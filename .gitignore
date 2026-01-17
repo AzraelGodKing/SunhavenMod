@@ -1,0 +1,24 @@
+# Decompiled source code - do not upload
+Decompiled/
+
+# Build results
+[Dd]ebug/
+[Rr]elease/
+bin/
+obj/
+
+# Visual Studio files
+.vs/
+*.user
+*.suo
+*.userosscache
+*.sln.docstates
+
+# NuGet packages
+packages/
+*.nupkg
+
+# Build artifacts
+*.dll
+*.pdb
+*.exe
