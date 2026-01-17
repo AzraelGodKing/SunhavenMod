@@ -7,3 +7,4 @@ C:\Users\Myleek\repo\SunhavenMod\HavensBirthright\obj\Debug\net48\HavensBirthrig
 C:\Users\Myleek\repo\SunhavenMod\HavensBirthright\obj\Debug\net48\HavensBirthright.csproj.CoreCompileInputs.cache
 C:\Users\Myleek\repo\SunhavenMod\HavensBirthright\obj\Debug\net48\HavensBirthright.dll
 C:\Users\Myleek\repo\SunhavenMod\HavensBirthright\obj\Debug\net48\HavensBirthright.pdb
+C:\Users\Myleek\repo\SunhavenMod\HavensBirthright\obj\Debug\net48\HavensBirthright.sourcelink.json
