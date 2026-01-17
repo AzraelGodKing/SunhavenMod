@@ -56,6 +56,31 @@ namespace HavensBirthright
                         typeof(Patches.StatPatches), "ModifyGetStat",
                         new[] { typeof(Wish.StatType) });
 
+                    // Patch NPCAI.AddFriendship for relationship bonuses (Human, Amari Dog)
+                    var npcaiType = AccessTools.TypeByName("Wish.NPCAI");
+                    if (npcaiType != null)
+                    {
+                        PatchMethodPrefix(npcaiType, "AddFriendship",
+                            typeof(Patches.EconomyPatches), "ModifyRelationshipGain",
+                            new[] { typeof(int) });
+                    }
+                    else
+                    {
+                        Log.LogWarning("Could not find NPCAI type - relationship bonuses will not work");
+                    }
+
+                    // Patch ShopMenu.BuyItem for shop discounts (Human)
+                    var shopMenuType = AccessTools.TypeByName("Wish.ShopMenu");
+                    if (shopMenuType != null)
+                    {
+                        PatchMethodPrefix(shopMenuType, "BuyItem",
+                            typeof(Patches.EconomyPatches), "ModifyBuyPrice");
+                    }
+                    else
+                    {
+                        Log.LogWarning("Could not find ShopMenu type - shop discounts will not work");
+                    }
+
                     // Log results
                     var patchedMethods = _harmony.GetPatchedMethods();
                     int count = 0;
@@ -110,6 +135,39 @@ namespace HavensBirthright
 
                 _harmony.Patch(original, postfix: new HarmonyMethod(postfix));
                 Log.LogInfo($"Successfully patched {targetType.Name}.{methodName}");
+            }
+            catch (Exception ex)
+            {
+                Log.LogError($"Failed to patch {targetType.Name}.{methodName}: {ex.Message}");
+            }
+        }
+
+        /// <summary>
+        /// Helper method to manually patch a method with a prefix
+        /// </summary>
+        private void PatchMethodPrefix(Type targetType, string methodName, Type patchType, string patchMethodName, Type[] parameters = null)
+        {
+            try
+            {
+                var original = parameters == null
+                    ? AccessTools.Method(targetType, methodName)
+                    : AccessTools.Method(targetType, methodName, parameters);
+
+                if (original == null)
+                {
+                    Log.LogWarning($"Could not find method {targetType.Name}.{methodName}");
+                    return;
+                }
+
+                var prefix = AccessTools.Method(patchType, patchMethodName);
+                if (prefix == null)
+                {
+                    Log.LogWarning($"Could not find patch method {patchType.Name}.{patchMethodName}");
+                    return;
+                }
+
+                _harmony.Patch(original, prefix: new HarmonyMethod(prefix));
+                Log.LogInfo($"Successfully patched {targetType.Name}.{methodName} (prefix)");
             }
             catch (Exception ex)
             {

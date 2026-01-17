@@ -25,12 +25,16 @@ namespace HavensBirthright.Patches
             {
                 // === COMBAT STATS ===
 
-                // Melee/Attack damage bonus (Demon, Fire Elemental)
+                // Melee/Attack damage bonus (Demon, Fire Elemental, Amari Reptile)
                 case StatType.AttackDamage:
                     if (manager.HasBonus(BonusType.MeleeStrength))
                     {
                         __result = manager.ApplyBonus(__result, BonusType.MeleeStrength);
                     }
+                    break;
+
+                // Spell/Magic damage bonus (Angel, Fire Elemental, Elemental)
+                case StatType.SpellDamage:
                     if (manager.HasBonus(BonusType.MagicPower))
                     {
                         __result = manager.ApplyBonus(__result, BonusType.MagicPower);
@@ -71,6 +75,15 @@ namespace HavensBirthright.Patches
                     }
                     break;
 
+                // Dodge chance bonus (Amari Cat)
+                case StatType.Dodge:
+                    if (manager.HasBonus(BonusType.DodgeChance))
+                    {
+                        float dodgeBonus = manager.GetBonusValue(BonusType.DodgeChance);
+                        __result += dodgeBonus / 100f;
+                    }
+                    break;
+
                 // === SKILL STATS ===
 
                 // Farming skill bonus (Elf)
@@ -78,6 +91,15 @@ namespace HavensBirthright.Patches
                     if (manager.HasBonus(BonusType.FarmingSpeed))
                     {
                         __result = manager.ApplyBonus(__result, BonusType.FarmingSpeed);
+                    }
+                    break;
+
+                // Extra crop chance bonus (Elf) - chance to get extra crops
+                case StatType.ExtraCropChance:
+                    if (manager.HasBonus(BonusType.CropQuality))
+                    {
+                        float cropBonus = manager.GetBonusValue(BonusType.CropQuality);
+                        __result += cropBonus / 100f;
                     }
                     break;
 
@@ -98,16 +120,22 @@ namespace HavensBirthright.Patches
                     }
                     break;
 
-                // Woodcutting crit bonus (Amari)
+                // Woodcutting crit bonus (extra wood chance)
+                // Also applies WoodcuttingSpeed here since no separate WoodcuttingSkill StatType exists
                 case StatType.WoodcuttingCrit:
                     if (manager.HasBonus(BonusType.WoodcuttingSpeed))
                     {
-                        float woodBonus = manager.GetBonusValue(BonusType.WoodcuttingSpeed);
+                        __result = manager.ApplyBonus(__result, BonusType.WoodcuttingSpeed);
+                    }
+                    if (manager.HasBonus(BonusType.WoodcuttingYield))
+                    {
+                        float woodBonus = manager.GetBonusValue(BonusType.WoodcuttingYield);
                         __result += woodBonus / 100f;
                     }
                     break;
 
-                // Fishing skill bonus (Naga, Water Elemental)
+                // Fishing skill bonus (Naga, Amari Aquatic)
+                // Also applies FishingLuck here since no separate StatType exists
                 case StatType.FishingSkill:
                     if (manager.HasBonus(BonusType.FishingSpeed))
                     {
