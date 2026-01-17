@@ -1,0 +1,1329 @@
+using System;
+using System.Buffers;
+using System.Collections.Generic;
+using System.Runtime.CompilerServices;
+using MemoryPack;
+using MemoryPack.Formatters;
+using MemoryPack.Internal;
+using UnityEngine.Events;
+using ZeroFormatter;
+
+namespace Wish
+{
+	// Token: 0x02000D1A RID: 3354
+	[ZeroFormattable]
+	[MemoryPackable(GenerateType.Object)]
+	public class CharacterData : IMemoryPackable<CharacterData>, IMemoryPackFormatterRegister
+	{
+		// Token: 0x1700C35D RID: 50013
+		// (get) Token: 0x06010F09 RID: 69385 RVA: 0x0029CD90 File Offset: 0x0029AF90
+		// (set) Token: 0x06010F0A RID: 69386 RVA: 0x0029CD98 File Offset: 0x0029AF98
+		[Index(0)]
+		public virtual string characterName { get; set; }
+
+		// Token: 0x1700C35E RID: 50014
+		// (get) Token: 0x06010F0B RID: 69387 RVA: 0x0029CDA1 File Offset: 0x0029AFA1
+		// (set) Token: 0x06010F0C RID: 69388 RVA: 0x0029CDA9 File Offset: 0x0029AFA9
+		[Index(1)]
+		public virtual Dictionary<byte, string> styleData { get; set; } = new Dictionary<byte, string>();
+
+		// Token: 0x1700C35F RID: 50015
+		// (get) Token: 0x06010F0D RID: 69389 RVA: 0x0029CDB4 File Offset: 0x0029AFB4
+		[IgnoreFormat]
+		public Dictionary<byte, string> StyleData
+		{
+			get
+			{
+				Dictionary<byte, string> result;
+				if ((result = this.styleData) == null)
+				{
+					result = (this.styleData = new Dictionary<byte, string>());
+				}
+				return result;
+			}
+		}
+
+		// Token: 0x1700C360 RID: 50016
+		// (get) Token: 0x06010F0E RID: 69390 RVA: 0x0029CDD9 File Offset: 0x0029AFD9
+		// (set) Token: 0x06010F0F RID: 69391 RVA: 0x0029CDE1 File Offset: 0x0029AFE1
+		[Index(2)]
+		public virtual Dictionary<short, InventoryItemData> items { get; set; }
+
+		// Token: 0x1700C361 RID: 50017
+		// (get) Token: 0x06010F10 RID: 69392 RVA: 0x0029CDEC File Offset: 0x0029AFEC
+		[IgnoreFormat]
+		public Dictionary<short, InventoryItemData> Items
+		{
+			get
+			{
+				Dictionary<short, InventoryItemData> result;
+				if ((result = this.items) == null)
+				{
+					result = (this.items = new Dictionary<short, InventoryItemData>());
+				}
+				return result;
+			}
+		}
+
+		// Token: 0x1700C362 RID: 50018
+		// (get) Token: 0x06010F11 RID: 69393 RVA: 0x0029CE11 File Offset: 0x0029B011
+		// (set) Token: 0x06010F12 RID: 69394 RVA: 0x0029CE19 File Offset: 0x0029B019
+		[Index(3)]
+		public virtual bool male { get; set; } = true;
+
+		// Token: 0x1700C363 RID: 50019
+		// (get) Token: 0x06010F13 RID: 69395 RVA: 0x0029CE22 File Offset: 0x0029B022
+		// (set) Token: 0x06010F14 RID: 69396 RVA: 0x0029CE2A File Offset: 0x0029B02A
+		[Index(4)]
+		public virtual SerializedVector2 position { get; set; }
+
+		// Token: 0x1700C364 RID: 50020
+		// (get) Token: 0x06010F15 RID: 69397 RVA: 0x0029CE33 File Offset: 0x0029B033
+		// (set) Token: 0x06010F16 RID: 69398 RVA: 0x0029CE3B File Offset: 0x0029B03B
+		[Index(5)]
+		public virtual int sceneID { get; set; }
+
+		// Token: 0x1700C365 RID: 50021
+		// (get) Token: 0x06010F17 RID: 69399 RVA: 0x0029CE44 File Offset: 0x0029B044
+		// (set) Token: 0x06010F18 RID: 69400 RVA: 0x0029CE4C File Offset: 0x0029B04C
+		[Index(6)]
+		public virtual Dictionary<int, int> foodStats { get; set; } = new Dictionary<int, int>();
+
+		// Token: 0x1700C366 RID: 50022
+		// (get) Token: 0x06010F19 RID: 69401 RVA: 0x0029CE58 File Offset: 0x0029B058
+		[IgnoreFormat]
+		public Dictionary<int, int> FoodStats
+		{
+			get
+			{
+				Dictionary<int, int> result;
+				if ((result = this.foodStats) == null)
+				{
+					result = (this.foodStats = new Dictionary<int, int>());
+				}
+				return result;
+			}
+		}
+
+		// Token: 0x1700C367 RID: 50023
+		// (get) Token: 0x06010F1A RID: 69402 RVA: 0x0029CE7D File Offset: 0x0029B07D
+		// (set) Token: 0x06010F1B RID: 69403 RVA: 0x0029CE85 File Offset: 0x0029B085
+		[Index(7)]
+		public virtual Dictionary<int, byte[]> progress { get; set; } = new Dictionary<int, byte[]>();
+
+		// Token: 0x1700C368 RID: 50024
+		// (get) Token: 0x06010F1C RID: 69404 RVA: 0x0029CE8E File Offset: 0x0029B08E
+		// (set) Token: 0x06010F1D RID: 69405 RVA: 0x0029CE96 File Offset: 0x0029B096
+		[Index(8)]
+		public virtual byte race { get; set; }
+
+		// Token: 0x1700C369 RID: 50025
+		// (get) Token: 0x06010F1E RID: 69406 RVA: 0x0029CE9F File Offset: 0x0029B09F
+		// (set) Token: 0x06010F1F RID: 69407 RVA: 0x0029CEA7 File Offset: 0x0029B0A7
+		[Index(9)]
+		public virtual Dictionary<string, float> relationships { get; set; } = new Dictionary<string, float>();
+
+		// Token: 0x1700C36A RID: 50026
+		// (get) Token: 0x06010F20 RID: 69408 RVA: 0x0029CEB0 File Offset: 0x0029B0B0
+		[IgnoreFormat]
+		public Dictionary<int, byte[]> Progress
+		{
+			get
+			{
+				Dictionary<int, byte[]> result;
+				if ((result = this.progress) == null)
+				{
+					result = (this.progress = new Dictionary<int, byte[]>());
+				}
+				return result;
+			}
+		}
+
+		// Token: 0x1700C36B RID: 50027
+		// (get) Token: 0x06010F21 RID: 69409 RVA: 0x0029CED8 File Offset: 0x0029B0D8
+		[IgnoreFormat]
+		public Dictionary<string, float> Relationships
+		{
+			get
+			{
+				Dictionary<string, float> result;
+				if ((result = this.relationships) == null)
+				{
+					result = (this.relationships = new Dictionary<string, float>());
+				}
+				return result;
+			}
+		}
+
+		// Token: 0x1700C36C RID: 50028
+		// (get) Token: 0x06010F22 RID: 69410 RVA: 0x0029CEFD File Offset: 0x0029B0FD
+		// (set) Token: 0x06010F23 RID: 69411 RVA: 0x0029CF05 File Offset: 0x0029B105
+		[Index(10)]
+		public virtual Dictionary<ProfessionType, Profession> professions { get; set; } = new Dictionary<ProfessionType, Profession>();
+
+		// Token: 0x1700C36D RID: 50029
+		// (get) Token: 0x06010F24 RID: 69412 RVA: 0x0029CF10 File Offset: 0x0029B110
+		[IgnoreFormat]
+		public Dictionary<ProfessionType, Profession> Professions
+		{
+			get
+			{
+				Dictionary<ProfessionType, Profession> result;
+				if ((result = this.professions) == null)
+				{
+					result = (this.professions = new Dictionary<ProfessionType, Profession>());
+				}
+				return result;
+			}
+		}
+
+		// Token: 0x06010F25 RID: 69413 RVA: 0x0029CF38 File Offset: 0x0029B138
+		public void AddExp(ProfessionType professionType, float amount)
+		{
+			this.Professions[professionType].experience += amount;
+			int level = this.Professions[professionType].level;
+			int levelFromExp = Profession.GetLevelFromExp(this.Professions[professionType].experience);
+			this.Professions[professionType].level = levelFromExp;
+			if (level != levelFromExp && levelFromExp > level)
+			{
+				UnityAction<ProfessionType, int> unityAction = CharacterData.onLevelUp;
+				if (unityAction != null)
+				{
+					unityAction(professionType, levelFromExp);
+				}
+			}
+			UnityAction<ProfessionType, float> unityAction2 = CharacterData.onAddEXP;
+			if (unityAction2 == null)
+			{
+				return;
+			}
+			unityAction2(professionType, amount);
+		}
+
+		// Token: 0x06010F26 RID: 69414 RVA: 0x0029CFC4 File Offset: 0x0029B1C4
+		public string StyleDataAsString()
+		{
+			string text = "";
+			byte b = 0;
+			while ((int)b < this.StyleData.Count)
+			{
+				string text2 = this.StyleData[b];
+				if (text2 == "")
+				{
+					text += "null ";
+				}
+				else
+				{
+					text = text + text2 + "+";
+				}
+				b += 1;
+			}
+			return text;
+		}
+
+		// Token: 0x1700C36E RID: 50030
+		// (get) Token: 0x06010F27 RID: 69415 RVA: 0x0029D024 File Offset: 0x0029B224
+		// (set) Token: 0x06010F28 RID: 69416 RVA: 0x0029D02C File Offset: 0x0029B22C
+		[Index(11)]
+		public virtual Dictionary<string, Dictionary<string, byte[]>> questData { get; set; }
+
+		// Token: 0x1700C36F RID: 50031
+		// (get) Token: 0x06010F29 RID: 69417 RVA: 0x0029D038 File Offset: 0x0029B238
+		[IgnoreFormat]
+		public Dictionary<string, Dictionary<string, byte[]>> QuestData
+		{
+			get
+			{
+				Dictionary<string, Dictionary<string, byte[]>> result;
+				if ((result = this.questData) == null)
+				{
+					result = (this.questData = new Dictionary<string, Dictionary<string, byte[]>>());
+				}
+				return result;
+			}
+		}
+
+		// Token: 0x1700C370 RID: 50032
+		// (get) Token: 0x06010F2A RID: 69418 RVA: 0x0029D05D File Offset: 0x0029B25D
+		// (set) Token: 0x06010F2B RID: 69419 RVA: 0x0029D065 File Offset: 0x0029B265
+		[Index(12)]
+		public virtual Dictionary<StatType, float> statBonuses { get; set; } = new Dictionary<StatType, float>();
+
+		// Token: 0x1700C371 RID: 50033
+		// (get) Token: 0x06010F2C RID: 69420 RVA: 0x0029D070 File Offset: 0x0029B270
+		[IgnoreFormat]
+		public Dictionary<StatType, float> StatBonuses
+		{
+			get
+			{
+				Dictionary<StatType, float> result;
+				if ((result = this.statBonuses) == null)
+				{
+					result = (this.statBonuses = new Dictionary<StatType, float>());
+				}
+				return result;
+			}
+		}
+
+		// Token: 0x06010F2D RID: 69421 RVA: 0x0029D098 File Offset: 0x0029B298
+		public void AddStatBonus(StatType stat, float statIncrease)
+		{
+			if (this.StatBonuses.ContainsKey(stat))
+			{
+				this.StatBonuses[stat] = SingletonBehaviour<GameSave>.Instance.CurrentSave.characterData.StatBonuses[stat] + statIncrease;
+			}
+			else
+			{
+				this.StatBonuses[stat] = statIncrease;
+			}
+			if (Player.Instance)
+			{
+				if (statIncrease > 0f)
+				{
+					SingletonBehaviour<NotificationStack>.Instance.SendStatNotification(statIncrease, stat, 0, false);
+				}
+				else
+				{
+					SingletonBehaviour<NotificationStack>.Instance.SendStatNotification(statIncrease, stat, 0, true);
+				}
+				if (stat == StatType.Mana)
+				{
+					ParticleManager.Instance.InstantiateParticle(SingletonBehaviour<Prefabs>.Instance.manaGainParticles, Player.Instance.Graphics.position, 3f, Player.Instance.Graphics);
+				}
+			}
+		}
+
+		// Token: 0x1700C372 RID: 50034
+		// (get) Token: 0x06010F2E RID: 69422 RVA: 0x0029D153 File Offset: 0x0029B353
+		// (set) Token: 0x06010F2F RID: 69423 RVA: 0x0029D15B File Offset: 0x0029B35B
+		[Index(13)]
+		public virtual Dictionary<string, MailData> mail { get; set; } = new Dictionary<string, MailData>();
+
+		// Token: 0x1700C373 RID: 50035
+		// (get) Token: 0x06010F30 RID: 69424 RVA: 0x0029D164 File Offset: 0x0029B364
+		[IgnoreFormat]
+		public Dictionary<string, MailData> Mail
+		{
+			get
+			{
+				Dictionary<string, MailData> result;
+				if ((result = this.mail) == null)
+				{
+					result = (this.mail = new Dictionary<string, MailData>());
+				}
+				return result;
+			}
+		}
+
+		// Token: 0x1700C374 RID: 50036
+		// (get) Token: 0x06010F31 RID: 69425 RVA: 0x0029D189 File Offset: 0x0029B389
+		// (set) Token: 0x06010F32 RID: 69426 RVA: 0x0029D191 File Offset: 0x0029B391
+		[Index(14)]
+		public virtual PetItem pet { get; set; }
+
+		// Token: 0x1700C375 RID: 50037
+		// (get) Token: 0x06010F33 RID: 69427 RVA: 0x0029D19A File Offset: 0x0029B39A
+		// (set) Token: 0x06010F34 RID: 69428 RVA: 0x0029D1A2 File Offset: 0x0029B3A2
+		[Index(15)]
+		public virtual byte characterIndex { get; set; }
+
+		// Token: 0x1700C376 RID: 50038
+		// (get) Token: 0x06010F35 RID: 69429 RVA: 0x0029D1AB File Offset: 0x0029B3AB
+		// (set) Token: 0x06010F36 RID: 69430 RVA: 0x0029D1B3 File Offset: 0x0029B3B3
+		[Index(16)]
+		public virtual float health { get; set; }
+
+		// Token: 0x1700C377 RID: 50039
+		// (get) Token: 0x06010F37 RID: 69431 RVA: 0x0029D1BC File Offset: 0x0029B3BC
+		// (set) Token: 0x06010F38 RID: 69432 RVA: 0x0029D1C4 File Offset: 0x0029B3C4
+		[Index(17)]
+		public virtual float mana { get; set; }
+
+		// Token: 0x1700C378 RID: 50040
+		// (get) Token: 0x06010F39 RID: 69433 RVA: 0x0029D1CD File Offset: 0x0029B3CD
+		// (set) Token: 0x06010F3A RID: 69434 RVA: 0x0029D1D5 File Offset: 0x0029B3D5
+		[Index(18)]
+		public virtual int map { get; set; }
+
+		// Token: 0x1700C379 RID: 50041
+		// (get) Token: 0x06010F3B RID: 69435 RVA: 0x0029D1DE File Offset: 0x0029B3DE
+		// (set) Token: 0x06010F3C RID: 69436 RVA: 0x0029D1E6 File Offset: 0x0029B3E6
+		[Index(19)]
+		public virtual Dictionary<short, InventoryItemData> bank { get; set; }
+
+		// Token: 0x1700C37A RID: 50042
+		// (get) Token: 0x06010F3D RID: 69437 RVA: 0x0029D1F0 File Offset: 0x0029B3F0
+		[IgnoreFormat]
+		public Dictionary<short, InventoryItemData> Bank
+		{
+			get
+			{
+				Dictionary<short, InventoryItemData> result;
+				if ((result = this.bank) == null)
+				{
+					result = (this.bank = new Dictionary<short, InventoryItemData>());
+				}
+				return result;
+			}
+		}
+
+		// Token: 0x1700C37B RID: 50043
+		// (get) Token: 0x06010F3E RID: 69438 RVA: 0x0029D215 File Offset: 0x0029B415
+		// (set) Token: 0x06010F3F RID: 69439 RVA: 0x0029D21D File Offset: 0x0029B41D
+		[Index(20)]
+		public virtual int profession { get; set; }
+
+		// Token: 0x1700C37C RID: 50044
+		// (get) Token: 0x06010F40 RID: 69440 RVA: 0x0029D226 File Offset: 0x0029B426
+		// (set) Token: 0x06010F41 RID: 69441 RVA: 0x0029D22E File Offset: 0x0029B42E
+		[Index(21)]
+		public virtual IList<XPSource> xpSources { get; set; }
+
+		// Token: 0x1700C37D RID: 50045
+		// (get) Token: 0x06010F42 RID: 69442 RVA: 0x0029D238 File Offset: 0x0029B438
+		[IgnoreFormat]
+		public IList<XPSource> XpSources
+		{
+			get
+			{
+				IList<XPSource> result;
+				if ((result = this.xpSources) == null)
+				{
+					result = (this.xpSources = new List<XPSource>());
+				}
+				return result;
+			}
+		}
+
+		// Token: 0x1700C37E RID: 50046
+		// (get) Token: 0x06010F43 RID: 69443 RVA: 0x0029D25D File Offset: 0x0029B45D
+		// (set) Token: 0x06010F44 RID: 69444 RVA: 0x0029D265 File Offset: 0x0029B465
+		[Index(22)]
+		public virtual Dictionary<short, EncylopediaData> encylopdieda { get; set; }
+
+		// Token: 0x1700C37F RID: 50047
+		// (get) Token: 0x06010F45 RID: 69445 RVA: 0x0029D270 File Offset: 0x0029B470
+		[IgnoreFormat]
+		public Dictionary<short, EncylopediaData> Encylopdeia
+		{
+			get
+			{
+				Dictionary<short, EncylopediaData> result;
+				if ((result = this.encylopdieda) == null)
+				{
+					result = (this.encylopdieda = new Dictionary<short, EncylopediaData>());
+				}
+				return result;
+			}
+		}
+
+		// Token: 0x1700C380 RID: 50048
+		// (get) Token: 0x06010F46 RID: 69446 RVA: 0x0029D295 File Offset: 0x0029B495
+		// (set) Token: 0x06010F47 RID: 69447 RVA: 0x0029D29D File Offset: 0x0029B49D
+		[Index(23)]
+		public virtual Dictionary<short, EncylopediaData> monsterEncylopedia { get; set; }
+
+		// Token: 0x1700C381 RID: 50049
+		// (get) Token: 0x06010F48 RID: 69448 RVA: 0x0029D2A8 File Offset: 0x0029B4A8
+		[IgnoreFormat]
+		public Dictionary<short, EncylopediaData> MonsterEncylopedia
+		{
+			get
+			{
+				Dictionary<short, EncylopediaData> result;
+				if ((result = this.monsterEncylopedia) == null)
+				{
+					result = (this.monsterEncylopedia = new Dictionary<short, EncylopediaData>());
+				}
+				return result;
+			}
+		}
+
+		// Token: 0x1700C382 RID: 50050
+		// (get) Token: 0x06010F49 RID: 69449 RVA: 0x0029D2CD File Offset: 0x0029B4CD
+		// (set) Token: 0x06010F4A RID: 69450 RVA: 0x0029D2D5 File Offset: 0x0029B4D5
+		[Index(24)]
+		public virtual string birthdaySeason { get; set; }
+
+		// Token: 0x1700C383 RID: 50051
+		// (get) Token: 0x06010F4B RID: 69451 RVA: 0x0029D2DE File Offset: 0x0029B4DE
+		// (set) Token: 0x06010F4C RID: 69452 RVA: 0x0029D2E6 File Offset: 0x0029B4E6
+		[Index(25)]
+		public virtual int birthdayDay { get; set; } = -1;
+
+		// Token: 0x1700C384 RID: 50052
+		// (get) Token: 0x06010F4D RID: 69453 RVA: 0x0029D2F0 File Offset: 0x0029B4F0
+		// (set) Token: 0x06010F4E RID: 69454 RVA: 0x0029D33B File Offset: 0x0029B53B
+		[IgnoreFormat]
+		public string BirthdaySeason
+		{
+			get
+			{
+				string result;
+				if ((result = this.birthdaySeason) == null)
+				{
+					result = (this.birthdaySeason = new string[]
+					{
+						"Spring",
+						"Summer",
+						"Fall",
+						"Winter"
+					}.RandomItem<string>());
+				}
+				return result;
+			}
+			set
+			{
+				this.birthdaySeason = value;
+			}
+		}
+
+		// Token: 0x1700C385 RID: 50053
+		// (get) Token: 0x06010F4F RID: 69455 RVA: 0x0029D344 File Offset: 0x0029B544
+		// (set) Token: 0x06010F50 RID: 69456 RVA: 0x0029D372 File Offset: 0x0029B572
+		[IgnoreFormat]
+		public int BirthdayDay
+		{
+			get
+			{
+				if (this.birthdayDay <= 0)
+				{
+					this.birthdayDay = new int[]
+					{
+						1,
+						2,
+						3,
+						4,
+						5,
+						6,
+						7,
+						8,
+						9,
+						10,
+						11,
+						12,
+						13,
+						15,
+						16,
+						17,
+						18,
+						19,
+						20,
+						21,
+						22,
+						23,
+						24,
+						25,
+						26,
+						27
+					}.RandomItem<int>();
+				}
+				return this.birthdayDay;
+			}
+			set
+			{
+				this.birthdayDay = value;
+			}
+		}
+
+		// Token: 0x1700C386 RID: 50054
+		// (get) Token: 0x06010F51 RID: 69457 RVA: 0x0029D37B File Offset: 0x0029B57B
+		// (set) Token: 0x06010F52 RID: 69458 RVA: 0x0029D383 File Offset: 0x0029B583
+		[Index(26)]
+		public virtual IList<KidClothingData> kidClothingDatas { get; set; }
+
+		// Token: 0x1700C387 RID: 50055
+		// (get) Token: 0x06010F53 RID: 69459 RVA: 0x0029D38C File Offset: 0x0029B58C
+		[IgnoreFormat]
+		public IList<KidClothingData> KidClothingDatas
+		{
+			get
+			{
+				IList<KidClothingData> result;
+				if ((result = this.kidClothingDatas) == null)
+				{
+					result = (this.kidClothingDatas = new List<KidClothingData>());
+				}
+				return result;
+			}
+		}
+
+		// Token: 0x1700C388 RID: 50056
+		// (get) Token: 0x06010F54 RID: 69460 RVA: 0x0029D3B1 File Offset: 0x0029B5B1
+		// (set) Token: 0x06010F55 RID: 69461 RVA: 0x0029D3B9 File Offset: 0x0029B5B9
+		[Index(27)]
+		public virtual Race ChildRace { get; set; }
+
+		// Token: 0x06010F56 RID: 69462 RVA: 0x0029D3C2 File Offset: 0x0029B5C2
+		static CharacterData()
+		{
+			CharacterData.RegisterFormatter();
+		}
+
+		// Token: 0x06010F57 RID: 69463 RVA: 0x0029D3CC File Offset: 0x0029B5CC
+		[MemoryPack.Internal.Preserve]
+		public static void RegisterFormatter()
+		{
+			if (!MemoryPackFormatterProvider.IsRegistered<CharacterData>())
+			{
+				MemoryPackFormatterProvider.Register<CharacterData>(new CharacterData.CharacterDataFormatter());
+			}
+			if (!MemoryPackFormatterProvider.IsRegistered<CharacterData[]>())
+			{
+				MemoryPackFormatterProvider.Register<CharacterData[]>(new ArrayFormatter<CharacterData>());
+			}
+			if (!MemoryPackFormatterProvider.IsRegistered<Dictionary<byte, string>>())
+			{
+				MemoryPackFormatterProvider.Register<Dictionary<byte, string>>(new DictionaryFormatter<byte, string>());
+			}
+			if (!MemoryPackFormatterProvider.IsRegistered<Dictionary<short, InventoryItemData>>())
+			{
+				MemoryPackFormatterProvider.Register<Dictionary<short, InventoryItemData>>(new DictionaryFormatter<short, InventoryItemData>());
+			}
+			if (!MemoryPackFormatterProvider.IsRegistered<Dictionary<int, int>>())
+			{
+				MemoryPackFormatterProvider.Register<Dictionary<int, int>>(new DictionaryFormatter<int, int>());
+			}
+			if (!MemoryPackFormatterProvider.IsRegistered<Dictionary<int, byte[]>>())
+			{
+				MemoryPackFormatterProvider.Register<Dictionary<int, byte[]>>(new DictionaryFormatter<int, byte[]>());
+			}
+			if (!MemoryPackFormatterProvider.IsRegistered<byte[]>())
+			{
+				MemoryPackFormatterProvider.Register<byte[]>(new ArrayFormatter<byte>());
+			}
+			if (!MemoryPackFormatterProvider.IsRegistered<Dictionary<string, float>>())
+			{
+				MemoryPackFormatterProvider.Register<Dictionary<string, float>>(new DictionaryFormatter<string, float>());
+			}
+			if (!MemoryPackFormatterProvider.IsRegistered<Dictionary<ProfessionType, Profession>>())
+			{
+				MemoryPackFormatterProvider.Register<Dictionary<ProfessionType, Profession>>(new DictionaryFormatter<ProfessionType, Profession>());
+			}
+			if (!MemoryPackFormatterProvider.IsRegistered<ProfessionType>())
+			{
+				MemoryPackFormatterProvider.Register<ProfessionType>(new UnmanagedFormatter<ProfessionType>());
+			}
+			if (!MemoryPackFormatterProvider.IsRegistered<Dictionary<string, Dictionary<string, byte[]>>>())
+			{
+				MemoryPackFormatterProvider.Register<Dictionary<string, Dictionary<string, byte[]>>>(new DictionaryFormatter<string, Dictionary<string, byte[]>>());
+			}
+			if (!MemoryPackFormatterProvider.IsRegistered<Dictionary<string, byte[]>>())
+			{
+				MemoryPackFormatterProvider.Register<Dictionary<string, byte[]>>(new DictionaryFormatter<string, byte[]>());
+			}
+			if (!MemoryPackFormatterProvider.IsRegistered<Dictionary<StatType, float>>())
+			{
+				MemoryPackFormatterProvider.Register<Dictionary<StatType, float>>(new DictionaryFormatter<StatType, float>());
+			}
+			if (!MemoryPackFormatterProvider.IsRegistered<StatType>())
+			{
+				MemoryPackFormatterProvider.Register<StatType>(new UnmanagedFormatter<StatType>());
+			}
+			if (!MemoryPackFormatterProvider.IsRegistered<Dictionary<string, MailData>>())
+			{
+				MemoryPackFormatterProvider.Register<Dictionary<string, MailData>>(new DictionaryFormatter<string, MailData>());
+			}
+			if (!MemoryPackFormatterProvider.IsRegistered<IList<XPSource>>())
+			{
+				MemoryPackFormatterProvider.Register<IList<XPSource>>(new InterfaceListFormatter<XPSource>());
+			}
+			if (!MemoryPackFormatterProvider.IsRegistered<Dictionary<short, EncylopediaData>>())
+			{
+				MemoryPackFormatterProvider.Register<Dictionary<short, EncylopediaData>>(new DictionaryFormatter<short, EncylopediaData>());
+			}
+			if (!MemoryPackFormatterProvider.IsRegistered<IList<KidClothingData>>())
+			{
+				MemoryPackFormatterProvider.Register<IList<KidClothingData>>(new InterfaceListFormatter<KidClothingData>());
+			}
+			if (!MemoryPackFormatterProvider.IsRegistered<Race>())
+			{
+				MemoryPackFormatterProvider.Register<Race>(new UnmanagedFormatter<Race>());
+			}
+		}
+
+		// Token: 0x06010F58 RID: 69464 RVA: 0x0029D51C File Offset: 0x0029B71C
+		[NullableContext(1)]
+		[MemoryPack.Internal.Preserve]
+		public static void Serialize<TBufferWriter>([Nullable(new byte[]
+		{
+			0,
+			1
+		})] ref MemoryPackWriter<TBufferWriter> writer, [Nullable(2)] ref CharacterData value) where TBufferWriter : class, IBufferWriter<byte>
+		{
+			if (value == null)
+			{
+				writer.WriteNullObjectHeader();
+				return;
+			}
+			writer.WriteObjectHeader(44);
+			writer.WriteString(value.characterName);
+			Dictionary<byte, string> styleData = value.styleData;
+			writer.WriteValue<Dictionary<byte, string>>(styleData);
+			styleData = value.StyleData;
+			writer.WriteValue<Dictionary<byte, string>>(styleData);
+			Dictionary<short, InventoryItemData> dictionary = value.items;
+			writer.WriteValue<Dictionary<short, InventoryItemData>>(dictionary);
+			dictionary = value.Items;
+			writer.WriteValue<Dictionary<short, InventoryItemData>>(dictionary);
+			bool male = value.male;
+			SerializedVector2 position = value.position;
+			int num = value.sceneID;
+			writer.WriteUnmanaged<bool, SerializedVector2, int>(male, position, num);
+			Dictionary<int, int> foodStats = value.foodStats;
+			writer.WriteValue<Dictionary<int, int>>(foodStats);
+			foodStats = value.FoodStats;
+			writer.WriteValue<Dictionary<int, int>>(foodStats);
+			Dictionary<int, byte[]> progress = value.progress;
+			writer.WriteValue<Dictionary<int, byte[]>>(progress);
+			byte b = value.race;
+			writer.WriteUnmanaged<byte>(b);
+			Dictionary<string, float> relationships = value.relationships;
+			writer.WriteValue<Dictionary<string, float>>(relationships);
+			progress = value.Progress;
+			writer.WriteValue<Dictionary<int, byte[]>>(progress);
+			relationships = value.Relationships;
+			writer.WriteValue<Dictionary<string, float>>(relationships);
+			Dictionary<ProfessionType, Profession> professions = value.professions;
+			writer.WriteValue<Dictionary<ProfessionType, Profession>>(professions);
+			professions = value.Professions;
+			writer.WriteValue<Dictionary<ProfessionType, Profession>>(professions);
+			Dictionary<string, Dictionary<string, byte[]>> questData = value.questData;
+			writer.WriteValue<Dictionary<string, Dictionary<string, byte[]>>>(questData);
+			questData = value.QuestData;
+			writer.WriteValue<Dictionary<string, Dictionary<string, byte[]>>>(questData);
+			Dictionary<StatType, float> statBonuses = value.statBonuses;
+			writer.WriteValue<Dictionary<StatType, float>>(statBonuses);
+			statBonuses = value.StatBonuses;
+			writer.WriteValue<Dictionary<StatType, float>>(statBonuses);
+			Dictionary<string, MailData> mail = value.mail;
+			writer.WriteValue<Dictionary<string, MailData>>(mail);
+			mail = value.Mail;
+			writer.WriteValue<Dictionary<string, MailData>>(mail);
+			PetItem pet = value.pet;
+			writer.WritePackable<PetItem>(pet);
+			b = value.characterIndex;
+			float health = value.health;
+			float mana = value.mana;
+			num = value.map;
+			writer.WriteUnmanaged<byte, float, float, int>(b, health, mana, num);
+			dictionary = value.bank;
+			writer.WriteValue<Dictionary<short, InventoryItemData>>(dictionary);
+			dictionary = value.Bank;
+			writer.WriteValue<Dictionary<short, InventoryItemData>>(dictionary);
+			num = value.profession;
+			writer.WriteUnmanaged<int>(num);
+			IList<XPSource> xpSources = value.xpSources;
+			writer.WriteValue<IList<XPSource>>(xpSources);
+			xpSources = value.XpSources;
+			writer.WriteValue<IList<XPSource>>(xpSources);
+			Dictionary<short, EncylopediaData> dictionary2 = value.encylopdieda;
+			writer.WriteValue<Dictionary<short, EncylopediaData>>(dictionary2);
+			dictionary2 = value.Encylopdeia;
+			writer.WriteValue<Dictionary<short, EncylopediaData>>(dictionary2);
+			dictionary2 = value.monsterEncylopedia;
+			writer.WriteValue<Dictionary<short, EncylopediaData>>(dictionary2);
+			dictionary2 = value.MonsterEncylopedia;
+			writer.WriteValue<Dictionary<short, EncylopediaData>>(dictionary2);
+			writer.WriteString(value.birthdaySeason);
+			num = value.birthdayDay;
+			writer.WriteUnmanaged<int>(num);
+			writer.WriteString(value.BirthdaySeason);
+			num = value.BirthdayDay;
+			writer.WriteUnmanaged<int>(num);
+			IList<KidClothingData> kidClothingDatas = value.kidClothingDatas;
+			writer.WriteValue<IList<KidClothingData>>(kidClothingDatas);
+			kidClothingDatas = value.KidClothingDatas;
+			writer.WriteValue<IList<KidClothingData>>(kidClothingDatas);
+			Race childRace = value.ChildRace;
+			writer.WriteUnmanaged<Race>(childRace);
+		}
+
+		// Token: 0x06010F59 RID: 69465 RVA: 0x0029D7F8 File Offset: 0x0029B9F8
+		[NullableContext(2)]
+		[MemoryPack.Internal.Preserve]
+		public static void Deserialize(ref MemoryPackReader reader, ref CharacterData value)
+		{
+			byte b;
+			if (!reader.TryReadObjectHeader(out b))
+			{
+				value = null;
+				return;
+			}
+			string characterName;
+			Dictionary<byte, string> styleData;
+			Dictionary<short, InventoryItemData> items;
+			bool male;
+			SerializedVector2 position;
+			int sceneID;
+			Dictionary<int, int> foodStats;
+			Dictionary<int, byte[]> progress;
+			byte race;
+			Dictionary<string, float> relationships;
+			Dictionary<ProfessionType, Profession> professions;
+			Dictionary<string, Dictionary<string, byte[]>> questData;
+			Dictionary<StatType, float> statBonuses;
+			Dictionary<string, MailData> mail;
+			PetItem pet;
+			byte characterIndex;
+			float health;
+			float mana;
+			int map;
+			Dictionary<short, InventoryItemData> bank;
+			int profession;
+			IList<XPSource> xpSources;
+			Dictionary<short, EncylopediaData> encylopdieda;
+			Dictionary<short, EncylopediaData> monsterEncylopedia;
+			string birthdaySeason;
+			int birthdayDay;
+			string birthdaySeason2;
+			int birthdayDay2;
+			IList<KidClothingData> kidClothingDatas;
+			Race childRace;
+			if (b == 44)
+			{
+				Dictionary<byte, string> dictionary;
+				Dictionary<short, InventoryItemData> dictionary2;
+				Dictionary<int, int> dictionary3;
+				Dictionary<int, byte[]> dictionary4;
+				Dictionary<string, float> dictionary5;
+				Dictionary<ProfessionType, Profession> dictionary6;
+				Dictionary<string, Dictionary<string, byte[]>> dictionary7;
+				Dictionary<StatType, float> dictionary8;
+				Dictionary<string, MailData> dictionary9;
+				Dictionary<short, InventoryItemData> dictionary10;
+				IList<XPSource> list;
+				Dictionary<short, EncylopediaData> dictionary11;
+				Dictionary<short, EncylopediaData> dictionary12;
+				IList<KidClothingData> list2;
+				if (value == null)
+				{
+					characterName = reader.ReadString();
+					styleData = reader.ReadValue<Dictionary<byte, string>>();
+					dictionary = reader.ReadValue<Dictionary<byte, string>>();
+					items = reader.ReadValue<Dictionary<short, InventoryItemData>>();
+					dictionary2 = reader.ReadValue<Dictionary<short, InventoryItemData>>();
+					reader.ReadUnmanaged<bool, SerializedVector2, int>(out male, out position, out sceneID);
+					foodStats = reader.ReadValue<Dictionary<int, int>>();
+					dictionary3 = reader.ReadValue<Dictionary<int, int>>();
+					progress = reader.ReadValue<Dictionary<int, byte[]>>();
+					reader.ReadUnmanaged<byte>(out race);
+					relationships = reader.ReadValue<Dictionary<string, float>>();
+					dictionary4 = reader.ReadValue<Dictionary<int, byte[]>>();
+					dictionary5 = reader.ReadValue<Dictionary<string, float>>();
+					professions = reader.ReadValue<Dictionary<ProfessionType, Profession>>();
+					dictionary6 = reader.ReadValue<Dictionary<ProfessionType, Profession>>();
+					questData = reader.ReadValue<Dictionary<string, Dictionary<string, byte[]>>>();
+					dictionary7 = reader.ReadValue<Dictionary<string, Dictionary<string, byte[]>>>();
+					statBonuses = reader.ReadValue<Dictionary<StatType, float>>();
+					dictionary8 = reader.ReadValue<Dictionary<StatType, float>>();
+					mail = reader.ReadValue<Dictionary<string, MailData>>();
+					dictionary9 = reader.ReadValue<Dictionary<string, MailData>>();
+					pet = reader.ReadPackable<PetItem>();
+					reader.ReadUnmanaged<byte, float, float, int>(out characterIndex, out health, out mana, out map);
+					bank = reader.ReadValue<Dictionary<short, InventoryItemData>>();
+					dictionary10 = reader.ReadValue<Dictionary<short, InventoryItemData>>();
+					reader.ReadUnmanaged<int>(out profession);
+					xpSources = reader.ReadValue<IList<XPSource>>();
+					list = reader.ReadValue<IList<XPSource>>();
+					encylopdieda = reader.ReadValue<Dictionary<short, EncylopediaData>>();
+					dictionary11 = reader.ReadValue<Dictionary<short, EncylopediaData>>();
+					monsterEncylopedia = reader.ReadValue<Dictionary<short, EncylopediaData>>();
+					dictionary12 = reader.ReadValue<Dictionary<short, EncylopediaData>>();
+					birthdaySeason = reader.ReadString();
+					reader.ReadUnmanaged<int>(out birthdayDay);
+					birthdaySeason2 = reader.ReadString();
+					reader.ReadUnmanaged<int>(out birthdayDay2);
+					kidClothingDatas = reader.ReadValue<IList<KidClothingData>>();
+					list2 = reader.ReadValue<IList<KidClothingData>>();
+					reader.ReadUnmanaged<Race>(out childRace);
+					goto IL_A3C;
+				}
+				characterName = value.characterName;
+				styleData = value.styleData;
+				dictionary = value.StyleData;
+				items = value.items;
+				dictionary2 = value.Items;
+				male = value.male;
+				position = value.position;
+				sceneID = value.sceneID;
+				foodStats = value.foodStats;
+				dictionary3 = value.FoodStats;
+				progress = value.progress;
+				race = value.race;
+				relationships = value.relationships;
+				dictionary4 = value.Progress;
+				dictionary5 = value.Relationships;
+				professions = value.professions;
+				dictionary6 = value.Professions;
+				questData = value.questData;
+				dictionary7 = value.QuestData;
+				statBonuses = value.statBonuses;
+				dictionary8 = value.StatBonuses;
+				mail = value.mail;
+				dictionary9 = value.Mail;
+				pet = value.pet;
+				characterIndex = value.characterIndex;
+				health = value.health;
+				mana = value.mana;
+				map = value.map;
+				bank = value.bank;
+				dictionary10 = value.Bank;
+				profession = value.profession;
+				xpSources = value.xpSources;
+				list = value.XpSources;
+				encylopdieda = value.encylopdieda;
+				dictionary11 = value.Encylopdeia;
+				monsterEncylopedia = value.monsterEncylopedia;
+				dictionary12 = value.MonsterEncylopedia;
+				birthdaySeason = value.birthdaySeason;
+				birthdayDay = value.birthdayDay;
+				birthdaySeason2 = value.BirthdaySeason;
+				birthdayDay2 = value.BirthdayDay;
+				kidClothingDatas = value.kidClothingDatas;
+				list2 = value.KidClothingDatas;
+				childRace = value.ChildRace;
+				characterName = reader.ReadString();
+				reader.ReadValue<Dictionary<byte, string>>(ref styleData);
+				reader.ReadValue<Dictionary<byte, string>>(ref dictionary);
+				reader.ReadValue<Dictionary<short, InventoryItemData>>(ref items);
+				reader.ReadValue<Dictionary<short, InventoryItemData>>(ref dictionary2);
+				reader.ReadUnmanaged<bool>(out male);
+				reader.ReadUnmanaged<SerializedVector2>(out position);
+				reader.ReadUnmanaged<int>(out sceneID);
+				reader.ReadValue<Dictionary<int, int>>(ref foodStats);
+				reader.ReadValue<Dictionary<int, int>>(ref dictionary3);
+				reader.ReadValue<Dictionary<int, byte[]>>(ref progress);
+				reader.ReadUnmanaged<byte>(out race);
+				reader.ReadValue<Dictionary<string, float>>(ref relationships);
+				reader.ReadValue<Dictionary<int, byte[]>>(ref dictionary4);
+				reader.ReadValue<Dictionary<string, float>>(ref dictionary5);
+				reader.ReadValue<Dictionary<ProfessionType, Profession>>(ref professions);
+				reader.ReadValue<Dictionary<ProfessionType, Profession>>(ref dictionary6);
+				reader.ReadValue<Dictionary<string, Dictionary<string, byte[]>>>(ref questData);
+				reader.ReadValue<Dictionary<string, Dictionary<string, byte[]>>>(ref dictionary7);
+				reader.ReadValue<Dictionary<StatType, float>>(ref statBonuses);
+				reader.ReadValue<Dictionary<StatType, float>>(ref dictionary8);
+				reader.ReadValue<Dictionary<string, MailData>>(ref mail);
+				reader.ReadValue<Dictionary<string, MailData>>(ref dictionary9);
+				reader.ReadPackable<PetItem>(ref pet);
+				reader.ReadUnmanaged<byte>(out characterIndex);
+				reader.ReadUnmanaged<float>(out health);
+				reader.ReadUnmanaged<float>(out mana);
+				reader.ReadUnmanaged<int>(out map);
+				reader.ReadValue<Dictionary<short, InventoryItemData>>(ref bank);
+				reader.ReadValue<Dictionary<short, InventoryItemData>>(ref dictionary10);
+				reader.ReadUnmanaged<int>(out profession);
+				reader.ReadValue<IList<XPSource>>(ref xpSources);
+				reader.ReadValue<IList<XPSource>>(ref list);
+				reader.ReadValue<Dictionary<short, EncylopediaData>>(ref encylopdieda);
+				reader.ReadValue<Dictionary<short, EncylopediaData>>(ref dictionary11);
+				reader.ReadValue<Dictionary<short, EncylopediaData>>(ref monsterEncylopedia);
+				reader.ReadValue<Dictionary<short, EncylopediaData>>(ref dictionary12);
+				birthdaySeason = reader.ReadString();
+				reader.ReadUnmanaged<int>(out birthdayDay);
+				birthdaySeason2 = reader.ReadString();
+				reader.ReadUnmanaged<int>(out birthdayDay2);
+				reader.ReadValue<IList<KidClothingData>>(ref kidClothingDatas);
+				reader.ReadValue<IList<KidClothingData>>(ref list2);
+				reader.ReadUnmanaged<Race>(out childRace);
+			}
+			else
+			{
+				if (b > 44)
+				{
+					MemoryPackSerializationException.ThrowInvalidPropertyCount(typeof(CharacterData), 44, b);
+					return;
+				}
+				Dictionary<byte, string> dictionary;
+				Dictionary<short, InventoryItemData> dictionary2;
+				Dictionary<int, int> dictionary3;
+				Dictionary<int, byte[]> dictionary4;
+				Dictionary<string, float> dictionary5;
+				Dictionary<ProfessionType, Profession> dictionary6;
+				Dictionary<string, Dictionary<string, byte[]>> dictionary7;
+				Dictionary<StatType, float> dictionary8;
+				Dictionary<string, MailData> dictionary9;
+				Dictionary<short, InventoryItemData> dictionary10;
+				IList<XPSource> list;
+				Dictionary<short, EncylopediaData> dictionary11;
+				Dictionary<short, EncylopediaData> dictionary12;
+				IList<KidClothingData> list2;
+				if (value == null)
+				{
+					characterName = null;
+					styleData = null;
+					dictionary = null;
+					items = null;
+					dictionary2 = null;
+					male = false;
+					position = default(SerializedVector2);
+					sceneID = 0;
+					foodStats = null;
+					dictionary3 = null;
+					progress = null;
+					race = 0;
+					relationships = null;
+					dictionary4 = null;
+					dictionary5 = null;
+					professions = null;
+					dictionary6 = null;
+					questData = null;
+					dictionary7 = null;
+					statBonuses = null;
+					dictionary8 = null;
+					mail = null;
+					dictionary9 = null;
+					pet = null;
+					characterIndex = 0;
+					health = 0f;
+					mana = 0f;
+					map = 0;
+					bank = null;
+					dictionary10 = null;
+					profession = 0;
+					xpSources = null;
+					list = null;
+					encylopdieda = null;
+					dictionary11 = null;
+					monsterEncylopedia = null;
+					dictionary12 = null;
+					birthdaySeason = null;
+					birthdayDay = 0;
+					birthdaySeason2 = null;
+					birthdayDay2 = 0;
+					kidClothingDatas = null;
+					list2 = null;
+					childRace = Race.Human;
+				}
+				else
+				{
+					characterName = value.characterName;
+					styleData = value.styleData;
+					dictionary = value.StyleData;
+					items = value.items;
+					dictionary2 = value.Items;
+					male = value.male;
+					position = value.position;
+					sceneID = value.sceneID;
+					foodStats = value.foodStats;
+					dictionary3 = value.FoodStats;
+					progress = value.progress;
+					race = value.race;
+					relationships = value.relationships;
+					dictionary4 = value.Progress;
+					dictionary5 = value.Relationships;
+					professions = value.professions;
+					dictionary6 = value.Professions;
+					questData = value.questData;
+					dictionary7 = value.QuestData;
+					statBonuses = value.statBonuses;
+					dictionary8 = value.StatBonuses;
+					mail = value.mail;
+					dictionary9 = value.Mail;
+					pet = value.pet;
+					characterIndex = value.characterIndex;
+					health = value.health;
+					mana = value.mana;
+					map = value.map;
+					bank = value.bank;
+					dictionary10 = value.Bank;
+					profession = value.profession;
+					xpSources = value.xpSources;
+					list = value.XpSources;
+					encylopdieda = value.encylopdieda;
+					dictionary11 = value.Encylopdeia;
+					monsterEncylopedia = value.monsterEncylopedia;
+					dictionary12 = value.MonsterEncylopedia;
+					birthdaySeason = value.birthdaySeason;
+					birthdayDay = value.birthdayDay;
+					birthdaySeason2 = value.BirthdaySeason;
+					birthdayDay2 = value.BirthdayDay;
+					kidClothingDatas = value.kidClothingDatas;
+					list2 = value.KidClothingDatas;
+					childRace = value.ChildRace;
+				}
+				if (b != 0)
+				{
+					characterName = reader.ReadString();
+					if (b != 1)
+					{
+						reader.ReadValue<Dictionary<byte, string>>(ref styleData);
+						if (b != 2)
+						{
+							reader.ReadValue<Dictionary<byte, string>>(ref dictionary);
+							if (b != 3)
+							{
+								reader.ReadValue<Dictionary<short, InventoryItemData>>(ref items);
+								if (b != 4)
+								{
+									reader.ReadValue<Dictionary<short, InventoryItemData>>(ref dictionary2);
+									if (b != 5)
+									{
+										reader.ReadUnmanaged<bool>(out male);
+										if (b != 6)
+										{
+											reader.ReadUnmanaged<SerializedVector2>(out position);
+											if (b != 7)
+											{
+												reader.ReadUnmanaged<int>(out sceneID);
+												if (b != 8)
+												{
+													reader.ReadValue<Dictionary<int, int>>(ref foodStats);
+													if (b != 9)
+													{
+														reader.ReadValue<Dictionary<int, int>>(ref dictionary3);
+														if (b != 10)
+														{
+															reader.ReadValue<Dictionary<int, byte[]>>(ref progress);
+															if (b != 11)
+															{
+																reader.ReadUnmanaged<byte>(out race);
+																if (b != 12)
+																{
+																	reader.ReadValue<Dictionary<string, float>>(ref relationships);
+																	if (b != 13)
+																	{
+																		reader.ReadValue<Dictionary<int, byte[]>>(ref dictionary4);
+																		if (b != 14)
+																		{
+																			reader.ReadValue<Dictionary<string, float>>(ref dictionary5);
+																			if (b != 15)
+																			{
+																				reader.ReadValue<Dictionary<ProfessionType, Profession>>(ref professions);
+																				if (b != 16)
+																				{
+																					reader.ReadValue<Dictionary<ProfessionType, Profession>>(ref dictionary6);
+																					if (b != 17)
+																					{
+																						reader.ReadValue<Dictionary<string, Dictionary<string, byte[]>>>(ref questData);
+																						if (b != 18)
+																						{
+																							reader.ReadValue<Dictionary<string, Dictionary<string, byte[]>>>(ref dictionary7);
+																							if (b != 19)
+																							{
+																								reader.ReadValue<Dictionary<StatType, float>>(ref statBonuses);
+																								if (b != 20)
+																								{
+																									reader.ReadValue<Dictionary<StatType, float>>(ref dictionary8);
+																									if (b != 21)
+																									{
+																										reader.ReadValue<Dictionary<string, MailData>>(ref mail);
+																										if (b != 22)
+																										{
+																											reader.ReadValue<Dictionary<string, MailData>>(ref dictionary9);
+																											if (b != 23)
+																											{
+																												reader.ReadPackable<PetItem>(ref pet);
+																												if (b != 24)
+																												{
+																													reader.ReadUnmanaged<byte>(out characterIndex);
+																													if (b != 25)
+																													{
+																														reader.ReadUnmanaged<float>(out health);
+																														if (b != 26)
+																														{
+																															reader.ReadUnmanaged<float>(out mana);
+																															if (b != 27)
+																															{
+																																reader.ReadUnmanaged<int>(out map);
+																																if (b != 28)
+																																{
+																																	reader.ReadValue<Dictionary<short, InventoryItemData>>(ref bank);
+																																	if (b != 29)
+																																	{
+																																		reader.ReadValue<Dictionary<short, InventoryItemData>>(ref dictionary10);
+																																		if (b != 30)
+																																		{
+																																			reader.ReadUnmanaged<int>(out profession);
+																																			if (b != 31)
+																																			{
+																																				reader.ReadValue<IList<XPSource>>(ref xpSources);
+																																				if (b != 32)
+																																				{
+																																					reader.ReadValue<IList<XPSource>>(ref list);
+																																					if (b != 33)
+																																					{
+																																						reader.ReadValue<Dictionary<short, EncylopediaData>>(ref encylopdieda);
+																																						if (b != 34)
+																																						{
+																																							reader.ReadValue<Dictionary<short, EncylopediaData>>(ref dictionary11);
+																																							if (b != 35)
+																																							{
+																																								reader.ReadValue<Dictionary<short, EncylopediaData>>(ref monsterEncylopedia);
+																																								if (b != 36)
+																																								{
+																																									reader.ReadValue<Dictionary<short, EncylopediaData>>(ref dictionary12);
+																																									if (b != 37)
+																																									{
+																																										birthdaySeason = reader.ReadString();
+																																										if (b != 38)
+																																										{
+																																											reader.ReadUnmanaged<int>(out birthdayDay);
+																																											if (b != 39)
+																																											{
+																																												birthdaySeason2 = reader.ReadString();
+																																												if (b != 40)
+																																												{
+																																													reader.ReadUnmanaged<int>(out birthdayDay2);
+																																													if (b != 41)
+																																													{
+																																														reader.ReadValue<IList<KidClothingData>>(ref kidClothingDatas);
+																																														if (b != 42)
+																																														{
+																																															reader.ReadValue<IList<KidClothingData>>(ref list2);
+																																															if (b != 43)
+																																															{
+																																																reader.ReadUnmanaged<Race>(out childRace);
+																																															}
+																																														}
+																																													}
+																																												}
+																																											}
+																																										}
+																																									}
+																																								}
+																																							}
+																																						}
+																																					}
+																																				}
+																																			}
+																																		}
+																																	}
+																																}
+																															}
+																														}
+																													}
+																												}
+																											}
+																										}
+																									}
+																								}
+																							}
+																						}
+																					}
+																				}
+																			}
+																		}
+																	}
+																}
+															}
+														}
+													}
+												}
+											}
+										}
+									}
+								}
+							}
+						}
+					}
+				}
+				if (value == null)
+				{
+					goto IL_A3C;
+				}
+			}
+			value.characterName = characterName;
+			value.styleData = styleData;
+			value.items = items;
+			value.male = male;
+			value.position = position;
+			value.sceneID = sceneID;
+			value.foodStats = foodStats;
+			value.progress = progress;
+			value.race = race;
+			value.relationships = relationships;
+			value.professions = professions;
+			value.questData = questData;
+			value.statBonuses = statBonuses;
+			value.mail = mail;
+			value.pet = pet;
+			value.characterIndex = characterIndex;
+			value.health = health;
+			value.mana = mana;
+			value.map = map;
+			value.bank = bank;
+			value.profession = profession;
+			value.xpSources = xpSources;
+			value.encylopdieda = encylopdieda;
+			value.monsterEncylopedia = monsterEncylopedia;
+			value.birthdaySeason = birthdaySeason;
+			value.birthdayDay = birthdayDay;
+			value.BirthdaySeason = birthdaySeason2;
+			value.BirthdayDay = birthdayDay2;
+			value.kidClothingDatas = kidClothingDatas;
+			value.ChildRace = childRace;
+			return;
+			IL_A3C:
+			value = new CharacterData
+			{
+				characterName = characterName,
+				styleData = styleData,
+				items = items,
+				male = male,
+				position = position,
+				sceneID = sceneID,
+				foodStats = foodStats,
+				progress = progress,
+				race = race,
+				relationships = relationships,
+				professions = professions,
+				questData = questData,
+				statBonuses = statBonuses,
+				mail = mail,
+				pet = pet,
+				characterIndex = characterIndex,
+				health = health,
+				mana = mana,
+				map = map,
+				bank = bank,
+				profession = profession,
+				xpSources = xpSources,
+				encylopdieda = encylopdieda,
+				monsterEncylopedia = monsterEncylopedia,
+				birthdaySeason = birthdaySeason,
+				birthdayDay = birthdayDay,
+				BirthdaySeason = birthdaySeason2,
+				BirthdayDay = birthdayDay2,
+				kidClothingDatas = kidClothingDatas,
+				ChildRace = childRace
+			};
+		}
+
+		// Token: 0x0401203E RID: 73790
+		public static UnityAction<ProfessionType, float> onAddEXP;
+
+		// Token: 0x0401203F RID: 73791
+		public static UnityAction<ProfessionType, int> onLevelUp;
+
+		// Token: 0x02000D1B RID: 3355
+		[NullableContext(1)]
+		[Nullable(new byte[]
+		{
+			0,
+			1
+		})]
+		[MemoryPack.Internal.Preserve]
+		private sealed class CharacterDataFormatter : MemoryPackFormatter<CharacterData>
+		{
+			// Token: 0x06010F5B RID: 69467 RVA: 0x0029E3A6 File Offset: 0x0029C5A6
+			[MemoryPack.Internal.Preserve]
+			public override void Serialize<TBufferWriter>([Nullable(new byte[]
+			{
+				0,
+				1
+			})] ref MemoryPackWriter<TBufferWriter> writer, ref CharacterData value)
+			{
+				CharacterData.Serialize<TBufferWriter>(ref writer, ref value);
+			}
+
+			// Token: 0x06010F5C RID: 69468 RVA: 0x0029E3AF File Offset: 0x0029C5AF
+			[MemoryPack.Internal.Preserve]
+			public override void Deserialize(ref MemoryPackReader reader, ref CharacterData value)
+			{
+				CharacterData.Deserialize(ref reader, ref value);
+			}
+		}
+	}
+}

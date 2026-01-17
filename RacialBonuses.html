@@ -1,0 +1,678 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Haven's Birthright - Racial Bonuses</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+            min-height: 100vh;
+            padding: 40px 20px;
+            color: #fff;
+        }
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+        h1 {
+            text-align: center;
+            font-size: 3em;
+            margin-bottom: 10px;
+            background: linear-gradient(90deg, #f39c12, #e74c3c, #9b59b6, #3498db);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            text-shadow: 0 0 30px rgba(255,255,255,0.1);
+        }
+        .subtitle {
+            text-align: center;
+            color: #888;
+            margin-bottom: 40px;
+            font-size: 1.2em;
+        }
+        .section-title {
+            text-align: center;
+            font-size: 2em;
+            margin: 40px 0 20px 0;
+            color: #9b59b6;
+            border-bottom: 2px solid #9b59b6;
+            padding-bottom: 10px;
+        }
+        .races-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+        }
+        .race-card {
+            background: rgba(255,255,255,0.05);
+            border-radius: 15px;
+            padding: 25px;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255,255,255,0.1);
+            transition: transform 0.3s, box-shadow 0.3s;
+        }
+        .race-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 40px rgba(0,0,0,0.3);
+        }
+        .race-header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 15px;
+            padding-bottom: 15px;
+            border-bottom: 2px solid;
+        }
+        .race-icon {
+            font-size: 2.5em;
+            margin-right: 15px;
+        }
+        .race-name {
+            font-size: 1.5em;
+            font-weight: bold;
+        }
+        .race-theme {
+            font-size: 0.9em;
+            opacity: 0.7;
+            font-style: italic;
+        }
+        .bonus-list {
+            list-style: none;
+        }
+        .bonus-item {
+            padding: 10px 0;
+            border-bottom: 1px solid rgba(255,255,255,0.05);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .bonus-item:last-child {
+            border-bottom: none;
+        }
+        .bonus-name {
+            font-weight: 600;
+        }
+        .bonus-desc {
+            font-size: 0.85em;
+            opacity: 0.7;
+        }
+        .bonus-value {
+            background: rgba(255,255,255,0.1);
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-weight: bold;
+            white-space: nowrap;
+        }
+
+        /* Race-specific colors */
+        .human .race-header { border-color: #f1c40f; }
+        .human .race-icon { color: #f1c40f; }
+        .human .bonus-value { background: rgba(241,196,15,0.2); color: #f1c40f; }
+
+        .elf .race-header { border-color: #2ecc71; }
+        .elf .race-icon { color: #2ecc71; }
+        .elf .bonus-value { background: rgba(46,204,113,0.2); color: #2ecc71; }
+
+        .angel .race-header { border-color: #ecf0f1; }
+        .angel .race-icon { color: #ecf0f1; }
+        .angel .bonus-value { background: rgba(236,240,241,0.2); color: #ecf0f1; }
+
+        .demon .race-header { border-color: #e74c3c; }
+        .demon .race-icon { color: #e74c3c; }
+        .demon .bonus-value { background: rgba(231,76,60,0.2); color: #e74c3c; }
+
+        .fire-elemental .race-header { border-color: #e67e22; }
+        .fire-elemental .race-icon { color: #e67e22; }
+        .fire-elemental .bonus-value { background: rgba(230,126,34,0.2); color: #e67e22; }
+
+        .water-elemental .race-header { border-color: #3498db; }
+        .water-elemental .race-icon { color: #3498db; }
+        .water-elemental .bonus-value { background: rgba(52,152,219,0.2); color: #3498db; }
+
+        .amari-cat .race-header { border-color: #f39c12; }
+        .amari-cat .race-icon { color: #f39c12; }
+        .amari-cat .bonus-value { background: rgba(243,156,18,0.2); color: #f39c12; }
+
+        .amari-dog .race-header { border-color: #e67e22; }
+        .amari-dog .race-icon { color: #e67e22; }
+        .amari-dog .bonus-value { background: rgba(230,126,34,0.2); color: #e67e22; }
+
+        .amari-bird .race-header { border-color: #9b59b6; }
+        .amari-bird .race-icon { color: #9b59b6; }
+        .amari-bird .bonus-value { background: rgba(155,89,182,0.2); color: #9b59b6; }
+
+        .amari-aquatic .race-header { border-color: #1abc9c; }
+        .amari-aquatic .race-icon { color: #1abc9c; }
+        .amari-aquatic .bonus-value { background: rgba(26,188,156,0.2); color: #1abc9c; }
+
+        .amari-reptile .race-header { border-color: #27ae60; }
+        .amari-reptile .race-icon { color: #27ae60; }
+        .amari-reptile .bonus-value { background: rgba(39,174,96,0.2); color: #27ae60; }
+
+        .naga .race-header { border-color: #1abc9c; }
+        .naga .race-icon { color: #1abc9c; }
+        .naga .bonus-value { background: rgba(26,188,156,0.2); color: #1abc9c; }
+
+        .footer {
+            text-align: center;
+            margin-top: 40px;
+            padding-top: 20px;
+            border-top: 1px solid rgba(255,255,255,0.1);
+            color: #666;
+        }
+        .footer a {
+            color: #3498db;
+            text-decoration: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Haven's Birthright</h1>
+        <p class="subtitle">Racial Bonuses for Sun Haven</p>
+
+        <div class="races-grid">
+            <!-- Human -->
+            <div class="race-card human">
+                <div class="race-header">
+                    <span class="race-icon">👤</span>
+                    <div>
+                        <div class="race-name">Human</div>
+                        <div class="race-theme">Jack of All Trades</div>
+                    </div>
+                </div>
+                <ul class="bonus-list">
+                    <li class="bonus-item">
+                        <div>
+                            <div class="bonus-name">Adaptable</div>
+                            <div class="bonus-desc">Experience gain</div>
+                        </div>
+                        <span class="bonus-value">+10%</span>
+                    </li>
+                    <li class="bonus-item">
+                        <div>
+                            <div class="bonus-name">Charismatic</div>
+                            <div class="bonus-desc">Relationship points</div>
+                        </div>
+                        <span class="bonus-value">+15%</span>
+                    </li>
+                    <li class="bonus-item">
+                        <div>
+                            <div class="bonus-name">Silver Tongue</div>
+                            <div class="bonus-desc">Shop prices</div>
+                        </div>
+                        <span class="bonus-value">-5%</span>
+                    </li>
+                </ul>
+            </div>
+
+            <!-- Elf -->
+            <div class="race-card elf">
+                <div class="race-header">
+                    <span class="race-icon">🧝</span>
+                    <div>
+                        <div class="race-name">Elf</div>
+                        <div class="race-theme">Nature's Guardian</div>
+                    </div>
+                </div>
+                <ul class="bonus-list">
+                    <li class="bonus-item">
+                        <div>
+                            <div class="bonus-name">Nature's Touch</div>
+                            <div class="bonus-desc">Farming speed</div>
+                        </div>
+                        <span class="bonus-value">+15%</span>
+                    </li>
+                    <li class="bonus-item">
+                        <div>
+                            <div class="bonus-name">Green Thumb</div>
+                            <div class="bonus-desc">Crop quality chance</div>
+                        </div>
+                        <span class="bonus-value">+20%</span>
+                    </li>
+                    <li class="bonus-item">
+                        <div>
+                            <div class="bonus-name">Forest Walker</div>
+                            <div class="bonus-desc">Foraging finds</div>
+                        </div>
+                        <span class="bonus-value">+25%</span>
+                    </li>
+                    <li class="bonus-item">
+                        <div>
+                            <div class="bonus-name">Arcane Heritage</div>
+                            <div class="bonus-desc">Mana regeneration</div>
+                        </div>
+                        <span class="bonus-value">+15%</span>
+                    </li>
+                </ul>
+            </div>
+
+            <!-- Angel -->
+            <div class="race-card angel">
+                <div class="race-header">
+                    <span class="race-icon">😇</span>
+                    <div>
+                        <div class="race-name">Angel</div>
+                        <div class="race-theme">Divine Blessed</div>
+                    </div>
+                </div>
+                <ul class="bonus-list">
+                    <li class="bonus-item">
+                        <div>
+                            <div class="bonus-name">Divine Reservoir</div>
+                            <div class="bonus-desc">Maximum mana</div>
+                        </div>
+                        <span class="bonus-value">+20%</span>
+                    </li>
+                    <li class="bonus-item">
+                        <div>
+                            <div class="bonus-name">Holy Light</div>
+                            <div class="bonus-desc">Magic damage</div>
+                        </div>
+                        <span class="bonus-value">+15%</span>
+                    </li>
+                    <li class="bonus-item">
+                        <div>
+                            <div class="bonus-name">Blessed Recovery</div>
+                            <div class="bonus-desc">Health regeneration</div>
+                        </div>
+                        <span class="bonus-value">+25%</span>
+                    </li>
+                    <li class="bonus-item">
+                        <div>
+                            <div class="bonus-name">Fortune's Favor</div>
+                            <div class="bonus-desc">Luck bonus</div>
+                        </div>
+                        <span class="bonus-value">+10%</span>
+                    </li>
+                </ul>
+            </div>
+
+            <!-- Demon -->
+            <div class="race-card demon">
+                <div class="race-header">
+                    <span class="race-icon">😈</span>
+                    <div>
+                        <div class="race-name">Demon</div>
+                        <div class="race-theme">Infernal Warrior</div>
+                    </div>
+                </div>
+                <ul class="bonus-list">
+                    <li class="bonus-item">
+                        <div>
+                            <div class="bonus-name">Infernal Might</div>
+                            <div class="bonus-desc">Melee damage</div>
+                        </div>
+                        <span class="bonus-value">+20%</span>
+                    </li>
+                    <li class="bonus-item">
+                        <div>
+                            <div class="bonus-name">Ruthless</div>
+                            <div class="bonus-desc">Critical hit chance</div>
+                        </div>
+                        <span class="bonus-value">+15%</span>
+                    </li>
+                    <li class="bonus-item">
+                        <div>
+                            <div class="bonus-name">Hellforged Vitality</div>
+                            <div class="bonus-desc">Maximum health</div>
+                        </div>
+                        <span class="bonus-value">+15%</span>
+                    </li>
+                    <li class="bonus-item">
+                        <div>
+                            <div class="bonus-name">Greed</div>
+                            <div class="bonus-desc">Gold drops</div>
+                        </div>
+                        <span class="bonus-value">+20%</span>
+                    </li>
+                </ul>
+            </div>
+
+            <!-- Fire Elemental -->
+            <div class="race-card fire-elemental">
+                <div class="race-header">
+                    <span class="race-icon">🔥</span>
+                    <div>
+                        <div class="race-name">Fire Elemental</div>
+                        <div class="race-theme">Blazing Fury</div>
+                    </div>
+                </div>
+                <ul class="bonus-list">
+                    <li class="bonus-item">
+                        <div>
+                            <div class="bonus-name">Burning Fury</div>
+                            <div class="bonus-desc">Melee damage</div>
+                        </div>
+                        <span class="bonus-value">+15%</span>
+                    </li>
+                    <li class="bonus-item">
+                        <div>
+                            <div class="bonus-name">Inferno</div>
+                            <div class="bonus-desc">Magic damage</div>
+                        </div>
+                        <span class="bonus-value">+20%</span>
+                    </li>
+                    <li class="bonus-item">
+                        <div>
+                            <div class="bonus-name">Wildfire</div>
+                            <div class="bonus-desc">Attack speed</div>
+                        </div>
+                        <span class="bonus-value">+10%</span>
+                    </li>
+                    <li class="bonus-item">
+                        <div>
+                            <div class="bonus-name">Scorching Strike</div>
+                            <div class="bonus-desc">Critical hit chance</div>
+                        </div>
+                        <span class="bonus-value">+15%</span>
+                    </li>
+                </ul>
+            </div>
+
+            <!-- Water Elemental -->
+            <div class="race-card water-elemental">
+                <div class="race-header">
+                    <span class="race-icon">💧</span>
+                    <div>
+                        <div class="race-name">Water Elemental</div>
+                        <div class="race-theme">Flowing Tide</div>
+                    </div>
+                </div>
+                <ul class="bonus-list">
+                    <li class="bonus-item">
+                        <div>
+                            <div class="bonus-name">Tidal Shield</div>
+                            <div class="bonus-desc">Defense</div>
+                        </div>
+                        <span class="bonus-value">+20%</span>
+                    </li>
+                    <li class="bonus-item">
+                        <div>
+                            <div class="bonus-name">Healing Waters</div>
+                            <div class="bonus-desc">Health regeneration</div>
+                        </div>
+                        <span class="bonus-value">+20%</span>
+                    </li>
+                    <li class="bonus-item">
+                        <div>
+                            <div class="bonus-name">Flowing Spirit</div>
+                            <div class="bonus-desc">Mana regeneration</div>
+                        </div>
+                        <span class="bonus-value">+25%</span>
+                    </li>
+                    <li class="bonus-item">
+                        <div>
+                            <div class="bonus-name">Aquatic Kinship</div>
+                            <div class="bonus-desc">Fishing luck</div>
+                        </div>
+                        <span class="bonus-value">+20%</span>
+                    </li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- Amari Section -->
+        <h2 class="section-title">🐾 Amari Variants</h2>
+
+        <div class="races-grid">
+            <!-- Amari Cat -->
+            <div class="race-card amari-cat">
+                <div class="race-header">
+                    <span class="race-icon">🐱</span>
+                    <div>
+                        <div class="race-name">Amari Cat</div>
+                        <div class="race-theme">Feline Predator</div>
+                    </div>
+                </div>
+                <ul class="bonus-list">
+                    <li class="bonus-item">
+                        <div>
+                            <div class="bonus-name">Feline Grace</div>
+                            <div class="bonus-desc">Movement speed</div>
+                        </div>
+                        <span class="bonus-value">+20%</span>
+                    </li>
+                    <li class="bonus-item">
+                        <div>
+                            <div class="bonus-name">Quick Pounce</div>
+                            <div class="bonus-desc">Attack speed</div>
+                        </div>
+                        <span class="bonus-value">+20%</span>
+                    </li>
+                    <li class="bonus-item">
+                        <div>
+                            <div class="bonus-name">Predator's Strike</div>
+                            <div class="bonus-desc">Critical hit chance</div>
+                        </div>
+                        <span class="bonus-value">+15%</span>
+                    </li>
+                    <li class="bonus-item">
+                        <div>
+                            <div class="bonus-name">Nine Lives</div>
+                            <div class="bonus-desc">Luck bonus</div>
+                        </div>
+                        <span class="bonus-value">+10%</span>
+                    </li>
+                </ul>
+            </div>
+
+            <!-- Amari Dog -->
+            <div class="race-card amari-dog">
+                <div class="race-header">
+                    <span class="race-icon">🐕</span>
+                    <div>
+                        <div class="race-name">Amari Dog</div>
+                        <div class="race-theme">Loyal Guardian</div>
+                    </div>
+                </div>
+                <ul class="bonus-list">
+                    <li class="bonus-item">
+                        <div>
+                            <div class="bonus-name">Loyal Heart</div>
+                            <div class="bonus-desc">Maximum health</div>
+                        </div>
+                        <span class="bonus-value">+20%</span>
+                    </li>
+                    <li class="bonus-item">
+                        <div>
+                            <div class="bonus-name">Guardian's Resolve</div>
+                            <div class="bonus-desc">Defense</div>
+                        </div>
+                        <span class="bonus-value">+15%</span>
+                    </li>
+                    <li class="bonus-item">
+                        <div>
+                            <div class="bonus-name">Best Friend</div>
+                            <div class="bonus-desc">Relationship points</div>
+                        </div>
+                        <span class="bonus-value">+25%</span>
+                    </li>
+                    <li class="bonus-item">
+                        <div>
+                            <div class="bonus-name">Eager Learner</div>
+                            <div class="bonus-desc">Experience gain</div>
+                        </div>
+                        <span class="bonus-value">+10%</span>
+                    </li>
+                </ul>
+            </div>
+
+            <!-- Amari Bird -->
+            <div class="race-card amari-bird">
+                <div class="race-header">
+                    <span class="race-icon">🐦</span>
+                    <div>
+                        <div class="race-name">Amari Bird</div>
+                        <div class="race-theme">Wind Rider</div>
+                    </div>
+                </div>
+                <ul class="bonus-list">
+                    <li class="bonus-item">
+                        <div>
+                            <div class="bonus-name">Wind Rider</div>
+                            <div class="bonus-desc">Movement speed</div>
+                        </div>
+                        <span class="bonus-value">+25%</span>
+                    </li>
+                    <li class="bonus-item">
+                        <div>
+                            <div class="bonus-name">Keen Eye</div>
+                            <div class="bonus-desc">Foraging finds</div>
+                        </div>
+                        <span class="bonus-value">+25%</span>
+                    </li>
+                    <li class="bonus-item">
+                        <div>
+                            <div class="bonus-name">Sky Spirit</div>
+                            <div class="bonus-desc">Mana regeneration</div>
+                        </div>
+                        <span class="bonus-value">+15%</span>
+                    </li>
+                    <li class="bonus-item">
+                        <div>
+                            <div class="bonus-name">Feathered Fortune</div>
+                            <div class="bonus-desc">Luck bonus</div>
+                        </div>
+                        <span class="bonus-value">+15%</span>
+                    </li>
+                </ul>
+            </div>
+
+            <!-- Amari Aquatic -->
+            <div class="race-card amari-aquatic">
+                <div class="race-header">
+                    <span class="race-icon">🐟</span>
+                    <div>
+                        <div class="race-name">Amari Aquatic</div>
+                        <div class="race-theme">Tide Walker</div>
+                    </div>
+                </div>
+                <ul class="bonus-list">
+                    <li class="bonus-item">
+                        <div>
+                            <div class="bonus-name">Water Born</div>
+                            <div class="bonus-desc">Fishing speed</div>
+                        </div>
+                        <span class="bonus-value">+25%</span>
+                    </li>
+                    <li class="bonus-item">
+                        <div>
+                            <div class="bonus-name">Tidal Blessing</div>
+                            <div class="bonus-desc">Fishing luck</div>
+                        </div>
+                        <span class="bonus-value">+25%</span>
+                    </li>
+                    <li class="bonus-item">
+                        <div>
+                            <div class="bonus-name">Flowing Spirit</div>
+                            <div class="bonus-desc">Mana regeneration</div>
+                        </div>
+                        <span class="bonus-value">+15%</span>
+                    </li>
+                    <li class="bonus-item">
+                        <div>
+                            <div class="bonus-name">Healing Waters</div>
+                            <div class="bonus-desc">Health regeneration</div>
+                        </div>
+                        <span class="bonus-value">+15%</span>
+                    </li>
+                </ul>
+            </div>
+
+            <!-- Amari Reptile -->
+            <div class="race-card amari-reptile">
+                <div class="race-header">
+                    <span class="race-icon">🦎</span>
+                    <div>
+                        <div class="race-name">Amari Reptile</div>
+                        <div class="race-theme">Scaled Survivor</div>
+                    </div>
+                </div>
+                <ul class="bonus-list">
+                    <li class="bonus-item">
+                        <div>
+                            <div class="bonus-name">Scaled Hide</div>
+                            <div class="bonus-desc">Defense</div>
+                        </div>
+                        <span class="bonus-value">+25%</span>
+                    </li>
+                    <li class="bonus-item">
+                        <div>
+                            <div class="bonus-name">Primal Strength</div>
+                            <div class="bonus-desc">Melee damage</div>
+                        </div>
+                        <span class="bonus-value">+15%</span>
+                    </li>
+                    <li class="bonus-item">
+                        <div>
+                            <div class="bonus-name">Cold Blood</div>
+                            <div class="bonus-desc">Maximum health</div>
+                        </div>
+                        <span class="bonus-value">+15%</span>
+                    </li>
+                    <li class="bonus-item">
+                        <div>
+                            <div class="bonus-name">Burrow Instinct</div>
+                            <div class="bonus-desc">Mining speed</div>
+                        </div>
+                        <span class="bonus-value">+20%</span>
+                    </li>
+                </ul>
+            </div>
+
+            <!-- Naga -->
+            <div class="race-card naga">
+                <div class="race-header">
+                    <span class="race-icon">🐍</span>
+                    <div>
+                        <div class="race-name">Naga</div>
+                        <div class="race-theme">Serpent of the Deep</div>
+                    </div>
+                </div>
+                <ul class="bonus-list">
+                    <li class="bonus-item">
+                        <div>
+                            <div class="bonus-name">Aquatic Nature</div>
+                            <div class="bonus-desc">Fishing speed</div>
+                        </div>
+                        <span class="bonus-value">+25%</span>
+                    </li>
+                    <li class="bonus-item">
+                        <div>
+                            <div class="bonus-name">Sea's Blessing</div>
+                            <div class="bonus-desc">Fishing luck</div>
+                        </div>
+                        <span class="bonus-value">+20%</span>
+                    </li>
+                    <li class="bonus-item">
+                        <div>
+                            <div class="bonus-name">Scaled Hide</div>
+                            <div class="bonus-desc">Defense</div>
+                        </div>
+                        <span class="bonus-value">+10%</span>
+                    </li>
+                    <li class="bonus-item">
+                        <div>
+                            <div class="bonus-name">Tidal Magic</div>
+                            <div class="bonus-desc">Mana regeneration</div>
+                        </div>
+                        <span class="bonus-value">+15%</span>
+                    </li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="footer">
+            <p>Haven's Birthright - A Sun Haven Mod by AzraelGodKing</p>
+            <p style="margin-top: 10px; font-size: 0.9em;">All values are configurable in-game!</p>
+        </div>
+    </div>
+</body>
+</html>

@@ -1,0 +1,11 @@
+{
+  "version": 2,
+  "dgSpecHash": "Ehidiw4luAQ=",
+  "success": true,
+  "projectFilePath": "C:\\Users\\Myleek\\repo\\SunhavenMod\\HavensBirthright\\HavensBirthright.csproj",
+  "expectedPackageFiles": [
+    "C:\\Users\\Myleek\\.nuget\\packages\\microsoft.netframework.referenceassemblies\\1.0.3\\microsoft.netframework.referenceassemblies.1.0.3.nupkg.sha512",
+    "C:\\Users\\Myleek\\.nuget\\packages\\microsoft.netframework.referenceassemblies.net48\\1.0.3\\microsoft.netframework.referenceassemblies.net48.1.0.3.nupkg.sha512"
+  ],
+  "logs": []
+}
