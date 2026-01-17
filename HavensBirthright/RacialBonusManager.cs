@@ -132,8 +132,8 @@ namespace HavensBirthright
                     "Quick Pounce: Attack faster"),
                 new RacialBonus(BonusType.CriticalChance, RacialConfig.AmariCatCritBonus.Value, true,
                     "Predator's Strike: Higher critical hit chance"),
-                new RacialBonus(BonusType.LuckBonus, RacialConfig.AmariCatLuckBonus.Value, true,
-                    "Nine Lives: Blessed with good luck")
+                new RacialBonus(BonusType.DodgeChance, RacialConfig.AmariCatDodgeBonus.Value, true,
+                    "Nine Lives: Higher chance to dodge attacks")
             };
 
             // Amari Dog - Loyal companions, tough and social
@@ -158,8 +158,8 @@ namespace HavensBirthright
                     "Keen Eye: Find more foragables"),
                 new RacialBonus(BonusType.ManaRegen, RacialConfig.AmariBirdManaRegenBonus.Value, true,
                     "Sky Spirit: Faster mana regeneration"),
-                new RacialBonus(BonusType.LuckBonus, RacialConfig.AmariBirdLuckBonus.Value, true,
-                    "Feathered Fortune: Blessed with good luck")
+                new RacialBonus(BonusType.DodgeChance, RacialConfig.AmariBirdDodgeBonus.Value, true,
+                    "Evasive Flight: Higher chance to dodge attacks")
             };
 
             // Amari Aquatic - Water dwellers, fishing experts

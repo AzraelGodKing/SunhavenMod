@@ -46,6 +46,10 @@ h1 {
     padding-bottom: 10px;
 }
 
+<<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> 8a86d9835166072ac011606ed7ff23ab1f8b3d6e
 /* Race Navigation */
 .race-nav {
     display: flex;
@@ -176,6 +180,11 @@ h1 {
 .serpent-category .category-title { color: #1abc9c; }
 .serpent-category .category-icon { color: #1abc9c; }
 
+<<<<<<< HEAD
+=======
+>>>>>>> a492bde (Updating Struture)
+=======
+>>>>>>> 8a86d9835166072ac011606ed7ff23ab1f8b3d6e
 .races-grid {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
@@ -319,6 +328,13 @@ h1 {
     text-decoration: underline;
 }
 
+<<<<<<< HEAD
+<<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> d0443ad (updating structure again)
+=======
+>>>>>>> 8a86d9835166072ac011606ed7ff23ab1f8b3d6e
 /* Index page styles */
 .intro-section {
     text-align: center;
@@ -469,6 +485,14 @@ h1 {
     font-size: 0.95em;
 }
 
+<<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> a492bde (Updating Struture)
+=======
+>>>>>>> d0443ad (updating structure again)
+=======
+>>>>>>> 8a86d9835166072ac011606ed7ff23ab1f8b3d6e
 /* Responsive adjustments */
 @media (max-width: 768px) {
     h1 {
@@ -490,11 +514,22 @@ h1 {
     .race-name {
         font-size: 1.2em;
     }
+<<<<<<< HEAD
+<<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> d0443ad (updating structure again)
+=======
+>>>>>>> 8a86d9835166072ac011606ed7ff23ab1f8b3d6e
 
     .cta-button {
         padding: 12px 30px;
         font-size: 1em;
     }
+<<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> 8a86d9835166072ac011606ed7ff23ab1f8b3d6e
 
     .race-category {
         padding: 20px;
@@ -512,6 +547,13 @@ h1 {
         padding: 8px 15px;
         font-size: 0.9em;
     }
+<<<<<<< HEAD
+=======
+>>>>>>> a492bde (Updating Struture)
+=======
+>>>>>>> d0443ad (updating structure again)
+=======
+>>>>>>> 8a86d9835166072ac011606ed7ff23ab1f8b3d6e
 }
 
 @media (max-width: 480px) {
@@ -532,13 +574,34 @@ h1 {
     .bonus-value {
         align-self: flex-end;
     }
+<<<<<<< HEAD
+<<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> d0443ad (updating structure again)
+=======
+>>>>>>> 8a86d9835166072ac011606ed7ff23ab1f8b3d6e
 
     .install-step {
         flex-direction: column;
         align-items: center;
         text-align: center;
     }
+<<<<<<< HEAD
+<<<<<<< HEAD
 
+<<<<<<< HEAD
+    .install-step {
+        flex-direction: column;
+        align-items: center;
+        text-align: center;
+    }
+
+=======
+>>>>>>> 685ba12 (updating the css page.)
+=======
+
+>>>>>>> 8a86d9835166072ac011606ed7ff23ab1f8b3d6e
     .category-header {
         flex-direction: column;
         text-align: center;
@@ -556,4 +619,11 @@ h1 {
         padding: 6px 12px;
         font-size: 0.85em;
     }
+<<<<<<< HEAD
+=======
+>>>>>>> a492bde (Updating Struture)
+=======
+>>>>>>> d0443ad (updating structure again)
+=======
+>>>>>>> 8a86d9835166072ac011606ed7ff23ab1f8b3d6e
 }

@@ -58,7 +58,7 @@ namespace HavensBirthright
         public static ConfigEntry<float> AmariCatSpeedBonus;
         public static ConfigEntry<float> AmariCatAttackSpeedBonus;
         public static ConfigEntry<float> AmariCatCritBonus;
-        public static ConfigEntry<float> AmariCatLuckBonus;
+        public static ConfigEntry<float> AmariCatDodgeBonus;
 
         // Amari Dog bonuses
         public static ConfigEntry<float> AmariDogHealthBonus;
@@ -70,7 +70,7 @@ namespace HavensBirthright
         public static ConfigEntry<float> AmariBirdSpeedBonus;
         public static ConfigEntry<float> AmariBirdForagingBonus;
         public static ConfigEntry<float> AmariBirdManaRegenBonus;
-        public static ConfigEntry<float> AmariBirdLuckBonus;
+        public static ConfigEntry<float> AmariBirdDodgeBonus;
 
         // Amari Aquatic bonuses
         public static ConfigEntry<float> AmariAquaticFishingSpeedBonus;
@@ -358,11 +358,11 @@ namespace HavensBirthright
                 "Percentage bonus to critical hit chance"
             );
 
-            AmariCatLuckBonus = config.Bind(
+            AmariCatDodgeBonus = config.Bind(
                 "Amari Cat",
-                "LuckBonus",
+                "DodgeChanceBonus",
                 10f,
-                "Percentage bonus to luck"
+                "Percentage bonus to dodge chance"
             );
 
             // Amari Dog bonuses (loyal companions - tanky and social)
@@ -416,11 +416,11 @@ namespace HavensBirthright
                 "Percentage bonus to mana regeneration"
             );
 
-            AmariBirdLuckBonus = config.Bind(
+            AmariBirdDodgeBonus = config.Bind(
                 "Amari Bird",
-                "LuckBonus",
+                "DodgeChanceBonus",
                 15f,
-                "Percentage bonus to luck"
+                "Percentage bonus to dodge chance"
             );
 
             // Amari Aquatic bonuses (water dwellers - fishing masters)

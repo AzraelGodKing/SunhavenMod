@@ -87,7 +87,8 @@ namespace HavensBirthright
         HealthRegen,
         ExperienceGain,
         GoldFind,
-        LuckBonus
+        LuckBonus,
+        DodgeChance
     }
 
     /// <summary>
