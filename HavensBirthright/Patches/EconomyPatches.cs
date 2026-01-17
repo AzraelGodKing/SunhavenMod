@@ -1,96 +1,59 @@
-using HarmonyLib;
 using UnityEngine;
-using Wish;
 
 namespace HavensBirthright.Patches
 {
     /// <summary>
     /// Patches for economy and social mechanics
-    /// Handles gold gains (already covered in PlayerPatches via AddMoney)
-    /// This file handles relationship gains and luck bonuses
+    /// Handles relationship gains and shop discounts
+    /// Note: Gold/Experience bonuses are now handled in StatPatches via GetStat
+    /// These patches are registered manually in Plugin.cs using dynamic type lookup
     /// </summary>
     public static class EconomyPatches
     {
         /// <summary>
-        /// Patch GetStat to modify luck and bonus experience stats
-        /// StatTypes that affect luck/economy: GoldGain, BonusExperience
+        /// Patch NPCAI.AddFriendship to modify relationship point gains
+        /// Affects: Human (RelationshipBonus), Amari Dog (RelationshipBonus)
         /// </summary>
-        [HarmonyPatch(typeof(Player), "GetStat")]
-        [HarmonyPostfix]
-        public static void ModifyEconomyStats(StatType stat, ref float __result)
+        public static void ModifyRelationshipGain(ref int val)
+        {
+            if (!RacialConfig.EnableRacialBonuses.Value)
+                return;
+
+            // Only apply to positive gains (not relationship loss)
+            if (val <= 0)
+                return;
+
+            var manager = Plugin.GetRacialBonusManager();
+            if (manager != null && manager.HasBonus(BonusType.RelationshipGain))
+            {
+                float bonus = manager.GetBonusValue(BonusType.RelationshipGain);
+                int originalVal = val;
+                val = Mathf.RoundToInt(val * (1f + bonus / 100f));
+                Plugin.Log.LogDebug($"RelationshipGain bonus applied: {originalVal} -> {val}");
+            }
+        }
+
+        /// <summary>
+        /// Patch ShopMenu.BuyItem to apply shop discounts
+        /// Affects: Human (ShopDiscount)
+        /// This patches the buy price calculation
+        /// </summary>
+        public static void ModifyBuyPrice(ref int price)
         {
             if (!RacialConfig.EnableRacialBonuses.Value)
                 return;
 
             var manager = Plugin.GetRacialBonusManager();
-            if (manager == null)
-                return;
-
-            switch (stat)
+            if (manager != null && manager.HasBonus(BonusType.ShopDiscount))
             {
-                // Gold gain bonus (Demon) - affects all gold sources
-                case StatType.GoldGain:
-                    if (manager.HasBonus(BonusType.GoldFind))
-                    {
-                        float bonus = manager.GetBonusValue(BonusType.GoldFind);
-                        __result += bonus / 100f;
-                    }
-                    break;
-
-                // Experience bonus (Human)
-                case StatType.BonusExperience:
-                case StatType.BonusFarmingEXP:
-                case StatType.BonusWoodcuttingEXP:
-                    if (manager.HasBonus(BonusType.ExperienceGain))
-                    {
-                        float bonus = manager.GetBonusValue(BonusType.ExperienceGain);
-                        __result += bonus / 100f;
-                    }
-                    break;
+                float discount = manager.GetBonusValue(BonusType.ShopDiscount);
+                int originalPrice = price;
+                // Apply discount (reduce price)
+                price = Mathf.RoundToInt(price * (1f - discount / 100f));
+                // Ensure price doesn't go below 1
+                if (price < 1) price = 1;
+                Plugin.Log.LogDebug($"ShopDiscount applied: {originalPrice} -> {price}");
             }
         }
-
-        /// <summary>
-        /// Note: Shop discounts and relationship gains may require finding additional
-        /// classes in the game code. These are placeholder hooks that can be
-        /// uncommented and adjusted once the correct classes are identified.
-        ///
-        /// Look for:
-        /// - Shop/Store classes for pricing
-        /// - NPCAI or Relationship classes for friendship points
-        /// - Craft/CraftingStation classes for crafting speed
-        /// </summary>
-
-        // Example: If you find a shop price calculation method, uncomment and adjust:
-        // [HarmonyPatch(typeof(ShopMenu), "CalculateBuyPrice")]
-        // [HarmonyPostfix]
-        // public static void ModifyShopPrice(ref int __result)
-        // {
-        //     if (!RacialConfig.EnableRacialBonuses.Value)
-        //         return;
-        //
-        //     var manager = Plugin.GetRacialBonusManager();
-        //     if (manager != null && manager.HasBonus(BonusType.ShopDiscount))
-        //     {
-        //         float discount = manager.GetBonusValue(BonusType.ShopDiscount);
-        //         __result = Mathf.RoundToInt(__result * (1f - discount / 100f));
-        //     }
-        // }
-
-        // Example: If you find relationship point addition, uncomment and adjust:
-        // [HarmonyPatch(typeof(NPCAI), "AddRelationshipPoints")]
-        // [HarmonyPrefix]
-        // public static void ModifyRelationshipGain(ref int points)
-        // {
-        //     if (!RacialConfig.EnableRacialBonuses.Value)
-        //         return;
-        //
-        //     var manager = Plugin.GetRacialBonusManager();
-        //     if (manager != null && manager.HasBonus(BonusType.RelationshipGain))
-        //     {
-        //         float bonus = manager.GetBonusValue(BonusType.RelationshipGain);
-        //         points = Mathf.RoundToInt(points * (1f + bonus / 100f));
-        //     }
-        // }
     }
 }
