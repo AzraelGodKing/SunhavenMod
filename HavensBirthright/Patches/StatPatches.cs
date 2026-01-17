@@ -144,6 +144,24 @@ namespace HavensBirthright.Patches
                     }
                     break;
 
+                // === HEALTH/MANA STATS ===
+
+                // Max Health (Demon, Amari Dog, Amari Reptile)
+                case StatType.Health:
+                    if (manager.HasBonus(BonusType.MaxHealth))
+                    {
+                        __result = manager.ApplyBonus(__result, BonusType.MaxHealth);
+                    }
+                    break;
+
+                // Max Mana (Angel)
+                case StatType.Mana:
+                    if (manager.HasBonus(BonusType.MaxMana))
+                    {
+                        __result = manager.ApplyBonus(__result, BonusType.MaxMana);
+                    }
+                    break;
+
                 // === REGEN STATS ===
 
                 // Health regeneration (Water Elemental, Naga)
