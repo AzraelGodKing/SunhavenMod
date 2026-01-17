@@ -46,6 +46,136 @@ h1 {
     padding-bottom: 10px;
 }
 
+/* Race Navigation */
+.race-nav {
+    display: flex;
+    justify-content: center;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-bottom: 40px;
+    padding: 20px;
+    background: rgba(255,255,255,0.03);
+    border-radius: 15px;
+}
+
+.nav-pill {
+    padding: 10px 20px;
+    border-radius: 25px;
+    text-decoration: none;
+    font-weight: 600;
+    transition: all 0.3s;
+    border: 2px solid;
+}
+
+.nav-pill.core {
+    border-color: #f1c40f;
+    color: #f1c40f;
+}
+.nav-pill.core:hover {
+    background: rgba(241,196,15,0.2);
+}
+
+.nav-pill.celestial {
+    border-color: #9b59b6;
+    color: #9b59b6;
+}
+.nav-pill.celestial:hover {
+    background: rgba(155,89,182,0.2);
+}
+
+.nav-pill.elemental {
+    border-color: #3498db;
+    color: #3498db;
+}
+.nav-pill.elemental:hover {
+    background: rgba(52,152,219,0.2);
+}
+
+.nav-pill.amari {
+    border-color: #e67e22;
+    color: #e67e22;
+}
+.nav-pill.amari:hover {
+    background: rgba(230,126,34,0.2);
+}
+
+.nav-pill.serpent {
+    border-color: #1abc9c;
+    color: #1abc9c;
+}
+.nav-pill.serpent:hover {
+    background: rgba(26,188,156,0.2);
+}
+
+/* Race Category Sections */
+.race-category {
+    margin-bottom: 50px;
+    padding: 30px;
+    border-radius: 20px;
+    border: 2px solid;
+}
+
+.category-header {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    margin-bottom: 25px;
+    padding-bottom: 20px;
+    border-bottom: 1px solid rgba(255,255,255,0.1);
+}
+
+.category-icon {
+    font-size: 3em;
+}
+
+.category-title {
+    font-size: 1.8em;
+    font-weight: bold;
+    margin: 0;
+}
+
+.category-desc {
+    font-size: 1em;
+    opacity: 0.7;
+    margin-top: 5px;
+}
+
+/* Category-specific themes */
+.core-category {
+    border-color: rgba(241,196,15,0.3);
+    background: linear-gradient(135deg, rgba(241,196,15,0.05) 0%, rgba(241,196,15,0.02) 100%);
+}
+.core-category .category-title { color: #f1c40f; }
+.core-category .category-icon { color: #f1c40f; }
+
+.celestial-category {
+    border-color: rgba(155,89,182,0.3);
+    background: linear-gradient(135deg, rgba(155,89,182,0.05) 0%, rgba(155,89,182,0.02) 100%);
+}
+.celestial-category .category-title { color: #9b59b6; }
+.celestial-category .category-icon { color: #9b59b6; }
+
+.elemental-category {
+    border-color: rgba(52,152,219,0.3);
+    background: linear-gradient(135deg, rgba(52,152,219,0.05) 0%, rgba(52,152,219,0.02) 100%);
+}
+.elemental-category .category-title { color: #3498db; }
+.elemental-category .category-icon { color: #3498db; }
+
+.amari-category {
+    border-color: rgba(230,126,34,0.3);
+    background: linear-gradient(135deg, rgba(230,126,34,0.05) 0%, rgba(230,126,34,0.02) 100%);
+}
+.amari-category .category-title { color: #e67e22; }
+.amari-category .category-icon { color: #e67e22; }
+
+.serpent-category {
+    border-color: rgba(26,188,156,0.3);
+    background: linear-gradient(135deg, rgba(26,188,156,0.05) 0%, rgba(26,188,156,0.02) 100%);
+}
+.serpent-category .category-title { color: #1abc9c; }
+.serpent-category .category-icon { color: #1abc9c; }
+
 .races-grid {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
@@ -365,6 +495,23 @@ h1 {
         padding: 12px 30px;
         font-size: 1em;
     }
+
+    .race-category {
+        padding: 20px;
+    }
+
+    .category-title {
+        font-size: 1.4em;
+    }
+
+    .category-icon {
+        font-size: 2.5em;
+    }
+
+    .nav-pill {
+        padding: 8px 15px;
+        font-size: 0.9em;
+    }
 }
 
 @media (max-width: 480px) {
@@ -390,5 +537,23 @@ h1 {
         flex-direction: column;
         align-items: center;
         text-align: center;
+    }
+
+    .category-header {
+        flex-direction: column;
+        text-align: center;
+    }
+
+    .race-category {
+        padding: 15px;
+    }
+
+    .race-nav {
+        padding: 15px;
+    }
+
+    .nav-pill {
+        padding: 6px 12px;
+        font-size: 0.85em;
     }
 }
