@@ -70,49 +70,6 @@ You can:
 - Adjust individual bonus percentages for each race
 - Show/hide bonus notifications
 
-## Building from Source
-
-### Requirements
-- .NET Framework 4.8 SDK
-- Visual Studio 2022 or VS Code with C# extension
-
-### Build Steps
-1. Open `HavensBirthright.sln` in Visual Studio
-2. Ensure the game path in `HavensBirthright.csproj` matches your installation
-3. Build the solution (Ctrl+Shift+B)
-4. The DLL will be automatically copied to your BepInEx plugins folder
-
-## Development Notes
-
-### Finding Game Methods to Patch
-
-The patch files contain template methods that need to be connected to actual game code:
-
-1. Use [dnSpy](https://github.com/dnSpy/dnSpy) or [ILSpy](https://github.com/icsharpcode/ILSpy) to decompile `Assembly-CSharp.dll`
-2. Search for classes related to:
-   - Player stats (health, mana, speed)
-   - Combat (damage, crits, defense)
-   - Skills (farming, mining, fishing, etc.)
-   - Economy (shops, relationships)
-3. Update the `[HarmonyPatch]` attributes with the correct class and method names
-4. Uncomment the patches once configured
-
-### Project Structure
-
-```
-HavensBirthright/
-├── Plugin.cs              # Main BepInEx plugin entry point
-├── Races.cs               # Race and bonus type enums
-├── RacialBonusManager.cs  # Manages all racial bonuses
-├── RacialConfig.cs        # BepInEx configuration
-└── Patches/
-    ├── PlayerPatches.cs   # Player stat patches
-    ├── CombatPatches.cs   # Combat mechanic patches
-    ├── FarmingPatches.cs  # Farming/gathering patches
-    ├── EconomyPatches.cs  # Shop/relationship patches
-    └── RegenPatches.cs    # Health/mana regen patches
-```
-
 ## License
 
 Feel free to use, modify, and distribute this mod.
