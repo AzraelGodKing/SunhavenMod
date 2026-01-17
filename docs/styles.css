@@ -539,12 +539,15 @@ h1 {
         text-align: center;
     }
 
+<<<<<<< HEAD
     .install-step {
         flex-direction: column;
         align-items: center;
         text-align: center;
     }
 
+=======
+>>>>>>> 685ba12 (updating the css page.)
     .category-header {
         flex-direction: column;
         text-align: center;
