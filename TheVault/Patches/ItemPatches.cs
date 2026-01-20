@@ -191,53 +191,18 @@ namespace TheVault.Patches
         /// <summary>
         /// PREFIX patch for Player.Pickup method.
         /// Signature: Pickup(int item, int amount = 1, bool rollForExtra = false)
-        /// Returns false to skip the original method (prevent item from going to inventory).
-        /// Returns true to let the original method run normally.
+        /// We always return true to let the original method run - the AddItem POSTFIX will handle auto-deposit.
+        /// This ensures the native notification system triggers.
         /// </summary>
         public static bool OnPlayerPickupPrefix(int item, int amount, bool rollForExtra)
         {
-            try
+            // Just log for debugging - let the original method run
+            // The AddItem POSTFIX will handle moving the item to vault after notification is shown
+            if (ShouldAutoDeposit(item))
             {
-                Plugin.Log?.LogInfo($"OnPlayerPickupPrefix called: item={item}, amount={amount}");
-
-                if (!ShouldAutoDeposit(item))
-                {
-                    // Not registered for auto-deposit, let the original method run
-                    return true;
-                }
-
-                string currencyId = GetCurrencyForItem(item);
-                if (string.IsNullOrEmpty(currencyId))
-                {
-                    Plugin.Log?.LogWarning($"No currency ID found for item {item}");
-                    return true;
-                }
-
-                var vaultManager = Plugin.GetVaultManager();
-                if (vaultManager == null)
-                {
-                    Plugin.Log?.LogWarning("VaultManager is null");
-                    return true;
-                }
-
-                Plugin.Log?.LogInfo($"Auto-depositing {amount} of item {item} as {currencyId} (skipping inventory)");
-
-                // Auto-deposit: directly add to vault, skip adding to inventory
-                AddCurrencyToVault(vaultManager, currencyId, amount);
-                Plugin.Log?.LogInfo($"Auto-deposited {amount} of item {item} as {currencyId}");
-
-                // Show notification
-                ShowAutoDepositNotification(currencyId, amount);
-
-                // Return false to SKIP the original Pickup method - item goes straight to vault
-                return false;
+                Plugin.Log?.LogInfo($"OnPlayerPickupPrefix: item={item}, amount={amount} - will be auto-deposited via AddItem POSTFIX");
             }
-            catch (Exception ex)
-            {
-                Plugin.Log?.LogError($"Error in OnPlayerPickupPrefix: {ex.Message}\n{ex.StackTrace}");
-                // On error, let the original method run
-                return true;
-            }
+            return true;
         }
 
         /// <summary>
@@ -253,11 +218,14 @@ namespace TheVault.Patches
         /// <summary>
         /// Postfix patch for Inventory.AddItem(int, int).
         /// Catches items added to inventory for auto-deposit.
+        /// The notification is already shown by the original method.
         /// </summary>
-        public static void OnInventoryAddItem(int itemId, int amount)
+        public static void OnInventoryAddItem(object __instance, int itemId, int amount)
         {
             try
             {
+                if (_isProcessingAutoDeposit) return;
+
                 Plugin.Log?.LogInfo($"OnInventoryAddItem called: itemId={itemId}, amount={amount}");
 
                 if (!ShouldAutoDeposit(itemId))
@@ -277,18 +245,30 @@ namespace TheVault.Patches
                     return;
                 }
 
-                Plugin.Log?.LogInfo($"Attempting to auto-deposit {amount} of item {itemId} as {currencyId} (via Inventory.AddItem)");
-
-                // Auto-deposit: remove from inventory, add to vault
-                if (RemoveItemFromInventory(itemId, amount))
+                _isProcessingAutoDeposit = true;
+                try
                 {
+                    Plugin.Log?.LogInfo($"Auto-depositing {amount} of item {itemId} as {currencyId} (via Inventory.AddItem)");
+
+                    // Remove from inventory
+                    var invType = __instance.GetType();
+                    var removeMethod = AccessTools.Method(invType, "RemoveItem", new[] { typeof(int), typeof(int), typeof(int) });
+                    if (removeMethod != null)
+                    {
+                        removeMethod.Invoke(__instance, new object[] { itemId, amount, -1 });
+                    }
+
                     AddCurrencyToVault(vaultManager, currencyId, amount);
                     Plugin.Log?.LogInfo($"Auto-deposited {amount} of item {itemId} as {currencyId}");
-                    ShowAutoDepositNotification(currencyId, amount);
+                }
+                finally
+                {
+                    _isProcessingAutoDeposit = false;
                 }
             }
             catch (Exception ex)
             {
+                _isProcessingAutoDeposit = false;
                 Plugin.Log?.LogError($"Error in OnInventoryAddItem: {ex.Message}\n{ex.StackTrace}");
             }
         }
@@ -296,11 +276,14 @@ namespace TheVault.Patches
         /// <summary>
         /// Postfix patch for Inventory.AddItem(int, int, bool).
         /// Catches items added to inventory for auto-deposit.
+        /// The notification is already shown by the original method if notify=true.
         /// </summary>
-        public static void OnInventoryAddItemWithNotify(int itemId, int amount, bool notify)
+        public static void OnInventoryAddItemWithNotify(object __instance, int itemId, int amount, bool notify)
         {
             try
             {
+                if (_isProcessingAutoDeposit) return;
+
                 Plugin.Log?.LogInfo($"OnInventoryAddItemWithNotify called: itemId={itemId}, amount={amount}, notify={notify}");
 
                 if (!ShouldAutoDeposit(itemId))
@@ -320,73 +303,111 @@ namespace TheVault.Patches
                     return;
                 }
 
-                Plugin.Log?.LogInfo($"Attempting to auto-deposit {amount} of item {itemId} as {currencyId} (via Inventory.AddItem with notify)");
-
-                // Auto-deposit: remove from inventory, add to vault
-                if (RemoveItemFromInventory(itemId, amount))
+                _isProcessingAutoDeposit = true;
+                try
                 {
+                    Plugin.Log?.LogInfo($"Auto-depositing {amount} of item {itemId} as {currencyId} (via Inventory.AddItem with notify)");
+
+                    // Remove from inventory
+                    var invType = __instance.GetType();
+                    var removeMethod = AccessTools.Method(invType, "RemoveItem", new[] { typeof(int), typeof(int), typeof(int) });
+                    if (removeMethod != null)
+                    {
+                        removeMethod.Invoke(__instance, new object[] { itemId, amount, -1 });
+                    }
+
                     AddCurrencyToVault(vaultManager, currencyId, amount);
                     Plugin.Log?.LogInfo($"Auto-deposited {amount} of item {itemId} as {currencyId}");
-                    ShowAutoDepositNotification(currencyId, amount);
+                }
+                finally
+                {
+                    _isProcessingAutoDeposit = false;
                 }
             }
             catch (Exception ex)
             {
+                _isProcessingAutoDeposit = false;
                 Plugin.Log?.LogError($"Error in OnInventoryAddItemWithNotify: {ex.Message}\n{ex.StackTrace}");
             }
         }
 
         /// <summary>
-        /// PREFIX patch for Inventory.AddItem(Item, int, int, bool, bool, bool).
+        /// Flag to prevent recursive auto-deposit when we're adding items back to inventory during withdraw
+        /// </summary>
+        private static bool _isProcessingAutoDeposit = false;
+
+        /// <summary>
+        /// POSTFIX patch for Inventory.AddItem(Item, int, int, bool, bool, bool).
         /// This is the actual method called by Wish.Pickup when items are collected from the ground.
         /// Signature: AddItem(Item item, int amount, int slot, bool sendNotification, bool specialItem, bool superSecretCheck)
-        /// Returns false to skip adding to inventory (auto-deposit to vault instead).
+        /// We use POSTFIX so the original method runs first (showing the notification), then we move the item to vault.
         /// </summary>
-        public static bool OnInventoryAddItemObject(object item, int amount, int slot, bool sendNotification, bool specialItem, bool superSecretCheck)
+        public static void OnInventoryAddItemObjectPostfix(object __instance, object item, int amount, int slot, bool sendNotification, bool specialItem, bool superSecretCheck)
         {
             try
             {
+                // Prevent recursive calls when we're doing withdrawals or other operations
+                if (_isProcessingAutoDeposit) return;
+
                 // Get the item ID from the Item object
                 int itemId = GetItemId(item);
-                Plugin.Log?.LogInfo($"OnInventoryAddItemObject called: itemId={itemId}, amount={amount}");
+                Plugin.Log?.LogInfo($"OnInventoryAddItemObjectPostfix called: itemId={itemId}, amount={amount}, sendNotification={sendNotification}");
 
                 if (!ShouldAutoDeposit(itemId))
                 {
-                    // Not registered for auto-deposit, let the original method run
-                    return true;
+                    // Not registered for auto-deposit
+                    return;
                 }
 
                 string currencyId = GetCurrencyForItem(itemId);
                 if (string.IsNullOrEmpty(currencyId))
                 {
                     Plugin.Log?.LogWarning($"No currency ID found for item {itemId}");
-                    return true;
+                    return;
                 }
 
                 var vaultManager = Plugin.GetVaultManager();
                 if (vaultManager == null)
                 {
                     Plugin.Log?.LogWarning("VaultManager is null");
-                    return true;
+                    return;
                 }
 
-                Plugin.Log?.LogInfo($"Auto-depositing {amount} of item {itemId} as {currencyId} (via Inventory.AddItem with Item object)");
+                Plugin.Log?.LogInfo($"Auto-depositing {amount} of item {itemId} as {currencyId} (via Inventory.AddItem POSTFIX)");
 
-                // Auto-deposit: directly add to vault, skip adding to inventory
-                AddCurrencyToVault(vaultManager, currencyId, amount);
-                Plugin.Log?.LogInfo($"Auto-deposited {amount} of item {itemId} as {currencyId}");
+                _isProcessingAutoDeposit = true;
+                try
+                {
+                    // The item is now in inventory (and notification was shown if sendNotification was true)
+                    // Now remove it from inventory and add to vault
 
-                // Show notification
-                ShowAutoDepositNotification(currencyId, amount);
+                    // Remove from inventory
+                    var invType = __instance.GetType();
+                    var removeMethod = AccessTools.Method(invType, "RemoveItem", new[] { typeof(int), typeof(int), typeof(int) });
+                    if (removeMethod != null)
+                    {
+                        removeMethod.Invoke(__instance, new object[] { itemId, amount, -1 });
+                        Plugin.Log?.LogInfo($"Removed {amount} of item {itemId} from inventory");
+                    }
+                    else
+                    {
+                        Plugin.Log?.LogWarning("Could not find RemoveItem method on inventory");
+                        return;
+                    }
 
-                // Return false to SKIP the original AddItem method - item goes straight to vault
-                return false;
+                    // Add to vault
+                    AddCurrencyToVault(vaultManager, currencyId, amount);
+                    Plugin.Log?.LogInfo($"Auto-deposited {amount} of item {itemId} as {currencyId} to vault");
+                }
+                finally
+                {
+                    _isProcessingAutoDeposit = false;
+                }
             }
             catch (Exception ex)
             {
-                Plugin.Log?.LogError($"Error in OnInventoryAddItemObject: {ex.Message}\n{ex.StackTrace}");
-                // On error, let the original method run
-                return true;
+                _isProcessingAutoDeposit = false;
+                Plugin.Log?.LogError($"Error in OnInventoryAddItemObjectPostfix: {ex.Message}\n{ex.StackTrace}");
             }
         }
 

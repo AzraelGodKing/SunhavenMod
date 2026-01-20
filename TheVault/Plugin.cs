@@ -398,16 +398,17 @@ namespace TheVault
                     Log.LogInfo($"Found Wish.Item type: {itemType.FullName}");
 
                     // Try AddItem(Item, int, int, bool, bool, bool) - the main pickup method
+                    // We use POSTFIX so the notification happens first, then we move to vault
                     var addItemMethod = AccessTools.Method(inventoryType, "AddItem",
                         new[] { itemType, typeof(int), typeof(int), typeof(bool), typeof(bool), typeof(bool) });
 
                     if (addItemMethod != null)
                     {
-                        var prefix = AccessTools.Method(typeof(ItemPatches), "OnInventoryAddItemObject");
-                        if (prefix != null)
+                        var postfix = AccessTools.Method(typeof(ItemPatches), "OnInventoryAddItemObjectPostfix");
+                        if (postfix != null)
                         {
-                            _harmony.Patch(addItemMethod, prefix: new HarmonyMethod(prefix));
-                            Log.LogInfo($"Successfully patched {inventoryType.Name}.AddItem(Item,int,int,bool,bool,bool) with PREFIX for auto-deposit");
+                            _harmony.Patch(addItemMethod, postfix: new HarmonyMethod(postfix));
+                            Log.LogInfo($"Successfully patched {inventoryType.Name}.AddItem(Item,int,int,bool,bool,bool) with POSTFIX for auto-deposit");
                         }
                     }
                     else
@@ -425,11 +426,11 @@ namespace TheVault
                                     string paramStr = string.Join(", ", System.Linq.Enumerable.Select(parameters, p => $"{p.ParameterType.Name} {p.Name}"));
                                     Log.LogInfo($"Found alternative AddItem: {m.Name}({paramStr})");
 
-                                    var prefix = AccessTools.Method(typeof(ItemPatches), "OnInventoryAddItemObject");
-                                    if (prefix != null)
+                                    var postfix = AccessTools.Method(typeof(ItemPatches), "OnInventoryAddItemObjectPostfix");
+                                    if (postfix != null)
                                     {
-                                        _harmony.Patch(m, prefix: new HarmonyMethod(prefix));
-                                        Log.LogInfo($"Successfully patched {inventoryType.Name}.{m.Name} with PREFIX for auto-deposit");
+                                        _harmony.Patch(m, postfix: new HarmonyMethod(postfix));
+                                        Log.LogInfo($"Successfully patched {inventoryType.Name}.{m.Name} with POSTFIX for auto-deposit");
                                         break;
                                     }
                                 }
