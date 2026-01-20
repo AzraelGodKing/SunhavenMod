@@ -939,123 +939,22 @@ namespace TheVault.Patches
                     return;
                 }
 
-                // Try to use the game's native pickup notification system
-                // Method 1: Try SingletonBehaviour<Notifications>.Instance.SendNotification
-                var notificationsType = AccessTools.TypeByName("Wish.Notifications");
-                if (notificationsType != null)
-                {
-                    var instanceProp = AccessTools.Property(notificationsType, "Instance");
-                    if (instanceProp != null)
-                    {
-                        var instance = instanceProp.GetValue(null);
-                        if (instance != null)
-                        {
-                            // Try SendItemNotification(int itemId, int amount) - this shows the actual item icon
-                            var sendItemMethod = AccessTools.Method(notificationsType, "SendItemNotification", new[] { typeof(int), typeof(int) });
-                            if (sendItemMethod != null)
-                            {
-                                sendItemMethod.Invoke(instance, new object[] { itemId, amount });
-                                Plugin.Log?.LogInfo($"Sent item notification for {amount}x item {itemId}");
-                                return;
-                            }
+                Plugin.Log?.LogInfo($"ShowAutoDepositNotification: Attempting notification for item {itemId} x{amount}");
 
-                            // Try SendNotification(int itemId, int amount)
-                            var sendMethod = AccessTools.Method(notificationsType, "SendNotification", new[] { typeof(int), typeof(int) });
-                            if (sendMethod != null)
-                            {
-                                sendMethod.Invoke(instance, new object[] { itemId, amount });
-                                Plugin.Log?.LogInfo($"Sent notification for {amount}x item {itemId}");
-                                return;
-                            }
-                        }
-                    }
-                }
+                // Method 1: Try SingletonBehaviour<Notifications>.Instance.SendNotification (most common in Sun Haven)
+                if (TrySendViaNotifications(itemId, amount)) return;
 
                 // Method 2: Try NotificationStack
-                var notificationStackType = AccessTools.TypeByName("Wish.NotificationStack");
-                if (notificationStackType != null)
-                {
-                    var instanceProperty = AccessTools.Property(notificationStackType, "Instance");
-                    if (instanceProperty != null)
-                    {
-                        var instance = instanceProperty.GetValue(null);
-                        if (instance != null)
-                        {
-                            // Try SendNotification(int itemId, int amount) first
-                            var sendItemMethod = AccessTools.Method(notificationStackType, "SendNotification", new[] { typeof(int), typeof(int) });
-                            if (sendItemMethod != null)
-                            {
-                                sendItemMethod.Invoke(instance, new object[] { itemId, amount });
-                                Plugin.Log?.LogInfo($"Sent stack notification for {amount}x item {itemId}");
-                                return;
-                            }
+                if (TrySendViaNotificationStack(itemId, amount)) return;
 
-                            // Fallback to string notification
-                            var sendStringMethod = AccessTools.Method(notificationStackType, "SendNotification", new[] { typeof(string) });
-                            if (sendStringMethod != null)
-                            {
-                                string itemName = GetItemDisplayName(itemId);
-                                sendStringMethod.Invoke(instance, new object[] { $"+{amount} {itemName}" });
-                                Plugin.Log?.LogInfo($"Sent string notification: +{amount} {itemName}");
-                                return;
-                            }
-                        }
-                    }
-                }
+                // Method 3: Try UIHandler or similar UI manager
+                if (TrySendViaUIHandler(itemId, amount)) return;
 
-                // Method 3: Try ItemNotifications or PickupNotification
-                var itemNotifType = AccessTools.TypeByName("Wish.ItemNotifications");
-                if (itemNotifType == null)
-                    itemNotifType = AccessTools.TypeByName("Wish.PickupNotification");
-                if (itemNotifType == null)
-                    itemNotifType = AccessTools.TypeByName("Wish.ItemPickupNotification");
+                // Method 4: Try Player notification methods
+                if (TrySendViaPlayer(itemId, amount)) return;
 
-                if (itemNotifType != null)
-                {
-                    var instanceProp = AccessTools.Property(itemNotifType, "Instance");
-                    if (instanceProp != null)
-                    {
-                        var instance = instanceProp.GetValue(null);
-                        if (instance != null)
-                        {
-                            // Try ShowNotification or similar
-                            var methods = itemNotifType.GetMethods();
-                            foreach (var method in methods)
-                            {
-                                if (method.Name.Contains("Notification") || method.Name.Contains("Pickup") || method.Name.Contains("Show"))
-                                {
-                                    var parameters = method.GetParameters();
-                                    if (parameters.Length >= 2 && parameters[0].ParameterType == typeof(int) && parameters[1].ParameterType == typeof(int))
-                                    {
-                                        method.Invoke(instance, new object[] { itemId, amount });
-                                        Plugin.Log?.LogInfo($"Sent {method.Name} for {amount}x item {itemId}");
-                                        return;
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
-
-                // Method 4: Try using Player.SendPickupNotification or similar
-                if (Wish.Player.Instance != null)
-                {
-                    var playerType = typeof(Wish.Player);
-
-                    // Look for pickup notification method on player
-                    var pickupNotifMethod = AccessTools.Method(playerType, "SendPickupNotification", new[] { typeof(int), typeof(int) });
-                    if (pickupNotifMethod == null)
-                        pickupNotifMethod = AccessTools.Method(playerType, "ShowPickupNotification", new[] { typeof(int), typeof(int) });
-                    if (pickupNotifMethod == null)
-                        pickupNotifMethod = AccessTools.Method(playerType, "ItemPickedUp", new[] { typeof(int), typeof(int) });
-
-                    if (pickupNotifMethod != null)
-                    {
-                        pickupNotifMethod.Invoke(Wish.Player.Instance, new object[] { itemId, amount });
-                        Plugin.Log?.LogInfo($"Sent player pickup notification for {amount}x item {itemId}");
-                        return;
-                    }
-                }
+                // Method 5: Search all loaded types for notification-related singletons
+                if (TrySendViaReflectionSearch(itemId, amount)) return;
 
                 Plugin.Log?.LogWarning("Could not find a notification method - item deposited silently");
             }
@@ -1063,6 +962,324 @@ namespace TheVault.Patches
             {
                 Plugin.Log?.LogError($"Error showing auto-deposit notification: {ex.Message}");
             }
+        }
+
+        private static bool TrySendViaNotifications(int itemId, int amount)
+        {
+            try
+            {
+                var notificationsType = AccessTools.TypeByName("Wish.Notifications");
+                if (notificationsType == null) return false;
+
+                var instanceProp = AccessTools.Property(notificationsType, "Instance");
+                if (instanceProp == null) return false;
+
+                var instance = instanceProp.GetValue(null);
+                if (instance == null) return false;
+
+                // Log available methods
+                var methods = notificationsType.GetMethods();
+                foreach (var m in methods)
+                {
+                    if (m.Name.ToLower().Contains("notif") || m.Name.ToLower().Contains("send") || m.Name.ToLower().Contains("item"))
+                    {
+                        var parms = m.GetParameters();
+                        string parmStr = string.Join(", ", System.Linq.Enumerable.Select(parms, p => $"{p.ParameterType.Name}"));
+                        Plugin.Log?.LogInfo($"  Notifications method: {m.Name}({parmStr})");
+                    }
+                }
+
+                // Try SendNotification with Item object
+                var itemType = AccessTools.TypeByName("Wish.Item");
+                if (itemType != null)
+                {
+                    var sendItemObjMethod = AccessTools.Method(notificationsType, "SendNotification", new[] { itemType, typeof(int) });
+                    if (sendItemObjMethod != null)
+                    {
+                        var itemObj = GetItemObject(itemId);
+                        if (itemObj != null)
+                        {
+                            sendItemObjMethod.Invoke(instance, new object[] { itemObj, amount });
+                            Plugin.Log?.LogInfo($"Sent Notifications.SendNotification(Item, int) for {amount}x item {itemId}");
+                            return true;
+                        }
+                    }
+                }
+
+                // Try SendNotification(int, int)
+                var sendMethod = AccessTools.Method(notificationsType, "SendNotification", new[] { typeof(int), typeof(int) });
+                if (sendMethod != null)
+                {
+                    sendMethod.Invoke(instance, new object[] { itemId, amount });
+                    Plugin.Log?.LogInfo($"Sent Notifications.SendNotification(int, int) for {amount}x item {itemId}");
+                    return true;
+                }
+
+                // Try SendItemNotification
+                var sendItemMethod = AccessTools.Method(notificationsType, "SendItemNotification", new[] { typeof(int), typeof(int) });
+                if (sendItemMethod != null)
+                {
+                    sendItemMethod.Invoke(instance, new object[] { itemId, amount });
+                    Plugin.Log?.LogInfo($"Sent Notifications.SendItemNotification for {amount}x item {itemId}");
+                    return true;
+                }
+            }
+            catch (Exception ex)
+            {
+                Plugin.Log?.LogError($"TrySendViaNotifications error: {ex.Message}");
+            }
+            return false;
+        }
+
+        private static bool TrySendViaNotificationStack(int itemId, int amount)
+        {
+            try
+            {
+                var stackType = AccessTools.TypeByName("Wish.NotificationStack");
+                if (stackType == null) return false;
+
+                var instanceProp = AccessTools.Property(stackType, "Instance");
+                if (instanceProp == null) return false;
+
+                var instance = instanceProp.GetValue(null);
+                if (instance == null) return false;
+
+                // Try with Item object first
+                var itemType = AccessTools.TypeByName("Wish.Item");
+                if (itemType != null)
+                {
+                    var sendItemMethod = AccessTools.Method(stackType, "SendNotification", new[] { itemType, typeof(int) });
+                    if (sendItemMethod != null)
+                    {
+                        var itemObj = GetItemObject(itemId);
+                        if (itemObj != null)
+                        {
+                            sendItemMethod.Invoke(instance, new object[] { itemObj, amount });
+                            Plugin.Log?.LogInfo($"Sent NotificationStack.SendNotification(Item, int) for {amount}x item {itemId}");
+                            return true;
+                        }
+                    }
+                }
+
+                // Try int, int
+                var sendIntMethod = AccessTools.Method(stackType, "SendNotification", new[] { typeof(int), typeof(int) });
+                if (sendIntMethod != null)
+                {
+                    sendIntMethod.Invoke(instance, new object[] { itemId, amount });
+                    Plugin.Log?.LogInfo($"Sent NotificationStack.SendNotification(int, int) for {amount}x item {itemId}");
+                    return true;
+                }
+
+                // Fallback to string
+                var sendStringMethod = AccessTools.Method(stackType, "SendNotification", new[] { typeof(string) });
+                if (sendStringMethod != null)
+                {
+                    string itemName = GetItemDisplayName(itemId);
+                    sendStringMethod.Invoke(instance, new object[] { $"+{amount} {itemName}" });
+                    Plugin.Log?.LogInfo($"Sent NotificationStack string notification: +{amount} {itemName}");
+                    return true;
+                }
+            }
+            catch (Exception ex)
+            {
+                Plugin.Log?.LogError($"TrySendViaNotificationStack error: {ex.Message}");
+            }
+            return false;
+        }
+
+        private static bool TrySendViaUIHandler(int itemId, int amount)
+        {
+            try
+            {
+                // Try various UI handler types
+                string[] uiTypes = { "Wish.UIHandler", "Wish.GameUI", "Wish.HUD", "Wish.PickupUI", "Wish.ItemPickupUI" };
+                foreach (var typeName in uiTypes)
+                {
+                    var uiType = AccessTools.TypeByName(typeName);
+                    if (uiType == null) continue;
+
+                    var instanceProp = AccessTools.Property(uiType, "Instance");
+                    if (instanceProp == null) continue;
+
+                    var instance = instanceProp.GetValue(null);
+                    if (instance == null) continue;
+
+                    // Look for pickup/notification methods
+                    var methods = uiType.GetMethods();
+                    foreach (var method in methods)
+                    {
+                        if (method.Name.ToLower().Contains("pickup") || method.Name.ToLower().Contains("item") && method.Name.ToLower().Contains("notif"))
+                        {
+                            var parms = method.GetParameters();
+                            if (parms.Length >= 2 && parms[0].ParameterType == typeof(int) && parms[1].ParameterType == typeof(int))
+                            {
+                                method.Invoke(instance, new object[] { itemId, amount });
+                                Plugin.Log?.LogInfo($"Sent {typeName}.{method.Name} for {amount}x item {itemId}");
+                                return true;
+                            }
+                        }
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                Plugin.Log?.LogError($"TrySendViaUIHandler error: {ex.Message}");
+            }
+            return false;
+        }
+
+        private static bool TrySendViaPlayer(int itemId, int amount)
+        {
+            try
+            {
+                if (Wish.Player.Instance == null) return false;
+
+                var playerType = typeof(Wish.Player);
+
+                // Log player methods related to notifications/pickups
+                var methods = playerType.GetMethods(System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
+                foreach (var m in methods)
+                {
+                    if (m.Name.ToLower().Contains("notif") || m.Name.ToLower().Contains("pickup") && !m.Name.ToLower().Contains("can"))
+                    {
+                        var parms = m.GetParameters();
+                        string parmStr = string.Join(", ", System.Linq.Enumerable.Select(parms, p => $"{p.ParameterType.Name}"));
+                        Plugin.Log?.LogInfo($"  Player method: {m.Name}({parmStr})");
+                    }
+                }
+
+                // Try various method names
+                string[] methodNames = { "SendPickupNotification", "ShowPickupNotification", "ItemPickedUp", "OnItemPickedUp", "PickupNotification" };
+                foreach (var methodName in methodNames)
+                {
+                    var method = AccessTools.Method(playerType, methodName, new[] { typeof(int), typeof(int) });
+                    if (method != null)
+                    {
+                        method.Invoke(Wish.Player.Instance, new object[] { itemId, amount });
+                        Plugin.Log?.LogInfo($"Sent Player.{methodName} for {amount}x item {itemId}");
+                        return true;
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                Plugin.Log?.LogError($"TrySendViaPlayer error: {ex.Message}");
+            }
+            return false;
+        }
+
+        private static bool TrySendViaReflectionSearch(int itemId, int amount)
+        {
+            try
+            {
+                // Search for any singleton with notification methods in Wish namespace
+                var assembly = typeof(Wish.Player).Assembly;
+                foreach (var type in assembly.GetTypes())
+                {
+                    if (!type.Namespace?.StartsWith("Wish") == true) continue;
+                    if (!type.Name.ToLower().Contains("notif") && !type.Name.ToLower().Contains("pickup")) continue;
+
+                    var instanceProp = AccessTools.Property(type, "Instance");
+                    if (instanceProp == null) continue;
+
+                    var instance = instanceProp.GetValue(null);
+                    if (instance == null) continue;
+
+                    Plugin.Log?.LogInfo($"Found potential notification type: {type.FullName}");
+
+                    // Try to find a send method
+                    var methods = type.GetMethods();
+                    foreach (var method in methods)
+                    {
+                        if (!method.Name.ToLower().Contains("send") && !method.Name.ToLower().Contains("show") && !method.Name.ToLower().Contains("add")) continue;
+
+                        var parms = method.GetParameters();
+                        if (parms.Length >= 2 && parms[0].ParameterType == typeof(int) && parms[1].ParameterType == typeof(int))
+                        {
+                            method.Invoke(instance, new object[] { itemId, amount });
+                            Plugin.Log?.LogInfo($"Sent {type.Name}.{method.Name} for {amount}x item {itemId}");
+                            return true;
+                        }
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                Plugin.Log?.LogError($"TrySendViaReflectionSearch error: {ex.Message}");
+            }
+            return false;
+        }
+
+        /// <summary>
+        /// Get an Item object from the game's database by ID.
+        /// </summary>
+        private static object GetItemObject(int itemId)
+        {
+            try
+            {
+                // Try Database.GetData<Item>(itemId)
+                var databaseType = AccessTools.TypeByName("Wish.Database");
+                if (databaseType != null)
+                {
+                    var itemType = AccessTools.TypeByName("Wish.Item");
+                    if (itemType != null)
+                    {
+                        // Try GetData<T> generic method
+                        var getDataMethod = databaseType.GetMethod("GetData", new[] { typeof(int) });
+                        if (getDataMethod != null && getDataMethod.IsGenericMethod)
+                        {
+                            var genericMethod = getDataMethod.MakeGenericMethod(itemType);
+                            var item = genericMethod.Invoke(null, new object[] { itemId });
+                            if (item != null)
+                            {
+                                Plugin.Log?.LogInfo($"Got Item object via Database.GetData<Item>({itemId})");
+                                return item;
+                            }
+                        }
+
+                        // Try GetItem static method
+                        var getItemMethod = AccessTools.Method(databaseType, "GetItem", new[] { typeof(int) });
+                        if (getItemMethod != null)
+                        {
+                            var item = getItemMethod.Invoke(null, new object[] { itemId });
+                            if (item != null)
+                            {
+                                Plugin.Log?.LogInfo($"Got Item object via Database.GetItem({itemId})");
+                                return item;
+                            }
+                        }
+                    }
+                }
+
+                // Try ItemDatabase.Instance.GetItem
+                var itemDbType = AccessTools.TypeByName("Wish.ItemDatabase");
+                if (itemDbType != null)
+                {
+                    var instanceProp = AccessTools.Property(itemDbType, "Instance");
+                    if (instanceProp != null)
+                    {
+                        var instance = instanceProp.GetValue(null);
+                        if (instance != null)
+                        {
+                            var getItemMethod = AccessTools.Method(itemDbType, "GetItem", new[] { typeof(int) });
+                            if (getItemMethod != null)
+                            {
+                                var item = getItemMethod.Invoke(instance, new object[] { itemId });
+                                if (item != null)
+                                {
+                                    Plugin.Log?.LogInfo($"Got Item object via ItemDatabase.GetItem({itemId})");
+                                    return item;
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                Plugin.Log?.LogError($"GetItemObject error: {ex.Message}");
+            }
+            return null;
         }
 
         /// <summary>
