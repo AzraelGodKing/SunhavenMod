@@ -437,7 +437,6 @@ namespace TheVault.Patches
                     // The item is now in inventory (and notification was shown if sendNotification was true)
                     // Now remove it from inventory and add to vault
 
-<<<<<<< HEAD
                     // Remove from inventory using RemoveAll which is simpler and avoids parameter issues
                     var invType = __instance.GetType();
 
@@ -474,22 +473,6 @@ namespace TheVault.Patches
                         }
                     }
 
-=======
-                    // Remove from inventory
-                    var invType = __instance.GetType();
-                    var removeMethod = AccessTools.Method(invType, "RemoveItem", new[] { typeof(int), typeof(int), typeof(int) });
-                    if (removeMethod != null)
-                    {
-                        removeMethod.Invoke(__instance, new object[] { itemId, amount, -1 });
-                        Plugin.Log?.LogInfo($"Removed {amount} of item {itemId} from inventory");
-                    }
-                    else
-                    {
-                        Plugin.Log?.LogWarning("Could not find RemoveItem method on inventory");
-                        return;
-                    }
-
->>>>>>> 27d1eba5551f5847bd655686f1096a60d79bb8f3
                     // Add to vault
                     AddCurrencyToVault(vaultManager, currencyId, amount);
                     Plugin.Log?.LogInfo($"Auto-deposited {amount} of item {itemId} as {currencyId} to vault");
@@ -502,13 +485,9 @@ namespace TheVault.Patches
             catch (Exception ex)
             {
                 _isProcessingAutoDeposit = false;
-<<<<<<< HEAD
                 // Get inner exception for better error message
                 var innerEx = ex.InnerException ?? ex;
                 Plugin.Log?.LogError($"Error in OnInventoryAddItemObjectPostfix: {innerEx.Message}\n{innerEx.StackTrace}");
-=======
-                Plugin.Log?.LogError($"Error in OnInventoryAddItemObjectPostfix: {ex.Message}\n{ex.StackTrace}");
->>>>>>> 27d1eba5551f5847bd655686f1096a60d79bb8f3
             }
         }
 
