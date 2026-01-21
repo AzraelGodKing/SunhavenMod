@@ -1,7 +1,8 @@
-# Docs-scoped ignores
+# Repo-wide ignores
 
 # Decompiled source code - do not upload
 Decompiled/
+Decomplied/
 
 # Build results
 [Dd]ebug/

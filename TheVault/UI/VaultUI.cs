@@ -62,7 +62,7 @@ namespace TheVault.UI
         private readonly Color _textDimColor = new Color(0.6f, 0.6f, 0.7f);
 
         // Window dimensions
-        private const float WINDOW_WIDTH = 420f;
+        private const float WINDOW_WIDTH = 460f;
         private const float WINDOW_HEIGHT = 480f;
 
         // Toggle key
@@ -90,15 +90,66 @@ namespace TheVault.UI
 
         public bool IsVisible => _isVisible;
 
+        // Unique identifier for pause object system
+        private const string PAUSE_ID = "TheVault_UI";
+
         public void Show()
         {
             _isVisible = true;
+
+            // Block game input while vault is open
+            try
+            {
+                if (Player.Instance != null)
+                {
+                    Player.Instance.AddPauseObject(PAUSE_ID);
+                }
+
+                // Also try to disable input through PlayerInput if available
+                var playerInputType = Type.GetType("PlayerInput, Assembly-CSharp");
+                if (playerInputType != null)
+                {
+                    var disableMethod = playerInputType.GetMethod("DisableInput",
+                        System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.Static,
+                        null, new[] { typeof(string) }, null);
+                    disableMethod?.Invoke(null, new object[] { PAUSE_ID });
+                }
+            }
+            catch (Exception ex)
+            {
+                Plugin.Log?.LogWarning($"Could not block game input: {ex.Message}");
+            }
+
             Plugin.Log?.LogInfo("Vault UI opened");
         }
 
         public void Hide()
         {
             _isVisible = false;
+
+            // Re-enable game input
+            try
+            {
+                if (Player.Instance != null)
+                {
+                    Player.Instance.RemovePauseObject(PAUSE_ID);
+                }
+
+                // Re-enable PlayerInput
+                var playerInputType = Type.GetType("PlayerInput, Assembly-CSharp");
+                if (playerInputType != null)
+                {
+                    var enableMethod = playerInputType.GetMethod("EnableInput",
+                        System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.Static,
+                        null, new[] { typeof(string) }, null);
+                    enableMethod?.Invoke(null, new object[] { PAUSE_ID });
+                }
+            }
+            catch (Exception ex)
+            {
+                Plugin.Log?.LogWarning($"Could not re-enable game input: {ex.Message}");
+            }
+
             Plugin.Log?.LogInfo("Vault UI closed");
         }
 
@@ -108,6 +159,15 @@ namespace TheVault.UI
                 Hide();
             else
                 Show();
+        }
+
+        private void OnDestroy()
+        {
+            // Make sure to re-enable input if the component is destroyed while visible
+            if (_isVisible)
+            {
+                Hide();
+            }
         }
 
         private void Update()
@@ -246,9 +306,9 @@ namespace TheVault.UI
 
             _valueStyle = new GUIStyle(GUI.skin.label)
             {
-                fontSize = 14,
+                fontSize = 16,
                 fontStyle = FontStyle.Bold,
-                alignment = TextAnchor.MiddleRight,
+                alignment = TextAnchor.MiddleLeft,
                 normal = { textColor = _goldColor }
             };
 
@@ -511,85 +571,141 @@ namespace TheVault.UI
         private void DrawCurrencyRow(string currencyId, int amount, bool isEvenRow)
         {
             bool isSelected = _selectedCurrencyId == currencyId;
+            bool autoDepositEnabled = ItemPatches.IsAutoDepositEnabled(currencyId);
 
             // Row background
-            var rowRect = GUILayoutUtility.GetRect(0, 36, GUILayout.ExpandWidth(true));
+            var rowRect = GUILayoutUtility.GetRect(0, 40, GUILayout.ExpandWidth(true));
             var bgColor = isSelected ? new Color(0.3f, 0.5f, 0.7f, 0.5f) : (isEvenRow ? _rowEvenColor : _rowOddColor);
             GUI.color = bgColor;
             GUI.DrawTexture(rowRect, Texture2D.whiteTexture);
             GUI.color = Color.white;
 
-            // Make row clickable
-            if (GUI.Button(rowRect, GUIContent.none, GUIStyle.none))
+            // Draw content using absolute positioning within the row
+            float yCenter = rowRect.y + (rowRect.height - 26) / 2;
+            float xPos = rowRect.x + 8;
+
+            // Auto-deposit toggle button (leftmost) - styled to fit the UI
+            float toggleBtnY = rowRect.y + (rowRect.height - 20) / 2;
+            var toggleBg = new Texture2D(1, 1);
+            toggleBg.SetPixel(0, 0, autoDepositEnabled ? new Color(0.2f, 0.5f, 0.2f, 0.9f) : new Color(0.3f, 0.3f, 0.35f, 0.9f));
+            toggleBg.Apply();
+            var toggleHover = new Texture2D(1, 1);
+            toggleHover.SetPixel(0, 0, autoDepositEnabled ? new Color(0.25f, 0.6f, 0.25f, 1f) : new Color(0.4f, 0.4f, 0.45f, 1f));
+            toggleHover.Apply();
+
+            var toggleStyle = new GUIStyle(GUI.skin.button)
             {
-                _selectedCurrencyId = currencyId;
+                fontSize = 9,
+                fontStyle = FontStyle.Bold,
+                padding = new RectOffset(1, 1, 1, 1),
+                normal = { background = toggleBg, textColor = autoDepositEnabled ? new Color(0.5f, 1f, 0.5f) : new Color(0.6f, 0.6f, 0.6f) },
+                hover = { background = toggleHover, textColor = Color.white },
+                active = { background = toggleHover, textColor = Color.white }
+            };
+
+            var toggleRect = new Rect(xPos, toggleBtnY, 20, 20);
+            string toggleText = autoDepositEnabled ? "ON" : "--";
+            if (GUI.Button(toggleRect, toggleText, toggleStyle))
+            {
+                ItemPatches.ToggleAutoDeposit(currencyId);
+                Plugin.Log?.LogInfo($"[UI] Toggle clicked for {currencyId}");
             }
+            xPos += 24;
 
-            // Draw content inside the row
-            GUILayout.BeginArea(new Rect(rowRect.x + 10, rowRect.y + 2, rowRect.width - 20, rowRect.height - 4));
-            GUILayout.BeginHorizontal();
-
-            // Currency icon
+            // Currency icon (using simple text that renders reliably)
             string icon = GetCurrencyIcon(currencyId);
-            var iconStyle = new GUIStyle(_labelStyle) { fontSize = 16 };
-            GUILayout.Label(icon, iconStyle, GUILayout.Width(24));
+            var iconStyle = new GUIStyle(_labelStyle) { fontSize = 10, alignment = TextAnchor.MiddleCenter };
+            iconStyle.normal.textColor = _accentColor;
+            GUI.Label(new Rect(xPos, yCenter, 28, 26), icon, iconStyle);
+            xPos += 32;
 
-            // Currency name
+            // Currency name (wider column for long names like "King's Lost Mine Key")
             string displayName = GetDisplayName(currencyId);
-            GUILayout.Label(displayName, _labelStyle, GUILayout.Width(140));
+            GUI.Label(new Rect(xPos, yCenter, 140, 26), displayName, _labelStyle);
+            xPos += 144;
 
-            // Amount with gold color
-            GUILayout.Label(amount.ToString("N0"), _valueStyle, GUILayout.Width(60));
+            // Amount with gold color - make it prominent with "x" prefix
+            string amountText = "x" + amount.ToString("N0");
+            var amountStyle = new GUIStyle(_valueStyle) { fontSize = 16, alignment = TextAnchor.MiddleLeft };
+            GUI.Label(new Rect(xPos, yCenter, 50, 26), amountText, amountStyle);
+            xPos += 54;
 
-            GUILayout.FlexibleSpace();
+            // Quick withdraw buttons - positioned from the right
+            float btnY = rowRect.y + (rowRect.height - 28) / 2;
+            float rightEdge = rowRect.x + rowRect.width - 8;
 
-            // Quick withdraw buttons with improved styling
-            GUI.enabled = amount >= 1;
-            if (GUILayout.Button("-1", _withdrawButtonStyle, GUILayout.Width(32), GUILayout.Height(26)))
-            {
-                WithdrawToInventory(currencyId, 1);
-            }
-
-            GUI.enabled = amount >= 5;
-            if (GUILayout.Button("-5", _withdrawButtonStyle, GUILayout.Width(32), GUILayout.Height(26)))
-            {
-                WithdrawToInventory(currencyId, 5);
-            }
-
+            // -10 button (rightmost)
             GUI.enabled = amount >= 10;
-            if (GUILayout.Button("-10", _withdrawButtonStyle, GUILayout.Width(38), GUILayout.Height(26)))
+            if (GUI.Button(new Rect(rightEdge - 40, btnY, 40, 28), "-10", _withdrawButtonStyle))
             {
                 WithdrawToInventory(currencyId, 10);
             }
 
+            // -5 button
+            GUI.enabled = amount >= 5;
+            if (GUI.Button(new Rect(rightEdge - 78, btnY, 34, 28), "-5", _withdrawButtonStyle))
+            {
+                WithdrawToInventory(currencyId, 5);
+            }
+
+            // -1 button
+            GUI.enabled = amount >= 1;
+            if (GUI.Button(new Rect(rightEdge - 116, btnY, 34, 28), "-1", _withdrawButtonStyle))
+            {
+                WithdrawToInventory(currencyId, 1);
+            }
+
             GUI.enabled = true;
-            GUILayout.EndHorizontal();
-            GUILayout.EndArea();
+
+            // Row selection on click (only if not clicking a button)
+            // Check if mouse is in row but not over any button
+            if (Event.current.type == UnityEngine.EventType.MouseDown && rowRect.Contains(Event.current.mousePosition))
+            {
+                // Check if click is outside button areas
+                bool overToggle = toggleRect.Contains(Event.current.mousePosition);
+                bool overWithdraw1 = new Rect(rightEdge - 116, btnY, 34, 28).Contains(Event.current.mousePosition);
+                bool overWithdraw5 = new Rect(rightEdge - 78, btnY, 34, 28).Contains(Event.current.mousePosition);
+                bool overWithdraw10 = new Rect(rightEdge - 40, btnY, 40, 28).Contains(Event.current.mousePosition);
+
+                if (!overToggle && !overWithdraw1 && !overWithdraw5 && !overWithdraw10)
+                {
+                    _selectedCurrencyId = currencyId;
+                }
+            }
         }
 
         private string GetCurrencyIcon(string currencyId)
         {
+            // Use simple text icons that render reliably in Unity's default font
             if (currencyId.StartsWith("seasonal_"))
             {
                 string season = currencyId.Substring("seasonal_".Length).ToLower();
                 return season switch
                 {
-                    "spring" => "\u2618", // Shamrock
-                    "summer" => "\u2600", // Sun
-                    "fall" => "\u2618",   // Leaf-like
-                    "winter" => "\u2744", // Snowflake
-                    _ => "\u2605"
+                    "spring" => "[Sp]",
+                    "summer" => "[Su]",
+                    "fall" => "[Fa]",
+                    "winter" => "[Wi]",
+                    _ => "[T]"
                 };
             }
             else if (currencyId.StartsWith("community_"))
             {
-                return "\u2665"; // Heart
+                return "[C]";
             }
             else if (currencyId.StartsWith("key_"))
             {
-                return "\u26bf"; // Key
+                return "[K]";
             }
-            return "\u2022";
+            else if (currencyId.StartsWith("ticket_"))
+            {
+                return "[Ti]";
+            }
+            else if (currencyId.StartsWith("orb_"))
+            {
+                return "[O]";
+            }
+            return "[?]";
         }
 
         private string GetDisplayName(string currencyId)
@@ -757,9 +873,8 @@ namespace TheVault.UI
 
             try
             {
-                // Temporarily disable auto-deposit so items go to inventory, not back to vault
-                bool wasAutoDepositEnabled = ItemPatches.AutoDepositEnabled;
-                ItemPatches.AutoDepositEnabled = false;
+                // Set withdrawal flag to bypass ALL auto-deposit logic
+                ItemPatches.IsWithdrawing = true;
 
                 try
                 {
@@ -798,8 +913,8 @@ namespace TheVault.UI
                 }
                 finally
                 {
-                    // Re-enable auto-deposit
-                    ItemPatches.AutoDepositEnabled = wasAutoDepositEnabled;
+                    // Clear withdrawal flag
+                    ItemPatches.IsWithdrawing = false;
                 }
             }
             catch (Exception ex)
