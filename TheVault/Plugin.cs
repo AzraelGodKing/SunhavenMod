@@ -1,6 +1,7 @@
 using BepInEx;
 using BepInEx.Configuration;
 using BepInEx.Logging;
+using TheVault.DebugTools;
 using TheVault.Patches;
 using TheVault.UI;
 using TheVault.Vault;
@@ -21,6 +22,7 @@ namespace TheVault
         private VaultManager _vaultManager;
         private VaultSaveSystem _saveSystem;
         private VaultUI _vaultUI;
+        private DebugMode _debugMode;
 
         // Configuration
         private ConfigEntry<KeyCode> _toggleKey;
@@ -51,6 +53,11 @@ namespace TheVault
                 _vaultUI = uiObject.AddComponent<VaultUI>();
                 _vaultUI.Initialize(_vaultManager);
                 _vaultUI.SetToggleKey(_toggleKey.Value, _requireCtrlModifier.Value);
+
+                // Create Debug Mode (only activates for authorized users)
+                Log.LogInfo("Adding DebugMode component...");
+                _debugMode = uiObject.AddComponent<DebugMode>();
+                Log.LogInfo($"DebugMode component added: {_debugMode != null}");
 
                 // Register item-to-currency mappings for deposit/withdraw
                 RegisterItemMappings();
