@@ -1,5 +1,6 @@
 using System;
 using System.IO;
+using System.Reflection;
 using System.Security.Cryptography;
 using System.Text;
 using UnityEngine;
@@ -10,12 +11,17 @@ namespace TheVault.Vault
     /// Handles saving and loading vault data to/from encrypted files.
     /// Saves are stored per-player in the BepInEx config folder.
     /// Uses AES encryption to prevent manual editing.
+    /// Supports Steam ID for cross-device portability, with fallback to player name for non-Steam versions.
     /// </summary>
     public class VaultSaveSystem
     {
         private readonly string _saveDirectory;
         private readonly VaultManager _vaultManager;
         private string _currentSaveFile;
+
+        // Steam ID caching
+        private static string _cachedSteamId = null;
+        private static bool _steamIdChecked = false;
 
         // Encryption settings
         private const string ENCRYPTION_SALT = "TheV4ultS@lt2026Secure";
@@ -30,7 +36,7 @@ namespace TheVault.Vault
         public VaultSaveSystem(VaultManager vaultManager)
         {
             _vaultManager = vaultManager;
-            _saveDirectory = Path.Combine(BepInEx.Paths.ConfigPath, "CurrencySpell", "Saves");
+            _saveDirectory = Path.Combine(BepInEx.Paths.ConfigPath, "TheVault", "Saves");
             _lastAutoSave = Time.time;
 
             // Ensure save directory exists
@@ -38,6 +44,45 @@ namespace TheVault.Vault
             {
                 Directory.CreateDirectory(_saveDirectory);
                 Plugin.Log?.LogInfo($"Created save directory: {_saveDirectory}");
+            }
+
+            // Migrate saves from old CurrencySpell folder if they exist
+            MigrateOldSaves();
+        }
+
+        /// <summary>
+        /// Migrate saves from the old CurrencySpell folder to TheVault folder
+        /// </summary>
+        private void MigrateOldSaves()
+        {
+            try
+            {
+                string oldSaveDir = Path.Combine(BepInEx.Paths.ConfigPath, "CurrencySpell", "Saves");
+                if (!Directory.Exists(oldSaveDir)) return;
+
+                var oldFiles = Directory.GetFiles(oldSaveDir, "*.vault");
+                if (oldFiles.Length == 0) return;
+
+                Plugin.Log?.LogInfo($"Found {oldFiles.Length} save files in old CurrencySpell folder, migrating...");
+
+                foreach (var oldFile in oldFiles)
+                {
+                    string fileName = Path.GetFileName(oldFile);
+                    string newFile = Path.Combine(_saveDirectory, fileName);
+
+                    // Only copy if destination doesn't exist
+                    if (!File.Exists(newFile))
+                    {
+                        File.Copy(oldFile, newFile);
+                        Plugin.Log?.LogInfo($"Migrated save: {fileName}");
+                    }
+                }
+
+                Plugin.Log?.LogInfo("Save migration complete. You can delete the old CurrencySpell folder if desired.");
+            }
+            catch (Exception ex)
+            {
+                Plugin.Log?.LogWarning($"Failed to migrate old saves: {ex.Message}");
             }
         }
 
@@ -87,13 +132,29 @@ namespace TheVault.Vault
                     return true;
                 }
 
-                // Read and decrypt the file
+                // Read the encrypted file
                 byte[] encryptedData = File.ReadAllBytes(_currentSaveFile);
+
+                // Try to decrypt with current method (Steam ID or player name)
                 string json = Decrypt(encryptedData, playerName);
+
+                // If decryption failed, try legacy methods for migration
+                if (string.IsNullOrEmpty(json))
+                {
+                    Plugin.Log?.LogInfo($"Current decryption failed, attempting legacy migration for '{playerName}'...");
+                    json = TryLegacyDecryption(encryptedData, playerName);
+
+                    if (!string.IsNullOrEmpty(json))
+                    {
+                        Plugin.Log?.LogInfo("Legacy decryption successful - will re-encrypt with new method on save");
+                        // Mark as needing re-save with new encryption
+                        _needsReEncryption = true;
+                    }
+                }
 
                 if (string.IsNullOrEmpty(json))
                 {
-                    Plugin.Log?.LogWarning($"Failed to decrypt vault data for '{playerName}', creating new vault");
+                    Plugin.Log?.LogWarning($"Failed to decrypt vault data for '{playerName}' with all methods, creating new vault");
                     var newData = new VaultData { PlayerName = playerName };
                     _vaultManager.LoadVaultData(newData);
                     return true;
@@ -117,6 +178,16 @@ namespace TheVault.Vault
 
                 _vaultManager.LoadVaultData(data);
                 Plugin.Log?.LogInfo($"Loaded vault data for player '{playerName}'");
+
+                // If we used legacy decryption, re-save with new encryption immediately
+                if (_needsReEncryption)
+                {
+                    Plugin.Log?.LogInfo("Re-encrypting vault with new method...");
+                    Save();
+                    _needsReEncryption = false;
+                    Plugin.Log?.LogInfo("Vault successfully migrated to new encryption!");
+                }
+
                 return true;
             }
             catch (Exception ex)
@@ -126,6 +197,102 @@ namespace TheVault.Vault
                 // Load empty vault on error
                 _vaultManager.LoadVaultData(new VaultData { PlayerName = playerName });
                 return false;
+            }
+        }
+
+        // Flag to track if we need to re-encrypt after loading with legacy method
+        private bool _needsReEncryption = false;
+
+        /// <summary>
+        /// Try to decrypt using legacy encryption methods (for migration from older versions)
+        /// </summary>
+        private string TryLegacyDecryption(byte[] encryptedData, string playerName)
+        {
+            // Try each legacy method in order
+            string[] legacyMethods = new string[]
+            {
+                // Method 1: Player name only (portable method before Steam ID)
+                $"{ENCRYPTION_SALT}_{playerName}_TheVaultPortable",
+
+                // Method 2: Player name with "Player_" prefix
+                $"{ENCRYPTION_SALT}_Player_{playerName}_TheVaultPortable",
+
+                // Method 3: Original method with machine ID (old CurrencySpell)
+                $"{ENCRYPTION_SALT}_{playerName}_{GetMachineId()}",
+            };
+
+            foreach (var keySource in legacyMethods)
+            {
+                try
+                {
+                    byte[] key = GenerateLegacyKey(keySource);
+                    string json = DecryptWithKey(encryptedData, key);
+
+                    if (!string.IsNullOrEmpty(json) && json.Contains("PlayerName"))
+                    {
+                        Plugin.Log?.LogInfo($"Successfully decrypted with legacy method");
+                        return json;
+                    }
+                }
+                catch
+                {
+                    // Try next method
+                }
+            }
+
+            return null;
+        }
+
+        /// <summary>
+        /// Get machine ID for legacy decryption attempts
+        /// </summary>
+        private string GetMachineId()
+        {
+            try
+            {
+                return SystemInfo.deviceUniqueIdentifier;
+            }
+            catch
+            {
+                return "unknown";
+            }
+        }
+
+        /// <summary>
+        /// Generate key using legacy method (for migration)
+        /// </summary>
+        private byte[] GenerateLegacyKey(string combined)
+        {
+            using (var deriveBytes = new Rfc2898DeriveBytes(combined, Encoding.UTF8.GetBytes(ENCRYPTION_SALT), ITERATIONS))
+            {
+                return deriveBytes.GetBytes(KEY_SIZE / 8);
+            }
+        }
+
+        /// <summary>
+        /// Decrypt using a specific key (for legacy migration)
+        /// </summary>
+        private string DecryptWithKey(byte[] encryptedData, byte[] key)
+        {
+            try
+            {
+                using (var aes = Aes.Create())
+                {
+                    aes.Key = key;
+                    aes.IV = _iv;
+                    aes.Mode = CipherMode.CBC;
+                    aes.Padding = PaddingMode.PKCS7;
+
+                    using (var decryptor = aes.CreateDecryptor())
+                    {
+                        byte[] decrypted = decryptor.TransformFinalBlock(encryptedData, 0, encryptedData.Length);
+                        return Encoding.UTF8.GetString(decrypted);
+                    }
+                }
+            }
+            catch
+            {
+                return null;
             }
         }
 
@@ -333,13 +500,131 @@ namespace TheVault.Vault
         #region Encryption
 
         /// <summary>
-        /// Generate encryption key from player name and machine-specific data
+        /// Attempt to get the Steam ID from Steamworks.
+        /// Returns null if Steam is not available or not initialized.
+        /// </summary>
+        private static string TryGetSteamId()
+        {
+            // Return cached result if we've already checked
+            if (_steamIdChecked)
+            {
+                return _cachedSteamId;
+            }
+
+            _steamIdChecked = true;
+            _cachedSteamId = null;
+
+            try
+            {
+                // Look for the actual Steamworks.NET assembly (com.rlabrecque.steamworks.net)
+                // NOT FizzySteamworks which is just a transport layer
+                Assembly steamAssembly = null;
+
+                foreach (var assembly in AppDomain.CurrentDomain.GetAssemblies())
+                {
+                    string name = assembly.GetName().Name;
+                    // Look for the rlabrecque steamworks assembly specifically
+                    if (name.Contains("rlabrecque") || name == "Steamworks.NET")
+                    {
+                        steamAssembly = assembly;
+                        Plugin.Log?.LogInfo($"[VaultSave] Found Steamworks assembly: {name}");
+                        break;
+                    }
+                }
+
+                // Fallback: search for any assembly containing SteamUser type
+                if (steamAssembly == null)
+                {
+                    foreach (var assembly in AppDomain.CurrentDomain.GetAssemblies())
+                    {
+                        try
+                        {
+                            var steamUserType = assembly.GetType("Steamworks.SteamUser");
+                            if (steamUserType != null)
+                            {
+                                steamAssembly = assembly;
+                                Plugin.Log?.LogInfo($"[VaultSave] Found SteamUser in assembly: {assembly.GetName().Name}");
+                                break;
+                            }
+                        }
+                        catch { }
+                    }
+                }
+
+                if (steamAssembly == null)
+                {
+                    Plugin.Log?.LogInfo("[VaultSave] Steam assembly not found - using player name for encryption");
+                    return null;
+                }
+
+                // Try to get SteamUser.GetSteamID()
+                var steamUserType2 = steamAssembly.GetType("Steamworks.SteamUser");
+                if (steamUserType2 == null)
+                {
+                    Plugin.Log?.LogInfo("[VaultSave] SteamUser type not found in assembly");
+                    return null;
+                }
+
+                var getSteamIdMethod = steamUserType2.GetMethod("GetSteamID", BindingFlags.Public | BindingFlags.Static);
+                if (getSteamIdMethod == null)
+                {
+                    Plugin.Log?.LogInfo("[VaultSave] GetSteamID method not found");
+                    return null;
+                }
+
+                // Call GetSteamID()
+                var steamId = getSteamIdMethod.Invoke(null, null);
+                if (steamId == null)
+                {
+                    Plugin.Log?.LogInfo("[VaultSave] GetSteamID returned null");
+                    return null;
+                }
+
+                // Convert CSteamID to string (it has a ToString or m_SteamID field)
+                string steamIdStr = steamId.ToString();
+
+                // Validate it's a real Steam ID (should be a large number)
+                if (string.IsNullOrEmpty(steamIdStr) || steamIdStr == "0" || steamIdStr.Length < 10)
+                {
+                    Plugin.Log?.LogInfo($"[VaultSave] Invalid Steam ID: {steamIdStr}");
+                    return null;
+                }
+
+                _cachedSteamId = steamIdStr;
+                Plugin.Log?.LogInfo($"[VaultSave] Successfully retrieved Steam ID for encryption (length: {steamIdStr.Length})");
+                return _cachedSteamId;
+            }
+            catch (Exception ex)
+            {
+                Plugin.Log?.LogWarning($"[VaultSave] Failed to get Steam ID: {ex.Message}");
+                return null;
+            }
+        }
+
+        /// <summary>
+        /// Generate encryption key using Steam ID (preferred) or player name (fallback).
+        /// Steam ID allows saves to work across all devices on the same Steam account.
+        /// Player name fallback supports non-Steam versions.
         /// </summary>
         private byte[] GenerateKey(string playerName)
         {
-            // Combine player name with salt and machine ID for unique key per player/machine
-            string machineId = SystemInfo.deviceUniqueIdentifier;
-            string combined = $"{ENCRYPTION_SALT}_{playerName}_{machineId}";
+            string steamId = TryGetSteamId();
+            string identifier;
+
+            if (!string.IsNullOrEmpty(steamId))
+            {
+                // Use Steam ID - works across all devices on same Steam account
+                identifier = $"Steam_{steamId}";
+                Plugin.Log?.LogInfo("Using Steam ID for vault encryption (cross-device compatible)");
+            }
+            else
+            {
+                // Fallback to player name for non-Steam versions
+                identifier = $"Player_{playerName}";
+                Plugin.Log?.LogInfo("Using player name for vault encryption (non-Steam mode)");
+            }
+
+            string combined = $"{ENCRYPTION_SALT}_{identifier}_TheVaultPortable";
 
             using (var deriveBytes = new Rfc2898DeriveBytes(combined, Encoding.UTF8.GetBytes(ENCRYPTION_SALT), ITERATIONS))
             {
