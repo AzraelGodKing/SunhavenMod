@@ -1,6 +1,9 @@
 # The Vault - Changelog
 
 ## Version 1.0.4
+- Added persistent HUD bar showing vault currency totals (toggle with F7)
+- HUD displays abbreviated currency names with counts, hides when main vault is open
+- Configurable HUD position (TopLeft, TopCenter, TopRight, BottomLeft, BottomCenter, BottomRight)
 - Moved Community Tokens to Special category for better organization
 - Added input blocking when Vault or Debug UI is open (prevents game interaction)
 - Added Steam Deck support with F8 as alternative keybind (no Ctrl required)

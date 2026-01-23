@@ -22,12 +22,16 @@ namespace TheVault
         private VaultManager _vaultManager;
         private VaultSaveSystem _saveSystem;
         private VaultUI _vaultUI;
+        private VaultHUD _vaultHUD;
         private DebugMode _debugMode;
 
         // Configuration
         private ConfigEntry<KeyCode> _toggleKey;
         private ConfigEntry<bool> _requireCtrlModifier;
         private ConfigEntry<KeyCode> _altToggleKey;
+        private ConfigEntry<bool> _enableHUD;
+        private ConfigEntry<string> _hudPosition;
+        private ConfigEntry<KeyCode> _hudToggleKey;
         private ConfigEntry<bool> _enableAutoSave;
         private ConfigEntry<float> _autoSaveInterval;
 
@@ -55,6 +59,12 @@ namespace TheVault
                 _vaultUI.Initialize(_vaultManager);
                 _vaultUI.SetToggleKey(_toggleKey.Value, _requireCtrlModifier.Value);
                 _vaultUI.SetAltToggleKey(_altToggleKey.Value);
+
+                // Create HUD for persistent display
+                _vaultHUD = uiObject.AddComponent<VaultHUD>();
+                _vaultHUD.Initialize(_vaultManager);
+                _vaultHUD.SetEnabled(_enableHUD.Value);
+                _vaultHUD.SetPosition(ParseHUDPosition(_hudPosition.Value));
 
                 // Create Debug Mode (only activates for authorized users)
                 Log.LogInfo("Adding DebugMode component...");
@@ -98,6 +108,27 @@ namespace TheVault
                 "AltToggleKey",
                 KeyCode.F8,
                 "Alternative key to toggle vault UI (no modifier required). Useful for Steam Deck."
+            );
+
+            _enableHUD = Config.Bind(
+                "HUD",
+                "EnableHUD",
+                true,
+                "Show a persistent HUD bar displaying vault currency totals"
+            );
+
+            _hudPosition = Config.Bind(
+                "HUD",
+                "Position",
+                "TopLeft",
+                "HUD position: TopLeft, TopCenter, TopRight, BottomLeft, BottomCenter, BottomRight"
+            );
+
+            _hudToggleKey = Config.Bind(
+                "HUD",
+                "ToggleKey",
+                KeyCode.F7,
+                "Key to toggle the HUD display on/off"
             );
 
             _enableAutoSave = Config.Bind(
@@ -558,6 +589,26 @@ namespace TheVault
             {
                 _saveSystem?.CheckAutoSave();
             }
+
+            // Check for HUD toggle
+            if (Input.GetKeyDown(_hudToggleKey.Value))
+            {
+                _vaultHUD?.Toggle();
+            }
+        }
+
+        private static VaultHUD.HUDPosition ParseHUDPosition(string position)
+        {
+            return position?.ToLower() switch
+            {
+                "topleft" => VaultHUD.HUDPosition.TopLeft,
+                "topcenter" => VaultHUD.HUDPosition.TopCenter,
+                "topright" => VaultHUD.HUDPosition.TopRight,
+                "bottomleft" => VaultHUD.HUDPosition.BottomLeft,
+                "bottomcenter" => VaultHUD.HUDPosition.BottomCenter,
+                "bottomright" => VaultHUD.HUDPosition.BottomRight,
+                _ => VaultHUD.HUDPosition.TopLeft
+            };
         }
 
         private void OnApplicationQuit()
@@ -631,6 +682,22 @@ namespace TheVault
             Instance?._saveSystem?.ForceSave();
         }
 
+        /// <summary>
+        /// Get the vault HUD instance
+        /// </summary>
+        public static VaultHUD GetVaultHUD()
+        {
+            return Instance?._vaultHUD;
+        }
+
+        /// <summary>
+        /// Toggle the vault HUD visibility
+        /// </summary>
+        public static void ToggleHUD()
+        {
+            Instance?._vaultHUD?.Toggle();
+        }
+
         #endregion
     }
 
@@ -638,6 +705,6 @@ namespace TheVault
     {
         public const string PLUGIN_GUID = "com.azraelgodking.thevault";
         public const string PLUGIN_NAME = "The Vault";
-        public const string PLUGIN_VERSION = "1.0.0";
+        public const string PLUGIN_VERSION = "1.0.4";
     }
 }
