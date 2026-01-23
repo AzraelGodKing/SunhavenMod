@@ -1,5 +1,17 @@
 # The Vault - Changelog
 
+## Version 1.0.3
+- Added Candy Corn Pieces support
+- Added Mana Shard support
+- Renamed "Tickets" category to "Special" to better reflect the variety of currencies
+- All special currencies now use unified "special_" prefix internally
+
+## Version 1.0.2
+- Added Red Carnival Ticket support
+- Renamed "Pirate" category to "Tickets" to accommodate all ticket types
+- Improved Debug UI with dropdown menus for all vault currencies
+- Debug UI now includes quick amount buttons for easier testing
+
 ## Version 1.0.1
 - Fixed item duplication bug when withdrawing currencies from vault
 - Added support for Pirate Currencies:
