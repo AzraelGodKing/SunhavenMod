@@ -54,9 +54,12 @@ namespace TheVault.Vault
             RegisterCurrency(new CurrencyDefinition("key_glorite", "Glorite Key", CurrencyCategory.Key, 1256));
             RegisterCurrency(new CurrencyDefinition("key_kingslostmine", "King's Lost Mine Key", CurrencyCategory.Key, 1257));
 
-            // Pirate event currencies
-            RegisterCurrency(new CurrencyDefinition("pirate_doubloon", "Doubloon", CurrencyCategory.Ticket, 60014));
-            RegisterCurrency(new CurrencyDefinition("pirate_blackbottlecap", "Black Bottle Cap", CurrencyCategory.Ticket, 60013));
+            // Special currencies
+            RegisterCurrency(new CurrencyDefinition("special_doubloon", "Doubloon", CurrencyCategory.Special, 60014));
+            RegisterCurrency(new CurrencyDefinition("special_blackbottlecap", "Black Bottle Cap", CurrencyCategory.Special, 60013));
+            RegisterCurrency(new CurrencyDefinition("special_redcarnivalticket", "Red Carnival Ticket", CurrencyCategory.Special, 18012));
+            RegisterCurrency(new CurrencyDefinition("special_candycornpieces", "Candy Corn Pieces", CurrencyCategory.Special, 18016));
+            RegisterCurrency(new CurrencyDefinition("special_manashard", "Mana Shard", CurrencyCategory.Special, 18015));
 
             Plugin.Log?.LogInfo($"Initialized {_currencyDefinitions.Count} currency definitions");
         }
@@ -278,44 +281,50 @@ namespace TheVault.Vault
 
         #endregion
 
-        #region Tickets
+        #region Special (uses Tickets storage for backwards compatibility)
 
-        public int GetTickets(string ticketId)
+        public int GetSpecial(string specialId)
         {
-            return _vaultData.Tickets.TryGetValue(ticketId, out int count) ? count : 0;
+            return _vaultData.Tickets.TryGetValue(specialId, out int count) ? count : 0;
         }
 
-        public bool AddTickets(string ticketId, int amount)
+        public bool AddSpecial(string specialId, int amount)
         {
-            if (amount < 0 || string.IsNullOrEmpty(ticketId)) return false;
+            if (amount < 0 || string.IsNullOrEmpty(specialId)) return false;
 
-            int oldValue = GetTickets(ticketId);
-            _vaultData.Tickets[ticketId] = oldValue + amount;
+            int oldValue = GetSpecial(specialId);
+            _vaultData.Tickets[specialId] = oldValue + amount;
             _isDirty = true;
 
-            OnCurrencyChanged?.Invoke($"ticket_{ticketId}", oldValue, oldValue + amount);
+            OnCurrencyChanged?.Invoke($"special_{specialId}", oldValue, oldValue + amount);
             return true;
         }
 
-        public bool RemoveTickets(string ticketId, int amount)
+        public bool RemoveSpecial(string specialId, int amount)
         {
-            if (amount < 0 || string.IsNullOrEmpty(ticketId)) return false;
+            if (amount < 0 || string.IsNullOrEmpty(specialId)) return false;
 
-            int current = GetTickets(ticketId);
+            int current = GetSpecial(specialId);
             if (current < amount) return false;
 
             int oldValue = current;
-            _vaultData.Tickets[ticketId] = current - amount;
+            _vaultData.Tickets[specialId] = current - amount;
             _isDirty = true;
 
-            OnCurrencyChanged?.Invoke($"ticket_{ticketId}", oldValue, current - amount);
+            OnCurrencyChanged?.Invoke($"special_{specialId}", oldValue, current - amount);
             return true;
         }
 
-        public bool HasTickets(string ticketId, int amount)
+        public bool HasSpecial(string specialId, int amount)
         {
-            return GetTickets(ticketId) >= amount;
+            return GetSpecial(specialId) >= amount;
         }
+
+        // Legacy methods for backwards compatibility
+        public int GetTickets(string ticketId) => GetSpecial(ticketId);
+        public bool AddTickets(string ticketId, int amount) => AddSpecial(ticketId, amount);
+        public bool RemoveTickets(string ticketId, int amount) => RemoveSpecial(ticketId, amount);
+        public bool HasTickets(string ticketId, int amount) => HasSpecial(ticketId, amount);
 
         #endregion
 
@@ -425,13 +434,9 @@ namespace TheVault.Vault
             {
                 return GetKeys(fullCurrencyId.Substring("key_".Length));
             }
-            else if (fullCurrencyId.StartsWith("pirate_"))
+            else if (fullCurrencyId.StartsWith("special_"))
             {
-                return GetTickets(fullCurrencyId.Substring("pirate_".Length));
-            }
-            else if (fullCurrencyId.StartsWith("ticket_"))
-            {
-                return GetTickets(fullCurrencyId.Substring("ticket_".Length));
+                return GetSpecial(fullCurrencyId.Substring("special_".Length));
             }
             else if (fullCurrencyId.StartsWith("orb_"))
             {
@@ -481,7 +486,7 @@ namespace TheVault.Vault
             foreach (var kvp in _vaultData.Tickets)
             {
                 if (kvp.Value > 0)
-                    result[$"ticket_{kvp.Key}"] = kvp.Value;
+                    result[$"special_{kvp.Key}"] = kvp.Value;
             }
 
             foreach (var kvp in _vaultData.Orbs)

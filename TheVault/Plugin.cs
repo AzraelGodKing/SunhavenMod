@@ -133,9 +133,12 @@ namespace TheVault
             ItemPatches.RegisterItemCurrencyMapping(1256, "key_glorite", autoDeposit: true);
             ItemPatches.RegisterItemCurrencyMapping(1257, "key_kingslostmine", autoDeposit: true);
 
-            // Pirate event currencies - auto-deposit enabled
-            ItemPatches.RegisterItemCurrencyMapping(60014, "pirate_doubloon", autoDeposit: true);
-            ItemPatches.RegisterItemCurrencyMapping(60013, "pirate_blackbottlecap", autoDeposit: true);
+            // Special currencies - auto-deposit enabled
+            ItemPatches.RegisterItemCurrencyMapping(60014, "special_doubloon", autoDeposit: true);
+            ItemPatches.RegisterItemCurrencyMapping(60013, "special_blackbottlecap", autoDeposit: true);
+            ItemPatches.RegisterItemCurrencyMapping(18012, "special_redcarnivalticket", autoDeposit: true);
+            ItemPatches.RegisterItemCurrencyMapping(18016, "special_candycornpieces", autoDeposit: true);
+            ItemPatches.RegisterItemCurrencyMapping(18015, "special_manashard", autoDeposit: true);
 
             Log.LogInfo("Registered item-to-currency mappings with auto-deposit enabled");
         }
