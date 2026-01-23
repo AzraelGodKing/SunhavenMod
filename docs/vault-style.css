@@ -183,6 +183,10 @@ body {
     border-top: 3px solid #a371f7;
 }
 
+.currency-category.pirate {
+    border-top: 3px solid #d4af37;
+}
+
 .category-header {
     display: flex;
     align-items: center;
@@ -250,6 +254,8 @@ body {
 .key.sunite { color: #f0883e; }
 .key.glorite { color: #7ee787; }
 .key.special { color: #f778ba; }
+.token.doubloon { color: #d4af37; }
+.token.bottlecap { color: #2c2c2c; }
 
 /* Usage Steps */
 .usage-steps {
