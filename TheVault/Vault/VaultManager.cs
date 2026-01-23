@@ -54,6 +54,10 @@ namespace TheVault.Vault
             RegisterCurrency(new CurrencyDefinition("key_glorite", "Glorite Key", CurrencyCategory.Key, 1256));
             RegisterCurrency(new CurrencyDefinition("key_kingslostmine", "King's Lost Mine Key", CurrencyCategory.Key, 1257));
 
+            // Pirate event currencies
+            RegisterCurrency(new CurrencyDefinition("pirate_doubloon", "Doubloon", CurrencyCategory.Ticket, 60014));
+            RegisterCurrency(new CurrencyDefinition("pirate_blackbottlecap", "Black Bottle Cap", CurrencyCategory.Ticket, 60013));
+
             Plugin.Log?.LogInfo($"Initialized {_currencyDefinitions.Count} currency definitions");
         }
 
@@ -420,6 +424,10 @@ namespace TheVault.Vault
             else if (fullCurrencyId.StartsWith("key_"))
             {
                 return GetKeys(fullCurrencyId.Substring("key_".Length));
+            }
+            else if (fullCurrencyId.StartsWith("pirate_"))
+            {
+                return GetTickets(fullCurrencyId.Substring("pirate_".Length));
             }
             else if (fullCurrencyId.StartsWith("ticket_"))
             {
