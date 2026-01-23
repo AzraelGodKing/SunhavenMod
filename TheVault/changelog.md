@@ -1,5 +1,10 @@
 # The Vault - Changelog
 
+## Version 1.0.4
+- Moved Community Tokens to Special category for better organization
+- Added input blocking when Vault or Debug UI is open (prevents game interaction)
+- Added Steam Deck support with F8 as alternative keybind (no Ctrl required)
+
 ## Version 1.0.3
 - Added Candy Corn Pieces support
 - Added Mana Shard support

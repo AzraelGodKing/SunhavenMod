@@ -42,9 +42,6 @@ namespace TheVault.Vault
             RegisterCurrency(new CurrencyDefinition("token_fall", "Fall Token", CurrencyCategory.SeasonalToken, 18023));
             RegisterCurrency(new CurrencyDefinition("token_winter", "Winter Token", CurrencyCategory.SeasonalToken, 18022));
 
-            // Community Tokens
-            RegisterCurrency(new CurrencyDefinition("token_community", "Community Token", CurrencyCategory.CommunityToken, 18013));
-
             // Keys - Actual Sun Haven item IDs
             RegisterCurrency(new CurrencyDefinition("key_copper", "Copper Key", CurrencyCategory.Key, 1251));
             RegisterCurrency(new CurrencyDefinition("key_iron", "Iron Key", CurrencyCategory.Key, 1252));
@@ -54,7 +51,8 @@ namespace TheVault.Vault
             RegisterCurrency(new CurrencyDefinition("key_glorite", "Glorite Key", CurrencyCategory.Key, 1256));
             RegisterCurrency(new CurrencyDefinition("key_kingslostmine", "King's Lost Mine Key", CurrencyCategory.Key, 1257));
 
-            // Special currencies
+            // Special currencies (includes Community Token)
+            RegisterCurrency(new CurrencyDefinition("special_communitytoken", "Community Token", CurrencyCategory.Special, 18013));
             RegisterCurrency(new CurrencyDefinition("special_doubloon", "Doubloon", CurrencyCategory.Special, 60014));
             RegisterCurrency(new CurrencyDefinition("special_blackbottlecap", "Black Bottle Cap", CurrencyCategory.Special, 60013));
             RegisterCurrency(new CurrencyDefinition("special_redcarnivalticket", "Red Carnival Ticket", CurrencyCategory.Special, 18012));
