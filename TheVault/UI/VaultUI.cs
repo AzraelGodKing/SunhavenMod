@@ -68,6 +68,7 @@ namespace TheVault.UI
         // Toggle key
         private KeyCode _toggleKey = KeyCode.V;
         private bool _requiresModifier = true; // Requires Ctrl+V by default
+        private KeyCode _altToggleKey = KeyCode.F8; // Alternative key for Steam Deck (no modifier)
 
         public void Initialize(VaultManager vaultManager)
         {
@@ -86,6 +87,11 @@ namespace TheVault.UI
         {
             _toggleKey = key;
             _requiresModifier = requireModifier;
+        }
+
+        public void SetAltToggleKey(KeyCode key)
+        {
+            _altToggleKey = key;
         }
 
         public bool IsVisible => _isVisible;
@@ -172,10 +178,16 @@ namespace TheVault.UI
 
         private void Update()
         {
-            // Check for toggle key
+            // Check for toggle key (with modifier)
             bool modifierHeld = !_requiresModifier || Input.GetKey(KeyCode.LeftControl) || Input.GetKey(KeyCode.RightControl);
 
             if (modifierHeld && Input.GetKeyDown(_toggleKey))
+            {
+                Toggle();
+            }
+
+            // Check for alternative toggle key (no modifier required - for Steam Deck)
+            if (_altToggleKey != KeyCode.None && Input.GetKeyDown(_altToggleKey))
             {
                 Toggle();
             }
@@ -438,7 +450,6 @@ namespace TheVault.UI
         private static readonly CurrencyCategory[] _enabledCategories = new[]
         {
             CurrencyCategory.SeasonalToken,
-            CurrencyCategory.CommunityToken,
             CurrencyCategory.Key,
             CurrencyCategory.Special
         };
@@ -705,6 +716,7 @@ namespace TheVault.UI
                 string specialName = currencyId.Substring("special_".Length).ToLower();
                 return specialName switch
                 {
+                    "communitytoken" => "[C]",
                     "doubloon" => "[D]",
                     "blackbottlecap" => "[B]",
                     "redcarnivalticket" => "[R]",
@@ -777,6 +789,7 @@ namespace TheVault.UI
             // Special handling for special currencies
             return specialName switch
             {
+                "communitytoken" => "Community Token",
                 "doubloon" => "Doubloon",
                 "blackbottlecap" => "Black Bottle Cap",
                 "redcarnivalticket" => "Red Carnival Ticket",

@@ -12,13 +12,13 @@ A quality-of-life mod that automatically manages your seasonal tokens, community
 ## Supported Currencies
 
 **Seasonal Tokens**: Spring, Summer, Fall, Winter
-**Community Tokens**: Community Token
 **Keys**: Copper, Iron, Adamant, Mithril, Sunite, Glorite, King's Lost Mine
-**Special**: Doubloon, Black Bottle Cap, Red Carnival Ticket, Candy Corn Pieces, Mana Shard
+**Special**: Community Token, Doubloon, Black Bottle Cap, Red Carnival Ticket, Candy Corn Pieces, Mana Shard
 
 ## Controls
 
 - `Ctrl+V` - Open/close vault UI
+- `F8` - Alternative open/close (Steam Deck friendly, no modifier needed)
 - `Escape` - Close vault UI
 - `-1/-5/-10 buttons` - Quick withdraw to inventory
 - `ON/--` toggle - Enable/disable auto-deposit per currency
@@ -38,6 +38,7 @@ Edit `BepInEx/config/com.azraelgodking.thevault.cfg`:
 |---------|---------|-------------|
 | ToggleKey | V | Key to open vault |
 | RequireCtrlModifier | true | Require Ctrl when pressing toggle |
+| AltToggleKey | F8 | Alternative key (no modifier, Steam Deck friendly) |
 | EnableAutoSave | true | Auto-save vault data |
 | AutoSaveInterval | 300 | Save interval in seconds |
 
