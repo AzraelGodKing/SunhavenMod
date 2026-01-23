@@ -1,5 +1,6 @@
 using HarmonyLib;
 using System;
+using TheVault.UI;
 using Wish;
 
 namespace TheVault.Patches
@@ -12,6 +13,12 @@ namespace TheVault.Patches
     {
         private static bool _hasLoadedVault = false;
         private static string _currentCharacterName = null;
+
+        /// <summary>
+        /// Returns true if the vault has been loaded for the current character.
+        /// UI components should check this before displaying.
+        /// </summary>
+        public static bool IsVaultLoaded => _hasLoadedVault;
 
         /// <summary>
         /// Called after player is initialized as owner.
@@ -48,6 +55,10 @@ namespace TheVault.Patches
                 // Set player name in vault manager
                 var vaultManager = Plugin.GetVaultManager();
                 vaultManager?.SetPlayerName(characterName);
+
+                // Now that game is fully loaded, load the UI icons
+                Plugin.Log?.LogInfo("Game fully loaded - loading UI icons...");
+                IconCache.LoadAllIcons();
             }
             catch (Exception ex)
             {

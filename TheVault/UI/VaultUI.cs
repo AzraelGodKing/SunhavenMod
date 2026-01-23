@@ -127,6 +127,9 @@ namespace TheVault.UI
             }
 
             Plugin.Log?.LogInfo("Vault UI opened");
+
+            // Log icon cache status when opening
+            IconCache.LogStatus();
         }
 
         public void Hide()
@@ -161,6 +164,13 @@ namespace TheVault.UI
 
         public void Toggle()
         {
+            // Don't allow toggle until vault is loaded
+            if (!PlayerPatches.IsVaultLoaded)
+            {
+                Plugin.Log?.LogInfo("Cannot toggle vault UI - save not yet loaded");
+                return;
+            }
+
             if (_isVisible)
                 Hide();
             else
@@ -369,7 +379,8 @@ namespace TheVault.UI
 
         private void OnGUI()
         {
-            if (!_isVisible || _vaultManager == null) return;
+            // Don't show UI until vault is loaded for the current character
+            if (!_isVisible || _vaultManager == null || !PlayerPatches.IsVaultLoaded) return;
 
             InitializeStyles();
 
@@ -626,11 +637,23 @@ namespace TheVault.UI
             }
             xPos += 24;
 
-            // Currency icon (using simple text that renders reliably)
-            string icon = GetCurrencyIcon(currencyId);
-            var iconStyle = new GUIStyle(_labelStyle) { fontSize = 10, alignment = TextAnchor.MiddleCenter };
-            iconStyle.normal.textColor = _accentColor;
-            GUI.Label(new Rect(xPos, yCenter, 28, 26), icon, iconStyle);
+            // Currency icon - use game icon if available, fallback to text
+            const float ICON_SIZE = 28f;
+            float iconY = rowRect.y + (rowRect.height - ICON_SIZE) / 2;
+            Texture2D iconTexture = IconCache.GetIconForCurrency(currencyId);
+            if (iconTexture != null && IconCache.IsIconLoaded(currencyId))
+            {
+                // Draw the actual game icon
+                GUI.DrawTexture(new Rect(xPos, iconY, ICON_SIZE, ICON_SIZE), iconTexture, ScaleMode.ScaleToFit);
+            }
+            else
+            {
+                // Fallback to text icon while loading or if icon unavailable
+                string icon = GetCurrencyIcon(currencyId);
+                var iconStyle = new GUIStyle(_labelStyle) { fontSize = 10, alignment = TextAnchor.MiddleCenter };
+                iconStyle.normal.textColor = _accentColor;
+                GUI.Label(new Rect(xPos, yCenter, ICON_SIZE, 26), icon, iconStyle);
+            }
             xPos += 32;
 
             // Currency name (wider column for long names like "King's Lost Mine Key")
@@ -639,10 +662,11 @@ namespace TheVault.UI
             xPos += 144;
 
             // Amount with gold color - make it prominent with "x" prefix
-            string amountText = "x" + amount.ToString("N0");
+            // Use K/M formatting for large numbers
+            string amountText = "x" + FormatNumber(amount);
             var amountStyle = new GUIStyle(_valueStyle) { fontSize = 16, alignment = TextAnchor.MiddleLeft };
-            GUI.Label(new Rect(xPos, yCenter, 50, 26), amountText, amountStyle);
-            xPos += 54;
+            GUI.Label(new Rect(xPos, yCenter, 70, 26), amountText, amountStyle);
+            xPos += 74;
 
             // Quick withdraw buttons - positioned from the right
             float btnY = rowRect.y + (rowRect.height - 28) / 2;
@@ -766,6 +790,29 @@ namespace TheVault.UI
         {
             if (string.IsNullOrEmpty(s)) return s;
             return char.ToUpper(s[0]) + s.Substring(1);
+        }
+
+        /// <summary>
+        /// Format a number with K/M suffixes for compact display.
+        /// 1000 -> 1K, 1500 -> 1.5K, 1000000 -> 1M
+        /// </summary>
+        private string FormatNumber(int value)
+        {
+            if (value >= 1000000)
+            {
+                float millions = value / 1000000f;
+                if (millions >= 10f || millions == (int)millions)
+                    return $"{(int)millions}M";
+                return $"{millions:0.#}M";
+            }
+            else if (value >= 1000)
+            {
+                float thousands = value / 1000f;
+                if (thousands >= 10f || thousands == (int)thousands)
+                    return $"{(int)thousands}K";
+                return $"{thousands:0.#}K";
+            }
+            return value.ToString();
         }
 
         private string FormatKeyName(string keyName)

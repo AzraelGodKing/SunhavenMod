@@ -33,6 +33,16 @@
                     <p>Tokens and keys automatically go to your vault when picked up from the ground or received as rewards - no manual action needed. Toggle auto-deposit on/off per currency type.</p>
                 </div>
                 <div class="feature-card">
+                    <div class="feature-icon">&#x1F4CA;</div>
+                    <h3>Persistent HUD Bar</h3>
+                    <p>A sleek always-visible HUD bar displays all your vault currencies at a glance. Shows seasonal tokens, keys, and special currencies with their actual game icons. Large numbers display as compact K/M format (e.g., 50K, 1.5M).</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">&#x1F3A8;</div>
+                    <h3>Native Game Icons</h3>
+                    <p>The vault loads actual item icons directly from the game's database. See the real Spring Token, Iron Key, or Mana Shard icons - not just text placeholders.</p>
+                </div>
+                <div class="feature-card">
                     <div class="feature-icon">&#x1F6D2;</div>
                     <h3>Seamless Shopping</h3>
                     <p>Shops and vendors automatically see your vault balance. Purchase items that cost seasonal tokens, community tokens, or keys without withdrawing first - the vault handles everything.</p>
@@ -53,9 +63,9 @@
                     <p>Vault data saves automatically every 5 minutes and whenever the game saves. Your currencies are protected even if the game crashes.</p>
                 </div>
                 <div class="feature-card">
-                    <div class="feature-icon">&#x1F4CA;</div>
-                    <h3>Quick Withdrawals</h3>
-                    <p>Need physical items for crafting or trading? Use the -1, -5, or -10 buttons to instantly withdraw currencies back to your inventory.</p>
+                    <div class="feature-icon">&#x1F3AE;</div>
+                    <h3>Steam Deck Ready</h3>
+                    <p>Full Steam Deck support with <kbd>F8</kbd> as an alternative toggle key (no modifier required). The HUD and vault UI work great with controller input.</p>
                 </div>
             </div>
         </section>
@@ -75,16 +85,6 @@
                         <li><span class="token summer">&#x2600;</span> Summer Token</li>
                         <li><span class="token fall">&#x1F342;</span> Fall Token</li>
                         <li><span class="token winter">&#x2744;</span> Winter Token</li>
-                    </ul>
-                </div>
-                <div class="currency-category community">
-                    <div class="category-header">
-                        <span class="category-icon">&#x2665;</span>
-                        <h3>Community Tokens</h3>
-                    </div>
-                    <p class="category-desc">Earned by helping NPCs and completing community tasks. Used at the Community Shop.</p>
-                    <ul class="currency-list">
-                        <li><span class="token community">&#x2665;</span> Community Token</li>
                     </ul>
                 </div>
                 <div class="currency-category keys">
@@ -108,8 +108,9 @@
                         <span class="category-icon">&#x2605;</span>
                         <h3>Special</h3>
                     </div>
-                    <p class="category-desc">Special currencies earned from events and activities throughout Sun Haven.</p>
+                    <p class="category-desc">Special currencies earned from events, activities, and community tasks throughout Sun Haven.</p>
                     <ul class="currency-list">
+                        <li><span class="token community">&#x2665;</span> Community Token</li>
                         <li><span class="token doubloon">&#x26c0;</span> Doubloon</li>
                         <li><span class="token bottlecap">&#x26ab;</span> Black Bottle Cap</li>
                         <li><span class="token carnival">&#x2727;</span> Red Carnival Ticket</li>
@@ -126,33 +127,40 @@
                 <div class="step">
                     <div class="step-number">1</div>
                     <div class="step-content">
-                        <h4>Open the Vault</h4>
-                        <p>Press <kbd>Ctrl</kbd> + <kbd>V</kbd> to open the vault interface at any time. Press <kbd>Escape</kbd> or click Close to exit.</p>
+                        <h4>Check the HUD</h4>
+                        <p>A persistent HUD bar at the top of your screen shows all your vault currencies at a glance with their actual game icons. Large values display in compact format (1K, 50K, 1M).</p>
                     </div>
                 </div>
                 <div class="step">
                     <div class="step-number">2</div>
                     <div class="step-content">
-                        <h4>Browse Your Currencies</h4>
-                        <p>Switch between tabs (Seasonal, Community, Keys) to see stored amounts. Each currency shows a toggle button to enable/disable auto-deposit for that specific item.</p>
+                        <h4>Open the Vault</h4>
+                        <p>Press <kbd>Ctrl</kbd> + <kbd>V</kbd> (or <kbd>F8</kbd> on Steam Deck) to open the vault interface. Press <kbd>Escape</kbd> or click Close to exit.</p>
                     </div>
                 </div>
                 <div class="step">
                     <div class="step-number">3</div>
+                    <div class="step-content">
+                        <h4>Browse Your Currencies</h4>
+                        <p>Switch between tabs (Seasonal, Keys, Special) to see stored amounts. Each currency shows a toggle button to enable/disable auto-deposit for that specific item.</p>
+                    </div>
+                </div>
+                <div class="step">
+                    <div class="step-number">4</div>
                     <div class="step-content">
                         <h4>Automatic Collection</h4>
                         <p>Just play normally! When you pick up tokens or keys, they're automatically deposited to your vault (if auto-deposit is enabled). You'll still see the pickup notification.</p>
                     </div>
                 </div>
                 <div class="step">
-                    <div class="step-number">4</div>
+                    <div class="step-number">5</div>
                     <div class="step-content">
                         <h4>Shop &amp; Unlock Seamlessly</h4>
                         <p>Visit any shop or locked door - The Vault automatically uses your stored currencies. No need to withdraw first; purchases and unlocks work directly from the vault.</p>
                     </div>
                 </div>
                 <div class="step">
-                    <div class="step-number">5</div>
+                    <div class="step-number">6</div>
                     <div class="step-content">
                         <h4>Withdraw When Needed</h4>
                         <p>Use the quick -1, -5, or -10 buttons next to each currency, or select a row and enter a custom amount to withdraw items back to your inventory.</p>
@@ -238,6 +246,21 @@
                             <td>RequireCtrlModifier</td>
                             <td>true</td>
                             <td>Require Ctrl key when pressing toggle key</td>
+                        </tr>
+                        <tr>
+                            <td>AltToggleKey</td>
+                            <td><kbd>F8</kbd></td>
+                            <td>Alternative key for Steam Deck (no modifier required)</td>
+                        </tr>
+                        <tr>
+                            <td>EnableHUD</td>
+                            <td>true</td>
+                            <td>Show the persistent HUD bar with vault currencies</td>
+                        </tr>
+                        <tr>
+                            <td>HUDPosition</td>
+                            <td>TopLeft</td>
+                            <td>HUD position (TopLeft, TopCenter, TopRight, BottomLeft, BottomCenter, BottomRight)</td>
                         </tr>
                         <tr>
                             <td>EnableAutoSave</td>
