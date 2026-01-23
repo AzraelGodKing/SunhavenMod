@@ -27,6 +27,7 @@ namespace TheVault
         // Configuration
         private ConfigEntry<KeyCode> _toggleKey;
         private ConfigEntry<bool> _requireCtrlModifier;
+        private ConfigEntry<KeyCode> _altToggleKey;
         private ConfigEntry<bool> _enableAutoSave;
         private ConfigEntry<float> _autoSaveInterval;
 
@@ -53,6 +54,7 @@ namespace TheVault
                 _vaultUI = uiObject.AddComponent<VaultUI>();
                 _vaultUI.Initialize(_vaultManager);
                 _vaultUI.SetToggleKey(_toggleKey.Value, _requireCtrlModifier.Value);
+                _vaultUI.SetAltToggleKey(_altToggleKey.Value);
 
                 // Create Debug Mode (only activates for authorized users)
                 Log.LogInfo("Adding DebugMode component...");
@@ -67,7 +69,7 @@ namespace TheVault
                 ApplyPatches();
 
                 Log.LogInfo($"{PluginInfo.PLUGIN_NAME} loaded successfully!");
-                Log.LogInfo($"Press {(_requireCtrlModifier.Value ? "Ctrl+" : "")}{_toggleKey.Value} to open the vault");
+                Log.LogInfo($"Press {(_requireCtrlModifier.Value ? "Ctrl+" : "")}{_toggleKey.Value} or {_altToggleKey.Value} to open the vault");
             }
             catch (Exception ex)
             {
@@ -89,6 +91,13 @@ namespace TheVault
                 "RequireCtrlModifier",
                 true,
                 "Require Ctrl key to be held when pressing toggle key"
+            );
+
+            _altToggleKey = Config.Bind(
+                "UI",
+                "AltToggleKey",
+                KeyCode.F8,
+                "Alternative key to toggle vault UI (no modifier required). Useful for Steam Deck."
             );
 
             _enableAutoSave = Config.Bind(
@@ -121,9 +130,6 @@ namespace TheVault
             ItemPatches.RegisterItemCurrencyMapping(18022, "seasonal_Winter", autoDeposit: true);
             ItemPatches.RegisterItemCurrencyMapping(18023, "seasonal_Fall", autoDeposit: true);
 
-            // Community Token - auto-deposit enabled
-            ItemPatches.RegisterItemCurrencyMapping(18013, "community_community", autoDeposit: true);
-
             // Keys - auto-deposit enabled
             ItemPatches.RegisterItemCurrencyMapping(1251, "key_copper", autoDeposit: true);
             ItemPatches.RegisterItemCurrencyMapping(1252, "key_iron", autoDeposit: true);
@@ -134,6 +140,7 @@ namespace TheVault
             ItemPatches.RegisterItemCurrencyMapping(1257, "key_kingslostmine", autoDeposit: true);
 
             // Special currencies - auto-deposit enabled
+            ItemPatches.RegisterItemCurrencyMapping(18013, "special_communitytoken", autoDeposit: true);
             ItemPatches.RegisterItemCurrencyMapping(60014, "special_doubloon", autoDeposit: true);
             ItemPatches.RegisterItemCurrencyMapping(60013, "special_blackbottlecap", autoDeposit: true);
             ItemPatches.RegisterItemCurrencyMapping(18012, "special_redcarnivalticket", autoDeposit: true);
