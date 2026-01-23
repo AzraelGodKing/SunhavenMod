@@ -144,7 +144,7 @@ namespace TheVault.Vault
         SeasonalToken,
         CommunityToken,
         Key,
-        Ticket,
+        Special,
         Orb,
         Custom
     }
