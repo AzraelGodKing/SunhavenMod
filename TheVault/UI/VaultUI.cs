@@ -439,7 +439,8 @@ namespace TheVault.UI
         {
             CurrencyCategory.SeasonalToken,
             CurrencyCategory.CommunityToken,
-            CurrencyCategory.Key
+            CurrencyCategory.Key,
+            CurrencyCategory.Ticket
         };
 
         private void DrawCategoryTabs()
@@ -471,6 +472,7 @@ namespace TheVault.UI
                 CurrencyCategory.SeasonalToken => "\u2600", // Sun symbol
                 CurrencyCategory.CommunityToken => "\u2665", // Heart
                 CurrencyCategory.Key => "\u26bf", // Key-like symbol
+                CurrencyCategory.Ticket => "\u2693", // Anchor symbol for pirate theme
                 _ => "\u2022"
             };
         }
@@ -482,6 +484,7 @@ namespace TheVault.UI
                 CurrencyCategory.SeasonalToken => "Seasonal",
                 CurrencyCategory.CommunityToken => "Community",
                 CurrencyCategory.Key => "Keys",
+                CurrencyCategory.Ticket => "Pirate",
                 _ => category.ToString()
             };
         }
@@ -547,9 +550,19 @@ namespace TheVault.UI
                         break;
 
                     case CurrencyCategory.Ticket:
-                        string ticketId = keyId.Replace("ticket_", "");
-                        amount = _vaultManager.GetTickets(ticketId);
-                        result[$"ticket_{ticketId}"] = amount;
+                        // Handle both pirate_ and ticket_ prefixes
+                        if (keyId.StartsWith("pirate_"))
+                        {
+                            string pirateId = keyId.Replace("pirate_", "");
+                            amount = _vaultManager.GetTickets(pirateId);
+                            result[$"pirate_{pirateId}"] = amount;
+                        }
+                        else
+                        {
+                            string ticketId = keyId.Replace("ticket_", "");
+                            amount = _vaultManager.GetTickets(ticketId);
+                            result[$"ticket_{ticketId}"] = amount;
+                        }
                         break;
 
                     case CurrencyCategory.Orb:
@@ -697,6 +710,16 @@ namespace TheVault.UI
             {
                 return "[K]";
             }
+            else if (currencyId.StartsWith("pirate_"))
+            {
+                string pirateName = currencyId.Substring("pirate_".Length).ToLower();
+                return pirateName switch
+                {
+                    "doubloon" => "[D]",
+                    "blackbottlecap" => "[B]",
+                    _ => "[P]"
+                };
+            }
             else if (currencyId.StartsWith("ticket_"))
             {
                 return "[Ti]";
@@ -724,6 +747,11 @@ namespace TheVault.UI
             {
                 string keyName = currencyId.Substring("key_".Length);
                 return FormatKeyName(keyName);
+            }
+            else if (currencyId.StartsWith("pirate_"))
+            {
+                string pirateName = currencyId.Substring("pirate_".Length);
+                return FormatPirateName(pirateName);
             }
             else if (currencyId.StartsWith("ticket_"))
             {
@@ -756,6 +784,17 @@ namespace TheVault.UI
                 "glorite" => "Glorite Key",
                 "kingslostmine" => "King's Lost Mine Key",
                 _ => CapitalizeFirst(keyName) + " Key"
+            };
+        }
+
+        private string FormatPirateName(string pirateName)
+        {
+            // Special handling for pirate event currencies
+            return pirateName switch
+            {
+                "doubloon" => "Doubloon",
+                "blackbottlecap" => "Black Bottle Cap",
+                _ => CapitalizeFirst(pirateName)
             };
         }
 
@@ -822,6 +861,10 @@ namespace TheVault.UI
             {
                 _vaultManager.RemoveKeys(currencyId.Substring("key_".Length), amount);
             }
+            else if (currencyId.StartsWith("pirate_"))
+            {
+                _vaultManager.RemoveTickets(currencyId.Substring("pirate_".Length), amount);
+            }
             else if (currencyId.StartsWith("ticket_"))
             {
                 _vaultManager.RemoveTickets(currencyId.Substring("ticket_".Length), amount);
@@ -873,8 +916,10 @@ namespace TheVault.UI
 
             try
             {
-                // Set withdrawal flag to bypass ALL auto-deposit logic
+                // Set both global and item-specific withdrawal flags to bypass ALL auto-deposit logic
+                // The item-specific flag persists even if there's async processing
                 ItemPatches.IsWithdrawing = true;
+                ItemPatches.StartWithdrawing(itemId);
 
                 try
                 {
@@ -913,13 +958,18 @@ namespace TheVault.UI
                 }
                 finally
                 {
-                    // Clear withdrawal flag
+                    // Clear global withdrawal flag immediately
                     ItemPatches.IsWithdrawing = false;
+                    // Keep item-specific flag set briefly to catch any delayed postfix calls
+                    // We'll clear it after a short delay using a coroutine or just leave it
+                    // For safety, clear it after inventory operation completes
+                    ItemPatches.StopWithdrawing(itemId);
                 }
             }
             catch (Exception ex)
             {
                 Plugin.Log?.LogError($"Error withdrawing to inventory: {ex.Message}");
+                ItemPatches.StopWithdrawing(itemId);
                 // Try to re-add to vault on error
                 AddCurrencyBack(currencyId, amount);
             }
@@ -945,6 +995,10 @@ namespace TheVault.UI
             else if (currencyId.StartsWith("key_"))
             {
                 _vaultManager.AddKeys(currencyId.Substring("key_".Length), amount);
+            }
+            else if (currencyId.StartsWith("pirate_"))
+            {
+                _vaultManager.AddTickets(currencyId.Substring("pirate_".Length), amount);
             }
             else if (currencyId.StartsWith("ticket_"))
             {

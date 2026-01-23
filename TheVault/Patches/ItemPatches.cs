@@ -1,6 +1,8 @@
 using HarmonyLib;
 using System;
 using System.Collections.Generic;
+using System.Linq;
+using System.Reflection;
 using TheVault.Vault;
 
 namespace TheVault.Patches
@@ -45,6 +47,59 @@ namespace TheVault.Patches
         public static bool IsWithdrawing { get; set; } = false;
 
         /// <summary>
+        /// Tracks recently withdrawn items with timestamps. Items in this dictionary will not be auto-deposited
+        /// until the withdrawal window expires. This handles async inventory operations where the postfix
+        /// might fire after the withdrawal method returns.
+        /// Key: itemId, Value: DateTime when withdrawal started
+        /// </summary>
+        private static Dictionary<int, DateTime> _withdrawingItems = new Dictionary<int, DateTime>();
+
+        /// <summary>
+        /// Time window (in milliseconds) to block auto-deposit after a withdrawal starts.
+        /// This should be long enough to cover any async delays in inventory operations.
+        /// </summary>
+        private const int WITHDRAWAL_BLOCK_WINDOW_MS = 2000;
+
+        /// <summary>
+        /// Mark an item as being withdrawn (prevents auto-deposit for WITHDRAWAL_BLOCK_WINDOW_MS)
+        /// </summary>
+        public static void StartWithdrawing(int itemId)
+        {
+            _withdrawingItems[itemId] = DateTime.Now;
+            Plugin.Log?.LogInfo($"Started withdrawing item {itemId} - auto-deposit blocked for {WITHDRAWAL_BLOCK_WINDOW_MS}ms");
+        }
+
+        /// <summary>
+        /// Explicitly stop withdrawing an item (optional - withdrawal will auto-expire)
+        /// This is kept for backwards compatibility but the time-based expiry is the primary mechanism.
+        /// </summary>
+        public static void StopWithdrawing(int itemId)
+        {
+            // Don't actually remove - let the time window handle it
+            // This prevents race conditions where StopWithdrawing is called before postfixes run
+            Plugin.Log?.LogInfo($"StopWithdrawing called for item {itemId} - will auto-expire");
+        }
+
+        /// <summary>
+        /// Check if an item was recently withdrawn (within WITHDRAWAL_BLOCK_WINDOW_MS)
+        /// </summary>
+        public static bool IsItemBeingWithdrawn(int itemId)
+        {
+            if (_withdrawingItems.TryGetValue(itemId, out DateTime withdrawStart))
+            {
+                double elapsed = (DateTime.Now - withdrawStart).TotalMilliseconds;
+                if (elapsed < WITHDRAWAL_BLOCK_WINDOW_MS)
+                {
+                    Plugin.Log?.LogInfo($"Item {itemId} was withdrawn {elapsed:F0}ms ago - blocking auto-deposit");
+                    return true;
+                }
+                // Expired - clean up
+                _withdrawingItems.Remove(itemId);
+            }
+            return false;
+        }
+
+        /// <summary>
         /// Register a mapping between a game item and vault currency.
         /// </summary>
         /// <param name="gameItemId">The item's ID in Sun Haven's item database</param>
@@ -79,8 +134,9 @@ namespace TheVault.Patches
         /// </summary>
         public static bool ShouldAutoDeposit(int gameItemId)
         {
-            // Never auto-deposit during withdrawals
+            // Never auto-deposit during withdrawals (global flag or item-specific)
             if (IsWithdrawing) return false;
+            if (IsItemBeingWithdrawn(gameItemId)) return false;
             if (!AutoDepositEnabled) return false;
 
             // Check if item is registered and has auto-deposit enabled
@@ -280,7 +336,8 @@ namespace TheVault.Patches
         {
             try
             {
-                if (_isProcessingAutoDeposit) return;
+                if (IsProcessingAutoDeposit(itemId)) return;
+                if (WasRecentlyDeposited(itemId)) return;
 
                 Plugin.Log?.LogInfo($"OnInventoryAddItem called: itemId={itemId}, amount={amount}");
 
@@ -301,30 +358,78 @@ namespace TheVault.Patches
                     return;
                 }
 
-                _isProcessingAutoDeposit = true;
+                StartProcessingAutoDeposit(itemId);
                 try
                 {
                     Plugin.Log?.LogInfo($"Auto-depositing {amount} of item {itemId} as {currencyId} (via Inventory.AddItem)");
 
                     // Remove from inventory
                     var invType = __instance.GetType();
+
+                    // Get inventory count BEFORE removal for logging (raw, without vault additions)
+                    int countBefore = -1;
+                    var getAmountMethod = AccessTools.Method(invType, "GetAmount", new[] { typeof(int) });
+                    if (getAmountMethod != null)
+                    {
+                        _skipVaultInGetAmount = true;
+                        try
+                        {
+                            countBefore = (int)getAmountMethod.Invoke(__instance, new object[] { itemId });
+                            Plugin.Log?.LogInfo($"[DEBUG] OnInventoryAddItem - Inventory count BEFORE removal: {countBefore} of item {itemId} (raw, no vault)");
+                        }
+                        finally
+                        {
+                            _skipVaultInGetAmount = false;
+                        }
+                    }
+
                     var removeMethod = AccessTools.Method(invType, "RemoveItem", new[] { typeof(int), typeof(int), typeof(int) });
                     if (removeMethod != null)
                     {
+                        Plugin.Log?.LogInfo($"[DEBUG] OnInventoryAddItem - Calling RemoveItem({itemId}, {amount}, -1)...");
                         removeMethod.Invoke(__instance, new object[] { itemId, amount, -1 });
+                        Plugin.Log?.LogInfo($"[DEBUG] OnInventoryAddItem - RemoveItem completed");
+                    }
+
+                    // Get inventory count AFTER removal to verify it worked (raw, without vault additions)
+                    int countAfter = -1;
+                    if (getAmountMethod != null)
+                    {
+                        _skipVaultInGetAmount = true;
+                        try
+                        {
+                            countAfter = (int)getAmountMethod.Invoke(__instance, new object[] { itemId });
+                            Plugin.Log?.LogInfo($"[DEBUG] OnInventoryAddItem - Inventory count AFTER removal: {countAfter} of item {itemId} (raw, no vault)");
+                        }
+                        finally
+                        {
+                            _skipVaultInGetAmount = false;
+                        }
+
+                        if (countBefore >= 0 && countAfter >= 0)
+                        {
+                            int removed = countBefore - countAfter;
+                            Plugin.Log?.LogInfo($"[DEBUG] OnInventoryAddItem - Items actually removed: {removed} (expected: {amount})");
+
+                            if (removed == 0)
+                            {
+                                Plugin.Log?.LogWarning($"[DEBUG] OnInventoryAddItem - WARNING: No items were removed from inventory!");
+                            }
+                        }
                     }
 
                     AddCurrencyToVault(vaultManager, currencyId, amount);
+                    MarkAsDeposited(itemId);
                     Plugin.Log?.LogInfo($"Auto-deposited {amount} of item {itemId} as {currencyId}");
                 }
                 finally
                 {
-                    _isProcessingAutoDeposit = false;
+                    StopProcessingAutoDeposit(itemId);
                 }
             }
             catch (Exception ex)
             {
-                _isProcessingAutoDeposit = false;
+                StopProcessingAutoDeposit(itemId);
                 Plugin.Log?.LogError($"Error in OnInventoryAddItem: {ex.Message}\n{ex.StackTrace}");
             }
         }
@@ -338,7 +443,8 @@ namespace TheVault.Patches
         {
             try
             {
-                if (_isProcessingAutoDeposit) return;
+                if (IsProcessingAutoDeposit(itemId)) return;
+                if (WasRecentlyDeposited(itemId)) return;
 
                 Plugin.Log?.LogInfo($"OnInventoryAddItemWithNotify called: itemId={itemId}, amount={amount}, notify={notify}");
 
@@ -359,54 +465,440 @@ namespace TheVault.Patches
                     return;
                 }
 
-                _isProcessingAutoDeposit = true;
+                StartProcessingAutoDeposit(itemId);
                 try
                 {
                     Plugin.Log?.LogInfo($"Auto-depositing {amount} of item {itemId} as {currencyId} (via Inventory.AddItem with notify)");
 
                     // Remove from inventory
                     var invType = __instance.GetType();
+
+                    // Get inventory count BEFORE removal for logging (raw, without vault additions)
+                    int countBefore = -1;
+                    var getAmountMethod = AccessTools.Method(invType, "GetAmount", new[] { typeof(int) });
+                    if (getAmountMethod != null)
+                    {
+                        _skipVaultInGetAmount = true;
+                        try
+                        {
+                            countBefore = (int)getAmountMethod.Invoke(__instance, new object[] { itemId });
+                            Plugin.Log?.LogInfo($"[DEBUG] OnInventoryAddItemWithNotify - Inventory count BEFORE removal: {countBefore} of item {itemId} (raw, no vault)");
+                        }
+                        finally
+                        {
+                            _skipVaultInGetAmount = false;
+                        }
+                    }
+
                     var removeMethod = AccessTools.Method(invType, "RemoveItem", new[] { typeof(int), typeof(int), typeof(int) });
                     if (removeMethod != null)
                     {
+                        Plugin.Log?.LogInfo($"[DEBUG] OnInventoryAddItemWithNotify - Calling RemoveItem({itemId}, {amount}, -1)...");
                         removeMethod.Invoke(__instance, new object[] { itemId, amount, -1 });
+                        Plugin.Log?.LogInfo($"[DEBUG] OnInventoryAddItemWithNotify - RemoveItem completed");
+                    }
+
+                    // Get inventory count AFTER removal to verify it worked (raw, without vault additions)
+                    int countAfter = -1;
+                    if (getAmountMethod != null)
+                    {
+                        _skipVaultInGetAmount = true;
+                        try
+                        {
+                            countAfter = (int)getAmountMethod.Invoke(__instance, new object[] { itemId });
+                            Plugin.Log?.LogInfo($"[DEBUG] OnInventoryAddItemWithNotify - Inventory count AFTER removal: {countAfter} of item {itemId} (raw, no vault)");
+                        }
+                        finally
+                        {
+                            _skipVaultInGetAmount = false;
+                        }
+
+                        if (countBefore >= 0 && countAfter >= 0)
+                        {
+                            int removed = countBefore - countAfter;
+                            Plugin.Log?.LogInfo($"[DEBUG] OnInventoryAddItemWithNotify - Items actually removed: {removed} (expected: {amount})");
+
+                            if (removed == 0)
+                            {
+                                Plugin.Log?.LogWarning($"[DEBUG] OnInventoryAddItemWithNotify - WARNING: No items were removed from inventory!");
+                            }
+                        }
                     }
 
                     AddCurrencyToVault(vaultManager, currencyId, amount);
+                    MarkAsDeposited(itemId);
                     Plugin.Log?.LogInfo($"Auto-deposited {amount} of item {itemId} as {currencyId}");
                 }
                 finally
                 {
-                    _isProcessingAutoDeposit = false;
+                    StopProcessingAutoDeposit(itemId);
                 }
             }
             catch (Exception ex)
             {
-                _isProcessingAutoDeposit = false;
+                StopProcessingAutoDeposit(itemId);
                 Plugin.Log?.LogError($"Error in OnInventoryAddItemWithNotify: {ex.Message}\n{ex.StackTrace}");
             }
         }
 
         /// <summary>
-        /// Flag to prevent recursive auto-deposit when we're adding items back to inventory during withdraw
+        /// Set of item IDs currently being processed for auto-deposit.
+        /// Using a set instead of a boolean flag allows concurrent processing of different item types.
         /// </summary>
-        private static bool _isProcessingAutoDeposit = false;
+        private static HashSet<int> _processingAutoDepositItems = new HashSet<int>();
 
         /// <summary>
-        /// POSTFIX patch for Inventory.AddItem(Item, int, int, bool, bool, bool).
+        /// Queue of pending deposits. Items are added here and processed after a short delay
+        /// to allow multiple stacks picked up simultaneously to be batched together.
+        /// Key: itemId, Value: (totalAmount, lastAddedTime)
+        /// </summary>
+        private static Dictionary<int, (int amount, DateTime addedTime)> _pendingDeposits = new Dictionary<int, (int, DateTime)>();
+
+        /// <summary>
+        /// Lock object for thread-safe access to pending deposits
+        /// </summary>
+        private static readonly object _pendingDepositsLock = new object();
+
+        /// <summary>
+        /// Delay (in milliseconds) before processing pending deposits.
+        /// This allows multiple stacks picked up at the same time to be batched.
+        /// </summary>
+        private const int DEPOSIT_BATCH_DELAY_MS = 100;
+
+        /// <summary>
+        /// Tracks items currently being processed to prevent re-entry
+        /// </summary>
+        private static HashSet<int> _currentlyProcessingDeposits = new HashSet<int>();
+
+        /// <summary>
+        /// Tracks recently deposited items with timestamps to prevent duplicate deposits
+        /// from multiple patched methods firing for the same pickup event.
+        /// Key: itemId, Value: DateTime of last deposit
+        /// </summary>
+        private static Dictionary<int, DateTime> _recentlyDepositedItems = new Dictionary<int, DateTime>();
+
+        /// <summary>
+        /// Time window (in milliseconds) to consider a deposit as "recent" and skip duplicate processing.
+        /// This should be long enough to cover multiple postfix methods firing for the same pickup event.
+        /// </summary>
+        private const int RECENT_DEPOSIT_WINDOW_MS = 500;
+
+        /// <summary>
+        /// Check if a specific item is currently being processed for auto-deposit
+        /// </summary>
+        private static bool IsProcessingAutoDeposit(int itemId)
+        {
+            return _processingAutoDepositItems.Contains(itemId);
+        }
+
+        /// <summary>
+        /// Check if an item was recently deposited (within RECENT_DEPOSIT_WINDOW_MS)
+        /// </summary>
+        private static bool WasRecentlyDeposited(int itemId)
+        {
+            if (_recentlyDepositedItems.TryGetValue(itemId, out DateTime lastDeposit))
+            {
+                double elapsed = (DateTime.Now - lastDeposit).TotalMilliseconds;
+                Plugin.Log?.LogInfo($"[DEBUG] WasRecentlyDeposited check for item {itemId}: elapsed={elapsed:F0}ms, window={RECENT_DEPOSIT_WINDOW_MS}ms");
+                if (elapsed < RECENT_DEPOSIT_WINDOW_MS)
+                {
+                    Plugin.Log?.LogInfo($"Item {itemId} was recently deposited {elapsed:F0}ms ago, skipping duplicate");
+                    return true;
+                }
+            }
+            else
+            {
+                Plugin.Log?.LogInfo($"[DEBUG] WasRecentlyDeposited check for item {itemId}: NOT in recently deposited list");
+            }
+            return false;
+        }
+
+        /// <summary>
+        /// Mark an item as recently deposited
+        /// </summary>
+        private static void MarkAsDeposited(int itemId)
+        {
+            _recentlyDepositedItems[itemId] = DateTime.Now;
+        }
+
+        /// <summary>
+        /// Mark an item as being processed for auto-deposit
+        /// </summary>
+        private static void StartProcessingAutoDeposit(int itemId)
+        {
+            _processingAutoDepositItems.Add(itemId);
+        }
+
+        /// <summary>
+        /// Mark an item as no longer being processed for auto-deposit
+        /// </summary>
+        private static void StopProcessingAutoDeposit(int itemId)
+        {
+            _processingAutoDepositItems.Remove(itemId);
+        }
+
+        /// <summary>
+        /// PREFIX patch for Inventory.AddItem(Item, int, int, bool, bool, bool).
         /// This is the actual method called by Wish.Pickup when items are collected from the ground.
         /// Signature: AddItem(Item item, int amount, int slot, bool sendNotification, bool specialItem, bool superSecretCheck)
-        /// We use POSTFIX so the original method runs first (showing the notification), then we move the item to vault.
+        /// We use PREFIX to intercept BEFORE the item enters inventory, deposit directly to vault, and skip the original method.
         /// </summary>
-        public static void OnInventoryAddItemObjectPostfix(object __instance, object item, int amount, int slot, bool sendNotification, bool specialItem, bool superSecretCheck)
+        /// <returns>False to skip original method (item goes directly to vault), True to let original run normally</returns>
+        public static bool OnInventoryAddItemObjectPrefix(object __instance, object item, int amount, int slot, bool sendNotification, bool specialItem, bool superSecretCheck)
+        {
+            int itemId = GetItemId(item);
+
+            try
+            {
+                // Skip if we're currently processing a withdrawal for this item
+                if (IsWithdrawing) return true;
+                if (IsItemBeingWithdrawn(itemId)) return true;
+
+                // Skip if not registered for auto-deposit
+                if (!ShouldAutoDeposit(itemId)) return true;
+
+                string currencyId = GetCurrencyForItem(itemId);
+                if (string.IsNullOrEmpty(currencyId)) return true;
+
+                var vaultManager = Plugin.GetVaultManager();
+                if (vaultManager == null) return true;
+
+                Plugin.Log?.LogInfo($"[PREFIX] Intercepting {amount} of item {itemId} - depositing directly to vault as {currencyId}");
+
+                // Mark as deposited IMMEDIATELY to prevent POSTFIX from also depositing
+                MarkAsDeposited(itemId);
+
+                // Add directly to vault - item never enters inventory
+                AddCurrencyToVault(vaultManager, currencyId, amount);
+                Plugin.Log?.LogInfo($"[PREFIX] Deposited {amount} of item {itemId} to vault");
+
+                // Show notification using the game's native notification system
+                // We pass the item object directly to trigger the same notification the player would see
+                if (sendNotification)
+                {
+                    TriggerPickupNotification(item, amount);
+                }
+
+                // Return FALSE to skip the original AddItem method - item goes directly to vault
+                return false;
+            }
+            catch (Exception ex)
+            {
+                Plugin.Log?.LogError($"Error in OnInventoryAddItemObjectPrefix: {ex.Message}");
+                // On error, let the original method run
+                return true;
+            }
+        }
+
+        /// <summary>
+        /// Cached reference to NotificationStack instance
+        /// </summary>
+        private static object _notificationStackInstance;
+        private static MethodInfo _addNotificationMethod;
+        private static bool _notificationSystemInitialized;
+
+        /// <summary>
+        /// Trigger the game's native pickup notification for an item.
+        /// Uses NotificationStack.SendNotification(string text, int id, int amount, bool unique, bool error)
+        /// </summary>
+        private static void TriggerPickupNotification(object item, int amount)
         {
             try
             {
-                // Prevent recursive calls when we're doing withdrawals or other operations
-                if (_isProcessingAutoDeposit) return;
-
-                // Get the item ID from the Item object
                 int itemId = GetItemId(item);
+
+                // Initialize notification system on first use
+                if (!_notificationSystemInitialized)
+                {
+                    InitializeNotificationSystem();
+                    _notificationSystemInitialized = true;
+                }
+
+                // Try to get instance at runtime if we don't have it yet
+                if (_notificationStackInstance == null && _addNotificationMethod != null)
+                {
+                    TryGetNotificationStackInstance();
+                }
+
+                // Use SendNotification(string text, int id, int amount, bool unique, bool error)
+                if (_addNotificationMethod != null && _notificationStackInstance != null)
+                {
+                    try
+                    {
+                        string itemName = GetItemDisplayName(itemId);
+                        // Parameters: text (item name), id (item ID), amount, unique (false = can stack), error (false = not an error)
+                        _addNotificationMethod.Invoke(_notificationStackInstance, new object[] { itemName, itemId, amount, false, false });
+                        Plugin.Log?.LogInfo($"[NOTIFY] Sent notification: {amount}x {itemName} (id={itemId})");
+                        return;
+                    }
+                    catch (Exception ex)
+                    {
+                        Plugin.Log?.LogWarning($"[NOTIFY] SendNotification failed: {ex.Message}");
+                    }
+                }
+
+                // Fallback: log only
+                string fallbackName = GetItemDisplayName(itemId);
+                Plugin.Log?.LogInfo($"[NOTIFY] Auto-deposited {amount}x {fallbackName} to vault (notification unavailable)");
+            }
+            catch (Exception ex)
+            {
+                Plugin.Log?.LogError($"[NOTIFY] Error triggering notification: {ex.Message}");
+            }
+        }
+
+        /// <summary>
+        /// Try to get the NotificationStack instance at runtime
+        /// </summary>
+        private static void TryGetNotificationStackInstance()
+        {
+            try
+            {
+                var notificationStackType = AccessTools.TypeByName("Wish.NotificationStack");
+                if (notificationStackType == null) return;
+
+                // Try SingletonBehaviour<NotificationStack>.Instance
+                var singletonType = AccessTools.TypeByName("Wish.SingletonBehaviour`1");
+                if (singletonType != null)
+                {
+                    var genericSingleton = singletonType.MakeGenericType(notificationStackType);
+                    var instanceProp = AccessTools.Property(genericSingleton, "Instance");
+                    if (instanceProp != null)
+                    {
+                        _notificationStackInstance = instanceProp.GetValue(null);
+                        if (_notificationStackInstance != null)
+                        {
+                            Plugin.Log?.LogInfo("[NOTIFY] Got NotificationStack instance at runtime via SingletonBehaviour");
+                            return;
+                        }
+                    }
+                }
+
+                // Try FindObjectOfType as fallback
+                var findMethod = typeof(UnityEngine.Object).GetMethod("FindObjectOfType", Type.EmptyTypes);
+                if (findMethod != null)
+                {
+                    var genericFind = findMethod.MakeGenericMethod(notificationStackType);
+                    _notificationStackInstance = genericFind.Invoke(null, null);
+                    if (_notificationStackInstance != null)
+                    {
+                        Plugin.Log?.LogInfo("[NOTIFY] Got NotificationStack instance at runtime via FindObjectOfType");
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                Plugin.Log?.LogWarning($"[NOTIFY] Failed to get NotificationStack instance: {ex.Message}");
+            }
+        }
+
+        /// <summary>
+        /// Initialize the notification system by finding the correct types and methods.
+        /// Sun Haven uses: NotificationStack.SendNotification(string text, int id, int amount, bool unique, bool error)
+        /// Access via SingletonBehaviour&lt;NotificationStack&gt;.Instance
+        /// </summary>
+        private static void InitializeNotificationSystem()
+        {
+            try
+            {
+                Plugin.Log?.LogInfo("[NOTIFY] Initializing notification system...");
+
+                // NotificationStack is accessed via SingletonBehaviour<NotificationStack>.Instance
+                // The method signature is: SendNotification(string text, int id, int amount, bool unique, bool error)
+                var notificationStackType = AccessTools.TypeByName("Wish.NotificationStack");
+                if (notificationStackType == null)
+                {
+                    Plugin.Log?.LogWarning("[NOTIFY] NotificationStack type not found");
+                    return;
+                }
+
+                Plugin.Log?.LogInfo($"[NOTIFY] Found NotificationStack type: {notificationStackType.FullName}");
+
+                // Try to get instance via SingletonBehaviour<NotificationStack>.Instance
+                var singletonType = AccessTools.TypeByName("Wish.SingletonBehaviour`1");
+                if (singletonType != null)
+                {
+                    var genericSingleton = singletonType.MakeGenericType(notificationStackType);
+                    var instanceProp = AccessTools.Property(genericSingleton, "Instance");
+                    if (instanceProp != null)
+                    {
+                        _notificationStackInstance = instanceProp.GetValue(null);
+                        Plugin.Log?.LogInfo($"[NOTIFY] Got NotificationStack via SingletonBehaviour: {(_notificationStackInstance != null ? "success" : "null")}");
+                    }
+                }
+
+                // Fallback: try direct Instance property
+                if (_notificationStackInstance == null)
+                {
+                    var directInstanceProp = AccessTools.Property(notificationStackType, "Instance");
+                    if (directInstanceProp != null)
+                    {
+                        _notificationStackInstance = directInstanceProp.GetValue(null);
+                        Plugin.Log?.LogInfo($"[NOTIFY] Got NotificationStack via direct Instance: {(_notificationStackInstance != null ? "success" : "null")}");
+                    }
+                }
+
+                // Fallback: try to find it via UnityEngine.Object.FindObjectOfType
+                if (_notificationStackInstance == null)
+                {
+                    var findMethod = typeof(UnityEngine.Object).GetMethod("FindObjectOfType", new Type[0]);
+                    if (findMethod != null)
+                    {
+                        var genericFind = findMethod.MakeGenericMethod(notificationStackType);
+                        _notificationStackInstance = genericFind.Invoke(null, null);
+                        Plugin.Log?.LogInfo($"[NOTIFY] Got NotificationStack via FindObjectOfType: {(_notificationStackInstance != null ? "success" : "null")}");
+                    }
+                }
+
+                if (_notificationStackInstance == null)
+                {
+                    Plugin.Log?.LogWarning("[NOTIFY] Could not get NotificationStack instance - will try at runtime");
+                }
+
+                // Find SendNotification method: SendNotification(string text, int id, int amount, bool unique, bool error)
+                _addNotificationMethod = AccessTools.Method(notificationStackType, "SendNotification",
+                    new[] { typeof(string), typeof(int), typeof(int), typeof(bool), typeof(bool) });
+
+                if (_addNotificationMethod != null)
+                {
+                    Plugin.Log?.LogInfo("[NOTIFY] Found SendNotification(string, int, int, bool, bool) method");
+                }
+                else
+                {
+                    Plugin.Log?.LogWarning("[NOTIFY] Could not find SendNotification method");
+                }
+            }
+            catch (Exception ex)
+            {
+                Plugin.Log?.LogError($"[NOTIFY] Error initializing notification system: {ex.Message}");
+            }
+        }
+
+        /// <summary>
+        /// POSTFIX patch for Inventory.AddItem(Item, int, int, bool, bool, bool).
+        /// This is kept as a backup/fallback in case the PREFIX doesn't fire or returns true.
+        /// NOTE: If PREFIX handled the deposit (returned false), this POSTFIX should NOT run because
+        /// the original method was skipped. However, we keep the WasRecentlyDeposited check as a safety measure.
+        /// Signature: AddItem(Item item, int amount, int slot, bool sendNotification, bool specialItem, bool superSecretCheck)
+        /// </summary>
+        public static void OnInventoryAddItemObjectPostfix(object __instance, object item, int amount, int slot, bool sendNotification, bool specialItem, bool superSecretCheck)
+        {
+            // Get the item ID from the Item object first so we can use item-specific tracking
+            int itemId = GetItemId(item);
+
+            try
+            {
+                // IMPORTANT: If PREFIX already handled this item and returned false, this POSTFIX should not run.
+                // But if it somehow does run (e.g., PREFIX returned true), check if it was recently deposited.
+                if (WasRecentlyDeposited(itemId))
+                {
+                    Plugin.Log?.LogInfo($"[POSTFIX] Item {itemId} was recently deposited by PREFIX, skipping");
+                    return;
+                }
+
+                // Prevent recursive calls when we're doing withdrawals or other operations for THIS specific item
+                if (IsProcessingAutoDeposit(itemId)) return;
+
                 Plugin.Log?.LogInfo($"OnInventoryAddItemObjectPostfix called: itemId={itemId}, amount={amount}, sendNotification={sendNotification}");
 
                 if (!ShouldAutoDeposit(itemId))
@@ -431,21 +923,57 @@ namespace TheVault.Patches
 
                 Plugin.Log?.LogInfo($"Auto-depositing {amount} of item {itemId} as {currencyId} (via Inventory.AddItem POSTFIX)");
 
-                _isProcessingAutoDeposit = true;
+                // Mark as deposited IMMEDIATELY before any processing to prevent duplicate calls
+                // that happen on the same frame/call stack
+                MarkAsDeposited(itemId);
+
+                StartProcessingAutoDeposit(itemId);
                 try
                 {
                     // The item is now in inventory (and notification was shown if sendNotification was true)
                     // Now remove it from inventory and add to vault
 
-                    // Remove from inventory using RemoveAll which is simpler and avoids parameter issues
-                    var invType = __instance.GetType();
+                    // IMPORTANT: We must use the PLAYER's inventory, not __instance which might be
+                    // a different inventory (chest, shop, etc.). The postfix fires on any Inventory.AddItem call.
+                    object playerInventory = GetPlayerInventory();
+                    if (playerInventory == null)
+                    {
+                        Plugin.Log?.LogWarning("[DEBUG] Could not get player inventory - using __instance as fallback");
+                        playerInventory = __instance;
+                    }
+                    else
+                    {
+                        Plugin.Log?.LogInfo($"[DEBUG] Using player inventory (type: {playerInventory.GetType().Name}) instead of __instance (type: {__instance.GetType().Name})");
+                    }
 
+                    var invType = playerInventory.GetType();
+
+                    // Get inventory count BEFORE removal for logging
+                    // Use _skipVaultInGetAmount to get raw inventory count without vault additions
+                    int countBefore = -1;
+                    var getAmountMethod = AccessTools.Method(invType, "GetAmount", new[] { typeof(int) });
+                    if (getAmountMethod != null)
+                    {
+                        _skipVaultInGetAmount = true;
+                        try
+                        {
+                            countBefore = (int)getAmountMethod.Invoke(playerInventory, new object[] { itemId });
+                            Plugin.Log?.LogInfo($"[DEBUG] Player inventory count BEFORE removal: {countBefore} of item {itemId} (raw, no vault)");
+                        }
+                        finally
+                        {
+                            _skipVaultInGetAmount = false;
+                        }
+                    }
+
+                    // Remove from player's inventory using RemoveAll which is simpler and avoids parameter issues
                     // Try RemoveAll(int id) first - this removes all of a specific item type
                     var removeAllMethod = AccessTools.Method(invType, "RemoveAll", new[] { typeof(int) });
                     if (removeAllMethod != null)
                     {
-                        removeAllMethod.Invoke(__instance, new object[] { itemId });
-                        Plugin.Log?.LogInfo($"Removed all of item {itemId} from inventory via RemoveAll");
+                        Plugin.Log?.LogInfo($"[DEBUG] Calling RemoveAll({itemId}) on player inventory...");
+                        removeAllMethod.Invoke(playerInventory, new object[] { itemId });
+                        Plugin.Log?.LogInfo($"[DEBUG] RemoveAll({itemId}) completed on player inventory");
                     }
                     else
                     {
@@ -455,8 +983,9 @@ namespace TheVault.Patches
                         {
                             try
                             {
-                                removeMethod.Invoke(__instance, new object[] { itemId, amount, -1 });
-                                Plugin.Log?.LogInfo($"Removed {amount} of item {itemId} from inventory via RemoveItem");
+                                Plugin.Log?.LogInfo($"[DEBUG] Calling RemoveItem({itemId}, {amount}, -1) on player inventory...");
+                                removeMethod.Invoke(playerInventory, new object[] { itemId, amount, -1 });
+                                Plugin.Log?.LogInfo($"[DEBUG] RemoveItem completed on player inventory");
                             }
                             catch (Exception removeEx)
                             {
@@ -473,21 +1002,134 @@ namespace TheVault.Patches
                         }
                     }
 
-                    // Add to vault
+                    // Get inventory count AFTER removal to verify it worked
+                    int countAfter = -1;
+                    if (getAmountMethod != null)
+                    {
+                        _skipVaultInGetAmount = true;
+                        try
+                        {
+                            countAfter = (int)getAmountMethod.Invoke(playerInventory, new object[] { itemId });
+                            Plugin.Log?.LogInfo($"[DEBUG] Player inventory count AFTER removal: {countAfter} of item {itemId} (raw, no vault)");
+                        }
+                        finally
+                        {
+                            _skipVaultInGetAmount = false;
+                        }
+
+                        // Check if removal actually happened
+                        if (countBefore >= 0 && countAfter >= 0)
+                        {
+                            int removed = countBefore - countAfter;
+                            Plugin.Log?.LogInfo($"[DEBUG] Items actually removed from player inventory: {removed} (expected: {amount})");
+
+                            if (removed == 0)
+                            {
+                                Plugin.Log?.LogWarning($"[DEBUG] WARNING: No items were removed from player inventory! RemoveAll/RemoveItem may not have worked.");
+                            }
+                            else if (removed != amount && removed != countBefore)
+                            {
+                                Plugin.Log?.LogWarning($"[DEBUG] WARNING: Removed {removed} items but expected {amount}");
+                            }
+                        }
+                    }
+
+                    // Add to vault (already marked as deposited at the start of processing)
                     AddCurrencyToVault(vaultManager, currencyId, amount);
                     Plugin.Log?.LogInfo($"Auto-deposited {amount} of item {itemId} as {currencyId} to vault");
                 }
                 finally
                 {
-                    _isProcessingAutoDeposit = false;
+                    StopProcessingAutoDeposit(itemId);
                 }
             }
             catch (Exception ex)
             {
-                _isProcessingAutoDeposit = false;
+                StopProcessingAutoDeposit(itemId);
                 // Get inner exception for better error message
                 var innerEx = ex.InnerException ?? ex;
                 Plugin.Log?.LogError($"Error in OnInventoryAddItemObjectPostfix: {innerEx.Message}\n{innerEx.StackTrace}");
+            }
+        }
+
+        /// <summary>
+        /// Get the player's inventory object. This ensures we always operate on the player's
+        /// actual inventory rather than some other inventory instance (chest, shop, etc.)
+        /// </summary>
+        private static object GetPlayerInventory()
+        {
+            try
+            {
+                // Get LocalPlayer via reflection
+                var playerType = typeof(Wish.Player);
+                var localPlayerProperty = AccessTools.Property(playerType, "LocalPlayer");
+                if (localPlayerProperty == null)
+                {
+                    // Try Instance as fallback
+                    localPlayerProperty = AccessTools.Property(playerType, "Instance");
+                }
+                if (localPlayerProperty == null)
+                {
+                    Plugin.Log?.LogWarning("[DEBUG] GetPlayerInventory: Could not find LocalPlayer or Instance property");
+                    return null;
+                }
+
+                var player = localPlayerProperty.GetValue(null);
+                if (player == null)
+                {
+                    Plugin.Log?.LogWarning("[DEBUG] GetPlayerInventory: LocalPlayer is null");
+                    return null;
+                }
+
+                // Try various property/field names for the inventory
+                var inventoryProperty = AccessTools.Property(playerType, "Inventory");
+                if (inventoryProperty != null)
+                {
+                    var inv = inventoryProperty.GetValue(player);
+                    if (inv != null)
+                    {
+                        Plugin.Log?.LogInfo($"[DEBUG] GetPlayerInventory: Found via Inventory property");
+                        return inv;
+                    }
+                }
+
+                var playerInventoryProperty = AccessTools.Property(playerType, "PlayerInventory");
+                if (playerInventoryProperty != null)
+                {
+                    var inv = playerInventoryProperty.GetValue(player);
+                    if (inv != null)
+                    {
+                        Plugin.Log?.LogInfo($"[DEBUG] GetPlayerInventory: Found via PlayerInventory property");
+                        return inv;
+                    }
+                }
+
+                // Try fields
+                var inventoryField = AccessTools.Field(playerType, "inventory");
+                if (inventoryField == null)
+                    inventoryField = AccessTools.Field(playerType, "_inventory");
+                if (inventoryField == null)
+                    inventoryField = AccessTools.Field(playerType, "playerInventory");
+                if (inventoryField == null)
+                    inventoryField = AccessTools.Field(playerType, "_playerInventory");
+
+                if (inventoryField != null)
+                {
+                    var inv = inventoryField.GetValue(player);
+                    if (inv != null)
+                    {
+                        Plugin.Log?.LogInfo($"[DEBUG] GetPlayerInventory: Found via {inventoryField.Name} field");
+                        return inv;
+                    }
+                }
+
+                Plugin.Log?.LogWarning("[DEBUG] GetPlayerInventory: Could not find inventory on player");
+                return null;
+            }
+            catch (Exception ex)
+            {
+                Plugin.Log?.LogError($"[DEBUG] GetPlayerInventory error: {ex.Message}");
+                return null;
             }
         }
 
@@ -786,6 +1428,10 @@ namespace TheVault.Patches
             {
                 vaultManager.AddTickets(currencyId.Substring("ticket_".Length), amount);
             }
+            else if (currencyId.StartsWith("pirate_"))
+            {
+                vaultManager.AddTickets(currencyId.Substring("pirate_".Length), amount);
+            }
             else if (currencyId.StartsWith("orb_"))
             {
                 vaultManager.AddOrbs(currencyId.Substring("orb_".Length), amount);
@@ -813,14 +1459,10 @@ namespace TheVault.Patches
             else if (currencyId.StartsWith("key_"))
             {
                 return vaultManager.RemoveKeys(currencyId.Substring("key_".Length), amount);
-            }
-            else if (currencyId.StartsWith("ticket_"))
+            }            
+            else if (currencyId.StartsWith("pirate_"))
             {
-                return vaultManager.RemoveTickets(currencyId.Substring("ticket_".Length), amount);
-            }
-            else if (currencyId.StartsWith("orb_"))
-            {
-                return vaultManager.RemoveOrbs(currencyId.Substring("orb_".Length), amount);
+                return vaultManager.RemoveTickets(currencyId.Substring("pirate_".Length), amount);
             }
             else if (currencyId.StartsWith("custom_"))
             {
@@ -865,6 +1507,10 @@ namespace TheVault.Patches
             else if (currencyId.StartsWith("ticket_"))
             {
                 return vaultManager.GetTickets(currencyId.Substring("ticket_".Length));
+            }
+            else if (currencyId.StartsWith("pirate_"))
+            {
+                return vaultManager.GetTickets(currencyId.Substring("pirate_".Length));
             }
             else if (currencyId.StartsWith("orb_"))
             {
@@ -965,8 +1611,8 @@ namespace TheVault.Patches
             __state = 0;
             try
             {
-                // Skip vault logic when we're doing auto-deposit removal
-                if (_isProcessingAutoDeposit) return;
+                // Skip vault logic when we're doing auto-deposit removal for this specific item
+                if (IsProcessingAutoDeposit(id)) return;
 
                 if (!IsVaultCurrency(id)) return;
 
@@ -1003,8 +1649,8 @@ namespace TheVault.Patches
         {
             try
             {
-                // Skip vault logic when we're doing auto-deposit removal
-                if (_isProcessingAutoDeposit) return;
+                // Skip vault logic when we're doing auto-deposit removal for this specific item
+                if (IsProcessingAutoDeposit(id)) return;
 
                 if (!IsVaultCurrency(id)) return;
 

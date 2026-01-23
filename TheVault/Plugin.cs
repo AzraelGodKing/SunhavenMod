@@ -133,6 +133,10 @@ namespace TheVault
             ItemPatches.RegisterItemCurrencyMapping(1256, "key_glorite", autoDeposit: true);
             ItemPatches.RegisterItemCurrencyMapping(1257, "key_kingslostmine", autoDeposit: true);
 
+            // Pirate event currencies - auto-deposit enabled
+            ItemPatches.RegisterItemCurrencyMapping(60014, "pirate_doubloon", autoDeposit: true);
+            ItemPatches.RegisterItemCurrencyMapping(60013, "pirate_blackbottlecap", autoDeposit: true);
+
             Log.LogInfo("Registered item-to-currency mappings with auto-deposit enabled");
         }
 
@@ -411,11 +415,20 @@ namespace TheVault
 
                     if (addItemMethod != null)
                     {
+                        // Use PREFIX to intercept before item enters inventory - this is the main fix
+                        var prefix = AccessTools.Method(typeof(ItemPatches), "OnInventoryAddItemObjectPrefix");
                         var postfix = AccessTools.Method(typeof(ItemPatches), "OnInventoryAddItemObjectPostfix");
-                        if (postfix != null)
+                        if (prefix != null)
+                        {
+                            _harmony.Patch(addItemMethod,
+                                prefix: new HarmonyMethod(prefix),
+                                postfix: postfix != null ? new HarmonyMethod(postfix) : null);
+                            Log.LogInfo($"Successfully patched {inventoryType.Name}.AddItem(Item,int,int,bool,bool,bool) with PREFIX+POSTFIX for auto-deposit");
+                        }
+                        else if (postfix != null)
                         {
                             _harmony.Patch(addItemMethod, postfix: new HarmonyMethod(postfix));
-                            Log.LogInfo($"Successfully patched {inventoryType.Name}.AddItem(Item,int,int,bool,bool,bool) with POSTFIX for auto-deposit");
+                            Log.LogInfo($"Successfully patched {inventoryType.Name}.AddItem(Item,int,int,bool,bool,bool) with POSTFIX only for auto-deposit");
                         }
                     }
                     else
@@ -433,8 +446,17 @@ namespace TheVault
                                     string paramStr = string.Join(", ", System.Linq.Enumerable.Select(parameters, p => $"{p.ParameterType.Name} {p.Name}"));
                                     Log.LogInfo($"Found alternative AddItem: {m.Name}({paramStr})");
 
+                                    var prefix = AccessTools.Method(typeof(ItemPatches), "OnInventoryAddItemObjectPrefix");
                                     var postfix = AccessTools.Method(typeof(ItemPatches), "OnInventoryAddItemObjectPostfix");
-                                    if (postfix != null)
+                                    if (prefix != null)
+                                    {
+                                        _harmony.Patch(m,
+                                            prefix: new HarmonyMethod(prefix),
+                                            postfix: postfix != null ? new HarmonyMethod(postfix) : null);
+                                        Log.LogInfo($"Successfully patched {inventoryType.Name}.{m.Name} with PREFIX+POSTFIX for auto-deposit");
+                                        break;
+                                    }
+                                    else if (postfix != null)
                                     {
                                         _harmony.Patch(m, postfix: new HarmonyMethod(postfix));
                                         Log.LogInfo($"Successfully patched {inventoryType.Name}.{m.Name} with POSTFIX for auto-deposit");
