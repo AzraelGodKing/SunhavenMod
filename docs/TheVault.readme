@@ -1,0 +1,53 @@
+# The Vault - Sun Haven Mod
+
+A quality-of-life mod that automatically manages your seasonal tokens, community tokens, and keys.
+
+## What It Does
+
+- **Auto-Deposit**: Tokens and keys go directly to your vault when picked up
+- **Seamless Spending**: Shops and locked doors use vault currencies automatically - no withdrawing needed
+- **Per-Character Storage**: Each character has their own separate vault
+- **Auto-Save**: Vault saves every 5 minutes and when the game saves
+
+## Supported Currencies
+
+**Seasonal Tokens**: Spring, Summer, Fall, Winter
+**Community Tokens**: Community Token
+**Keys**: Copper, Iron, Adamant, Mithril, Sunite, Glorite, King's Lost Mine
+**Pirate Currencies**: Doubloon, Black Bottle Cap
+
+## Controls
+
+- `Ctrl+V` - Open/close vault UI
+- `Escape` - Close vault UI
+- `-1/-5/-10 buttons` - Quick withdraw to inventory
+- `ON/--` toggle - Enable/disable auto-deposit per currency
+
+## Installation
+
+1. Install BepInEx 5.x for Unity games
+2. Download TheVault.dll from Nexus Mods
+3. Place in `BepInEx/plugins/TheVault/`
+4. Launch Sun Haven
+
+## Configuration
+
+Edit `BepInEx/config/com.azraelgodking.thevault.cfg`:
+
+| Setting | Default | Description |
+|---------|---------|-------------|
+| ToggleKey | V | Key to open vault |
+| RequireCtrlModifier | true | Require Ctrl when pressing toggle |
+| EnableAutoSave | true | Auto-save vault data |
+| AutoSaveInterval | 300 | Save interval in seconds |
+
+## How It Works
+
+1. When you pick up a supported item, it enters your inventory briefly then moves to the vault
+2. Shops check your vault balance when you try to buy with tokens/keys
+3. Locked doors/chests check your vault for required keys
+4. Vault deducts automatically on purchase/unlock
+
+---
+The Vault - A Sun Haven Mod by AzraelGodKing
+https://www.nexusmods.com/profile/AzraelGodKing/mods
