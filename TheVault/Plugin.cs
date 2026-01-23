@@ -66,6 +66,9 @@ namespace TheVault
                 _vaultHUD.SetEnabled(_enableHUD.Value);
                 _vaultHUD.SetPosition(ParseHUDPosition(_hudPosition.Value));
 
+                // Initialize icon cache for UI icons
+                IconCache.Initialize();
+
                 // Create Debug Mode (only activates for authorized users)
                 Log.LogInfo("Adding DebugMode component...");
                 _debugMode = uiObject.AddComponent<DebugMode>();
@@ -705,6 +708,6 @@ namespace TheVault
     {
         public const string PLUGIN_GUID = "com.azraelgodking.thevault";
         public const string PLUGIN_NAME = "The Vault";
-        public const string PLUGIN_VERSION = "1.0.4";
+        public const string PLUGIN_VERSION = "1.0.5";
     }
 }

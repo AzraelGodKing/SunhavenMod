@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using TheVault.Patches;
 using TheVault.Vault;
 using UnityEngine;
 
@@ -31,12 +32,16 @@ namespace TheVault.UI
         private readonly Color _goldColor = new Color(0.95f, 0.8f, 0.3f);
         private readonly Color _accentColor = new Color(0.4f, 0.7f, 0.95f);
 
-        // HUD dimensions
-        private const float HUD_HEIGHT = 44f;
-        private const float PADDING = 16f;
-        private const float ITEM_SPACING = 20f;
-        private const float CATEGORY_SPACING = 32f;
-        private const float MIN_HUD_WIDTH = 200f;
+        // HUD dimensions - matches game's top bar height
+        private const float HUD_HEIGHT = 28f;
+        private const float PADDING = 8f;
+        private const float ITEM_SPACING = 12f;
+        private const float GROUP_SPACING = 16f;
+        private const float MIN_HUD_WIDTH = 100f;
+
+        // Separator styling
+        private Texture2D _separatorTexture;
+        private readonly Color _separatorColor = new Color(0.4f, 0.4f, 0.5f, 0.5f);
 
         // Cache for currency display
         private Dictionary<string, int> _cachedCurrencies = new Dictionary<string, int>();
@@ -89,38 +94,39 @@ namespace TheVault.UI
             if (_stylesInitialized) return;
 
             _hudBackground = MakeTex(2, 2, new Color(_bgColor.r, _bgColor.g, _bgColor.b, _opacity));
+            _separatorTexture = MakeTex(1, 1, _separatorColor);
 
             _hudBackgroundStyle = new GUIStyle()
             {
                 normal = { background = _hudBackground },
-                padding = new RectOffset((int)PADDING, (int)PADDING, 8, 8)
+                padding = new RectOffset((int)PADDING, (int)PADDING, 4, 4)
             };
 
             _currencyLabelStyle = new GUIStyle(GUI.skin.label)
             {
-                fontSize = 16,
+                fontSize = 11,
                 fontStyle = FontStyle.Normal,
                 alignment = TextAnchor.MiddleLeft,
                 normal = { textColor = _textColor },
-                padding = new RectOffset(0, 6, 0, 0)
+                padding = new RectOffset(0, 3, 0, 0)
             };
 
             _currencyValueStyle = new GUIStyle(GUI.skin.label)
             {
-                fontSize = 18,
+                fontSize = 12,
                 fontStyle = FontStyle.Bold,
                 alignment = TextAnchor.MiddleLeft,
                 normal = { textColor = _goldColor },
-                padding = new RectOffset(0, 0, 0, 0)
+                padding = new RectOffset(1, 0, 0, 0)
             };
 
             _categoryLabelStyle = new GUIStyle(GUI.skin.label)
             {
-                fontSize = 15,
+                fontSize = 10,
                 fontStyle = FontStyle.Bold,
                 alignment = TextAnchor.MiddleLeft,
                 normal = { textColor = _accentColor },
-                padding = new RectOffset(0, 8, 0, 0)
+                padding = new RectOffset(0, 4, 0, 0)
             };
 
             _stylesInitialized = true;
@@ -149,7 +155,8 @@ namespace TheVault.UI
 
         private void OnGUI()
         {
-            if (!_isEnabled || _vaultManager == null) return;
+            // Don't show HUD until vault is loaded for the current character
+            if (!_isEnabled || _vaultManager == null || !PlayerPatches.IsVaultLoaded) return;
 
             // Don't show HUD if main vault window is open
             var vaultUI = Plugin.GetVaultUI();
@@ -169,60 +176,76 @@ namespace TheVault.UI
             // Draw background
             GUI.Box(hudRect, "", _hudBackgroundStyle);
 
-            // Draw content
-            GUILayout.BeginArea(new Rect(hudRect.x + PADDING, hudRect.y + 6, hudRect.width - PADDING * 2, hudRect.height - 12));
+            // Draw content - vertically centered
+            GUILayout.BeginArea(new Rect(hudRect.x + PADDING, hudRect.y + 3, hudRect.width - PADDING * 2, hudRect.height - 6));
             GUILayout.BeginHorizontal();
 
-            var seasonal = GetSeasonalTokens();
-            var keys = GetKeys();
-            var special = GetSpecialCurrencies();
+            var seasonal = GetSeasonalTokens();  // Always has items (shows 0 values)
+            var keys = GetKeys();                // Always has items (shows 0 values)
+            var special = GetSpecialCurrencies(); // Always has items (shows 0 values)
 
-            if (seasonal.Count == 0 && keys.Count == 0 && special.Count == 0)
-            {
-                // Show placeholder when vault is empty
-                GUILayout.Label("The Vault: Empty", _categoryLabelStyle);
-            }
-            else
-            {
-                DrawCurrencyGroup("Tokens", seasonal);
-                DrawCurrencyGroup("Keys", keys);
-                DrawCurrencyGroup("Special", special);
-            }
+            // All groups are always shown
+            DrawCurrencyItems(seasonal);
+            DrawSeparator();
+            DrawCurrencyItems(keys);
+            DrawSeparator();
+            DrawCurrencyItems(special);
 
             GUILayout.EndHorizontal();
             GUILayout.EndArea();
+        }
+
+        private void DrawSeparator()
+        {
+            GUILayout.Space(GROUP_SPACING / 2 - 1);
+            GUILayout.Box("", GUIStyle.none, GUILayout.Width(1), GUILayout.Height(HUD_ICON_SIZE));
+            // Draw a vertical line
+            Rect lastRect = GUILayoutUtility.GetLastRect();
+            GUI.DrawTexture(new Rect(lastRect.x, lastRect.y + 2, 1, HUD_ICON_SIZE - 4), _separatorTexture);
+            GUILayout.Space(GROUP_SPACING / 2 - 1);
         }
 
         private float CalculateHUDWidth()
         {
             float width = PADDING * 2;
 
-            var seasonal = GetSeasonalTokens();
-            var keys = GetKeys();
-            var special = GetSpecialCurrencies();
+            var seasonal = GetSeasonalTokens();  // Always has items
+            var keys = GetKeys();                // Always has items
+            var special = GetSpecialCurrencies(); // Always has items
 
-            if (seasonal.Count > 0)
-                width += CalculateGroupWidth("Tokens", seasonal) + CATEGORY_SPACING;
-            if (keys.Count > 0)
-                width += CalculateGroupWidth("Keys", keys) + CATEGORY_SPACING;
-            if (special.Count > 0)
-                width += CalculateGroupWidth("Special", special);
+            // All groups are always shown
+            width += CalculateGroupWidth(seasonal);
+            width += CalculateGroupWidth(keys);
+            width += CalculateGroupWidth(special);
+
+            // Add separator spacing between all 3 groups
+            width += 2 * GROUP_SPACING;
+
+            // Add extra padding to prevent cutoff on the right side
+            width += 24;
 
             return width;
         }
 
-        private float CalculateGroupWidth(string label, Dictionary<string, int> items)
+        // Icon size for HUD display
+        private const float HUD_ICON_SIZE = 18f;
+
+        private float CalculateGroupWidth(Dictionary<string, int> items)
         {
             if (items.Count == 0) return 0;
 
-            float width = label.Length * 9 + 12; // Category label (larger font)
-
+            float width = 0;
             foreach (var kvp in items)
             {
-                string shortName = GetShortName(kvp.Key);
-                string value = kvp.Value.ToString();
-                width += shortName.Length * 8 + value.Length * 10 + ITEM_SPACING;
+                string value = FormatNumber(kvp.Value);
+                // Icon + small gap + value text + item spacing
+                // Use 9px per character for smaller font
+                width += HUD_ICON_SIZE + 3 + value.Length * 9 + ITEM_SPACING;
             }
+
+            // Remove trailing item spacing
+            if (items.Count > 0)
+                width -= ITEM_SPACING;
 
             return width;
         }
@@ -234,58 +257,73 @@ namespace TheVault.UI
             switch (_position)
             {
                 case HUDPosition.TopLeft:
-                    x = 10;
-                    y = 10;
+                    x = 0;
+                    y = 0;
                     break;
                 case HUDPosition.TopCenter:
                     x = (Screen.width - width) / 2;
-                    y = 10;
+                    y = 0;
                     break;
                 case HUDPosition.TopRight:
-                    x = Screen.width - width - 10;
-                    y = 10;
+                    x = Screen.width - width;
+                    y = 0;
                     break;
                 case HUDPosition.BottomLeft:
-                    x = 10;
-                    y = Screen.height - HUD_HEIGHT - 10;
+                    x = 0;
+                    y = Screen.height - HUD_HEIGHT;
                     break;
                 case HUDPosition.BottomCenter:
                     x = (Screen.width - width) / 2;
-                    y = Screen.height - HUD_HEIGHT - 10;
+                    y = Screen.height - HUD_HEIGHT;
                     break;
                 case HUDPosition.BottomRight:
-                    x = Screen.width - width - 10;
-                    y = Screen.height - HUD_HEIGHT - 10;
+                    x = Screen.width - width;
+                    y = Screen.height - HUD_HEIGHT;
                     break;
             }
 
             return new Rect(x, y, width, HUD_HEIGHT);
         }
 
-        private void DrawCurrencyGroup(string label, Dictionary<string, int> items)
+        private void DrawCurrencyItems(Dictionary<string, int> items)
         {
             if (items.Count == 0) return;
 
-            GUILayout.Label(label + ":", _categoryLabelStyle);
-
+            bool first = true;
             foreach (var kvp in items)
             {
-                string shortName = GetShortName(kvp.Key);
-                GUILayout.Label(shortName, _currencyLabelStyle);
-                GUILayout.Label(kvp.Value.ToString(), _currencyValueStyle);
-                GUILayout.Space(ITEM_SPACING);
-            }
+                if (!first)
+                    GUILayout.Space(ITEM_SPACING);
+                first = false;
 
-            GUILayout.Space(CATEGORY_SPACING - ITEM_SPACING);
+                // Draw icon if available
+                Texture2D iconTexture = IconCache.GetIconForCurrency(kvp.Key);
+                if (iconTexture != null && IconCache.IsIconLoaded(kvp.Key))
+                {
+                    // Draw the actual game icon
+                    GUILayout.Box(iconTexture, GUIStyle.none, GUILayout.Width(HUD_ICON_SIZE), GUILayout.Height(HUD_ICON_SIZE));
+                }
+                else
+                {
+                    // Fallback to short text name while loading
+                    string shortName = GetShortName(kvp.Key);
+                    GUILayout.Label(shortName, _currencyLabelStyle);
+                }
+
+                // Draw the value right next to the icon (formatted with K/M)
+                GUILayout.Label(FormatNumber(kvp.Value), _currencyValueStyle);
+            }
         }
 
         private Dictionary<string, int> GetSeasonalTokens()
         {
             var result = new Dictionary<string, int>();
-            foreach (var kvp in _cachedCurrencies)
+            // Always include all seasonal tokens, even if 0
+            foreach (var currencyId in _allSeasonalTokens)
             {
-                if (kvp.Key.StartsWith("seasonal_") && kvp.Value > 0)
-                    result[kvp.Key] = kvp.Value;
+                int value = 0;
+                _cachedCurrencies.TryGetValue(currencyId, out value);
+                result[currencyId] = value;
             }
             return result;
         }
@@ -293,23 +331,82 @@ namespace TheVault.UI
         private Dictionary<string, int> GetKeys()
         {
             var result = new Dictionary<string, int>();
-            foreach (var kvp in _cachedCurrencies)
+            // Always include all keys, even if 0
+            foreach (var currencyId in _allKeys)
             {
-                if (kvp.Key.StartsWith("key_") && kvp.Value > 0)
-                    result[kvp.Key] = kvp.Value;
+                int value = 0;
+                _cachedCurrencies.TryGetValue(currencyId, out value);
+                result[currencyId] = value;
             }
             return result;
         }
 
+        // All seasonal token IDs that should always be shown
+        private static readonly string[] _allSeasonalTokens = new[]
+        {
+            "seasonal_Spring",
+            "seasonal_Summer",
+            "seasonal_Fall",
+            "seasonal_Winter"
+        };
+
+        // All key IDs that should always be shown
+        private static readonly string[] _allKeys = new[]
+        {
+            "key_copper",
+            "key_iron",
+            "key_adamant",
+            "key_mithril",
+            "key_sunite",
+            "key_glorite",
+            "key_kingslostmine"
+        };
+
+        // All special currency IDs that should always be shown
+        private static readonly string[] _allSpecialCurrencies = new[]
+        {
+            "special_communitytoken",
+            "special_doubloon",
+            "special_blackbottlecap",
+            "special_redcarnivalticket",
+            "special_candycornpieces",
+            "special_manashard"
+        };
+
         private Dictionary<string, int> GetSpecialCurrencies()
         {
             var result = new Dictionary<string, int>();
-            foreach (var kvp in _cachedCurrencies)
+            // Always include all special currencies, even if 0
+            foreach (var currencyId in _allSpecialCurrencies)
             {
-                if (kvp.Key.StartsWith("special_") && kvp.Value > 0)
-                    result[kvp.Key] = kvp.Value;
+                int value = 0;
+                _cachedCurrencies.TryGetValue(currencyId, out value);
+                result[currencyId] = value;
             }
             return result;
+        }
+
+        /// <summary>
+        /// Format a number with K/M suffixes for compact display.
+        /// 1000 -> 1K, 1500 -> 1.5K, 1000000 -> 1M
+        /// </summary>
+        private string FormatNumber(int value)
+        {
+            if (value >= 1000000)
+            {
+                float millions = value / 1000000f;
+                if (millions >= 10f || millions == (int)millions)
+                    return $"{(int)millions}M";
+                return $"{millions:0.#}M";
+            }
+            else if (value >= 1000)
+            {
+                float thousands = value / 1000f;
+                if (thousands >= 10f || thousands == (int)thousands)
+                    return $"{(int)thousands}K";
+                return $"{thousands:0.#}K";
+            }
+            return value.ToString();
         }
 
         private string GetShortName(string currencyId)

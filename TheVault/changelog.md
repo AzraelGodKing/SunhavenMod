@@ -1,5 +1,10 @@
 # The Vault - Changelog
 
+## Version 1.0.5
+- Added item icons from the game to Vault UI and HUD
+- Icons are loaded from the game's database and cached for performance
+- Fallback to text abbreviations while icons are loading or unavailable
+
 ## Version 1.0.4
 - Added persistent HUD bar showing vault currency totals (toggle with F7)
 - HUD displays abbreviated currency names with counts, hides when main vault is open
