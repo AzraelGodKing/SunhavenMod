@@ -440,7 +440,7 @@ namespace TheVault.UI
             CurrencyCategory.SeasonalToken,
             CurrencyCategory.CommunityToken,
             CurrencyCategory.Key,
-            CurrencyCategory.Ticket
+            CurrencyCategory.Special
         };
 
         private void DrawCategoryTabs()
@@ -472,7 +472,7 @@ namespace TheVault.UI
                 CurrencyCategory.SeasonalToken => "\u2600", // Sun symbol
                 CurrencyCategory.CommunityToken => "\u2665", // Heart
                 CurrencyCategory.Key => "\u26bf", // Key-like symbol
-                CurrencyCategory.Ticket => "\u2693", // Anchor symbol for pirate theme
+                CurrencyCategory.Special => "\u2605", // Star symbol
                 _ => "\u2022"
             };
         }
@@ -484,7 +484,7 @@ namespace TheVault.UI
                 CurrencyCategory.SeasonalToken => "Seasonal",
                 CurrencyCategory.CommunityToken => "Community",
                 CurrencyCategory.Key => "Keys",
-                CurrencyCategory.Ticket => "Pirate",
+                CurrencyCategory.Special => "Special",
                 _ => category.ToString()
             };
         }
@@ -549,20 +549,10 @@ namespace TheVault.UI
                         result[$"key_{keyName}"] = amount;
                         break;
 
-                    case CurrencyCategory.Ticket:
-                        // Handle both pirate_ and ticket_ prefixes
-                        if (keyId.StartsWith("pirate_"))
-                        {
-                            string pirateId = keyId.Replace("pirate_", "");
-                            amount = _vaultManager.GetTickets(pirateId);
-                            result[$"pirate_{pirateId}"] = amount;
-                        }
-                        else
-                        {
-                            string ticketId = keyId.Replace("ticket_", "");
-                            amount = _vaultManager.GetTickets(ticketId);
-                            result[$"ticket_{ticketId}"] = amount;
-                        }
+                    case CurrencyCategory.Special:
+                        string specialId = keyId.Replace("special_", "");
+                        amount = _vaultManager.GetSpecial(specialId);
+                        result[$"special_{specialId}"] = amount;
                         break;
 
                     case CurrencyCategory.Orb:
@@ -710,19 +700,18 @@ namespace TheVault.UI
             {
                 return "[K]";
             }
-            else if (currencyId.StartsWith("pirate_"))
+            else if (currencyId.StartsWith("special_"))
             {
-                string pirateName = currencyId.Substring("pirate_".Length).ToLower();
-                return pirateName switch
+                string specialName = currencyId.Substring("special_".Length).ToLower();
+                return specialName switch
                 {
                     "doubloon" => "[D]",
                     "blackbottlecap" => "[B]",
-                    _ => "[P]"
+                    "redcarnivalticket" => "[R]",
+                    "candycornpieces" => "[CC]",
+                    "manashard" => "[M]",
+                    _ => "[S]"
                 };
-            }
-            else if (currencyId.StartsWith("ticket_"))
-            {
-                return "[Ti]";
             }
             else if (currencyId.StartsWith("orb_"))
             {
@@ -748,14 +737,10 @@ namespace TheVault.UI
                 string keyName = currencyId.Substring("key_".Length);
                 return FormatKeyName(keyName);
             }
-            else if (currencyId.StartsWith("pirate_"))
+            else if (currencyId.StartsWith("special_"))
             {
-                string pirateName = currencyId.Substring("pirate_".Length);
-                return FormatPirateName(pirateName);
-            }
-            else if (currencyId.StartsWith("ticket_"))
-            {
-                return CapitalizeFirst(currencyId.Substring("ticket_".Length)) + " Ticket";
+                string specialName = currencyId.Substring("special_".Length);
+                return FormatSpecialName(specialName);
             }
             else if (currencyId.StartsWith("orb_"))
             {
@@ -787,14 +772,17 @@ namespace TheVault.UI
             };
         }
 
-        private string FormatPirateName(string pirateName)
+        private string FormatSpecialName(string specialName)
         {
-            // Special handling for pirate event currencies
-            return pirateName switch
+            // Special handling for special currencies
+            return specialName switch
             {
                 "doubloon" => "Doubloon",
                 "blackbottlecap" => "Black Bottle Cap",
-                _ => CapitalizeFirst(pirateName)
+                "redcarnivalticket" => "Red Carnival Ticket",
+                "candycornpieces" => "Candy Corn Pieces",
+                "manashard" => "Mana Shard",
+                _ => CapitalizeFirst(specialName)
             };
         }
 
@@ -861,13 +849,9 @@ namespace TheVault.UI
             {
                 _vaultManager.RemoveKeys(currencyId.Substring("key_".Length), amount);
             }
-            else if (currencyId.StartsWith("pirate_"))
+            else if (currencyId.StartsWith("special_"))
             {
-                _vaultManager.RemoveTickets(currencyId.Substring("pirate_".Length), amount);
-            }
-            else if (currencyId.StartsWith("ticket_"))
-            {
-                _vaultManager.RemoveTickets(currencyId.Substring("ticket_".Length), amount);
+                _vaultManager.RemoveSpecial(currencyId.Substring("special_".Length), amount);
             }
             else if (currencyId.StartsWith("orb_"))
             {
@@ -996,13 +980,9 @@ namespace TheVault.UI
             {
                 _vaultManager.AddKeys(currencyId.Substring("key_".Length), amount);
             }
-            else if (currencyId.StartsWith("pirate_"))
+            else if (currencyId.StartsWith("special_"))
             {
-                _vaultManager.AddTickets(currencyId.Substring("pirate_".Length), amount);
-            }
-            else if (currencyId.StartsWith("ticket_"))
-            {
-                _vaultManager.AddTickets(currencyId.Substring("ticket_".Length), amount);
+                _vaultManager.AddSpecial(currencyId.Substring("special_".Length), amount);
             }
             else if (currencyId.StartsWith("orb_"))
             {

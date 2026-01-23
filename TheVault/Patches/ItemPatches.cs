@@ -1424,13 +1424,9 @@ namespace TheVault.Patches
             {
                 vaultManager.AddKeys(currencyId.Substring("key_".Length), amount);
             }
-            else if (currencyId.StartsWith("ticket_"))
+            else if (currencyId.StartsWith("special_"))
             {
-                vaultManager.AddTickets(currencyId.Substring("ticket_".Length), amount);
-            }
-            else if (currencyId.StartsWith("pirate_"))
-            {
-                vaultManager.AddTickets(currencyId.Substring("pirate_".Length), amount);
+                vaultManager.AddSpecial(currencyId.Substring("special_".Length), amount);
             }
             else if (currencyId.StartsWith("orb_"))
             {
@@ -1460,9 +1456,9 @@ namespace TheVault.Patches
             {
                 return vaultManager.RemoveKeys(currencyId.Substring("key_".Length), amount);
             }            
-            else if (currencyId.StartsWith("pirate_"))
+            else if (currencyId.StartsWith("special_"))
             {
-                return vaultManager.RemoveTickets(currencyId.Substring("pirate_".Length), amount);
+                return vaultManager.RemoveSpecial(currencyId.Substring("special_".Length), amount);
             }
             else if (currencyId.StartsWith("custom_"))
             {
@@ -1504,13 +1500,9 @@ namespace TheVault.Patches
             {
                 return vaultManager.GetKeys(currencyId.Substring("key_".Length));
             }
-            else if (currencyId.StartsWith("ticket_"))
+            else if (currencyId.StartsWith("special_"))
             {
-                return vaultManager.GetTickets(currencyId.Substring("ticket_".Length));
-            }
-            else if (currencyId.StartsWith("pirate_"))
-            {
-                return vaultManager.GetTickets(currencyId.Substring("pirate_".Length));
+                return vaultManager.GetSpecial(currencyId.Substring("special_".Length));
             }
             else if (currencyId.StartsWith("orb_"))
             {

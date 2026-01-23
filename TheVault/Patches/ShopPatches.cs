@@ -189,9 +189,9 @@ namespace TheVault.Patches
             {
                 vaultManager.RemoveKeys(currencyId.Substring("key_".Length), amount);
             }
-            else if (currencyId.StartsWith("ticket_"))
+            else if (currencyId.StartsWith("special_"))
             {
-                vaultManager.RemoveTickets(currencyId.Substring("ticket_".Length), amount);
+                vaultManager.RemoveSpecial(currencyId.Substring("special_".Length), amount);
             }
             else if (currencyId.StartsWith("orb_"))
             {
@@ -248,10 +248,23 @@ namespace TheVault.Patches
                 return "Community Tokens";
             if (currencyId.StartsWith("key_"))
                 return currencyId.Substring("key_".Length) + " Keys";
-            if (currencyId.StartsWith("ticket_"))
-                return currencyId.Substring("ticket_".Length) + " Tickets";
+            if (currencyId.StartsWith("special_"))
+                return FormatSpecialName(currencyId.Substring("special_".Length));
 
             return currencyId;
+        }
+
+        private static string FormatSpecialName(string specialName)
+        {
+            return specialName switch
+            {
+                "doubloon" => "Doubloons",
+                "blackbottlecap" => "Black Bottle Caps",
+                "redcarnivalticket" => "Red Carnival Tickets",
+                "candycornpieces" => "Candy Corn Pieces",
+                "manashard" => "Mana Shards",
+                _ => specialName
+            };
         }
     }
 }
