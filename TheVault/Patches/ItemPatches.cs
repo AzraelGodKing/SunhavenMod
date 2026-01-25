@@ -82,6 +82,18 @@ namespace TheVault.Patches
         private static PropertyInfo _cachedItemIdProperty;
         private static MethodInfo _cachedItemIdMethod;
 
+        // Cached database lookups for item names (PERFORMANCE CRITICAL)
+        private static bool _databaseCacheInitialized = false;
+        private static Type _databaseType;
+        private static Type _itemDatabaseType;
+        private static MethodInfo _cachedDatabaseGetItemMethod;
+        private static PropertyInfo _cachedItemDatabaseInstanceProp;
+        private static MethodInfo _cachedItemDatabaseGetItemMethod;
+        private static PropertyInfo _cachedItemNameProperty;
+
+        // Cache for item display names - once we look up a name, we never need to again
+        private static readonly Dictionary<int, string> _itemNameCache = new Dictionary<int, string>();
+
         /// <summary>
         /// Initialize the reflection cache. Called once on first use.
         /// </summary>
@@ -130,6 +142,50 @@ namespace TheVault.Patches
             catch (Exception ex)
             {
                 Plugin.Log?.LogError($"Failed to initialize reflection cache: {ex.Message}");
+            }
+        }
+
+        /// <summary>
+        /// Initialize the database cache for item name lookups. Called lazily on first use.
+        /// </summary>
+        private static void InitializeDatabaseCache()
+        {
+            if (_databaseCacheInitialized) return;
+
+            try
+            {
+                // Cache Database type and GetItem method
+                _databaseType = AccessTools.TypeByName("Wish.Database");
+                if (_databaseType != null)
+                {
+                    _cachedDatabaseGetItemMethod = AccessTools.Method(_databaseType, "GetItem", new[] { typeof(int) });
+                }
+
+                // Cache ItemDatabase type and methods
+                _itemDatabaseType = AccessTools.TypeByName("Wish.ItemDatabase");
+                if (_itemDatabaseType != null)
+                {
+                    _cachedItemDatabaseInstanceProp = AccessTools.Property(_itemDatabaseType, "Instance");
+                    _cachedItemDatabaseGetItemMethod = AccessTools.Method(_itemDatabaseType, "GetItem", new[] { typeof(int) });
+                }
+
+                // Cache item name property (will be set on first successful item lookup)
+                // We try common property names
+                if (_itemType != null)
+                {
+                    _cachedItemNameProperty = AccessTools.Property(_itemType, "name") ??
+                                              AccessTools.Property(_itemType, "Name") ??
+                                              AccessTools.Property(_itemType, "itemName") ??
+                                              AccessTools.Property(_itemType, "ItemName");
+                }
+
+                _databaseCacheInitialized = true;
+                if (DEBUG_LOGGING) Plugin.Log?.LogInfo("ItemPatches database cache initialized");
+            }
+            catch (Exception ex)
+            {
+                Plugin.Log?.LogError($"Failed to initialize database cache: {ex.Message}");
+                _databaseCacheInitialized = true; // Mark as initialized to prevent repeated failures
             }
         }
 
@@ -2063,161 +2119,166 @@ namespace TheVault.Patches
 
         /// <summary>
         /// Get an Item object from the game's database by ID.
+        /// Uses cached reflection for performance.
         /// </summary>
         private static object GetItemObject(int itemId)
         {
+            // Initialize caches
+            InitializeReflectionCache();
+            InitializeDatabaseCache();
+
             try
             {
-                // Try Database.GetData<Item>(itemId)
-                var databaseType = AccessTools.TypeByName("Wish.Database");
-                if (databaseType != null)
+                // Try Database.GetItem using cached method
+                if (_cachedDatabaseGetItemMethod != null)
                 {
-                    var itemType = AccessTools.TypeByName("Wish.Item");
-                    if (itemType != null)
+                    var item = _cachedDatabaseGetItemMethod.Invoke(null, new object[] { itemId });
+                    if (item != null)
                     {
-                        // Try GetData<T> generic method
-                        var getDataMethod = databaseType.GetMethod("GetData", new[] { typeof(int) });
-                        if (getDataMethod != null && getDataMethod.IsGenericMethod)
-                        {
-                            var genericMethod = getDataMethod.MakeGenericMethod(itemType);
-                            var item = genericMethod.Invoke(null, new object[] { itemId });
-                            if (item != null)
-                            {
-                                Plugin.Log?.LogInfo($"Got Item object via Database.GetData<Item>({itemId})");
-                                return item;
-                            }
-                        }
-
-                        // Try GetItem static method
-                        var getItemMethod = AccessTools.Method(databaseType, "GetItem", new[] { typeof(int) });
-                        if (getItemMethod != null)
-                        {
-                            var item = getItemMethod.Invoke(null, new object[] { itemId });
-                            if (item != null)
-                            {
-                                Plugin.Log?.LogInfo($"Got Item object via Database.GetItem({itemId})");
-                                return item;
-                            }
-                        }
+                        if (DEBUG_LOGGING) Plugin.Log?.LogInfo($"Got Item object via Database.GetItem({itemId})");
+                        return item;
                     }
                 }
 
-                // Try ItemDatabase.Instance.GetItem
-                var itemDbType = AccessTools.TypeByName("Wish.ItemDatabase");
-                if (itemDbType != null)
+                // Try ItemDatabase.Instance.GetItem using cached method
+                if (_cachedItemDatabaseInstanceProp != null && _cachedItemDatabaseGetItemMethod != null)
                 {
-                    var instanceProp = AccessTools.Property(itemDbType, "Instance");
-                    if (instanceProp != null)
+                    var instance = _cachedItemDatabaseInstanceProp.GetValue(null);
+                    if (instance != null)
                     {
-                        var instance = instanceProp.GetValue(null);
-                        if (instance != null)
+                        var item = _cachedItemDatabaseGetItemMethod.Invoke(instance, new object[] { itemId });
+                        if (item != null)
                         {
-                            var getItemMethod = AccessTools.Method(itemDbType, "GetItem", new[] { typeof(int) });
-                            if (getItemMethod != null)
-                            {
-                                var item = getItemMethod.Invoke(instance, new object[] { itemId });
-                                if (item != null)
-                                {
-                                    Plugin.Log?.LogInfo($"Got Item object via ItemDatabase.GetItem({itemId})");
-                                    return item;
-                                }
-                            }
+                            if (DEBUG_LOGGING) Plugin.Log?.LogInfo($"Got Item object via ItemDatabase.GetItem({itemId})");
+                            return item;
                         }
                     }
                 }
             }
             catch (Exception ex)
             {
-                Plugin.Log?.LogError($"GetItemObject error: {ex.Message}");
+                if (DEBUG_LOGGING) Plugin.Log?.LogError($"GetItemObject error: {ex.Message}");
             }
             return null;
         }
 
         /// <summary>
         /// Get display name for an item ID using the game's item database.
+        /// Uses cached reflection and caches item names for performance.
         /// </summary>
         private static string GetItemDisplayName(int itemId)
         {
+            // Check cache first - fastest path
+            if (_itemNameCache.TryGetValue(itemId, out string cachedName))
+            {
+                return cachedName;
+            }
+
+            // Initialize database cache on first use
+            InitializeReflectionCache();
+            InitializeDatabaseCache();
+
+            string foundName = null;
+
             try
             {
-                // Try to get item name from database
-                var databaseType = AccessTools.TypeByName("Wish.Database");
-                if (databaseType != null)
+                // Try Database.GetItem using cached method
+                if (_cachedDatabaseGetItemMethod != null)
                 {
-                    var getItemMethod = AccessTools.Method(databaseType, "GetItem", new[] { typeof(int) });
-                    if (getItemMethod != null)
+                    var item = _cachedDatabaseGetItemMethod.Invoke(null, new object[] { itemId });
+                    if (item != null)
                     {
-                        var item = getItemMethod.Invoke(null, new object[] { itemId });
-                        if (item != null)
-                        {
-                            var nameProperty = AccessTools.Property(item.GetType(), "name");
-                            if (nameProperty == null)
-                                nameProperty = AccessTools.Property(item.GetType(), "Name");
-                            if (nameProperty == null)
-                                nameProperty = AccessTools.Property(item.GetType(), "itemName");
-                            if (nameProperty == null)
-                                nameProperty = AccessTools.Property(item.GetType(), "ItemName");
-
-                            if (nameProperty != null)
-                            {
-                                var name = nameProperty.GetValue(item) as string;
-                                if (!string.IsNullOrEmpty(name))
-                                    return name;
-                            }
-                        }
+                        foundName = GetItemNameFromObject(item);
                     }
                 }
 
-                // Try ItemDatabase
-                var itemDbType = AccessTools.TypeByName("Wish.ItemDatabase");
-                if (itemDbType != null)
+                // Try ItemDatabase.Instance.GetItem using cached method
+                if (foundName == null && _cachedItemDatabaseInstanceProp != null && _cachedItemDatabaseGetItemMethod != null)
                 {
-                    var instanceProp = AccessTools.Property(itemDbType, "Instance");
-                    if (instanceProp != null)
+                    var instance = _cachedItemDatabaseInstanceProp.GetValue(null);
+                    if (instance != null)
                     {
-                        var instance = instanceProp.GetValue(null);
-                        if (instance != null)
+                        var item = _cachedItemDatabaseGetItemMethod.Invoke(instance, new object[] { itemId });
+                        if (item != null)
                         {
-                            var getItemMethod = AccessTools.Method(itemDbType, "GetItem", new[] { typeof(int) });
-                            if (getItemMethod != null)
-                            {
-                                var item = getItemMethod.Invoke(instance, new object[] { itemId });
-                                if (item != null)
-                                {
-                                    var nameProp = AccessTools.Property(item.GetType(), "name") ??
-                                                   AccessTools.Property(item.GetType(), "Name") ??
-                                                   AccessTools.Property(item.GetType(), "itemName");
-                                    if (nameProp != null)
-                                    {
-                                        var name = nameProp.GetValue(item) as string;
-                                        if (!string.IsNullOrEmpty(name))
-                                            return name;
-                                    }
-                                }
-                            }
+                            foundName = GetItemNameFromObject(item);
                         }
                     }
                 }
             }
             catch (Exception ex)
             {
-                Plugin.Log?.LogError($"Error getting item name: {ex.Message}");
+                if (DEBUG_LOGGING) Plugin.Log?.LogError($"Error getting item name: {ex.Message}");
             }
 
             // Fallback: format from currency ID
-            string currencyId = GetCurrencyForItem(itemId);
-            if (!string.IsNullOrEmpty(currencyId) && currencyId.Contains("_"))
+            if (string.IsNullOrEmpty(foundName))
             {
-                string[] parts = currencyId.Split('_');
-                if (parts.Length >= 2)
+                string currencyId = GetCurrencyForItem(itemId);
+                if (!string.IsNullOrEmpty(currencyId) && currencyId.Contains("_"))
                 {
-                    string name = parts[1];
-                    // Capitalize first letter
-                    return char.ToUpper(name[0]) + name.Substring(1);
+                    string[] parts = currencyId.Split('_');
+                    if (parts.Length >= 2)
+                    {
+                        string name = parts[1];
+                        // Capitalize first letter
+                        foundName = char.ToUpper(name[0]) + name.Substring(1);
+                    }
                 }
             }
 
-            return $"Item {itemId}";
+            // Final fallback
+            if (string.IsNullOrEmpty(foundName))
+            {
+                foundName = $"Item {itemId}";
+            }
+
+            // Cache the result for future lookups
+            _itemNameCache[itemId] = foundName;
+            return foundName;
+        }
+
+        /// <summary>
+        /// Extract item name from an item object using cached property.
+        /// </summary>
+        private static string GetItemNameFromObject(object item)
+        {
+            if (item == null) return null;
+
+            try
+            {
+                // Use cached property if available
+                if (_cachedItemNameProperty != null)
+                {
+                    var name = _cachedItemNameProperty.GetValue(item) as string;
+                    if (!string.IsNullOrEmpty(name))
+                        return name;
+                }
+
+                // Fallback: try to find the property on this specific type
+                var itemType = item.GetType();
+                var nameProp = AccessTools.Property(itemType, "name") ??
+                               AccessTools.Property(itemType, "Name") ??
+                               AccessTools.Property(itemType, "itemName") ??
+                               AccessTools.Property(itemType, "ItemName");
+
+                if (nameProp != null)
+                {
+                    // Cache it for future use if we found one
+                    if (_cachedItemNameProperty == null)
+                        _cachedItemNameProperty = nameProp;
+
+                    var name = nameProp.GetValue(item) as string;
+                    if (!string.IsNullOrEmpty(name))
+                        return name;
+                }
+            }
+            catch
+            {
+                // Silently fail, return null
+            }
+
+            return null;
         }
     }
 }
