@@ -1,6 +1,6 @@
 # The Vault - Changelog
 
-## Version 1.0.5
+## Version 2.0.0
 - Added item icons from the game to Vault UI and HUD
 - Icons are loaded from the game's database and cached for performance
 - Fallback to text abbreviations while icons are loading or unavailable
