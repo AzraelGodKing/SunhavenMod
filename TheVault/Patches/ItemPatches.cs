@@ -15,6 +15,11 @@ namespace TheVault.Patches
     public static class ItemPatches
     {
         /// <summary>
+        /// Enable verbose debug logging. Set to false for release to improve performance.
+        /// </summary>
+        private const bool DEBUG_LOGGING = false;
+
+        /// <summary>
         /// Maps game item IDs to vault currency types.
         /// Format: gameItemId -> currencyId
         /// </summary>
@@ -60,13 +65,226 @@ namespace TheVault.Patches
         /// </summary>
         private const int WITHDRAWAL_BLOCK_WINDOW_MS = 2000;
 
+        #region Cached Reflection (PERFORMANCE CRITICAL)
+        // Cache all reflection lookups to avoid expensive AccessTools calls on every item pickup
+
+        private static bool _reflectionCacheInitialized = false;
+        private static Type _inventoryType;
+        private static Type _playerType;
+        private static Type _itemType;
+        private static MethodInfo _cachedGetAmountMethod;
+        private static MethodInfo _cachedRemoveItemMethod;
+        private static MethodInfo _cachedRemoveAllMethod;
+        private static PropertyInfo _cachedLocalPlayerProperty;
+        private static PropertyInfo _cachedInventoryProperty;
+        private static FieldInfo _cachedInventoryField;
+        private static FieldInfo _cachedItemIdField;
+        private static PropertyInfo _cachedItemIdProperty;
+        private static MethodInfo _cachedItemIdMethod;
+
+        /// <summary>
+        /// Initialize the reflection cache. Called once on first use.
+        /// </summary>
+        private static void InitializeReflectionCache()
+        {
+            if (_reflectionCacheInitialized) return;
+
+            try
+            {
+                _playerType = typeof(Wish.Player);
+                _inventoryType = AccessTools.TypeByName("Wish.Inventory") ?? AccessTools.TypeByName("Wish.PlayerInventory");
+                _itemType = AccessTools.TypeByName("Wish.Item");
+
+                // Cache player access
+                _cachedLocalPlayerProperty = AccessTools.Property(_playerType, "LocalPlayer") ?? AccessTools.Property(_playerType, "Instance");
+
+                // Cache inventory access on player
+                _cachedInventoryProperty = AccessTools.Property(_playerType, "Inventory") ?? AccessTools.Property(_playerType, "PlayerInventory");
+                if (_cachedInventoryProperty == null)
+                {
+                    _cachedInventoryField = AccessTools.Field(_playerType, "inventory") ??
+                                           AccessTools.Field(_playerType, "_inventory") ??
+                                           AccessTools.Field(_playerType, "playerInventory") ??
+                                           AccessTools.Field(_playerType, "_playerInventory");
+                }
+
+                // Cache inventory methods
+                if (_inventoryType != null)
+                {
+                    _cachedGetAmountMethod = AccessTools.Method(_inventoryType, "GetAmount", new[] { typeof(int) });
+                    _cachedRemoveItemMethod = AccessTools.Method(_inventoryType, "RemoveItem", new[] { typeof(int), typeof(int), typeof(int) });
+                    _cachedRemoveAllMethod = AccessTools.Method(_inventoryType, "RemoveAll", new[] { typeof(int) });
+                }
+
+                // Cache item ID access
+                if (_itemType != null)
+                {
+                    _cachedItemIdField = AccessTools.Field(_itemType, "id") ?? AccessTools.Field(_itemType, "_id");
+                    _cachedItemIdProperty = AccessTools.Property(_itemType, "id") ?? AccessTools.Property(_itemType, "Id") ?? AccessTools.Property(_itemType, "ItemID");
+                    _cachedItemIdMethod = AccessTools.Method(_itemType, "ID");
+                }
+
+                _reflectionCacheInitialized = true;
+                Plugin.Log?.LogInfo("ItemPatches reflection cache initialized");
+            }
+            catch (Exception ex)
+            {
+                Plugin.Log?.LogError($"Failed to initialize reflection cache: {ex.Message}");
+            }
+        }
+
+        /// <summary>
+        /// Get player inventory using cached reflection. Returns null if not available.
+        /// </summary>
+        private static object GetPlayerInventoryCached()
+        {
+            InitializeReflectionCache();
+
+            try
+            {
+                if (_cachedLocalPlayerProperty == null) return null;
+
+                var player = _cachedLocalPlayerProperty.GetValue(null);
+                if (player == null) return null;
+
+                if (_cachedInventoryProperty != null)
+                    return _cachedInventoryProperty.GetValue(player);
+                if (_cachedInventoryField != null)
+                    return _cachedInventoryField.GetValue(player);
+
+                return null;
+            }
+            catch
+            {
+                return null;
+            }
+        }
+
+        /// <summary>
+        /// Get item ID using cached reflection. Much faster than GetItemId.
+        /// </summary>
+        private static int GetItemIdFast(object item)
+        {
+            if (item == null) return -1;
+
+            InitializeReflectionCache();
+
+            try
+            {
+                // Try cached field first (fastest)
+                if (_cachedItemIdField != null)
+                {
+                    var result = _cachedItemIdField.GetValue(item);
+                    if (result is int id) return id;
+                }
+
+                // Try cached property
+                if (_cachedItemIdProperty != null)
+                {
+                    var result = _cachedItemIdProperty.GetValue(item);
+                    if (result is int id) return id;
+                }
+
+                // Try cached method
+                if (_cachedItemIdMethod != null)
+                {
+                    var result = _cachedItemIdMethod.Invoke(item, null);
+                    if (result is int id) return id;
+                }
+
+                // Fallback to full search (first time or if cache failed)
+                return GetItemIdSlow(item);
+            }
+            catch
+            {
+                return -1;
+            }
+        }
+
+        /// <summary>
+        /// Slow path for getting item ID - only used as fallback
+        /// </summary>
+        private static int GetItemIdSlow(object item)
+        {
+            if (item == null) return -1;
+
+            try
+            {
+                var itemType = item.GetType();
+
+                // Try common field/property names
+                var idField = AccessTools.Field(itemType, "id") ?? AccessTools.Field(itemType, "_id");
+                if (idField != null)
+                {
+                    var result = idField.GetValue(item);
+                    if (result is int id)
+                    {
+                        // Cache for future use
+                        _cachedItemIdField = idField;
+                        return id;
+                    }
+                }
+
+                var idProp = AccessTools.Property(itemType, "id") ?? AccessTools.Property(itemType, "Id") ?? AccessTools.Property(itemType, "ItemID");
+                if (idProp != null)
+                {
+                    var result = idProp.GetValue(item);
+                    if (result is int id)
+                    {
+                        _cachedItemIdProperty = idProp;
+                        return id;
+                    }
+                }
+
+                var idMethod = AccessTools.Method(itemType, "ID");
+                if (idMethod != null)
+                {
+                    var result = idMethod.Invoke(item, null);
+                    if (result is int id)
+                    {
+                        _cachedItemIdMethod = idMethod;
+                        return id;
+                    }
+                }
+            }
+            catch { }
+
+            return -1;
+        }
+
+        #endregion
+
+        /// <summary>
+        /// Reset all static state. Called when returning to menu to ensure clean state for next character.
+        /// </summary>
+        public static void ResetState()
+        {
+            Plugin.Log?.LogInfo("ItemPatches: Resetting all static state for character switch");
+
+            // Clear tracking dictionaries
+            _withdrawingItems.Clear();
+            _recentlyDepositedItems.Clear();
+            _processingAutoDepositItems.Clear();
+            _pendingDeposits.Clear();
+            _currentlyProcessingDeposits.Clear();
+
+            // Reset flags
+            IsWithdrawing = false;
+
+            // Clear notification system cache (will re-initialize on next use)
+            _notificationStackInstance = null;
+            _notificationSystemInitialized = false;
+
+            Plugin.Log?.LogInfo("ItemPatches: State reset complete");
+        }
+
         /// <summary>
         /// Mark an item as being withdrawn (prevents auto-deposit for WITHDRAWAL_BLOCK_WINDOW_MS)
         /// </summary>
         public static void StartWithdrawing(int itemId)
         {
-            _withdrawingItems[itemId] = DateTime.Now;
-            Plugin.Log?.LogInfo($"Started withdrawing item {itemId} - auto-deposit blocked for {WITHDRAWAL_BLOCK_WINDOW_MS}ms");
+            _withdrawingItems[itemId] = GetCachedNow();
+            if (DEBUG_LOGGING) Plugin.Log?.LogInfo($"Started withdrawing item {itemId} - auto-deposit blocked for {WITHDRAWAL_BLOCK_WINDOW_MS}ms");
         }
 
         /// <summary>
@@ -77,7 +295,25 @@ namespace TheVault.Patches
         {
             // Don't actually remove - let the time window handle it
             // This prevents race conditions where StopWithdrawing is called before postfixes run
-            Plugin.Log?.LogInfo($"StopWithdrawing called for item {itemId} - will auto-expire");
+            if (DEBUG_LOGGING) Plugin.Log?.LogInfo($"StopWithdrawing called for item {itemId} - will auto-expire");
+        }
+
+        // Cache the current time to avoid multiple DateTime.Now calls per frame
+        private static DateTime _cachedNow;
+        private static int _cachedNowFrame = -1;
+
+        /// <summary>
+        /// Get cached DateTime.Now to reduce allocations. Updates once per frame.
+        /// </summary>
+        private static DateTime GetCachedNow()
+        {
+            int currentFrame = UnityEngine.Time.frameCount;
+            if (_cachedNowFrame != currentFrame)
+            {
+                _cachedNow = DateTime.Now;
+                _cachedNowFrame = currentFrame;
+            }
+            return _cachedNow;
         }
 
         /// <summary>
@@ -85,12 +321,13 @@ namespace TheVault.Patches
         /// </summary>
         public static bool IsItemBeingWithdrawn(int itemId)
         {
+            if (_withdrawingItems.Count == 0) return false;
+
             if (_withdrawingItems.TryGetValue(itemId, out DateTime withdrawStart))
             {
-                double elapsed = (DateTime.Now - withdrawStart).TotalMilliseconds;
+                double elapsed = (GetCachedNow() - withdrawStart).TotalMilliseconds;
                 if (elapsed < WITHDRAWAL_BLOCK_WINDOW_MS)
                 {
-                    Plugin.Log?.LogInfo($"Item {itemId} was withdrawn {elapsed:F0}ms ago - blocking auto-deposit");
                     return true;
                 }
                 // Expired - clean up
@@ -130,20 +367,27 @@ namespace TheVault.Patches
         }
 
         /// <summary>
-        /// Check if an item should be auto-deposited
+        /// Check if an item should be auto-deposited.
+        /// PERFORMANCE: This is called on every item pickup, so it must be fast.
         /// </summary>
         public static bool ShouldAutoDeposit(int gameItemId)
         {
-            // Never auto-deposit during withdrawals (global flag or item-specific)
-            if (IsWithdrawing) return false;
-            if (IsItemBeingWithdrawn(gameItemId)) return false;
+            // Fast path: check if auto-deposit is globally disabled
             if (!AutoDepositEnabled) return false;
 
-            // Check if item is registered and has auto-deposit enabled
+            // Fast path: check if item is even registered (most items aren't vault items)
             if (!_itemToCurrency.TryGetValue(gameItemId, out var currencyId))
                 return false;
 
-            return _currencyAutoDeposit.TryGetValue(currencyId, out var enabled) && enabled;
+            // Check per-currency setting
+            if (!_currencyAutoDeposit.TryGetValue(currencyId, out var enabled) || !enabled)
+                return false;
+
+            // Slower checks only after we know item is a vault item with auto-deposit enabled
+            if (IsWithdrawing) return false;
+            if (IsItemBeingWithdrawn(gameItemId)) return false;
+
+            return true;
         }
 
         /// <summary>
@@ -162,7 +406,7 @@ namespace TheVault.Patches
             if (_currencyAutoDeposit.ContainsKey(currencyId))
             {
                 _currencyAutoDeposit[currencyId] = enabled;
-                Plugin.Log?.LogInfo($"Auto-deposit for {currencyId}: {enabled}");
+                if (DEBUG_LOGGING) Plugin.Log?.LogInfo($"Auto-deposit for {currencyId}: {enabled}");
             }
         }
 
@@ -174,7 +418,7 @@ namespace TheVault.Patches
             if (_currencyAutoDeposit.ContainsKey(currencyId))
             {
                 _currencyAutoDeposit[currencyId] = !_currencyAutoDeposit[currencyId];
-                Plugin.Log?.LogInfo($"Auto-deposit for {currencyId} toggled to: {_currencyAutoDeposit[currencyId]}");
+                if (DEBUG_LOGGING) Plugin.Log?.LogInfo($"Auto-deposit for {currencyId} toggled to: {_currencyAutoDeposit[currencyId]}");
                 return _currencyAutoDeposit[currencyId];
             }
             return false;
@@ -279,7 +523,7 @@ namespace TheVault.Patches
                 if (RemoveItemFromInventory(itemId, amount))
                 {
                     AddCurrencyToVault(vaultManager, currencyId, amount);
-                    Plugin.Log?.LogInfo($"Auto-deposited {amount} of item {itemId} as {currencyId}");
+                    if (DEBUG_LOGGING) Plugin.Log?.LogInfo($"Auto-deposited {amount} of item {itemId} as {currencyId}");
 
                     // Show notification
                     ShowAutoDepositNotification(currencyId, amount);
@@ -312,7 +556,7 @@ namespace TheVault.Patches
             // The AddItem POSTFIX will handle moving the item to vault after notification is shown
             if (ShouldAutoDeposit(item))
             {
-                Plugin.Log?.LogInfo($"OnPlayerPickupPrefix: item={item}, amount={amount} - will be auto-deposited via AddItem POSTFIX");
+                if (DEBUG_LOGGING) Plugin.Log?.LogInfo($"OnPlayerPickupPrefix: item={item}, amount={amount} - will be auto-deposited via AddItem POSTFIX");
             }
             return true;
         }
@@ -324,7 +568,7 @@ namespace TheVault.Patches
         public static void OnPlayerPickup(int item, int amount, bool rollForExtra)
         {
             // This postfix only runs if the prefix returned true (item was not auto-deposited)
-            Plugin.Log?.LogInfo($"OnPlayerPickup POSTFIX called: item={item}, amount={amount} (item added to inventory normally)");
+            if (DEBUG_LOGGING) Plugin.Log?.LogInfo($"OnPlayerPickup POSTFIX called: item={item}, amount={amount} (item added to inventory normally)");
         }
 
         /// <summary>
@@ -339,7 +583,7 @@ namespace TheVault.Patches
                 if (IsProcessingAutoDeposit(itemId)) return;
                 if (WasRecentlyDeposited(itemId)) return;
 
-                Plugin.Log?.LogInfo($"OnInventoryAddItem called: itemId={itemId}, amount={amount}");
+                if (DEBUG_LOGGING) Plugin.Log?.LogInfo($"OnInventoryAddItem called: itemId={itemId}, amount={amount}");
 
                 if (!ShouldAutoDeposit(itemId))
                 {
@@ -361,66 +605,21 @@ namespace TheVault.Patches
                 StartProcessingAutoDeposit(itemId);
                 try
                 {
-                    Plugin.Log?.LogInfo($"Auto-depositing {amount} of item {itemId} as {currencyId} (via Inventory.AddItem)");
+                    if (DEBUG_LOGGING) Plugin.Log?.LogInfo($"Auto-depositing {amount} of item {itemId} as {currencyId} (via Inventory.AddItem)");
 
-                    // Remove from inventory
-                    var invType = __instance.GetType();
+                    // Use cached reflection for performance
+                    InitializeReflectionCache();
 
-                    // Get inventory count BEFORE removal for logging (raw, without vault additions)
-                    int countBefore = -1;
-                    var getAmountMethod = AccessTools.Method(invType, "GetAmount", new[] { typeof(int) });
-                    if (getAmountMethod != null)
+                    // Remove from inventory using cached method
+                    if (_cachedRemoveItemMethod != null)
                     {
-                        _skipVaultInGetAmount = true;
-                        try
-                        {
-                            countBefore = (int)getAmountMethod.Invoke(__instance, new object[] { itemId });
-                            Plugin.Log?.LogInfo($"[DEBUG] OnInventoryAddItem - Inventory count BEFORE removal: {countBefore} of item {itemId} (raw, no vault)");
-                        }
-                        finally
-                        {
-                            _skipVaultInGetAmount = false;
-                        }
-                    }
-
-                    var removeMethod = AccessTools.Method(invType, "RemoveItem", new[] { typeof(int), typeof(int), typeof(int) });
-                    if (removeMethod != null)
-                    {
-                        Plugin.Log?.LogInfo($"[DEBUG] OnInventoryAddItem - Calling RemoveItem({itemId}, {amount}, -1)...");
-                        removeMethod.Invoke(__instance, new object[] { itemId, amount, -1 });
-                        Plugin.Log?.LogInfo($"[DEBUG] OnInventoryAddItem - RemoveItem completed");
-                    }
-
-                    // Get inventory count AFTER removal to verify it worked (raw, without vault additions)
-                    int countAfter = -1;
-                    if (getAmountMethod != null)
-                    {
-                        _skipVaultInGetAmount = true;
-                        try
-                        {
-                            countAfter = (int)getAmountMethod.Invoke(__instance, new object[] { itemId });
-                            Plugin.Log?.LogInfo($"[DEBUG] OnInventoryAddItem - Inventory count AFTER removal: {countAfter} of item {itemId} (raw, no vault)");
-                        }
-                        finally
-                        {
-                            _skipVaultInGetAmount = false;
-                        }
-
-                        if (countBefore >= 0 && countAfter >= 0)
-                        {
-                            int removed = countBefore - countAfter;
-                            Plugin.Log?.LogInfo($"[DEBUG] OnInventoryAddItem - Items actually removed: {removed} (expected: {amount})");
-
-                            if (removed == 0)
-                            {
-                                Plugin.Log?.LogWarning($"[DEBUG] OnInventoryAddItem - WARNING: No items were removed from inventory!");
-                            }
-                        }
+                        if (DEBUG_LOGGING) Plugin.Log?.LogInfo($"[DEBUG] OnInventoryAddItem - Calling cached RemoveItem({itemId}, {amount}, -1)...");
+                        _cachedRemoveItemMethod.Invoke(__instance, new object[] { itemId, amount, -1 });
                     }
 
                     AddCurrencyToVault(vaultManager, currencyId, amount);
                     MarkAsDeposited(itemId);
-                    Plugin.Log?.LogInfo($"Auto-deposited {amount} of item {itemId} as {currencyId}");
+                    if (DEBUG_LOGGING) Plugin.Log?.LogInfo($"Auto-deposited {amount} of item {itemId} as {currencyId}");
                 }
                 finally
                 {
@@ -446,7 +645,7 @@ namespace TheVault.Patches
                 if (IsProcessingAutoDeposit(itemId)) return;
                 if (WasRecentlyDeposited(itemId)) return;
 
-                Plugin.Log?.LogInfo($"OnInventoryAddItemWithNotify called: itemId={itemId}, amount={amount}, notify={notify}");
+                if (DEBUG_LOGGING) Plugin.Log?.LogInfo($"OnInventoryAddItemWithNotify called: itemId={itemId}, amount={amount}, notify={notify}");
 
                 if (!ShouldAutoDeposit(itemId))
                 {
@@ -468,66 +667,21 @@ namespace TheVault.Patches
                 StartProcessingAutoDeposit(itemId);
                 try
                 {
-                    Plugin.Log?.LogInfo($"Auto-depositing {amount} of item {itemId} as {currencyId} (via Inventory.AddItem with notify)");
+                    if (DEBUG_LOGGING) Plugin.Log?.LogInfo($"Auto-depositing {amount} of item {itemId} as {currencyId} (via Inventory.AddItem with notify)");
 
-                    // Remove from inventory
-                    var invType = __instance.GetType();
+                    // Use cached reflection for performance
+                    InitializeReflectionCache();
 
-                    // Get inventory count BEFORE removal for logging (raw, without vault additions)
-                    int countBefore = -1;
-                    var getAmountMethod = AccessTools.Method(invType, "GetAmount", new[] { typeof(int) });
-                    if (getAmountMethod != null)
+                    // Remove from inventory using cached method
+                    if (_cachedRemoveItemMethod != null)
                     {
-                        _skipVaultInGetAmount = true;
-                        try
-                        {
-                            countBefore = (int)getAmountMethod.Invoke(__instance, new object[] { itemId });
-                            Plugin.Log?.LogInfo($"[DEBUG] OnInventoryAddItemWithNotify - Inventory count BEFORE removal: {countBefore} of item {itemId} (raw, no vault)");
-                        }
-                        finally
-                        {
-                            _skipVaultInGetAmount = false;
-                        }
-                    }
-
-                    var removeMethod = AccessTools.Method(invType, "RemoveItem", new[] { typeof(int), typeof(int), typeof(int) });
-                    if (removeMethod != null)
-                    {
-                        Plugin.Log?.LogInfo($"[DEBUG] OnInventoryAddItemWithNotify - Calling RemoveItem({itemId}, {amount}, -1)...");
-                        removeMethod.Invoke(__instance, new object[] { itemId, amount, -1 });
-                        Plugin.Log?.LogInfo($"[DEBUG] OnInventoryAddItemWithNotify - RemoveItem completed");
-                    }
-
-                    // Get inventory count AFTER removal to verify it worked (raw, without vault additions)
-                    int countAfter = -1;
-                    if (getAmountMethod != null)
-                    {
-                        _skipVaultInGetAmount = true;
-                        try
-                        {
-                            countAfter = (int)getAmountMethod.Invoke(__instance, new object[] { itemId });
-                            Plugin.Log?.LogInfo($"[DEBUG] OnInventoryAddItemWithNotify - Inventory count AFTER removal: {countAfter} of item {itemId} (raw, no vault)");
-                        }
-                        finally
-                        {
-                            _skipVaultInGetAmount = false;
-                        }
-
-                        if (countBefore >= 0 && countAfter >= 0)
-                        {
-                            int removed = countBefore - countAfter;
-                            Plugin.Log?.LogInfo($"[DEBUG] OnInventoryAddItemWithNotify - Items actually removed: {removed} (expected: {amount})");
-
-                            if (removed == 0)
-                            {
-                                Plugin.Log?.LogWarning($"[DEBUG] OnInventoryAddItemWithNotify - WARNING: No items were removed from inventory!");
-                            }
-                        }
+                        if (DEBUG_LOGGING) Plugin.Log?.LogInfo($"[DEBUG] OnInventoryAddItemWithNotify - Calling cached RemoveItem({itemId}, {amount}, -1)...");
+                        _cachedRemoveItemMethod.Invoke(__instance, new object[] { itemId, amount, -1 });
                     }
 
                     AddCurrencyToVault(vaultManager, currencyId, amount);
                     MarkAsDeposited(itemId);
-                    Plugin.Log?.LogInfo($"Auto-deposited {amount} of item {itemId} as {currencyId}");
+                    if (DEBUG_LOGGING) Plugin.Log?.LogInfo($"Auto-deposited {amount} of item {itemId} as {currencyId}");
                 }
                 finally
                 {
@@ -596,19 +750,17 @@ namespace TheVault.Patches
         /// </summary>
         private static bool WasRecentlyDeposited(int itemId)
         {
+            if (_recentlyDepositedItems.Count == 0) return false;
+
             if (_recentlyDepositedItems.TryGetValue(itemId, out DateTime lastDeposit))
             {
-                double elapsed = (DateTime.Now - lastDeposit).TotalMilliseconds;
-                Plugin.Log?.LogInfo($"[DEBUG] WasRecentlyDeposited check for item {itemId}: elapsed={elapsed:F0}ms, window={RECENT_DEPOSIT_WINDOW_MS}ms");
+                double elapsed = (GetCachedNow() - lastDeposit).TotalMilliseconds;
                 if (elapsed < RECENT_DEPOSIT_WINDOW_MS)
                 {
-                    Plugin.Log?.LogInfo($"Item {itemId} was recently deposited {elapsed:F0}ms ago, skipping duplicate");
                     return true;
                 }
-            }
-            else
-            {
-                Plugin.Log?.LogInfo($"[DEBUG] WasRecentlyDeposited check for item {itemId}: NOT in recently deposited list");
+                // Expired - clean up
+                _recentlyDepositedItems.Remove(itemId);
             }
             return false;
         }
@@ -618,7 +770,7 @@ namespace TheVault.Patches
         /// </summary>
         private static void MarkAsDeposited(int itemId)
         {
-            _recentlyDepositedItems[itemId] = DateTime.Now;
+            _recentlyDepositedItems[itemId] = GetCachedNow();
         }
 
         /// <summary>
@@ -642,11 +794,13 @@ namespace TheVault.Patches
         /// This is the actual method called by Wish.Pickup when items are collected from the ground.
         /// Signature: AddItem(Item item, int amount, int slot, bool sendNotification, bool specialItem, bool superSecretCheck)
         /// We use PREFIX to intercept BEFORE the item enters inventory, deposit directly to vault, and skip the original method.
+        /// PERFORMANCE: This runs on EVERY item pickup so it must be as fast as possible.
         /// </summary>
         /// <returns>False to skip original method (item goes directly to vault), True to let original run normally</returns>
         public static bool OnInventoryAddItemObjectPrefix(object __instance, object item, int amount, int slot, bool sendNotification, bool specialItem, bool superSecretCheck)
         {
-            int itemId = GetItemId(item);
+            // Use fast item ID lookup
+            int itemId = GetItemIdFast(item);
 
             try
             {
@@ -663,14 +817,14 @@ namespace TheVault.Patches
                 var vaultManager = Plugin.GetVaultManager();
                 if (vaultManager == null) return true;
 
-                Plugin.Log?.LogInfo($"[PREFIX] Intercepting {amount} of item {itemId} - depositing directly to vault as {currencyId}");
+                if (DEBUG_LOGGING) Plugin.Log?.LogInfo($"[PREFIX] Intercepting {amount} of item {itemId} - depositing directly to vault as {currencyId}");
 
                 // Mark as deposited IMMEDIATELY to prevent POSTFIX from also depositing
                 MarkAsDeposited(itemId);
 
                 // Add directly to vault - item never enters inventory
                 AddCurrencyToVault(vaultManager, currencyId, amount);
-                Plugin.Log?.LogInfo($"[PREFIX] Deposited {amount} of item {itemId} to vault");
+                if (DEBUG_LOGGING) Plugin.Log?.LogInfo($"[PREFIX] Deposited {amount} of item {itemId} to vault");
 
                 // Show notification using the game's native notification system
                 // We pass the item object directly to trigger the same notification the player would see
@@ -705,7 +859,7 @@ namespace TheVault.Patches
         {
             try
             {
-                int itemId = GetItemId(item);
+                int itemId = GetItemIdFast(item);
 
                 // Initialize notification system on first use
                 if (!_notificationSystemInitialized)
@@ -728,7 +882,7 @@ namespace TheVault.Patches
                         string itemName = GetItemDisplayName(itemId);
                         // Parameters: text (item name), id (item ID), amount, unique (false = can stack), error (false = not an error)
                         _addNotificationMethod.Invoke(_notificationStackInstance, new object[] { itemName, itemId, amount, false, false });
-                        Plugin.Log?.LogInfo($"[NOTIFY] Sent notification: {amount}x {itemName} (id={itemId})");
+                        if (DEBUG_LOGGING) Plugin.Log?.LogInfo($"[NOTIFY] Sent notification: {amount}x {itemName} (id={itemId})");
                         return;
                     }
                     catch (Exception ex)
@@ -739,7 +893,7 @@ namespace TheVault.Patches
 
                 // Fallback: log only
                 string fallbackName = GetItemDisplayName(itemId);
-                Plugin.Log?.LogInfo($"[NOTIFY] Auto-deposited {amount}x {fallbackName} to vault (notification unavailable)");
+                if (DEBUG_LOGGING) Plugin.Log?.LogInfo($"[NOTIFY] Auto-deposited {amount}x {fallbackName} to vault (notification unavailable)");
             }
             catch (Exception ex)
             {
@@ -812,7 +966,7 @@ namespace TheVault.Patches
                     return;
                 }
 
-                Plugin.Log?.LogInfo($"[NOTIFY] Found NotificationStack type: {notificationStackType.FullName}");
+                if (DEBUG_LOGGING) Plugin.Log?.LogInfo($"[NOTIFY] Found NotificationStack type: {notificationStackType.FullName}");
 
                 // Try to get instance via SingletonBehaviour<NotificationStack>.Instance
                 var singletonType = AccessTools.TypeByName("Wish.SingletonBehaviour`1");
@@ -823,7 +977,7 @@ namespace TheVault.Patches
                     if (instanceProp != null)
                     {
                         _notificationStackInstance = instanceProp.GetValue(null);
-                        Plugin.Log?.LogInfo($"[NOTIFY] Got NotificationStack via SingletonBehaviour: {(_notificationStackInstance != null ? "success" : "null")}");
+                        if (DEBUG_LOGGING) Plugin.Log?.LogInfo($"[NOTIFY] Got NotificationStack via SingletonBehaviour: {(_notificationStackInstance != null ? "success" : "null")}");
                     }
                 }
 
@@ -834,7 +988,7 @@ namespace TheVault.Patches
                     if (directInstanceProp != null)
                     {
                         _notificationStackInstance = directInstanceProp.GetValue(null);
-                        Plugin.Log?.LogInfo($"[NOTIFY] Got NotificationStack via direct Instance: {(_notificationStackInstance != null ? "success" : "null")}");
+                        if (DEBUG_LOGGING) Plugin.Log?.LogInfo($"[NOTIFY] Got NotificationStack via direct Instance: {(_notificationStackInstance != null ? "success" : "null")}");
                     }
                 }
 
@@ -846,7 +1000,7 @@ namespace TheVault.Patches
                     {
                         var genericFind = findMethod.MakeGenericMethod(notificationStackType);
                         _notificationStackInstance = genericFind.Invoke(null, null);
-                        Plugin.Log?.LogInfo($"[NOTIFY] Got NotificationStack via FindObjectOfType: {(_notificationStackInstance != null ? "success" : "null")}");
+                        if (DEBUG_LOGGING) Plugin.Log?.LogInfo($"[NOTIFY] Got NotificationStack via FindObjectOfType: {(_notificationStackInstance != null ? "success" : "null")}");
                     }
                 }
 
@@ -884,7 +1038,7 @@ namespace TheVault.Patches
         public static void OnInventoryAddItemObjectPostfix(object __instance, object item, int amount, int slot, bool sendNotification, bool specialItem, bool superSecretCheck)
         {
             // Get the item ID from the Item object first so we can use item-specific tracking
-            int itemId = GetItemId(item);
+            int itemId = GetItemIdFast(item);
 
             try
             {
@@ -921,7 +1075,7 @@ namespace TheVault.Patches
                     return;
                 }
 
-                Plugin.Log?.LogInfo($"Auto-depositing {amount} of item {itemId} as {currencyId} (via Inventory.AddItem POSTFIX)");
+                if (DEBUG_LOGGING) Plugin.Log?.LogInfo($"Auto-depositing {amount} of item {itemId} as {currencyId} (via Inventory.AddItem POSTFIX)");
 
                 // Mark as deposited IMMEDIATELY before any processing to prevent duplicate calls
                 // that happen on the same frame/call stack
@@ -935,108 +1089,45 @@ namespace TheVault.Patches
 
                     // IMPORTANT: We must use the PLAYER's inventory, not __instance which might be
                     // a different inventory (chest, shop, etc.). The postfix fires on any Inventory.AddItem call.
-                    object playerInventory = GetPlayerInventory();
+                    // Use cached reflection for performance
+                    InitializeReflectionCache();
+                    object playerInventory = GetPlayerInventoryCached();
                     if (playerInventory == null)
                     {
-                        Plugin.Log?.LogWarning("[DEBUG] Could not get player inventory - using __instance as fallback");
+                        if (DEBUG_LOGGING) Plugin.Log?.LogWarning("[DEBUG] Could not get player inventory - using __instance as fallback");
                         playerInventory = __instance;
                     }
-                    else
+
+                    // Use cached methods for performance (avoid AccessTools.Method on every call)
+                    // Remove from player's inventory using cached RemoveAll or RemoveItem method
+                    if (_cachedRemoveAllMethod != null)
                     {
-                        Plugin.Log?.LogInfo($"[DEBUG] Using player inventory (type: {playerInventory.GetType().Name}) instead of __instance (type: {__instance.GetType().Name})");
+                        if (DEBUG_LOGGING) Plugin.Log?.LogInfo($"[DEBUG] Calling cached RemoveAll({itemId}) on player inventory...");
+                        _cachedRemoveAllMethod.Invoke(playerInventory, new object[] { itemId });
                     }
-
-                    var invType = playerInventory.GetType();
-
-                    // Get inventory count BEFORE removal for logging
-                    // Use _skipVaultInGetAmount to get raw inventory count without vault additions
-                    int countBefore = -1;
-                    var getAmountMethod = AccessTools.Method(invType, "GetAmount", new[] { typeof(int) });
-                    if (getAmountMethod != null)
+                    else if (_cachedRemoveItemMethod != null)
                     {
-                        _skipVaultInGetAmount = true;
                         try
                         {
-                            countBefore = (int)getAmountMethod.Invoke(playerInventory, new object[] { itemId });
-                            Plugin.Log?.LogInfo($"[DEBUG] Player inventory count BEFORE removal: {countBefore} of item {itemId} (raw, no vault)");
+                            if (DEBUG_LOGGING) Plugin.Log?.LogInfo($"[DEBUG] Calling cached RemoveItem({itemId}, {amount}, -1) on player inventory...");
+                            _cachedRemoveItemMethod.Invoke(playerInventory, new object[] { itemId, amount, -1 });
                         }
-                        finally
+                        catch (Exception removeEx)
                         {
-                            _skipVaultInGetAmount = false;
-                        }
-                    }
-
-                    // Remove from player's inventory using RemoveAll which is simpler and avoids parameter issues
-                    // Try RemoveAll(int id) first - this removes all of a specific item type
-                    var removeAllMethod = AccessTools.Method(invType, "RemoveAll", new[] { typeof(int) });
-                    if (removeAllMethod != null)
-                    {
-                        Plugin.Log?.LogInfo($"[DEBUG] Calling RemoveAll({itemId}) on player inventory...");
-                        removeAllMethod.Invoke(playerInventory, new object[] { itemId });
-                        Plugin.Log?.LogInfo($"[DEBUG] RemoveAll({itemId}) completed on player inventory");
-                    }
-                    else
-                    {
-                        // Fallback to RemoveItem(int, int, int)
-                        var removeMethod = AccessTools.Method(invType, "RemoveItem", new[] { typeof(int), typeof(int), typeof(int) });
-                        if (removeMethod != null)
-                        {
-                            try
-                            {
-                                Plugin.Log?.LogInfo($"[DEBUG] Calling RemoveItem({itemId}, {amount}, -1) on player inventory...");
-                                removeMethod.Invoke(playerInventory, new object[] { itemId, amount, -1 });
-                                Plugin.Log?.LogInfo($"[DEBUG] RemoveItem completed on player inventory");
-                            }
-                            catch (Exception removeEx)
-                            {
-                                // Get inner exception for better error message
-                                var innerEx = removeEx.InnerException ?? removeEx;
-                                Plugin.Log?.LogError($"RemoveItem failed: {innerEx.Message}");
-                                return;
-                            }
-                        }
-                        else
-                        {
-                            Plugin.Log?.LogWarning("Could not find RemoveItem or RemoveAll method on inventory");
+                            var innerEx = removeEx.InnerException ?? removeEx;
+                            Plugin.Log?.LogError($"RemoveItem failed: {innerEx.Message}");
                             return;
                         }
                     }
-
-                    // Get inventory count AFTER removal to verify it worked
-                    int countAfter = -1;
-                    if (getAmountMethod != null)
+                    else
                     {
-                        _skipVaultInGetAmount = true;
-                        try
-                        {
-                            countAfter = (int)getAmountMethod.Invoke(playerInventory, new object[] { itemId });
-                            Plugin.Log?.LogInfo($"[DEBUG] Player inventory count AFTER removal: {countAfter} of item {itemId} (raw, no vault)");
-                        }
-                        finally
-                        {
-                            _skipVaultInGetAmount = false;
-                        }
-
-                        // Check if removal actually happened
-                        if (countBefore >= 0 && countAfter >= 0)
-                        {
-                            int removed = countBefore - countAfter;
-                            Plugin.Log?.LogInfo($"[DEBUG] Items actually removed from player inventory: {removed} (expected: {amount})");
-
-                            if (removed == 0)
-                            {
-                                Plugin.Log?.LogWarning($"[DEBUG] WARNING: No items were removed from player inventory! RemoveAll/RemoveItem may not have worked.");
-                            }
-                            else if (removed != amount && removed != countBefore)
-                            {
-                                Plugin.Log?.LogWarning($"[DEBUG] WARNING: Removed {removed} items but expected {amount}");
-                            }
-                        }
+                        Plugin.Log?.LogWarning("No cached RemoveItem or RemoveAll method available");
+                        return;
                     }
 
                     // Add to vault (already marked as deposited at the start of processing)
                     AddCurrencyToVault(vaultManager, currencyId, amount);
-                    Plugin.Log?.LogInfo($"Auto-deposited {amount} of item {itemId} as {currencyId} to vault");
+                    if (DEBUG_LOGGING) Plugin.Log?.LogInfo($"Auto-deposited {amount} of item {itemId} as {currencyId} to vault");
                 }
                 finally
                 {
@@ -1088,7 +1179,7 @@ namespace TheVault.Patches
                     var inv = inventoryProperty.GetValue(player);
                     if (inv != null)
                     {
-                        Plugin.Log?.LogInfo($"[DEBUG] GetPlayerInventory: Found via Inventory property");
+                        if (DEBUG_LOGGING) Plugin.Log?.LogInfo($"[DEBUG] GetPlayerInventory: Found via Inventory property");
                         return inv;
                     }
                 }
@@ -1099,7 +1190,7 @@ namespace TheVault.Patches
                     var inv = playerInventoryProperty.GetValue(player);
                     if (inv != null)
                     {
-                        Plugin.Log?.LogInfo($"[DEBUG] GetPlayerInventory: Found via PlayerInventory property");
+                        if (DEBUG_LOGGING) Plugin.Log?.LogInfo($"[DEBUG] GetPlayerInventory: Found via PlayerInventory property");
                         return inv;
                     }
                 }
@@ -1118,7 +1209,7 @@ namespace TheVault.Patches
                     var inv = inventoryField.GetValue(player);
                     if (inv != null)
                     {
-                        Plugin.Log?.LogInfo($"[DEBUG] GetPlayerInventory: Found via {inventoryField.Name} field");
+                        if (DEBUG_LOGGING) Plugin.Log?.LogInfo($"[DEBUG] GetPlayerInventory: Found via {inventoryField.Name} field");
                         return inv;
                     }
                 }
@@ -1273,7 +1364,7 @@ namespace TheVault.Patches
                 if (removeMethod != null)
                 {
                     var result = removeMethod.Invoke(player, new object[] { itemId, amount });
-                    Plugin.Log?.LogInfo($"RemoveItem via Player returned: {result}");
+                    if (DEBUG_LOGGING) Plugin.Log?.LogInfo($"RemoveItem via Player returned: {result}");
                     return result is bool b && b;
                 }
 
@@ -1306,7 +1397,7 @@ namespace TheVault.Patches
                     if (invRemoveMethod != null)
                     {
                         var result = invRemoveMethod.Invoke(inventory, new object[] { itemId, amount });
-                        Plugin.Log?.LogInfo($"RemoveItem(int,int) returned: {result}");
+                        if (DEBUG_LOGGING) Plugin.Log?.LogInfo($"RemoveItem(int,int) returned: {result}");
                         return result is bool b ? b : true;
                     }
 
@@ -1315,7 +1406,7 @@ namespace TheVault.Patches
                     if (invRemoveMethod != null)
                     {
                         var result = invRemoveMethod.Invoke(inventory, new object[] { itemId, amount, false });
-                        Plugin.Log?.LogInfo($"RemoveItem(int,int,bool) returned: {result}");
+                        if (DEBUG_LOGGING) Plugin.Log?.LogInfo($"RemoveItem(int,int,bool) returned: {result}");
                         return result is bool b ? b : true;
                     }
 
@@ -1324,7 +1415,7 @@ namespace TheVault.Patches
                     if (invRemoveMethod != null)
                     {
                         var result = invRemoveMethod.Invoke(inventory, new object[] { itemId, amount });
-                        Plugin.Log?.LogInfo($"RemoveItemAmount returned: {result}");
+                        if (DEBUG_LOGGING) Plugin.Log?.LogInfo($"RemoveItemAmount returned: {result}");
                         return result is bool b ? b : true;
                     }
 
@@ -1531,8 +1622,8 @@ namespace TheVault.Patches
                 bool autoDeposit = _currencyAutoDeposit.TryGetValue(kvp.Value, out var enabled) && enabled;
                 Plugin.Log?.LogInfo($"  Item {kvp.Key} -> {kvp.Value} (auto-deposit: {autoDeposit})");
             }
-            Plugin.Log?.LogInfo($"[DEBUG] Total mappings: {_itemToCurrency.Count}");
-            Plugin.Log?.LogInfo($"[DEBUG] Auto-deposit enabled: {AutoDepositEnabled}");
+            if (DEBUG_LOGGING) Plugin.Log?.LogInfo($"[DEBUG] Total mappings: {_itemToCurrency.Count}");
+            if (DEBUG_LOGGING) Plugin.Log?.LogInfo($"[DEBUG] Auto-deposit enabled: {AutoDepositEnabled}");
         }
 
         /// <summary>
@@ -1623,7 +1714,7 @@ namespace TheVault.Patches
                     {
                         _skipVaultInGetAmount = false;
                     }
-                    Plugin.Log?.LogInfo($"RemoveItem prefix: item {id}, rawInventory={__state}, requestedAmount={amount}");
+                    if (DEBUG_LOGGING) Plugin.Log?.LogInfo($"RemoveItem prefix: item {id}, rawInventory={__state}, requestedAmount={amount}");
                 }
             }
             catch (Exception ex)
@@ -1651,7 +1742,7 @@ namespace TheVault.Patches
                 // If inventory had enough, nothing to do with vault
                 if (inventoryHadBefore >= amount)
                 {
-                    Plugin.Log?.LogInfo($"RemoveItem postfix: item {id}, inventory had enough ({inventoryHadBefore} >= {amount})");
+                    if (DEBUG_LOGGING) Plugin.Log?.LogInfo($"RemoveItem postfix: item {id}, inventory had enough ({inventoryHadBefore} >= {amount})");
                     return;
                 }
 
@@ -1669,7 +1760,7 @@ namespace TheVault.Patches
                 {
                     // Deduct from vault
                     bool removed = RemoveCurrencyFromVault(vaultManager, currencyId, fromVault);
-                    Plugin.Log?.LogInfo($"RemoveItem postfix: deducted {fromVault} of item {id} from vault (success={removed})");
+                    if (DEBUG_LOGGING) Plugin.Log?.LogInfo($"RemoveItem postfix: deducted {fromVault} of item {id} from vault (success={removed})");
                 }
                 else if (fromVault > 0)
                 {
