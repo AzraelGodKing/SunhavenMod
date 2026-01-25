@@ -63,6 +63,14 @@ After first launch, edit the config file at:
 - **Key Integration**: Locked doors and chests automatically consume keys from your vault
 - **Save System**: Vault data auto-saves every 5 minutes and on game save
 
+## Changelog
+
+### v2.0.3
+- **Performance Fix**: Fixed lag when picking up vault items by adding reflection caching and item name caching
+
+### v2.0.2
+- **UI Fix**: Fixed VaultUI not opening (was opening then immediately closing due to double-toggle bug)
+
 ## License
 
 Feel free to use, modify, and distribute this mod.
