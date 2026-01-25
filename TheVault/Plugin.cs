@@ -8,6 +8,7 @@ using TheVault.Vault;
 using HarmonyLib;
 using System;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 
 namespace TheVault
 {
@@ -17,6 +18,19 @@ namespace TheVault
         public static Plugin Instance { get; private set; }
         public static ManualLogSource Log { get; private set; }
         public static ConfigFile ConfigFile { get; private set; }
+
+        // Static references that survive Plugin destruction
+        // (Unity's null-conditional returns null for destroyed MonoBehaviours)
+        private static VaultManager _staticVaultManager;
+        private static VaultSaveSystem _staticSaveSystem;
+        private static VaultUI _staticVaultUI;
+        private static VaultHUD _staticVaultHUD;
+
+        // Static config values for PersistentRunner to use for hotkey detection
+        internal static KeyCode StaticToggleKey = KeyCode.V;
+        internal static bool StaticRequireCtrl = true;
+        internal static KeyCode StaticAltToggleKey = KeyCode.F8;
+        internal static KeyCode StaticHUDToggleKey = KeyCode.F7;
 
         private Harmony _harmony;
         private VaultManager _vaultManager;
@@ -35,13 +49,35 @@ namespace TheVault
         private ConfigEntry<bool> _enableAutoSave;
         private ConfigEntry<float> _autoSaveInterval;
 
+        // Backup menu detection via polling (in case SceneManager.sceneLoaded stops working)
+        private string _lastKnownScene = "";
+        private bool _wasInMenuScene = true; // Start as true since game starts at menu
+        private float _sceneCheckTimer = 0f;
+        private const float SCENE_CHECK_INTERVAL = 0.5f; // Check every 0.5 seconds
+
+        // Heartbeat for debugging - proves plugin is still running
+        private float _heartbeatTimer = 0f;
+        private const float HEARTBEAT_INTERVAL = 30f; // Log every 30 seconds to prove plugin is alive
+        private int _heartbeatCount = 0;
+
+        // Separate persistent object that survives game's UIHandler.UnloadGame cleanup
+        private static GameObject _persistentRunner;
+        private static PersistentUpdateRunner _updateRunner;
+
         private void Awake()
         {
             Instance = this;
             Log = Logger;
             ConfigFile = Config;
 
+            // NOTE: DontDestroyOnLoad on this gameObject doesn't help because
+            // the game's UIHandler.UnloadGame explicitly destroys UI objects.
+            // We use a separate hidden persistent runner instead.
+
             Log.LogInfo($"Loading {PluginInfo.PLUGIN_NAME} v{PluginInfo.PLUGIN_VERSION}");
+
+            // Create a hidden persistent runner that survives the game's cleanup
+            CreatePersistentRunner();
 
             try
             {
@@ -49,8 +85,11 @@ namespace TheVault
                 InitializeConfig();
 
                 // Initialize vault system
+                // Store in both instance and static fields so they survive Plugin destruction
                 _vaultManager = new VaultManager();
                 _saveSystem = new VaultSaveSystem(_vaultManager);
+                _staticVaultManager = _vaultManager;
+                _staticSaveSystem = _saveSystem;
 
                 // Create UI GameObject
                 var uiObject = new GameObject("TheVault_UI");
@@ -59,12 +98,20 @@ namespace TheVault
                 _vaultUI.Initialize(_vaultManager);
                 _vaultUI.SetToggleKey(_toggleKey.Value, _requireCtrlModifier.Value);
                 _vaultUI.SetAltToggleKey(_altToggleKey.Value);
+                _staticVaultUI = _vaultUI;
+
+                // Store config values for PersistentRunner hotkey detection
+                StaticToggleKey = _toggleKey.Value;
+                StaticRequireCtrl = _requireCtrlModifier.Value;
+                StaticAltToggleKey = _altToggleKey.Value;
+                StaticHUDToggleKey = _hudToggleKey.Value;
 
                 // Create HUD for persistent display
                 _vaultHUD = uiObject.AddComponent<VaultHUD>();
                 _vaultHUD.Initialize(_vaultManager);
                 _vaultHUD.SetEnabled(_enableHUD.Value);
                 _vaultHUD.SetPosition(ParseHUDPosition(_hudPosition.Value));
+                _staticVaultHUD = _vaultHUD;
 
                 // Initialize icon cache for UI icons
                 IconCache.Initialize();
@@ -81,12 +128,93 @@ namespace TheVault
                 _harmony = new Harmony(PluginInfo.PLUGIN_GUID);
                 ApplyPatches();
 
+                // Patch GameSave class for character loading detection
+                PatchGameSave();
+
+                // Subscribe to scene loading as a backup trigger for vault loading
+                // This is more reliable than patching game-specific methods that may not exist
+                SceneManager.sceneLoaded += OnSceneLoaded;
+                Log.LogInfo("Subscribed to SceneManager.sceneLoaded for vault loading");
+
                 Log.LogInfo($"{PluginInfo.PLUGIN_NAME} loaded successfully!");
                 Log.LogInfo($"Press {(_requireCtrlModifier.Value ? "Ctrl+" : "")}{_toggleKey.Value} or {_altToggleKey.Value} to open the vault");
             }
             catch (Exception ex)
             {
                 Log.LogError($"Failed to load {PluginInfo.PLUGIN_NAME}: {ex}");
+            }
+        }
+
+        /// <summary>
+        /// Creates a hidden GameObject that persists across scene loads AND survives
+        /// the game's UIHandler.UnloadGame cleanup that destroys regular GameObjects.
+        /// </summary>
+        private void CreatePersistentRunner()
+        {
+            if (_persistentRunner != null)
+            {
+                Log.LogInfo("PersistentRunner already exists");
+                return;
+            }
+
+            // Create a new hidden GameObject
+            _persistentRunner = new GameObject("TheVault_PersistentRunner");
+
+            // Mark it to survive scene changes
+            DontDestroyOnLoad(_persistentRunner);
+
+            // Hide it from the game's cleanup routines and hierarchy
+            _persistentRunner.hideFlags = HideFlags.HideAndDontSave;
+
+            // Add the update runner component
+            _updateRunner = _persistentRunner.AddComponent<PersistentUpdateRunner>();
+
+            Log.LogInfo("Created hidden PersistentRunner that survives game cleanup");
+        }
+
+        /// <summary>
+        /// Ensures UI components exist and recreates them if they were destroyed by the game's cleanup.
+        /// Called from PlayerPatches when a character loads.
+        /// </summary>
+        public static void EnsureUIComponentsExist()
+        {
+            try
+            {
+                // Check if PersistentRunner was destroyed and recreate it
+                if (_persistentRunner == null || _updateRunner == null)
+                {
+                    Log?.LogInfo("[EnsureUI] Recreating PersistentRunner...");
+                    _persistentRunner = new GameObject("TheVault_PersistentRunner");
+                    UnityEngine.Object.DontDestroyOnLoad(_persistentRunner);
+                    _persistentRunner.hideFlags = HideFlags.HideAndDontSave;
+                    _updateRunner = _persistentRunner.AddComponent<PersistentUpdateRunner>();
+                    Log?.LogInfo("[EnsureUI] PersistentRunner recreated");
+                }
+
+                // Check if VaultUI was destroyed and recreate it
+                if (_staticVaultUI == null)
+                {
+                    Log?.LogInfo("[EnsureUI] Recreating VaultUI...");
+                    var uiObject = new GameObject("TheVault_UI");
+                    UnityEngine.Object.DontDestroyOnLoad(uiObject);
+                    // NOTE: Do NOT use HideFlags.HideAndDontSave on VaultUI!
+                    // That flag prevents Unity's OnGUI from being called, which breaks the UI rendering.
+                    // Only PersistentRunner needs HideFlags (it only uses Update, not OnGUI).
+
+                    _staticVaultUI = uiObject.AddComponent<VaultUI>();
+                    _staticVaultUI.Initialize(_staticVaultManager);
+                    _staticVaultUI.SetToggleKey(StaticToggleKey, StaticRequireCtrl);
+                    _staticVaultUI.SetAltToggleKey(StaticAltToggleKey);
+
+                    _staticVaultHUD = uiObject.AddComponent<VaultHUD>();
+                    _staticVaultHUD.Initialize(_staticVaultManager);
+
+                    Log?.LogInfo("[EnsureUI] VaultUI and VaultHUD recreated");
+                }
+            }
+            catch (Exception ex)
+            {
+                Log?.LogError($"[EnsureUI] Error recreating UI: {ex.Message}");
             }
         }
 
@@ -221,6 +349,33 @@ namespace TheVault
                     Log.LogWarning("Could not find SaveLoadManager - using fallback save triggers");
                 }
 
+                // Patch return to menu for state reset (critical for character switching)
+                var mainMenuType = AccessTools.TypeByName("Wish.MainMenuController");
+                if (mainMenuType != null)
+                {
+                    // Try to patch ReturnToMainMenu or similar method
+                    PatchMethod(mainMenuType, "ReturnToMainMenu",
+                        typeof(SaveLoadPatches), "OnReturnToMenu");
+                }
+
+                // Also try patching the title screen load
+                var titleType = AccessTools.TypeByName("Wish.TitleScreen");
+                if (titleType != null)
+                {
+                    PatchMethod(titleType, "Start",
+                        typeof(SaveLoadPatches), "OnReturnToMenu");
+                }
+
+                // Try GameManager's return to menu method
+                var gameManagerType = AccessTools.TypeByName("Wish.GameManager");
+                if (gameManagerType != null)
+                {
+                    PatchMethod(gameManagerType, "ReturnToMainMenu",
+                        typeof(SaveLoadPatches), "OnReturnToMenu");
+                    PatchMethod(gameManagerType, "QuitToMainMenu",
+                        typeof(SaveLoadPatches), "OnReturnToMenu");
+                }
+
                 // Patch item pickup for auto-deposit
                 PatchItemPickup(playerType);
 
@@ -297,6 +452,63 @@ namespace TheVault
             catch (Exception ex)
             {
                 Log.LogError($"Failed to patch {targetType.Name}.{methodName}: {ex.Message}");
+            }
+        }
+
+        /// <summary>
+        /// Patch GameSave class to detect when characters are loaded.
+        /// This is crucial for detecting character switches that don't trigger scene reloads.
+        /// </summary>
+        private void PatchGameSave()
+        {
+            try
+            {
+                var gameSaveType = AccessTools.TypeByName("Wish.GameSave");
+                if (gameSaveType == null)
+                {
+                    Log.LogWarning("Could not find Wish.GameSave type");
+                    return;
+                }
+
+                // Patch Load method
+                var loadMethod = AccessTools.Method(gameSaveType, "Load");
+                if (loadMethod != null)
+                {
+                    var postfix = AccessTools.Method(typeof(GameSavePatches), "OnGameSaveLoad");
+                    if (postfix != null)
+                    {
+                        _harmony.Patch(loadMethod, postfix: new HarmonyMethod(postfix));
+                        Log.LogInfo("Patched GameSave.Load");
+                    }
+                }
+
+                // Patch LoadCharacter method (critical for character switching)
+                var loadCharMethod = AccessTools.Method(gameSaveType, "LoadCharacter");
+                if (loadCharMethod != null)
+                {
+                    var postfix = AccessTools.Method(typeof(GameSavePatches), "OnLoadCharacter");
+                    if (postfix != null)
+                    {
+                        _harmony.Patch(loadCharMethod, postfix: new HarmonyMethod(postfix));
+                        Log.LogInfo("Patched GameSave.LoadCharacter");
+                    }
+                }
+
+                // Patch SetCurrentCharacter
+                var setCharMethod = AccessTools.Method(gameSaveType, "SetCurrentCharacter");
+                if (setCharMethod != null)
+                {
+                    var postfix = AccessTools.Method(typeof(GameSavePatches), "OnSetCurrentCharacter");
+                    if (postfix != null)
+                    {
+                        _harmony.Patch(setCharMethod, postfix: new HarmonyMethod(postfix));
+                        Log.LogInfo("Patched GameSave.SetCurrentCharacter");
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                Log.LogError($"Error patching GameSave: {ex.Message}");
             }
         }
 
@@ -598,6 +810,60 @@ namespace TheVault
             {
                 _vaultHUD?.Toggle();
             }
+
+            // BACKUP: Poll for menu scene changes
+            // This is a failsafe in case SceneManager.sceneLoaded stops firing
+            _sceneCheckTimer += Time.deltaTime;
+            if (_sceneCheckTimer >= SCENE_CHECK_INTERVAL)
+            {
+                _sceneCheckTimer = 0f;
+                CheckForMenuSceneChange();
+            }
+
+            // Heartbeat - prove the plugin is still running
+            _heartbeatTimer += Time.deltaTime;
+            if (_heartbeatTimer >= HEARTBEAT_INTERVAL)
+            {
+                _heartbeatTimer = 0f;
+                _heartbeatCount++;
+                Log.LogInfo($"[Heartbeat #{_heartbeatCount}] Plugin alive. Scene: {_lastKnownScene}, VaultLoaded: {PlayerPatches.IsVaultLoaded}, Character: {PlayerPatches.LoadedCharacterName ?? "none"}");
+            }
+        }
+
+        /// <summary>
+        /// Backup menu detection via polling.
+        /// Checks the active scene name and triggers SaveAndReset when entering a menu scene.
+        /// </summary>
+        private void CheckForMenuSceneChange()
+        {
+            try
+            {
+                var activeScene = SceneManager.GetActiveScene();
+                string sceneName = activeScene.name;
+
+                // Only log if scene actually changed
+                if (sceneName != _lastKnownScene)
+                {
+                    Log.LogInfo($"[ScenePoll] Scene changed: '{_lastKnownScene}' -> '{sceneName}'");
+                    _lastKnownScene = sceneName;
+
+                    string sceneLower = sceneName.ToLowerInvariant();
+                    bool isMenuScene = sceneLower.Contains("menu") || sceneLower.Contains("title");
+
+                    // Detect transition INTO menu scene (was not in menu, now is)
+                    if (isMenuScene && !_wasInMenuScene)
+                    {
+                        Log.LogInfo($"[ScenePoll] Menu scene detected via polling: {sceneName}");
+                        PlayerPatches.SaveAndReset();
+                    }
+
+                    _wasInMenuScene = isMenuScene;
+                }
+            }
+            catch (Exception ex)
+            {
+                Log.LogError($"Error in CheckForMenuSceneChange: {ex.Message}");
+            }
         }
 
         private static VaultHUD.HUDPosition ParseHUDPosition(string position)
@@ -621,10 +887,55 @@ namespace TheVault
             _saveSystem?.ForceSave();
         }
 
+        private void OnDisable()
+        {
+            Log.LogWarning("[CRITICAL] Plugin OnDisable called! Plugin is being disabled.");
+            Log.LogWarning($"[CRITICAL] Last known scene: {_lastKnownScene}");
+            Log.LogWarning($"[CRITICAL] Stack trace: {Environment.StackTrace}");
+        }
+
         private void OnDestroy()
         {
-            _harmony?.UnpatchSelf();
+            Log.LogWarning("[CRITICAL] Plugin OnDestroy called! Plugin is being destroyed.");
+            Log.LogWarning($"[CRITICAL] Last known scene: {_lastKnownScene}");
+            Log.LogWarning($"[CRITICAL] Stack trace: {Environment.StackTrace}");
+            SceneManager.sceneLoaded -= OnSceneLoaded;
+
+            // IMPORTANT: Do NOT unpatch Harmony here!
+            // Harmony patches are global and will continue working even after this MonoBehaviour is destroyed.
+            // If we unpatch, the LoadCharacter and InitializeAsOwner hooks stop working,
+            // which breaks character switching entirely.
+            // Only unpatch in OnApplicationQuit when the game is actually closing.
+            // _harmony?.UnpatchSelf(); // REMOVED - this was breaking character switching!
+
             _saveSystem?.ForceSave();
+        }
+
+        /// <summary>
+        /// Called when a new scene is loaded.
+        /// We only care about detecting menu scenes to reset vault state.
+        /// Actual vault loading is handled by OnPlayerInitialized.
+        /// </summary>
+        private void OnSceneLoaded(Scene scene, LoadSceneMode mode)
+        {
+            try
+            {
+                // Log ALL scene changes for debugging
+                Log.LogInfo($"[SceneChange] Scene loaded: '{scene.name}' (mode: {mode})");
+
+                string sceneLower = scene.name.ToLowerInvariant();
+
+                // Detect menu/title scenes to reset vault state
+                if (sceneLower.Contains("menu") || sceneLower.Contains("title"))
+                {
+                    Log.LogInfo($"Menu scene detected: {scene.name}");
+                    PlayerPatches.SaveAndReset();
+                }
+            }
+            catch (Exception ex)
+            {
+                Log.LogError($"Error in OnSceneLoaded: {ex.Message}");
+            }
         }
 
         #region Public API
@@ -634,7 +945,8 @@ namespace TheVault
         /// </summary>
         public static VaultManager GetVaultManager()
         {
-            return Instance?._vaultManager;
+            // Use static field which survives Plugin destruction
+            return _staticVaultManager;
         }
 
         /// <summary>
@@ -642,7 +954,8 @@ namespace TheVault
         /// </summary>
         public static VaultSaveSystem GetSaveSystem()
         {
-            return Instance?._saveSystem;
+            // Use static field which survives Plugin destruction
+            return _staticSaveSystem;
         }
 
         /// <summary>
@@ -650,7 +963,8 @@ namespace TheVault
         /// </summary>
         public static VaultUI GetVaultUI()
         {
-            return Instance?._vaultUI;
+            // Use static field which survives Plugin destruction
+            return _staticVaultUI;
         }
 
         /// <summary>
@@ -658,7 +972,8 @@ namespace TheVault
         /// </summary>
         public static void OpenVault()
         {
-            Instance?._vaultUI?.Show();
+            // Use static field which survives Plugin destruction
+            _staticVaultUI?.Show();
         }
 
         /// <summary>
@@ -666,7 +981,8 @@ namespace TheVault
         /// </summary>
         public static void CloseVault()
         {
-            Instance?._vaultUI?.Hide();
+            // Use static field which survives Plugin destruction
+            _staticVaultUI?.Hide();
         }
 
         /// <summary>
@@ -674,7 +990,8 @@ namespace TheVault
         /// </summary>
         public static void LoadVaultForPlayer(string playerName)
         {
-            Instance?._saveSystem?.Load(playerName);
+            // Use static field which survives Plugin destruction
+            _staticSaveSystem?.Load(playerName);
         }
 
         /// <summary>
@@ -682,7 +999,8 @@ namespace TheVault
         /// </summary>
         public static void SaveVault()
         {
-            Instance?._saveSystem?.ForceSave();
+            // Use static field which survives Plugin destruction
+            _staticSaveSystem?.ForceSave();
         }
 
         /// <summary>
@@ -690,7 +1008,8 @@ namespace TheVault
         /// </summary>
         public static VaultHUD GetVaultHUD()
         {
-            return Instance?._vaultHUD;
+            // Use static field which survives Plugin destruction
+            return _staticVaultHUD;
         }
 
         /// <summary>
@@ -698,7 +1017,8 @@ namespace TheVault
         /// </summary>
         public static void ToggleHUD()
         {
-            Instance?._vaultHUD?.Toggle();
+            // Use static field which survives Plugin destruction
+            _staticVaultHUD?.Toggle();
         }
 
         #endregion
@@ -708,6 +1028,125 @@ namespace TheVault
     {
         public const string PLUGIN_GUID = "com.azraelgodking.thevault";
         public const string PLUGIN_NAME = "The Vault";
-        public const string PLUGIN_VERSION = "1.0.5";
+        public const string PLUGIN_VERSION = "1.0.27";
+    }
+
+    /// <summary>
+    /// A separate MonoBehaviour that runs on a hidden GameObject.
+    /// This survives the game's UIHandler.UnloadGame cleanup because:
+    /// 1. It's marked DontDestroyOnLoad
+    /// 2. It's hidden from Unity's hierarchy (HideFlags)
+    /// 3. It's not a child of any game object the cleanup knows about
+    /// </summary>
+    public class PersistentUpdateRunner : MonoBehaviour
+    {
+        private string _lastKnownScene = "";
+        private bool _wasInMenuScene = true;
+        private float _sceneCheckTimer = 0f;
+        private float _heartbeatTimer = 0f;
+        private int _heartbeatCount = 0;
+
+        private const float SCENE_CHECK_INTERVAL = 0.5f;
+        private const float HEARTBEAT_INTERVAL = 30f;
+
+        private void Awake()
+        {
+            // Hide this object from the game's cleanup routines
+            gameObject.hideFlags = HideFlags.HideAndDontSave;
+            Plugin.Log?.LogInfo("[PersistentRunner] Created hidden persistent runner");
+        }
+
+        private void Update()
+        {
+            // Poll for menu scene changes
+            _sceneCheckTimer += Time.deltaTime;
+            if (_sceneCheckTimer >= SCENE_CHECK_INTERVAL)
+            {
+                _sceneCheckTimer = 0f;
+                CheckForMenuSceneChange();
+            }
+
+            // Heartbeat
+            _heartbeatTimer += Time.deltaTime;
+            if (_heartbeatTimer >= HEARTBEAT_INTERVAL)
+            {
+                _heartbeatTimer = 0f;
+                _heartbeatCount++;
+                Plugin.Log?.LogInfo($"[PersistentRunner Heartbeat #{_heartbeatCount}] Scene: {_lastKnownScene}, VaultLoaded: {PlayerPatches.IsVaultLoaded}, Character: {PlayerPatches.LoadedCharacterName ?? "none"}");
+            }
+
+            // Handle hotkey detection for Vault UI (since VaultUI might be destroyed)
+            CheckHotkeys();
+        }
+
+        private void CheckHotkeys()
+        {
+            try
+            {
+                var vaultUI = Plugin.GetVaultUI();
+                if (vaultUI == null) return;
+
+                // Check for vault toggle key (with modifier)
+                bool modifierHeld = !Plugin.StaticRequireCtrl ||
+                    Input.GetKey(KeyCode.LeftControl) || Input.GetKey(KeyCode.RightControl);
+
+                if (modifierHeld && Input.GetKeyDown(Plugin.StaticToggleKey))
+                {
+                    vaultUI.Toggle();
+                }
+
+                // Check for alternative toggle key (no modifier - for Steam Deck)
+                if (Plugin.StaticAltToggleKey != KeyCode.None && Input.GetKeyDown(Plugin.StaticAltToggleKey))
+                {
+                    vaultUI.Toggle();
+                }
+
+                // Check for HUD toggle key
+                if (Input.GetKeyDown(Plugin.StaticHUDToggleKey))
+                {
+                    var vaultHUD = Plugin.GetVaultHUD();
+                    vaultHUD?.Toggle();
+                }
+            }
+            catch (Exception ex)
+            {
+                Plugin.Log?.LogError($"[PersistentRunner] Hotkey error: {ex.Message}");
+            }
+        }
+
+        private void CheckForMenuSceneChange()
+        {
+            try
+            {
+                var activeScene = SceneManager.GetActiveScene();
+                string sceneName = activeScene.name;
+
+                if (sceneName != _lastKnownScene)
+                {
+                    Plugin.Log?.LogInfo($"[PersistentRunner] Scene changed: '{_lastKnownScene}' -> '{sceneName}'");
+                    _lastKnownScene = sceneName;
+
+                    string sceneLower = sceneName.ToLowerInvariant();
+                    bool isMenuScene = sceneLower.Contains("menu") || sceneLower.Contains("title");
+
+                    if (isMenuScene && !_wasInMenuScene)
+                    {
+                        Plugin.Log?.LogInfo($"[PersistentRunner] Menu scene detected: {sceneName}");
+                        PlayerPatches.SaveAndReset();
+                    }
+
+                    _wasInMenuScene = isMenuScene;
+                }
+            }
+            catch (Exception ex)
+            {
+                Plugin.Log?.LogError($"[PersistentRunner] Error: {ex.Message}");
+            }
+        }
+
+        private void OnDestroy()
+        {
+            Plugin.Log?.LogWarning("[PersistentRunner] OnDestroy called - this should NOT happen!");
+        }
     }
 }

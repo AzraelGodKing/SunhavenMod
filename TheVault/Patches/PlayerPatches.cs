@@ -1,4 +1,3 @@
-using HarmonyLib;
 using System;
 using TheVault.UI;
 using Wish;
@@ -6,59 +5,63 @@ using Wish;
 namespace TheVault.Patches
 {
     /// <summary>
-    /// Patches for player initialization and events.
-    /// Used to load vault data when player enters the game.
+    /// Simple vault loading system.
+    /// Loads vault when player enters game, resets when returning to menu.
     /// </summary>
     public static class PlayerPatches
     {
-        private static bool _hasLoadedVault = false;
-        private static string _currentCharacterName = null;
+        private static bool _isVaultLoaded = false;
+        private static string _loadedCharacterName = null;
 
         /// <summary>
-        /// Returns true if the vault has been loaded for the current character.
-        /// UI components should check this before displaying.
+        /// Returns true if a vault is currently loaded.
         /// </summary>
-        public static bool IsVaultLoaded => _hasLoadedVault;
+        public static bool IsVaultLoaded => _isVaultLoaded;
 
         /// <summary>
-        /// Called after player is initialized as owner.
-        /// This is the main entry point for loading vault data.
+        /// Returns the name of the character whose vault is loaded.
         /// </summary>
-        public static void OnPlayerInitialized(Wish.Player __instance)
+        public static string LoadedCharacterName => _loadedCharacterName;
+
+        /// <summary>
+        /// Called when player is initialized in-game.
+        /// This is our single trigger point for vault loading.
+        /// </summary>
+        public static void OnPlayerInitialized(Player __instance)
         {
             try
             {
-                // Get character name from GameSave
-                string characterName = GetCharacterName();
+                // Ensure UI components exist (recreate if destroyed by game's cleanup)
+                Plugin.EnsureUIComponentsExist();
 
-                // Check if we're switching characters or loading for first time
-                if (_hasLoadedVault && _currentCharacterName == characterName)
+                // Get the current character name
+                string characterName = GetCurrentCharacterName();
+
+                if (string.IsNullOrEmpty(characterName) || characterName == "default")
                 {
-                    Plugin.Log?.LogInfo($"Vault already loaded for character: {characterName}");
+                    Plugin.Log?.LogWarning("Could not determine character name on player init");
                     return;
-                }
-
-                // If switching characters, save the old vault first
-                if (_hasLoadedVault && _currentCharacterName != null && _currentCharacterName != characterName)
-                {
-                    Plugin.Log?.LogInfo($"Switching from character '{_currentCharacterName}' to '{characterName}' - saving old vault");
-                    Plugin.SaveVault();
                 }
 
                 Plugin.Log?.LogInfo($"Player initialized: {characterName}");
 
-                // Load vault data for this character
-                Plugin.LoadVaultForPlayer(characterName);
-                _hasLoadedVault = true;
-                _currentCharacterName = characterName;
+                // If vault already loaded for this character, skip
+                if (_isVaultLoaded && _loadedCharacterName == characterName)
+                {
+                    Plugin.Log?.LogInfo($"Vault already loaded for {characterName}");
+                    return;
+                }
 
-                // Set player name in vault manager
-                var vaultManager = Plugin.GetVaultManager();
-                vaultManager?.SetPlayerName(characterName);
+                // If vault loaded for different character, save it first
+                if (_isVaultLoaded && _loadedCharacterName != characterName)
+                {
+                    Plugin.Log?.LogInfo($"Switching from {_loadedCharacterName} to {characterName}");
+                    Plugin.SaveVault();
+                    ResetState();
+                }
 
-                // Now that game is fully loaded, load the UI icons
-                Plugin.Log?.LogInfo("Game fully loaded - loading UI icons...");
-                IconCache.LoadAllIcons();
+                // Load vault for this character
+                LoadVaultForCharacter(characterName);
             }
             catch (Exception ex)
             {
@@ -67,45 +70,72 @@ namespace TheVault.Patches
         }
 
         /// <summary>
-        /// Get the character's name from GameSave.CurrentCharacter
+        /// Load vault data for a character.
         /// </summary>
-        private static string GetCharacterName()
+        private static void LoadVaultForCharacter(string characterName)
         {
             try
             {
-                // Use GameSave.CurrentCharacter which contains the character data
+                Plugin.Log?.LogInfo($"Loading vault for: {characterName}");
+
+                // Load the vault file
+                Plugin.LoadVaultForPlayer(characterName);
+
+                // Update state
+                _isVaultLoaded = true;
+                _loadedCharacterName = characterName;
+
+                // Set player name in vault manager
+                var vaultManager = Plugin.GetVaultManager();
+                vaultManager?.SetPlayerName(characterName);
+
+                // Load UI icons
+                IconCache.LoadAllIcons();
+
+                Plugin.Log?.LogInfo($"Vault loaded successfully for {characterName}");
+            }
+            catch (Exception ex)
+            {
+                Plugin.Log?.LogError($"Error loading vault: {ex.Message}");
+            }
+        }
+
+        /// <summary>
+        /// Get the current character name.
+        /// Primary source: LastLoadedCharacterName (extracted from slot during LoadCharacter)
+        /// Fallback: GameSave.CurrentCharacter (can be stale on character switch)
+        /// </summary>
+        private static string GetCurrentCharacterName()
+        {
+            try
+            {
+                // PRIMARY: Use the character name extracted during LoadCharacter
+                // This bypasses the stale CurrentCharacter issue
+                string lastLoadedName = GameSavePatches.LastLoadedCharacterName;
+                if (!string.IsNullOrEmpty(lastLoadedName))
+                {
+                    string sanitizedName = SanitizeFileName(lastLoadedName);
+                    Plugin.Log?.LogInfo($"GetCurrentCharacterName: Using LastLoadedCharacterName = '{sanitizedName}'");
+                    return sanitizedName;
+                }
+
+                // FALLBACK: Use CurrentCharacter (may be stale on character switch)
+                // OLD CODE (kept for reference):
+                // var currentChar = GameSave.CurrentCharacter;
+                // if (currentChar != null && !string.IsNullOrEmpty(currentChar.characterName))
+                // {
+                //     return SanitizeFileName(currentChar.characterName);
+                // }
+
                 var currentChar = GameSave.CurrentCharacter;
-                if (currentChar != null)
+                if (currentChar != null && !string.IsNullOrEmpty(currentChar.characterName))
                 {
-                    // Try characterName field first (this is what Sun Haven uses)
-                    string name = currentChar.characterName;
-                    if (!string.IsNullOrEmpty(name))
-                    {
-                        Plugin.Log?.LogInfo($"Found character name from GameSave: {name}");
-                        return SanitizeCharacterName(name);
-                    }
+                    string nameFromCurrent = SanitizeFileName(currentChar.characterName);
+                    Plugin.Log?.LogWarning($"GetCurrentCharacterName: FALLBACK to CurrentCharacter = '{nameFromCurrent}' (LastLoadedCharacterName was null)");
+                    return nameFromCurrent;
                 }
 
-                // Fallback: try getting from Player instance
-                if (Player.Instance != null)
-                {
-                    // Try reflection as backup
-                    var playerType = Player.Instance.GetType();
-
-                    // Try playerName field
-                    var nameField = AccessTools.Field(playerType, "playerName");
-                    if (nameField != null)
-                    {
-                        var name = nameField.GetValue(Player.Instance) as string;
-                        if (!string.IsNullOrEmpty(name))
-                        {
-                            Plugin.Log?.LogInfo($"Found character name from Player.playerName: {name}");
-                            return SanitizeCharacterName(name);
-                        }
-                    }
-                }
-
-                Plugin.Log?.LogWarning("Could not determine character name, using 'default'");
+                Plugin.Log?.LogWarning("GetCurrentCharacterName: Could not determine character name from any source");
                 return "default";
             }
             catch (Exception ex)
@@ -116,34 +146,59 @@ namespace TheVault.Patches
         }
 
         /// <summary>
-        /// Sanitize character name for use as filename
+        /// Sanitize a string for use as a filename.
         /// </summary>
-        private static string SanitizeCharacterName(string name)
+        private static string SanitizeFileName(string name)
         {
             if (string.IsNullOrEmpty(name))
                 return "default";
 
-            // Remove or replace invalid filename characters
             char[] invalid = System.IO.Path.GetInvalidFileNameChars();
             foreach (char c in invalid)
             {
                 name = name.Replace(c, '_');
             }
 
-            // Trim and ensure not empty
             name = name.Trim();
-            if (string.IsNullOrEmpty(name))
-                return "default";
-
-            return name;
+            return string.IsNullOrEmpty(name) ? "default" : name;
         }
 
         /// <summary>
-        /// Reset the vault loaded flag (used when player exits to menu)
+        /// Reset vault state. Called when returning to menu.
         /// </summary>
-        public static void ResetVaultLoaded()
+        public static void ResetState()
         {
-            _hasLoadedVault = false;
+            Plugin.Log?.LogInfo("Resetting vault state");
+            _isVaultLoaded = false;
+            _loadedCharacterName = null;
+            GameSavePatches.ResetLastLoadedSlot(); // Reset slot tracker so next character gets fresh data
+            ItemPatches.ResetState();
+            IconCache.Clear();
         }
+
+        /// <summary>
+        /// Save and reset. Called when exiting to menu.
+        /// </summary>
+        public static void SaveAndReset()
+        {
+            try
+            {
+                if (_isVaultLoaded)
+                {
+                    Plugin.Log?.LogInfo($"Saving vault for {_loadedCharacterName} before menu");
+                    Plugin.SaveVault();
+                }
+                ResetState();
+            }
+            catch (Exception ex)
+            {
+                Plugin.Log?.LogError($"Error in SaveAndReset: {ex.Message}");
+            }
+        }
+
+        // Legacy compatibility methods
+        public static void ResetVaultLoaded() => ResetState();
+        public static void ForceVaultReload() => ResetState();
+        public static void TriggerVaultLoad(string characterName) => LoadVaultForCharacter(characterName);
     }
 }

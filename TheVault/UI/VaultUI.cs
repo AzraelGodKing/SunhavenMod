@@ -188,19 +188,9 @@ namespace TheVault.UI
 
         private void Update()
         {
-            // Check for toggle key (with modifier)
-            bool modifierHeld = !_requiresModifier || Input.GetKey(KeyCode.LeftControl) || Input.GetKey(KeyCode.RightControl);
-
-            if (modifierHeld && Input.GetKeyDown(_toggleKey))
-            {
-                Toggle();
-            }
-
-            // Check for alternative toggle key (no modifier required - for Steam Deck)
-            if (_altToggleKey != KeyCode.None && Input.GetKeyDown(_altToggleKey))
-            {
-                Toggle();
-            }
+            // NOTE: Hotkey detection is now handled by PersistentRunner to avoid double-toggle.
+            // PersistentRunner survives game cleanup and calls our Toggle() method directly.
+            // We only handle Escape here since it's specific to closing this UI when visible.
 
             // Close on Escape
             if (_isVisible && Input.GetKeyDown(KeyCode.Escape))
