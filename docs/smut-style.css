@@ -1,0 +1,525 @@
+/* S.M.U.T. - Museum Tracker Stylesheet */
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+    min-height: 100vh;
+    padding: 0;
+    color: #e6edf3;
+}
+
+/* Top Navigation */
+.top-nav {
+    background: rgba(22, 33, 62, 0.95);
+    padding: 15px 40px;
+    border-bottom: 1px solid #3a506b;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    backdrop-filter: blur(10px);
+}
+
+.nav-home {
+    color: #5bc0be;
+    text-decoration: none;
+    font-weight: 600;
+    transition: color 0.3s;
+}
+
+.nav-home:hover {
+    color: #6fffe9;
+}
+
+.nav-divider {
+    color: #3a506b;
+    margin: 0 10px;
+}
+
+.nav-current {
+    color: #8b949e;
+}
+
+.container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 20px 40px 60px;
+}
+
+/* Hero Section */
+.hero {
+    text-align: center;
+    padding: 60px 20px;
+    margin-bottom: 40px;
+    background: linear-gradient(180deg, rgba(91, 192, 190, 0.15) 0%, transparent 100%);
+    border-radius: 20px;
+    border: 1px solid rgba(91, 192, 190, 0.3);
+}
+
+.hero-icon {
+    font-size: 5em;
+    margin-bottom: 20px;
+    filter: drop-shadow(0 0 20px rgba(91, 192, 190, 0.5));
+}
+
+.hero h1 {
+    font-size: 3.5em;
+    margin-bottom: 15px;
+    background: linear-gradient(90deg, #5bc0be, #ffc857, #e9724c);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    text-shadow: 0 0 40px rgba(91, 192, 190, 0.3);
+}
+
+.hero .full-name {
+    font-size: 0.5em;
+    display: block;
+    margin-top: 10px;
+    background: linear-gradient(90deg, #8b949e, #c9d1d9);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+.tagline {
+    font-size: 1.3em;
+    color: #8b949e;
+}
+
+/* Intro Section */
+.intro-section {
+    text-align: center;
+    max-width: 800px;
+    margin: 0 auto 50px;
+    font-size: 1.15em;
+    line-height: 1.7;
+    color: #c9d1d9;
+    padding: 30px;
+    background: rgba(91, 192, 190, 0.08);
+    border-radius: 15px;
+    border-left: 4px solid #5bc0be;
+}
+
+/* Section Titles */
+.section-title {
+    text-align: center;
+    font-size: 2em;
+    margin: 50px 0 30px;
+    color: #f0f6fc;
+    position: relative;
+}
+
+.section-title::after {
+    content: '';
+    position: absolute;
+    bottom: -10px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 80px;
+    height: 3px;
+    background: linear-gradient(90deg, #5bc0be, #ffc857);
+    border-radius: 2px;
+}
+
+/* Features Grid */
+.features-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 25px;
+    margin-bottom: 50px;
+}
+
+.feature-card {
+    background: rgba(22, 33, 62, 0.8);
+    border-radius: 15px;
+    padding: 30px;
+    text-align: center;
+    border: 1px solid #3a506b;
+    transition: all 0.3s ease;
+}
+
+.feature-card:hover {
+    transform: translateY(-5px);
+    border-color: #5bc0be;
+    box-shadow: 0 10px 40px rgba(91, 192, 190, 0.15);
+}
+
+.feature-icon {
+    font-size: 2.5em;
+    margin-bottom: 15px;
+}
+
+.feature-card h3 {
+    color: #f0f6fc;
+    margin-bottom: 12px;
+    font-size: 1.2em;
+}
+
+.feature-card p {
+    color: #8b949e;
+    line-height: 1.6;
+}
+
+/* Museum Sections */
+.museum-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+    gap: 25px;
+    margin-bottom: 50px;
+}
+
+.museum-section {
+    background: rgba(22, 33, 62, 0.8);
+    border-radius: 15px;
+    padding: 25px;
+    border: 1px solid #3a506b;
+}
+
+.museum-section.gems {
+    border-top: 4px solid #a371f7;
+}
+
+.museum-section.culture {
+    border-top: 4px solid #ffc857;
+}
+
+.museum-section.aquarium {
+    border-top: 4px solid #5bc0be;
+}
+
+.section-header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 20px;
+    padding-bottom: 15px;
+    border-bottom: 1px solid #3a506b;
+}
+
+.section-icon {
+    font-size: 2em;
+}
+
+.section-header h3 {
+    color: #f0f6fc;
+    font-size: 1.3em;
+}
+
+.section-desc {
+    color: #8b949e;
+    font-size: 0.95em;
+    margin-bottom: 15px;
+    line-height: 1.5;
+}
+
+.bundle-list {
+    list-style: none;
+}
+
+.bundle-list li {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 0;
+    color: #c9d1d9;
+    border-bottom: 1px solid rgba(58, 80, 107, 0.5);
+}
+
+.bundle-list li:last-child {
+    border-bottom: none;
+}
+
+.bundle-icon {
+    font-size: 1.2em;
+    width: 28px;
+    text-align: center;
+}
+
+.bundle-icon.gem { color: #a371f7; }
+.bundle-icon.mineral { color: #8b949e; }
+.bundle-icon.ore { color: #d29922; }
+.bundle-icon.crystal { color: #79c0ff; }
+.bundle-icon.mana { color: #58a6ff; }
+.bundle-icon.artifact { color: #ffc857; }
+.bundle-icon.elven { color: #7ee787; }
+.bundle-icon.nelvari { color: #f778ba; }
+.bundle-icon.wither { color: #8957e5; }
+.bundle-icon.fossil { color: #d29922; }
+.bundle-icon.freshwater { color: #5bc0be; }
+.bundle-icon.saltwater { color: #58a6ff; }
+.bundle-icon.exotic { color: #f778ba; }
+.bundle-icon.legendary { color: #ffc857; }
+.bundle-icon.shellfish { color: #f0883e; }
+
+/* Rarity Colors Section */
+.rarity-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 15px;
+    max-width: 900px;
+    margin: 0 auto 50px;
+}
+
+.rarity-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    background: rgba(22, 33, 62, 0.6);
+    padding: 15px 20px;
+    border-radius: 10px;
+    border: 1px solid #3a506b;
+}
+
+.rarity-dot {
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
+}
+
+.rarity-dot.common { background: #8b949e; }
+.rarity-dot.uncommon { background: #7ee787; }
+.rarity-dot.rare { background: #58a6ff; }
+.rarity-dot.epic { background: #a371f7; }
+.rarity-dot.legendary { background: #ffc857; }
+
+.rarity-label {
+    color: #c9d1d9;
+    font-weight: 500;
+}
+
+/* Usage Steps */
+.usage-steps {
+    max-width: 700px;
+    margin: 0 auto 50px;
+}
+
+.step {
+    display: flex;
+    gap: 20px;
+    margin-bottom: 25px;
+    background: rgba(22, 33, 62, 0.6);
+    padding: 25px;
+    border-radius: 12px;
+    border: 1px solid #3a506b;
+    transition: border-color 0.3s;
+}
+
+.step:hover {
+    border-color: #5bc0be;
+}
+
+.step-number {
+    background: linear-gradient(135deg, #5bc0be, #6fffe9);
+    color: #1a1a2e;
+    width: 45px;
+    height: 45px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: bold;
+    font-size: 1.3em;
+    flex-shrink: 0;
+}
+
+.step-content h4 {
+    color: #f0f6fc;
+    margin-bottom: 8px;
+    font-size: 1.1em;
+}
+
+.step-content p {
+    color: #8b949e;
+    line-height: 1.5;
+}
+
+kbd {
+    background: #16213e;
+    border: 1px solid #3a506b;
+    border-radius: 6px;
+    padding: 3px 8px;
+    font-family: 'Consolas', monospace;
+    font-size: 0.9em;
+    color: #c9d1d9;
+    box-shadow: 0 2px 0 #3a506b;
+}
+
+/* Installation */
+.install-steps {
+    max-width: 700px;
+    margin: 0 auto 50px;
+}
+
+.install-step {
+    display: flex;
+    gap: 20px;
+    margin-bottom: 20px;
+    background: rgba(22, 33, 62, 0.6);
+    padding: 25px;
+    border-radius: 12px;
+    border: 1px solid #3a506b;
+    align-items: center;
+}
+
+.step-icon {
+    font-size: 2em;
+    width: 50px;
+    text-align: center;
+}
+
+.step-info h4 {
+    color: #f0f6fc;
+    margin-bottom: 6px;
+}
+
+.step-info p {
+    color: #8b949e;
+}
+
+/* Configuration */
+.config-table {
+    max-width: 700px;
+    margin: 0 auto 20px;
+    overflow-x: auto;
+}
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+    background: rgba(22, 33, 62, 0.8);
+    border-radius: 10px;
+    overflow: hidden;
+}
+
+th, td {
+    padding: 15px 20px;
+    text-align: left;
+    border-bottom: 1px solid #3a506b;
+}
+
+th {
+    background: rgba(58, 80, 107, 0.5);
+    color: #f0f6fc;
+    font-weight: 600;
+}
+
+td {
+    color: #c9d1d9;
+}
+
+tr:last-child td {
+    border-bottom: none;
+}
+
+tr:hover td {
+    background: rgba(91, 192, 190, 0.05);
+}
+
+code {
+    background: #16213e;
+    padding: 3px 8px;
+    border-radius: 4px;
+    font-family: 'Consolas', monospace;
+    font-size: 0.9em;
+    color: #5bc0be;
+}
+
+.config-note {
+    text-align: center;
+    color: #8b949e;
+    font-size: 0.95em;
+    margin-bottom: 40px;
+}
+
+/* Footer */
+.footer {
+    text-align: center;
+    margin-top: 60px;
+    padding: 40px 20px;
+    border-top: 1px solid #3a506b;
+    background: rgba(26, 26, 46, 0.5);
+    border-radius: 0 0 20px 20px;
+}
+
+.footer p {
+    color: #8b949e;
+    margin-bottom: 15px;
+}
+
+.footer-links {
+    display: flex;
+    justify-content: center;
+    gap: 30px;
+}
+
+.footer-links a {
+    color: #5bc0be;
+    text-decoration: none;
+    transition: color 0.3s;
+}
+
+.footer-links a:hover {
+    color: #6fffe9;
+    text-decoration: underline;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .container {
+        padding: 20px;
+    }
+
+    .hero h1 {
+        font-size: 2.5em;
+    }
+
+    .hero-icon {
+        font-size: 3.5em;
+    }
+
+    .section-title {
+        font-size: 1.6em;
+    }
+
+    .step, .install-step {
+        flex-direction: column;
+        text-align: center;
+    }
+
+    .step-number {
+        margin: 0 auto 15px;
+    }
+
+    .top-nav {
+        padding: 12px 20px;
+    }
+
+    .footer-links {
+        flex-direction: column;
+        gap: 15px;
+    }
+}
+
+@media (max-width: 480px) {
+    .hero h1 {
+        font-size: 2em;
+    }
+
+    .features-grid, .museum-grid, .rarity-grid {
+        grid-template-columns: 1fr;
+    }
+
+    table {
+        font-size: 0.9em;
+    }
+
+    th, td {
+        padding: 10px 12px;
+    }
+}

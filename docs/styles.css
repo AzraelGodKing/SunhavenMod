@@ -683,6 +683,25 @@ h1 {
     transform: scale(1.05);
 }
 
+.mod-card.smut-theme {
+    border-color: rgba(91, 192, 190, 0.4);
+    background: linear-gradient(135deg, rgba(91, 192, 190, 0.1) 0%, rgba(91, 192, 190, 0.02) 100%);
+}
+
+.mod-card.smut-theme:hover {
+    border-color: rgba(91, 192, 190, 0.7);
+}
+
+.mod-cta-button.smut-btn {
+    background: linear-gradient(135deg, #5bc0be, #3a9d9b);
+    color: #fff;
+}
+
+.mod-cta-button.smut-btn:hover {
+    background: linear-gradient(135deg, #6fffe9, #5bc0be);
+    transform: scale(1.05);
+}
+
 .quick-install {
     max-width: 700px;
     margin: 0 auto 50px;
