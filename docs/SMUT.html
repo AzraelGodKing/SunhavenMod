@@ -1,0 +1,254 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>S.M.U.T. - Museum Tracker for Sun Haven</title>
+    <link rel="stylesheet" href="smut-style.css">
+</head>
+<body>
+    <nav class="top-nav">
+        <a href="index.html" class="nav-home">Mod Hub</a>
+        <span class="nav-divider">/</span>
+        <span class="nav-current">S.M.U.T.</span>
+    </nav>
+
+    <div class="container">
+        <header class="hero">
+            <div class="hero-icon">&#x1F3DB;</div>
+            <h1>S.M.U.T.<span class="full-name">Sun Haven Museum Utility Tracker</span></h1>
+            <p class="tagline">Track Your Museum Donations</p>
+        </header>
+
+        <section class="intro-section">
+            <p>S.M.U.T. helps you track which items you've donated to the Sun Haven Museum and which ones you still need. With per-character saves and a clean UI organized by museum sections and bundles, you'll never lose track of your collection progress again.</p>
+        </section>
+
+        <section class="features-section">
+            <h2 class="section-title">Key Features</h2>
+            <div class="features-grid">
+                <div class="feature-card">
+                    <div class="feature-icon">&#x2611;</div>
+                    <h3>Donation Tracking</h3>
+                    <p>Mark items as donated with a simple checkbox. Track your progress across all museum sections with visual indicators for completed bundles.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">&#x1F464;</div>
+                    <h3>Per-Character Saves</h3>
+                    <p>Each character has their own separate donation tracker. Switch between characters and your progress is always saved correctly.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">&#x1F4CA;</div>
+                    <h3>Progress Statistics</h3>
+                    <p>See completion percentages for each section, bundle, and your overall museum progress. Progress bars show exactly how close you are to completion.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">&#x1F3A8;</div>
+                    <h3>Item Icons</h3>
+                    <p>Displays actual game item icons when available, making it easy to identify exactly which items you need to find.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">&#x1F50D;</div>
+                    <h3>Filter View</h3>
+                    <p>Toggle "Show only needed items" to hide already donated items and focus on what's still missing from your collection.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">&#x1F48E;</div>
+                    <h3>Rarity Colors</h3>
+                    <p>Items are color-coded by rarity (Common, Uncommon, Rare, Epic, Legendary) so you can prioritize finding those rare collectibles.</p>
+                </div>
+            </div>
+        </section>
+
+        <section class="museum-section-list">
+            <h2 class="section-title">Museum Sections</h2>
+            <div class="museum-grid">
+                <!-- Hall of Gems -->
+                <div class="museum-section gems">
+                    <div class="section-header">
+                        <span class="section-icon">&#x1F48E;</span>
+                        <h3>The Hall of Gems</h3>
+                    </div>
+                    <p class="section-desc">A dazzling collection of precious gems, minerals, ores, and magical crystals.</p>
+                    <ul class="bundle-list">
+                        <li><span class="bundle-icon gem">&#x1F48E;</span> Precious Gems</li>
+                        <li><span class="bundle-icon mineral">&#x26AB;</span> Common Minerals</li>
+                        <li><span class="bundle-icon ore">&#x26CF;</span> Ore Specimens</li>
+                        <li><span class="bundle-icon crystal">&#x2728;</span> Magical Crystals</li>
+                        <li><span class="bundle-icon mana">&#x1F4A7;</span> Mana</li>
+                    </ul>
+                </div>
+
+                <!-- Hall of Culture -->
+                <div class="museum-section culture">
+                    <div class="section-header">
+                        <span class="section-icon">&#x1F3FA;</span>
+                        <h3>The Hall of Culture</h3>
+                    </div>
+                    <p class="section-desc">Artifacts and relics from civilizations past and present.</p>
+                    <ul class="bundle-list">
+                        <li><span class="bundle-icon artifact">&#x1F3FA;</span> Ancient Artifacts</li>
+                        <li><span class="bundle-icon elven">&#x1F343;</span> Elven Heritage</li>
+                        <li><span class="bundle-icon nelvari">&#x1F3AD;</span> Nelvari Relics</li>
+                        <li><span class="bundle-icon wither">&#x1F480;</span> Withergate Remnants</li>
+                        <li><span class="bundle-icon fossil">&#x1F9B4;</span> Fossils</li>
+                    </ul>
+                </div>
+
+                <!-- Aquarium -->
+                <div class="museum-section aquarium">
+                    <div class="section-header">
+                        <span class="section-icon">&#x1F41F;</span>
+                        <h3>Aquarium</h3>
+                    </div>
+                    <p class="section-desc">A collection of fish and aquatic life from all waters.</p>
+                    <ul class="bundle-list">
+                        <li><span class="bundle-icon freshwater">&#x1F3DE;</span> Freshwater Fish</li>
+                        <li><span class="bundle-icon saltwater">&#x1F30A;</span> Saltwater Fish</li>
+                        <li><span class="bundle-icon exotic">&#x1F420;</span> Exotic Fish</li>
+                        <li><span class="bundle-icon legendary">&#x2B50;</span> Legendary Sea Creatures</li>
+                        <li><span class="bundle-icon shellfish">&#x1F980;</span> Shellfish & Crustaceans</li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+
+        <section class="rarity-section">
+            <h2 class="section-title">Item Rarities</h2>
+            <div class="rarity-grid">
+                <div class="rarity-item">
+                    <span class="rarity-dot common"></span>
+                    <span class="rarity-label">Common</span>
+                </div>
+                <div class="rarity-item">
+                    <span class="rarity-dot uncommon"></span>
+                    <span class="rarity-label">Uncommon</span>
+                </div>
+                <div class="rarity-item">
+                    <span class="rarity-dot rare"></span>
+                    <span class="rarity-label">Rare</span>
+                </div>
+                <div class="rarity-item">
+                    <span class="rarity-dot epic"></span>
+                    <span class="rarity-label">Epic</span>
+                </div>
+                <div class="rarity-item">
+                    <span class="rarity-dot legendary"></span>
+                    <span class="rarity-label">Legendary</span>
+                </div>
+            </div>
+        </section>
+
+        <section class="usage-section">
+            <h2 class="section-title">How to Use</h2>
+            <div class="usage-steps">
+                <div class="step">
+                    <div class="step-number">1</div>
+                    <div class="step-content">
+                        <h4>Open the Tracker</h4>
+                        <p>Press <kbd>Ctrl</kbd> + <kbd>C</kbd> to open the Museum Tracker window. Press <kbd>Escape</kbd> or the X button to close it.</p>
+                    </div>
+                </div>
+                <div class="step">
+                    <div class="step-number">2</div>
+                    <div class="step-content">
+                        <h4>Choose a Section</h4>
+                        <p>Click the tabs at the top to switch between The Hall of Gems, The Hall of Culture, and the Aquarium.</p>
+                    </div>
+                </div>
+                <div class="step">
+                    <div class="step-number">3</div>
+                    <div class="step-content">
+                        <h4>Expand Bundles</h4>
+                        <p>Click on any bundle header to expand it and see all the items within that category.</p>
+                    </div>
+                </div>
+                <div class="step">
+                    <div class="step-number">4</div>
+                    <div class="step-content">
+                        <h4>Mark Donations</h4>
+                        <p>Click the checkbox next to any item to mark it as donated. Your progress saves automatically!</p>
+                    </div>
+                </div>
+                <div class="step">
+                    <div class="step-number">5</div>
+                    <div class="step-content">
+                        <h4>Filter Items</h4>
+                        <p>Toggle "Show only needed items" to hide completed donations and focus on what you still need to find.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section class="install-section">
+            <h2 class="section-title">Installation</h2>
+            <div class="install-steps">
+                <div class="install-step">
+                    <div class="step-icon">&#x1F4E6;</div>
+                    <div class="step-info">
+                        <h4>1. Install BepInEx</h4>
+                        <p>Download and install BepInEx 5.x for Unity games if you haven't already.</p>
+                    </div>
+                </div>
+                <div class="install-step">
+                    <div class="step-icon">&#x1F4E5;</div>
+                    <div class="step-info">
+                        <h4>2. Download S.M.U.T.</h4>
+                        <p>Get SunHavenMuseumUtilityTracker.dll from <a href="https://www.nexusmods.com/profile/AzraelGodKing/mods" target="_blank">Nexus Mods</a>.</p>
+                    </div>
+                </div>
+                <div class="install-step">
+                    <div class="step-icon">&#x1F4C1;</div>
+                    <div class="step-info">
+                        <h4>3. Install the Mod</h4>
+                        <p>Place the DLL in <code>BepInEx/plugins/SunHavenMuseumUtilityTracker</code> folder.</p>
+                    </div>
+                </div>
+                <div class="install-step">
+                    <div class="step-icon">&#x1F3AE;</div>
+                    <div class="step-info">
+                        <h4>4. Play!</h4>
+                        <p>Launch Sun Haven and press <kbd>Ctrl</kbd>+<kbd>C</kbd> to track your museum progress.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section class="config-section">
+            <h2 class="section-title">Configuration</h2>
+            <div class="config-table">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Setting</th>
+                            <th>Default</th>
+                            <th>Description</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>ToggleKey</td>
+                            <td><kbd>C</kbd></td>
+                            <td>Key to open/close the tracker UI</td>
+                        </tr>
+                        <tr>
+                            <td>RequireCtrl</td>
+                            <td>true</td>
+                            <td>Require Ctrl key when pressing toggle key</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+            <p class="config-note">Configuration file located at: <code>BepInEx/config/com.azraelgodking.museumtracker.cfg</code></p>
+        </section>
+
+        <footer class="footer">
+            <p>S.M.U.T. - A Sun Haven Mod by AzraelGodKing</p>
+            <div class="footer-links">
+                <a href="index.html">Back to Mod Hub</a>
+                <a href="https://www.nexusmods.com/profile/AzraelGodKing/mods" target="_blank">View on Nexus Mods</a>
+            </div>
+        </footer>
+    </div>
+</body>
+</html>
