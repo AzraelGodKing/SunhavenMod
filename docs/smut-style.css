@@ -106,6 +106,36 @@ body {
     border-left: 4px solid #5bc0be;
 }
 
+/* Notice Section */
+.notice-section {
+    max-width: 800px;
+    margin: 0 auto 30px;
+}
+
+.notice-box {
+    background: rgba(255, 200, 87, 0.1);
+    border: 1px solid rgba(255, 200, 87, 0.4);
+    border-left: 4px solid #ffc857;
+    border-radius: 15px;
+    padding: 25px 30px;
+}
+
+.notice-box h3 {
+    color: #ffc857;
+    margin-bottom: 15px;
+    font-size: 1.2em;
+}
+
+.notice-box p {
+    color: #c9d1d9;
+    line-height: 1.7;
+    margin-bottom: 10px;
+}
+
+.notice-box p:last-child {
+    margin-bottom: 0;
+}
+
 /* Section Titles */
 .section-title {
     text-align: center;
@@ -246,11 +276,26 @@ body {
 .bundle-icon.ore { color: #d29922; }
 .bundle-icon.crystal { color: #79c0ff; }
 .bundle-icon.mana { color: #58a6ff; }
+.bundle-icon.money { color: #ffc857; }
+.bundle-icon.golden { color: #ffd700; }
+.bundle-icon.bars { color: #d29922; }
 .bundle-icon.artifact { color: #ffc857; }
 .bundle-icon.elven { color: #7ee787; }
 .bundle-icon.nelvari { color: #f778ba; }
 .bundle-icon.wither { color: #8957e5; }
 .bundle-icon.fossil { color: #d29922; }
+.bundle-icon.spring { color: #7ee787; }
+.bundle-icon.summer { color: #ffc857; }
+.bundle-icon.fall { color: #f0883e; }
+.bundle-icon.winter { color: #79c0ff; }
+.bundle-icon.flower { color: #f778ba; }
+.bundle-icon.forage { color: #d29922; }
+.bundle-icon.explore { color: #58a6ff; }
+.bundle-icon.combat { color: #f85149; }
+.bundle-icon.alchemy { color: #a371f7; }
+.bundle-icon.temple { color: #ffc857; }
+.bundle-icon.fishing { color: #58a6ff; }
+.bundle-icon.large { color: #5bc0be; }
 .bundle-icon.freshwater { color: #5bc0be; }
 .bundle-icon.saltwater { color: #58a6ff; }
 .bundle-icon.exotic { color: #f778ba; }
