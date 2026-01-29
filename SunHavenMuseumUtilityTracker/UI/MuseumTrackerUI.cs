@@ -1,7 +1,4 @@
-using System;
 using System.Collections.Generic;
-using System.Reflection;
-using HarmonyLib;
 using SunHavenMuseumUtilityTracker.Data;
 using SunHavenMuseumUtilityTracker.Patches;
 using UnityEngine;
@@ -33,10 +30,6 @@ namespace SunHavenMuseumUtilityTracker.UI
         private int _selectedSectionIndex = 0;
         private HashSet<string> _expandedBundles = new HashSet<string>();
         private bool _showOnlyNeeded = false;
-
-        // Icon cache
-        private Dictionary<int, Texture2D> _iconCache = new Dictionary<int, Texture2D>();
-        private HashSet<int> _failedIconLoads = new HashSet<int>();
 
         // Styles
         private bool _stylesInitialized;
@@ -116,6 +109,9 @@ namespace SunHavenMuseumUtilityTracker.UI
             float x = (Screen.width - WINDOW_WIDTH) / 2f;
             float y = (Screen.height - WINDOW_HEIGHT) / 2f;
             _windowRect = new Rect(x, y, WINDOW_WIDTH, WINDOW_HEIGHT);
+
+            // Initialize icon cache
+            IconCache.Initialize();
 
             Plugin.Log?.LogInfo("MuseumTrackerUI initialized");
         }
@@ -368,127 +364,6 @@ namespace SunHavenMuseumUtilityTracker.UI
             return tex;
         }
 
-        // Cached reflection for icon loading
-        private static bool _reflectionInitialized;
-        private static Type _itemDatabaseType;
-        private static PropertyInfo _itemDatabaseInstanceProp;
-        private static MethodInfo _getItemMethod;
-
-        /// <summary>
-        /// Initialize reflection for accessing ItemDatabase.
-        /// </summary>
-        private void InitializeIconReflection()
-        {
-            if (_reflectionInitialized) return;
-            _reflectionInitialized = true;
-
-            try
-            {
-                // Find ItemDatabase type
-                _itemDatabaseType = AccessTools.TypeByName("Wish.ItemDatabase");
-                if (_itemDatabaseType == null)
-                {
-                    Plugin.Log?.LogDebug("Could not find Wish.ItemDatabase type");
-                    return;
-                }
-
-                // Find Instance property
-                _itemDatabaseInstanceProp = _itemDatabaseType.GetProperty("Instance", BindingFlags.Public | BindingFlags.Static);
-                if (_itemDatabaseInstanceProp == null)
-                {
-                    Plugin.Log?.LogDebug("Could not find ItemDatabase.Instance property");
-                    return;
-                }
-
-                // Find GetItem method
-                _getItemMethod = _itemDatabaseType.GetMethod("GetItem", new[] { typeof(int) });
-                if (_getItemMethod == null)
-                {
-                    Plugin.Log?.LogDebug("Could not find ItemDatabase.GetItem method");
-                    return;
-                }
-
-                Plugin.Log?.LogInfo("Icon reflection initialized successfully");
-            }
-            catch (Exception ex)
-            {
-                Plugin.Log?.LogDebug($"Failed to initialize icon reflection: {ex.Message}");
-            }
-        }
-
-        /// <summary>
-        /// Gets the icon for an item from the game database, with caching.
-        /// </summary>
-        private Texture2D GetItemIcon(int gameItemId)
-        {
-            // Return cached icon if available
-            if (_iconCache.TryGetValue(gameItemId, out var cachedIcon))
-                return cachedIcon;
-
-            // Skip if we already failed to load this icon
-            if (_failedIconLoads.Contains(gameItemId))
-                return null;
-
-            // Initialize reflection on first use
-            InitializeIconReflection();
-
-            try
-            {
-                // Get ItemDatabase instance via reflection
-                if (_itemDatabaseInstanceProp != null && _getItemMethod != null)
-                {
-                    var instance = _itemDatabaseInstanceProp.GetValue(null);
-                    if (instance != null)
-                    {
-                        var item = _getItemMethod.Invoke(instance, new object[] { gameItemId });
-                        if (item != null)
-                        {
-                            // Get ItemData via ItemData() method
-                            var itemDataMethod = item.GetType().GetMethod("ItemData", BindingFlags.Public | BindingFlags.Instance);
-                            if (itemDataMethod != null)
-                            {
-                                var itemData = itemDataMethod.Invoke(item, null);
-                                if (itemData != null)
-                                {
-                                    // Try to get icon field
-                                    var iconField = itemData.GetType().GetField("icon", BindingFlags.Public | BindingFlags.Instance);
-                                    if (iconField != null)
-                                    {
-                                        var sprite = iconField.GetValue(itemData) as Sprite;
-                                        if (sprite != null && sprite.texture != null)
-                                        {
-                                            _iconCache[gameItemId] = sprite.texture;
-                                            return sprite.texture;
-                                        }
-                                    }
-
-                                    // Try property if field didn't work
-                                    var iconProp = itemData.GetType().GetProperty("icon", BindingFlags.Public | BindingFlags.Instance);
-                                    if (iconProp != null)
-                                    {
-                                        var sprite = iconProp.GetValue(itemData) as Sprite;
-                                        if (sprite != null && sprite.texture != null)
-                                        {
-                                            _iconCache[gameItemId] = sprite.texture;
-                                            return sprite.texture;
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-            catch (Exception ex)
-            {
-                Plugin.Log?.LogDebug($"Failed to load icon for item {gameItemId}: {ex.Message}");
-            }
-
-            // Mark as failed so we don't keep trying
-            _failedIconLoads.Add(gameItemId);
-            return null;
-        }
-
         private void DrawWindow(int windowId)
         {
             GUILayout.BeginVertical();
@@ -707,7 +582,7 @@ namespace SunHavenMuseumUtilityTracker.UI
                 GUILayout.Space(5);
 
                 // Item icon
-                var icon = GetItemIcon(item.GameItemId);
+                var icon = IconCache.GetIcon(item.GameItemId);
                 if (icon != null)
                 {
                     var iconRect = GUILayoutUtility.GetRect(ICON_SIZE, ICON_SIZE, GUILayout.Width(ICON_SIZE), GUILayout.Height(ICON_SIZE));
