@@ -21,7 +21,15 @@
         </header>
 
         <section class="intro-section">
-            <p>S.M.U.T. helps you track which items you've donated to the Sun Haven Museum and which ones you still need. With per-character saves and a clean UI organized by museum sections and bundles, you'll never lose track of your collection progress again.</p>
+            <p>S.M.U.T. helps you track which items you've donated to the Sun Haven Museum and which ones you still need. With per-character saves, search functionality, and a beautiful dark-themed UI organized by museum sections and bundles, you'll never lose track of your collection progress again.</p>
+        </section>
+
+        <section class="notice-section">
+            <div class="notice-box">
+                <h3>&#x2139; Manual Tracking Only</h3>
+                <p>This mod uses <strong>manual tracking</strong>. Sun Haven's game code only stores bundle completion (e.g., "Golden Bundle complete"), not individual item donations. Because the game doesn't track which specific items you've donated within incomplete bundles, automatic tracking of individual items is not possible.</p>
+                <p>Simply check off items as you donate them - your progress saves automatically per character!</p>
+            </div>
         </section>
 
         <section class="features-section">
@@ -29,7 +37,7 @@
             <div class="features-grid">
                 <div class="feature-card">
                     <div class="feature-icon">&#x2611;</div>
-                    <h3>Donation Tracking</h3>
+                    <h3>Manual Tracking</h3>
                     <p>Mark items as donated with a simple checkbox. Track your progress across all museum sections with visual indicators for completed bundles.</p>
                 </div>
                 <div class="feature-card">
@@ -38,19 +46,19 @@
                     <p>Each character has their own separate donation tracker. Switch between characters and your progress is always saved correctly.</p>
                 </div>
                 <div class="feature-card">
+                    <div class="feature-icon">&#x1F50D;</div>
+                    <h3>Search & Filter</h3>
+                    <p>Search for items by name or rarity. Toggle "Show only needed" to hide donated items and focus on what's missing.</p>
+                </div>
+                <div class="feature-card">
                     <div class="feature-icon">&#x1F4CA;</div>
                     <h3>Progress Statistics</h3>
-                    <p>See completion percentages for each section, bundle, and your overall museum progress. Progress bars show exactly how close you are to completion.</p>
+                    <p>See completion percentages for each section, bundle, and your overall museum progress. Progress bars show exactly how close you are to 100%.</p>
                 </div>
                 <div class="feature-card">
                     <div class="feature-icon">&#x1F3A8;</div>
                     <h3>Item Icons</h3>
                     <p>Displays actual game item icons when available, making it easy to identify exactly which items you need to find.</p>
-                </div>
-                <div class="feature-card">
-                    <div class="feature-icon">&#x1F50D;</div>
-                    <h3>Filter View</h3>
-                    <p>Toggle "Show only needed items" to hide already donated items and focus on what's still missing from your collection.</p>
                 </div>
                 <div class="feature-card">
                     <div class="feature-icon">&#x1F48E;</div>
@@ -69,29 +77,38 @@
                         <span class="section-icon">&#x1F48E;</span>
                         <h3>The Hall of Gems</h3>
                     </div>
-                    <p class="section-desc">A dazzling collection of precious gems, minerals, ores, and magical crystals.</p>
+                    <p class="section-desc">A dazzling collection of precious gems, bars, and magical crystals.</p>
                     <ul class="bundle-list">
-                        <li><span class="bundle-icon gem">&#x1F48E;</span> Precious Gems</li>
-                        <li><span class="bundle-icon mineral">&#x26AB;</span> Common Minerals</li>
-                        <li><span class="bundle-icon ore">&#x26CF;</span> Ore Specimens</li>
-                        <li><span class="bundle-icon crystal">&#x2728;</span> Magical Crystals</li>
-                        <li><span class="bundle-icon mana">&#x1F4A7;</span> Mana</li>
+                        <li><span class="bundle-icon mana">&#x1F4A7;</span> Mana Bundle</li>
+                        <li><span class="bundle-icon money">&#x1F4B0;</span> Money Bundle</li>
+                        <li><span class="bundle-icon golden">&#x2B50;</span> Golden Bundle</li>
+                        <li><span class="bundle-icon bars">&#x26CF;</span> Bars Bundle</li>
+                        <li><span class="bundle-icon gem">&#x1F48E;</span> Gems Bundle</li>
+                        <li><span class="bundle-icon nelvari">&#x1F3D4;</span> Nel'Vari Mines Bundle</li>
+                        <li><span class="bundle-icon wither">&#x1F36C;</span> Withergate Mines Bundle</li>
                     </ul>
                 </div>
 
                 <!-- Hall of Culture -->
                 <div class="museum-section culture">
                     <div class="section-header">
-                        <span class="section-icon">&#x1F3FA;</span>
+                        <span class="section-icon">&#x1F33E;</span>
                         <h3>The Hall of Culture</h3>
                     </div>
-                    <p class="section-desc">Artifacts and relics from civilizations past and present.</p>
+                    <p class="section-desc">Crops, flowers, artifacts, and treasures from all regions.</p>
                     <ul class="bundle-list">
-                        <li><span class="bundle-icon artifact">&#x1F3FA;</span> Ancient Artifacts</li>
-                        <li><span class="bundle-icon elven">&#x1F343;</span> Elven Heritage</li>
-                        <li><span class="bundle-icon nelvari">&#x1F3AD;</span> Nelvari Relics</li>
-                        <li><span class="bundle-icon wither">&#x1F480;</span> Withergate Remnants</li>
-                        <li><span class="bundle-icon fossil">&#x1F9B4;</span> Fossils</li>
+                        <li><span class="bundle-icon spring">&#x1F331;</span> Spring Crops</li>
+                        <li><span class="bundle-icon summer">&#x2600;</span> Summer Crops</li>
+                        <li><span class="bundle-icon fall">&#x1F342;</span> Fall Crops</li>
+                        <li><span class="bundle-icon winter">&#x2744;</span> Winter Crops</li>
+                        <li><span class="bundle-icon nelvari">&#x1F343;</span> Nel'Vari Crops</li>
+                        <li><span class="bundle-icon wither">&#x1F480;</span> Withergate Crops</li>
+                        <li><span class="bundle-icon flower">&#x1F338;</span> Flowers</li>
+                        <li><span class="bundle-icon forage">&#x1F344;</span> Foraging</li>
+                        <li><span class="bundle-icon explore">&#x1F5FA;</span> Exploration</li>
+                        <li><span class="bundle-icon combat">&#x2694;</span> Combat</li>
+                        <li><span class="bundle-icon alchemy">&#x2697;</span> Alchemy</li>
+                        <li><span class="bundle-icon temple">&#x1F4D6;</span> Nel'Vari Temple</li>
                     </ul>
                 </div>
 
@@ -103,11 +120,14 @@
                     </div>
                     <p class="section-desc">A collection of fish and aquatic life from all waters.</p>
                     <ul class="bundle-list">
-                        <li><span class="bundle-icon freshwater">&#x1F3DE;</span> Freshwater Fish</li>
-                        <li><span class="bundle-icon saltwater">&#x1F30A;</span> Saltwater Fish</li>
-                        <li><span class="bundle-icon exotic">&#x1F420;</span> Exotic Fish</li>
-                        <li><span class="bundle-icon legendary">&#x2B50;</span> Legendary Sea Creatures</li>
-                        <li><span class="bundle-icon shellfish">&#x1F980;</span> Shellfish & Crustaceans</li>
+                        <li><span class="bundle-icon fishing">&#x1F3A3;</span> Fishing Bundle</li>
+                        <li><span class="bundle-icon spring">&#x1F331;</span> Spring Fish Tank</li>
+                        <li><span class="bundle-icon summer">&#x2600;</span> Summer Fish Tank</li>
+                        <li><span class="bundle-icon fall">&#x1F342;</span> Fall Fish Tank</li>
+                        <li><span class="bundle-icon winter">&#x2744;</span> Winter Fish Tank</li>
+                        <li><span class="bundle-icon nelvari">&#x1F343;</span> Nel'Vari Fish Tank</li>
+                        <li><span class="bundle-icon wither">&#x1F480;</span> Withergate Fish Tank</li>
+                        <li><span class="bundle-icon large">&#x1F30A;</span> Large Fish Tank</li>
                     </ul>
                 </div>
             </div>
@@ -159,22 +179,22 @@
                 <div class="step">
                     <div class="step-number">3</div>
                     <div class="step-content">
-                        <h4>Expand Bundles</h4>
-                        <p>Click on any bundle header to expand it and see all the items within that category.</p>
+                        <h4>Search or Filter</h4>
+                        <p>Use the search box to find specific items, or toggle "Show needed only" to hide already donated items.</p>
                     </div>
                 </div>
                 <div class="step">
                     <div class="step-number">4</div>
                     <div class="step-content">
-                        <h4>Mark Donations</h4>
-                        <p>Click the checkbox next to any item to mark it as donated. Your progress saves automatically!</p>
+                        <h4>Expand Bundles</h4>
+                        <p>Click on any bundle header to expand it and see all the items within that category.</p>
                     </div>
                 </div>
                 <div class="step">
                     <div class="step-number">5</div>
                     <div class="step-content">
-                        <h4>Filter Items</h4>
-                        <p>Toggle "Show only needed items" to hide completed donations and focus on what you still need to find.</p>
+                        <h4>Mark Donations</h4>
+                        <p>Click the checkbox next to any item to mark it as donated. Your progress saves automatically!</p>
                     </div>
                 </div>
             </div>
@@ -201,7 +221,7 @@
                     <div class="step-icon">&#x1F4C1;</div>
                     <div class="step-info">
                         <h4>3. Install the Mod</h4>
-                        <p>Place the DLL in <code>BepInEx/plugins/SunHavenMuseumUtilityTracker</code> folder.</p>
+                        <p>Place the DLL in your <code>BepInEx/plugins/</code> folder.</p>
                     </div>
                 </div>
                 <div class="install-step">
@@ -239,11 +259,11 @@
                     </tbody>
                 </table>
             </div>
-            <p class="config-note">Configuration file located at: <code>BepInEx/config/com.azraelgodking.museumtracker.cfg</code></p>
+            <p class="config-note">Configuration file located at: <code>BepInEx/config/com.myleek.sunhavenmuseumutilitytracker.cfg</code></p>
         </section>
 
         <footer class="footer">
-            <p>S.M.U.T. - A Sun Haven Mod by AzraelGodKing</p>
+            <p>S.M.U.T. - A Sun Haven Mod by Myleek</p>
             <div class="footer-links">
                 <a href="index.html">Back to Mod Hub</a>
                 <a href="https://www.nexusmods.com/sunhaven/mods/490" target="_blank">View on Nexus Mods</a>

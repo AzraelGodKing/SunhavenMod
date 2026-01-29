@@ -4,6 +4,7 @@ using BepInEx.Configuration;
 using BepInEx.Logging;
 using HarmonyLib;
 using SunHavenMuseumUtilityTracker.Data;
+using SunHavenMuseumUtilityTracker.DebugTools;
 using SunHavenMuseumUtilityTracker.Patches;
 using SunHavenMuseumUtilityTracker.UI;
 using UnityEngine;
@@ -23,6 +24,7 @@ namespace SunHavenMuseumUtilityTracker
         private static DonationSaveSystem _staticSaveSystem;
         private static MuseumTrackerUI _staticTrackerUI;
         private static GameObject _persistentRunner;
+        private static PersistentRunner _persistentRunnerComponent;
 
         // Instance references
         private DonationManager _donationManager;
@@ -33,10 +35,12 @@ namespace SunHavenMuseumUtilityTracker
         // Configuration
         private ConfigEntry<KeyCode> _toggleKey;
         private ConfigEntry<bool> _requireCtrl;
+        private ConfigEntry<KeyCode> _altToggleKey;
 
         // Static config for PersistentRunner
         public static KeyCode StaticToggleKey { get; private set; }
         public static bool StaticRequireCtrl { get; private set; }
+        public static KeyCode StaticAltToggleKey { get; private set; }
 
         private string _lastScene = "";
 
@@ -72,7 +76,7 @@ namespace SunHavenMuseumUtilityTracker
             SceneManager.sceneLoaded += OnSceneLoaded;
 
             Logger.LogInfo($"{PluginInfo.PLUGIN_NAME} loaded successfully!");
-            Logger.LogInfo($"Press {(_requireCtrl.Value ? "Ctrl+" : "")}{_toggleKey.Value} to open the tracker");
+            Logger.LogInfo($"Press {(_requireCtrl.Value ? "Ctrl+" : "")}{_toggleKey.Value} or {_altToggleKey.Value} to open the tracker");
         }
 
         private void BindConfiguration()
@@ -91,9 +95,17 @@ namespace SunHavenMuseumUtilityTracker
                 "Require Ctrl to be held when pressing the toggle key"
             );
 
+            _altToggleKey = Config.Bind(
+                "Hotkeys",
+                "AltToggleKey",
+                KeyCode.F7,
+                "Alternative key to toggle the Museum Tracker (no modifier required). Useful for Steam Deck."
+            );
+
             // Set static values for PersistentRunner
             StaticToggleKey = _toggleKey.Value;
             StaticRequireCtrl = _requireCtrl.Value;
+            StaticAltToggleKey = _altToggleKey.Value;
 
             // Listen for config changes
             _toggleKey.SettingChanged += (_, _) =>
@@ -106,16 +118,20 @@ namespace SunHavenMuseumUtilityTracker
                 StaticRequireCtrl = _requireCtrl.Value;
                 _trackerUI?.SetToggleKey(_toggleKey.Value, _requireCtrl.Value);
             };
+            _altToggleKey.SettingChanged += (_, _) =>
+            {
+                StaticAltToggleKey = _altToggleKey.Value;
+            };
         }
 
         private void CreatePersistentRunner()
         {
-            if (_persistentRunner != null) return;
+            if (_persistentRunner != null && _persistentRunnerComponent != null) return;
 
             _persistentRunner = new GameObject("MuseumTracker_PersistentRunner");
             DontDestroyOnLoad(_persistentRunner);
             _persistentRunner.hideFlags = HideFlags.HideAndDontSave;
-            _persistentRunner.AddComponent<PersistentRunner>();
+            _persistentRunnerComponent = _persistentRunner.AddComponent<PersistentRunner>();
             Logger.LogInfo("[PersistentRunner] Created");
         }
 
@@ -129,23 +145,54 @@ namespace SunHavenMuseumUtilityTracker
             _trackerUI.SetToggleKey(_toggleKey.Value, _requireCtrl.Value);
             _staticTrackerUI = _trackerUI;
 
+            // Create Debug Mode (only activates for authorized users via F10)
+            uiObject.AddComponent<DebugMode>();
+
             Logger.LogInfo("UI components created");
         }
 
         /// <summary>
         /// Ensure UI components exist (recreate if destroyed by game cleanup).
+        /// Called from PlayerPatches when a character loads.
         /// </summary>
         public static void EnsureUIComponentsExist()
         {
-            if (_staticTrackerUI == null)
+            try
             {
-                Log?.LogInfo("[EnsureUI] Recreating UI...");
-                var uiObject = new GameObject("MuseumTracker_UI");
-                UnityEngine.Object.DontDestroyOnLoad(uiObject);
+                // Check if PersistentRunner was destroyed and recreate it
+                if (_persistentRunner == null || _persistentRunnerComponent == null)
+                {
+                    Log?.LogInfo("[EnsureUI] Recreating PersistentRunner...");
+                    _persistentRunner = new GameObject("MuseumTracker_PersistentRunner");
+                    UnityEngine.Object.DontDestroyOnLoad(_persistentRunner);
+                    _persistentRunner.hideFlags = HideFlags.HideAndDontSave;
+                    _persistentRunnerComponent = _persistentRunner.AddComponent<PersistentRunner>();
+                    Log?.LogInfo("[EnsureUI] PersistentRunner recreated");
+                }
 
-                _staticTrackerUI = uiObject.AddComponent<MuseumTrackerUI>();
-                _staticTrackerUI.Initialize(_staticDonationManager);
-                _staticTrackerUI.SetToggleKey(StaticToggleKey, StaticRequireCtrl);
+                // Check if TrackerUI was destroyed and recreate it
+                if (_staticTrackerUI == null)
+                {
+                    Log?.LogInfo("[EnsureUI] Recreating TrackerUI...");
+                    var uiObject = new GameObject("MuseumTracker_UI");
+                    UnityEngine.Object.DontDestroyOnLoad(uiObject);
+                    // NOTE: Do NOT use HideFlags.HideAndDontSave on TrackerUI!
+                    // That flag prevents Unity's OnGUI from being called, which breaks the UI rendering.
+                    // Only PersistentRunner needs HideFlags (it only uses Update, not OnGUI).
+
+                    _staticTrackerUI = uiObject.AddComponent<MuseumTrackerUI>();
+                    _staticTrackerUI.Initialize(_staticDonationManager);
+                    _staticTrackerUI.SetToggleKey(StaticToggleKey, StaticRequireCtrl);
+
+                    // Recreate DebugMode component
+                    uiObject.AddComponent<DebugTools.DebugMode>();
+
+                    Log?.LogInfo("[EnsureUI] TrackerUI recreated");
+                }
+            }
+            catch (Exception ex)
+            {
+                Log?.LogError($"[EnsureUI] Error recreating UI: {ex.Message}");
             }
         }
 
@@ -232,7 +279,9 @@ namespace SunHavenMuseumUtilityTracker
         {
             Logger.LogWarning("[CRITICAL] Plugin OnDestroy called!");
             _saveSystem?.ForceSave();
-            _harmony?.UnpatchSelf();
+            // NOTE: Do NOT call _harmony?.UnpatchSelf() here!
+            // Patches must survive plugin destruction so OnPlayerInitialized
+            // can trigger EnsureUIComponentsExist() on character reload.
         }
 
         #region Public API
@@ -276,8 +325,15 @@ namespace SunHavenMuseumUtilityTracker
         {
             bool ctrlPressed = Input.GetKey(KeyCode.LeftControl) || Input.GetKey(KeyCode.RightControl);
             bool togglePressed = Input.GetKeyDown(Plugin.StaticToggleKey);
+            bool altTogglePressed = Input.GetKeyDown(Plugin.StaticAltToggleKey);
 
+            // Check main toggle key (with optional Ctrl modifier)
             if (togglePressed && (ctrlPressed == Plugin.StaticRequireCtrl))
+            {
+                Plugin.ToggleUI();
+            }
+            // Check alt toggle key (no modifier required)
+            else if (altTogglePressed)
             {
                 Plugin.ToggleUI();
             }
