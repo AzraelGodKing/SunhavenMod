@@ -570,5 +570,175 @@ namespace SunHavenMuseumUtilityTracker.Data
             }
             return null;
         }
+
+        /// <summary>
+        /// Maps game progress key names to our bundle IDs.
+        /// The game uses names like "ManaBundle", we use "mana_bundle".
+        /// </summary>
+        private static Dictionary<string, string> _progressKeyToBundleId;
+
+        private static void InitializeProgressKeyMapping()
+        {
+            if (_progressKeyToBundleId != null) return;
+
+            _progressKeyToBundleId = new Dictionary<string, string>(System.StringComparer.OrdinalIgnoreCase)
+            {
+                // Hall of Gems
+                { "ManaBundle", "mana_bundle" },
+                { "MoneyBundle", "money_bundle" },
+                { "GoldenBundle", "golden_bundle" },
+                { "BarsBundle", "bars_bundle" },
+                { "GemsBundle", "gems_bundle" },
+                { "NelVariMinesBundle", "nelvari_mines_bundle" },
+                { "NelvariMinesBundle", "nelvari_mines_bundle" },
+                { "WithergateMinesBundle", "withergate_mines_bundle" },
+
+                // Hall of Culture
+                { "SpringCropsBundle", "spring_crops_bundle" },
+                { "SummerCropsBundle", "summer_crops_bundle" },
+                { "FallCropsBundle", "fall_crops_bundle" },
+                { "WinterCropsBundle", "winter_crops_bundle" },
+                { "NelVariCropsBundle", "nelvari_crops_bundle" },
+                { "NelvariCropsBundle", "nelvari_crops_bundle" },
+                { "WithergateCropsBundle", "withergate_crops_bundle" },
+                { "FlowersBundle", "flowers_bundle" },
+                { "ForagingBundle", "foraging_bundle" },
+                { "ExplorationBundle", "exploration_bundle" },
+                { "CombatBundle", "combat_bundle" },
+                { "AlchemyBundle", "alchemy_bundle" },
+                { "NelVariTempleBundle", "nelvari_temple_bundle" },
+                { "NelvariTempleBundle", "nelvari_temple_bundle" },
+
+                // Aquarium
+                { "FishingBundle", "fishing_bundle" },
+                { "SpringFishTank", "spring_fish_tank" },
+                { "SummerFishTank", "summer_fish_tank" },
+                { "FallFishTank", "fall_fish_tank" },
+                { "WinterFishTank", "winter_fish_tank" },
+                { "NelVariFishTank", "nelvari_fish_tank" },
+                { "NelvariFishTank", "nelvari_fish_tank" },
+                { "WithergateFishTank", "withergate_fish_tank" },
+                { "LargeFishTank", "large_fish_tank" },
+            };
+        }
+
+        /// <summary>
+        /// Finds a bundle by the game's progress key name.
+        /// </summary>
+        public static MuseumBundle FindBundleByProgressKey(string progressKey)
+        {
+            InitializeProgressKeyMapping();
+
+            if (!_progressKeyToBundleId.TryGetValue(progressKey, out string bundleId))
+            {
+                // Try to auto-match by converting to our format
+                bundleId = ConvertProgressKeyToBundleId(progressKey);
+            }
+
+            if (string.IsNullOrEmpty(bundleId)) return null;
+
+            foreach (var section in GetAllSections())
+            {
+                foreach (var bundle in section.Bundles)
+                {
+                    if (bundle.Id == bundleId)
+                        return bundle;
+                }
+            }
+
+            return null;
+        }
+
+        /// <summary>
+        /// Converts a progress key like "ManaBundle" to bundle ID like "mana_bundle".
+        /// </summary>
+        private static string ConvertProgressKeyToBundleId(string progressKey)
+        {
+            if (string.IsNullOrEmpty(progressKey)) return null;
+
+            // Convert PascalCase to snake_case
+            var result = new System.Text.StringBuilder();
+            for (int i = 0; i < progressKey.Length; i++)
+            {
+                char c = progressKey[i];
+                if (char.IsUpper(c) && i > 0)
+                {
+                    result.Append('_');
+                }
+                result.Append(char.ToLower(c));
+            }
+
+            return result.ToString();
+        }
+
+        /// <summary>
+        /// Gets all items in a specific bundle.
+        /// </summary>
+        public static List<MuseumItem> GetItemsInBundle(string bundleId)
+        {
+            foreach (var section in GetAllSections())
+            {
+                foreach (var bundle in section.Bundles)
+                {
+                    if (bundle.Id == bundleId)
+                        return bundle.Items;
+                }
+            }
+            return new List<MuseumItem>();
+        }
+
+        /// <summary>
+        /// Gets all bundle IDs.
+        /// </summary>
+        public static List<string> GetAllBundleIds()
+        {
+            var bundleIds = new List<string>();
+            foreach (var section in GetAllSections())
+            {
+                foreach (var bundle in section.Bundles)
+                {
+                    bundleIds.Add(bundle.Id);
+                }
+            }
+            return bundleIds;
+        }
+
+        /// <summary>
+        /// Gets the progress key for a bundle ID.
+        /// </summary>
+        public static string GetProgressKeyForBundle(string bundleId)
+        {
+            InitializeProgressKeyMapping();
+
+            foreach (var kvp in _progressKeyToBundleId)
+            {
+                if (kvp.Value == bundleId)
+                    return kvp.Key;
+            }
+
+            // Try converting bundle_id to BundleId
+            return ConvertBundleIdToProgressKey(bundleId);
+        }
+
+        /// <summary>
+        /// Converts a bundle ID like "mana_bundle" to progress key like "ManaBundle".
+        /// </summary>
+        private static string ConvertBundleIdToProgressKey(string bundleId)
+        {
+            if (string.IsNullOrEmpty(bundleId)) return null;
+
+            var parts = bundleId.Split('_');
+            var result = new System.Text.StringBuilder();
+            foreach (var part in parts)
+            {
+                if (!string.IsNullOrEmpty(part))
+                {
+                    result.Append(char.ToUpper(part[0]));
+                    if (part.Length > 1)
+                        result.Append(part.Substring(1));
+                }
+            }
+            return result.ToString();
+        }
     }
 }

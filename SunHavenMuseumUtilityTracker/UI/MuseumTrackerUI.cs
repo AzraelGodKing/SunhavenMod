@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Linq;
 using SunHavenMuseumUtilityTracker.Data;
 using SunHavenMuseumUtilityTracker.Patches;
 using UnityEngine;
@@ -7,13 +8,15 @@ using Wish;
 namespace SunHavenMuseumUtilityTracker.UI
 {
     /// <summary>
-    /// Main UI window for the Museum Utility Tracker.
+    /// Main UI window for the Museum Utility Tracker - Sun Haven warm parchment theme.
     /// </summary>
     public class MuseumTrackerUI : MonoBehaviour
     {
         // Window dimensions
-        private const float WINDOW_WIDTH = 550f;
-        private const float WINDOW_HEIGHT = 650f;
+        private const float WINDOW_WIDTH = 640f;
+        private const float WINDOW_HEIGHT = 700f;
+        private const float ICON_SIZE = 34f;
+        private const float HEADER_HEIGHT = 80f;
 
         // State
         private DonationManager _donationManager;
@@ -30,31 +33,39 @@ namespace SunHavenMuseumUtilityTracker.UI
         private int _selectedSectionIndex = 0;
         private HashSet<string> _expandedBundles = new HashSet<string>();
         private bool _showOnlyNeeded = false;
+        private string _searchQuery = "";
+
+        // Animation
+        private float _openAnimation = 0f;
 
         // Styles
         private bool _stylesInitialized;
         private GUIStyle _windowStyle;
         private GUIStyle _titleStyle;
+        private GUIStyle _subtitleStyle;
         private GUIStyle _sectionTabStyle;
         private GUIStyle _sectionTabActiveStyle;
         private GUIStyle _bundleHeaderStyle;
         private GUIStyle _bundleHeaderCompleteStyle;
         private GUIStyle _itemRowStyle;
         private GUIStyle _itemNameStyle;
-        private GUIStyle _itemDonatedStyle;
-        private GUIStyle _itemNeededStyle;
         private GUIStyle _buttonStyle;
+        private GUIStyle _closeButtonStyle;
         private GUIStyle _labelStyle;
-        private GUIStyle _progressStyle;
         private GUIStyle _checkmarkStyle;
         private GUIStyle _toggleStyle;
+        private GUIStyle _searchStyle;
+        private GUIStyle _statsStyle;
+        private GUIStyle _footerStyle;
 
         // Textures
         private Texture2D _windowBackground;
         private Texture2D _headerBackground;
         private Texture2D _tabNormal;
+        private Texture2D _tabHover;
         private Texture2D _tabActive;
         private Texture2D _bundleNormal;
+        private Texture2D _bundleHover;
         private Texture2D _bundleComplete;
         private Texture2D _itemEven;
         private Texture2D _itemOdd;
@@ -62,39 +73,61 @@ namespace SunHavenMuseumUtilityTracker.UI
         private Texture2D _buttonNormal;
         private Texture2D _buttonHover;
         private Texture2D _progressBg;
-        private Texture2D _progressFill;
+        private Texture2D _searchBg;
+        private Texture2D _dividerTex;
 
-        // Sun Haven color palette
-        private readonly Color _bgDark = new Color(0.12f, 0.13f, 0.16f, 0.98f);
-        private readonly Color _bgMedium = new Color(0.16f, 0.17f, 0.21f, 0.95f);
-        private readonly Color _bgLight = new Color(0.22f, 0.24f, 0.28f, 0.9f);
-        private readonly Color _accentBlue = new Color(0.35f, 0.55f, 0.75f);
-        private readonly Color _accentBlueDark = new Color(0.25f, 0.40f, 0.58f);
-        private readonly Color _gold = new Color(0.95f, 0.82f, 0.35f);
-        private readonly Color _goldDark = new Color(0.75f, 0.62f, 0.25f);
-        private readonly Color _textPrimary = new Color(0.92f, 0.90f, 0.85f);
-        private readonly Color _textSecondary = new Color(0.65f, 0.65f, 0.70f);
-        private readonly Color _textMuted = new Color(0.45f, 0.45f, 0.50f);
-        private readonly Color _borderColor = new Color(0.35f, 0.38f, 0.45f, 0.6f);
-        private readonly Color _successGreen = new Color(0.35f, 0.70f, 0.40f);
-        private readonly Color _neededRed = new Color(0.70f, 0.35f, 0.35f);
+        // Sun Haven warm parchment color palette
+        private readonly Color _parchmentLight = new Color(0.96f, 0.93f, 0.86f, 0.98f);
+        private readonly Color _parchment = new Color(0.92f, 0.87f, 0.78f, 0.97f);
+        private readonly Color _parchmentDark = new Color(0.85f, 0.78f, 0.65f, 0.95f);
+        private readonly Color _parchmentDarker = new Color(0.75f, 0.67f, 0.52f, 0.92f);
 
-        // Rarity colors
+        // Warm wood/leather tones
+        private readonly Color _woodDark = new Color(0.35f, 0.25f, 0.15f);
+        private readonly Color _woodMedium = new Color(0.50f, 0.38f, 0.25f);
+        private readonly Color _woodLight = new Color(0.65f, 0.52f, 0.38f);
+        private readonly Color _leather = new Color(0.55f, 0.40f, 0.28f);
+
+        // Accent colors - Sun Haven fantasy
+        private readonly Color _goldRich = new Color(0.85f, 0.68f, 0.20f);
+        private readonly Color _goldBright = new Color(0.95f, 0.80f, 0.30f);
+        private readonly Color _goldPale = new Color(1.0f, 0.92f, 0.70f);
+        private readonly Color _forestGreen = new Color(0.30f, 0.55f, 0.30f);
+        private readonly Color _skyBlue = new Color(0.45f, 0.65f, 0.85f);
+        private readonly Color _coralWarm = new Color(0.85f, 0.50f, 0.40f);
+
+        // Text colors
+        private readonly Color _textDark = new Color(0.25f, 0.20f, 0.15f);
+        private readonly Color _textMedium = new Color(0.40f, 0.35f, 0.28f);
+        private readonly Color _textLight = new Color(0.55f, 0.48f, 0.38f);
+        private readonly Color _textMuted = new Color(0.65f, 0.58f, 0.48f);
+
+        // Status colors
+        private readonly Color _successGreen = new Color(0.35f, 0.65f, 0.35f);
+        private readonly Color _successGreenLight = new Color(0.50f, 0.75f, 0.45f);
+        private readonly Color _neededOrange = new Color(0.85f, 0.55f, 0.25f);
+
+        // Border/trim colors
+        private readonly Color _borderDark = new Color(0.45f, 0.35f, 0.22f, 0.8f);
+        private readonly Color _borderGold = new Color(0.75f, 0.60f, 0.25f, 0.7f);
+
+        // Rarity colors - rich fantasy tones
         private readonly Dictionary<Data.ItemRarity, Color> _rarityColors = new Dictionary<Data.ItemRarity, Color>
         {
-            { Data.ItemRarity.Common, new Color(0.70f, 0.70f, 0.70f) },
-            { Data.ItemRarity.Uncommon, new Color(0.40f, 0.75f, 0.40f) },
-            { Data.ItemRarity.Rare, new Color(0.40f, 0.60f, 0.90f) },
-            { Data.ItemRarity.Epic, new Color(0.70f, 0.45f, 0.85f) },
-            { Data.ItemRarity.Legendary, new Color(0.95f, 0.75f, 0.25f) }
+            { Data.ItemRarity.Common, new Color(0.50f, 0.45f, 0.38f) },
+            { Data.ItemRarity.Uncommon, new Color(0.35f, 0.60f, 0.35f) },
+            { Data.ItemRarity.Rare, new Color(0.35f, 0.55f, 0.80f) },
+            { Data.ItemRarity.Epic, new Color(0.65f, 0.40f, 0.75f) },
+            { Data.ItemRarity.Legendary, new Color(0.90f, 0.70f, 0.20f) }
         };
 
-        // Section colors
-        private readonly Dictionary<string, Color> _sectionColors = new Dictionary<string, Color>
+        // Section theme colors - warm variations
+        private readonly Dictionary<string, (Color primary, Color accent)> _sectionThemes =
+            new Dictionary<string, (Color, Color)>
         {
-            { "hall_of_gems", new Color(0.55f, 0.75f, 0.90f) },
-            { "hall_of_culture", new Color(0.85f, 0.70f, 0.50f) },
-            { "aquarium", new Color(0.40f, 0.75f, 0.85f) }
+            { "hall_of_gems", (new Color(0.60f, 0.50f, 0.75f), new Color(0.75f, 0.65f, 0.90f)) },
+            { "hall_of_culture", (new Color(0.70f, 0.55f, 0.35f), new Color(0.85f, 0.70f, 0.45f)) },
+            { "aquarium", (new Color(0.40f, 0.60f, 0.75f), new Color(0.55f, 0.75f, 0.90f)) }
         };
 
         public bool IsVisible => _isVisible;
@@ -105,14 +138,11 @@ namespace SunHavenMuseumUtilityTracker.UI
             _isVisible = false;
             _windowId = GetHashCode();
 
-            // Center window
             float x = (Screen.width - WINDOW_WIDTH) / 2f;
             float y = (Screen.height - WINDOW_HEIGHT) / 2f;
             _windowRect = new Rect(x, y, WINDOW_WIDTH, WINDOW_HEIGHT);
 
-            // Initialize icon cache
             IconCache.Initialize();
-
             Plugin.Log?.LogInfo("MuseumTrackerUI initialized");
         }
 
@@ -130,17 +160,15 @@ namespace SunHavenMuseumUtilityTracker.UI
                 return;
             }
 
-            if (_isVisible)
-                Hide();
-            else
-                Show();
+            if (_isVisible) Hide();
+            else Show();
         }
 
         public void Show()
         {
             _isVisible = true;
+            _openAnimation = 0f;
 
-            // Pause game
             if (Player.Instance != null)
                 Player.Instance.AddPauseObject("MuseumTracker_UI");
 
@@ -151,7 +179,6 @@ namespace SunHavenMuseumUtilityTracker.UI
         {
             _isVisible = false;
 
-            // Unpause game
             if (Player.Instance != null)
                 Player.Instance.RemovePauseObject("MuseumTracker_UI");
 
@@ -160,10 +187,14 @@ namespace SunHavenMuseumUtilityTracker.UI
 
         private void Update()
         {
-            // Close on Escape
             if (_isVisible && Input.GetKeyDown(KeyCode.Escape))
             {
                 Hide();
+            }
+
+            if (_isVisible)
+            {
+                _openAnimation = Mathf.MoveTowards(_openAnimation, 1f, Time.unscaledDeltaTime * 6f);
             }
         }
 
@@ -174,130 +205,171 @@ namespace SunHavenMuseumUtilityTracker.UI
 
             InitializeStyles();
 
-            // Draw main window
+            float alpha = _openAnimation;
+            GUI.color = new Color(1, 1, 1, alpha);
+
             _windowRect = GUI.Window(_windowId, _windowRect, DrawWindow, "", _windowStyle);
+
+            GUI.color = Color.white;
         }
 
         private void InitializeStyles()
         {
             if (_stylesInitialized) return;
 
-            // Create textures
-            _windowBackground = MakeGradientTex(8, 64, _bgDark, new Color(_bgDark.r * 0.9f, _bgDark.g * 0.9f, _bgDark.b * 0.9f, _bgDark.a));
-            _headerBackground = MakeGradientTex(8, 32, _bgLight, _bgMedium);
-            _tabNormal = MakeBorderedTex(8, 8, _bgMedium, _borderColor, 1);
-            _tabActive = MakeBorderedTex(8, 8, _accentBlueDark, _accentBlue, 1);
-            _bundleNormal = MakeBorderedTex(8, 8, new Color(_bgLight.r, _bgLight.g, _bgLight.b, 0.7f), _borderColor, 1);
-            _bundleComplete = MakeBorderedTex(8, 8, new Color(0.20f, 0.30f, 0.22f, 0.8f), _successGreen, 1);
-            _itemEven = MakeTex(1, 1, new Color(_bgMedium.r, _bgMedium.g, _bgMedium.b, 0.4f));
-            _itemOdd = MakeTex(1, 1, new Color(_bgLight.r * 0.85f, _bgLight.g * 0.85f, _bgLight.b * 0.85f, 0.3f));
-            _itemDonated = MakeTex(1, 1, new Color(0.18f, 0.28f, 0.20f, 0.4f));
-            _buttonNormal = MakeBorderedTex(8, 8, _accentBlueDark, new Color(_accentBlue.r, _accentBlue.g, _accentBlue.b, 0.4f), 1);
-            _buttonHover = MakeBorderedTex(8, 8, _accentBlue, new Color(_accentBlue.r, _accentBlue.g, _accentBlue.b, 0.8f), 1);
-            _progressBg = MakeTex(1, 1, new Color(0.1f, 0.1f, 0.12f, 0.8f));
-            _progressFill = MakeTex(1, 1, _successGreen);
+            CreateTextures();
+            CreateStyles();
 
+            _stylesInitialized = true;
+        }
+
+        private void CreateTextures()
+        {
+            // Main window - warm parchment with wood border
+            _windowBackground = MakeParchmentTexture(32, 128, _parchment, _parchmentLight, _borderDark, 4);
+
+            // Header - darker parchment with gold trim feel
+            _headerBackground = MakeGradientTex(8, 64, _parchmentDark, _parchment);
+
+            // Tab textures
+            _tabNormal = MakeRoundedRect(8, 8, _parchmentDark, _borderDark, 2);
+            _tabHover = MakeRoundedRect(8, 8, _parchmentDarker, _woodMedium, 2);
+            _tabActive = MakeRoundedRect(8, 8, _goldPale, _goldRich, 3);
+
+            // Bundle textures
+            _bundleNormal = MakeRoundedRect(6, 6, _parchmentDark, _borderDark, 2);
+            _bundleHover = MakeRoundedRect(6, 6, _parchmentDarker, _woodMedium, 2);
+            _bundleComplete = MakeRoundedRect(6, 6,
+                new Color(_successGreenLight.r, _successGreenLight.g, _successGreenLight.b, 0.3f),
+                _successGreen, 2);
+
+            // Item row backgrounds
+            _itemEven = MakeTex(1, 1, new Color(_parchmentLight.r, _parchmentLight.g, _parchmentLight.b, 0.5f));
+            _itemOdd = MakeTex(1, 1, new Color(_parchment.r, _parchment.g, _parchment.b, 0.5f));
+            _itemDonated = MakeTex(1, 1, new Color(_successGreenLight.r, _successGreenLight.g, _successGreenLight.b, 0.25f));
+
+            // Buttons - warm wood style
+            _buttonNormal = MakeRoundedRect(6, 6, _woodMedium, _woodDark, 2);
+            _buttonHover = MakeRoundedRect(6, 6, _woodLight, _woodMedium, 2);
+
+            // Progress bar
+            _progressBg = MakeTex(1, 1, new Color(_woodDark.r, _woodDark.g, _woodDark.b, 0.4f));
+
+            // Search box
+            _searchBg = MakeRoundedRect(6, 6, _parchmentLight, _borderDark, 1);
+
+            // Divider
+            _dividerTex = MakeTex(1, 1, _borderDark);
+        }
+
+        private void CreateStyles()
+        {
             // Window style
             _windowStyle = new GUIStyle(GUI.skin.window)
             {
-                normal = { background = _windowBackground, textColor = _textPrimary },
-                padding = new RectOffset(12, 12, 12, 12),
-                border = new RectOffset(8, 8, 8, 8)
+                normal = { background = _windowBackground, textColor = _textDark },
+                padding = new RectOffset(0, 0, 0, 0),
+                border = new RectOffset(16, 16, 16, 16)
             };
 
-            // Title style
+            // Title style - rich gold
             _titleStyle = new GUIStyle(GUI.skin.label)
             {
-                fontSize = 22,
+                fontSize = 28,
                 fontStyle = FontStyle.Bold,
-                alignment = TextAnchor.MiddleCenter,
-                normal = { textColor = _gold }
+                alignment = TextAnchor.MiddleLeft,
+                normal = { textColor = _woodDark }
+            };
+
+            // Subtitle style
+            _subtitleStyle = new GUIStyle(GUI.skin.label)
+            {
+                fontSize = 12,
+                fontStyle = FontStyle.Italic,
+                alignment = TextAnchor.MiddleLeft,
+                normal = { textColor = _textMedium }
             };
 
             // Section tab styles
             _sectionTabStyle = new GUIStyle(GUI.skin.button)
             {
-                normal = { background = _tabNormal, textColor = _textSecondary },
-                hover = { background = _tabActive, textColor = _textPrimary },
-                fontSize = 11,
+                normal = { background = _tabNormal, textColor = _textMedium },
+                hover = { background = _tabHover, textColor = _textDark },
+                active = { background = _tabHover, textColor = _textDark },
+                fontSize = 12,
                 fontStyle = FontStyle.Bold,
-                padding = new RectOffset(8, 8, 6, 6)
+                padding = new RectOffset(12, 12, 10, 10),
+                margin = new RectOffset(3, 3, 0, 0)
             };
 
             _sectionTabActiveStyle = new GUIStyle(_sectionTabStyle)
             {
-                normal = { background = _tabActive, textColor = _gold }
+                normal = { background = _tabActive, textColor = _woodDark },
+                hover = { background = _tabActive, textColor = _woodDark }
             };
 
             // Bundle header style
             _bundleHeaderStyle = new GUIStyle(GUI.skin.button)
             {
-                normal = { background = _bundleNormal, textColor = _textPrimary },
-                hover = { background = _bundleNormal, textColor = Color.white },
-                fontSize = 13,
+                normal = { background = _bundleNormal, textColor = _textDark },
+                hover = { background = _bundleHover, textColor = _woodDark },
+                active = { background = _bundleHover, textColor = _woodDark },
+                fontSize = 14,
                 fontStyle = FontStyle.Bold,
                 alignment = TextAnchor.MiddleLeft,
-                padding = new RectOffset(10, 10, 8, 8)
+                padding = new RectOffset(15, 15, 12, 12)
             };
 
             _bundleHeaderCompleteStyle = new GUIStyle(_bundleHeaderStyle)
             {
-                normal = { background = _bundleComplete, textColor = _successGreen }
+                normal = { background = _bundleComplete, textColor = _successGreen },
+                hover = { background = _bundleComplete, textColor = _forestGreen }
             };
 
             // Item styles
             _itemRowStyle = new GUIStyle
             {
-                padding = new RectOffset(15, 10, 4, 4),
+                padding = new RectOffset(20, 15, 6, 6),
                 margin = new RectOffset(0, 0, 1, 1)
             };
 
             _itemNameStyle = new GUIStyle(GUI.skin.label)
             {
-                fontSize = 12,
-                normal = { textColor = _textPrimary }
-            };
-
-            _itemDonatedStyle = new GUIStyle(_itemNameStyle)
-            {
-                normal = { textColor = _successGreen },
-                fontStyle = FontStyle.Italic
-            };
-
-            _itemNeededStyle = new GUIStyle(_itemNameStyle)
-            {
-                normal = { textColor = _textSecondary }
+                fontSize = 13,
+                normal = { textColor = _textDark }
             };
 
             // Button style
             _buttonStyle = new GUIStyle(GUI.skin.button)
             {
-                normal = { background = _buttonNormal, textColor = _textPrimary },
+                normal = { background = _buttonNormal, textColor = _parchmentLight },
                 hover = { background = _buttonHover, textColor = Color.white },
+                active = { background = _buttonHover, textColor = Color.white },
                 fontSize = 12,
                 fontStyle = FontStyle.Bold,
-                padding = new RectOffset(10, 10, 6, 6)
+                padding = new RectOffset(14, 14, 8, 8)
+            };
+
+            // Close button style
+            _closeButtonStyle = new GUIStyle(_buttonStyle)
+            {
+                fontSize = 18,
+                fontStyle = FontStyle.Bold,
+                normal = { background = MakeRoundedRect(6, 6, _coralWarm, new Color(0.7f, 0.35f, 0.25f), 2), textColor = Color.white },
+                hover = { background = MakeRoundedRect(6, 6, new Color(0.95f, 0.55f, 0.45f), _coralWarm, 2), textColor = Color.white }
             };
 
             // Label style
             _labelStyle = new GUIStyle(GUI.skin.label)
             {
                 fontSize = 12,
-                normal = { textColor = _textPrimary }
-            };
-
-            // Progress style
-            _progressStyle = new GUIStyle(GUI.skin.label)
-            {
-                fontSize = 11,
-                normal = { textColor = _textSecondary },
-                alignment = TextAnchor.MiddleRight
+                normal = { textColor = _textDark }
             };
 
             // Checkmark style
             _checkmarkStyle = new GUIStyle(GUI.skin.label)
             {
-                fontSize = 14,
+                fontSize = 16,
                 fontStyle = FontStyle.Bold,
                 normal = { textColor = _successGreen },
                 alignment = TextAnchor.MiddleCenter
@@ -306,11 +378,37 @@ namespace SunHavenMuseumUtilityTracker.UI
             // Toggle style
             _toggleStyle = new GUIStyle(GUI.skin.toggle)
             {
-                fontSize = 11,
-                normal = { textColor = _textSecondary }
+                fontSize = 12,
+                normal = { textColor = _textMedium },
+                hover = { textColor = _textDark }
             };
 
-            _stylesInitialized = true;
+            // Search style
+            _searchStyle = new GUIStyle(GUI.skin.textField)
+            {
+                fontSize = 13,
+                normal = { background = _searchBg, textColor = _textDark },
+                focused = { background = _searchBg, textColor = _textDark },
+                padding = new RectOffset(12, 12, 8, 8)
+            };
+
+            // Stats style
+            _statsStyle = new GUIStyle(GUI.skin.label)
+            {
+                fontSize = 24,
+                fontStyle = FontStyle.Bold,
+                alignment = TextAnchor.MiddleCenter,
+                normal = { textColor = _goldRich }
+            };
+
+            // Footer style
+            _footerStyle = new GUIStyle(GUI.skin.label)
+            {
+                fontSize = 11,
+                fontStyle = FontStyle.Italic,
+                alignment = TextAnchor.MiddleCenter,
+                normal = { textColor = _textMuted }
+            };
         }
 
         private Texture2D MakeTex(int width, int height, Color color)
@@ -344,7 +442,7 @@ namespace SunHavenMuseumUtilityTracker.UI
             return tex;
         }
 
-        private Texture2D MakeBorderedTex(int width, int height, Color fillColor, Color borderColor, int borderWidth = 1)
+        private Texture2D MakeRoundedRect(int width, int height, Color fillColor, Color borderColor, int borderWidth)
         {
             var tex = new Texture2D(width, height);
             var pixels = new Color[width * height];
@@ -364,26 +462,68 @@ namespace SunHavenMuseumUtilityTracker.UI
             return tex;
         }
 
+        private Texture2D MakeParchmentTexture(int width, int height, Color baseColor, Color lightColor, Color borderColor, int borderWidth)
+        {
+            var tex = new Texture2D(width, height);
+            var pixels = new Color[width * height];
+
+            for (int y = 0; y < height; y++)
+            {
+                float t = (float)y / (height - 1);
+                // Create subtle vertical gradient
+                Color gradColor = Color.Lerp(lightColor, baseColor, t * 0.3f);
+
+                for (int x = 0; x < width; x++)
+                {
+                    bool isBorder = x < borderWidth || x >= width - borderWidth ||
+                                   y < borderWidth || y >= height - borderWidth;
+
+                    if (isBorder)
+                    {
+                        pixels[y * width + x] = borderColor;
+                    }
+                    else
+                    {
+                        // Add subtle noise for parchment feel
+                        float noise = ((x + y) % 3) * 0.01f;
+                        pixels[y * width + x] = new Color(
+                            gradColor.r + noise,
+                            gradColor.g + noise * 0.8f,
+                            gradColor.b + noise * 0.5f,
+                            gradColor.a
+                        );
+                    }
+                }
+            }
+
+            tex.SetPixels(pixels);
+            tex.Apply();
+            return tex;
+        }
+
         private void DrawWindow(int windowId)
         {
             GUILayout.BeginVertical();
 
-            // Header
+            // Header area
             DrawHeader();
+
+            // Gold trim divider
+            DrawGoldDivider();
+
+            GUILayout.Space(10);
+
+            // Search and filter bar
+            DrawSearchBar();
 
             GUILayout.Space(10);
 
             // Section tabs
             DrawSectionTabs();
 
-            GUILayout.Space(10);
+            GUILayout.Space(12);
 
-            // Filter options
-            DrawFilterOptions();
-
-            GUILayout.Space(5);
-
-            // Content
+            // Content area
             DrawContent();
 
             GUILayout.Space(10);
@@ -393,57 +533,108 @@ namespace SunHavenMuseumUtilityTracker.UI
 
             GUILayout.EndVertical();
 
-            // Make window draggable
-            GUI.DragWindow(new Rect(0, 0, WINDOW_WIDTH, 50));
+            // Make window draggable from header
+            GUI.DragWindow(new Rect(0, 0, WINDOW_WIDTH, HEADER_HEIGHT));
         }
 
         private void DrawHeader()
         {
-            var headerRect = GUILayoutUtility.GetRect(0, 50, GUILayout.ExpandWidth(true));
+            var headerRect = GUILayoutUtility.GetRect(0, HEADER_HEIGHT, GUILayout.ExpandWidth(true));
             GUI.DrawTexture(headerRect, _headerBackground, ScaleMode.StretchToFill);
 
-            GUILayout.BeginArea(headerRect);
+            GUILayout.BeginArea(new Rect(headerRect.x + 25, headerRect.y, headerRect.width - 50, headerRect.height));
             GUILayout.BeginHorizontal();
 
-            GUILayout.Space(10);
-
-            // Title
+            // Left side - Title and subtitle
             GUILayout.BeginVertical();
-            GUILayout.FlexibleSpace();
-            GUILayout.Label("Museum Tracker", _titleStyle, GUILayout.Height(30));
-            GUILayout.FlexibleSpace();
+            GUILayout.Space(12);
+            GUILayout.Label("S.M.U.T.", _titleStyle);
+            GUILayout.Label("Sun Haven Museum Utility Tracker", _subtitleStyle);
             GUILayout.EndVertical();
 
             GUILayout.FlexibleSpace();
 
-            // Overall progress
+            // Right side - Overall stats in a decorative box
             GUILayout.BeginVertical();
-            GUILayout.FlexibleSpace();
+            GUILayout.Space(12);
+
             var (donated, total) = _donationManager.GetOverallStats();
             float percent = _donationManager.GetOverallCompletionPercent();
-            GUILayout.Label($"{donated}/{total} ({percent:F1}%)", _progressStyle, GUILayout.Width(100));
-            GUILayout.FlexibleSpace();
+
+            // Stats box
+            var boxStyle = new GUIStyle(GUI.skin.box)
+            {
+                normal = { background = MakeRoundedRect(4, 4, new Color(_goldPale.r, _goldPale.g, _goldPale.b, 0.5f), _goldRich, 2) },
+                padding = new RectOffset(15, 15, 8, 8)
+            };
+
+            GUILayout.BeginVertical(boxStyle, GUILayout.Width(100));
+            GUILayout.Label($"{percent:F0}%", _statsStyle);
+            var countStyle = new GUIStyle(_labelStyle) { alignment = TextAnchor.MiddleCenter, fontSize = 11 };
+            GUILayout.Label($"{donated}/{total}", countStyle);
+            GUILayout.EndVertical();
+
             GUILayout.EndVertical();
 
             GUILayout.Space(10);
 
             // Close button
             GUILayout.BeginVertical();
-            GUILayout.FlexibleSpace();
-            var closeStyle = new GUIStyle(_buttonStyle);
-            closeStyle.normal.textColor = new Color(0.9f, 0.5f, 0.5f);
-            closeStyle.hover.textColor = new Color(1f, 0.6f, 0.6f);
-            closeStyle.fontSize = 14;
-            if (GUILayout.Button("X", closeStyle, GUILayout.Width(32), GUILayout.Height(32)))
+            GUILayout.Space(20);
+            if (GUILayout.Button("X", _closeButtonStyle, GUILayout.Width(38), GUILayout.Height(38)))
             {
                 Hide();
             }
-            GUILayout.FlexibleSpace();
             GUILayout.EndVertical();
 
-            GUILayout.Space(5);
             GUILayout.EndHorizontal();
             GUILayout.EndArea();
+        }
+
+        private void DrawGoldDivider()
+        {
+            var divRect = GUILayoutUtility.GetRect(0, 4, GUILayout.ExpandWidth(true));
+            divRect.x += 20;
+            divRect.width -= 40;
+
+            // Draw decorative gold divider
+            GUI.color = _goldRich;
+            GUI.DrawTexture(new Rect(divRect.x, divRect.y + 1, divRect.width, 2), Texture2D.whiteTexture);
+            GUI.color = _goldPale;
+            GUI.DrawTexture(new Rect(divRect.x + 2, divRect.y, divRect.width - 4, 1), Texture2D.whiteTexture);
+            GUI.color = Color.white;
+        }
+
+        private void DrawSearchBar()
+        {
+            GUILayout.BeginHorizontal();
+            GUILayout.Space(20);
+
+            // Search label
+            var searchLabelStyle = new GUIStyle(_labelStyle) { fontStyle = FontStyle.Bold };
+            GUILayout.Label("Search:", searchLabelStyle, GUILayout.Width(55));
+
+            // Search field
+            _searchQuery = GUILayout.TextField(_searchQuery, _searchStyle, GUILayout.Width(220), GUILayout.Height(28));
+
+            GUILayout.Space(20);
+
+            // Filter toggle with custom style
+            _showOnlyNeeded = GUILayout.Toggle(_showOnlyNeeded, " Show needed only", _toggleStyle, GUILayout.Width(140));
+
+            GUILayout.FlexibleSpace();
+
+            // Clear button
+            if (!string.IsNullOrEmpty(_searchQuery))
+            {
+                if (GUILayout.Button("Clear", _buttonStyle, GUILayout.Width(65), GUILayout.Height(28)))
+                {
+                    _searchQuery = "";
+                }
+            }
+
+            GUILayout.Space(20);
+            GUILayout.EndHorizontal();
         }
 
         private void DrawSectionTabs()
@@ -451,43 +642,34 @@ namespace SunHavenMuseumUtilityTracker.UI
             var sections = MuseumContent.GetAllSections();
 
             GUILayout.BeginHorizontal();
-            GUILayout.FlexibleSpace();
+            GUILayout.Space(20);
 
             for (int i = 0; i < sections.Count; i++)
             {
                 var section = sections[i];
                 var stats = _donationManager.GetSectionStats(section);
                 bool isComplete = _donationManager.IsSectionComplete(section);
+                bool isSelected = i == _selectedSectionIndex;
 
-                var style = i == _selectedSectionIndex ? _sectionTabActiveStyle : _sectionTabStyle;
-                string label = $"{section.Name}\n{stats.donated}/{stats.total}";
+                var theme = _sectionThemes.TryGetValue(section.Id, out var t) ? t : (_woodMedium, _woodLight);
 
-                if (isComplete)
-                {
-                    label = $"✓ {section.Name}\n{stats.donated}/{stats.total}";
-                }
+                var tabStyle = isSelected ? _sectionTabActiveStyle : _sectionTabStyle;
 
-                if (GUILayout.Button(label, style, GUILayout.Width(160), GUILayout.Height(45)))
+                // Build label
+                string completeMark = isComplete ? " *" : "";
+                string label = $"{section.Name}{completeMark}\n{stats.donated}/{stats.total}";
+
+                if (GUILayout.Button(label, tabStyle, GUILayout.Width(185), GUILayout.Height(52)))
                 {
                     _selectedSectionIndex = i;
+                    _scrollPosition = Vector2.zero;
                 }
 
                 if (i < sections.Count - 1)
-                    GUILayout.Space(5);
+                    GUILayout.Space(8);
             }
 
-            GUILayout.FlexibleSpace();
-            GUILayout.EndHorizontal();
-        }
-
-        private void DrawFilterOptions()
-        {
-            GUILayout.BeginHorizontal();
-            GUILayout.FlexibleSpace();
-
-            _showOnlyNeeded = GUILayout.Toggle(_showOnlyNeeded, " Show only needed items", _toggleStyle);
-
-            GUILayout.FlexibleSpace();
+            GUILayout.Space(20);
             GUILayout.EndHorizontal();
         }
 
@@ -498,36 +680,117 @@ namespace SunHavenMuseumUtilityTracker.UI
                 _selectedSectionIndex = 0;
 
             var section = sections[_selectedSectionIndex];
+            var theme = _sectionThemes.TryGetValue(section.Id, out var t) ? t : (_woodMedium, _woodLight);
 
-            // Scroll view
-            _scrollPosition = GUILayout.BeginScrollView(_scrollPosition, GUILayout.ExpandHeight(true));
+            GUILayout.BeginHorizontal();
+            GUILayout.Space(20);
+
+            GUILayout.BeginVertical();
+
+            // Section progress bar
+            DrawSectionProgress(section, theme.Item1);
+
+            GUILayout.Space(10);
+
+            // Scroll view with parchment-like style
+            var scrollStyle = new GUIStyle(GUI.skin.scrollView);
+            _scrollPosition = GUILayout.BeginScrollView(_scrollPosition, scrollStyle,
+                GUILayout.ExpandHeight(true), GUILayout.ExpandWidth(true));
+
+            bool hasVisibleContent = false;
 
             foreach (var bundle in section.Bundles)
             {
-                DrawBundle(bundle);
-                GUILayout.Space(5);
+                bool bundleHasVisibleItems = DrawBundle(bundle, theme.Item1);
+                if (bundleHasVisibleItems)
+                {
+                    hasVisibleContent = true;
+                    GUILayout.Space(8);
+                }
+            }
+
+            // Empty state message
+            if (!hasVisibleContent)
+            {
+                GUILayout.Space(50);
+                var emptyStyle = new GUIStyle(_labelStyle)
+                {
+                    alignment = TextAnchor.MiddleCenter,
+                    fontSize = 15,
+                    fontStyle = FontStyle.Italic,
+                    normal = { textColor = _textMuted }
+                };
+
+                if (!string.IsNullOrEmpty(_searchQuery))
+                    GUILayout.Label($"No items found for \"{_searchQuery}\"", emptyStyle);
+                else if (_showOnlyNeeded)
+                    GUILayout.Label("Wonderful! All items donated!", emptyStyle);
             }
 
             GUILayout.EndScrollView();
+
+            GUILayout.EndVertical();
+
+            GUILayout.Space(20);
+            GUILayout.EndHorizontal();
         }
 
-        private void DrawBundle(MuseumBundle bundle)
+        private void DrawSectionProgress(MuseumSection section, Color sectionColor)
+        {
+            var stats = _donationManager.GetSectionStats(section);
+            float percent = _donationManager.GetSectionCompletionPercent(section);
+
+            // Progress bar with wood frame look
+            var barRect = GUILayoutUtility.GetRect(0, 28, GUILayout.ExpandWidth(true));
+
+            // Background
+            GUI.DrawTexture(barRect, _progressBg);
+
+            // Fill
+            var fillRect = new Rect(barRect.x + 3, barRect.y + 3, (barRect.width - 6) * (percent / 100f), barRect.height - 6);
+            GUI.color = sectionColor;
+            GUI.DrawTexture(fillRect, Texture2D.whiteTexture);
+            GUI.color = Color.white;
+
+            // Border overlay
+            GUI.color = _borderDark;
+            GUI.DrawTexture(new Rect(barRect.x, barRect.y, barRect.width, 2), Texture2D.whiteTexture);
+            GUI.DrawTexture(new Rect(barRect.x, barRect.y + barRect.height - 2, barRect.width, 2), Texture2D.whiteTexture);
+            GUI.DrawTexture(new Rect(barRect.x, barRect.y, 2, barRect.height), Texture2D.whiteTexture);
+            GUI.DrawTexture(new Rect(barRect.x + barRect.width - 2, barRect.y, 2, barRect.height), Texture2D.whiteTexture);
+            GUI.color = Color.white;
+
+            // Progress text
+            var progressLabel = new GUIStyle(_labelStyle)
+            {
+                alignment = TextAnchor.MiddleCenter,
+                fontSize = 13,
+                fontStyle = FontStyle.Bold,
+                normal = { textColor = percent > 50 ? _parchmentLight : _textDark }
+            };
+            GUI.Label(barRect, $"{section.Name}: {stats.donated}/{stats.total} ({percent:F0}%)", progressLabel);
+        }
+
+        private bool DrawBundle(MuseumBundle bundle, Color sectionColor)
         {
             bool isComplete = _donationManager.IsBundleComplete(bundle);
             bool isExpanded = _expandedBundles.Contains(bundle.Id);
             var stats = _donationManager.GetBundleStats(bundle);
 
-            // Skip if filtering and bundle is complete
-            if (_showOnlyNeeded && isComplete)
-                return;
+            var visibleItems = GetVisibleItems(bundle);
+            if (visibleItems.Count == 0 && (_showOnlyNeeded || !string.IsNullOrEmpty(_searchQuery)))
+                return false;
+
+            if (_showOnlyNeeded && isComplete && string.IsNullOrEmpty(_searchQuery))
+                return false;
 
             // Bundle header
             var headerStyle = isComplete ? _bundleHeaderCompleteStyle : _bundleHeaderStyle;
-            string expandIcon = isExpanded ? "▼" : "►";
-            string completeIcon = isComplete ? " ✓" : "";
-            string label = $"{expandIcon} {bundle.Name}{completeIcon} ({stats.donated}/{stats.total})";
+            string expandIcon = isExpanded ? "[-]" : "[+]";
+            string completeIcon = isComplete ? " COMPLETE" : "";
+            string label = $"{expandIcon}  {bundle.Name}{completeIcon}  ({stats.donated}/{stats.total})";
 
-            if (GUILayout.Button(label, headerStyle, GUILayout.ExpandWidth(true), GUILayout.Height(35)))
+            if (GUILayout.Button(label, headerStyle, GUILayout.ExpandWidth(true), GUILayout.Height(42)))
             {
                 if (isExpanded)
                     _expandedBundles.Remove(bundle.Id);
@@ -535,150 +798,146 @@ namespace SunHavenMuseumUtilityTracker.UI
                     _expandedBundles.Add(bundle.Id);
             }
 
-            // Draw items if expanded
             if (isExpanded)
             {
-                DrawBundleItems(bundle);
+                DrawBundleItems(visibleItems);
             }
+
+            return true;
         }
 
-        private void DrawBundleItems(MuseumBundle bundle)
+        private List<MuseumItem> GetVisibleItems(MuseumBundle bundle)
         {
-            const float ICON_SIZE = 28f;
+            var items = new List<MuseumItem>();
+            string searchLower = _searchQuery?.ToLower() ?? "";
 
-            int index = 0;
             foreach (var item in bundle.Items)
             {
                 bool isDonated = _donationManager.HasDonated(item.Id);
 
-                // Skip donated items if filtering
                 if (_showOnlyNeeded && isDonated)
-                {
-                    index++;
                     continue;
+
+                if (!string.IsNullOrEmpty(searchLower))
+                {
+                    bool matchesSearch = item.Name.ToLower().Contains(searchLower) ||
+                                        item.Rarity.ToString().ToLower().Contains(searchLower) ||
+                                        bundle.Name.ToLower().Contains(searchLower);
+                    if (!matchesSearch)
+                        continue;
                 }
 
-                // Row with background color
-                var bgTex = isDonated ? _itemDonated : (index % 2 == 0 ? _itemEven : _itemOdd);
+                items.Add(item);
+            }
 
-                GUILayout.BeginHorizontal(_itemRowStyle, GUILayout.Height(32));
+            return items;
+        }
 
-                // Draw background manually
-                var lastRect = GUILayoutUtility.GetLastRect();
-                if (Event.current.type == UnityEngine.EventType.Repaint && bgTex != null)
-                {
-                    GUI.DrawTexture(lastRect, bgTex);
-                }
-
-                GUILayout.Space(10);
-
-                // Checkbox for manual toggle
-                bool newDonated = GUILayout.Toggle(isDonated, "", GUILayout.Width(20));
-                if (newDonated != isDonated)
-                {
-                    _donationManager.ToggleDonated(item.Id);
-                }
-
-                GUILayout.Space(5);
-
-                // Item icon
-                var icon = IconCache.GetIcon(item.GameItemId);
-                if (icon != null)
-                {
-                    var iconRect = GUILayoutUtility.GetRect(ICON_SIZE, ICON_SIZE, GUILayout.Width(ICON_SIZE), GUILayout.Height(ICON_SIZE));
-                    GUI.DrawTexture(iconRect, icon, ScaleMode.ScaleToFit);
-                    GUILayout.Space(8);
-                }
-                else
-                {
-                    // Placeholder space if no icon
-                    GUILayout.Space(ICON_SIZE + 8);
-                }
-
-                // Item name with rarity color
-                var rarityColor = _rarityColors.TryGetValue(item.Rarity, out var c) ? c : _textPrimary;
-                var nameStyle = new GUIStyle(_labelStyle)
-                {
-                    fontSize = 12,
-                    normal = { textColor = isDonated ? _successGreen : rarityColor }
-                };
-                if (isDonated) nameStyle.fontStyle = FontStyle.Italic;
-
-                GUILayout.Label(item.Name, nameStyle, GUILayout.ExpandWidth(true));
-
-                // Rarity badge
-                var rarityStyle = new GUIStyle(_labelStyle)
-                {
-                    fontSize = 9,
-                    normal = { textColor = rarityColor }
-                };
-                GUILayout.Label(item.Rarity.ToString(), rarityStyle, GUILayout.Width(60));
-
-                // Status icon
-                if (isDonated)
-                {
-                    GUILayout.Label("✓", _checkmarkStyle, GUILayout.Width(25));
-                }
-                else
-                {
-                    var neededStyle = new GUIStyle(_checkmarkStyle) { normal = { textColor = _neededRed } };
-                    GUILayout.Label("○", neededStyle, GUILayout.Width(25));
-                }
-
-                GUILayout.Space(10);
-
-                GUILayout.EndHorizontal();
-
+        private void DrawBundleItems(List<MuseumItem> visibleItems)
+        {
+            int index = 0;
+            foreach (var item in visibleItems)
+            {
+                DrawItemRow(item, index);
                 index++;
             }
         }
 
+        private void DrawItemRow(MuseumItem item, int index)
+        {
+            bool isDonated = _donationManager.HasDonated(item.Id);
+
+            var bgTex = isDonated ? _itemDonated : (index % 2 == 0 ? _itemEven : _itemOdd);
+
+            GUILayout.BeginHorizontal(_itemRowStyle, GUILayout.Height(40));
+
+            // Draw background
+            var lastRect = GUILayoutUtility.GetLastRect();
+            if (Event.current.type == UnityEngine.EventType.Repaint && bgTex != null)
+            {
+                GUI.DrawTexture(lastRect, bgTex);
+            }
+
+            GUILayout.Space(10);
+
+            // Checkbox
+            bool newDonated = GUILayout.Toggle(isDonated, "", GUILayout.Width(24));
+            if (newDonated != isDonated)
+            {
+                _donationManager.ToggleDonated(item.Id);
+            }
+
+            GUILayout.Space(8);
+
+            // Item icon
+            var icon = IconCache.GetIcon(item.GameItemId);
+            if (icon != null)
+            {
+                var iconRect = GUILayoutUtility.GetRect(ICON_SIZE, ICON_SIZE, GUILayout.Width(ICON_SIZE), GUILayout.Height(ICON_SIZE));
+                GUI.DrawTexture(iconRect, icon, ScaleMode.ScaleToFit);
+                GUILayout.Space(10);
+            }
+            else
+            {
+                GUILayout.Space(ICON_SIZE + 10);
+            }
+
+            // Item name with rarity color
+            var rarityColor = _rarityColors.TryGetValue(item.Rarity, out var c) ? c : _textDark;
+            var nameStyle = new GUIStyle(_itemNameStyle)
+            {
+                fontSize = 13,
+                normal = { textColor = isDonated ? _successGreen : rarityColor }
+            };
+            if (isDonated)
+            {
+                nameStyle.fontStyle = FontStyle.Italic;
+            }
+
+            GUILayout.Label(item.Name, nameStyle, GUILayout.ExpandWidth(true));
+
+            // Rarity label
+            var rarityLabelStyle = new GUIStyle(_labelStyle)
+            {
+                fontSize = 11,
+                fontStyle = FontStyle.Bold,
+                alignment = TextAnchor.MiddleCenter,
+                normal = { textColor = rarityColor }
+            };
+            GUILayout.Label(item.Rarity.ToString(), rarityLabelStyle, GUILayout.Width(80));
+
+            // Status
+            if (isDonated)
+            {
+                var checkStyle = new GUIStyle(_checkmarkStyle) { fontSize = 14 };
+                GUILayout.Label("Donated", checkStyle, GUILayout.Width(60));
+            }
+            else
+            {
+                var neededStyle = new GUIStyle(_checkmarkStyle)
+                {
+                    normal = { textColor = _neededOrange },
+                    fontSize = 12
+                };
+                GUILayout.Label("Needed", neededStyle, GUILayout.Width(60));
+            }
+
+            GUILayout.Space(10);
+            GUILayout.EndHorizontal();
+        }
+
         private void DrawFooter()
         {
-            var sections = MuseumContent.GetAllSections();
-            var section = sections[_selectedSectionIndex];
-            var stats = _donationManager.GetSectionStats(section);
-            float percent = _donationManager.GetSectionCompletionPercent(section);
-
-            GUILayout.BeginHorizontal();
-
-            // Section progress bar
-            var barRect = GUILayoutUtility.GetRect(0, 20, GUILayout.ExpandWidth(true));
-
-            // Background
-            GUI.DrawTexture(barRect, _progressBg);
-
-            // Fill
-            var fillRect = new Rect(barRect.x, barRect.y, barRect.width * (percent / 100f), barRect.height);
-            var sectionColor = _sectionColors.TryGetValue(section.Id, out var sc) ? sc : _successGreen;
-            GUI.color = sectionColor;
-            GUI.DrawTexture(fillRect, Texture2D.whiteTexture);
-            GUI.color = Color.white;
-
-            // Text overlay
-            var progressLabel = new GUIStyle(_labelStyle)
-            {
-                alignment = TextAnchor.MiddleCenter,
-                fontSize = 11,
-                fontStyle = FontStyle.Bold
-            };
-            GUI.Label(barRect, $"{section.Name}: {stats.donated}/{stats.total} ({percent:F1}%)", progressLabel);
-
-            GUILayout.EndHorizontal();
-
-            GUILayout.Space(5);
-
-            // Hotkey hint
             GUILayout.BeginHorizontal();
             GUILayout.FlexibleSpace();
-            var hintStyle = new GUIStyle(_labelStyle)
-            {
-                fontSize = 10,
-                normal = { textColor = _textMuted }
-            };
-            GUILayout.Label($"Press {(_requireCtrl ? "Ctrl+" : "")}{_toggleKey} to toggle | Escape to close", hintStyle);
+
+            var footerText = $"Press {(_requireCtrl ? "Ctrl+" : "")}{_toggleKey} to toggle  |  ESC to close  |  Manual tracking";
+            GUILayout.Label(footerText, _footerStyle);
+
             GUILayout.FlexibleSpace();
             GUILayout.EndHorizontal();
+
+            GUILayout.Space(12);
         }
     }
 }
