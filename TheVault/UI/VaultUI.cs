@@ -130,6 +130,9 @@ namespace TheVault.UI
 
             // Log icon cache status when opening
             IconCache.LogStatus();
+
+            // Check for secret gifts on first open
+            SecretGifts.CheckAndGiveFirstOpenGift(PlayerPatches.LoadedCharacterName);
         }
 
         public void Hide()
