@@ -189,6 +189,9 @@ namespace TheVault.Patches
                     Plugin.SaveVault();
                 }
                 ResetState();
+
+                // Reset secret gift check for next character
+                SecretGifts.ResetGiftCheck();
             }
             catch (Exception ex)
             {
