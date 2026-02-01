@@ -367,7 +367,7 @@ namespace SunHavenMuseumUtilityTracker
     /// </summary>
     public static class PluginInfo
     {
-        public const string PLUGIN_GUID = "com.myleek.sunhavenmuseumutilitytracker";
+        public const string PLUGIN_GUID = "com.azraelgodking.sunhavenmuseumutilitytracker";
         public const string PLUGIN_NAME = "Sun Haven Museum Utility Tracker";
         public const string PLUGIN_VERSION = "1.0.0";
     }

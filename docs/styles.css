@@ -702,6 +702,25 @@ h1 {
     transform: scale(1.05);
 }
 
+.mod-card.todo-theme {
+    border-color: rgba(212, 175, 125, 0.4);
+    background: linear-gradient(135deg, rgba(212, 175, 125, 0.1) 0%, rgba(212, 175, 125, 0.02) 100%);
+}
+
+.mod-card.todo-theme:hover {
+    border-color: rgba(212, 175, 125, 0.7);
+}
+
+.mod-cta-button.todo-btn {
+    background: linear-gradient(135deg, #d4af7d, #c49a6c);
+    color: #fff;
+}
+
+.mod-cta-button.todo-btn:hover {
+    background: linear-gradient(135deg, #e8c99b, #d4af7d);
+    transform: scale(1.05);
+}
+
 .quick-install {
     max-width: 700px;
     margin: 0 auto 50px;

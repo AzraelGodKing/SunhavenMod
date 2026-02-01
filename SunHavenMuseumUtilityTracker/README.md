@@ -64,7 +64,7 @@ Use the tracker UI to manually check off items as you donate them. Your progress
 ## Configuration
 
 After first launch, edit the config file at:
-`Sun Haven/BepInEx/config/com.myleek.sunhavenmuseumutilitytracker.cfg`
+`Sun Haven/BepInEx/config/com.azraelgodking.sunhavenmuseumutilitytracker.cfg`
 
 | Setting | Default | Description |
 |---------|---------|-------------|
@@ -115,5 +115,5 @@ Feel free to use, modify, and distribute this mod.
 
 ## Credits
 
-- Created by Myleek
+- Created by AzraelGodking
 - Built with [BepInEx](https://github.com/BepInEx/BepInEx) and [Harmony](https://github.com/pardeike/Harmony)
