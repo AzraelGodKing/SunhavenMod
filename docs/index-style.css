@@ -1,0 +1,283 @@
+/* Sun Haven Mod Hub - Distinct Style */
+
+:root {
+    --ink: #1f1a12;
+    --muted: #5f5245;
+    --paper: #f6efe3;
+    --paper-deep: #efe1cc;
+    --accent: #2f8f5b;
+    --accent-2: #f2a65a;
+    --shadow: rgba(31, 26, 18, 0.18);
+}
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: "Trebuchet MS", "Lucida Sans Unicode", "Lucida Grande", "Verdana", sans-serif;
+    background:
+        radial-gradient(circle at 15% 10%, rgba(242, 166, 90, 0.25), transparent 45%),
+        radial-gradient(circle at 85% 0%, rgba(47, 143, 91, 0.22), transparent 45%),
+        linear-gradient(135deg, #fef8ef 0%, #f6efe3 45%, #efe1cc 100%);
+    min-height: 100vh;
+    padding: 40px 20px 60px;
+    color: var(--ink);
+}
+
+.container {
+    max-width: 1400px;
+    margin: 0 auto;
+}
+
+h1 {
+    text-align: center;
+    font-size: 3.1em;
+    margin-bottom: 12px;
+    letter-spacing: 1px;
+    color: var(--ink);
+}
+
+.subtitle {
+    text-align: center;
+    color: var(--muted);
+    margin-bottom: 40px;
+    font-size: 1.15em;
+}
+
+.hub-header {
+    text-align: center;
+    padding: 30px 20px 10px;
+    margin-bottom: 10px;
+    animation: fade-up 0.7s ease-out;
+}
+
+.section-title {
+    text-align: center;
+    font-size: 2em;
+    margin: 40px 0 22px 0;
+    color: var(--accent);
+    position: relative;
+}
+
+.section-title::after {
+    content: "";
+    position: absolute;
+    bottom: -8px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 90px;
+    height: 3px;
+    background: linear-gradient(90deg, var(--accent), var(--accent-2));
+    border-radius: 2px;
+}
+
+/* Mod Cards */
+.mods-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(360px, 1fr));
+    gap: 28px;
+    margin-top: 30px;
+}
+
+.mod-card {
+    background: rgba(255, 255, 255, 0.7);
+    border-radius: 22px;
+    padding: 28px;
+    border: 1px solid rgba(31, 26, 18, 0.08);
+    box-shadow: 0 18px 40px var(--shadow);
+    transition: transform 0.25s ease, box-shadow 0.25s ease, border-color 0.25s ease;
+}
+
+.mod-card:hover {
+    transform: translateY(-6px);
+    box-shadow: 0 24px 50px rgba(31, 26, 18, 0.22);
+    border-color: rgba(47, 143, 91, 0.35);
+}
+
+.mod-card-header {
+    display: flex;
+    align-items: center;
+    gap: 18px;
+    margin-bottom: 18px;
+}
+
+.mod-icon-large {
+    font-size: 3em;
+}
+
+.mod-title-area h3 {
+    font-size: 1.6em;
+    color: var(--ink);
+    margin-bottom: 4px;
+}
+
+.mod-tagline {
+    color: var(--muted);
+    font-size: 0.98em;
+    font-style: italic;
+}
+
+.mod-description {
+    color: var(--muted);
+    line-height: 1.7;
+    margin-bottom: 18px;
+}
+
+.mod-features-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-bottom: 20px;
+}
+
+.mod-feature {
+    background: rgba(47, 143, 91, 0.12);
+    padding: 6px 14px;
+    border-radius: 18px;
+    font-size: 0.85em;
+    color: #2a5f43;
+}
+
+.mod-cta-button {
+    display: inline-block;
+    padding: 12px 22px;
+    border-radius: 24px;
+    text-decoration: none;
+    font-weight: 700;
+    font-size: 0.98em;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.mod-cta-button:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 10px 20px rgba(47, 143, 91, 0.25);
+}
+
+.mod-cta-button.vault-btn {
+    background: linear-gradient(135deg, #2d6cdf, #1f5c9f);
+    color: #fff;
+}
+
+.mod-cta-button.birthright-btn {
+    background: linear-gradient(135deg, #c48b2c, #8b5b1b);
+    color: #fff;
+}
+
+.mod-cta-button.smut-btn {
+    background: linear-gradient(135deg, #0f8e8e, #0b5c5c);
+    color: #fff;
+}
+
+.mod-cta-button.todo-btn {
+    background: linear-gradient(135deg, #f2a65a, #d27f33);
+    color: #fff;
+}
+
+/* Quick install */
+.quick-install {
+    max-width: 760px;
+    margin: 0 auto 50px;
+}
+
+.install-steps {
+    display: grid;
+    gap: 16px;
+}
+
+.install-step {
+    display: flex;
+    align-items: flex-start;
+    gap: 18px;
+    background: rgba(255, 255, 255, 0.6);
+    padding: 18px 20px;
+    border-radius: 16px;
+    border: 1px solid rgba(31, 26, 18, 0.08);
+}
+
+.step-number {
+    background: linear-gradient(135deg, var(--accent), var(--accent-2));
+    color: #fff;
+    width: 38px;
+    height: 38px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: bold;
+    font-size: 1.1em;
+    flex-shrink: 0;
+}
+
+.step-content h4 {
+    color: var(--ink);
+    margin-bottom: 4px;
+}
+
+.step-content p {
+    color: var(--muted);
+    font-size: 0.96em;
+}
+
+code {
+    background: rgba(31, 26, 18, 0.08);
+    padding: 2px 6px;
+    border-radius: 4px;
+    font-family: "Courier New", "Lucida Console", monospace;
+}
+
+.footer {
+    text-align: center;
+    margin-top: 40px;
+    padding-top: 20px;
+    color: var(--muted);
+}
+
+.footer a {
+    color: var(--accent);
+    text-decoration: none;
+}
+
+.footer a:hover {
+    text-decoration: underline;
+}
+
+.footer-disclaimer {
+    color: #7a6b5d;
+    font-size: 0.85em;
+    margin-top: 10px;
+}
+
+@keyframes fade-up {
+    from {
+        opacity: 0;
+        transform: translateY(12px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@media (max-width: 860px) {
+    .mods-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .mod-card-header {
+        flex-direction: column;
+        text-align: center;
+    }
+}
+
+@media (max-width: 480px) {
+    body {
+        padding: 24px 12px 40px;
+    }
+
+    h1 {
+        font-size: 2.2em;
+    }
+}
