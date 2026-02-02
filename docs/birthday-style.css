@@ -1,0 +1,508 @@
+/* Squirrels Birthday Reminder - Distinct Style */
+
+:root {
+    --ink: #2c1f2c;
+    --paper: #fef6f8;
+    --paper-dark: #f8e6ec;
+    --accent: #e84393;
+    --accent-2: #c44569;
+    --gold: #d4a373;
+    --shadow: rgba(44, 31, 44, 0.18);
+}
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: "Century Gothic", "Futura", "Franklin Gothic Medium", "Trebuchet MS", sans-serif;
+    background:
+        radial-gradient(circle at 10% 0%, rgba(232, 67, 147, 0.15), transparent 40%),
+        radial-gradient(circle at 85% 10%, rgba(212, 163, 115, 0.18), transparent 35%),
+        linear-gradient(135deg, #fff8fa 0%, #f8e6ec 100%);
+    min-height: 100vh;
+    padding: 0;
+    color: var(--ink);
+}
+
+/* Top Navigation */
+.top-nav {
+    background: rgba(255, 248, 250, 0.95);
+    padding: 14px 40px;
+    border-bottom: 1px solid rgba(44, 31, 44, 0.15);
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    backdrop-filter: blur(8px);
+}
+
+.nav-home {
+    color: var(--accent);
+    text-decoration: none;
+    font-weight: 700;
+    transition: color 0.3s;
+}
+
+.nav-home:hover {
+    color: var(--accent-2);
+}
+
+.nav-divider {
+    color: rgba(44, 31, 44, 0.35);
+    margin: 0 10px;
+}
+
+.nav-current {
+    color: rgba(44, 31, 44, 0.6);
+}
+
+.container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 24px 40px 60px;
+}
+
+/* Hero Section */
+.hero {
+    text-align: center;
+    padding: 56px 24px;
+    margin-bottom: 40px;
+    background: linear-gradient(180deg, rgba(232, 67, 147, 0.12) 0%, transparent 100%);
+    border-radius: 22px;
+    border: 1px solid rgba(232, 67, 147, 0.25);
+    box-shadow: 0 20px 40px var(--shadow);
+    animation: fade-in 0.8s ease-out;
+}
+
+.hero-icon {
+    font-size: 4.8em;
+    margin-bottom: 18px;
+    filter: drop-shadow(0 8px 16px rgba(232, 67, 147, 0.35));
+}
+
+.hero h1 {
+    font-size: 3.2em;
+    margin-bottom: 10px;
+    color: var(--ink);
+}
+
+.hero .full-name {
+    font-size: 0.45em;
+    display: block;
+    margin-top: 10px;
+    color: var(--accent-2);
+    letter-spacing: 1px;
+}
+
+.tagline {
+    font-size: 1.25em;
+    color: rgba(44, 31, 44, 0.7);
+}
+
+/* Intro Section */
+.intro-section {
+    text-align: center;
+    max-width: 820px;
+    margin: 0 auto 45px;
+    font-size: 1.1em;
+    line-height: 1.7;
+    color: rgba(44, 31, 44, 0.75);
+    padding: 26px 30px;
+    background: rgba(255, 255, 255, 0.7);
+    border-radius: 16px;
+    border-left: 4px solid var(--accent);
+}
+
+/* Notice Section */
+.notice-section {
+    max-width: 800px;
+    margin: 0 auto 30px;
+}
+
+.notice-box {
+    background: rgba(212, 163, 115, 0.12);
+    border: 1px solid rgba(212, 163, 115, 0.35);
+    border-left: 4px solid var(--gold);
+    border-radius: 15px;
+    padding: 22px 26px;
+}
+
+.notice-box h3 {
+    color: var(--gold);
+    margin-bottom: 12px;
+    font-size: 1.2em;
+}
+
+.notice-box p {
+    color: rgba(44, 31, 44, 0.75);
+    line-height: 1.6;
+    margin-bottom: 10px;
+}
+
+.notice-box p:last-child {
+    margin-bottom: 0;
+}
+
+/* Section Titles */
+.section-title {
+    text-align: center;
+    font-size: 2em;
+    margin: 50px 0 28px;
+    color: var(--accent-2);
+    position: relative;
+}
+
+.section-title::after {
+    content: "";
+    position: absolute;
+    bottom: -10px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 90px;
+    height: 3px;
+    background: linear-gradient(90deg, var(--accent), var(--gold));
+    border-radius: 2px;
+}
+
+/* Features Grid */
+.features-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 24px;
+    margin-bottom: 50px;
+}
+
+.feature-card {
+    background: rgba(255, 255, 255, 0.78);
+    border-radius: 16px;
+    padding: 26px;
+    text-align: center;
+    border: 1px solid rgba(44, 31, 44, 0.12);
+    transition: transform 0.25s ease, box-shadow 0.25s ease;
+}
+
+.feature-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 14px 30px rgba(44, 31, 44, 0.16);
+}
+
+.feature-icon {
+    font-size: 2.4em;
+    margin-bottom: 12px;
+}
+
+.feature-card h3 {
+    color: var(--ink);
+    margin-bottom: 10px;
+    font-size: 1.15em;
+}
+
+.feature-card p {
+    color: rgba(44, 31, 44, 0.7);
+    line-height: 1.6;
+}
+
+/* NPC Birthday Grid */
+.npc-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+    gap: 22px;
+    margin-bottom: 50px;
+}
+
+.npc-section {
+    background: rgba(255, 255, 255, 0.78);
+    border-radius: 16px;
+    padding: 22px;
+    border: 1px solid rgba(44, 31, 44, 0.12);
+}
+
+.npc-section.spring { border-top: 4px solid #7daa7d; }
+.npc-section.summer { border-top: 4px solid #d4a373; }
+.npc-section.fall { border-top: 4px solid #c68642; }
+.npc-section.winter { border-top: 4px solid #6a8fb0; }
+
+.section-header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 16px;
+    padding-bottom: 12px;
+    border-bottom: 1px solid rgba(44, 31, 44, 0.12);
+}
+
+.section-icon {
+    font-size: 2em;
+}
+
+.section-header h3 {
+    color: var(--ink);
+    font-size: 1.2em;
+}
+
+.section-desc {
+    color: rgba(44, 31, 44, 0.65);
+    font-size: 0.95em;
+    margin-bottom: 14px;
+    line-height: 1.5;
+}
+
+.npc-list {
+    list-style: none;
+}
+
+.npc-list li {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 9px 0;
+    color: rgba(44, 31, 44, 0.8);
+    border-bottom: 1px solid rgba(44, 31, 44, 0.08);
+}
+
+.npc-list li:last-child {
+    border-bottom: none;
+}
+
+.npc-icon {
+    font-size: 1.15em;
+    width: 26px;
+    text-align: center;
+}
+
+/* Gift Rarity Colors */
+.rarity-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 14px;
+    max-width: 900px;
+    margin: 0 auto 50px;
+}
+
+.rarity-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    background: rgba(255, 255, 255, 0.78);
+    padding: 14px 18px;
+    border-radius: 12px;
+    border: 1px solid rgba(44, 31, 44, 0.1);
+}
+
+.rarity-dot {
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
+}
+
+.rarity-dot.loved { background: #e84393; }
+.rarity-dot.liked { background: #d4a373; }
+.rarity-dot.neutral { background: #9aa39a; }
+.rarity-dot.disliked { background: #6a8fb0; }
+
+.rarity-label {
+    color: rgba(44, 31, 44, 0.8);
+    font-weight: 600;
+}
+
+/* Usage Steps */
+.usage-steps,
+.install-steps {
+    max-width: 720px;
+    margin: 0 auto 50px;
+}
+
+.step,
+.install-step {
+    display: flex;
+    gap: 18px;
+    margin-bottom: 20px;
+    background: rgba(255, 255, 255, 0.78);
+    padding: 22px;
+    border-radius: 14px;
+    border: 1px solid rgba(44, 31, 44, 0.1);
+    transition: border-color 0.2s ease;
+}
+
+.step:hover,
+.install-step:hover {
+    border-color: rgba(232, 67, 147, 0.4);
+}
+
+.step-number {
+    background: linear-gradient(135deg, var(--accent), var(--accent-2));
+    color: #fff;
+    width: 42px;
+    height: 42px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: bold;
+    font-size: 1.2em;
+    flex-shrink: 0;
+}
+
+.step-icon {
+    font-size: 2em;
+    width: 44px;
+    text-align: center;
+}
+
+.step-content h4,
+.step-info h4 {
+    color: var(--ink);
+    margin-bottom: 6px;
+    font-size: 1.05em;
+}
+
+.step-content p,
+.step-info p {
+    color: rgba(44, 31, 44, 0.7);
+    line-height: 1.5;
+}
+
+kbd {
+    background: #f8e6ec;
+    border: 1px solid rgba(44, 31, 44, 0.2);
+    border-radius: 6px;
+    padding: 2px 6px;
+    font-family: "Courier New", "Lucida Console", monospace;
+    font-size: 0.9em;
+    color: var(--ink);
+}
+
+/* Config */
+.config-table {
+    max-width: 720px;
+    margin: 0 auto 20px;
+    overflow-x: auto;
+}
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+    background: rgba(255, 255, 255, 0.85);
+    border-radius: 10px;
+    overflow: hidden;
+}
+
+th, td {
+    padding: 14px 18px;
+    text-align: left;
+    border-bottom: 1px solid rgba(44, 31, 44, 0.1);
+}
+
+th {
+    background: rgba(232, 67, 147, 0.15);
+    color: var(--ink);
+    font-weight: 700;
+}
+
+td {
+    color: rgba(44, 31, 44, 0.75);
+}
+
+tr:last-child td {
+    border-bottom: none;
+}
+
+code {
+    background: rgba(44, 31, 44, 0.08);
+    padding: 2px 6px;
+    border-radius: 4px;
+    font-family: "Courier New", "Lucida Console", monospace;
+    font-size: 0.9em;
+    color: var(--accent-2);
+}
+
+.config-note {
+    text-align: center;
+    color: rgba(44, 31, 44, 0.6);
+    font-size: 0.95em;
+    margin-bottom: 40px;
+}
+
+/* Footer */
+.footer {
+    text-align: center;
+    margin-top: 60px;
+    padding: 34px 20px;
+    border-top: 1px solid rgba(44, 31, 44, 0.12);
+    background: rgba(255, 255, 255, 0.7);
+    border-radius: 0 0 18px 18px;
+}
+
+.footer p {
+    color: rgba(44, 31, 44, 0.6);
+    margin-bottom: 12px;
+}
+
+.footer-links {
+    display: flex;
+    justify-content: center;
+    gap: 24px;
+}
+
+.footer-links a {
+    color: var(--accent);
+    text-decoration: none;
+    transition: color 0.3s;
+}
+
+.footer-links a:hover {
+    color: var(--accent-2);
+    text-decoration: underline;
+}
+
+@keyframes fade-in {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+@media (max-width: 768px) {
+    .container {
+        padding: 20px;
+    }
+
+    .hero h1 {
+        font-size: 2.4em;
+    }
+
+    .hero-icon {
+        font-size: 3.5em;
+    }
+
+    .step,
+    .install-step {
+        flex-direction: column;
+        text-align: center;
+    }
+
+    .step-number {
+        margin: 0 auto 12px;
+    }
+
+    .top-nav {
+        padding: 12px 20px;
+    }
+
+    .footer-links {
+        flex-direction: column;
+        gap: 12px;
+    }
+}
+
+@media (max-width: 480px) {
+    .hero h1 {
+        font-size: 2em;
+    }
+
+    .features-grid,
+    .npc-grid,
+    .rarity-grid {
+        grid-template-columns: 1fr;
+    }
+}
