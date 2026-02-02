@@ -176,6 +176,11 @@ h1 {
     color: #fff;
 }
 
+.mod-cta-button.birthday-btn {
+    background: linear-gradient(135deg, #e84393, #c44569);
+    color: #fff;
+}
+
 /* Quick install */
 .quick-install {
     max-width: 760px;

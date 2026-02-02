@@ -20,23 +20,33 @@ namespace SunhavenTodo
         private static TodoManager _staticTodoManager;
         private static TodoSaveSystem _staticSaveSystem;
         private static TodoUI _staticTodoUI;
+        private static TodoHUD _staticTodoHUD;
         private static GameObject _persistentRunner;
         private static PersistentRunner _persistentRunnerComponent;
         private static KeyCode _staticToggleKey = KeyCode.T;
         private static bool _staticRequireCtrl = true;
         private static bool _staticAutoSave = true;
         private static float _staticAutoSaveInterval = 60f;
+        private static bool _staticHUDEnabled = true;
+        private static float _staticHUDPositionX = -1f;
+        private static float _staticHUDPositionY = -1f;
+        private static KeyCode _staticHUDToggleKey = KeyCode.H;
 
         // Configuration
         private ConfigEntry<KeyCode> _toggleKey;
         private ConfigEntry<bool> _requireCtrl;
         private ConfigEntry<bool> _autoSave;
         private ConfigEntry<float> _autoSaveInterval;
+        private ConfigEntry<bool> _hudEnabled;
+        private ConfigEntry<float> _hudPositionX;
+        private ConfigEntry<float> _hudPositionY;
+        private ConfigEntry<KeyCode> _hudToggleKey;
 
         // Instance references
         private TodoManager _todoManager;
         private TodoSaveSystem _saveSystem;
         private TodoUI _todoUI;
+        private TodoHUD _todoHUD;
 
         // State
         private Harmony _harmony;
@@ -47,6 +57,8 @@ namespace SunhavenTodo
         // Static access for patches and hotkeys
         public static KeyCode StaticToggleKey => _staticToggleKey;
         public static bool StaticRequireCtrl => _staticRequireCtrl;
+        public static KeyCode StaticHUDToggleKey => _staticHUDToggleKey;
+        public static bool StaticHUDEnabled => _staticHUDEnabled;
 
         private void Awake()
         {
@@ -102,6 +114,45 @@ namespace SunhavenTodo
             );
             _staticAutoSaveInterval = _autoSaveInterval.Value;
             _autoSaveInterval.SettingChanged += (_, _) => _staticAutoSaveInterval = _autoSaveInterval.Value;
+
+            // HUD Configuration
+            _hudEnabled = Config.Bind(
+                "HUD",
+                "Enabled",
+                true,
+                "Show the movable HUD panel with top 5 urgent tasks"
+            );
+            _staticHUDEnabled = _hudEnabled.Value;
+            _hudEnabled.SettingChanged += (_, _) =>
+            {
+                _staticHUDEnabled = _hudEnabled.Value;
+                _staticTodoHUD?.SetEnabled(_staticHUDEnabled);
+            };
+
+            _hudPositionX = Config.Bind(
+                "HUD",
+                "PositionX",
+                -1f,
+                "HUD X position (-1 for default)"
+            );
+            _staticHUDPositionX = _hudPositionX.Value;
+
+            _hudPositionY = Config.Bind(
+                "HUD",
+                "PositionY",
+                -1f,
+                "HUD Y position (-1 for default)"
+            );
+            _staticHUDPositionY = _hudPositionY.Value;
+
+            _hudToggleKey = Config.Bind(
+                "Hotkeys",
+                "HUDToggleKey",
+                KeyCode.H,
+                "Key to toggle the HUD panel (with Ctrl if RequireCtrl is enabled)"
+            );
+            _staticHUDToggleKey = _hudToggleKey.Value;
+            _hudToggleKey.SettingChanged += (_, _) => _staticHUDToggleKey = _hudToggleKey.Value;
         }
 
         private void CreatePersistentRunner()
@@ -186,10 +237,40 @@ namespace SunhavenTodo
                     Log?.LogInfo("[EnsureUI] TodoUI recreated");
                 }
 
+                // Recreate TodoHUD if destroyed
+                if (_staticTodoHUD == null)
+                {
+                    Log?.LogInfo("[EnsureUI] Recreating TodoHUD...");
+                    var hudObject = new GameObject("SunhavenTodo_HUD");
+                    UnityEngine.Object.DontDestroyOnLoad(hudObject);
+
+                    _staticTodoHUD = hudObject.AddComponent<TodoHUD>();
+                    _staticTodoHUD.Initialize(_staticTodoManager);
+                    _staticTodoHUD.SetEnabled(_staticHUDEnabled);
+
+                    // Restore saved position if valid
+                    if (_staticHUDPositionX >= 0 && _staticHUDPositionY >= 0)
+                    {
+                        _staticTodoHUD.SetPosition(_staticHUDPositionX, _staticHUDPositionY);
+                    }
+
+                    // Wire up position persistence
+                    _staticTodoHUD.OnPositionChanged = (x, y) =>
+                    {
+                        _staticHUDPositionX = x;
+                        _staticHUDPositionY = y;
+                        Instance?._hudPositionX?.SetSerializedValue(x.ToString());
+                        Instance?._hudPositionY?.SetSerializedValue(y.ToString());
+                    };
+
+                    Log?.LogInfo("[EnsureUI] TodoHUD recreated");
+                }
+
                 // Update instance reference if we have an instance
                 if (Instance != null)
                 {
                     Instance._todoUI = _staticTodoUI;
+                    Instance._todoHUD = _staticTodoHUD;
                 }
             }
             catch (Exception ex)
@@ -262,6 +343,13 @@ namespace SunhavenTodo
 
         public static TodoManager GetTodoManager() => _staticTodoManager;
         public static TodoUI GetTodoUI() => _staticTodoUI;
+        public static TodoHUD GetTodoHUD() => _staticTodoHUD;
+
+        public static void ToggleHUD()
+        {
+            EnsureUIComponentsExist();
+            _staticTodoHUD?.Toggle();
+        }
 
         private void OnDestroy()
         {
@@ -300,10 +388,17 @@ namespace SunhavenTodo
 
             bool ctrlPressed = Input.GetKey(KeyCode.LeftControl) || Input.GetKey(KeyCode.RightControl);
             bool togglePressed = Input.GetKeyDown(Plugin.StaticToggleKey);
+            bool hudTogglePressed = Input.GetKeyDown(Plugin.StaticHUDToggleKey);
 
             if (togglePressed && (ctrlPressed == Plugin.StaticRequireCtrl))
             {
                 Plugin.ToggleUI();
+            }
+
+            // HUD toggle (also uses Ctrl if required)
+            if (hudTogglePressed && (ctrlPressed == Plugin.StaticRequireCtrl))
+            {
+                Plugin.ToggleHUD();
             }
         }
 

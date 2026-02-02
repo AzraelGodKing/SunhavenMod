@@ -4,7 +4,6 @@ using BepInEx.Configuration;
 using BepInEx.Logging;
 using HarmonyLib;
 using SunHavenMuseumUtilityTracker.Data;
-using SunHavenMuseumUtilityTracker.DebugTools;
 using SunHavenMuseumUtilityTracker.Patches;
 using SunHavenMuseumUtilityTracker.UI;
 using UnityEngine;
@@ -183,9 +182,6 @@ namespace SunHavenMuseumUtilityTracker
                     _staticTrackerUI = uiObject.AddComponent<MuseumTrackerUI>();
                     _staticTrackerUI.Initialize(_staticDonationManager);
                     _staticTrackerUI.SetToggleKey(StaticToggleKey, StaticRequireCtrl);
-
-                    // Recreate DebugMode component
-                    uiObject.AddComponent<DebugTools.DebugMode>();
 
                     Log?.LogInfo("[EnsureUI] TrackerUI recreated");
                 }
