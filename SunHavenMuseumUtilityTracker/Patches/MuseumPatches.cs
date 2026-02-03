@@ -25,6 +25,13 @@ namespace SunHavenMuseumUtilityTracker.Patches
         // Log all progress key calls for debugging
         private static bool _debugLogging = true;
 
+        // Cached reflection data for performance
+        private static object _cachedGameSaveInstance;
+        private static MethodInfo _cachedGetProgressBoolMethod;
+        private static MethodInfo _cachedGetProgressIntMethod;
+        private static bool _reflectionInitialized = false;
+        private static bool _gameProgressAvailable = false;
+
         /// <summary>
         /// Discover the actual progress key patterns used by the game.
         /// Accesses MuseumCurator's static lists at runtime.
@@ -206,29 +213,20 @@ namespace SunHavenMuseumUtilityTracker.Patches
                 }
 
                 Plugin.Log?.LogInfo("[SYNC] ======= Starting sync with game progress =======");
+
+                // Initialize and check if game progress is available
+                InitializeReflectionCache();
+                if (!_gameProgressAvailable || _cachedGameSaveInstance == null)
+                {
+                    Plugin.Log?.LogWarning("[SYNC] Game progress not available - cannot sync (character may not be loaded yet)");
+                    return;
+                }
+
                 Plugin.Log?.LogInfo("[SYNC] NOTE: The game only stores BUNDLE completion, not individual items.");
                 Plugin.Log?.LogInfo("[SYNC] This will mark ALL items in completed bundles as donated.");
 
-                // Get GameSave instance
-                object gameSaveInstance = GetGameSaveInstance();
-                if (gameSaveInstance == null)
-                {
-                    Plugin.Log?.LogWarning("[SYNC] GameSave instance is null - cannot sync");
-                    return;
-                }
-
-                var gameSaveType = gameSaveInstance.GetType();
-
-                // Find GetProgressBoolCharacter method
-                var getProgressMethod = gameSaveType.GetMethod("GetProgressBoolCharacter", new[] { typeof(string) });
-                if (getProgressMethod == null)
-                {
-                    Plugin.Log?.LogWarning("[SYNC] Could not find GetProgressBoolCharacter method");
-                    return;
-                }
-
-                // Check all bundles for completion
-                int bundlesSynced = SyncCompletedBundles(gameSaveInstance, getProgressMethod, manager);
+                // Check all bundles for completion using cached methods
+                int bundlesSynced = SyncCompletedBundles(_cachedGameSaveInstance, _cachedGetProgressBoolMethod, _cachedGetProgressIntMethod, manager);
 
                 Plugin.Log?.LogInfo($"[SYNC] Synced {bundlesSynced} completed bundles");
                 Plugin.Log?.LogInfo("[SYNC] ======= Sync complete =======");
@@ -240,9 +238,50 @@ namespace SunHavenMuseumUtilityTracker.Patches
         }
 
         /// <summary>
+        /// Get the donation count for a bundle from the game's progress system.
+        /// Returns -1 if unable to read.
+        /// </summary>
+        public static int GetBundleDonationCount(string progressKey)
+        {
+            try
+            {
+                InitializeReflectionCache();
+                if (!_gameProgressAvailable || _cachedGameSaveInstance == null || _cachedGetProgressIntMethod == null)
+                    return -1;
+
+                // Game stores count as "{BundleName}complete"
+                string countKey = progressKey + "complete";
+                return (int)_cachedGetProgressIntMethod.Invoke(_cachedGameSaveInstance, new object[] { countKey });
+            }
+            catch
+            {
+                return -1;
+            }
+        }
+
+        /// <summary>
+        /// Check if a bundle is marked as complete in the game's progress system.
+        /// </summary>
+        public static bool IsBundleCompleteInGame(string progressKey)
+        {
+            try
+            {
+                InitializeReflectionCache();
+                if (!_gameProgressAvailable || _cachedGameSaveInstance == null || _cachedGetProgressBoolMethod == null)
+                    return false;
+
+                return (bool)_cachedGetProgressBoolMethod.Invoke(_cachedGameSaveInstance, new object[] { progressKey });
+            }
+            catch
+            {
+                return false;
+            }
+        }
+
+        /// <summary>
         /// Checks all known bundle progress keys and marks their items as donated if complete.
         /// </summary>
-        private static int SyncCompletedBundles(object gameSaveInstance, MethodInfo getProgressMethod, DonationManager manager)
+        private static int SyncCompletedBundles(object gameSaveInstance, MethodInfo getProgressBoolMethod, MethodInfo getProgressIntMethod, DonationManager manager)
         {
             int bundlesSynced = 0;
 
@@ -258,17 +297,25 @@ namespace SunHavenMuseumUtilityTracker.Patches
                     string progressKey = MuseumContent.GetProgressKeyForBundle(bundleId);
                     if (string.IsNullOrEmpty(progressKey)) continue;
 
-                    Plugin.Log?.LogDebug($"[SYNC] Checking bundle '{bundleId}' with progress key '{progressKey}'");
+                    // Get donation count from game (stored as "{BundleName}complete")
+                    int gameDonationCount = 0;
+                    if (getProgressIntMethod != null)
+                    {
+                        string countKey = progressKey + "complete";
+                        gameDonationCount = (int)getProgressIntMethod.Invoke(gameSaveInstance, new object[] { countKey });
+                    }
 
                     // Check if this bundle is complete in the game
-                    bool isComplete = (bool)getProgressMethod.Invoke(gameSaveInstance, new object[] { progressKey });
+                    bool isComplete = (bool)getProgressBoolMethod.Invoke(gameSaveInstance, new object[] { progressKey });
+
+                    var items = MuseumContent.GetItemsInBundle(bundleId);
+                    Plugin.Log?.LogDebug($"[SYNC] Bundle '{bundleId}' ({progressKey}): {gameDonationCount}/{items.Count} donated, complete={isComplete}");
 
                     if (isComplete)
                     {
                         Plugin.Log?.LogInfo($"[SYNC] Bundle '{bundleId}' is COMPLETE, marking all items...");
 
                         // Get all items in this bundle and mark them as donated
-                        var items = MuseumContent.GetItemsInBundle(bundleId);
                         int markedCount = 0;
 
                         foreach (var item in items)
@@ -286,6 +333,11 @@ namespace SunHavenMuseumUtilityTracker.Patches
                             bundlesSynced++;
                         }
                     }
+                    else if (gameDonationCount > 0)
+                    {
+                        // Bundle not complete, but has some donations
+                        Plugin.Log?.LogInfo($"[SYNC] Bundle '{bundleId}' has {gameDonationCount}/{items.Count} donations (not complete)");
+                    }
                 }
                 catch (Exception ex)
                 {
@@ -297,49 +349,101 @@ namespace SunHavenMuseumUtilityTracker.Patches
         }
 
         /// <summary>
-        /// Get the GameSave singleton instance.
+        /// Initialize reflection cache for game progress methods.
+        /// Call this once, and it will cache all needed reflection data.
         /// </summary>
-        private static object GetGameSaveInstance()
+        private static void InitializeReflectionCache()
         {
+            if (_reflectionInitialized) return;
+            _reflectionInitialized = true;
+
             try
             {
-                // Try SingletonBehaviour<GameSave>.Instance
+                // Try to get GameSave type
                 var gameSaveType = AccessTools.TypeByName("Wish.GameSave") ?? AccessTools.TypeByName("GameSave");
-                if (gameSaveType == null) return null;
-
-                // Try the SingletonBehaviour pattern
-                foreach (var assembly in AppDomain.CurrentDomain.GetAssemblies())
+                if (gameSaveType == null)
                 {
-                    try
-                    {
-                        var singletonType = assembly.GetType("SingletonBehaviour`1");
-                        if (singletonType != null)
-                        {
-                            var genericType = singletonType.MakeGenericType(gameSaveType);
-                            var instanceProp = genericType.GetProperty("Instance", BindingFlags.Public | BindingFlags.Static);
-                            if (instanceProp != null)
-                            {
-                                var instance = instanceProp.GetValue(null);
-                                if (instance != null) return instance;
-                            }
-                        }
-                    }
-                    catch { }
+                    Plugin.Log?.LogDebug("[MuseumPatches] GameSave type not found");
+                    return;
                 }
 
-                // Fallback: try direct Instance property
-                var directProp = gameSaveType.GetProperty("Instance", BindingFlags.Public | BindingFlags.Static);
-                if (directProp != null)
+                // Try direct Instance property first (most common pattern)
+                var instanceProp = gameSaveType.GetProperty("Instance", BindingFlags.Public | BindingFlags.Static | BindingFlags.FlattenHierarchy);
+                if (instanceProp != null)
                 {
-                    return directProp.GetValue(null);
+                    _cachedGameSaveInstance = instanceProp.GetValue(null);
+                }
+
+                // If that didn't work, try SingletonBehaviour pattern
+                if (_cachedGameSaveInstance == null)
+                {
+                    var singletonType = AccessTools.TypeByName("SingletonBehaviour`1");
+                    if (singletonType != null)
+                    {
+                        var genericType = singletonType.MakeGenericType(gameSaveType);
+                        instanceProp = genericType.GetProperty("Instance", BindingFlags.Public | BindingFlags.Static);
+                        if (instanceProp != null)
+                        {
+                            _cachedGameSaveInstance = instanceProp.GetValue(null);
+                        }
+                    }
+                }
+
+                if (_cachedGameSaveInstance == null)
+                {
+                    Plugin.Log?.LogDebug("[MuseumPatches] GameSave instance not available yet");
+                    _reflectionInitialized = false; // Allow retry later
+                    return;
+                }
+
+                // Cache the methods
+                _cachedGetProgressBoolMethod = gameSaveType.GetMethod("GetProgressBoolWorld", new[] { typeof(string) });
+                _cachedGetProgressIntMethod = gameSaveType.GetMethod("GetProgressIntWorld", new[] { typeof(string) });
+
+                if (_cachedGetProgressBoolMethod != null && _cachedGetProgressIntMethod != null)
+                {
+                    _gameProgressAvailable = true;
+                    Plugin.Log?.LogInfo("[MuseumPatches] Game progress reflection initialized successfully");
+                }
+                else
+                {
+                    Plugin.Log?.LogDebug("[MuseumPatches] Progress methods not found");
                 }
             }
             catch (Exception ex)
             {
-                Plugin.Log?.LogDebug($"[MuseumPatches] Error getting GameSave instance: {ex.Message}");
+                Plugin.Log?.LogDebug($"[MuseumPatches] Error initializing reflection: {ex.Message}");
             }
+        }
 
-            return null;
+        /// <summary>
+        /// Check if game progress features are available.
+        /// </summary>
+        public static bool IsGameProgressAvailable()
+        {
+            InitializeReflectionCache();
+            return _gameProgressAvailable;
+        }
+
+        /// <summary>
+        /// Reset the reflection cache (call when character changes).
+        /// </summary>
+        public static void ResetReflectionCache()
+        {
+            _reflectionInitialized = false;
+            _gameProgressAvailable = false;
+            _cachedGameSaveInstance = null;
+            _cachedGetProgressBoolMethod = null;
+            _cachedGetProgressIntMethod = null;
+        }
+
+        /// <summary>
+        /// Get the GameSave singleton instance (cached).
+        /// </summary>
+        private static object GetGameSaveInstance()
+        {
+            InitializeReflectionCache();
+            return _cachedGameSaveInstance;
         }
 
         /// <summary>
@@ -362,6 +466,152 @@ namespace SunHavenMuseumUtilityTracker.Patches
         {
             _debugLogging = enabled;
             Plugin.Log?.LogInfo($"[MuseumPatches] Debug logging: {enabled}");
+        }
+    }
+
+    /// <summary>
+    /// Harmony patches for HungryMonster (museum bundle donations).
+    /// Tracks items when they're donated to museum bundles in real-time.
+    /// </summary>
+    public static class HungryMonsterPatches
+    {
+        private static bool _isHooked = false;
+
+        /// <summary>
+        /// Apply patches to HungryMonster for real-time donation tracking.
+        /// Call from Plugin.ApplyPatches().
+        /// </summary>
+        public static void ApplyPatches(Harmony harmony)
+        {
+            if (_isHooked) return;
+
+            try
+            {
+                // Find HungryMonster type
+                var hungryMonsterType = AccessTools.TypeByName("Wish.HungryMonster") ?? AccessTools.TypeByName("HungryMonster");
+                if (hungryMonsterType == null)
+                {
+                    Plugin.Log?.LogWarning("[HungryMonsterPatches] Could not find HungryMonster type");
+                    return;
+                }
+
+                // Patch SaveInventory - called when items are saved after donation
+                var saveInventoryMethod = AccessTools.Method(hungryMonsterType, "SaveInventory");
+                if (saveInventoryMethod != null)
+                {
+                    var postfix = AccessTools.Method(typeof(HungryMonsterPatches), nameof(OnSaveInventory));
+                    harmony.Patch(saveInventoryMethod, postfix: new HarmonyMethod(postfix));
+                    Plugin.Log?.LogInfo("[HungryMonsterPatches] Patched HungryMonster.SaveInventory");
+                }
+                else
+                {
+                    Plugin.Log?.LogWarning("[HungryMonsterPatches] Could not find SaveInventory method");
+                }
+
+                _isHooked = true;
+            }
+            catch (Exception ex)
+            {
+                Plugin.Log?.LogError($"[HungryMonsterPatches] Error applying patches: {ex.Message}");
+            }
+        }
+
+        /// <summary>
+        /// Called after HungryMonster.SaveInventory() - tracks donated items.
+        /// </summary>
+        public static void OnSaveInventory(object __instance)
+        {
+            try
+            {
+                var instanceType = __instance.GetType();
+
+                // Check if this is a museum bundle (bundleType == MuseumBundle)
+                var bundleTypeField = instanceType.GetField("bundleType", BindingFlags.Public | BindingFlags.Instance);
+                if (bundleTypeField == null) return;
+
+                var bundleType = bundleTypeField.GetValue(__instance);
+                if (bundleType == null) return;
+
+                // BundleType.MuseumBundle = 3
+                int bundleTypeValue = (int)bundleType;
+                if (bundleTypeValue != 3) return; // Not a museum bundle
+
+                // Get the progress key for this bundle
+                var progressTokenField = instanceType.GetField("progressTokenWhenFull", BindingFlags.Public | BindingFlags.Instance);
+                if (progressTokenField == null) return;
+
+                var progressToken = progressTokenField.GetValue(__instance);
+                if (progressToken == null) return;
+
+                // Get progressID from the Progress object
+                var progressIdField = progressToken.GetType().GetField("progressID", BindingFlags.Public | BindingFlags.Instance);
+                if (progressIdField == null) return;
+
+                string progressKey = progressIdField.GetValue(progressToken) as string;
+                if (string.IsNullOrEmpty(progressKey)) return;
+
+                // Get the selling inventory
+                var inventoryField = instanceType.GetField("sellingInventory", BindingFlags.Public | BindingFlags.Instance);
+                if (inventoryField == null) return;
+
+                var inventory = inventoryField.GetValue(__instance);
+                if (inventory == null) return;
+
+                // Get Items property from inventory
+                var itemsProperty = inventory.GetType().GetProperty("Items", BindingFlags.Public | BindingFlags.Instance);
+                if (itemsProperty == null) return;
+
+                var items = itemsProperty.GetValue(inventory) as IEnumerable;
+                if (items == null) return;
+
+                // Find the corresponding bundle in our content
+                var bundle = MuseumContent.FindBundleByProgressKey(progressKey);
+                if (bundle == null)
+                {
+                    Plugin.Log?.LogDebug($"[HungryMonsterPatches] No bundle found for progress key: {progressKey}");
+                    return;
+                }
+
+                var manager = Plugin.GetDonationManager();
+                if (manager == null) return;
+
+                int trackedCount = 0;
+
+                // Iterate through inventory items and mark them as donated
+                foreach (var slotData in items)
+                {
+                    var slotDataType = slotData.GetType();
+                    var itemField = slotDataType.GetField("item", BindingFlags.Public | BindingFlags.Instance);
+                    if (itemField == null) continue;
+
+                    var item = itemField.GetValue(slotData);
+                    if (item == null) continue;
+
+                    // Get item ID
+                    var idMethod = item.GetType().GetMethod("ID", BindingFlags.Public | BindingFlags.Instance);
+                    if (idMethod == null) continue;
+
+                    int gameItemId = (int)idMethod.Invoke(item, null);
+
+                    // Find this item in our content
+                    var museumItem = MuseumContent.FindByGameItemId(gameItemId);
+                    if (museumItem != null && !manager.HasDonated(museumItem.Id))
+                    {
+                        manager.MarkDonated(museumItem.Id);
+                        trackedCount++;
+                        Plugin.Log?.LogInfo($"[HungryMonsterPatches] Auto-tracked donation: {museumItem.Name} (ID: {gameItemId})");
+                    }
+                }
+
+                if (trackedCount > 0)
+                {
+                    Plugin.Log?.LogInfo($"[HungryMonsterPatches] Tracked {trackedCount} new donations for bundle '{bundle.Name}'");
+                }
+            }
+            catch (Exception ex)
+            {
+                Plugin.Log?.LogDebug($"[HungryMonsterPatches] Error tracking donation: {ex.Message}");
+            }
         }
     }
 }
