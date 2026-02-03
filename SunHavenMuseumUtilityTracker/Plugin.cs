@@ -222,6 +222,9 @@ namespace SunHavenMuseumUtilityTracker
                     Logger.LogInfo("Patched GameSave.LoadCharacter");
                 }
 
+                // Patch HungryMonster for real-time donation tracking
+                HungryMonsterPatches.ApplyPatches(_harmony);
+
                 Logger.LogInfo("Harmony patches applied");
             }
             catch (Exception ex)

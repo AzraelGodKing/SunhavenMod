@@ -26,9 +26,9 @@
 
         <section class="notice-section">
             <div class="notice-box">
-                <h3>&#x2139; Manual Tracking Only</h3>
-                <p>This mod uses <strong>manual tracking</strong>. Sun Haven's game code only stores bundle completion (e.g., "Golden Bundle complete"), not individual item donations. Because the game doesn't track which specific items you've donated within incomplete bundles, automatic tracking of individual items is not possible.</p>
-                <p>Simply check off items as you donate them - your progress saves automatically per character!</p>
+                <h3>&#x1F504; Smart Tracking</h3>
+                <p>S.M.U.T. now features <strong>real-time auto-tracking</strong>! When you donate items to museum bundles in-game, they're automatically marked in your tracker. Plus, use the <strong>"Sync with Game"</strong> button to import all completed bundles from your save file.</p>
+                <p>Bundle headers show both your tracked progress and the game's recorded donation count <code>[Game: X]</code> side-by-side!</p>
             </div>
         </section>
 
@@ -36,9 +36,14 @@
             <h2 class="section-title">Key Features</h2>
             <div class="features-grid">
                 <div class="feature-card">
-                    <div class="feature-icon">&#x2611;</div>
-                    <h3>Manual Tracking</h3>
-                    <p>Mark items as donated with a simple checkbox. Track your progress across all museum sections with visual indicators for completed bundles.</p>
+                    <div class="feature-icon">&#x1F504;</div>
+                    <h3>Real-Time Auto-Tracking</h3>
+                    <p>Donations are automatically tracked when you add items to museum bundles. No need to manually check boxes for new donations!</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">&#x1F517;</div>
+                    <h3>Sync with Game</h3>
+                    <p>Click "Sync with Game" to import all completed bundles from your save file. Bundle headers show game progress alongside your tracked items.</p>
                 </div>
                 <div class="feature-card">
                     <div class="feature-icon">&#x1F464;</div>
@@ -54,11 +59,6 @@
                     <div class="feature-icon">&#x1F4CA;</div>
                     <h3>Progress Statistics</h3>
                     <p>See completion percentages for each section, bundle, and your overall museum progress. Progress bars show exactly how close you are to 100%.</p>
-                </div>
-                <div class="feature-card">
-                    <div class="feature-icon">&#x1F3A8;</div>
-                    <h3>Item Icons</h3>
-                    <p>Displays actual game item icons when available, making it easy to identify exactly which items you need to find.</p>
                 </div>
                 <div class="feature-card">
                     <div class="feature-icon">&#x1F48E;</div>
@@ -194,7 +194,14 @@
                     <div class="step-number">5</div>
                     <div class="step-content">
                         <h4>Mark Donations</h4>
-                        <p>Click the checkbox next to any item to mark it as donated. Your progress saves automatically!</p>
+                        <p>Click the checkbox next to any item to mark it as donated. Items you donate in-game are auto-tracked!</p>
+                    </div>
+                </div>
+                <div class="step">
+                    <div class="step-number">6</div>
+                    <div class="step-content">
+                        <h4>Sync with Game</h4>
+                        <p>Click the <strong>"Sync with Game"</strong> button to import completed bundles from your save. The <code>[Game: X]</code> indicator shows the game's recorded donation count.</p>
                     </div>
                 </div>
             </div>
@@ -255,6 +262,11 @@
                             <td>RequireCtrl</td>
                             <td>true</td>
                             <td>Require Ctrl key when pressing toggle key</td>
+                        </tr>
+                        <tr>
+                            <td>AltToggleKey</td>
+                            <td><kbd>F7</kbd></td>
+                            <td>Alternative key to toggle tracker (no modifier required, great for Steam Deck)</td>
                         </tr>
                     </tbody>
                 </table>

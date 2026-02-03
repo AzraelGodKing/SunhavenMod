@@ -1,3 +1,4 @@
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using SunHavenMuseumUtilityTracker.Data;
@@ -38,6 +39,16 @@ namespace SunHavenMuseumUtilityTracker.UI
         // Animation
         private float _openAnimation = 0f;
 
+        // Sync status
+        private string _syncStatusMessage = "";
+        private float _syncStatusTimer = 0f;
+
+        // Game progress cache (to avoid expensive reflection calls every frame)
+        private Dictionary<string, int> _cachedGameDonationCounts = new Dictionary<string, int>();
+        private Dictionary<string, bool> _cachedGameCompleteStatus = new Dictionary<string, bool>();
+        private Coroutine _cacheRefreshCoroutine;
+        private bool _isCacheRefreshing = false;
+
         // Styles
         private bool _stylesInitialized;
         private GUIStyle _windowStyle;
@@ -57,6 +68,20 @@ namespace SunHavenMuseumUtilityTracker.UI
         private GUIStyle _searchStyle;
         private GUIStyle _statsStyle;
         private GUIStyle _footerStyle;
+        private GUIStyle _syncButtonStyle;
+        private GUIStyle _syncStatusStyle;
+
+        // Cached inline styles (to avoid GC allocations every frame)
+        private GUIStyle _headerBoxStyle;
+        private GUIStyle _headerCountStyle;
+        private GUIStyle _searchLabelStyle;
+        private GUIStyle _scrollStyle;
+        private GUIStyle _emptyStyle;
+        private GUIStyle _progressLabelStyle;
+        private GUIStyle _itemNameDonatedStyle;
+        private GUIStyle _rarityLabelStyleCached;
+        private GUIStyle _checkStyleCached;
+        private GUIStyle _neededStyleCached;
 
         // Textures
         private Texture2D _windowBackground;
@@ -169,10 +194,85 @@ namespace SunHavenMuseumUtilityTracker.UI
             _isVisible = true;
             _openAnimation = 0f;
 
+            // Refresh game progress cache in background (spread over multiple frames)
+            StartCacheRefresh();
+
             if (Player.Instance != null)
                 Player.Instance.AddPauseObject("MuseumTracker_UI");
 
             Plugin.Log?.LogInfo("Museum Tracker UI opened");
+        }
+
+        /// <summary>
+        /// Start refreshing the game progress cache in the background.
+        /// </summary>
+        private void StartCacheRefresh()
+        {
+            if (_cacheRefreshCoroutine != null)
+            {
+                StopCoroutine(_cacheRefreshCoroutine);
+            }
+            _cacheRefreshCoroutine = StartCoroutine(RefreshGameProgressCacheCoroutine());
+        }
+
+        /// <summary>
+        /// Refresh the cached game progress data over multiple frames to avoid lag spikes.
+        /// </summary>
+        private IEnumerator RefreshGameProgressCacheCoroutine()
+        {
+            _isCacheRefreshing = true;
+            _cachedGameDonationCounts.Clear();
+            _cachedGameCompleteStatus.Clear();
+
+            var bundleIds = MuseumContent.GetAllBundleIds();
+            int processedCount = 0;
+            const int batchSize = 3; // Process 3 bundles per frame
+
+            foreach (var bundleId in bundleIds)
+            {
+                string progressKey = MuseumContent.GetProgressKeyForBundle(bundleId);
+                if (!string.IsNullOrEmpty(progressKey))
+                {
+                    _cachedGameDonationCounts[bundleId] = MuseumPatches.GetBundleDonationCount(progressKey);
+                    _cachedGameCompleteStatus[bundleId] = MuseumPatches.IsBundleCompleteInGame(progressKey);
+                }
+
+                processedCount++;
+                if (processedCount % batchSize == 0)
+                {
+                    yield return null; // Wait one frame before processing more
+                }
+            }
+
+            _isCacheRefreshing = false;
+            _cacheRefreshCoroutine = null;
+        }
+
+        /// <summary>
+        /// Refresh cache synchronously (used after sync button press).
+        /// </summary>
+        private void RefreshGameProgressCacheImmediate()
+        {
+            if (_cacheRefreshCoroutine != null)
+            {
+                StopCoroutine(_cacheRefreshCoroutine);
+                _cacheRefreshCoroutine = null;
+            }
+            _isCacheRefreshing = false;
+
+            _cachedGameDonationCounts.Clear();
+            _cachedGameCompleteStatus.Clear();
+
+            var bundleIds = MuseumContent.GetAllBundleIds();
+            foreach (var bundleId in bundleIds)
+            {
+                string progressKey = MuseumContent.GetProgressKeyForBundle(bundleId);
+                if (!string.IsNullOrEmpty(progressKey))
+                {
+                    _cachedGameDonationCounts[bundleId] = MuseumPatches.GetBundleDonationCount(progressKey);
+                    _cachedGameCompleteStatus[bundleId] = MuseumPatches.IsBundleCompleteInGame(progressKey);
+                }
+            }
         }
 
         public void Hide()
@@ -195,6 +295,16 @@ namespace SunHavenMuseumUtilityTracker.UI
             if (_isVisible)
             {
                 _openAnimation = Mathf.MoveTowards(_openAnimation, 1f, Time.unscaledDeltaTime * 6f);
+
+                // Decay sync status message
+                if (_syncStatusTimer > 0)
+                {
+                    _syncStatusTimer -= Time.unscaledDeltaTime;
+                    if (_syncStatusTimer <= 0)
+                    {
+                        _syncStatusMessage = "";
+                    }
+                }
             }
         }
 
@@ -409,6 +519,86 @@ namespace SunHavenMuseumUtilityTracker.UI
                 alignment = TextAnchor.MiddleCenter,
                 normal = { textColor = _textMuted }
             };
+
+            // Sync button style - teal/green to indicate sync action
+            _syncButtonStyle = new GUIStyle(GUI.skin.button)
+            {
+                normal = { background = MakeRoundedRect(6, 6, new Color(0.30f, 0.55f, 0.50f), new Color(0.20f, 0.40f, 0.35f), 2), textColor = _parchmentLight },
+                hover = { background = MakeRoundedRect(6, 6, new Color(0.40f, 0.65f, 0.60f), new Color(0.30f, 0.50f, 0.45f), 2), textColor = Color.white },
+                active = { background = MakeRoundedRect(6, 6, new Color(0.35f, 0.60f, 0.55f), new Color(0.25f, 0.45f, 0.40f), 2), textColor = Color.white },
+                fontSize = 11,
+                fontStyle = FontStyle.Bold,
+                padding = new RectOffset(10, 10, 6, 6)
+            };
+
+            // Sync status message style
+            _syncStatusStyle = new GUIStyle(GUI.skin.label)
+            {
+                fontSize = 11,
+                fontStyle = FontStyle.Italic,
+                alignment = TextAnchor.MiddleRight,
+                normal = { textColor = _successGreen }
+            };
+
+            // Cached inline styles (created once, not every frame)
+            _headerBoxStyle = new GUIStyle(GUI.skin.box)
+            {
+                normal = { background = MakeRoundedRect(4, 4, new Color(_goldPale.r, _goldPale.g, _goldPale.b, 0.5f), _goldRich, 2) },
+                padding = new RectOffset(15, 15, 8, 8)
+            };
+
+            _headerCountStyle = new GUIStyle(_labelStyle)
+            {
+                alignment = TextAnchor.MiddleCenter,
+                fontSize = 11
+            };
+
+            _searchLabelStyle = new GUIStyle(_labelStyle)
+            {
+                fontStyle = FontStyle.Bold
+            };
+
+            _scrollStyle = new GUIStyle(GUI.skin.scrollView);
+
+            _emptyStyle = new GUIStyle(_labelStyle)
+            {
+                alignment = TextAnchor.MiddleCenter,
+                fontSize = 15,
+                fontStyle = FontStyle.Italic,
+                normal = { textColor = _textMuted }
+            };
+
+            _progressLabelStyle = new GUIStyle(_labelStyle)
+            {
+                alignment = TextAnchor.MiddleCenter,
+                fontSize = 13,
+                fontStyle = FontStyle.Bold
+            };
+
+            _itemNameDonatedStyle = new GUIStyle(_itemNameStyle)
+            {
+                fontSize = 13,
+                fontStyle = FontStyle.Italic,
+                normal = { textColor = _successGreen }
+            };
+
+            _rarityLabelStyleCached = new GUIStyle(_labelStyle)
+            {
+                fontSize = 11,
+                fontStyle = FontStyle.Bold,
+                alignment = TextAnchor.MiddleCenter
+            };
+
+            _checkStyleCached = new GUIStyle(_checkmarkStyle)
+            {
+                fontSize = 14
+            };
+
+            _neededStyleCached = new GUIStyle(_checkmarkStyle)
+            {
+                normal = { textColor = _neededOrange },
+                fontSize = 12
+            };
         }
 
         private Texture2D MakeTex(int width, int height, Color color)
@@ -561,17 +751,10 @@ namespace SunHavenMuseumUtilityTracker.UI
             var (donated, total) = _donationManager.GetOverallStats();
             float percent = _donationManager.GetOverallCompletionPercent();
 
-            // Stats box
-            var boxStyle = new GUIStyle(GUI.skin.box)
-            {
-                normal = { background = MakeRoundedRect(4, 4, new Color(_goldPale.r, _goldPale.g, _goldPale.b, 0.5f), _goldRich, 2) },
-                padding = new RectOffset(15, 15, 8, 8)
-            };
-
-            GUILayout.BeginVertical(boxStyle, GUILayout.Width(100));
+            // Stats box (using cached style)
+            GUILayout.BeginVertical(_headerBoxStyle, GUILayout.Width(100));
             GUILayout.Label($"{percent:F0}%", _statsStyle);
-            var countStyle = new GUIStyle(_labelStyle) { alignment = TextAnchor.MiddleCenter, fontSize = 11 };
-            GUILayout.Label($"{donated}/{total}", countStyle);
+            GUILayout.Label($"{donated}/{total}", _headerCountStyle);
             GUILayout.EndVertical();
 
             GUILayout.EndVertical();
@@ -610,31 +793,77 @@ namespace SunHavenMuseumUtilityTracker.UI
             GUILayout.BeginHorizontal();
             GUILayout.Space(20);
 
-            // Search label
-            var searchLabelStyle = new GUIStyle(_labelStyle) { fontStyle = FontStyle.Bold };
-            GUILayout.Label("Search:", searchLabelStyle, GUILayout.Width(55));
+            // Search label (using cached style)
+            GUILayout.Label("Search:", _searchLabelStyle, GUILayout.Width(55));
 
             // Search field
-            _searchQuery = GUILayout.TextField(_searchQuery, _searchStyle, GUILayout.Width(220), GUILayout.Height(28));
+            _searchQuery = GUILayout.TextField(_searchQuery, _searchStyle, GUILayout.Width(180), GUILayout.Height(28));
 
-            GUILayout.Space(20);
+            GUILayout.Space(15);
 
             // Filter toggle with custom style
-            _showOnlyNeeded = GUILayout.Toggle(_showOnlyNeeded, " Show needed only", _toggleStyle, GUILayout.Width(140));
+            _showOnlyNeeded = GUILayout.Toggle(_showOnlyNeeded, " Show needed only", _toggleStyle, GUILayout.Width(130));
 
             GUILayout.FlexibleSpace();
+
+            // Show sync status message if active
+            if (!string.IsNullOrEmpty(_syncStatusMessage))
+            {
+                GUILayout.Label(_syncStatusMessage, _syncStatusStyle, GUILayout.Width(150));
+                GUILayout.Space(8);
+            }
 
             // Clear button
             if (!string.IsNullOrEmpty(_searchQuery))
             {
-                if (GUILayout.Button("Clear", _buttonStyle, GUILayout.Width(65), GUILayout.Height(28)))
+                if (GUILayout.Button("Clear", _buttonStyle, GUILayout.Width(55), GUILayout.Height(28)))
                 {
                     _searchQuery = "";
                 }
+                GUILayout.Space(8);
+            }
+
+            // Sync with Game button
+            if (GUILayout.Button("Sync with Game", _syncButtonStyle, GUILayout.Width(105), GUILayout.Height(28)))
+            {
+                PerformGameSync();
             }
 
             GUILayout.Space(20);
             GUILayout.EndHorizontal();
+        }
+
+        private void PerformGameSync()
+        {
+            try
+            {
+                var (donatedBefore, _) = _donationManager.GetOverallStats();
+
+                MuseumPatches.SyncWithGameProgress();
+
+                // Refresh cache immediately after syncing (user expects immediate feedback)
+                RefreshGameProgressCacheImmediate();
+
+                var (donatedAfter, total) = _donationManager.GetOverallStats();
+                int newlyMarked = donatedAfter - donatedBefore;
+
+                if (newlyMarked > 0)
+                {
+                    _syncStatusMessage = $"Synced {newlyMarked} items!";
+                    Plugin.Log?.LogInfo($"[UI] Synced {newlyMarked} items from game progress");
+                }
+                else
+                {
+                    _syncStatusMessage = "Already in sync!";
+                }
+                _syncStatusTimer = 4f; // Show message for 4 seconds
+            }
+            catch (System.Exception ex)
+            {
+                _syncStatusMessage = "Sync failed";
+                _syncStatusTimer = 4f;
+                Plugin.Log?.LogError($"[UI] Sync failed: {ex.Message}");
+            }
         }
 
         private void DrawSectionTabs()
@@ -692,9 +921,8 @@ namespace SunHavenMuseumUtilityTracker.UI
 
             GUILayout.Space(10);
 
-            // Scroll view with parchment-like style
-            var scrollStyle = new GUIStyle(GUI.skin.scrollView);
-            _scrollPosition = GUILayout.BeginScrollView(_scrollPosition, scrollStyle,
+            // Scroll view (using cached style)
+            _scrollPosition = GUILayout.BeginScrollView(_scrollPosition, _scrollStyle,
                 GUILayout.ExpandHeight(true), GUILayout.ExpandWidth(true));
 
             bool hasVisibleContent = false;
@@ -709,22 +937,15 @@ namespace SunHavenMuseumUtilityTracker.UI
                 }
             }
 
-            // Empty state message
+            // Empty state message (using cached style)
             if (!hasVisibleContent)
             {
                 GUILayout.Space(50);
-                var emptyStyle = new GUIStyle(_labelStyle)
-                {
-                    alignment = TextAnchor.MiddleCenter,
-                    fontSize = 15,
-                    fontStyle = FontStyle.Italic,
-                    normal = { textColor = _textMuted }
-                };
 
                 if (!string.IsNullOrEmpty(_searchQuery))
-                    GUILayout.Label($"No items found for \"{_searchQuery}\"", emptyStyle);
+                    GUILayout.Label($"No items found for \"{_searchQuery}\"", _emptyStyle);
                 else if (_showOnlyNeeded)
-                    GUILayout.Label("Wonderful! All items donated!", emptyStyle);
+                    GUILayout.Label("Wonderful! All items donated!", _emptyStyle);
             }
 
             GUILayout.EndScrollView();
@@ -784,11 +1005,26 @@ namespace SunHavenMuseumUtilityTracker.UI
             if (_showOnlyNeeded && isComplete && string.IsNullOrEmpty(_searchQuery))
                 return false;
 
+            // Get cached game progress for this bundle (avoid expensive reflection calls every frame)
+            int gameDonationCount = _cachedGameDonationCounts.TryGetValue(bundle.Id, out var count) ? count : -1;
+            bool gameComplete = _cachedGameCompleteStatus.TryGetValue(bundle.Id, out var complete) && complete;
+
             // Bundle header
-            var headerStyle = isComplete ? _bundleHeaderCompleteStyle : _bundleHeaderStyle;
+            var headerStyle = (isComplete || gameComplete) ? _bundleHeaderCompleteStyle : _bundleHeaderStyle;
             string expandIcon = isExpanded ? "[-]" : "[+]";
-            string completeIcon = isComplete ? " COMPLETE" : "";
-            string label = $"{expandIcon}  {bundle.Name}{completeIcon}  ({stats.donated}/{stats.total})";
+            string completeIcon = (isComplete || gameComplete) ? " COMPLETE" : "";
+
+            // Build label with game progress if available
+            string label;
+            if (gameDonationCount >= 0)
+            {
+                // Show both tracked and game progress
+                label = $"{expandIcon}  {bundle.Name}{completeIcon}  ({stats.donated}/{stats.total})  [Game: {gameDonationCount}]";
+            }
+            else
+            {
+                label = $"{expandIcon}  {bundle.Name}{completeIcon}  ({stats.donated}/{stats.total})";
+            }
 
             if (GUILayout.Button(label, headerStyle, GUILayout.ExpandWidth(true), GUILayout.Height(42)))
             {
@@ -882,45 +1118,30 @@ namespace SunHavenMuseumUtilityTracker.UI
                 GUILayout.Space(ICON_SIZE + 10);
             }
 
-            // Item name with rarity color
+            // Item name with rarity color (use GUI.contentColor to avoid creating styles)
             var rarityColor = _rarityColors.TryGetValue(item.Rarity, out var c) ? c : _textDark;
-            var nameStyle = new GUIStyle(_itemNameStyle)
-            {
-                fontSize = 13,
-                normal = { textColor = isDonated ? _successGreen : rarityColor }
-            };
+            var savedColor = GUI.contentColor;
+
+            GUI.contentColor = isDonated ? _successGreen : rarityColor;
+            GUILayout.Label(item.Name, isDonated ? _itemNameDonatedStyle : _itemNameStyle, GUILayout.ExpandWidth(true));
+
+            // Rarity label (using cached style with content color)
+            GUI.contentColor = rarityColor;
+            GUILayout.Label(item.Rarity.ToString(), _rarityLabelStyleCached, GUILayout.Width(80));
+
+            // Status (using cached styles)
             if (isDonated)
             {
-                nameStyle.fontStyle = FontStyle.Italic;
-            }
-
-            GUILayout.Label(item.Name, nameStyle, GUILayout.ExpandWidth(true));
-
-            // Rarity label
-            var rarityLabelStyle = new GUIStyle(_labelStyle)
-            {
-                fontSize = 11,
-                fontStyle = FontStyle.Bold,
-                alignment = TextAnchor.MiddleCenter,
-                normal = { textColor = rarityColor }
-            };
-            GUILayout.Label(item.Rarity.ToString(), rarityLabelStyle, GUILayout.Width(80));
-
-            // Status
-            if (isDonated)
-            {
-                var checkStyle = new GUIStyle(_checkmarkStyle) { fontSize = 14 };
-                GUILayout.Label("Donated", checkStyle, GUILayout.Width(60));
+                GUI.contentColor = _successGreen;
+                GUILayout.Label("Donated", _checkStyleCached, GUILayout.Width(60));
             }
             else
             {
-                var neededStyle = new GUIStyle(_checkmarkStyle)
-                {
-                    normal = { textColor = _neededOrange },
-                    fontSize = 12
-                };
-                GUILayout.Label("Needed", neededStyle, GUILayout.Width(60));
+                GUI.contentColor = _neededOrange;
+                GUILayout.Label("Needed", _neededStyleCached, GUILayout.Width(60));
             }
+
+            GUI.contentColor = savedColor;
 
             GUILayout.Space(10);
             GUILayout.EndHorizontal();
@@ -931,7 +1152,7 @@ namespace SunHavenMuseumUtilityTracker.UI
             GUILayout.BeginHorizontal();
             GUILayout.FlexibleSpace();
 
-            var footerText = $"Press {(_requireCtrl ? "Ctrl+" : "")}{_toggleKey} to toggle  |  ESC to close  |  Manual tracking";
+            var footerText = $"Press {(_requireCtrl ? "Ctrl+" : "")}{_toggleKey} to toggle  |  ESC to close  |  Sync imports completed bundles";
             GUILayout.Label(footerText, _footerStyle);
 
             GUILayout.FlexibleSpace();

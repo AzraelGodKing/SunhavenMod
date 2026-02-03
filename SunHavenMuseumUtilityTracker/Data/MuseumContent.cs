@@ -581,44 +581,44 @@ namespace SunHavenMuseumUtilityTracker.Data
         {
             if (_progressKeyToBundleId != null) return;
 
+            // These keys come from MuseumCurator static lists in the game:
+            // - culturalMuseumProgress
+            // - miningMuseumProgress
+            // - aquaticMuseumProgress
             _progressKeyToBundleId = new Dictionary<string, string>(System.StringComparer.OrdinalIgnoreCase)
             {
-                // Hall of Gems
+                // Hall of Gems (miningMuseumProgress)
                 { "ManaBundle", "mana_bundle" },
                 { "MoneyBundle", "money_bundle" },
                 { "GoldenBundle", "golden_bundle" },
                 { "BarsBundle", "bars_bundle" },
-                { "GemsBundle", "gems_bundle" },
-                { "NelVariMinesBundle", "nelvari_mines_bundle" },
+                { "GemBundle", "gems_bundle" },  // Game uses GemBundle, not GemsBundle
                 { "NelvariMinesBundle", "nelvari_mines_bundle" },
                 { "WithergateMinesBundle", "withergate_mines_bundle" },
 
-                // Hall of Culture
+                // Hall of Culture (culturalMuseumProgress)
                 { "SpringCropsBundle", "spring_crops_bundle" },
                 { "SummerCropsBundle", "summer_crops_bundle" },
                 { "FallCropsBundle", "fall_crops_bundle" },
                 { "WinterCropsBundle", "winter_crops_bundle" },
-                { "NelVariCropsBundle", "nelvari_crops_bundle" },
-                { "NelvariCropsBundle", "nelvari_crops_bundle" },
-                { "WithergateCropsBundle", "withergate_crops_bundle" },
+                { "NelvariFarmingBundle", "nelvari_crops_bundle" },  // Game uses NelvariFarmingBundle
+                { "WithergateFarmingBundle", "withergate_crops_bundle" },  // Game uses WithergateFarmingBundle
                 { "FlowersBundle", "flowers_bundle" },
                 { "ForagingBundle", "foraging_bundle" },
                 { "ExplorationBundle", "exploration_bundle" },
                 { "CombatBundle", "combat_bundle" },
                 { "AlchemyBundle", "alchemy_bundle" },
-                { "NelVariTempleBundle", "nelvari_temple_bundle" },
-                { "NelvariTempleBundle", "nelvari_temple_bundle" },
+                { "NelvariTempleBooks", "nelvari_temple_bundle" },  // Game uses NelvariTempleBooks
 
-                // Aquarium
+                // Aquarium (aquaticMuseumProgress)
                 { "FishingBundle", "fishing_bundle" },
-                { "SpringFishTank", "spring_fish_tank" },
-                { "SummerFishTank", "summer_fish_tank" },
-                { "FallFishTank", "fall_fish_tank" },
-                { "WinterFishTank", "winter_fish_tank" },
-                { "NelVariFishTank", "nelvari_fish_tank" },
-                { "NelvariFishTank", "nelvari_fish_tank" },
-                { "WithergateFishTank", "withergate_fish_tank" },
-                { "LargeFishTank", "large_fish_tank" },
+                { "MuseumAquariumSpring", "spring_fish_tank" },  // Game uses MuseumAquariumSpring
+                { "MuseumAquariumSummer", "summer_fish_tank" },  // Game uses MuseumAquariumSummer
+                { "MuseumAquariumFall", "fall_fish_tank" },  // Game uses MuseumAquariumFall
+                { "MuseumAquariumWinter", "winter_fish_tank" },  // Game uses MuseumAquariumWinter
+                { "MuseumAquariumNelvari", "nelvari_fish_tank" },  // Game uses MuseumAquariumNelvari
+                { "MuseumAquariumWithergate", "withergate_fish_tank" },  // Game uses MuseumAquariumWithergate
+                { "MuseumAquariumBigTank", "large_fish_tank" },  // Game uses MuseumAquariumBigTank
             };
         }
 
