@@ -227,20 +227,25 @@ namespace SunhavenMods.Shared
                 var notificationStackType = ReflectionHelper.FindWishType("NotificationStack");
                 if (notificationStackType != null)
                 {
-                    var singletonType = typeof(SingletonBehaviour<>).MakeGenericType(notificationStackType);
-                    var instanceProp = singletonType.GetProperty("Instance");
-                    var instance = instanceProp?.GetValue(null);
-
-                    if (instance != null)
+                    // Use reflection to get SingletonBehaviour<NotificationStack>.Instance
+                    var singletonBaseType = ReflectionHelper.FindType("SingletonBehaviour`1", "Wish");
+                    if (singletonBaseType != null)
                     {
-                        var sendMethod = notificationStackType.GetMethod("SendNotification",
-                            new[] { typeof(string), typeof(int), typeof(int), typeof(bool), typeof(bool) });
+                        var singletonType = singletonBaseType.MakeGenericType(notificationStackType);
+                        var instanceProp = singletonType.GetProperty("Instance");
+                        var instance = instanceProp?.GetValue(null);
 
-                        if (sendMethod != null)
+                        if (instance != null)
                         {
-                            // SendNotification(message, itemId, amount, showInChat, playSound)
-                            sendMethod.Invoke(instance, new object[] { message, 0, 1, false, true });
-                            return;
+                            var sendMethod = notificationStackType.GetMethod("SendNotification",
+                                new[] { typeof(string), typeof(int), typeof(int), typeof(bool), typeof(bool) });
+
+                            if (sendMethod != null)
+                            {
+                                // SendNotification(message, itemId, amount, showInChat, playSound)
+                                sendMethod.Invoke(instance, new object[] { message, 0, 1, false, true });
+                                return;
+                            }
                         }
                     }
                 }
