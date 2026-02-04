@@ -8,7 +8,8 @@ using UnityEngine;
 namespace BirthdayReminder.Data
 {
     /// <summary>
-    /// Manages birthday detection and gift tracking
+    /// Manages birthday detection and gift tracking.
+    /// Uses game's NPCGiftTable data when available, falls back to BirthdayCache.
     /// </summary>
     public class BirthdayManager
     {
@@ -18,6 +19,19 @@ namespace BirthdayReminder.Data
 
         // Cached date for HUD display (avoids logging spam from per-frame calls)
         private string _cachedDateString = "";
+
+        // Cached reflection data for game API access
+        private static bool _reflectionInitialized = false;
+        private static Type _npcManagerType;
+        private static Type _npcGiftTableType;
+        private static PropertyInfo _npcManagerInstanceProp;
+        private static FieldInfo _npcsDictField;
+        private static FieldInfo _birthDayField;
+        private static FieldInfo _birthMonthField;
+        private static FieldInfo _love2Field;
+        private static FieldInfo _like2Field;
+        private static FieldInfo _gaveGiftForDayField;
+        private static bool _useGameData = false;
 
         public event Action OnBirthdaysUpdated;
 
@@ -55,6 +69,75 @@ namespace BirthdayReminder.Data
         {
             _statusMessage = message;
             _statusMessageTimer = STATUS_MESSAGE_DURATION;
+        }
+
+        /// <summary>
+        /// Initialize reflection cache for accessing game's NPC data
+        /// </summary>
+        private void InitializeReflectionCache()
+        {
+            if (_reflectionInitialized) return;
+            _reflectionInitialized = true;
+
+            try
+            {
+                // Get NPCManager type and instance
+                _npcManagerType = AccessTools.TypeByName("Wish.NPCManager");
+                if (_npcManagerType == null)
+                {
+                    Plugin.Log?.LogDebug("[BirthdayManager] NPCManager type not found - using cache");
+                    return;
+                }
+
+                // Get NPCManager.Instance
+                var singletonType = AccessTools.TypeByName("Wish.SingletonBehaviour`1");
+                if (singletonType != null)
+                {
+                    var genericType = singletonType.MakeGenericType(_npcManagerType);
+                    _npcManagerInstanceProp = genericType.GetProperty("Instance", BindingFlags.Public | BindingFlags.Static);
+                }
+
+                // Get _npcs dictionary field
+                _npcsDictField = AccessTools.Field(_npcManagerType, "_npcs")
+                                 ?? AccessTools.Field(_npcManagerType, "npcs");
+
+                // Get NPCGiftTable type for birthday and gift data
+                _npcGiftTableType = AccessTools.TypeByName("Wish.NPCGiftTable");
+                if (_npcGiftTableType != null)
+                {
+                    _birthDayField = AccessTools.Field(_npcGiftTableType, "birthDay");
+                    _birthMonthField = AccessTools.Field(_npcGiftTableType, "birthMonth");
+                    _love2Field = AccessTools.Field(_npcGiftTableType, "love2");
+                    _like2Field = AccessTools.Field(_npcGiftTableType, "like2");
+                }
+
+                // Get NPCAI type for gaveGiftForDay
+                var npcaiType = AccessTools.TypeByName("Wish.NPCAI");
+                if (npcaiType != null)
+                {
+                    _gaveGiftForDayField = AccessTools.Field(npcaiType, "gaveGiftForDay");
+                }
+
+                // Check if we have enough to use game data
+                _useGameData = _npcManagerInstanceProp != null &&
+                               _npcsDictField != null &&
+                               _birthDayField != null &&
+                               _birthMonthField != null;
+
+                if (_useGameData)
+                {
+                    Plugin.Log?.LogInfo("[BirthdayManager] Game data API initialized - using NPCGiftTable for birthdays");
+                }
+                else
+                {
+                    Plugin.Log?.LogDebug("[BirthdayManager] Game data API not available - using hardcoded cache");
+                }
+            }
+            catch (Exception ex)
+            {
+                Plugin.Log?.LogDebug($"[BirthdayManager] Error initializing game data API: {ex.Message}");
+                _useGameData = false;
+            }
         }
 
         /// <summary>
@@ -100,11 +183,31 @@ namespace BirthdayReminder.Data
 
                 foreach (var npc in npcBirthdays)
                 {
-                    bool hasGifted = _giftTracking.HasGifted(npc.NPCName);
+                    // Check gift status - prefer game's gaveGiftForDay, fall back to our tracking
+                    bool hasGifted = false;
+                    if (_gaveGiftForDayField != null && _useGameData)
+                    {
+                        hasGifted = CheckGaveGiftForDay(npc.NPCName);
+                    }
+                    if (!hasGifted)
+                    {
+                        hasGifted = _giftTracking.HasGifted(npc.NPCName);
+                    }
 
-                    // Get 3 random gift suggestions for the short hint
-                    var randomGifts = BirthdayCache.GetRandomGiftSuggestions(npc.NPCName, 3);
-                    string giftHint = randomGifts.Count > 0 ? $"Loves: {string.Join(", ", randomGifts)}" : "";
+                    // Get gift suggestions - prefer NPC's own gifts from game data, fall back to cache
+                    string giftHint;
+                    if (npc.LovedGifts.Count > 0)
+                    {
+                        // Use the NPC's loved gifts from game data (or cache)
+                        var randomGifts = npc.LovedGifts.OrderBy(x => Guid.NewGuid()).Take(3).ToList();
+                        giftHint = $"Loves: {string.Join(", ", randomGifts)}";
+                    }
+                    else
+                    {
+                        // Fall back to cache suggestions
+                        var randomGifts = BirthdayCache.GetRandomGiftSuggestions(npc.NPCName, 3);
+                        giftHint = randomGifts.Count > 0 ? $"Loves: {string.Join(", ", randomGifts)}" : "";
+                    }
 
                     // Pass full gift lists for expanded view
                     _todaysBirthdays.Add(new BirthdayDisplayInfo(
@@ -456,25 +559,269 @@ namespace BirthdayReminder.Data
                     }
                 }
             }
-            catch { }
+            catch (Exception ex)
+            {
+                Plugin.Log?.LogDebug($"[BirthdayManager] Error getting character name: {ex.Message}");
+            }
 
             return "Unknown";
         }
 
         /// <summary>
-        /// Find NPCs whose birthday is today using the static cache
+        /// Find NPCs whose birthday is today.
+        /// Uses game's NPCGiftTable data when available, falls back to hardcoded cache.
         /// </summary>
         private List<NPCBirthday> GetNPCsWithBirthdayToday(string season, int day)
         {
-            // Use the hardcoded birthday cache - much more reliable than reflection
-            var birthdays = BirthdayCache.GetBirthdaysForDate(season, day);
+            // Initialize reflection cache on first call
+            InitializeReflectionCache();
 
-            foreach (var birthday in birthdays)
+            // Try game data first
+            if (_useGameData)
             {
-                Plugin.Log?.LogInfo($"[BirthdayManager] Found birthday: {birthday.NPCName} ({birthday.Season} {birthday.Day})");
+                var gameBirthdays = GetBirthdaysFromGameData(season, day);
+                if (gameBirthdays.Count > 0)
+                {
+                    foreach (var birthday in gameBirthdays)
+                    {
+                        Plugin.Log?.LogInfo($"[BirthdayManager] Found birthday (game data): {birthday.NPCName} ({birthday.Season} {birthday.Day})");
+                    }
+                    return gameBirthdays;
+                }
+            }
+
+            // Fall back to hardcoded cache
+            var cacheBirthdays = BirthdayCache.GetBirthdaysForDate(season, day);
+            foreach (var birthday in cacheBirthdays)
+            {
+                Plugin.Log?.LogInfo($"[BirthdayManager] Found birthday (cache): {birthday.NPCName} ({birthday.Season} {birthday.Day})");
+            }
+            return cacheBirthdays;
+        }
+
+        /// <summary>
+        /// Get birthdays from game's NPCManager._npcs dictionary using NPCGiftTable data.
+        /// </summary>
+        private List<NPCBirthday> GetBirthdaysFromGameData(string season, int day)
+        {
+            var birthdays = new List<NPCBirthday>();
+
+            try
+            {
+                // Get NPCManager instance
+                var npcManager = _npcManagerInstanceProp?.GetValue(null);
+                if (npcManager == null)
+                {
+                    Plugin.Log?.LogDebug("[BirthdayManager] NPCManager instance is null");
+                    return birthdays;
+                }
+
+                // Get _npcs dictionary
+                var npcsDict = _npcsDictField?.GetValue(npcManager);
+                if (npcsDict == null)
+                {
+                    Plugin.Log?.LogDebug("[BirthdayManager] NPCs dictionary is null");
+                    return birthdays;
+                }
+
+                // Iterate through NPCs
+                var valuesProperty = npcsDict.GetType().GetProperty("Values");
+                var values = valuesProperty?.GetValue(npcsDict) as System.Collections.IEnumerable;
+                if (values == null) return birthdays;
+
+                foreach (var npc in values)
+                {
+                    if (npc == null) continue;
+
+                    try
+                    {
+                        // Get NPC name
+                        var npcType = npc.GetType();
+                        var nameProp = AccessTools.Property(npcType, "NPCName")
+                                       ?? AccessTools.Property(npcType, "npcName")
+                                       ?? AccessTools.Property(npcType, "Name");
+                        string npcName = nameProp?.GetValue(npc)?.ToString();
+                        if (string.IsNullOrEmpty(npcName)) continue;
+
+                        // Get NPCGiftTable (characterData or giftTable)
+                        var giftTableProp = AccessTools.Property(npcType, "characterData")
+                                            ?? AccessTools.Property(npcType, "giftTable")
+                                            ?? AccessTools.Property(npcType, "CharacterData");
+                        var giftTable = giftTableProp?.GetValue(npc);
+                        if (giftTable == null) continue;
+
+                        // Get birthDay and birthMonth from NPCGiftTable
+                        int birthDay = 0;
+                        object birthMonth = null;
+
+                        if (_birthDayField != null)
+                            birthDay = (int)_birthDayField.GetValue(giftTable);
+
+                        if (_birthMonthField != null)
+                            birthMonth = _birthMonthField.GetValue(giftTable);
+
+                        string birthSeason = birthMonth?.ToString() ?? "";
+
+                        // Check if birthday matches
+                        if (birthDay == day && string.Equals(birthSeason, season, StringComparison.OrdinalIgnoreCase))
+                        {
+                            var birthday = new NPCBirthday(npcName, birthSeason, birthDay);
+
+                            // Get gift preferences from NPCGiftTable
+                            GetGiftsFromGameData(giftTable, birthday);
+
+                            birthdays.Add(birthday);
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        Plugin.Log?.LogDebug($"[BirthdayManager] Error checking NPC: {ex.Message}");
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                Plugin.Log?.LogDebug($"[BirthdayManager] Error getting birthdays from game: {ex.Message}");
             }
 
             return birthdays;
+        }
+
+        /// <summary>
+        /// Get loved and liked gifts from NPCGiftTable's love2 and like2 fields.
+        /// </summary>
+        private void GetGiftsFromGameData(object giftTable, NPCBirthday birthday)
+        {
+            try
+            {
+                // Get love2 list (loved items)
+                if (_love2Field != null)
+                {
+                    var love2 = _love2Field.GetValue(giftTable) as System.Collections.IList;
+                    if (love2 != null)
+                    {
+                        foreach (var itemId in love2)
+                        {
+                            string itemName = GetItemNameFromId(itemId);
+                            if (!string.IsNullOrEmpty(itemName))
+                            {
+                                birthday.LovedGifts.Add(itemName);
+                            }
+                        }
+                    }
+                }
+
+                // Get like2 list (liked items)
+                if (_like2Field != null)
+                {
+                    var like2 = _like2Field.GetValue(giftTable) as System.Collections.IList;
+                    if (like2 != null)
+                    {
+                        foreach (var itemId in like2)
+                        {
+                            string itemName = GetItemNameFromId(itemId);
+                            if (!string.IsNullOrEmpty(itemName))
+                            {
+                                birthday.LikedGifts.Add(itemName);
+                            }
+                        }
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                Plugin.Log?.LogDebug($"[BirthdayManager] Error getting gifts from game data: {ex.Message}");
+            }
+        }
+
+        /// <summary>
+        /// Get item name from item ID using the game's Database.
+        /// </summary>
+        private string GetItemNameFromId(object itemIdOrObj)
+        {
+            try
+            {
+                int itemId;
+                if (itemIdOrObj is int id)
+                {
+                    itemId = id;
+                }
+                else
+                {
+                    // Could be an Item object or enum, try to get ID
+                    var idProp = itemIdOrObj.GetType().GetProperty("id")
+                                 ?? itemIdOrObj.GetType().GetProperty("ID");
+                    if (idProp != null)
+                    {
+                        itemId = (int)idProp.GetValue(itemIdOrObj);
+                    }
+                    else
+                    {
+                        // Try casting to int (for enums)
+                        itemId = Convert.ToInt32(itemIdOrObj);
+                    }
+                }
+
+                // Get item from Database
+                var databaseType = AccessTools.TypeByName("Wish.Database");
+                if (databaseType != null)
+                {
+                    var getItemMethod = AccessTools.Method(databaseType, "GetItem", new[] { typeof(int) });
+                    if (getItemMethod != null)
+                    {
+                        var item = getItemMethod.Invoke(null, new object[] { itemId });
+                        if (item != null)
+                        {
+                            var nameProp = AccessTools.Property(item.GetType(), "name")
+                                           ?? AccessTools.Property(item.GetType(), "Name");
+                            return nameProp?.GetValue(item)?.ToString();
+                        }
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                Plugin.Log?.LogDebug($"[BirthdayManager] Error getting item name: {ex.Message}");
+            }
+
+            return null;
+        }
+
+        /// <summary>
+        /// Check if an NPC has been gifted today using game's gaveGiftForDay field.
+        /// </summary>
+        private bool CheckGaveGiftForDay(string npcName)
+        {
+            try
+            {
+                if (_gaveGiftForDayField == null) return false;
+
+                // Get NPC instance
+                var npcManager = _npcManagerInstanceProp?.GetValue(null);
+                if (npcManager == null) return false;
+
+                var npcsDict = _npcsDictField?.GetValue(npcManager);
+                if (npcsDict == null) return false;
+
+                // Try to get the NPC by name from dictionary
+                var tryGetValueMethod = npcsDict.GetType().GetMethod("TryGetValue");
+                if (tryGetValueMethod != null)
+                {
+                    var args = new object[] { npcName, null };
+                    bool found = (bool)tryGetValueMethod.Invoke(npcsDict, args);
+                    if (found && args[1] != null)
+                    {
+                        var npc = args[1];
+                        return (bool)_gaveGiftForDayField.GetValue(npc);
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                Plugin.Log?.LogDebug($"[BirthdayManager] Error checking gift status for {npcName}: {ex.Message}");
+            }
+
+            return false;
         }
 
         /// <summary>
@@ -559,7 +906,10 @@ namespace BirthdayReminder.Data
                         }
                     }
                 }
-                catch { }
+                catch (Exception ex)
+                {
+                    Plugin.Log?.LogDebug($"[BirthdayManager] Error getting gift name for item {itemId}: {ex.Message}");
+                }
 
                 return $"Item #{itemId}";
             }

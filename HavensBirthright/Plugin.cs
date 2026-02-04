@@ -2,6 +2,7 @@ using BepInEx;
 using BepInEx.Configuration;
 using BepInEx.Logging;
 using HarmonyLib;
+using SunhavenMods.Shared;
 using System;
 using System.Linq;
 using UnityEngine;
@@ -17,6 +18,7 @@ namespace HavensBirthright
 
         private Harmony _harmony;
         private RacialBonusManager _racialBonusManager;
+        private ConfigEntry<bool> _checkForUpdates;
 
         private void Awake()
         {
@@ -30,6 +32,13 @@ namespace HavensBirthright
             {
                 // Initialize configuration
                 RacialConfig.Initialize(Config);
+
+                _checkForUpdates = Config.Bind(
+                    "Updates",
+                    "CheckForUpdates",
+                    true,
+                    "Check for mod updates on startup"
+                );
 
                 // Initialize the racial bonus manager
                 _racialBonusManager = new RacialBonusManager();
@@ -94,6 +103,13 @@ namespace HavensBirthright
                 catch (Exception patchEx)
                 {
                     Log.LogError($"Harmony patching failed: {patchEx}");
+                }
+
+                // Check for updates
+                if (_checkForUpdates.Value)
+                {
+                    VersionChecker.CheckForUpdate(PluginInfo.PLUGIN_GUID, PluginInfo.PLUGIN_VERSION, Log,
+                        result => result.NotifyUpdateAvailable(Log));
                 }
 
                 Log.LogInfo($"{PluginInfo.PLUGIN_NAME} loaded successfully!");
@@ -188,6 +204,6 @@ namespace HavensBirthright
     {
         public const string PLUGIN_GUID = "com.azraelgodking.havensbirthright";
         public const string PLUGIN_NAME = "Haven's Birthright";
-        public const string PLUGIN_VERSION = "1.0.0";
+        public const string PLUGIN_VERSION = "1.0.2";
     }
 }

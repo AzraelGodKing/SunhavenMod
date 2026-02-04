@@ -5,6 +5,7 @@ using TheVault.Patches;
 using TheVault.UI;
 using TheVault.Vault;
 using HarmonyLib;
+using SunhavenMods.Shared;
 using System;
 using UnityEngine;
 using UnityEngine.SceneManagement;
@@ -46,6 +47,7 @@ namespace TheVault
         private ConfigEntry<KeyCode> _hudToggleKey;
         private ConfigEntry<bool> _enableAutoSave;
         private ConfigEntry<float> _autoSaveInterval;
+        private ConfigEntry<bool> _checkForUpdates;
 
         // Backup menu detection via polling (in case SceneManager.sceneLoaded stops working)
         private string _lastKnownScene = "";
@@ -128,6 +130,13 @@ namespace TheVault
                 // This is more reliable than patching game-specific methods that may not exist
                 SceneManager.sceneLoaded += OnSceneLoaded;
                 Log.LogInfo("Subscribed to SceneManager.sceneLoaded for vault loading");
+
+                // Check for updates
+                if (_checkForUpdates.Value)
+                {
+                    VersionChecker.CheckForUpdate(PluginInfo.PLUGIN_GUID, PluginInfo.PLUGIN_VERSION, Log,
+                        result => result.NotifyUpdateAvailable(Log));
+                }
 
                 Log.LogInfo($"{PluginInfo.PLUGIN_NAME} loaded successfully!");
                 Log.LogInfo($"Press {(_requireCtrlModifier.Value ? "Ctrl+" : "")}{_toggleKey.Value} or {_altToggleKey.Value} to open the vault");
@@ -268,11 +277,19 @@ namespace TheVault
                 300f,
                 "Auto-save interval in seconds (default: 5 minutes)"
             );
+
+            _checkForUpdates = Config.Bind(
+                "Updates",
+                "CheckForUpdates",
+                true,
+                "Check for mod updates on startup"
+            );
         }
 
         /// <summary>
         /// Register mappings between Sun Haven item IDs and vault currency IDs.
         /// Auto-deposit is enabled so items are automatically converted to vault currency when picked up.
+        /// Item IDs are defined in ItemIds.cs for maintainability.
         /// </summary>
         private void RegisterItemMappings()
         {
@@ -280,27 +297,27 @@ namespace TheVault
             ItemPatches.AutoDepositEnabled = true;
 
             // Seasonal Tokens - auto-deposit enabled
-            ItemPatches.RegisterItemCurrencyMapping(18020, "seasonal_Spring", autoDeposit: true);
-            ItemPatches.RegisterItemCurrencyMapping(18021, "seasonal_Summer", autoDeposit: true);
-            ItemPatches.RegisterItemCurrencyMapping(18022, "seasonal_Winter", autoDeposit: true);
-            ItemPatches.RegisterItemCurrencyMapping(18023, "seasonal_Fall", autoDeposit: true);
+            ItemPatches.RegisterItemCurrencyMapping(ItemIds.SpringToken, "seasonal_Spring", autoDeposit: true);
+            ItemPatches.RegisterItemCurrencyMapping(ItemIds.SummerToken, "seasonal_Summer", autoDeposit: true);
+            ItemPatches.RegisterItemCurrencyMapping(ItemIds.WinterToken, "seasonal_Winter", autoDeposit: true);
+            ItemPatches.RegisterItemCurrencyMapping(ItemIds.FallToken, "seasonal_Fall", autoDeposit: true);
 
             // Keys - auto-deposit enabled
-            ItemPatches.RegisterItemCurrencyMapping(1251, "key_copper", autoDeposit: true);
-            ItemPatches.RegisterItemCurrencyMapping(1252, "key_iron", autoDeposit: true);
-            ItemPatches.RegisterItemCurrencyMapping(1253, "key_adamant", autoDeposit: true);
-            ItemPatches.RegisterItemCurrencyMapping(1254, "key_mithril", autoDeposit: true);
-            ItemPatches.RegisterItemCurrencyMapping(1255, "key_sunite", autoDeposit: true);
-            ItemPatches.RegisterItemCurrencyMapping(1256, "key_glorite", autoDeposit: true);
-            ItemPatches.RegisterItemCurrencyMapping(1257, "key_kingslostmine", autoDeposit: true);
+            ItemPatches.RegisterItemCurrencyMapping(ItemIds.CopperKey, "key_copper", autoDeposit: true);
+            ItemPatches.RegisterItemCurrencyMapping(ItemIds.IronKey, "key_iron", autoDeposit: true);
+            ItemPatches.RegisterItemCurrencyMapping(ItemIds.AdamantKey, "key_adamant", autoDeposit: true);
+            ItemPatches.RegisterItemCurrencyMapping(ItemIds.MithrilKey, "key_mithril", autoDeposit: true);
+            ItemPatches.RegisterItemCurrencyMapping(ItemIds.SuniteKey, "key_sunite", autoDeposit: true);
+            ItemPatches.RegisterItemCurrencyMapping(ItemIds.GloriteKey, "key_glorite", autoDeposit: true);
+            ItemPatches.RegisterItemCurrencyMapping(ItemIds.KingsLostMineKey, "key_kingslostmine", autoDeposit: true);
 
             // Special currencies - auto-deposit enabled
-            ItemPatches.RegisterItemCurrencyMapping(18013, "special_communitytoken", autoDeposit: true);
-            ItemPatches.RegisterItemCurrencyMapping(60014, "special_doubloon", autoDeposit: true);
-            ItemPatches.RegisterItemCurrencyMapping(60013, "special_blackbottlecap", autoDeposit: true);
-            ItemPatches.RegisterItemCurrencyMapping(18012, "special_redcarnivalticket", autoDeposit: true);
-            ItemPatches.RegisterItemCurrencyMapping(18016, "special_candycornpieces", autoDeposit: true);
-            ItemPatches.RegisterItemCurrencyMapping(18015, "special_manashard", autoDeposit: true);
+            ItemPatches.RegisterItemCurrencyMapping(ItemIds.CommunityToken, "special_communitytoken", autoDeposit: true);
+            ItemPatches.RegisterItemCurrencyMapping(ItemIds.Doubloon, "special_doubloon", autoDeposit: true);
+            ItemPatches.RegisterItemCurrencyMapping(ItemIds.BlackBottleCap, "special_blackbottlecap", autoDeposit: true);
+            ItemPatches.RegisterItemCurrencyMapping(ItemIds.RedCarnivalTicket, "special_redcarnivalticket", autoDeposit: true);
+            ItemPatches.RegisterItemCurrencyMapping(ItemIds.CandyCornPieces, "special_candycornpieces", autoDeposit: true);
+            ItemPatches.RegisterItemCurrencyMapping(ItemIds.ManaShard, "special_manashard", autoDeposit: true);
 
             Log.LogInfo("Registered item-to-currency mappings with auto-deposit enabled");
         }

@@ -3,6 +3,7 @@ using BepInEx;
 using BepInEx.Configuration;
 using BepInEx.Logging;
 using HarmonyLib;
+using SunhavenMods.Shared;
 using SunhavenTodo.Data;
 using SunhavenTodo.UI;
 using UnityEngine;
@@ -41,6 +42,7 @@ namespace SunhavenTodo
         private ConfigEntry<float> _hudPositionX;
         private ConfigEntry<float> _hudPositionY;
         private ConfigEntry<KeyCode> _hudToggleKey;
+        private ConfigEntry<bool> _checkForUpdates;
 
         // Instance references
         private TodoManager _todoManager;
@@ -73,6 +75,13 @@ namespace SunhavenTodo
             ApplyPatches();
 
             SceneManager.sceneLoaded += OnSceneLoaded;
+
+            // Check for updates
+            if (_checkForUpdates.Value)
+            {
+                VersionChecker.CheckForUpdate(PluginInfo.PLUGIN_GUID, PluginInfo.PLUGIN_VERSION, Log,
+                    result => result.NotifyUpdateAvailable(Log));
+            }
 
             Log.LogInfo($"{PluginInfo.PLUGIN_NAME} loaded successfully!");
         }
@@ -153,6 +162,13 @@ namespace SunhavenTodo
             );
             _staticHUDToggleKey = _hudToggleKey.Value;
             _hudToggleKey.SettingChanged += (_, _) => _staticHUDToggleKey = _hudToggleKey.Value;
+
+            _checkForUpdates = Config.Bind(
+                "Updates",
+                "CheckForUpdates",
+                true,
+                "Check for mod updates on startup"
+            );
         }
 
         private void CreatePersistentRunner()

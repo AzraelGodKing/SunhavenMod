@@ -53,7 +53,23 @@ namespace SunhavenTodo.Data
                 var wrapper = TodoListDataWrapper.FromData(data);
                 var json = JsonUtility.ToJson(wrapper, true);
                 var filePath = GetSaveFilePath(data.CharacterName);
-                File.WriteAllText(filePath, json);
+
+                // Write to temp file first (atomic operation)
+                var tempFilePath = filePath + ".tmp";
+                File.WriteAllText(tempFilePath, json);
+
+                // Backup existing file before overwriting
+                if (File.Exists(filePath))
+                {
+                    var backupPath = filePath + ".bak";
+                    if (File.Exists(backupPath))
+                        File.Delete(backupPath);
+                    File.Move(filePath, backupPath);
+                }
+
+                // Move temp file to final location
+                File.Move(tempFilePath, filePath);
+
                 _manager.MarkClean();
                 Plugin.Log?.LogInfo($"Saved todo list for {data.CharacterName} to {filePath}");
             }
@@ -72,24 +88,62 @@ namespace SunhavenTodo.Data
             }
 
             var filePath = GetSaveFilePath(characterName);
-            if (!File.Exists(filePath))
+            var backupPath = filePath + ".bak";
+
+            // Try main file first
+            if (File.Exists(filePath))
             {
-                Plugin.Log?.LogInfo($"No save file found for {characterName}, creating new todo list");
-                return new TodoListData(characterName);
+                var result = TryLoadFromFile(filePath, characterName);
+                if (result != null)
+                    return result;
+
+                Plugin.Log?.LogWarning($"Main save file corrupted for {characterName}, trying backup...");
             }
 
+            // Try backup file if main failed or doesn't exist
+            if (File.Exists(backupPath))
+            {
+                var result = TryLoadFromFile(backupPath, characterName);
+                if (result != null)
+                {
+                    Plugin.Log?.LogInfo($"Loaded from backup for {characterName}");
+                    return result;
+                }
+                Plugin.Log?.LogWarning($"Backup file also corrupted for {characterName}");
+            }
+
+            Plugin.Log?.LogInfo($"No valid save file found for {characterName}, creating new todo list");
+            return new TodoListData(characterName);
+        }
+
+        private TodoListData TryLoadFromFile(string filePath, string characterName)
+        {
             try
             {
                 var json = File.ReadAllText(filePath);
+
+                // Basic validation - check if it looks like valid JSON
+                if (string.IsNullOrWhiteSpace(json) || !json.TrimStart().StartsWith("{"))
+                {
+                    Plugin.Log?.LogWarning($"File {filePath} does not contain valid JSON");
+                    return null;
+                }
+
                 var wrapper = JsonUtility.FromJson<TodoListDataWrapper>(json);
+                if (wrapper == null)
+                {
+                    Plugin.Log?.LogWarning($"Failed to deserialize {filePath}");
+                    return null;
+                }
+
                 var data = wrapper.ToData();
-                Plugin.Log?.LogInfo($"Loaded todo list for {characterName} with {data.Items.Count} items");
+                Plugin.Log?.LogInfo($"Loaded todo list for {characterName} with {data.Items.Count} items from {filePath}");
                 return data;
             }
             catch (Exception ex)
             {
-                Plugin.Log?.LogError($"Failed to load todo list: {ex.Message}");
-                return new TodoListData(characterName);
+                Plugin.Log?.LogError($"Error loading {filePath}: {ex.Message}");
+                return null;
             }
         }
 

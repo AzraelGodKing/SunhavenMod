@@ -68,6 +68,20 @@ namespace BirthdayReminder.UI
         private GUIStyle _sectionHeaderStyle;
         private GUIStyle _universalItemStyle;
 
+        // Cached inline styles (to avoid GC allocations every frame)
+        private GUIStyle _statusMessageStyle;
+        private GUIStyle _itemBoxStyle;
+        private GUIStyle _statusGiftedStyle;
+        private GUIStyle _statusUngiftedStyle;
+        private GUIStyle _nameGiftedStyle;
+        private GUIStyle _nameUngiftedStyle;
+        private GUIStyle _lovedSectionStyle;
+        private GUIStyle _likedSectionStyle;
+        private GUIStyle _universalSubHeaderStyle;
+        private GUIStyle _lovedBulletStyle;
+        private GUIStyle _likedBulletStyle;
+        private GUIStyle _universalBulletStyle;
+
         // Textures
         private Texture2D _windowBackground;
         private Texture2D _headerBackground;
@@ -341,18 +355,12 @@ namespace BirthdayReminder.UI
         {
             GUILayout.Space(6);
 
-            // Show status message if any (e.g., "Refreshed!")
+            // Show status message if any (e.g., "Refreshed!") - using cached style
             if (_manager != null && _manager.HasStatusMessage)
             {
-                var statusStyle = new GUIStyle(_hintStyle)
-                {
-                    normal = { textColor = _giftedColor },
-                    fontStyle = FontStyle.Bold,
-                    alignment = TextAnchor.MiddleCenter
-                };
                 GUILayout.BeginHorizontal();
                 GUILayout.FlexibleSpace();
-                GUILayout.Label(_manager.StatusMessage, statusStyle);
+                GUILayout.Label(_manager.StatusMessage, _statusMessageStyle);
                 GUILayout.FlexibleSpace();
                 GUILayout.EndHorizontal();
                 GUILayout.Space(4);
@@ -379,38 +387,20 @@ namespace BirthdayReminder.UI
 
         private void DrawBirthdayItem(BirthdayDisplayInfo birthday)
         {
-            // Use a box style for item background
-            var itemBoxStyle = new GUIStyle
-            {
-                normal = { background = _itemBackground },
-                padding = new RectOffset(8, 8, 6, 6),
-                margin = new RectOffset(6, 6, 2, 2)
-            };
-
-            GUILayout.BeginVertical(itemBoxStyle);
+            // Use cached box style for item background
+            GUILayout.BeginVertical(_itemBoxStyle);
 
             GUILayout.BeginHorizontal();
 
-            // Status indicator
-            var statusColor = birthday.HasBeenGifted ? _giftedColor : _ungiftedColor;
-            var statusStyle = new GUIStyle(_nameStyle)
-            {
-                normal = { textColor = statusColor },
-                fontStyle = FontStyle.Bold,
-                fontSize = 13
-            };
+            // Status indicator (using cached styles)
+            var statusStyle = birthday.HasBeenGifted ? _statusGiftedStyle : _statusUngiftedStyle;
             GUILayout.Label(birthday.HasBeenGifted ? "[OK]" : "[!!]", statusStyle, GUILayout.Width(40));
 
             GUILayout.BeginVertical();
 
-            // Name row
+            // Name row (using cached styles)
             GUILayout.BeginHorizontal();
-            var nameStyle = new GUIStyle(_nameStyle)
-            {
-                normal = { textColor = birthday.HasBeenGifted ? new Color(_textLight.r, _textLight.g, _textLight.b, 0.5f) : _textLight },
-                fontStyle = birthday.HasBeenGifted ? FontStyle.Italic : FontStyle.Bold,
-                fontSize = 13
-            };
+            var nameStyle = birthday.HasBeenGifted ? _nameGiftedStyle : _nameUngiftedStyle;
             GUILayout.Label(birthday.NPCName, nameStyle);
 
             GUILayout.FlexibleSpace();
@@ -546,7 +536,14 @@ namespace BirthdayReminder.UI
         {
             GUILayout.BeginHorizontal();
             GUILayout.Space(8);
-            var style = new GUIStyle(_sectionHeaderStyle) { normal = { textColor = color } };
+            // Use cached style based on color
+            GUIStyle style;
+            if (color == _lovedColor)
+                style = _lovedSectionStyle;
+            else if (color == _likedColor)
+                style = _likedSectionStyle;
+            else
+                style = _sectionHeaderStyle;
             GUILayout.Label(text, style);
             GUILayout.EndHorizontal();
         }
@@ -555,13 +552,8 @@ namespace BirthdayReminder.UI
         {
             GUILayout.BeginHorizontal();
             GUILayout.Space(12);
-            var style = new GUIStyle(_hintStyle)
-            {
-                normal = { textColor = color },
-                fontStyle = FontStyle.Bold,
-                fontSize = 9
-            };
-            GUILayout.Label(text, style);
+            // Use cached universal sub-header style
+            GUILayout.Label(text, _universalSubHeaderStyle);
             GUILayout.EndHorizontal();
         }
 
@@ -570,8 +562,14 @@ namespace BirthdayReminder.UI
             GUILayout.BeginHorizontal();
             GUILayout.Space(16);
 
-            // Colored bullet
-            var bulletStyle = new GUIStyle(_giftItemStyle) { normal = { textColor = bulletColor } };
+            // Colored bullet (using cached styles)
+            GUIStyle bulletStyle;
+            if (bulletColor == _lovedColor)
+                bulletStyle = _lovedBulletStyle;
+            else if (bulletColor == _likedColor)
+                bulletStyle = _likedBulletStyle;
+            else
+                bulletStyle = _universalBulletStyle;
             GUILayout.Label("\u2022", bulletStyle, GUILayout.Width(12));
 
             // Gift name
@@ -698,6 +696,81 @@ namespace BirthdayReminder.UI
             };
 
             _universalItemStyle = new GUIStyle(_giftItemStyle)
+            {
+                normal = { textColor = _universalColor }
+            };
+
+            // Cached inline styles (created once, not every frame)
+            _statusMessageStyle = new GUIStyle(_hintStyle)
+            {
+                normal = { textColor = _giftedColor },
+                fontStyle = FontStyle.Bold,
+                alignment = TextAnchor.MiddleCenter
+            };
+
+            _itemBoxStyle = new GUIStyle
+            {
+                normal = { background = _itemBackground },
+                padding = new RectOffset(8, 8, 6, 6),
+                margin = new RectOffset(6, 6, 2, 2)
+            };
+
+            _statusGiftedStyle = new GUIStyle(_nameStyle)
+            {
+                normal = { textColor = _giftedColor },
+                fontStyle = FontStyle.Bold,
+                fontSize = 13
+            };
+
+            _statusUngiftedStyle = new GUIStyle(_nameStyle)
+            {
+                normal = { textColor = _ungiftedColor },
+                fontStyle = FontStyle.Bold,
+                fontSize = 13
+            };
+
+            _nameGiftedStyle = new GUIStyle(_nameStyle)
+            {
+                normal = { textColor = new Color(_textLight.r, _textLight.g, _textLight.b, 0.5f) },
+                fontStyle = FontStyle.Italic,
+                fontSize = 13
+            };
+
+            _nameUngiftedStyle = new GUIStyle(_nameStyle)
+            {
+                normal = { textColor = _textLight },
+                fontStyle = FontStyle.Bold,
+                fontSize = 13
+            };
+
+            _lovedSectionStyle = new GUIStyle(_sectionHeaderStyle)
+            {
+                normal = { textColor = _lovedColor }
+            };
+
+            _likedSectionStyle = new GUIStyle(_sectionHeaderStyle)
+            {
+                normal = { textColor = _likedColor }
+            };
+
+            _universalSubHeaderStyle = new GUIStyle(_hintStyle)
+            {
+                normal = { textColor = _universalColor },
+                fontStyle = FontStyle.Bold,
+                fontSize = 9
+            };
+
+            _lovedBulletStyle = new GUIStyle(_giftItemStyle)
+            {
+                normal = { textColor = _lovedColor }
+            };
+
+            _likedBulletStyle = new GUIStyle(_giftItemStyle)
+            {
+                normal = { textColor = _likedColor }
+            };
+
+            _universalBulletStyle = new GUIStyle(_giftItemStyle)
             {
                 normal = { textColor = _universalColor }
             };

@@ -10,6 +10,7 @@ using HarmonyLib;
 using HavenDevTools.Config;
 using HavenDevTools.Services;
 using HavenDevTools.UI;
+using SunhavenMods.Shared;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
@@ -97,6 +98,13 @@ namespace HavenDevTools
 
                 // Subscribe to scene changes
                 SceneManager.sceneLoaded += OnSceneLoaded;
+
+                // Check for updates
+                if (ModConfig.CheckForUpdates.Value)
+                {
+                    VersionChecker.CheckForUpdate(PluginInfo.PLUGIN_GUID, PluginInfo.PLUGIN_VERSION, Log,
+                        result => result.NotifyUpdateAvailable(Log));
+                }
 
                 Log.LogInfo($"{PluginInfo.PLUGIN_NAME} loaded successfully!");
                 Log.LogInfo($"Press {ModConfig.ToggleKey.Value} to open the debug window (requires authorization)");

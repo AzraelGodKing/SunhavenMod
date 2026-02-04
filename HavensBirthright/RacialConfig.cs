@@ -89,6 +89,18 @@ namespace HavensBirthright
         public static ConfigEntry<float> NagaFishingLuckBonus;
         public static ConfigEntry<float> NagaDefenseBonus;
         public static ConfigEntry<float> NagaManaRegenBonus;
+        public static ConfigEntry<float> NagaAirSkipBonus;
+
+        // New advanced bonuses
+        public static ConfigEntry<float> ElfWoodcuttingDamageBonus;
+        public static ConfigEntry<float> HumanCommunityTokenBonus;
+        public static ConfigEntry<float> DemonTripleGoldBonus;
+        public static ConfigEntry<float> DemonMiningDamageBonus;
+        public static ConfigEntry<float> AngelSpellAttackSpeedBonus;
+        public static ConfigEntry<float> WaterElementalFishingMinigameBonus;
+        public static ConfigEntry<float> WaterElementalAirSkipBonus;
+        public static ConfigEntry<float> AmariAquaticFishingMinigameBonus;
+        public static ConfigEntry<float> AmariAquaticAirSkipBonus;
 
         // General settings
         public static ConfigEntry<bool> EnableRacialBonuses;
@@ -508,6 +520,82 @@ namespace HavensBirthright
                 "ManaRegenBonus",
                 15f,
                 "Percentage bonus to mana regeneration"
+            );
+
+            NagaAirSkipBonus = config.Bind(
+                "Naga",
+                "AirSkipChanceBonus",
+                15f,
+                "Percentage chance to skip air requirement while swimming/fishing"
+            );
+
+            // Advanced bonuses - Elf
+            ElfWoodcuttingDamageBonus = config.Bind(
+                "Elf",
+                "WoodcuttingDamageBonus",
+                15f,
+                "Percentage bonus to tree damage"
+            );
+
+            // Advanced bonuses - Human
+            HumanCommunityTokenBonus = config.Bind(
+                "Human",
+                "CommunityTokenBonus",
+                10f,
+                "Percentage bonus to daily community token gain"
+            );
+
+            // Advanced bonuses - Demon
+            DemonTripleGoldBonus = config.Bind(
+                "Demon",
+                "TripleGoldChanceBonus",
+                10f,
+                "Percentage chance for triple gold drops"
+            );
+
+            DemonMiningDamageBonus = config.Bind(
+                "Demon",
+                "MiningDamageBonus",
+                15f,
+                "Percentage bonus to mining damage"
+            );
+
+            // Advanced bonuses - Angel
+            AngelSpellAttackSpeedBonus = config.Bind(
+                "Angel",
+                "SpellAttackSpeedBonus",
+                15f,
+                "Percentage bonus to spell casting speed"
+            );
+
+            // Advanced bonuses - Water Elemental
+            WaterElementalFishingMinigameBonus = config.Bind(
+                "Water Elemental",
+                "FishingMinigameSpeedBonus",
+                20f,
+                "Percentage bonus to fishing minigame speed"
+            );
+
+            WaterElementalAirSkipBonus = config.Bind(
+                "Water Elemental",
+                "AirSkipChanceBonus",
+                20f,
+                "Percentage chance to skip air requirement while swimming/fishing"
+            );
+
+            // Advanced bonuses - Amari Aquatic
+            AmariAquaticFishingMinigameBonus = config.Bind(
+                "Amari Aquatic",
+                "FishingMinigameSpeedBonus",
+                15f,
+                "Percentage bonus to fishing minigame speed"
+            );
+
+            AmariAquaticAirSkipBonus = config.Bind(
+                "Amari Aquatic",
+                "AirSkipChanceBonus",
+                15f,
+                "Percentage chance to skip air requirement while swimming/fishing"
             );
 
             Plugin.Log.LogInfo("Configuration initialized");
