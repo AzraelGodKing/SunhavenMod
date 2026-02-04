@@ -29,7 +29,9 @@ namespace HavensBirthright
                 new RacialBonus(BonusType.RelationshipGain, RacialConfig.HumanRelationshipBonus.Value, true,
                     "Charismatic: Build relationships faster"),
                 new RacialBonus(BonusType.ShopDiscount, RacialConfig.HumanShopDiscount.Value, true,
-                    "Silver Tongue: Small discount at shops")
+                    "Silver Tongue: Small discount at shops"),
+                new RacialBonus(BonusType.CommunityTokenGain, RacialConfig.HumanCommunityTokenBonus.Value, true,
+                    "Community Leader: Earn more community tokens")
             };
 
             // Elf - Nature-attuned, excellent farmers and foragers
@@ -42,7 +44,9 @@ namespace HavensBirthright
                 new RacialBonus(BonusType.ForagingChance, RacialConfig.ElfForagingBonus.Value, true,
                     "Forest Walker: Find more foragables"),
                 new RacialBonus(BonusType.ManaRegen, RacialConfig.ElfManaRegenBonus.Value, true,
-                    "Arcane Heritage: Faster mana regeneration")
+                    "Arcane Heritage: Faster mana regeneration"),
+                new RacialBonus(BonusType.WoodcuttingDamage, RacialConfig.ElfWoodcuttingDamageBonus.Value, true,
+                    "Timber Master: Deal more damage to trees")
             };
 
             // Angel - Divine beings with healing and light magic affinity
@@ -55,7 +59,9 @@ namespace HavensBirthright
                 new RacialBonus(BonusType.HealthRegen, RacialConfig.AngelHealthRegenBonus.Value, true,
                     "Blessed Recovery: Faster health regeneration"),
                 new RacialBonus(BonusType.LuckBonus, RacialConfig.AngelLuckBonus.Value, true,
-                    "Fortune's Favor: Blessed with good luck")
+                    "Fortune's Favor: Blessed with good luck"),
+                new RacialBonus(BonusType.SpellAttackSpeed, RacialConfig.AngelSpellAttackSpeedBonus.Value, true,
+                    "Divine Haste: Cast spells faster")
             };
 
             // Demon - Fierce combatants with dark powers
@@ -68,7 +74,11 @@ namespace HavensBirthright
                 new RacialBonus(BonusType.MaxHealth, RacialConfig.DemonHealthBonus.Value, true,
                     "Hellforged Vitality: Increased maximum health"),
                 new RacialBonus(BonusType.GoldFind, RacialConfig.DemonGoldBonus.Value, true,
-                    "Greed: Find more gold")
+                    "Greed: Find more gold"),
+                new RacialBonus(BonusType.TripleGoldChance, RacialConfig.DemonTripleGoldBonus.Value, true,
+                    "Avarice: Chance for triple gold drops"),
+                new RacialBonus(BonusType.MiningDamage, RacialConfig.DemonMiningDamageBonus.Value, true,
+                    "Hellfire Pick: Deal more damage to rocks")
             };
 
             // Fire Elemental - Aggressive, damage-focused with fire affinity
@@ -94,7 +104,11 @@ namespace HavensBirthright
                 new RacialBonus(BonusType.ManaRegen, RacialConfig.WaterElementalManaRegenBonus.Value, true,
                     "Flowing Spirit: Faster mana regeneration"),
                 new RacialBonus(BonusType.FishingLuck, RacialConfig.WaterElementalFishingBonus.Value, true,
-                    "Aquatic Kinship: Better fishing luck")
+                    "Aquatic Kinship: Better fishing luck"),
+                new RacialBonus(BonusType.FishingMinigameSpeed, RacialConfig.WaterElementalFishingMinigameBonus.Value, true,
+                    "Water Mastery: Faster fishing minigame"),
+                new RacialBonus(BonusType.AirSkipChance, RacialConfig.WaterElementalAirSkipBonus.Value, true,
+                    "Breathless: No need for air underwater")
             };
 
             // Generic Elemental fallback (if variant can't be determined)
@@ -172,7 +186,11 @@ namespace HavensBirthright
                 new RacialBonus(BonusType.ManaRegen, RacialConfig.AmariAquaticManaRegenBonus.Value, true,
                     "Flowing Spirit: Faster mana regeneration"),
                 new RacialBonus(BonusType.HealthRegen, RacialConfig.AmariAquaticHealthRegenBonus.Value, true,
-                    "Healing Waters: Faster health regeneration")
+                    "Healing Waters: Faster health regeneration"),
+                new RacialBonus(BonusType.FishingMinigameSpeed, RacialConfig.AmariAquaticFishingMinigameBonus.Value, true,
+                    "Aquatic Instinct: Faster fishing minigame"),
+                new RacialBonus(BonusType.AirSkipChance, RacialConfig.AmariAquaticAirSkipBonus.Value, true,
+                    "Amphibious: Chance to skip air requirement")
             };
 
             // Amari Reptile - Tough survivors, resilient and strong
@@ -198,7 +216,9 @@ namespace HavensBirthright
                 new RacialBonus(BonusType.Defense, RacialConfig.NagaDefenseBonus.Value, true,
                     "Scaled Hide: Increased defense"),
                 new RacialBonus(BonusType.ManaRegen, RacialConfig.NagaManaRegenBonus.Value, true,
-                    "Tidal Magic: Faster mana regeneration")
+                    "Tidal Magic: Faster mana regeneration"),
+                new RacialBonus(BonusType.AirSkipChance, RacialConfig.NagaAirSkipBonus.Value, true,
+                    "Serpent's Breath: Chance to skip air requirement")
             };
 
             Plugin.Log.LogInfo($"Initialized racial bonuses for {_racialBonuses.Count} races");

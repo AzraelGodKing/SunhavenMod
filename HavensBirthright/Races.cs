@@ -88,7 +88,16 @@ namespace HavensBirthright
         ExperienceGain,
         GoldFind,
         LuckBonus,
-        DodgeChance
+        DodgeChance,
+
+        // Advanced bonuses (new stat types)
+        FishingMinigameSpeed,   // Faster fishing minigame
+        WoodcuttingDamage,      // Bonus tree damage
+        MiningDamage,           // Bonus mining damage
+        SpellAttackSpeed,       // Faster spell casting
+        AirSkipChance,          // Chance to skip air while fishing/swimming
+        CommunityTokenGain,     // Daily community token bonus
+        TripleGoldChance        // Chance for triple gold drops
     }
 
     /// <summary>

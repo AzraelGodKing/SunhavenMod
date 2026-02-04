@@ -19,6 +19,9 @@ namespace HavenDevTools.Config
         public static ConfigEntry<bool> ShowBundles { get; private set; }
         public static ConfigEntry<bool> ShowRaceBonuses { get; private set; }
 
+        // Updates
+        public static ConfigEntry<bool> CheckForUpdates { get; private set; }
+
         public static void Initialize(ConfigFile config)
         {
             // Hotkeys
@@ -78,6 +81,14 @@ namespace HavenDevTools.Config
                 "ShowRaceBonuses",
                 true,
                 "Show race modifier tracker section in debug window (requires Haven's Birthright)"
+            );
+
+            // Updates
+            CheckForUpdates = config.Bind(
+                "Updates",
+                "CheckForUpdates",
+                true,
+                "Check for mod updates on startup"
             );
 
             Plugin.Log?.LogInfo("Configuration initialized");
