@@ -1,0 +1,273 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HavenDevTools - Developer Utilities</title>
+    <link rel="stylesheet" href="devtools-style.css">
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="top-nav">
+        <a href="index.html" class="nav-home">Mod Hub</a>
+        <span class="nav-divider">/</span>
+        <span class="nav-current">HavenDevTools</span>
+    </nav>
+
+    <div class="container">
+        <!-- Hero Section -->
+        <section class="hero">
+            <div class="hero-icon">&#x1F6E0;&#xFE0F;</div>
+            <h1>HavenDevTools</h1>
+            <p class="tagline">Developer & Debugging Utilities for Sun Haven<span class="cursor">|</span></p>
+        </section>
+
+        <!-- Intro -->
+        <div class="intro-section">
+            <p>A comprehensive development toolkit for Sun Haven mod developers. Provides real-time game state inspection, advanced logging, debug overlays, and utilities for testing and troubleshooting mods.</p>
+        </div>
+
+        <!-- Features Grid -->
+        <h2 class="section-title">Core Features</h2>
+        <div class="features-grid">
+            <div class="feature-card">
+                <div class="feature-icon">&#x1F50D;</div>
+                <h3>State Inspector</h3>
+                <p>Inspect player stats, inventory, active quests, NPC relationships, and game variables in real-time with a searchable interface.</p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon">&#x1F4DD;</div>
+                <h3>Advanced Logging</h3>
+                <p>Categorized log levels (Debug, Info, Warning, Error) with timestamps, stack traces, and log filtering by mod or category.</p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon">&#x1F3AE;</div>
+                <h3>Debug Overlay</h3>
+                <p>Toggle on-screen overlays showing FPS, memory usage, active scene, player position, and custom debug variables.</p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon">&#x26A1;</div>
+                <h3>Command Console</h3>
+                <p>Execute debug commands to modify game state, spawn items, teleport, adjust time, and test mod functionality.</p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon">&#x1F504;</div>
+                <h3>Hot Reload</h3>
+                <p>Reload configuration files and certain mod components without restarting the game for faster iteration.</p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon">&#x1F4CA;</div>
+                <h3>Performance Monitor</h3>
+                <p>Track frame times, memory allocation, and identify performance bottlenecks in real-time graphs.</p>
+            </div>
+        </div>
+
+        <!-- Tool Categories -->
+        <h2 class="section-title">Available Tools</h2>
+        <p class="section-desc">Organized by functionality for quick access</p>
+        <div class="tool-grid">
+            <div class="tool-category inspection">
+                <div class="category-header">
+                    <span class="category-icon">&#x1F50E;</span>
+                    <h3>Inspection Tools</h3>
+                </div>
+                <p class="category-desc">Examine game state and object properties</p>
+                <ul class="tool-list">
+                    <li>Player Stats Viewer</li>
+                    <li>Inventory Inspector</li>
+                    <li>NPC Relationship Data</li>
+                    <li>Quest State Tracker</li>
+                    <li>Scene Hierarchy Browser</li>
+                </ul>
+            </div>
+
+            <div class="tool-category logging">
+                <div class="category-header">
+                    <span class="category-icon">&#x1F4C4;</span>
+                    <h3>Logging Tools</h3>
+                </div>
+                <p class="category-desc">Track and filter debug output</p>
+                <ul class="tool-list">
+                    <li>Console Log Window</li>
+                    <li>Log Level Filters</li>
+                    <li>Stack Trace Viewer</li>
+                    <li>Log Export (JSON/TXT)</li>
+                    <li>Error Aggregation</li>
+                </ul>
+            </div>
+
+            <div class="tool-category testing">
+                <div class="category-header">
+                    <span class="category-icon">&#x1F9EA;</span>
+                    <h3>Testing Tools</h3>
+                </div>
+                <p class="category-desc">Test functionality and simulate scenarios</p>
+                <ul class="tool-list">
+                    <li>Item Spawner</li>
+                    <li>Time Manipulation</li>
+                    <li>Event Trigger</li>
+                    <li>Stat Modifier</li>
+                    <li>Save State Manager</li>
+                </ul>
+            </div>
+
+            <div class="tool-category utilities">
+                <div class="category-header">
+                    <span class="category-icon">&#x2699;&#xFE0F;</span>
+                    <h3>Utilities</h3>
+                </div>
+                <p class="category-desc">General development helpers</p>
+                <ul class="tool-list">
+                    <li>Scene Teleporter</li>
+                    <li>Config Editor</li>
+                    <li>Heartbeat Monitor</li>
+                    <li>Reflection Helper</li>
+                    <li>Asset Browser</li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- Usage Instructions -->
+        <h2 class="section-title">Quick Start</h2>
+        <div class="usage-steps">
+            <div class="step">
+                <div class="step-number">1</div>
+                <div class="step-content">
+                    <h4>Open DevTools Console</h4>
+                    <p>Press <kbd>F12</kbd> or <kbd>`</kbd> (backtick) to toggle the developer console overlay.</p>
+                </div>
+            </div>
+            <div class="step">
+                <div class="step-number">2</div>
+                <div class="step-content">
+                    <h4>Navigate Panels</h4>
+                    <p>Use the tab bar to switch between Inspector, Console, Performance, and Tools panels.</p>
+                </div>
+            </div>
+            <div class="step">
+                <div class="step-number">3</div>
+                <div class="step-content">
+                    <h4>Execute Commands</h4>
+                    <p>Type commands in the console input. Use <kbd>Tab</kbd> for autocomplete and <kbd>Up/Down</kbd> for history.</p>
+                </div>
+            </div>
+            <div class="step">
+                <div class="step-number">4</div>
+                <div class="step-content">
+                    <h4>Toggle Overlays</h4>
+                    <p>Press <kbd>F11</kbd> to toggle the performance overlay, or use <code>overlay.toggle</code> command.</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Common Commands -->
+        <h2 class="section-title">Common Commands</h2>
+        <div class="config-table">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Command</th>
+                        <th>Description</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><code>help</code></td>
+                        <td>List all available commands</td>
+                    </tr>
+                    <tr>
+                        <td><code>player.stats</code></td>
+                        <td>Display current player statistics</td>
+                    </tr>
+                    <tr>
+                        <td><code>spawn [itemId] [amount]</code></td>
+                        <td>Spawn items into inventory</td>
+                    </tr>
+                    <tr>
+                        <td><code>time.set [hour]</code></td>
+                        <td>Set the in-game time (0-23)</td>
+                    </tr>
+                    <tr>
+                        <td><code>tp [scene]</code></td>
+                        <td>Teleport to a scene</td>
+                    </tr>
+                    <tr>
+                        <td><code>log.level [level]</code></td>
+                        <td>Set minimum log level (debug/info/warn/error)</td>
+                    </tr>
+                    <tr>
+                        <td><code>reload.config</code></td>
+                        <td>Hot reload mod configuration files</td>
+                    </tr>
+                    <tr>
+                        <td><code>clear</code></td>
+                        <td>Clear the console output</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Warning -->
+        <div class="warning-box">
+            <h4>&#x26A0;&#xFE0F; Development Only</h4>
+            <p>HavenDevTools is intended for mod development and debugging purposes. Some features can modify game state in ways that may affect save files. Always backup your saves before extensive testing. This tool is not published to Nexus Mods as it's primarily for personal development use.</p>
+        </div>
+
+        <!-- Configuration -->
+        <h2 class="section-title">Configuration</h2>
+        <div class="config-table">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Setting</th>
+                        <th>Default</th>
+                        <th>Description</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><code>ToggleKey</code></td>
+                        <td>F12</td>
+                        <td>Key to open/close DevTools</td>
+                    </tr>
+                    <tr>
+                        <td><code>OverlayKey</code></td>
+                        <td>F11</td>
+                        <td>Key to toggle performance overlay</td>
+                    </tr>
+                    <tr>
+                        <td><code>LogLevel</code></td>
+                        <td>Debug</td>
+                        <td>Minimum level to display</td>
+                    </tr>
+                    <tr>
+                        <td><code>HeartbeatInterval</code></td>
+                        <td>5.0</td>
+                        <td>Seconds between heartbeat logs</td>
+                    </tr>
+                    <tr>
+                        <td><code>MaxLogEntries</code></td>
+                        <td>1000</td>
+                        <td>Maximum entries before auto-clear</td>
+                    </tr>
+                    <tr>
+                        <td><code>ShowOnStartup</code></td>
+                        <td>false</td>
+                        <td>Auto-open DevTools on game start</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+        <p class="config-note">Configuration file: <code>BepInEx/config/com.azraelgodking.havendevtools.cfg</code></p>
+
+        <!-- Footer -->
+        <div class="footer">
+            <p>HavenDevTools - A Sun Haven Development Tool by AzraelGodKing</p>
+            <p style="margin-top: 10px; font-size: 0.9em;">Internal development tool - Not published to Nexus Mods</p>
+            <div class="footer-links" style="margin-top: 15px;">
+                <a href="index.html">Back to Mod Hub</a>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

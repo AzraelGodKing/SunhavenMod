@@ -1,0 +1,38 @@
+{
+  "com.azraelgodking.squirrelsbirthdayreminder": {
+    "version": "1.0.2",
+    "name": "A Squirrel's Birthday Reminder",
+    "nexus": "https://www.nexusmods.com/sunhaven/mods/493",
+    "changelog": "Initial release"
+  },
+  "com.azraelgodking.havensbirthright": {
+    "version": "1.0.2",
+    "name": "Haven's Birthright",
+    "nexus": "https://www.nexusmods.com/sunhaven/mods/487",
+    "changelog": "Initial release"
+  },
+  "com.azraelgodking.sunhavenmuseumutilitytracker": {
+    "version": "2.0.1",
+    "name": "S.M.U.T.",
+    "nexus": "https://www.nexusmods.com/sunhaven/mods/490",
+    "changelog": "Initial release"
+  },
+  "com.azraelgodking.sunhaventodo": {
+    "version": "1.0.0",
+    "name": "Sun Haven Todo",
+    "nexus": "https://www.nexusmods.com/sunhaven/mods/491",
+    "changelog": "Initial release"
+  },
+  "com.azraelgodking.thevault": {
+    "version": "2.0.3",
+    "name": "The Vault",
+    "nexus": "https://www.nexusmods.com/sunhaven/mods/488",
+    "changelog": "Bug fixes and improvements"
+  },
+  "com.azraelgodking.havendevtools": {
+    "version": "1.0.0",
+    "name": "HavenDevTools",
+    "nexus": null,
+    "changelog": "Initial release"
+  }
+}

@@ -3,6 +3,7 @@ using BepInEx;
 using BepInEx.Configuration;
 using BepInEx.Logging;
 using HarmonyLib;
+using SunhavenMods.Shared;
 using SunHavenMuseumUtilityTracker.Data;
 using SunHavenMuseumUtilityTracker.Patches;
 using SunHavenMuseumUtilityTracker.UI;
@@ -35,6 +36,7 @@ namespace SunHavenMuseumUtilityTracker
         private ConfigEntry<KeyCode> _toggleKey;
         private ConfigEntry<bool> _requireCtrl;
         private ConfigEntry<KeyCode> _altToggleKey;
+        private ConfigEntry<bool> _checkForUpdates;
 
         // Static config for PersistentRunner
         public static KeyCode StaticToggleKey { get; private set; }
@@ -74,6 +76,13 @@ namespace SunHavenMuseumUtilityTracker
             // Subscribe to scene changes
             SceneManager.sceneLoaded += OnSceneLoaded;
 
+            // Check for updates
+            if (_checkForUpdates.Value)
+            {
+                VersionChecker.CheckForUpdate(PluginInfo.PLUGIN_GUID, PluginInfo.PLUGIN_VERSION, Log,
+                    result => result.NotifyUpdateAvailable(Log));
+            }
+
             Logger.LogInfo($"{PluginInfo.PLUGIN_NAME} loaded successfully!");
             Logger.LogInfo($"Press {(_requireCtrl.Value ? "Ctrl+" : "")}{_toggleKey.Value} or {_altToggleKey.Value} to open the tracker");
         }
@@ -99,6 +108,13 @@ namespace SunHavenMuseumUtilityTracker
                 "AltToggleKey",
                 KeyCode.F7,
                 "Alternative key to toggle the Museum Tracker (no modifier required). Useful for Steam Deck."
+            );
+
+            _checkForUpdates = Config.Bind(
+                "Updates",
+                "CheckForUpdates",
+                true,
+                "Check for mod updates on startup"
             );
 
             // Set static values for PersistentRunner
@@ -368,6 +384,6 @@ namespace SunHavenMuseumUtilityTracker
     {
         public const string PLUGIN_GUID = "com.azraelgodking.sunhavenmuseumutilitytracker";
         public const string PLUGIN_NAME = "Sun Haven Museum Utility Tracker";
-        public const string PLUGIN_VERSION = "1.0.0";
+        public const string PLUGIN_VERSION = "2.0.1";
     }
 }

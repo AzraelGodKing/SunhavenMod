@@ -101,6 +101,12 @@ namespace SunhavenTodo.UI
         private GUIStyle _categoryLabelStyle;
         private GUIStyle _priorityLabelStyle;
 
+        // Cached inline styles (to avoid GC allocations every frame)
+        private GUIStyle _footerStyle;
+        private GUIStyle _completedTitleStyle;
+        private Dictionary<TodoPriority, GUIStyle> _priorityStyleCache;
+        private Dictionary<TodoCategory, GUIStyle> _categoryStyleCache;
+
         // Textures
         private Texture2D _windowBackground;
         private Texture2D _headerBackground;
@@ -442,25 +448,18 @@ namespace SunhavenTodo.UI
 
             GUILayout.Space(4);
 
-            // Priority indicator
-            var priorityColor = _priorityColors.TryGetValue(item.Priority, out var pc) ? pc : _textDark;
-            var priorityStyle = new GUIStyle(_priorityLabelStyle) { normal = { textColor = priorityColor } };
+            // Priority indicator (using cached style)
+            var priorityStyle = _priorityStyleCache.TryGetValue(item.Priority, out var ps) ? ps : _priorityLabelStyle;
             GUILayout.Label(GetPriorityIcon(item.Priority), priorityStyle, GUILayout.Width(20));
 
-            // Category indicator
-            var categoryColor = _categoryColors.TryGetValue(item.Category, out var cc) ? cc : _textDark;
-            var categoryStyle = new GUIStyle(_categoryLabelStyle) { normal = { textColor = categoryColor } };
+            // Category indicator (using cached style)
+            var categoryStyle = _categoryStyleCache.TryGetValue(item.Category, out var cs) ? cs : _categoryLabelStyle;
             GUILayout.Label($"[{GetCategoryShort(item.Category)}]", categoryStyle, GUILayout.Width(45));
 
             GUILayout.Space(4);
 
-            // Title
-            var titleStyle = new GUIStyle(_labelBoldStyle);
-            if (item.IsCompleted)
-            {
-                titleStyle.normal.textColor = new Color(0.5f, 0.5f, 0.5f);
-                titleStyle.fontStyle = FontStyle.Italic;
-            }
+            // Title (using cached styles)
+            var titleStyle = item.IsCompleted ? _completedTitleStyle : _labelBoldStyle;
             GUILayout.Label(item.Title, titleStyle, GUILayout.ExpandWidth(true));
 
             // Delete button
@@ -555,13 +554,8 @@ namespace SunhavenTodo.UI
             GUILayout.BeginHorizontal();
             GUILayout.FlexibleSpace();
 
-            var footerStyle = new GUIStyle(_labelStyle)
-            {
-                fontSize = 10,
-                fontStyle = FontStyle.Italic,
-                normal = { textColor = new Color(_textDark.r, _textDark.g, _textDark.b, 0.6f) }
-            };
-            GUILayout.Label("Press ESC to close | Drag header to move", footerStyle);
+            // Using cached footer style
+            GUILayout.Label("Press ESC to close | Drag header to move", _footerStyle);
 
             GUILayout.FlexibleSpace();
             GUILayout.EndHorizontal();
@@ -810,6 +804,43 @@ namespace SunhavenTodo.UI
                 fontStyle = FontStyle.Bold,
                 alignment = TextAnchor.MiddleCenter
             };
+
+            // Cached footer style
+            _footerStyle = new GUIStyle(_labelStyle)
+            {
+                fontSize = 10,
+                fontStyle = FontStyle.Italic,
+                normal = { textColor = new Color(_textDark.r, _textDark.g, _textDark.b, 0.6f) }
+            };
+
+            // Cached completed title style
+            _completedTitleStyle = new GUIStyle(_labelBoldStyle)
+            {
+                normal = { textColor = new Color(0.5f, 0.5f, 0.5f) },
+                fontStyle = FontStyle.Italic
+            };
+
+            // Cache priority styles
+            _priorityStyleCache = new Dictionary<TodoPriority, GUIStyle>();
+            foreach (TodoPriority priority in Enum.GetValues(typeof(TodoPriority)))
+            {
+                var priorityColor = _priorityColors.TryGetValue(priority, out var pc) ? pc : _textDark;
+                _priorityStyleCache[priority] = new GUIStyle(_priorityLabelStyle)
+                {
+                    normal = { textColor = priorityColor }
+                };
+            }
+
+            // Cache category styles
+            _categoryStyleCache = new Dictionary<TodoCategory, GUIStyle>();
+            foreach (TodoCategory category in Enum.GetValues(typeof(TodoCategory)))
+            {
+                var categoryColor = _categoryColors.TryGetValue(category, out var cc) ? cc : _textDark;
+                _categoryStyleCache[category] = new GUIStyle(_categoryLabelStyle)
+                {
+                    normal = { textColor = categoryColor }
+                };
+            }
         }
 
         private Texture2D MakeTex(int width, int height, Color color)

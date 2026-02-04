@@ -6,6 +6,7 @@ using BepInEx.Logging;
 using BirthdayReminder.Data;
 using BirthdayReminder.UI;
 using HarmonyLib;
+using SunhavenMods.Shared;
 using UnityEngine;
 using UnityEngine.Events;
 using UnityEngine.SceneManagement;
@@ -31,7 +32,9 @@ namespace BirthdayReminder
         private ConfigEntry<float> _hudPositionY;
         private ConfigEntry<KeyCode> _toggleKey;
         private ConfigEntry<bool> _showGiftHints;
+        private ConfigEntry<bool> _useNativeNotifications;
         private ConfigEntry<bool> _debugMode;
+        private ConfigEntry<bool> _checkForUpdates;
 
         // Character tracking for save switching
         private static string _currentCharacterName;
@@ -53,6 +56,13 @@ namespace BirthdayReminder
         // Static config values for PersistentRunner access
         private static KeyCode _staticToggleKey = KeyCode.B;
         private static bool _staticDebugMode = false;
+        private static bool _staticUseNativeNotifications = true;
+
+        // Cached reflection for native notifications
+        private static Type _notificationStackType;
+        private static PropertyInfo _notificationStackInstance;
+        private static MethodInfo _sendNotificationMethod;
+        private static bool _notificationSystemInitialized = false;
 
         private void Awake()
         {
@@ -67,6 +77,13 @@ namespace BirthdayReminder
             ApplyPatches();
 
             SceneManager.sceneLoaded += OnSceneLoaded;
+
+            // Check for updates
+            if (_checkForUpdates.Value)
+            {
+                VersionChecker.CheckForUpdate(PluginInfo.PLUGIN_GUID, PluginInfo.PLUGIN_VERSION, Log,
+                    result => result.NotifyUpdateAvailable(Log));
+            }
 
             Log.LogInfo($"{PluginInfo.PLUGIN_NAME} loaded successfully!");
         }
@@ -112,6 +129,13 @@ namespace BirthdayReminder
                 "Show gift preferences in the birthday reminder"
             );
 
+            _useNativeNotifications = Config.Bind(
+                "General",
+                "UseNativeNotifications",
+                true,
+                "Show birthday notifications using the game's native notification system"
+            );
+
             _debugMode = Config.Bind(
                 "Debug",
                 "DebugMode",
@@ -120,6 +144,16 @@ namespace BirthdayReminder
             );
             _staticDebugMode = _debugMode.Value;
             _debugMode.SettingChanged += (_, _) => _staticDebugMode = _debugMode.Value;
+
+            _staticUseNativeNotifications = _useNativeNotifications.Value;
+            _useNativeNotifications.SettingChanged += (_, _) => _staticUseNativeNotifications = _useNativeNotifications.Value;
+
+            _checkForUpdates = Config.Bind(
+                "Updates",
+                "CheckForUpdates",
+                true,
+                "Check for mod updates on startup"
+            );
         }
 
         private void CreatePersistentRunner()
@@ -301,6 +335,9 @@ namespace BirthdayReminder
             {
                 EnsureUIComponentsExist();
                 _staticHUD?.Show();
+
+                // Send native game notifications for each birthday
+                SendAllBirthdayNotifications();
             }
         }
 
@@ -423,6 +460,106 @@ namespace BirthdayReminder
         public static BirthdayHUD GetHUD() => _staticHUD;
         public static KeyCode StaticToggleKey => _staticToggleKey;
         public static bool StaticDebugMode => _staticDebugMode;
+        public static bool StaticUseNativeNotifications => _staticUseNativeNotifications;
+
+        /// <summary>
+        /// Initialize the native notification system via reflection
+        /// </summary>
+        private static void InitializeNotificationSystem()
+        {
+            if (_notificationSystemInitialized) return;
+            _notificationSystemInitialized = true;
+
+            try
+            {
+                // Get NotificationStack singleton
+                _notificationStackType = AccessTools.TypeByName("Wish.NotificationStack");
+                if (_notificationStackType == null)
+                {
+                    Log?.LogDebug("[Notifications] NotificationStack type not found");
+                    return;
+                }
+
+                // Get SingletonBehaviour<NotificationStack>.Instance
+                var singletonType = AccessTools.TypeByName("Wish.SingletonBehaviour`1");
+                if (singletonType != null)
+                {
+                    var genericType = singletonType.MakeGenericType(_notificationStackType);
+                    _notificationStackInstance = genericType.GetProperty("Instance", BindingFlags.Public | BindingFlags.Static);
+                }
+
+                // Get SendNotification method - signature: SendNotification(string, int, int, bool, bool)
+                _sendNotificationMethod = AccessTools.Method(_notificationStackType, "SendNotification",
+                    new[] { typeof(string), typeof(int), typeof(int), typeof(bool), typeof(bool) });
+
+                if (_sendNotificationMethod != null)
+                {
+                    Log?.LogInfo("[Notifications] Native notification system initialized");
+                }
+                else
+                {
+                    Log?.LogDebug("[Notifications] SendNotification method not found");
+                }
+            }
+            catch (Exception ex)
+            {
+                Log?.LogDebug($"[Notifications] Error initializing: {ex.Message}");
+            }
+        }
+
+        /// <summary>
+        /// Send a native game notification for a birthday
+        /// </summary>
+        /// <param name="npcName">Name of the NPC</param>
+        /// <param name="itemId">Optional item ID to show (0 for default)</param>
+        public static void SendBirthdayNotification(string npcName, int itemId = 0)
+        {
+            if (!_staticUseNativeNotifications) return;
+
+            InitializeNotificationSystem();
+
+            if (_sendNotificationMethod == null || _notificationStackInstance == null)
+            {
+                Log?.LogDebug("[Notifications] Cannot send - system not available");
+                return;
+            }
+
+            try
+            {
+                var instance = _notificationStackInstance.GetValue(null);
+                if (instance == null)
+                {
+                    Log?.LogDebug("[Notifications] NotificationStack instance is null");
+                    return;
+                }
+
+                // Send notification: (title, itemId, amount, showInChat, playSound)
+                string message = $"It's {npcName}'s birthday today!";
+                _sendNotificationMethod.Invoke(instance, new object[] { message, itemId, 1, false, true });
+                Log?.LogInfo($"[Notifications] Sent birthday notification for {npcName}");
+            }
+            catch (Exception ex)
+            {
+                Log?.LogDebug($"[Notifications] Error sending notification: {ex.Message}");
+            }
+        }
+
+        /// <summary>
+        /// Send birthday notifications for all NPCs with birthdays today
+        /// </summary>
+        public static void SendAllBirthdayNotifications()
+        {
+            if (!_staticUseNativeNotifications) return;
+            if (_staticManager == null || !_staticManager.HasBirthdays) return;
+
+            foreach (var birthday in _staticManager.TodaysBirthdays)
+            {
+                if (!birthday.HasBeenGifted)
+                {
+                    SendBirthdayNotification(birthday.NPCName);
+                }
+            }
+        }
 
         /// <summary>
         /// Get singleton instance using reflection

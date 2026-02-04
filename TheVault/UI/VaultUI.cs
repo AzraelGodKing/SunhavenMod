@@ -61,6 +61,20 @@ namespace TheVault.UI
         private readonly Color _textColor = new Color(0.9f, 0.9f, 0.95f);
         private readonly Color _textDimColor = new Color(0.6f, 0.6f, 0.7f);
 
+        // Cached styles and textures for DrawCurrencyRow (to avoid GC allocations every frame)
+        private GUIStyle _subtitleStyle;
+        private GUIStyle _emptyStyle;
+        private GUIStyle _toggleOnStyle;
+        private GUIStyle _toggleOffStyle;
+        private GUIStyle _iconFallbackStyle;
+        private GUIStyle _hintStyle;
+        private GUIStyle _selectedNameStyle;
+        private GUIStyle _amountLabelStyle;
+        private Texture2D _toggleOnBg;
+        private Texture2D _toggleOnHover;
+        private Texture2D _toggleOffBg;
+        private Texture2D _toggleOffHover;
+
         // Window dimensions
         private const float WINDOW_WIDTH = 460f;
         private const float WINDOW_HEIGHT = 480f;
@@ -367,6 +381,75 @@ namespace TheVault.UI
                 normal = { textColor = _textColor }
             };
 
+            // Cached styles for DrawWindow subtitle
+            _subtitleStyle = new GUIStyle(_labelStyle)
+            {
+                alignment = TextAnchor.MiddleCenter,
+                fontSize = 11
+            };
+            _subtitleStyle.normal.textColor = _textDimColor;
+
+            // Cached style for empty category message
+            _emptyStyle = new GUIStyle(_labelStyle)
+            {
+                alignment = TextAnchor.MiddleCenter
+            };
+            _emptyStyle.normal.textColor = _textDimColor;
+
+            // Cached toggle button textures (created once, not every frame)
+            _toggleOnBg = MakeTex(1, 1, new Color(0.2f, 0.5f, 0.2f, 0.9f));
+            _toggleOnHover = MakeTex(1, 1, new Color(0.25f, 0.6f, 0.25f, 1f));
+            _toggleOffBg = MakeTex(1, 1, new Color(0.3f, 0.3f, 0.35f, 0.9f));
+            _toggleOffHover = MakeTex(1, 1, new Color(0.4f, 0.4f, 0.45f, 1f));
+
+            // Cached toggle button styles
+            _toggleOnStyle = new GUIStyle(GUI.skin.button)
+            {
+                fontSize = 9,
+                fontStyle = FontStyle.Bold,
+                padding = new RectOffset(1, 1, 1, 1),
+                normal = { background = _toggleOnBg, textColor = new Color(0.5f, 1f, 0.5f) },
+                hover = { background = _toggleOnHover, textColor = Color.white },
+                active = { background = _toggleOnHover, textColor = Color.white }
+            };
+
+            _toggleOffStyle = new GUIStyle(GUI.skin.button)
+            {
+                fontSize = 9,
+                fontStyle = FontStyle.Bold,
+                padding = new RectOffset(1, 1, 1, 1),
+                normal = { background = _toggleOffBg, textColor = new Color(0.6f, 0.6f, 0.6f) },
+                hover = { background = _toggleOffHover, textColor = Color.white },
+                active = { background = _toggleOffHover, textColor = Color.white }
+            };
+
+            // Cached icon fallback style
+            _iconFallbackStyle = new GUIStyle(_labelStyle)
+            {
+                fontSize = 10,
+                alignment = TextAnchor.MiddleCenter
+            };
+            _iconFallbackStyle.normal.textColor = _accentColor;
+
+            // Cached hint style for controls
+            _hintStyle = new GUIStyle(_labelStyle)
+            {
+                alignment = TextAnchor.MiddleCenter,
+                fontStyle = FontStyle.Italic
+            };
+            _hintStyle.normal.textColor = _textDimColor;
+
+            // Cached selected name style
+            _selectedNameStyle = new GUIStyle(_labelStyle)
+            {
+                fontStyle = FontStyle.Bold
+            };
+            _selectedNameStyle.normal.textColor = _accentColor;
+
+            // Cached amount label style
+            _amountLabelStyle = new GUIStyle(_labelStyle);
+            _amountLabelStyle.normal.textColor = _textDimColor;
+
             _stylesInitialized = true;
         }
 
@@ -401,10 +484,8 @@ namespace TheVault.UI
             GUILayout.FlexibleSpace();
             GUILayout.EndHorizontal();
 
-            // Subtitle
-            var subtitleStyle = new GUIStyle(_labelStyle) { alignment = TextAnchor.MiddleCenter, fontSize = 11 };
-            subtitleStyle.normal.textColor = _textDimColor;
-            GUILayout.Label("Currency Storage System", subtitleStyle);
+            // Subtitle (using cached style)
+            GUILayout.Label("Currency Storage System", _subtitleStyle);
             GUILayout.Space(12);
 
             // Category tabs with better spacing
@@ -513,9 +594,7 @@ namespace TheVault.UI
             if (currencies.Count == 0)
             {
                 GUILayout.Space(20);
-                var emptyStyle = new GUIStyle(_labelStyle) { alignment = TextAnchor.MiddleCenter };
-                emptyStyle.normal.textColor = _textDimColor;
-                GUILayout.Label("No items in this category", emptyStyle);
+                GUILayout.Label("No items in this category", _emptyStyle);
                 return;
             }
 
@@ -602,24 +681,9 @@ namespace TheVault.UI
             float yCenter = rowRect.y + (rowRect.height - 26) / 2;
             float xPos = rowRect.x + 8;
 
-            // Auto-deposit toggle button (leftmost) - styled to fit the UI
+            // Auto-deposit toggle button (leftmost) - using cached styles
             float toggleBtnY = rowRect.y + (rowRect.height - 20) / 2;
-            var toggleBg = new Texture2D(1, 1);
-            toggleBg.SetPixel(0, 0, autoDepositEnabled ? new Color(0.2f, 0.5f, 0.2f, 0.9f) : new Color(0.3f, 0.3f, 0.35f, 0.9f));
-            toggleBg.Apply();
-            var toggleHover = new Texture2D(1, 1);
-            toggleHover.SetPixel(0, 0, autoDepositEnabled ? new Color(0.25f, 0.6f, 0.25f, 1f) : new Color(0.4f, 0.4f, 0.45f, 1f));
-            toggleHover.Apply();
-
-            var toggleStyle = new GUIStyle(GUI.skin.button)
-            {
-                fontSize = 9,
-                fontStyle = FontStyle.Bold,
-                padding = new RectOffset(1, 1, 1, 1),
-                normal = { background = toggleBg, textColor = autoDepositEnabled ? new Color(0.5f, 1f, 0.5f) : new Color(0.6f, 0.6f, 0.6f) },
-                hover = { background = toggleHover, textColor = Color.white },
-                active = { background = toggleHover, textColor = Color.white }
-            };
+            var toggleStyle = autoDepositEnabled ? _toggleOnStyle : _toggleOffStyle;
 
             var toggleRect = new Rect(xPos, toggleBtnY, 20, 20);
             string toggleText = autoDepositEnabled ? "ON" : "--";
@@ -641,11 +705,9 @@ namespace TheVault.UI
             }
             else
             {
-                // Fallback to text icon while loading or if icon unavailable
+                // Fallback to text icon while loading or if icon unavailable (using cached style)
                 string icon = GetCurrencyIcon(currencyId);
-                var iconStyle = new GUIStyle(_labelStyle) { fontSize = 10, alignment = TextAnchor.MiddleCenter };
-                iconStyle.normal.textColor = _accentColor;
-                GUI.Label(new Rect(xPos, yCenter, ICON_SIZE, 26), icon, iconStyle);
+                GUI.Label(new Rect(xPos, yCenter, ICON_SIZE, 26), icon, _iconFallbackStyle);
             }
             xPos += 32;
 
@@ -843,13 +905,7 @@ namespace TheVault.UI
         {
             if (string.IsNullOrEmpty(_selectedCurrencyId))
             {
-                var hintStyle = new GUIStyle(_labelStyle)
-                {
-                    alignment = TextAnchor.MiddleCenter,
-                    fontStyle = FontStyle.Italic
-                };
-                hintStyle.normal.textColor = _textDimColor;
-                GUILayout.Label("Click a row to select, or use quick withdraw buttons", hintStyle);
+                GUILayout.Label("Click a row to select, or use quick withdraw buttons", _hintStyle);
                 return;
             }
 
@@ -857,16 +913,12 @@ namespace TheVault.UI
             GUILayout.BeginHorizontal();
             GUILayout.FlexibleSpace();
 
-            // Selection indicator
-            var selectedStyle = new GUIStyle(_labelStyle) { fontStyle = FontStyle.Bold };
-            selectedStyle.normal.textColor = _accentColor;
-            GUILayout.Label($"\u25b6 {GetDisplayName(_selectedCurrencyId)}", selectedStyle);
+            // Selection indicator (using cached style)
+            GUILayout.Label($"\u25b6 {GetDisplayName(_selectedCurrencyId)}", _selectedNameStyle);
 
             GUILayout.Space(15);
 
-            var amountLabelStyle = new GUIStyle(_labelStyle);
-            amountLabelStyle.normal.textColor = _textDimColor;
-            GUILayout.Label("Qty:", amountLabelStyle, GUILayout.Width(30));
+            GUILayout.Label("Qty:", _amountLabelStyle, GUILayout.Width(30));
             _depositAmount = GUILayout.TextField(_depositAmount, 6, _textFieldStyle, GUILayout.Width(55));
 
             GUILayout.Space(8);

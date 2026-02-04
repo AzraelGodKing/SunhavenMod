@@ -181,6 +181,11 @@ h1 {
     color: #fff;
 }
 
+.mod-cta-button.devtools-btn {
+    background: linear-gradient(135deg, #3fb950, #238636);
+    color: #fff;
+}
+
 /* Quick install */
 .quick-install {
     max-width: 760px;

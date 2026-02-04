@@ -189,7 +189,7 @@ namespace HavensBirthright.Patches
                 1 => Race.Elf,
                 2 => Race.Amari,
                 3 => Race.Naga,
-                4 => Race.Elemental,  // TODO: Detect Fire/Water variant if possible
+                4 => Race.Elemental,  // Note: Fire/Water variant detected via StyleData in DetectAndSetRace()
                 5 => Race.Angel,
                 6 => Race.Demon,
                 _ => Race.Human
@@ -268,6 +268,22 @@ namespace HavensBirthright.Patches
                 StatType.BonusExperience => BonusType.ExperienceGain,
                 StatType.BonusFarmingEXP => BonusType.ExperienceGain,
                 StatType.BonusWoodcuttingEXP => BonusType.ExperienceGain,
+
+                // Luck and Dodge stats (Angel, Amari Cat, Amari Bird)
+                StatType.Luck => BonusType.LuckBonus,
+                StatType.DodgeChance => BonusType.DodgeChance,
+
+                // Fishing luck (Water Elemental, Amari Aquatic, Naga)
+                StatType.FishingLuck => BonusType.FishingLuck,
+
+                // Advanced stats (new mappings)
+                StatType.FishingMinigameSpeed => BonusType.FishingMinigameSpeed,
+                StatType.BonusTreeDamage => BonusType.WoodcuttingDamage,
+                StatType.MiningDamage => BonusType.MiningDamage,
+                StatType.SpellAttackSpeed => BonusType.SpellAttackSpeed,
+                StatType.FreeAirSkipChance => BonusType.AirSkipChance,
+                StatType.CommunityTokenPerDay => BonusType.CommunityTokenGain,
+                StatType.TripleGoldChance => BonusType.TripleGoldChance,
 
                 _ => null
             };
@@ -351,14 +367,13 @@ namespace HavensBirthright.Patches
             }
         }
 
-        // TODO: Add RelationshipGain patch once correct NPC class is identified
-        // Human and Amari Dog have RelationshipGain bonus that needs patching
-
-        // TODO: Add ShopDiscount patch once correct Shop class is identified
-        // Human has ShopDiscount bonus that needs patching
-
-        // TODO: Add FishingLuck patch - Water Elemental, Amari Aquatic, Naga
-        // TODO: Add LuckBonus patch - Angel, Amari Cat, Amari Bird
-        // TODO: Add CropQuality patch - Elf
+        // Note: RelationshipGain patch is implemented in EconomyPatches.ModifyRelationshipGain
+        //       (patched to NPCAI.AddFriendship in Plugin.cs)
+        // Note: ShopDiscount patch is implemented in EconomyPatches.ModifyBuyPrice
+        //       (patched to ShopMenu.BuyItem in Plugin.cs)
+        // Note: FishingLuck is handled via StatType.FishingLuck mapping above
+        // Note: LuckBonus is handled via StatType.Luck mapping above
+        // Note: DodgeChance is handled via StatType.DodgeChance mapping above
+        // Note: CropQuality is handled in FarmingPatches.ModifyFarmingLevel
     }
 }
