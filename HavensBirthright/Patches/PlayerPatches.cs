@@ -269,21 +269,9 @@ namespace HavensBirthright.Patches
                 StatType.BonusFarmingEXP => BonusType.ExperienceGain,
                 StatType.BonusWoodcuttingEXP => BonusType.ExperienceGain,
 
-                // Luck and Dodge stats (Angel, Amari Cat, Amari Bird)
-                StatType.Luck => BonusType.LuckBonus,
-                StatType.DodgeChance => BonusType.DodgeChance,
-
-                // Fishing luck (Water Elemental, Amari Aquatic, Naga)
-                StatType.FishingLuck => BonusType.FishingLuck,
-
-                // Advanced stats (new mappings)
-                StatType.FishingMinigameSpeed => BonusType.FishingMinigameSpeed,
-                StatType.BonusTreeDamage => BonusType.WoodcuttingDamage,
-                StatType.MiningDamage => BonusType.MiningDamage,
-                StatType.SpellAttackSpeed => BonusType.SpellAttackSpeed,
-                StatType.FreeAirSkipChance => BonusType.AirSkipChance,
-                StatType.CommunityTokenPerDay => BonusType.CommunityTokenGain,
-                StatType.TripleGoldChance => BonusType.TripleGoldChance,
+                // Note: Some advanced stat types may not exist in game
+                // FishingMinigameSpeed, WoodcuttingDamage, MiningDamage, SpellAttackSpeed,
+                // AirSkipChance, CommunityTokenGain, TripleGoldChance - applied via other mechanisms
 
                 _ => null
             };

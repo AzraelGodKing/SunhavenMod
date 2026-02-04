@@ -69,6 +69,16 @@
       <HintPath>$(ManagedPath)\SunHaven.Core.dll</HintPath>
       <Private>false</Private>
     </Reference>
+    <Reference Include="UnityEngine.UnityWebRequestModule">
+      <HintPath>$(ManagedPath)\UnityEngine.UnityWebRequestModule.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
+  </ItemGroup>
+
+  <!-- Shared Utilities (linked files) -->
+  <ItemGroup>
+    <Compile Include="..\SharedUtilities\VersionChecker.cs" Link="Shared\VersionChecker.cs" />
+    <Compile Include="..\SharedUtilities\ReflectionHelper.cs" Link="Shared\ReflectionHelper.cs" />
   </ItemGroup>
 
   <!-- Copy to BepInEx plugins folder after build -->
