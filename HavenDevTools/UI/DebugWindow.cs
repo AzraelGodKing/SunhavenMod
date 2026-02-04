@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using HavenDevTools.Config;
 using HavenDevTools.Services;
+using SunhavenMods.Shared;
 using UnityEngine;
 using Wish;
 
@@ -48,6 +49,22 @@ namespace HavenDevTools.UI
         // Race state
         private int _selectedRaceIndex;
         private Vector2 _raceScrollPosition;
+
+        // Version checking state
+        private static Dictionary<string, VersionChecker.VersionCheckResult> _versionResults = new Dictionary<string, VersionChecker.VersionCheckResult>();
+        private static bool _isCheckingVersions;
+        private Vector2 _versionScrollPosition;
+
+        // Known mod GUIDs and versions
+        private static readonly (string guid, string name, string version)[] _knownMods = new[]
+        {
+            ("com.azraelgodking.havendevtools", "Haven Dev Tools", "1.0.1"),
+            ("com.azraelgodking.squirrelsbirthdayreminder", "Birthday Reminder", "1.0.2"),
+            ("com.azraelgodking.havensbirthright", "Haven's Birthright", "1.0.2"),
+            ("com.azraelgodking.sunhavenmuseumutilitytracker", "S.M.U.T.", "2.0.1"),
+            ("com.azraelgodking.sunhaventodo", "Sunhaven Todo", "1.0.0"),
+            ("com.azraelgodking.thevault", "The Vault", "2.0.3"),
+        };
 
         private const string PAUSE_ID = "HavenDevTools_Debug";
 
@@ -587,6 +604,11 @@ namespace HavenDevTools.UI
             GUILayout.Label("Utility", _sectionHeaderStyle);
             GUILayout.Space(5);
 
+            // Version Checker Section
+            DrawVersionCheckerSection();
+
+            GUILayout.Space(10);
+
             // Item cache
             var itemInspector = Plugin.GetItemInspector();
             GUILayout.Label($"Item Cache: {itemInspector?.CacheCount ?? 0} items ({(itemInspector?.IsCacheBuilt == true ? "built" : "not built")})", _labelStyle);
@@ -626,6 +648,97 @@ namespace HavenDevTools.UI
             }
 
             GUILayout.EndVertical();
+        }
+
+        private void DrawVersionCheckerSection()
+        {
+            GUILayout.Label("Version Checker:", _sectionHeaderStyle);
+            GUILayout.Space(3);
+
+            // Check all button
+            GUI.enabled = !_isCheckingVersions;
+            if (GUILayout.Button(_isCheckingVersions ? "Checking..." : "Check All Mod Versions", _buttonStyle))
+            {
+                CheckAllModVersions();
+            }
+            GUI.enabled = true;
+
+            GUILayout.Space(5);
+
+            // Results display
+            _versionScrollPosition = GUILayout.BeginScrollView(_versionScrollPosition, GUILayout.Height(140));
+
+            foreach (var mod in _knownMods)
+            {
+                GUILayout.BeginHorizontal();
+
+                // Mod name and current version
+                GUILayout.Label($"{mod.name} v{mod.version}", _labelStyle, GUILayout.Width(200));
+
+                // Status
+                if (_versionResults.TryGetValue(mod.guid, out var result))
+                {
+                    if (!result.Success)
+                    {
+                        // Error state
+                        var errorStyle = new GUIStyle(_labelStyle) { normal = { textColor = new Color(1f, 0.5f, 0.5f) } };
+                        GUILayout.Label($"Error: {result.ErrorMessage}", errorStyle);
+                    }
+                    else if (result.UpdateAvailable)
+                    {
+                        // Update available
+                        var updateStyle = new GUIStyle(_labelStyle) { normal = { textColor = new Color(1f, 0.9f, 0.3f) } };
+                        GUILayout.Label($"Update: v{result.LatestVersion}", updateStyle);
+                    }
+                    else
+                    {
+                        // Up to date
+                        var okStyle = new GUIStyle(_labelStyle) { normal = { textColor = new Color(0.5f, 1f, 0.5f) } };
+                        GUILayout.Label("Up to date", okStyle);
+                    }
+                }
+                else
+                {
+                    GUILayout.Label("Not checked", _labelStyle);
+                }
+
+                GUILayout.EndHorizontal();
+            }
+
+            GUILayout.EndScrollView();
+        }
+
+        private void CheckAllModVersions()
+        {
+            _isCheckingVersions = true;
+            _versionResults.Clear();
+            int pendingChecks = _knownMods.Length;
+
+            foreach (var mod in _knownMods)
+            {
+                VersionChecker.CheckForUpdate(mod.guid, mod.version, Plugin.Log, result =>
+                {
+                    _versionResults[mod.guid] = result;
+                    pendingChecks--;
+                    if (pendingChecks <= 0)
+                    {
+                        _isCheckingVersions = false;
+                    }
+
+                    // Log result
+                    if (result.Success)
+                    {
+                        if (result.UpdateAvailable)
+                            Plugin.Log?.LogInfo($"[VersionChecker] {mod.name}: Update available v{result.LatestVersion}");
+                        else
+                            Plugin.Log?.LogInfo($"[VersionChecker] {mod.name}: Up to date (v{mod.version})");
+                    }
+                    else
+                    {
+                        Plugin.Log?.LogWarning($"[VersionChecker] {mod.name}: {result.ErrorMessage}");
+                    }
+                });
+            }
         }
 
         private void LogPlayerStats()

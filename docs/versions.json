@@ -30,7 +30,7 @@
     "changelog": "Bug fixes and improvements"
   },
   "com.azraelgodking.havendevtools": {
-    "version": "1.0.0",
+    "version": "1.0.1",
     "name": "HavenDevTools",
     "nexus": null,
     "changelog": "Initial release"
