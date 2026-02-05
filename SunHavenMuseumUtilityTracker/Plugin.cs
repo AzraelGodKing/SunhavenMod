@@ -294,9 +294,6 @@ namespace SunHavenMuseumUtilityTracker
         {
             Logger.LogWarning("[CRITICAL] Plugin OnDestroy called!");
             _saveSystem?.ForceSave();
-            // NOTE: Do NOT call _harmony?.UnpatchSelf() here!
-            // Patches must survive plugin destruction so OnPlayerInitialized
-            // can trigger EnsureUIComponentsExist() on character reload.
         }
 
         #region Public API
@@ -384,6 +381,6 @@ namespace SunHavenMuseumUtilityTracker
     {
         public const string PLUGIN_GUID = "com.azraelgodking.sunhavenmuseumutilitytracker";
         public const string PLUGIN_NAME = "Sun Haven Museum Utility Tracker";
-        public const string PLUGIN_VERSION = "2.0.1";
+        public const string PLUGIN_VERSION = "2.1.0";
     }
 }

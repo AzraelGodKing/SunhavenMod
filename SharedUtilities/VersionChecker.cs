@@ -16,7 +16,6 @@ namespace SunhavenMods.Shared
         // UPDATE THIS URL to your GitHub Pages URL
         private const string VersionsUrl = "https://azraelgodking.github.io/SunhavenMod/versions.json";
 
-        private static bool _hasCheckedThisSession = false;
         private static ManualLogSource _logger;
 
         /// <summary>
@@ -120,11 +119,8 @@ namespace SunhavenMods.Shared
 
                     yield return www.SendWebRequest();
 
-#if UNITY_2020_1_OR_NEWER
-                    if (www.result != UnityEngine.Networking.UnityWebRequest.Result.Success)
-#else
-                    if (www.isNetworkError || www.isHttpError)
-#endif
+                    if (www.result == UnityEngine.Networking.UnityWebRequest.Result.ConnectionError ||
+                        www.result == UnityEngine.Networking.UnityWebRequest.Result.ProtocolError)
                     {
                         result.Success = false;
                         result.ErrorMessage = $"Network error: {www.error}";
