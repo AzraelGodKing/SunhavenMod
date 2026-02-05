@@ -655,6 +655,8 @@ namespace HavenDevTools.UI
             GUILayout.Label("Version Checker:", _sectionHeaderStyle);
             GUILayout.Space(3);
 
+            GUILayout.BeginHorizontal();
+
             // Check all button
             GUI.enabled = !_isCheckingVersions;
             if (GUILayout.Button(_isCheckingVersions ? "Checking..." : "Check All Mod Versions", _buttonStyle))
@@ -662,6 +664,14 @@ namespace HavenDevTools.UI
                 CheckAllModVersions();
             }
             GUI.enabled = true;
+
+            // Test notification button
+            if (GUILayout.Button("Test Notification", _buttonStyle, GUILayout.Width(120)))
+            {
+                TestUpdateNotification();
+            }
+
+            GUILayout.EndHorizontal();
 
             GUILayout.Space(5);
 
@@ -739,6 +749,23 @@ namespace HavenDevTools.UI
                     }
                 });
             }
+        }
+
+        private void TestUpdateNotification()
+        {
+            // Create a fake result to test the notification system
+            var fakeResult = new VersionChecker.VersionCheckResult
+            {
+                Success = true,
+                UpdateAvailable = true,
+                CurrentVersion = "1.0.0",
+                LatestVersion = "9.9.9",
+                ModName = "Test Mod (HavenDevTools)",
+                NexusUrl = "https://www.nexusmods.com/sunhaven"
+            };
+
+            Plugin.Log?.LogInfo("[VersionChecker] Testing notification system...");
+            fakeResult.NotifyUpdateAvailable(Plugin.Log);
         }
 
         private void LogPlayerStats()
