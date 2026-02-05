@@ -47,7 +47,9 @@ namespace SunHavenMuseumUtilityTracker.UI
         private Dictionary<string, int> _cachedGameDonationCounts = new Dictionary<string, int>();
         private Dictionary<string, bool> _cachedGameCompleteStatus = new Dictionary<string, bool>();
         private Coroutine _cacheRefreshCoroutine;
+#pragma warning disable CS0414 // Field is assigned but never used
         private bool _isCacheRefreshing = false;
+#pragma warning restore CS0414
 
         // Styles
         private bool _stylesInitialized;

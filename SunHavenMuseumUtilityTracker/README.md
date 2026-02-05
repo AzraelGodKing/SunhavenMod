@@ -5,22 +5,17 @@ A Sun Haven mod that helps you track which items you've donated to the museum an
 ## Features
 
 ### Core Features
-- **Real-Time Auto-Tracking**: Items are automatically tracked when you donate them to museum bundles in-game
-- **Sync with Game**: Click "Sync with Game" to import all completed bundles from your save file
-- **Game Progress Display**: Bundle headers show both your tracked progress and the game's recorded donation count `[Game: X]`
+- **Manual Donation Tracking**: Mark items as donated or needed across all museum sections
 - **Per-Character Saves**: Each character has their own separate donation tracking
 - **Progress Statistics**: See completion percentages for sections, bundles, and overall
 - **Item Icons**: Displays game item icons for easy identification
 - **Search & Filter**: Search for specific items or filter to show only needed items
 
-### Smart Tracking
+### Important Note on Tracking
 
-S.M.U.T. now features intelligent tracking that works with the game:
+**This mod uses manual tracking only.** Sun Haven's game code only tracks bundle completion (e.g., "Golden Bundle complete"), not individual item donations. Because the game doesn't store which specific items you've donated within incomplete bundles, automatic tracking of individual items is not possible.
 
-1. **Real-Time Tracking**: When you donate items to museum bundles, they're automatically marked in your tracker
-2. **Sync Button**: Import all completed bundles from the game's save data with one click
-3. **Dual Progress Display**: See both `(tracked/total)` and `[Game: X]` to compare your tracker with the game's records
-4. **Manual Override**: You can still manually check/uncheck items if needed
+Use the tracker UI to manually check off items as you donate them. Your progress is saved automatically per character.
 
 ### Museum Sections
 
@@ -55,11 +50,9 @@ S.M.U.T. now features intelligent tracking that works with the game:
 | Action | Key |
 |--------|-----|
 | Open/Close Tracker | `Ctrl+C` |
-| Open/Close Tracker (Alt) | `F7` (great for Steam Deck) |
 | Close Tracker | `Escape` |
 | Toggle Item Donated | Click checkbox |
 | Expand/Collapse Bundle | Click bundle header |
-| Sync with Game | Click "Sync with Game" button |
 
 ## Installation
 
@@ -77,11 +70,10 @@ After first launch, edit the config file at:
 |---------|---------|-------------|
 | ToggleKey | C | Key to open/close tracker UI |
 | RequireCtrl | true | Require Ctrl key with toggle key |
-| AltToggleKey | F7 | Alternative toggle key (no modifier required) |
 
 ## UI Features
 
-- **Warm Parchment Theme**: Sun Haven-inspired visual design
+- **Beautiful Dark Theme**: Sun Haven-inspired visual design
 - **Section Tabs**: Switch between Hall of Gems, Hall of Culture, and Aquarium
 - **Color-Coded Sections**: Each museum section has its own accent color
 - **Bundle Expansion**: Click bundles to show/hide their items
@@ -89,8 +81,7 @@ After first launch, edit the config file at:
 - **Filter Toggle**: Show only needed items to focus on what's missing
 - **Progress Bars**: Visual progress for current section with percentage
 - **Rarity Colors**: Items are color-coded by rarity
-- **Game Progress**: Shows `[Game: X]` alongside your tracked counts
-- **Sync Button**: One-click sync with game's completed bundles
+- **Status Icons**: "DONATED" for completed, "X" for needed
 
 ## Item Rarity Colors
 
@@ -107,24 +98,16 @@ After first launch, edit the config file at:
 Donation data is saved per-character at:
 `Sun Haven/BepInEx/config/SunHavenMuseumUtilityTracker/Saves/[CharacterName]_donations.json`
 
-## Debug Mode
+## Debug Mode (Authorized Users Only)
 
-Press **F10** to access debug tools. This includes:
-- Discover game progress key patterns
-- View detailed logging
-- Force sync operations
+Press **F10** to access debug tools if you're an authorized user. This includes:
+- Sync with game progress (marks all items in COMPLETED bundles)
+- View game progress data
+- Diagnostic tools
 
 ## Version History
 
-- **1.1.0** - Added real-time auto-tracking, Sync with Game button, game progress display, performance optimizations
 - **1.0.0** - Initial release with manual tracking, search, filter, and polished UI
-
-## Technical Notes
-
-- Real-time tracking works by patching `HungryMonster.SaveInventory()` to detect museum bundle donations
-- Game progress is read from `GameSave.GetProgressBoolWorld()` and `GetProgressIntWorld()` (world-level, not character-level)
-- The game only stores bundle completion status and donation counts, not which specific items were donated
-- Reflection caching ensures minimal performance impact
 
 ## License
 
@@ -132,5 +115,5 @@ Feel free to use, modify, and distribute this mod.
 
 ## Credits
 
-- Created by AzraelGodking
+- Created by Myleek
 - Built with [BepInEx](https://github.com/BepInEx/BepInEx) and [Harmony](https://github.com/pardeike/Harmony)

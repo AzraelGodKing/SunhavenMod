@@ -12,10 +12,10 @@
     "changelog": "Initial release"
   },
   "com.azraelgodking.sunhavenmuseumutilitytracker": {
-    "version": "2.0.1",
+    "version": "2.1.0",
     "name": "S.M.U.T.",
     "nexus": "https://www.nexusmods.com/sunhaven/mods/490",
-    "changelog": "Initial release"
+    "changelog": "UI updates and bug fixes"
   },
   "com.azraelgodking.sunhaventodo": {
     "version": "1.0.0",
