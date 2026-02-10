@@ -1,0 +1,49 @@
+# Haven's Birthright
+
+Unique racial bonuses and abilities for all 12 playable races in Sun Haven.
+
+## Features
+
+- **12 Unique Races** - Each race has distinct gameplay advantages
+- **Active Abilities** - Fire and Water Elementals have special triggered abilities
+- **Configurable Bonuses** - Adjust values to your preference
+- **Balanced Gameplay** - Designed to enhance without breaking the game
+
+## Races
+
+### Core Races
+- **Human** - Jack of all trades with XP and relationship bonuses
+- **Elf** - Nature's guardian with farming and foraging bonuses
+
+### Celestial Races
+- **Angel** - Divine blessed with mana and magic bonuses
+- **Demon** - Infernal warrior with melee and critical bonuses
+
+### Elemental Races
+- **Fire Elemental** - Blazing fury with combat bonuses + Infernal Forge ability
+- **Water Elemental** - Flowing tide with defense and fishing bonuses + Tidal Blessing ability
+
+### Amari Variants
+- **Amari Cat** - Feline predator with speed and attack bonuses
+- **Amari Dog** - Loyal guardian with friendship bonuses
+- **Amari Bird** - Sky dancer with movement bonuses
+- **Amari Aquatic** - Water dweller with fishing bonuses
+- **Amari Reptile** - Scaled survivor with defense bonuses
+
+### Serpent Race
+- **Naga** - Serpent kin with fishing and swimming bonuses
+
+## Installation
+
+1. Install BepInEx 5.x
+2. Place `HavensBirthright.dll` in `BepInEx/plugins/`
+3. Launch the game
+
+## Configuration
+
+Edit `BepInEx/config/com.azraelgodking.havensbirthright.cfg` to customize bonuses.
+
+## Links
+
+- [Nexus Mods](https://www.nexusmods.com/sunhaven/mods/487)
+- [Documentation](https://azraelgodking.github.io/SunhavenMod/RacialBonuses.html)
