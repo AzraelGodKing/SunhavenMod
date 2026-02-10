@@ -84,7 +84,7 @@ Periodically scans your inventory and automatically smelts raw ore into bars, co
   - Glorite: 7%
   - Elven Steel: 8%
 - Won't activate below a mana safety threshold (default 10%)
-- **Blocks all mana regeneration** while active, giving the player a reason to toggle it off
+- **Blocks all mana regeneration** while active
 
 ---
 

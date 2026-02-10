@@ -242,8 +242,9 @@ namespace HavensBirthright.Abilities
             InfernalForgeScanInterval = config.Bind(
                 "Active Abilities - Fire Elemental",
                 "ScanIntervalSeconds",
-                2f,
-                "Seconds between inventory scans for ore to smelt into bars"
+                60f,
+                "Seconds between inventory scans for ore to smelt into bars. " +
+                "Default 60s (1 minute) to simulate actual smelting time."
             );
 
             // ===================== ANGEL - DIVINE WARD =====================

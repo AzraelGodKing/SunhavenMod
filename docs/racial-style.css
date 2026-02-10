@@ -44,8 +44,82 @@ h1 {
 .subtitle {
     text-align: center;
     color: #6f5f4e;
-    margin-bottom: 32px;
+    margin-bottom: 15px;
     font-size: 1.15em;
+}
+
+/* Hero Section */
+.hero {
+    text-align: center;
+    padding: 40px 20px;
+    margin-bottom: 30px;
+    background: rgba(255, 255, 255, 0.5);
+    border-radius: 20px;
+    border: 1px solid rgba(192, 138, 43, 0.3);
+}
+
+.version-badge {
+    display: inline-block;
+    margin-top: 10px;
+    background: linear-gradient(135deg, var(--gold), #d4a03a);
+    color: #fff;
+    padding: 8px 20px;
+    border-radius: 20px;
+    font-weight: bold;
+    font-size: 1em;
+    box-shadow: 0 4px 15px rgba(192, 138, 43, 0.3);
+}
+
+/* Changelog Section */
+.changelog-section {
+    max-width: 800px;
+    margin: 0 auto 40px;
+}
+
+.section-title {
+    text-align: center;
+    font-size: 1.6em;
+    margin-bottom: 20px;
+    color: var(--gold);
+}
+
+.changelog-box {
+    background: rgba(255, 255, 255, 0.7);
+    border: 1px solid rgba(192, 138, 43, 0.3);
+    border-radius: 15px;
+    padding: 25px;
+}
+
+.changelog-entry {
+    display: flex;
+    gap: 15px;
+    padding: 15px 0;
+    border-bottom: 1px solid rgba(42, 32, 22, 0.1);
+}
+
+.changelog-entry:last-child {
+    border-bottom: none;
+    padding-bottom: 0;
+}
+
+.changelog-entry:first-child {
+    padding-top: 0;
+}
+
+.changelog-icon {
+    font-size: 1.8em;
+    flex-shrink: 0;
+}
+
+.changelog-content h4 {
+    color: var(--gold);
+    margin-bottom: 6px;
+    font-size: 1.1em;
+}
+
+.changelog-content p {
+    color: #6f5f4e;
+    line-height: 1.6;
 }
 
 /* Navigation */
@@ -211,6 +285,105 @@ h1 {
     font-weight: bold;
     white-space: nowrap;
 }
+
+/* Active Ability Section */
+.active-ability {
+    margin-top: 18px;
+    padding: 18px;
+    background: linear-gradient(135deg, rgba(192, 138, 43, 0.12), rgba(192, 138, 43, 0.05));
+    border-radius: 12px;
+    border: 2px solid rgba(192, 138, 43, 0.35);
+    position: relative;
+}
+
+.ability-header {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 10px;
+}
+
+.ability-icon {
+    font-size: 1.5em;
+}
+
+.ability-label {
+    font-size: 0.8em;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: var(--gold);
+    font-weight: bold;
+}
+
+.ability-name {
+    font-size: 1.2em;
+    font-weight: bold;
+    color: var(--ink);
+    margin-bottom: 8px;
+}
+
+.ability-desc {
+    font-size: 0.95em;
+    color: #5f4f3a;
+    line-height: 1.5;
+    margin-bottom: 10px;
+}
+
+.ability-cooldown {
+    font-size: 0.85em;
+    color: var(--gold);
+    font-weight: 600;
+    padding: 4px 10px;
+    background: rgba(192, 138, 43, 0.15);
+    border-radius: 12px;
+    display: inline-block;
+}
+
+/* Race-specific ability borders */
+.human .active-ability { border-color: rgba(192, 138, 43, 0.4); }
+.elf .active-ability { border-color: rgba(63, 143, 95, 0.4); background: linear-gradient(135deg, rgba(63, 143, 95, 0.12), rgba(63, 143, 95, 0.05)); }
+.elf .ability-label, .elf .ability-cooldown { color: #3f8f5f; }
+.elf .ability-cooldown { background: rgba(63, 143, 95, 0.15); }
+
+.angel .active-ability { border-color: rgba(201, 178, 107, 0.5); background: linear-gradient(135deg, rgba(255, 215, 0, 0.12), rgba(255, 215, 0, 0.05)); }
+.angel .ability-label, .angel .ability-cooldown { color: #b8a03c; }
+.angel .ability-cooldown { background: rgba(201, 178, 107, 0.2); }
+
+.demon .active-ability { border-color: rgba(143, 62, 47, 0.5); background: linear-gradient(135deg, rgba(143, 62, 47, 0.15), rgba(143, 62, 47, 0.05)); }
+.demon .ability-label, .demon .ability-cooldown { color: #8f3e2f; }
+.demon .ability-cooldown { background: rgba(143, 62, 47, 0.15); }
+
+.fire-elemental .active-ability { border-color: rgba(201, 106, 47, 0.5); background: linear-gradient(135deg, rgba(255, 100, 50, 0.15), rgba(255, 100, 50, 0.05)); }
+.fire-elemental .ability-label, .fire-elemental .ability-cooldown { color: #c96a2f; }
+.fire-elemental .ability-cooldown { background: rgba(201, 106, 47, 0.15); }
+
+.water-elemental .active-ability { border-color: rgba(59, 110, 143, 0.5); background: linear-gradient(135deg, rgba(59, 110, 143, 0.15), rgba(59, 110, 143, 0.05)); }
+.water-elemental .ability-label, .water-elemental .ability-cooldown { color: #3b6e8f; }
+.water-elemental .ability-cooldown { background: rgba(59, 110, 143, 0.15); }
+
+.amari-cat .active-ability { border-color: rgba(168, 106, 42, 0.5); background: linear-gradient(135deg, rgba(168, 106, 42, 0.12), rgba(168, 106, 42, 0.05)); }
+.amari-cat .ability-label, .amari-cat .ability-cooldown { color: #a86a2a; }
+.amari-cat .ability-cooldown { background: rgba(168, 106, 42, 0.15); }
+
+.amari-dog .active-ability { border-color: rgba(123, 90, 58, 0.5); background: linear-gradient(135deg, rgba(123, 90, 58, 0.12), rgba(123, 90, 58, 0.05)); }
+.amari-dog .ability-label, .amari-dog .ability-cooldown { color: #7b5a3a; }
+.amari-dog .ability-cooldown { background: rgba(123, 90, 58, 0.15); }
+
+.amari-bird .active-ability { border-color: rgba(108, 92, 154, 0.5); background: linear-gradient(135deg, rgba(108, 92, 154, 0.12), rgba(108, 92, 154, 0.05)); }
+.amari-bird .ability-label, .amari-bird .ability-cooldown { color: #6c5c9a; }
+.amari-bird .ability-cooldown { background: rgba(108, 92, 154, 0.15); }
+
+.amari-aquatic .active-ability { border-color: rgba(47, 122, 108, 0.5); background: linear-gradient(135deg, rgba(47, 122, 108, 0.12), rgba(47, 122, 108, 0.05)); }
+.amari-aquatic .ability-label, .amari-aquatic .ability-cooldown { color: #2f7a6c; }
+.amari-aquatic .ability-cooldown { background: rgba(47, 122, 108, 0.15); }
+
+.amari-reptile .active-ability { border-color: rgba(76, 122, 67, 0.5); background: linear-gradient(135deg, rgba(76, 122, 67, 0.12), rgba(76, 122, 67, 0.05)); }
+.amari-reptile .ability-label, .amari-reptile .ability-cooldown { color: #4c7a43; }
+.amari-reptile .ability-cooldown { background: rgba(76, 122, 67, 0.15); }
+
+.naga .active-ability { border-color: rgba(47, 122, 108, 0.5); background: linear-gradient(135deg, rgba(47, 122, 108, 0.12), rgba(47, 122, 108, 0.05)); }
+.naga .ability-label, .naga .ability-cooldown { color: #2f7a6c; }
+.naga .ability-cooldown { background: rgba(47, 122, 108, 0.15); }
 
 /* Race-specific accents */
 .human .race-header { border-color: var(--gold); }
