@@ -15,7 +15,7 @@
   },
   "com.azraelgodking.sunhavenmuseumutilitytracker": {
     "version": "2.1.0",
-    "name": "S.M.U.T.",
+    "name": "Sunhaven Museum Utility Tracker",
     "description": "Track museum donation progress across all three halls",
     "nexus": "https://www.nexusmods.com/sunhaven/mods/490",
     "changelog": "UI updates and bug fixes"
