@@ -1,57 +1,131 @@
 # Haven's Birthright
 
-A Sun Haven mod that adds unique racial bonuses and traits for each playable race.
+A Sun Haven mod that adds unique racial bonuses, active abilities, drawbacks, and conditional synergies for each playable race.
 
 ## Features
 
-Each race receives thematic bonuses that enhance their strengths:
+Each race receives thematic passive bonuses, and select races gain powerful active abilities that can be toggled during gameplay.
 
-### Human
+### Passive Racial Bonuses
+
+#### Human
 - **Adaptable**: +10% Experience gain
 - **Charismatic**: +15% Relationship point gain
 - **Silver Tongue**: 5% Shop discount
 
-### Elf
+#### Elf
 - **Nature's Touch**: +15% Farming speed
 - **Green Thumb**: +20% Crop quality chance
 - **Forest Walker**: +25% Foraging find chance
 - **Arcane Heritage**: +15% Mana regeneration
 
-### Angel
+#### Angel
 - **Divine Reservoir**: +20% Maximum mana
 - **Holy Light**: +15% Magic damage
 - **Blessed Recovery**: +25% Health regeneration
 - **Fortune's Favor**: +10% Luck
 
-### Demon
+#### Demon
 - **Infernal Might**: +20% Melee damage
 - **Ruthless**: +15% Critical hit chance
 - **Hellforged Vitality**: +15% Maximum health
 - **Greed**: +20% Gold drops
 
-### Fire Elemental
+#### Fire Elemental
 - **Burning Fury**: +15% Melee damage
 - **Inferno**: +20% Magic damage
 - **Wildfire**: +10% Attack speed
 - **Scorching Strike**: +15% Critical hit chance
 
-### Water Elemental
+#### Water Elemental
 - **Tidal Shield**: +20% Defense
 - **Healing Waters**: +20% Health regeneration
 - **Flowing Spirit**: +25% Mana regeneration
 - **Aquatic Kinship**: +20% Fishing luck
 
-### Amari
+#### Amari
 - **Swift Paws**: +15% Movement speed
 - **Predator's Reflexes**: +15% Attack speed
 - **Skilled Artisan**: +20% Crafting speed
 - **Forest Hunter**: +15% Woodcutting speed
 
-### Naga
+#### Naga
 - **Aquatic Nature**: +25% Fishing speed
 - **Sea's Blessing**: +20% Fishing luck
 - **Scaled Hide**: +10% Defense
 - **Tidal Magic**: +15% Mana regeneration
+
+---
+
+### Active Abilities
+
+Active abilities are powerful race-specific skills that run automatically when toggled on. Press **F9** (configurable) to toggle your race's active ability on or off during gameplay.
+
+#### Water Elemental — Tidal Blessing
+Automatically waters hoed crop tiles at the cost of HP. Stand on or next to a tilled plot and it will be watered for you.
+
+- Waters tiles within 1 tile of the player
+- Costs a configurable percentage of max HP per tile watered (default 3%)
+- Won't activate below a safety HP threshold (default 20%)
+- Cooldown between activations (default 2 seconds)
+
+#### Fire Elemental — Infernal Forge
+Periodically scans your inventory and automatically smelts raw ore into bars, consuming mana in the process.
+
+- Scans inventory every 2 seconds (configurable)
+- Requires the same ore-per-bar ratio as the game (default 3 ore = 1 bar)
+- **Tiered mana costs** scale by ore rarity:
+  - Copper: 1% max mana per bar
+  - Iron: 2%
+  - Gold: 3%
+  - Adamant: 4%
+  - Mithril: 5%
+  - Sunite: 6%
+  - Glorite: 7%
+  - Elven Steel: 8%
+- Won't activate below a mana safety threshold (default 10%)
+- **Blocks all mana regeneration** while active, giving the player a reason to toggle it off
+
+---
+
+### Drawbacks (Optional)
+
+Racial drawbacks add thematic penalties to balance racial bonuses. **Disabled by default** — enable in config.
+
+| Race | Drawback | Effect |
+|------|----------|--------|
+| Fire Elemental | Hydrophobic | -20% Fishing speed/luck |
+| Water Elemental | Fragile Form | -10% Max HP |
+| Angel | Pacifist | -10% Melee damage |
+| Demon | Distrusted | -15% Relationship gain |
+| Elf | Fragile | -10% Max HP, -5% Defense |
+| Amari Cat | Glass Cannon | -15% Max HP |
+| Amari Dog | Slow Starter | -10% Movement speed |
+| Amari Bird | Hollow Bones | -15% Max HP, -10% Defense |
+| Amari Aquatic | Land Slug | -10% Movement speed |
+| Amari Reptile | Cold Blooded | -10% Attack speed |
+| Naga | Landlocked | -10% Movement speed, -10% Farming speed |
+
+---
+
+### Conditional Synergies
+
+Bonuses that activate based on time of day, season, or HP threshold.
+
+**Time of Day:**
+- Angel — Solar Power: +10% Magic damage during daytime
+- Demon — Night Stalker: +10% Melee damage during nighttime
+
+**Season:**
+- Elf — Spring Awakening: +15% Farming bonus during Spring
+- Fire Elemental — Summer's Fury: +10% Combat bonus during Summer
+- Water Elemental — Winter's Embrace: +15% Defense/regen bonus during Winter
+
+**Health Threshold:**
+- Amari Reptile — Last Stand: +25% Defense when HP below 40%
+- Angel — Martyr's Light: 3x Health regen when HP below 20%
+
+---
 
 ## Installation
 
@@ -67,8 +141,25 @@ All bonus values are configurable! After first launch, edit the config file at:
 
 You can:
 - Enable/disable racial bonuses entirely
+- Toggle active abilities, drawbacks, and conditional synergies independently
 - Adjust individual bonus percentages for each race
-- Show/hide bonus notifications
+- Configure ability toggle keybind (default F9)
+- Set HP/mana cost percentages and safety thresholds
+- Adjust scan intervals and cooldowns
+
+## Changelog
+
+### v1.2.0 — Elemental Enhancements
+- **Tidal Blessing** (Water Elemental): Auto-water hoed tiles near the player at HP cost
+- **Infernal Forge** (Fire Elemental): Auto-smelt ore into bars with tiered mana costs
+  - Mana costs scale by ore tier (1% copper through 8% elven steel)
+  - Blocks mana regeneration while active
+- Added ability toggle hotkey (F9) for enabling/disabling active abilities in-game
+- Added drawback system (disabled by default)
+- Added conditional synergies (time-of-day, season, HP threshold)
+
+### v1.1.0
+- Initial release with passive racial bonuses for all races
 
 ## License
 

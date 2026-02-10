@@ -41,6 +41,14 @@
       <HintPath>$(ManagedPath)\UnityEngine.UI.dll</HintPath>
       <Private>false</Private>
     </Reference>
+    <Reference Include="UnityEngine.Physics2DModule">
+      <HintPath>$(ManagedPath)\UnityEngine.Physics2DModule.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
+    <Reference Include="UnityEngine.InputLegacyModule">
+      <HintPath>$(ManagedPath)\UnityEngine.InputLegacyModule.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
   </ItemGroup>
 
   <!-- Game References -->
@@ -71,6 +79,8 @@
   <ItemGroup>
     <Compile Include="..\SharedUtilities\VersionChecker.cs" Link="Shared\VersionChecker.cs" />
     <Compile Include="..\SharedUtilities\ReflectionHelper.cs" Link="Shared\ReflectionHelper.cs" />
+    <Compile Include="..\SharedUtilities\PersistentRunnerBase.cs" Link="Shared\PersistentRunnerBase.cs" />
+    <Compile Include="..\SharedUtilities\SceneHelpers.cs" Link="Shared\SceneHelpers.cs" />
   </ItemGroup>
 
   <!-- Copy to BepInEx plugins folder after build -->

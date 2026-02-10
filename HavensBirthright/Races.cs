@@ -31,18 +31,8 @@ namespace HavensBirthright
         Water
     }
 
-    /// <summary>
-    /// Amari variant types
-    /// </summary>
-    public enum AmariVariant
-    {
-        None,
-        Cat,
-        Dog,
-        Bird,
-        Aquatic,
-        Reptile
-    }
+    // AmariVariant enum removed — replaced by game's native Wish.SubRace
+    // SubRace: Default=0, Cat=1, Dog=2, Bird=3, Aquatic=4, GreenReptile=5, OrangeReptile=6
 
     /// <summary>
     /// Types of bonuses that can be applied to races
