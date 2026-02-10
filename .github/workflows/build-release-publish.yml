@@ -1,28 +1,33 @@
 # =============================================================================
-# Mod CI/CD Pipeline: Build → GitHub Release → Thunderstore Publish (Manual)
+# Mod CI/CD Pipeline: Package → GitHub Release → Thunderstore Publish (Manual)
 # =============================================================================
-# TRIGGER: Manual workflow dispatch - select which mod to build/release/publish
+# TRIGGER: Manual workflow dispatch - select which mod to release/publish
+#
+# IMPORTANT: This workflow packages PRE-BUILT DLLs. You must:
+#   1. Build your mod locally
+#   2. Copy the DLL to builds/{ModName}/{ModName}.dll
+#   3. Commit and push
+#   4. Then run this workflow
 #
 # WHAT IT DOES:
-#   1. Builds your C# mod (dotnet build)
-#   2. Packages the Thunderstore-ready zip (manifest.json, README, icon, DLL)
-#   3. Creates a GitHub Release with the zip attached (for Nexus manual upload)
-#   4. Optionally publishes to Thunderstore (manual checkbox)
+#   1. Packages the Thunderstore-ready zip (manifest.json, README, icon, DLL)
+#   2. Creates a GitHub Release with the zip attached (for Nexus manual upload)
+#   3. Optionally publishes to Thunderstore (manual checkbox)
 #
 # SETUP REQUIRED:
 #   1. Create a Thunderstore Service Account token:
 #      Thunderstore → Settings → Teams → [Your Team] → Service Accounts → Add
 #   2. Add it as a GitHub repo secret named THUNDERSTORE_TOKEN:
-#      GitHub → Repo → Settings → Secrets → New Repository Secret
+#      GitHub → Repo → Settings → Secrets → Actions → New Repository Secret
 # =============================================================================
 
-name: Build, Release & Publish
+name: Release & Publish
 
 on:
   workflow_dispatch:
     inputs:
       mod:
-        description: 'Which mod to build and release'
+        description: 'Which mod to release'
         required: true
         type: choice
         options:
@@ -46,31 +51,24 @@ on:
 env:
   THUNDERSTORE_NAMESPACE: "AzraelGodKing"
   THUNDERSTORE_COMMUNITY: "sun-haven"
-  DOTNET_VERSION: "6.0.x"
-  BUILD_CONFIG: "Release"
   THUNDERSTORE_CATEGORIES: "mods"
   THUNDERSTORE_DEPS: "BepInEx-BepInExPack@5.4.2100"
 
 jobs:
-  build-release:
+  release:
     runs-on: ubuntu-latest
     permissions:
       contents: write
 
     steps:
       # ------------------------------------------------------------------
-      # 1. CHECKOUT & SETUP
+      # 1. CHECKOUT
       # ------------------------------------------------------------------
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Setup .NET
-        uses: actions/setup-dotnet@v4
-        with:
-          dotnet-version: ${{ env.DOTNET_VERSION }}
-
       # ------------------------------------------------------------------
-      # 2. LOAD MOD CONFIG FROM MATRIX
+      # 2. LOAD MOD CONFIG
       # ------------------------------------------------------------------
       - name: Set mod configuration
         id: config
@@ -81,37 +79,37 @@ jobs:
           case "$MOD_KEY" in
             "havensbirthright")
               JSON_KEY="com.azraelgodking.havensbirthright"
-              PROJECT_PATH="HavensBirthright/HavensBirthright.csproj"
+              MOD_DIR="HavensBirthright"
               DLL_NAME="HavensBirthright"
               THUNDERSTORE_NAME="HavensBirthright"
               ;;
             "sunhavenmuseumutilitytracker")
               JSON_KEY="com.azraelgodking.sunhavenmuseumutilitytracker"
-              PROJECT_PATH="SunHavenMuseumUtilityTracker/SunHavenMuseumUtilityTracker.csproj"
+              MOD_DIR="SunHavenMuseumUtilityTracker"
               DLL_NAME="SunHavenMuseumUtilityTracker"
               THUNDERSTORE_NAME="SMUT"
               ;;
             "squirrelsbirthdayreminder")
               JSON_KEY="com.azraelgodking.squirrelsbirthdayreminder"
-              PROJECT_PATH="BirthdayReminder/BirthdayReminder.csproj"
+              MOD_DIR="BirthdayReminder"
               DLL_NAME="BirthdayReminder"
               THUNDERSTORE_NAME="SquirrelsBirthdayReminder"
               ;;
             "sunhaventodo")
               JSON_KEY="com.azraelgodking.sunhaventodo"
-              PROJECT_PATH="SunhavenTodo/SunhavenTodo.csproj"
+              MOD_DIR="SunhavenTodo"
               DLL_NAME="SunhavenTodo"
               THUNDERSTORE_NAME="SunHavenTodo"
               ;;
             "thevault")
               JSON_KEY="com.azraelgodking.thevault"
-              PROJECT_PATH="TheVault/TheVault.csproj"
+              MOD_DIR="TheVault"
               DLL_NAME="TheVault"
               THUNDERSTORE_NAME="TheVault"
               ;;
             "havendevtools")
               JSON_KEY="com.azraelgodking.havendevtools"
-              PROJECT_PATH="HavenDevTools/HavenDevTools.csproj"
+              MOD_DIR="HavenDevTools"
               DLL_NAME="HavenDevTools"
               THUNDERSTORE_NAME="HavenDevTools"
               ;;
@@ -128,7 +126,7 @@ jobs:
           CHANGELOG=$(jq -r ".[\"$JSON_KEY\"].changelog" docs/versions.json)
 
           echo "json_key=$JSON_KEY" >> "$GITHUB_OUTPUT"
-          echo "project_path=$PROJECT_PATH" >> "$GITHUB_OUTPUT"
+          echo "mod_dir=$MOD_DIR" >> "$GITHUB_OUTPUT"
           echo "dll_name=$DLL_NAME" >> "$GITHUB_OUTPUT"
           echo "thunderstore_name=$THUNDERSTORE_NAME" >> "$GITHUB_OUTPUT"
           echo "version=$VERSION" >> "$GITHUB_OUTPUT"
@@ -136,49 +134,36 @@ jobs:
           echo "description=$MOD_DESCRIPTION" >> "$GITHUB_OUTPUT"
           echo "changelog=$CHANGELOG" >> "$GITHUB_OUTPUT"
 
-          echo "📦 Building: $MOD_DISPLAY_NAME v$VERSION"
+          echo "📦 Packaging: $MOD_DISPLAY_NAME v$VERSION"
           echo "   Description: $MOD_DESCRIPTION"
-          echo "   Project: $PROJECT_PATH"
-          echo "   DLL: $DLL_NAME.dll"
+          echo "   Looking for: builds/$MOD_DIR/$DLL_NAME.dll"
 
       # ------------------------------------------------------------------
-      # 3. BUILD
-      # ------------------------------------------------------------------
-      - name: Restore dependencies
-        run: dotnet restore ${{ steps.config.outputs.project_path }}
-
-      - name: Build mod
-        run: |
-          dotnet build ${{ steps.config.outputs.project_path }} \
-            --configuration ${{ env.BUILD_CONFIG }} \
-            --no-restore \
-            -p:Version=${{ steps.config.outputs.version }}
-
-      # ------------------------------------------------------------------
-      # 4. PACKAGE — Assemble Thunderstore-compatible zip
+      # 3. PACKAGE — Assemble Thunderstore-compatible zip
       # ------------------------------------------------------------------
       - name: Package mod for distribution
         run: |
           mkdir -p dist/package
 
-          # Find and copy the built DLL
-          DLL_PATH=$(find . -name "${{ steps.config.outputs.dll_name }}.dll" -path "*bin/${{ env.BUILD_CONFIG }}*" | head -1)
-          if [ -z "$DLL_PATH" ]; then
-            echo "❌ Could not find ${{ steps.config.outputs.dll_name }}.dll"
+          # Look for pre-built DLL in builds folder
+          DLL_PATH="builds/${{ steps.config.outputs.mod_dir }}/${{ steps.config.outputs.dll_name }}.dll"
+
+          if [ ! -f "$DLL_PATH" ]; then
+            echo "❌ DLL not found at: $DLL_PATH"
+            echo ""
+            echo "Please build your mod locally and commit the DLL:"
+            echo "  1. Build in Visual Studio/Rider"
+            echo "  2. Copy DLL to: builds/${{ steps.config.outputs.mod_dir }}/"
+            echo "  3. git add builds/ && git commit -m 'Update ${{ steps.config.outputs.dll_name }} build' && git push"
+            echo "  4. Re-run this workflow"
             exit 1
           fi
+
           echo "📄 Found DLL: $DLL_PATH"
           cp "$DLL_PATH" dist/package/
 
-          # Check for mod-specific thunderstore folder, fallback to shared
-          MOD_DIR=$(dirname "${{ steps.config.outputs.project_path }}")
-          if [ -d "$MOD_DIR/thunderstore" ]; then
-            THUNDERSTORE_DIR="$MOD_DIR/thunderstore"
-          elif [ -d "thunderstore/${{ github.event.inputs.mod }}" ]; then
-            THUNDERSTORE_DIR="thunderstore/${{ github.event.inputs.mod }}"
-          else
-            THUNDERSTORE_DIR="thunderstore"
-          fi
+          # Use thunderstore folder from mod directory
+          THUNDERSTORE_DIR="${{ steps.config.outputs.mod_dir }}/thunderstore"
 
           echo "📁 Using Thunderstore assets from: $THUNDERSTORE_DIR"
 
@@ -200,6 +185,9 @@ jobs:
 
           if [ -f "$THUNDERSTORE_DIR/icon.png" ]; then
             cp "$THUNDERSTORE_DIR/icon.png" dist/package/
+          else
+            echo "❌ icon.png is required for Thunderstore!"
+            exit 1
           fi
 
           if [ -f "$THUNDERSTORE_DIR/README.md" ]; then
@@ -221,11 +209,8 @@ jobs:
           echo "✅ Package created: $ZIP_NAME"
           ls -lh "../$ZIP_NAME"
 
-          # Output zip name for later steps
-          echo "zip_name=$ZIP_NAME" >> "$GITHUB_OUTPUT"
-
       # ------------------------------------------------------------------
-      # 5. GITHUB RELEASE (Optional)
+      # 4. GITHUB RELEASE (Optional)
       # ------------------------------------------------------------------
       - name: Create GitHub Release
         if: ${{ github.event.inputs.create_github_release == 'true' }}
@@ -249,7 +234,7 @@ jobs:
           prerelease: false
 
       # ------------------------------------------------------------------
-      # 6. THUNDERSTORE PUBLISH (Manual opt-in)
+      # 5. THUNDERSTORE PUBLISH (Manual opt-in)
       # ------------------------------------------------------------------
       - name: Publish to Thunderstore
         if: ${{ github.event.inputs.publish_thunderstore == 'true' }}

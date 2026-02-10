@@ -85,10 +85,11 @@
     <Compile Include="..\SharedUtilities\ReflectionHelper.cs" Link="Shared\ReflectionHelper.cs" />
   </ItemGroup>
 
-  <!-- Copy to BepInEx plugins folder after build -->
+  <!-- Copy to BepInEx plugins folder and builds folder after build -->
   <Target Name="CopyToPlugins" AfterTargets="Build">
     <Copy SourceFiles="$(TargetPath)" DestinationFolder="$(BepInExPath)\plugins\TheVault" />
-    <Message Text="Copied $(TargetFileName) to BepInEx plugins folder" Importance="High" />
+    <Copy SourceFiles="$(TargetPath)" DestinationFolder="$(MSBuildProjectDirectory)\..\builds\TheVault" />
+    <Message Text="Copied $(TargetFileName) to BepInEx plugins and builds folder" Importance="High" />
   </Target>
 
 </Project>
