@@ -25,3 +25,8 @@ packages/
 *.dll
 *.pdb
 *.exe
+
+# Allow pre-built DLLs in builds folder for CI/CD
+!builds/
+!builds/**/
+!builds/**/*.dll
