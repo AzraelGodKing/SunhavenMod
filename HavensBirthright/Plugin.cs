@@ -1,6 +1,7 @@
 using BepInEx;
 using BepInEx.Configuration;
 using BepInEx.Logging;
+using HavensBirthright.Abilities;
 using HarmonyLib;
 using SunhavenMods.Shared;
 using System;
@@ -16,9 +17,13 @@ namespace HavensBirthright
         public static ManualLogSource Log { get; private set; }
         public static ConfigFile ConfigFile { get; private set; }
 
+        // Static config value for BirthrightRunner hotkey detection
+        internal static UnityEngine.KeyCode StaticAbilityToggleKey = UnityEngine.KeyCode.F9;
+
         private Harmony _harmony;
         private RacialBonusManager _racialBonusManager;
         private ConfigEntry<bool> _checkForUpdates;
+        private BirthrightRunner _runner;
 
         private void Awake()
         {
@@ -32,6 +37,10 @@ namespace HavensBirthright
             {
                 // Initialize configuration
                 RacialConfig.Initialize(Config);
+                AbilityConfig.Initialize(Config);
+
+                // Cache static keybind for BirthrightRunner to access
+                StaticAbilityToggleKey = AbilityConfig.ActiveAbilityToggleKey.Value;
 
                 _checkForUpdates = Config.Bind(
                     "Updates",
@@ -42,6 +51,10 @@ namespace HavensBirthright
 
                 // Initialize the racial bonus manager
                 _racialBonusManager = new RacialBonusManager();
+
+                // Create the persistent runner for ability update loop
+                _runner = PersistentRunnerBase.CreateRunner<BirthrightRunner>();
+                Log.LogInfo("BirthrightRunner created for active abilities");
 
                 // Apply Harmony patches
                 _harmony = new Harmony(PluginInfo.PLUGIN_GUID);
@@ -60,12 +73,20 @@ namespace HavensBirthright
                         typeof(Patches.PlayerPatches), "OnPlayerInitialize",
                         Type.EmptyTypes);
 
-                    // Patch GetStat for stat bonuses (combat, skills, regen)
+                    // Patch GetStat for stat bonuses (combat, skills, regen, abilities, drawbacks, synergies)
                     PatchMethod(playerType, "GetStat",
                         typeof(Patches.StatPatches), "ModifyGetStat",
                         new[] { typeof(Wish.StatType) });
 
-                    // Patch NPCAI.AddFriendship for relationship bonuses (Human, Amari Dog)
+                    // Patch ReceiveDamage for defense + combat abilities (prefix)
+                    PatchMethodPrefix(playerType, "ReceiveDamage",
+                        typeof(Patches.CombatPatches), "ModifyDamageReceived");
+
+                    // Patch ReceiveDamage for dodge detection + Divine Ward trigger (postfix)
+                    PatchMethod(playerType, "ReceiveDamage",
+                        typeof(Patches.CombatPatches), "OnDamageReceivedPostfix");
+
+                    // Patch NPCAI.AddFriendship for relationship bonuses/drawbacks
                     var npcaiType = AccessTools.TypeByName("Wish.NPCAI");
                     if (npcaiType != null)
                     {
@@ -78,7 +99,7 @@ namespace HavensBirthright
                         Log.LogWarning("Could not find NPCAI type - relationship bonuses will not work");
                     }
 
-                    // Patch ShopMenu.BuyItem for shop discounts (Human)
+                    // Patch ShopMenu.BuyItem for shop discounts
                     var shopMenuType = AccessTools.TypeByName("Wish.ShopMenu");
                     if (shopMenuType != null)
                     {
@@ -89,6 +110,14 @@ namespace HavensBirthright
                     {
                         Log.LogWarning("Could not find ShopMenu type - shop discounts will not work");
                     }
+
+                    // Patch Player.AddMana to block mana regen while Infernal Forge is active
+                    PatchMethodPrefix(playerType, "AddMana",
+                        typeof(Patches.AbilityPatches), "OnPlayerAddManaPrefix");
+
+                    // NOTE: Infernal Forge no longer uses a Harmony prefix on Inventory.AddItem.
+                    // It now uses a periodic inventory scan in BirthrightRunner.UpdateInfernalForge()
+                    // because ore is picked up 1 at a time, making per-pickup smelting impossible.
 
                     // Log results
                     var patchedMethods = _harmony.GetPatchedMethods();
@@ -113,6 +142,10 @@ namespace HavensBirthright
                 }
 
                 Log.LogInfo($"{PluginInfo.PLUGIN_NAME} loaded successfully!");
+                Log.LogInfo($"Active abilities: {(AbilityConfig.EnableActiveAbilities.Value ? "ENABLED" : "DISABLED")}");
+                Log.LogInfo($"Racial drawbacks: {(AbilityConfig.EnableRacialDrawbacks.Value ? "ENABLED" : "DISABLED")}");
+                Log.LogInfo($"Conditional synergies: {(AbilityConfig.EnableConditionalSynergies.Value ? "ENABLED" : "DISABLED")}");
+                Log.LogInfo($"Ability toggle key: {StaticAbilityToggleKey}");
             }
             catch (Exception ex)
             {
@@ -198,12 +231,28 @@ namespace HavensBirthright
         {
             return Instance?._racialBonusManager;
         }
+
+        /// <summary>
+        /// Ensures BirthrightRunner exists. Recreates it if destroyed (e.g. by UIHandler.UnloadGame).
+        /// Called from PlayerPatches.OnPlayerInitialized() on every game load.
+        /// </summary>
+        public static void EnsureRunner()
+        {
+            if (Instance == null) return;
+
+            // Check if runner is null or destroyed (destroyed Unity objects bypass C# null check)
+            if (Instance._runner == null || (Instance._runner is UnityEngine.Object obj && obj == null))
+            {
+                Instance._runner = PersistentRunnerBase.CreateRunner<BirthrightRunner>();
+                Log?.LogInfo("[Plugin] BirthrightRunner recreated after destruction");
+            }
+        }
     }
 
     public static class PluginInfo
     {
         public const string PLUGIN_GUID = "com.azraelgodking.havensbirthright";
         public const string PLUGIN_NAME = "Haven's Birthright";
-        public const string PLUGIN_VERSION = "1.0.2";
+        public const string PLUGIN_VERSION = "1.2.0";
     }
 }

@@ -1,18 +1,17 @@
+using HavensBirthright.Abilities;
 using UnityEngine;
 
 namespace HavensBirthright.Patches
 {
     /// <summary>
-    /// Patches for economy and social mechanics
-    /// Handles relationship gains and shop discounts
-    /// Note: Gold/Experience bonuses are now handled in StatPatches via GetStat
-    /// These patches are registered manually in Plugin.cs using dynamic type lookup
+    /// Patches for economy and social mechanics.
+    /// Handles relationship gains, shop discounts, and drawback penalties.
     /// </summary>
     public static class EconomyPatches
     {
         /// <summary>
-        /// Patch NPCAI.AddFriendship to modify relationship point gains
-        /// Affects: Human (RelationshipBonus), Amari Dog (RelationshipBonus)
+        /// Patch NPCAI.AddFriendship to modify relationship point gains.
+        /// Applies bonuses (Human, Amari Dog) and drawback penalties (Demon).
         /// </summary>
         public static void ModifyRelationshipGain(ref int val)
         {
@@ -24,19 +23,36 @@ namespace HavensBirthright.Patches
                 return;
 
             var manager = Plugin.GetRacialBonusManager();
-            if (manager != null && manager.HasBonus(BonusType.RelationshipGain))
+            if (manager == null)
+                return;
+
+            int originalVal = val;
+
+            // Apply racial bonus (Human, Amari Dog)
+            if (manager.HasBonus(BonusType.RelationshipGain))
             {
                 float bonus = manager.GetBonusValue(BonusType.RelationshipGain);
-                int originalVal = val;
                 val = Mathf.RoundToInt(val * (1f + bonus / 100f));
-                Plugin.Log.LogDebug($"RelationshipGain bonus applied: {originalVal} -> {val}");
             }
+
+            // Apply Demon drawback: reduced relationship gain
+            if (AbilityConfig.EnableRacialDrawbacks != null && AbilityConfig.EnableRacialDrawbacks.Value)
+            {
+                var race = manager.GetPlayerRace();
+                if (race.HasValue && race.Value == Race.Demon)
+                {
+                    float penalty = AbilityConfig.DemonDistrustedRelationshipPenalty.Value;
+                    val = Mathf.RoundToInt(val * (1f - penalty / 100f));
+                }
+            }
+
+            if (val != originalVal)
+                Plugin.Log.LogDebug($"RelationshipGain modified: {originalVal} -> {val}");
         }
 
         /// <summary>
-        /// Patch ShopMenu.BuyItem to apply shop discounts
+        /// Patch ShopMenu.BuyItem to apply shop discounts.
         /// Affects: Human (ShopDiscount)
-        /// This patches the buy price calculation
         /// </summary>
         public static void ModifyBuyPrice(ref int price)
         {
@@ -48,9 +64,7 @@ namespace HavensBirthright.Patches
             {
                 float discount = manager.GetBonusValue(BonusType.ShopDiscount);
                 int originalPrice = price;
-                // Apply discount (reduce price)
                 price = Mathf.RoundToInt(price * (1f - discount / 100f));
-                // Ensure price doesn't go below 1
                 if (price < 1) price = 1;
                 Plugin.Log.LogDebug($"ShopDiscount applied: {originalPrice} -> {price}");
             }

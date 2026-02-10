@@ -16,7 +16,8 @@ namespace SunhavenMods.Shared
         /// </summary>
         public static readonly BindingFlags AllBindingFlags =
             BindingFlags.Public | BindingFlags.NonPublic |
-            BindingFlags.Instance | BindingFlags.Static;
+            BindingFlags.Instance | BindingFlags.Static |
+            BindingFlags.FlattenHierarchy;
 
         /// <summary>
         /// Finds a type by name, searching across all loaded assemblies if needed.

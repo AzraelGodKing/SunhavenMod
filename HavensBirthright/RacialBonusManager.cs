@@ -3,12 +3,14 @@ using System.Collections.Generic;
 namespace HavensBirthright
 {
     /// <summary>
-    /// Manages racial bonuses for all races in Sun Haven
+    /// Manages racial bonuses for all races in Sun Haven.
+    /// Caches the detected race and SubRace so detection only runs once per save load.
     /// </summary>
     public class RacialBonusManager
     {
         private Dictionary<Race, List<RacialBonus>> _racialBonuses;
         private Race? _currentPlayerRace;
+        private int _cachedGameSubRace = -1; // Wish.SubRace as int, -1 = unknown
 
         public RacialBonusManager()
         {
@@ -257,6 +259,20 @@ namespace HavensBirthright
         }
 
         /// <summary>
+        /// Set the player's race with SubRace caching.
+        /// Called by PlayerPatches.DetectAndSetRace() after two-tier detection.
+        /// The SubRace value is cached so it never needs to be re-detected.
+        /// </summary>
+        /// <param name="race">The resolved mod Race (e.g. AmariCat, FireElemental, Naga)</param>
+        /// <param name="gameSubRace">The raw Wish.SubRace value as int, or -1 if unknown</param>
+        public void SetPlayerRace(Race race, int gameSubRace)
+        {
+            _currentPlayerRace = race;
+            _cachedGameSubRace = gameSubRace;
+            Plugin.Log.LogInfo($"Player race set to: {race} (cached SubRace: {gameSubRace})");
+        }
+
+        /// <summary>
         /// Helper to determine if player is any type of Elemental
         /// </summary>
         public bool IsElemental()
@@ -264,6 +280,47 @@ namespace HavensBirthright
             return _currentPlayerRace == Race.Elemental ||
                    _currentPlayerRace == Race.FireElemental ||
                    _currentPlayerRace == Race.WaterElemental;
+        }
+
+        /// <summary>
+        /// Helper to determine if player is any type of Amari
+        /// </summary>
+        public bool IsAmari()
+        {
+            return _currentPlayerRace == Race.Amari ||
+                   _currentPlayerRace == Race.AmariCat ||
+                   _currentPlayerRace == Race.AmariDog ||
+                   _currentPlayerRace == Race.AmariBird ||
+                   _currentPlayerRace == Race.AmariAquatic ||
+                   _currentPlayerRace == Race.AmariReptile;
+        }
+
+        /// <summary>
+        /// Helper to determine if player is Naga
+        /// </summary>
+        public bool IsNaga()
+        {
+            return _currentPlayerRace == Race.Naga;
+        }
+
+        /// <summary>
+        /// Gets the cached game SubRace value (Wish.SubRace as int).
+        /// Returns -1 if unknown or not yet detected.
+        /// </summary>
+        public int GetCachedSubRace()
+        {
+            return _cachedGameSubRace;
+        }
+
+        /// <summary>
+        /// Clears the cached player race and SubRace.
+        /// Called on menu transition so race detection re-runs when a new save is loaded.
+        /// </summary>
+        public void ClearPlayerRace()
+        {
+            _currentPlayerRace = null;
+            _cachedGameSubRace = -1;
+            Plugin.Log.LogDebug("[RacialBonusManager] Player race cleared");
         }
 
         /// <summary>
