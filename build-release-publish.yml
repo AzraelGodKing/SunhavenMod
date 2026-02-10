@@ -1,0 +1,268 @@
+# =============================================================================
+# Mod CI/CD Pipeline: Build → GitHub Release → Thunderstore Publish (Manual)
+# =============================================================================
+# TRIGGER: Manual workflow dispatch - select which mod to build/release/publish
+#
+# WHAT IT DOES:
+#   1. Builds your C# mod (dotnet build)
+#   2. Packages the Thunderstore-ready zip (manifest.json, README, icon, DLL)
+#   3. Creates a GitHub Release with the zip attached (for Nexus manual upload)
+#   4. Optionally publishes to Thunderstore (manual checkbox)
+#
+# SETUP REQUIRED:
+#   1. Create a Thunderstore Service Account token:
+#      Thunderstore → Settings → Teams → [Your Team] → Service Accounts → Add
+#   2. Add it as a GitHub repo secret named THUNDERSTORE_TOKEN:
+#      GitHub → Repo → Settings → Secrets → New Repository Secret
+# =============================================================================
+
+name: Build, Release & Publish
+
+on:
+  workflow_dispatch:
+    inputs:
+      mod:
+        description: 'Which mod to build and release'
+        required: true
+        type: choice
+        options:
+          - havensbirthright
+          - sunhavenmuseumutilitytracker
+          - squirrelsbirthdayreminder
+          - sunhaventodo
+          - thevault
+          - havendevtools
+      publish_thunderstore:
+        description: 'Publish to Thunderstore after release?'
+        required: true
+        type: boolean
+        default: false
+      create_github_release:
+        description: 'Create GitHub Release?'
+        required: true
+        type: boolean
+        default: true
+
+env:
+  THUNDERSTORE_NAMESPACE: "AzraelGodKing"
+  THUNDERSTORE_COMMUNITY: "sun-haven"
+  DOTNET_VERSION: "6.0.x"
+  BUILD_CONFIG: "Release"
+  THUNDERSTORE_CATEGORIES: "mods"
+  THUNDERSTORE_DEPS: "BepInEx-BepInExPack@5.4.2100"
+
+jobs:
+  build-release:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
+    steps:
+      # ------------------------------------------------------------------
+      # 1. CHECKOUT & SETUP
+      # ------------------------------------------------------------------
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: ${{ env.DOTNET_VERSION }}
+
+      # ------------------------------------------------------------------
+      # 2. LOAD MOD CONFIG FROM MATRIX
+      # ------------------------------------------------------------------
+      - name: Set mod configuration
+        id: config
+        run: |
+          MOD_KEY="${{ github.event.inputs.mod }}"
+
+          # Map input to versions.json key and project details
+          case "$MOD_KEY" in
+            "havensbirthright")
+              JSON_KEY="com.azraelgodking.havensbirthright"
+              PROJECT_PATH="HavensBirthright/HavensBirthright.csproj"
+              DLL_NAME="HavensBirthright"
+              THUNDERSTORE_NAME="HavensBirthright"
+              ;;
+            "sunhavenmuseumutilitytracker")
+              JSON_KEY="com.azraelgodking.sunhavenmuseumutilitytracker"
+              PROJECT_PATH="SunHavenMuseumUtilityTracker/SunHavenMuseumUtilityTracker.csproj"
+              DLL_NAME="SunHavenMuseumUtilityTracker"
+              THUNDERSTORE_NAME="SMUT"
+              ;;
+            "squirrelsbirthdayreminder")
+              JSON_KEY="com.azraelgodking.squirrelsbirthdayreminder"
+              PROJECT_PATH="BirthdayReminder/BirthdayReminder.csproj"
+              DLL_NAME="BirthdayReminder"
+              THUNDERSTORE_NAME="SquirrelsBirthdayReminder"
+              ;;
+            "sunhaventodo")
+              JSON_KEY="com.azraelgodking.sunhaventodo"
+              PROJECT_PATH="SunhavenTodo/SunhavenTodo.csproj"
+              DLL_NAME="SunhavenTodo"
+              THUNDERSTORE_NAME="SunHavenTodo"
+              ;;
+            "thevault")
+              JSON_KEY="com.azraelgodking.thevault"
+              PROJECT_PATH="TheVault/TheVault.csproj"
+              DLL_NAME="TheVault"
+              THUNDERSTORE_NAME="TheVault"
+              ;;
+            "havendevtools")
+              JSON_KEY="com.azraelgodking.havendevtools"
+              PROJECT_PATH="HavenDevTools/HavenDevTools.csproj"
+              DLL_NAME="HavenDevTools"
+              THUNDERSTORE_NAME="HavenDevTools"
+              ;;
+            *)
+              echo "❌ Unknown mod: $MOD_KEY"
+              exit 1
+              ;;
+          esac
+
+          # Read version, name, description, and changelog from versions.json
+          VERSION=$(jq -r ".[\"$JSON_KEY\"].version" docs/versions.json)
+          MOD_DISPLAY_NAME=$(jq -r ".[\"$JSON_KEY\"].name" docs/versions.json)
+          MOD_DESCRIPTION=$(jq -r ".[\"$JSON_KEY\"].description" docs/versions.json)
+          CHANGELOG=$(jq -r ".[\"$JSON_KEY\"].changelog" docs/versions.json)
+
+          echo "json_key=$JSON_KEY" >> "$GITHUB_OUTPUT"
+          echo "project_path=$PROJECT_PATH" >> "$GITHUB_OUTPUT"
+          echo "dll_name=$DLL_NAME" >> "$GITHUB_OUTPUT"
+          echo "thunderstore_name=$THUNDERSTORE_NAME" >> "$GITHUB_OUTPUT"
+          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+          echo "display_name=$MOD_DISPLAY_NAME" >> "$GITHUB_OUTPUT"
+          echo "description=$MOD_DESCRIPTION" >> "$GITHUB_OUTPUT"
+          echo "changelog=$CHANGELOG" >> "$GITHUB_OUTPUT"
+
+          echo "📦 Building: $MOD_DISPLAY_NAME v$VERSION"
+          echo "   Description: $MOD_DESCRIPTION"
+          echo "   Project: $PROJECT_PATH"
+          echo "   DLL: $DLL_NAME.dll"
+
+      # ------------------------------------------------------------------
+      # 3. BUILD
+      # ------------------------------------------------------------------
+      - name: Restore dependencies
+        run: dotnet restore ${{ steps.config.outputs.project_path }}
+
+      - name: Build mod
+        run: |
+          dotnet build ${{ steps.config.outputs.project_path }} \
+            --configuration ${{ env.BUILD_CONFIG }} \
+            --no-restore \
+            -p:Version=${{ steps.config.outputs.version }}
+
+      # ------------------------------------------------------------------
+      # 4. PACKAGE — Assemble Thunderstore-compatible zip
+      # ------------------------------------------------------------------
+      - name: Package mod for distribution
+        run: |
+          mkdir -p dist/package
+
+          # Find and copy the built DLL
+          DLL_PATH=$(find . -name "${{ steps.config.outputs.dll_name }}.dll" -path "*bin/${{ env.BUILD_CONFIG }}*" | head -1)
+          if [ -z "$DLL_PATH" ]; then
+            echo "❌ Could not find ${{ steps.config.outputs.dll_name }}.dll"
+            exit 1
+          fi
+          echo "📄 Found DLL: $DLL_PATH"
+          cp "$DLL_PATH" dist/package/
+
+          # Check for mod-specific thunderstore folder, fallback to shared
+          MOD_DIR=$(dirname "${{ steps.config.outputs.project_path }}")
+          if [ -d "$MOD_DIR/thunderstore" ]; then
+            THUNDERSTORE_DIR="$MOD_DIR/thunderstore"
+          elif [ -d "thunderstore/${{ github.event.inputs.mod }}" ]; then
+            THUNDERSTORE_DIR="thunderstore/${{ github.event.inputs.mod }}"
+          else
+            THUNDERSTORE_DIR="thunderstore"
+          fi
+
+          echo "📁 Using Thunderstore assets from: $THUNDERSTORE_DIR"
+
+          # Copy Thunderstore metadata files
+          if [ -f "$THUNDERSTORE_DIR/manifest.json" ]; then
+            cp "$THUNDERSTORE_DIR/manifest.json" dist/package/
+          else
+            echo "⚠️ No manifest.json found - creating minimal one"
+            cat > dist/package/manifest.json << EOF
+          {
+            "name": "${{ steps.config.outputs.thunderstore_name }}",
+            "version_number": "${{ steps.config.outputs.version }}",
+            "website_url": "",
+            "description": "${{ steps.config.outputs.description }}",
+            "dependencies": ["BepInEx-BepInExPack-5.4.2100"]
+          }
+          EOF
+          fi
+
+          if [ -f "$THUNDERSTORE_DIR/icon.png" ]; then
+            cp "$THUNDERSTORE_DIR/icon.png" dist/package/
+          fi
+
+          if [ -f "$THUNDERSTORE_DIR/README.md" ]; then
+            cp "$THUNDERSTORE_DIR/README.md" dist/package/
+          fi
+
+          # Update the version in manifest.json to match versions.json
+          cd dist/package
+          if [ -f manifest.json ]; then
+            sed -i "s/\"version_number\": \".*\"/\"version_number\": \"${{ steps.config.outputs.version }}\"/" manifest.json
+            echo "📋 manifest.json contents:"
+            cat manifest.json
+          fi
+
+          # Create the zip
+          ZIP_NAME="${{ steps.config.outputs.thunderstore_name }}-${{ steps.config.outputs.version }}.zip"
+          zip -r "../$ZIP_NAME" .
+
+          echo "✅ Package created: $ZIP_NAME"
+          ls -lh "../$ZIP_NAME"
+
+          # Output zip name for later steps
+          echo "zip_name=$ZIP_NAME" >> "$GITHUB_OUTPUT"
+
+      # ------------------------------------------------------------------
+      # 5. GITHUB RELEASE (Optional)
+      # ------------------------------------------------------------------
+      - name: Create GitHub Release
+        if: ${{ github.event.inputs.create_github_release == 'true' }}
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: "${{ steps.config.outputs.thunderstore_name }}-v${{ steps.config.outputs.version }}"
+          name: "${{ steps.config.outputs.display_name }} v${{ steps.config.outputs.version }}"
+          body: |
+            ## ${{ steps.config.outputs.display_name }} v${{ steps.config.outputs.version }}
+
+            ### Changes
+            ${{ steps.config.outputs.changelog }}
+
+            ### Installation
+            - **Thunderstore**: Install via r2modman or Thunderstore app
+            - **Nexus**: Download the zip below and extract to your BepInEx/plugins folder
+            - **Manual**: Extract the DLL to `Sun Haven/BepInEx/plugins/`
+          files: |
+            dist/${{ steps.config.outputs.thunderstore_name }}-${{ steps.config.outputs.version }}.zip
+          draft: false
+          prerelease: false
+
+      # ------------------------------------------------------------------
+      # 6. THUNDERSTORE PUBLISH (Manual opt-in)
+      # ------------------------------------------------------------------
+      - name: Publish to Thunderstore
+        if: ${{ github.event.inputs.publish_thunderstore == 'true' }}
+        uses: GreenTF/upload-thunderstore-package@v4.3
+        with:
+          token: ${{ secrets.THUNDERSTORE_TOKEN }}
+          namespace: ${{ env.THUNDERSTORE_NAMESPACE }}
+          name: ${{ steps.config.outputs.thunderstore_name }}
+          description: ${{ steps.config.outputs.description }}
+          version: ${{ steps.config.outputs.version }}
+          community: ${{ env.THUNDERSTORE_COMMUNITY }}
+          repo: thunderstore.io
+          categories: |
+            ${{ env.THUNDERSTORE_CATEGORIES }}
+          deps: ${{ env.THUNDERSTORE_DEPS }}
+          file: dist/${{ steps.config.outputs.thunderstore_name }}-${{ steps.config.outputs.version }}.zip

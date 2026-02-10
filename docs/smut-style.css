@@ -108,6 +108,63 @@ body {
     color: var(--muted);
 }
 
+.version-badge {
+    display: inline-block;
+    margin-top: 15px;
+    background: linear-gradient(135deg, var(--accent), #7df0d7);
+    color: #0f1f1b;
+    padding: 8px 20px;
+    border-radius: 20px;
+    font-weight: bold;
+    font-size: 1em;
+    box-shadow: 0 4px 15px rgba(79, 209, 181, 0.3);
+}
+
+/* Changelog Section */
+.changelog-section {
+    max-width: 800px;
+    margin: 0 auto 40px;
+}
+
+.changelog-box {
+    background: rgba(79, 209, 181, 0.08);
+    border: 1px solid rgba(79, 209, 181, 0.3);
+    border-radius: 15px;
+    padding: 25px;
+}
+
+.changelog-entry {
+    display: flex;
+    gap: 15px;
+    padding: 15px 0;
+    border-bottom: 1px solid rgba(47, 75, 72, 0.6);
+}
+
+.changelog-entry:last-child {
+    border-bottom: none;
+    padding-bottom: 0;
+}
+
+.changelog-entry:first-child {
+    padding-top: 0;
+}
+
+.changelog-icon {
+    font-size: 1.8em;
+    flex-shrink: 0;
+}
+
+.changelog-content h4 {
+    color: var(--accent);
+    margin-bottom: 6px;
+    font-size: 1.1em;
+}
+
+.changelog-content p {
+    color: var(--muted);
+    line-height: 1.6;
+}
+
 /* Intro Section */
 .intro-section {
     text-align: center;
