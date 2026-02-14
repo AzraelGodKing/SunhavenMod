@@ -142,7 +142,183 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     // -----------------------------------------------------------------
-    // 5. SCROLL-SPY FOR RACIALBONUS NAV PILLS
+    // 5. DYNAMIC VERSION BADGES (from versions.json)
+    // -----------------------------------------------------------------
+    (function() {
+        // Map mod-card data-name to versions.json key
+        var nameToKey = {
+            'The Vault': 'com.azraelgodking.thevault',
+            "Haven's Birthright": 'com.azraelgodking.havensbirthright',
+            'S.M.U.T.': 'com.azraelgodking.sunhavenmuseumutilitytracker',
+            'Sun Haven Todo': 'com.azraelgodking.sunhaventodo',
+            "A Squirrel's Birthday Reminder": 'com.azraelgodking.squirrelsbirthdayreminder',
+            "Senpai's Chest": 'com.azraelgodking.senpaischest',
+            'HavenDevTools': 'com.azraelgodking.havendevtools'
+        };
+
+        // Determine base path for versions.json
+        var scripts = document.querySelectorAll('script[src*="shared.js"]');
+        var basePath = '';
+        if (scripts.length) {
+            var src = scripts[0].getAttribute('src');
+            basePath = src.replace('shared.js', '');
+        }
+
+        fetch(basePath + 'versions.json')
+            .then(function(r) { return r.json(); })
+            .then(function(data) {
+                // Update index page mod cards
+                var cards = document.querySelectorAll('.mod-card[data-name]');
+                cards.forEach(function(card) {
+                    var name = card.getAttribute('data-name');
+                    var key = nameToKey[name];
+                    if (key && data[key]) {
+                        var ver = data[key].version;
+                        var badge = card.querySelector('.mod-version');
+                        if (badge) badge.textContent = 'v' + ver;
+                        // Update update-badge if present
+                        var updateBadge = card.querySelector('.update-badge');
+                        if (updateBadge && updateBadge.textContent.indexOf('Updated') !== -1) {
+                            updateBadge.textContent = 'Updated v' + ver;
+                        }
+                    }
+                });
+
+                // Update subpage version badge
+                var pageBadge = document.querySelector('.hero .version-badge');
+                if (pageBadge) {
+                    // Find which mod this page is for by checking title or nav
+                    var navCurrent = document.querySelector('.nav-current');
+                    var pageName = navCurrent ? navCurrent.textContent.trim() : '';
+                    // Map nav names to keys
+                    var navToKey = {
+                        'S.M.U.T.': 'com.azraelgodking.sunhavenmuseumutilitytracker',
+                        "Haven's Birthright": 'com.azraelgodking.havensbirthright',
+                        'The Vault': 'com.azraelgodking.thevault',
+                        'Todo List': 'com.azraelgodking.sunhaventodo',
+                        'Birthday Reminder': 'com.azraelgodking.squirrelsbirthdayreminder',
+                        "Senpai's Chest": 'com.azraelgodking.senpaischest',
+                        'HavenDevTools': 'com.azraelgodking.havendevtools'
+                    };
+                    var pageKey = navToKey[pageName];
+                    if (pageKey && data[pageKey]) {
+                        pageBadge.textContent = 'v' + data[pageKey].version;
+                    }
+                }
+            })
+            .catch(function() { /* versions.json not available, keep static values */ });
+    })();
+
+    // -----------------------------------------------------------------
+    // 6. AUTO-GENERATED TABLE OF CONTENTS (long pages)
+    // -----------------------------------------------------------------
+    (function() {
+        var tocContainer = document.querySelector('.toc-sidebar');
+        if (!tocContainer) return;
+
+        var headings = document.querySelectorAll('.container h2.section-title');
+        if (headings.length < 3) { tocContainer.style.display = 'none'; return; }
+
+        var tocList = document.createElement('ul');
+        tocList.className = 'toc-list';
+        headings.forEach(function(h, i) {
+            var id = h.id || 'section-' + i;
+            h.id = id;
+            var li = document.createElement('li');
+            var a = document.createElement('a');
+            a.href = '#' + id;
+            a.textContent = h.textContent;
+            a.className = 'toc-link';
+            li.appendChild(a);
+            tocList.appendChild(li);
+        });
+        tocContainer.appendChild(tocList);
+
+        // Scroll-spy for TOC
+        var tocLinks = tocContainer.querySelectorAll('.toc-link');
+        window.addEventListener('scroll', function() {
+            var scrollPos = window.scrollY + 160;
+            var activeLink = tocLinks[0];
+            headings.forEach(function(h, i) {
+                if (h.offsetTop <= scrollPos) activeLink = tocLinks[i];
+            });
+            tocLinks.forEach(function(l) { l.classList.remove('active'); });
+            if (activeLink) activeLink.classList.add('active');
+        });
+    })();
+
+    // -----------------------------------------------------------------
+    // 7. PAGE TRANSITION ANIMATIONS
+    // -----------------------------------------------------------------
+    (function() {
+        var animateEls = document.querySelectorAll(
+            '.mod-card, .feature-card, .install-step, .step, .faq-item, ' +
+            '.pack-card, .keybind-card, .related-card, .race-card, ' +
+            '.currency-category, .rule-card, .tool-category, .comparison-table, ' +
+            '.mod-status-badge'
+        );
+        if (!animateEls.length) return;
+
+        animateEls.forEach(function(el) { el.classList.add('animate-in'); });
+
+        var observer = new IntersectionObserver(function(entries) {
+            entries.forEach(function(entry) {
+                if (entry.isIntersecting) {
+                    entry.target.classList.add('animated');
+                    observer.unobserve(entry.target);
+                }
+            });
+        }, { threshold: 0.1, rootMargin: '0px 0px -40px 0px' });
+
+        animateEls.forEach(function(el, i) {
+            el.style.transitionDelay = (i % 6) * 0.08 + 's';
+            observer.observe(el);
+        });
+    })();
+
+    // -----------------------------------------------------------------
+    // 8. ANNOUNCEMENT BANNER (Index Page)
+    // -----------------------------------------------------------------
+    (function() {
+        var banner = document.getElementById('announcementBanner');
+        if (!banner) return;
+
+        var key = banner.getAttribute('data-dismiss-key') || 'announce-default';
+        if (localStorage.getItem('sh-dismiss-' + key)) {
+            banner.remove();
+            return;
+        }
+
+        banner.classList.add('visible');
+
+        var dismissBtn = banner.querySelector('.announcement-dismiss');
+        if (dismissBtn) {
+            dismissBtn.addEventListener('click', function() {
+                banner.classList.remove('visible');
+                banner.classList.add('hiding');
+                setTimeout(function() { banner.remove(); }, 400);
+                localStorage.setItem('sh-dismiss-' + key, '1');
+            });
+        }
+    })();
+
+    // -----------------------------------------------------------------
+    // 9. REPORT A BUG FLOATING BUTTON
+    // -----------------------------------------------------------------
+    (function() {
+        var bugBtn = document.createElement('a');
+        bugBtn.href = 'https://discord.gg/Vwh2y7qMXv';
+        bugBtn.target = '_blank';
+        bugBtn.rel = 'noopener noreferrer';
+        bugBtn.className = 'bug-report-btn';
+        bugBtn.setAttribute('aria-label', 'Report a bug on Discord');
+        bugBtn.title = 'Report a bug on Discord';
+        bugBtn.innerHTML = '<span class="bug-icon">&#x1F41B;</span><span class="bug-label">Report Bug</span>';
+        document.body.appendChild(bugBtn);
+    })();
+
+    // -----------------------------------------------------------------
+    // 10. SCROLL-SPY FOR RACIALBONUS NAV PILLS
     // -----------------------------------------------------------------
     var pills = document.querySelectorAll('.nav-pill');
     if (pills.length) {
