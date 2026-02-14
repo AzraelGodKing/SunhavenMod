@@ -169,6 +169,17 @@ h1 {
     font-style: italic;
 }
 
+.mod-version {
+    font-size: 0.75em;
+    font-weight: bold;
+    color: rgba(31, 26, 18, 0.5);
+    background: rgba(31, 26, 18, 0.08);
+    padding: 2px 10px;
+    border-radius: 12px;
+    margin-top: 4px;
+    display: inline-block;
+}
+
 .mod-description {
     color: var(--muted);
     line-height: 1.7;

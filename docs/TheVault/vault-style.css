@@ -97,6 +97,17 @@ body {
     color: var(--muted);
 }
 
+.version-badge {
+    display: inline-block;
+    margin-top: 15px;
+    background: linear-gradient(135deg, var(--bronze), #f0d28a);
+    color: #1a1208;
+    padding: 8px 20px;
+    border-radius: 20px;
+    font-weight: bold;
+    font-size: 1em;
+}
+
 /* Intro Section */
 .intro-section {
     text-align: center;
