@@ -641,3 +641,156 @@ code {
         padding: 10px 12px;
     }
 }
+
+/* -----------------------------------------------------------------
+   LIGHT MODE
+   ----------------------------------------------------------------- */
+[data-theme="light"] body {
+    background:
+        radial-gradient(circle at 15% 10%, rgba(79, 209, 181, 0.15), transparent 45%),
+        radial-gradient(circle at 90% 0%, rgba(242, 193, 78, 0.12), transparent 40%),
+        linear-gradient(135deg, #f8f5f0 0%, #f0ebe2 50%, #e8e0d4 100%);
+    color: #1f1a12;
+}
+
+[data-theme="light"] .top-nav {
+    background: rgba(248, 245, 240, 0.95);
+    border-bottom-color: rgba(31, 26, 18, 0.15);
+}
+[data-theme="light"] .nav-home { color: #0f8e8e; }
+[data-theme="light"] .nav-divider { color: rgba(31, 26, 18, 0.3); }
+[data-theme="light"] .nav-current { color: rgba(31, 26, 18, 0.6); }
+
+[data-theme="light"] .hero {
+    background: linear-gradient(180deg, rgba(79, 209, 181, 0.12) 0%, transparent 100%);
+    border-color: rgba(79, 209, 181, 0.3);
+}
+[data-theme="light"] .hero h1 {
+    background: linear-gradient(90deg, #0f8e8e, #c08a2b, #d06830);
+    -webkit-background-clip: text;
+    background-clip: text;
+}
+[data-theme="light"] .hero .full-name {
+    background: linear-gradient(90deg, #5a7a72, #3a5a52);
+    -webkit-background-clip: text;
+    background-clip: text;
+}
+[data-theme="light"] .tagline { color: rgba(31, 26, 18, 0.65); }
+
+[data-theme="light"] .version-badge {
+    background: linear-gradient(135deg, #0f8e8e, #4fd1b5);
+    color: #fff;
+}
+
+[data-theme="light"] .changelog-box {
+    background: rgba(255, 255, 255, 0.7);
+    border-color: rgba(79, 209, 181, 0.3);
+}
+[data-theme="light"] .changelog-entry {
+    border-bottom-color: rgba(31, 26, 18, 0.1);
+}
+[data-theme="light"] .changelog-content h4 { color: #0f8e8e; }
+[data-theme="light"] .changelog-content p { color: rgba(31, 26, 18, 0.65); }
+
+[data-theme="light"] .intro-section {
+    background: rgba(255, 255, 255, 0.7);
+    color: rgba(31, 26, 18, 0.75);
+    border-left-color: #0f8e8e;
+}
+
+[data-theme="light"] .notice-box {
+    background: rgba(242, 193, 78, 0.08);
+    border-color: rgba(242, 193, 78, 0.3);
+}
+[data-theme="light"] .notice-box h3 { color: #c08a2b; }
+[data-theme="light"] .notice-box p { color: rgba(31, 26, 18, 0.7); }
+
+[data-theme="light"] .section-title { color: #1f1a12; }
+
+[data-theme="light"] .feature-card {
+    background: rgba(255, 255, 255, 0.78);
+    border-color: rgba(31, 26, 18, 0.1);
+}
+[data-theme="light"] .feature-card:hover {
+    border-color: rgba(79, 209, 181, 0.4);
+    box-shadow: 0 10px 40px rgba(31, 26, 18, 0.12);
+}
+[data-theme="light"] .feature-card h3 { color: #1f1a12; }
+[data-theme="light"] .feature-card p { color: rgba(31, 26, 18, 0.65); }
+
+[data-theme="light"] .museum-section {
+    background: rgba(255, 255, 255, 0.78);
+    border-color: rgba(31, 26, 18, 0.1);
+}
+[data-theme="light"] .section-header {
+    border-bottom-color: rgba(31, 26, 18, 0.1);
+}
+[data-theme="light"] .section-header h3 { color: #1f1a12; }
+[data-theme="light"] .section-desc { color: rgba(31, 26, 18, 0.6); }
+
+[data-theme="light"] .bundle-list li {
+    color: rgba(31, 26, 18, 0.75);
+    border-bottom-color: rgba(31, 26, 18, 0.08);
+}
+
+[data-theme="light"] .rarity-item {
+    background: rgba(255, 255, 255, 0.7);
+    border-color: rgba(31, 26, 18, 0.1);
+}
+[data-theme="light"] .rarity-label { color: rgba(31, 26, 18, 0.75); }
+
+[data-theme="light"] .step {
+    background: rgba(255, 255, 255, 0.78);
+    border-color: rgba(31, 26, 18, 0.1);
+}
+[data-theme="light"] .step:hover { border-color: rgba(79, 209, 181, 0.4); }
+[data-theme="light"] .step-number {
+    background: linear-gradient(135deg, #0f8e8e, #4fd1b5);
+    color: #fff;
+}
+[data-theme="light"] .step-content h4 { color: #1f1a12; }
+[data-theme="light"] .step-content p { color: rgba(31, 26, 18, 0.65); }
+
+[data-theme="light"] kbd {
+    background: #f0ebe2;
+    border-color: rgba(31, 26, 18, 0.2);
+    color: #1f1a12;
+    box-shadow: 0 2px 0 rgba(31, 26, 18, 0.1);
+}
+
+[data-theme="light"] .install-step {
+    background: rgba(255, 255, 255, 0.78);
+    border-color: rgba(31, 26, 18, 0.1);
+}
+[data-theme="light"] .step-info h4 { color: #1f1a12; }
+[data-theme="light"] .step-info p { color: rgba(31, 26, 18, 0.65); }
+
+[data-theme="light"] table {
+    background: rgba(255, 255, 255, 0.85);
+}
+[data-theme="light"] th {
+    background: rgba(79, 209, 181, 0.12);
+    color: #1f1a12;
+}
+[data-theme="light"] td {
+    color: rgba(31, 26, 18, 0.75);
+    border-bottom-color: rgba(31, 26, 18, 0.1);
+}
+[data-theme="light"] tr:hover td {
+    background: rgba(79, 209, 181, 0.05);
+}
+
+[data-theme="light"] code {
+    background: rgba(31, 26, 18, 0.06);
+    color: #0f8e8e;
+}
+
+[data-theme="light"] .config-note { color: rgba(31, 26, 18, 0.6); }
+
+[data-theme="light"] .footer {
+    background: rgba(255, 255, 255, 0.7);
+    border-top-color: rgba(31, 26, 18, 0.1);
+}
+[data-theme="light"] .footer p { color: rgba(31, 26, 18, 0.6); }
+[data-theme="light"] .footer-links a { color: #0f8e8e; }
+[data-theme="light"] .footer-links a:hover { color: #0b6b6b; }
