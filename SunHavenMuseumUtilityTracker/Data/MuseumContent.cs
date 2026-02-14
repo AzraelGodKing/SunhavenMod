@@ -120,397 +120,136 @@ namespace SunHavenMuseumUtilityTracker.Data
             // ==================== HALL OF CULTURE ====================
             var hallOfCulture = new MuseumSection("hall_of_culture", "The Hall of Culture", "Artifacts and relics from civilizations past and present.");
 
-            // Spring Crops Bundle
-            var springCropsBundle = new MuseumBundle("spring_crops_bundle", "Spring Crops Bundle", "hall_of_culture", "Crops harvested in spring.");
-            springCropsBundle.Items.AddRange(new[]
+            // Ancient Artifacts Bundle
+            var ancientArtifacts = new MuseumBundle("ancient_artifacts", "Ancient Artifacts", "hall_of_culture", "Relics from ancient civilizations.");
+            ancientArtifacts.Items.AddRange(new[]
             {
-                new MuseumItem("grapes", "Grapes", "spring_crops_bundle", 11022, ItemRarity.Common, "Fresh grapes."),
-                new MuseumItem("wheat", "Wheat", "spring_crops_bundle", 11000, ItemRarity.Common, "Golden wheat."),
-                new MuseumItem("tomato", "Tomato", "spring_crops_bundle", 11003, ItemRarity.Common, "A ripe tomato."),
-                new MuseumItem("corn", "Corn", "spring_crops_bundle", 11001, ItemRarity.Common, "Fresh corn."),
-                new MuseumItem("onion", "Onion", "spring_crops_bundle", 11009, ItemRarity.Common, "A pungent onion."),
-                new MuseumItem("potato", "Potato", "spring_crops_bundle", 11002, ItemRarity.Common, "A hearty potato."),
-                new MuseumItem("greenroot", "Greenroot", "spring_crops_bundle", 11010, ItemRarity.Common, "A green root vegetable."),
-                new MuseumItem("carrot", "Carrot", "spring_crops_bundle", 11006, ItemRarity.Common, "An orange carrot."),
-                new MuseumItem("kale", "Kale", "spring_crops_bundle", 11050, ItemRarity.Common, "Leafy kale."),
-                new MuseumItem("lettuce", "Lettuce", "spring_crops_bundle", 11013, ItemRarity.Common, "Crisp lettuce."),
-                new MuseumItem("cinnaberry", "Cinnaberry", "spring_crops_bundle", 11012, ItemRarity.Uncommon, "A spicy cinnaberry."),
-                new MuseumItem("pepper", "Pepper", "spring_crops_bundle", 11008, ItemRarity.Common, "A fresh pepper."),
-                new MuseumItem("shimmeroot", "Shimmeroot", "spring_crops_bundle", 11007, ItemRarity.Uncommon, "A shimmering root."),
+                new MuseumItem("coins", "Ancient Coins", "ancient_artifacts", 60000, ItemRarity.Uncommon, "A pile of ancient coins."),
+                new MuseumItem("blue_elven_vase", "Blue Elven Vase", "ancient_artifacts", 10160, ItemRarity.Rare, "A beautifully decorated elven vase."),
+                new MuseumItem("red_elven_vase", "Red Elven Vase", "ancient_artifacts", 10161, ItemRarity.Rare, "A red elven vase."),
+                new MuseumItem("green_elven_vase", "Green Elven Vase", "ancient_artifacts", 10162, ItemRarity.Rare, "A green elven vase."),
+                new MuseumItem("paper_scroll", "Paper Scroll", "ancient_artifacts", 50337, ItemRarity.Common, "An ancient paper scroll."),
+                new MuseumItem("starfish_artifact", "Starfish", "ancient_artifacts", 2103, ItemRarity.Common, "A preserved starfish."),
             });
-            hallOfCulture.Bundles.Add(springCropsBundle);
+            hallOfCulture.Bundles.Add(ancientArtifacts);
 
-            // Summer Crops Bundle
-            var summerCropsBundle = new MuseumBundle("summer_crops_bundle", "Summer Crops Bundle", "hall_of_culture", "Crops harvested in summer.");
-            summerCropsBundle.Items.AddRange(new[]
+            // Nelvari Relics Bundle
+            var nelvariRelics = new MuseumBundle("nelvari_relics", "Nelvari Relics", "hall_of_culture", "Mysterious items from the Nelvari people.");
+            nelvariRelics.Items.AddRange(new[]
             {
-                new MuseumItem("armoranth", "Armoranth", "summer_crops_bundle", 11053, ItemRarity.Uncommon, "A sturdy armoranth."),
-                new MuseumItem("guava_berry", "Guava Berry", "summer_crops_bundle", 11035, ItemRarity.Common, "A sweet guava berry."),
-                new MuseumItem("beet", "Beet", "summer_crops_bundle", 12080, ItemRarity.Common, "A red beet."),
-                new MuseumItem("lemon", "Lemon", "summer_crops_bundle", 11052, ItemRarity.Common, "A sour lemon."),
-                new MuseumItem("chocoberry", "Chocoberry", "summer_crops_bundle", 11054, ItemRarity.Uncommon, "A chocolate-flavored berry."),
-                new MuseumItem("pineapple", "Pineapple", "summer_crops_bundle", 11056, ItemRarity.Common, "A tropical pineapple."),
-                new MuseumItem("melon", "Melon", "summer_crops_bundle", 11057, ItemRarity.Common, "A juicy melon."),
-                new MuseumItem("stormelon", "Stormelon", "summer_crops_bundle", 11051, ItemRarity.Uncommon, "An electric stormelon."),
-                new MuseumItem("durian", "Durian", "summer_crops_bundle", 11062, ItemRarity.Rare, "A pungent durian."),
+                new MuseumItem("nelvari_totem", "Nelvari Totem", "nelvari_relics", 10697, ItemRarity.Rare, "A carved Nelvari totem."),
+                new MuseumItem("ancient_amari_totem", "Ancient Amari Totem", "nelvari_relics", 20160, ItemRarity.Epic, "An ancient Amari totem."),
+                new MuseumItem("exploration_totem", "Exploration Totem", "nelvari_relics", 10692, ItemRarity.Rare, "A totem for exploration."),
+                new MuseumItem("combat_totem", "Combat Totem", "nelvari_relics", 10699, ItemRarity.Rare, "A totem of combat."),
+                new MuseumItem("irisss_enchanted_totem", "Iris's Enchanted Totem", "nelvari_relics", 6218, ItemRarity.Legendary, "A magically enchanted totem."),
             });
-            hallOfCulture.Bundles.Add(summerCropsBundle);
+            hallOfCulture.Bundles.Add(nelvariRelics);
 
-            // Fall Crops Bundle
-            var fallCropsBundle = new MuseumBundle("fall_crops_bundle", "Fall Crops Bundle", "hall_of_culture", "Crops harvested in fall.");
-            fallCropsBundle.Items.AddRange(new[]
+            // Withergate Remnants Bundle
+            var withergateRemnants = new MuseumBundle("withergate_remnants", "Withergate Remnants", "hall_of_culture", "Dark artifacts from the Withergate era.");
+            withergateRemnants.Items.AddRange(new[]
             {
-                new MuseumItem("garlic", "Garlic", "fall_crops_bundle", 11060, ItemRarity.Common, "Pungent garlic."),
-                new MuseumItem("yam", "Yam", "fall_crops_bundle", 11047, ItemRarity.Common, "A hearty yam."),
-                new MuseumItem("soda_pop", "Soda Pop", "fall_crops_bundle", 11038, ItemRarity.Uncommon, "A fizzy soda pop crop."),
-                new MuseumItem("fizzy_fruit", "Fizzy Fruit", "fall_crops_bundle", 11039, ItemRarity.Uncommon, "A carbonated fruit."),
-                new MuseumItem("cranberry", "Cranberry", "fall_crops_bundle", 11070, ItemRarity.Common, "Tart cranberries."),
-                new MuseumItem("barley", "Barley", "fall_crops_bundle", 11045, ItemRarity.Common, "Golden barley."),
-                new MuseumItem("pumpkin", "Pumpkin", "fall_crops_bundle", 11036, ItemRarity.Common, "A large pumpkin."),
-                new MuseumItem("ghost_pepper", "Ghost Pepper", "fall_crops_bundle", 11049, ItemRarity.Rare, "An extremely hot pepper."),
-                new MuseumItem("butternut", "Butternut", "fall_crops_bundle", 11044, ItemRarity.Common, "A butternut squash."),
+                new MuseumItem("withergate_totem", "Withergate Totem", "withergate_remnants", 10693, ItemRarity.Rare, "A dark totem from Withergate."),
+                new MuseumItem("withergate_mask", "Withergate Mask", "withergate_remnants", 5100, ItemRarity.Epic, "A mask from the Withergate."),
+                new MuseumItem("bronze_dragon_relic", "Bronze Dragon Relic", "withergate_remnants", 20152, ItemRarity.Legendary, "A relic of an ancient dragon."),
             });
-            hallOfCulture.Bundles.Add(fallCropsBundle);
+            hallOfCulture.Bundles.Add(withergateRemnants);
 
-            // Winter Crops Bundle
-            var winterCropsBundle = new MuseumBundle("winter_crops_bundle", "Winter Crops Bundle", "hall_of_culture", "Crops harvested in winter.");
-            winterCropsBundle.Items.AddRange(new[]
+            // Seasonal Totems Bundle
+            var seasonalTotems = new MuseumBundle("seasonal_totems", "Seasonal Totems", "hall_of_culture", "Totems representing the seasons.");
+            seasonalTotems.Items.AddRange(new[]
             {
-                new MuseumItem("tea_leaves", "Tea Leaves", "winter_crops_bundle", 11048, ItemRarity.Common, "Aromatic tea leaves."),
-                new MuseumItem("turnip", "Turnip", "winter_crops_bundle", 11040, ItemRarity.Common, "A fresh turnip."),
-                new MuseumItem("purple_eggplant", "Purple Eggplant", "winter_crops_bundle", 12081, ItemRarity.Common, "A purple eggplant."),
-                new MuseumItem("heat_fruit", "Heat Fruit", "winter_crops_bundle", 11041, ItemRarity.Uncommon, "A warming fruit."),
-                new MuseumItem("marshmallow_bean", "Marshmallow Bean", "winter_crops_bundle", 11042, ItemRarity.Uncommon, "A fluffy bean."),
-                new MuseumItem("brr_nana", "Brr-Nana", "winter_crops_bundle", 12082, ItemRarity.Uncommon, "A frozen banana."),
-                new MuseumItem("starfruit", "Starfruit", "winter_crops_bundle", 11066, ItemRarity.Rare, "A star-shaped fruit."),
-                new MuseumItem("hexagon_berry", "Hexagon Berry", "winter_crops_bundle", 11065, ItemRarity.Rare, "A hexagonal berry."),
-                new MuseumItem("snow_pea", "Snow Pea", "winter_crops_bundle", 11078, ItemRarity.Common, "A crisp snow pea."),
-                new MuseumItem("snow_ball", "Snow Ball", "winter_crops_bundle", 20019, ItemRarity.Common, "A ball of snow."),
-                new MuseumItem("blizzard_berry", "Blizzard Berry", "winter_crops_bundle", 11068, ItemRarity.Rare, "An icy berry."),
-                new MuseumItem("balloon_fruit", "Balloon Fruit", "winter_crops_bundle", 11063, ItemRarity.Uncommon, "A floating fruit."),
-                new MuseumItem("pythagorean_berry", "Pythagorean Berry", "winter_crops_bundle", 11069, ItemRarity.Rare, "A mathematically perfect berry."),
-                new MuseumItem("blue_moon_fruit", "Blue Moon Fruit", "winter_crops_bundle", 11064, ItemRarity.Rare, "A rare lunar fruit."),
-                new MuseumItem("candy_cane", "Candy Cane", "winter_crops_bundle", 11077, ItemRarity.Uncommon, "A sweet candy cane."),
+                new MuseumItem("spring_totem", "Spring Totem", "seasonal_totems", 10735, ItemRarity.Uncommon, "A totem of spring."),
+                new MuseumItem("summer_totem", "Summer Totem", "seasonal_totems", 10736, ItemRarity.Uncommon, "A totem of summer."),
+                new MuseumItem("fall_totem", "Fall Totem", "seasonal_totems", 10734, ItemRarity.Uncommon, "A totem of fall."),
+                new MuseumItem("winter_totem", "Winter Totem", "seasonal_totems", 10737, ItemRarity.Uncommon, "A totem of winter."),
+                new MuseumItem("sun_haven_totem", "Sun Haven Totem", "seasonal_totems", 10739, ItemRarity.Rare, "A totem of Sun Haven."),
             });
-            hallOfCulture.Bundles.Add(winterCropsBundle);
-
-            // Nel'Vari Crops Bundle
-            var nelvariCropsBundle = new MuseumBundle("nelvari_crops_bundle", "Nel'Vari Crops Bundle", "hall_of_culture", "Crops from Nel'Vari.");
-            nelvariCropsBundle.Items.AddRange(new[]
-            {
-                new MuseumItem("acorn", "Acorn", "nelvari_crops_bundle", 11031, ItemRarity.Common, "A small acorn."),
-                new MuseumItem("rock_fruit", "Rock Fruit", "nelvari_crops_bundle", 11025, ItemRarity.Uncommon, "A sturdy rock fruit."),
-                new MuseumItem("water_fruit", "Water Fruit", "nelvari_crops_bundle", 11023, ItemRarity.Uncommon, "A watery fruit."),
-                new MuseumItem("fire_fruit", "Fire Fruit", "nelvari_crops_bundle", 11024, ItemRarity.Uncommon, "A fiery fruit."),
-                new MuseumItem("walk_choy", "Walk Choy", "nelvari_crops_bundle", 11028, ItemRarity.Common, "A walking vegetable."),
-                new MuseumItem("wind_chime", "Wind Chime", "nelvari_crops_bundle", 11026, ItemRarity.Uncommon, "A musical plant."),
-                new MuseumItem("shiiwalki_mushroom", "Shiiwalki Mushroom", "nelvari_crops_bundle", 11029, ItemRarity.Rare, "A magical mushroom."),
-                new MuseumItem("dragon_fruit", "Dragon Fruit", "nelvari_crops_bundle", 11027, ItemRarity.Rare, "A dragon-scaled fruit."),
-                new MuseumItem("mana_gem", "Mana Gem", "nelvari_crops_bundle", 11033, ItemRarity.Rare, "A gem-like plant."),
-                new MuseumItem("cat_tail", "Cat Tail", "nelvari_crops_bundle", 11032, ItemRarity.Common, "A fluffy cat tail plant."),
-                new MuseumItem("indiglow", "Indiglow", "nelvari_crops_bundle", 11030, ItemRarity.Uncommon, "A glowing plant."),
-            });
-            hallOfCulture.Bundles.Add(nelvariCropsBundle);
-
-            // Withergate Crops Bundle
-            var withergateCropsBundle = new MuseumBundle("withergate_crops_bundle", "Withergate Crops Bundle", "hall_of_culture", "Crops from Withergate.");
-            withergateCropsBundle.Items.AddRange(new[]
-            {
-                new MuseumItem("kraken_kale", "Kraken Kale", "withergate_crops_bundle", 11016, ItemRarity.Uncommon, "Tentacled kale."),
-                new MuseumItem("tombmelon", "Tombmelon", "withergate_crops_bundle", 11019, ItemRarity.Uncommon, "A spooky melon."),
-                new MuseumItem("suckerstem", "Suckerstem", "withergate_crops_bundle", 11018, ItemRarity.Uncommon, "A vampiric plant."),
-                new MuseumItem("razorstalk", "Razorstalk", "withergate_crops_bundle", 11020, ItemRarity.Rare, "A sharp plant."),
-                new MuseumItem("snappy_plant", "Snappy Plant", "withergate_crops_bundle", 11005, ItemRarity.Uncommon, "A biting plant."),
-                new MuseumItem("moonplant", "Moonplant", "withergate_crops_bundle", 11017, ItemRarity.Rare, "A lunar plant."),
-                new MuseumItem("eggplant", "Eggplant", "withergate_crops_bundle", 11015, ItemRarity.Common, "A dark eggplant."),
-                new MuseumItem("demon_orb", "Demon Orb", "withergate_crops_bundle", 11004, ItemRarity.Rare, "A demonic fruit."),
-            });
-            hallOfCulture.Bundles.Add(withergateCropsBundle);
-
-            // Flowers Bundle
-            var flowersBundle = new MuseumBundle("flowers_bundle", "Flowers Bundle", "hall_of_culture", "Beautiful flowers collection.");
-            flowersBundle.Items.AddRange(new[]
-            {
-                new MuseumItem("honey_flower", "Honey Flower", "flowers_bundle", 11101, ItemRarity.Common, "A sweet honey flower."),
-                new MuseumItem("red_rose", "Red Rose", "flowers_bundle", 11107, ItemRarity.Common, "A classic red rose."),
-                new MuseumItem("blue_rose", "Blue Rose", "flowers_bundle", 11108, ItemRarity.Uncommon, "A rare blue rose."),
-                new MuseumItem("daisy", "Daisy", "flowers_bundle", 11130, ItemRarity.Common, "A cheerful daisy."),
-                new MuseumItem("orchid", "Orchid", "flowers_bundle", 11105, ItemRarity.Uncommon, "An elegant orchid."),
-                new MuseumItem("tulip", "Tulip", "flowers_bundle", 11109, ItemRarity.Common, "A colorful tulip."),
-                new MuseumItem("hibiscus", "Hibiscus", "flowers_bundle", 11103, ItemRarity.Common, "A tropical hibiscus."),
-                new MuseumItem("lavender", "Lavender", "flowers_bundle", 11102, ItemRarity.Common, "Fragrant lavender."),
-                new MuseumItem("sunflower", "Sunflower", "flowers_bundle", 11106, ItemRarity.Common, "A tall sunflower."),
-                new MuseumItem("lily", "Lily", "flowers_bundle", 11104, ItemRarity.Common, "A graceful lily."),
-                new MuseumItem("lotus", "Lotus", "flowers_bundle", 11110, ItemRarity.Uncommon, "A serene lotus."),
-            });
-            hallOfCulture.Bundles.Add(flowersBundle);
-
-            // Foraging Bundle
-            var foragingBundle = new MuseumBundle("foraging_bundle", "Foraging Bundle", "hall_of_culture", "Items found while foraging.");
-            foragingBundle.Items.AddRange(new[]
-            {
-                new MuseumItem("log", "Log", "foraging_bundle", 2002, ItemRarity.Common, "A wooden log."),
-                new MuseumItem("apple", "Apple", "foraging_bundle", 3044, ItemRarity.Common, "A fresh apple."),
-                new MuseumItem("seaweed", "Seaweed", "foraging_bundle", 3002, ItemRarity.Common, "Ocean seaweed."),
-                new MuseumItem("blueberry", "Blueberry", "foraging_bundle", 3046, ItemRarity.Common, "Wild blueberries."),
-                new MuseumItem("mushroom", "Mushroom", "foraging_bundle", 3001, ItemRarity.Common, "A forest mushroom."),
-                new MuseumItem("orange", "Orange", "foraging_bundle", 3045, ItemRarity.Common, "A juicy orange."),
-                new MuseumItem("strawberry", "Strawberry", "foraging_bundle", 3047, ItemRarity.Common, "Sweet strawberries."),
-                new MuseumItem("berry", "Berry", "foraging_bundle", 16500, ItemRarity.Common, "Wild berries."),
-                new MuseumItem("raspberry", "Raspberry", "foraging_bundle", 3049, ItemRarity.Common, "Fresh raspberries."),
-                new MuseumItem("peach", "Peach", "foraging_bundle", 3048, ItemRarity.Common, "A ripe peach."),
-                new MuseumItem("sand_dollar", "Sand Dollar", "foraging_bundle", 2102, ItemRarity.Uncommon, "A beach sand dollar."),
-                new MuseumItem("starfish", "Starfish", "foraging_bundle", 2103, ItemRarity.Uncommon, "A colorful starfish."),
-            });
-            hallOfCulture.Bundles.Add(foragingBundle);
-
-            // Exploration Bundle
-            var explorationBundle = new MuseumBundle("exploration_bundle", "Exploration Bundle", "hall_of_culture", "Treasures found while exploring.");
-            explorationBundle.Items.AddRange(new[]
-            {
-                new MuseumItem("petrified_log", "Petrified Log", "exploration_bundle", 20200, ItemRarity.Rare, "An ancient petrified log."),
-                new MuseumItem("phoenix_feather", "Phoenix Feather", "exploration_bundle", 20201, ItemRarity.Epic, "A feather from a phoenix."),
-                new MuseumItem("fairy_wings", "Fairy Wings", "exploration_bundle", 20202, ItemRarity.Rare, "Delicate fairy wings."),
-                new MuseumItem("griffon_egg", "Griffon Egg", "exploration_bundle", 20203, ItemRarity.Epic, "A griffon's egg."),
-                new MuseumItem("mana_sap", "Mana Sap", "exploration_bundle", 20204, ItemRarity.Rare, "Magical tree sap."),
-                new MuseumItem("pumice_stone", "Pumice Stone", "exploration_bundle", 20205, ItemRarity.Uncommon, "A volcanic pumice stone."),
-                new MuseumItem("mysterious_antler", "Mysterious Antler", "exploration_bundle", 20206, ItemRarity.Rare, "An antler from an unknown creature."),
-                new MuseumItem("dragon_fang", "Dragon Fang", "exploration_bundle", 20207, ItemRarity.Epic, "A fang from a dragon."),
-                new MuseumItem("monster_candy", "Monster Candy", "exploration_bundle", 20208, ItemRarity.Uncommon, "Candy dropped by monsters."),
-                new MuseumItem("unicorn_hair_tuft", "Unicorn Hair Tuft", "exploration_bundle", 20209, ItemRarity.Legendary, "Hair from a unicorn."),
-            });
-            hallOfCulture.Bundles.Add(explorationBundle);
-
-            // Combat Bundle
-            var combatBundle = new MuseumBundle("combat_bundle", "Combat Bundle", "hall_of_culture", "Trophies from combat.");
-            combatBundle.Items.AddRange(new[]
-            {
-                new MuseumItem("leafie_trinket", "Leafie Trinket", "combat_bundle", 20103, ItemRarity.Common, "A trinket from a Leafie."),
-                new MuseumItem("elite_leafie_trinket", "Elite Leafie Trinket", "combat_bundle", 20104, ItemRarity.Uncommon, "A trinket from an Elite Leafie."),
-                new MuseumItem("centipillar_trinket", "Centapillar Trinket", "combat_bundle", 20105, ItemRarity.Common, "A trinket from a Centapillar."),
-                new MuseumItem("peppinch_green_trinket", "Peppinch-Green Trinket", "combat_bundle", 20106, ItemRarity.Common, "A trinket from a Peppinch."),
-                new MuseumItem("scorpepper_trinket", "Scorpepper Trinket", "combat_bundle", 20107, ItemRarity.Uncommon, "A trinket from a Scorpepper."),
-                new MuseumItem("elite_scorpepper_trinket", "Elite Scorpepper Trinket", "combat_bundle", 20108, ItemRarity.Rare, "A trinket from an Elite Scorpepper."),
-                new MuseumItem("hat_crab_trinket", "Hat Crab Trinket", "combat_bundle", 20109, ItemRarity.Uncommon, "A trinket from a Hat Crab."),
-                new MuseumItem("floaty_crab_trinket", "Floaty Crab Trinket", "combat_bundle", 20110, ItemRarity.Uncommon, "A trinket from a Floaty Crab."),
-                new MuseumItem("bucket_crab_trinket", "Bucket Crab Trinket", "combat_bundle", 20111, ItemRarity.Uncommon, "A trinket from a Bucket Crab."),
-                new MuseumItem("umbrella_crab_trinket", "Umbrella Crab Trinket", "combat_bundle", 20112, ItemRarity.Rare, "A trinket from an Umbrella Crab."),
-                new MuseumItem("chimchuck_trinket", "Chimchuck Trinket", "combat_bundle", 20113, ItemRarity.Rare, "A trinket from a Chimchuck."),
-                new MuseumItem("ancient_sun_haven_sword", "Ancient Sun Haven Sword", "combat_bundle", 20100, ItemRarity.Epic, "An ancient sword from Sun Haven."),
-                new MuseumItem("ancient_nelvarian_sword", "Ancient Nel'Varian Sword", "combat_bundle", 20101, ItemRarity.Epic, "An ancient sword from Nel'Vari."),
-                new MuseumItem("ancient_withergate_sword", "Ancient Withergate Sword", "combat_bundle", 20102, ItemRarity.Epic, "An ancient sword from Withergate."),
-            });
-            hallOfCulture.Bundles.Add(combatBundle);
-
-            // Alchemy Bundle
-            var alchemyBundle = new MuseumBundle("alchemy_bundle", "Alchemy Bundle", "hall_of_culture", "Potions and elixirs.");
-            alchemyBundle.Items.AddRange(new[]
-            {
-                new MuseumItem("mana_potion", "Mana Potion", "alchemy_bundle", 3080, ItemRarity.Common, "Restores mana."),
-                new MuseumItem("health_potion", "Health Potion", "alchemy_bundle", 3081, ItemRarity.Common, "Restores health."),
-                new MuseumItem("attack_potion", "Attack Potion", "alchemy_bundle", 3082, ItemRarity.Common, "Boosts attack."),
-                new MuseumItem("speed_potion", "Speed Potion", "alchemy_bundle", 3083, ItemRarity.Common, "Increases speed."),
-                new MuseumItem("defense_potion", "Defense Potion", "alchemy_bundle", 3084, ItemRarity.Common, "Boosts defense."),
-                new MuseumItem("advanced_attack_potion", "Advanced Attack Potion", "alchemy_bundle", 3085, ItemRarity.Uncommon, "Greater attack boost."),
-                new MuseumItem("advanced_defense_potion", "Advanced Defense Potion", "alchemy_bundle", 3086, ItemRarity.Uncommon, "Greater defense boost."),
-                new MuseumItem("advanced_spell_damage_potion", "Advanced Spell Damage Potion", "alchemy_bundle", 3087, ItemRarity.Uncommon, "Boosts spell damage."),
-                new MuseumItem("incredible_spell_damage_potion", "Incredible Spell Damage Potion", "alchemy_bundle", 3766, ItemRarity.Rare, "Massive spell damage boost."),
-                new MuseumItem("incredible_attack_potion", "Incredible Attack Potion", "alchemy_bundle", 3767, ItemRarity.Rare, "Massive attack boost."),
-                new MuseumItem("incredible_defense_potion", "Incredible Defense Potion", "alchemy_bundle", 3768, ItemRarity.Rare, "Massive defense boost."),
-            });
-            hallOfCulture.Bundles.Add(alchemyBundle);
-
-            // Nel'Vari Temple Bundle
-            var nelvariTempleBundle = new MuseumBundle("nelvari_temple_bundle", "Nel'Vari Temple Bundle", "hall_of_culture", "Ancient books from the Nel'Vari Temple.");
-            nelvariTempleBundle.Items.AddRange(new[]
-            {
-                new MuseumItem("origins_grand_tree_1", "Origins of the Grand Tree - Book I", "nelvari_temple_bundle", 6500, ItemRarity.Rare, "The first volume about the Grand Tree."),
-                new MuseumItem("origins_grand_tree_2", "Origins of the Grand Tree - Book II", "nelvari_temple_bundle", 6501, ItemRarity.Rare, "The second volume about the Grand Tree."),
-                new MuseumItem("origins_grand_tree_3", "Origins of the Grand Tree - Book III", "nelvari_temple_bundle", 6502, ItemRarity.Rare, "The third volume about the Grand Tree."),
-                new MuseumItem("origins_grand_tree_4", "Origins of the Grand Tree - Book IV", "nelvari_temple_bundle", 6503, ItemRarity.Rare, "The fourth volume about the Grand Tree."),
-                new MuseumItem("origins_grand_tree_5", "Origins of the Grand Tree - Book V", "nelvari_temple_bundle", 6504, ItemRarity.Rare, "The fifth volume about the Grand Tree."),
-                new MuseumItem("origins_sun_haven_1", "Origins of Sun Haven - Book I", "nelvari_temple_bundle", 6505, ItemRarity.Rare, "The first volume about Sun Haven."),
-                new MuseumItem("origins_sun_haven_2", "Origins of Sun Haven - Book II", "nelvari_temple_bundle", 6506, ItemRarity.Rare, "The second volume about Sun Haven."),
-                new MuseumItem("origins_sun_haven_3", "Origins of Sun Haven - Book III", "nelvari_temple_bundle", 6507, ItemRarity.Rare, "The third volume about Sun Haven."),
-                new MuseumItem("origins_sun_haven_4", "Origins of Sun Haven - Book IV", "nelvari_temple_bundle", 6508, ItemRarity.Rare, "The fourth volume about Sun Haven."),
-                new MuseumItem("origins_sun_haven_5", "Origins of Sun Haven - Book V", "nelvari_temple_bundle", 6509, ItemRarity.Rare, "The fifth volume about Sun Haven."),
-                new MuseumItem("origins_dynus_1", "Origins of Dynus - Book I", "nelvari_temple_bundle", 6510, ItemRarity.Rare, "The first volume about Dynus."),
-                new MuseumItem("origins_dynus_2", "Origins of Dynus - Book II", "nelvari_temple_bundle", 6511, ItemRarity.Rare, "The second volume about Dynus."),
-                new MuseumItem("origins_dynus_3", "Origins of Dynus - Book III", "nelvari_temple_bundle", 6512, ItemRarity.Rare, "The third volume about Dynus."),
-                new MuseumItem("origins_dynus_4", "Origins of Dynus - Book IV", "nelvari_temple_bundle", 6513, ItemRarity.Rare, "The fourth volume about Dynus."),
-                new MuseumItem("origins_dynus_5", "Origins of Dynus - Book V", "nelvari_temple_bundle", 6514, ItemRarity.Rare, "The fifth volume about Dynus."),
-            });
-            hallOfCulture.Bundles.Add(nelvariTempleBundle);
+            hallOfCulture.Bundles.Add(seasonalTotems);
 
             sections.Add(hallOfCulture);
 
             // ==================== AQUARIUM ====================
             var aquarium = new MuseumSection("aquarium", "Aquarium", "A collection of fish and aquatic life from all waters.");
 
-            // Fishing Bundle
-            var fishingBundle = new MuseumBundle("fishing_bundle", "Fishing Bundle", "aquarium", "Treasures found while fishing.");
-            fishingBundle.Items.AddRange(new[]
+            // Freshwater Fish Bundle
+            var freshwaterFish = new MuseumBundle("freshwater_fish", "Freshwater Fish", "aquarium", "Fish from rivers and lakes.");
+            freshwaterFish.Items.AddRange(new[]
             {
-                new MuseumItem("handmade_bobber", "Handmade Bobber", "fishing_bundle", 20150, ItemRarity.Uncommon, "A handcrafted fishing bobber."),
-                new MuseumItem("ancient_magic_staff", "Ancient Magic Staff", "fishing_bundle", 20151, ItemRarity.Epic, "An ancient magical staff."),
-                new MuseumItem("bronze_dragon_relic", "Bronze Dragon Relic", "fishing_bundle", 20152, ItemRarity.Legendary, "A relic of an ancient dragon."),
-                new MuseumItem("old_sword_hilt", "Old Sword Hilt", "fishing_bundle", 20153, ItemRarity.Rare, "An old sword hilt."),
-                new MuseumItem("nelvarian_runestone", "Nel'Varian Runestone", "fishing_bundle", 20154, ItemRarity.Rare, "A runestone from Nel'Vari."),
-                new MuseumItem("ancient_elven_headdress", "Ancient Elven Headdress", "fishing_bundle", 20155, ItemRarity.Epic, "An ancient elven headdress."),
-                new MuseumItem("old_mayoral_painting", "Old Mayoral Painting", "fishing_bundle", 20156, ItemRarity.Rare, "A painting of an old mayor."),
-                new MuseumItem("tentacle_monster_emblem", "Tentacle Monster Emblem", "fishing_bundle", 20157, ItemRarity.Epic, "An emblem of the tentacle monster."),
-                new MuseumItem("ancient_angel_quill", "Ancient Angel Quill", "fishing_bundle", 20158, ItemRarity.Epic, "A quill from an ancient angel."),
-                new MuseumItem("ancient_naga_crook", "Ancient Naga Crook", "fishing_bundle", 20159, ItemRarity.Epic, "A crook from an ancient naga."),
-                new MuseumItem("ancient_amari_totem", "Ancient Amari Totem", "fishing_bundle", 20160, ItemRarity.Legendary, "An ancient Amari totem."),
+                new MuseumItem("rainbow_trout", "Rainbow Trout", "freshwater_fish", 15004, ItemRarity.Common, "A colorful rainbow trout."),
+                new MuseumItem("carp", "Carp", "freshwater_fish", 15010, ItemRarity.Common, "A golden carp."),
+                new MuseumItem("silver_carp", "Silver Carp", "freshwater_fish", 15012, ItemRarity.Common, "A silver carp."),
+                new MuseumItem("catfish", "Catfish", "freshwater_fish", 15018, ItemRarity.Common, "A whiskered catfish."),
+                new MuseumItem("salmon", "Salmon", "freshwater_fish", 15085, ItemRarity.Uncommon, "A pink salmon."),
+                new MuseumItem("northern_pike", "Northern Pike", "freshwater_fish", 15093, ItemRarity.Uncommon, "A northern pike."),
+                new MuseumItem("bashful_pike", "Bashful Pike", "freshwater_fish", 15015, ItemRarity.Rare, "A bashful pike."),
+                new MuseumItem("ironhead_sturgeon", "Ironhead Sturgeon", "freshwater_fish", 15024, ItemRarity.Rare, "An ironhead sturgeon."),
             });
-            aquarium.Bundles.Add(fishingBundle);
+            aquarium.Bundles.Add(freshwaterFish);
 
-            // Spring Fish Tank
-            var springFishTank = new MuseumBundle("spring_fish_tank", "Spring Fish Tank", "aquarium", "Fish found in spring.");
-            springFishTank.Items.AddRange(new[]
+            // Saltwater Fish Bundle
+            var saltwaterFish = new MuseumBundle("saltwater_fish", "Saltwater Fish", "aquarium", "Fish from the ocean.");
+            saltwaterFish.Items.AddRange(new[]
             {
-                new MuseumItem("butterflyfish", "Butterflyfish", "spring_fish_tank", 15117, ItemRarity.Common, "A colorful butterflyfish."),
-                new MuseumItem("sunfish", "Sunfish", "spring_fish_tank", 15116, ItemRarity.Common, "A sunny sunfish."),
-                new MuseumItem("flower_flounder", "Flower Flounder", "spring_fish_tank", 15114, ItemRarity.Uncommon, "A floral flounder."),
-                new MuseumItem("raincloud_ray", "Raincloud Ray", "spring_fish_tank", 15118, ItemRarity.Uncommon, "A rainy ray."),
-                new MuseumItem("floral_trout", "Floral Trout", "spring_fish_tank", 15119, ItemRarity.Uncommon, "A flowery trout."),
-                new MuseumItem("neon_tetra", "Neon Tetra", "spring_fish_tank", 15121, ItemRarity.Common, "A glowing tetra."),
-                new MuseumItem("seahorse", "Seahorse", "spring_fish_tank", 15122, ItemRarity.Rare, "A delicate seahorse."),
-                new MuseumItem("painted_egg", "Painted Egg", "spring_fish_tank", 15123, ItemRarity.Rare, "A decorated egg."),
-                new MuseumItem("tadpole", "Tadpole", "spring_fish_tank", 15124, ItemRarity.Common, "A tiny tadpole."),
+                new MuseumItem("sea_bass", "Sea Bass", "saltwater_fish", 15006, ItemRarity.Common, "A sea bass."),
+                new MuseumItem("tuna", "Tuna", "saltwater_fish", 15087, ItemRarity.Uncommon, "A mighty tuna."),
+                new MuseumItem("red_snapper", "Red Snapper", "saltwater_fish", 15011, ItemRarity.Uncommon, "A red snapper."),
+                new MuseumItem("flower_flounder", "Flower Flounder", "saltwater_fish", 15114, ItemRarity.Uncommon, "A flower flounder."),
+                new MuseumItem("blunted_swordfish", "Blunted Swordfish", "saltwater_fish", 15017, ItemRarity.Rare, "A blunted swordfish."),
+                new MuseumItem("king_salmon", "King Salmon", "saltwater_fish", 15126, ItemRarity.Epic, "A majestic king salmon."),
             });
-            aquarium.Bundles.Add(springFishTank);
+            aquarium.Bundles.Add(saltwaterFish);
 
-            // Summer Fish Tank
-            var summerFishTank = new MuseumBundle("summer_fish_tank", "Summer Fish Tank", "aquarium", "Fish found in summer.");
-            summerFishTank.Items.AddRange(new[]
+            // Bass Collection Bundle
+            var bassCollection = new MuseumBundle("bass_collection", "Bass Collection", "aquarium", "Various bass species.");
+            bassCollection.Items.AddRange(new[]
             {
-                new MuseumItem("blazeel", "Blazeel", "summer_fish_tank", 15104, ItemRarity.Rare, "A fiery eel."),
-                new MuseumItem("hearth_angler", "Hearth Angler", "summer_fish_tank", 15106, ItemRarity.Rare, "A warm angler fish."),
-                new MuseumItem("scorching_squid", "Scorching Squid", "summer_fish_tank", 15107, ItemRarity.Rare, "A hot squid."),
-                new MuseumItem("magma_star", "Magma Star", "summer_fish_tank", 15108, ItemRarity.Epic, "A volcanic starfish."),
-                new MuseumItem("tinder_turtle", "Tinder Turtle", "summer_fish_tank", 15109, ItemRarity.Uncommon, "A fiery turtle."),
-                new MuseumItem("pyrelus", "Pyrelus", "summer_fish_tank", 15110, ItemRarity.Epic, "A flame fish."),
-                new MuseumItem("flame_ray", "Flame Ray", "summer_fish_tank", 15111, ItemRarity.Rare, "A burning ray."),
-                new MuseumItem("molten_slug", "Molten Slug", "summer_fish_tank", 15112, ItemRarity.Uncommon, "A lava slug."),
-                new MuseumItem("searback", "Searback", "summer_fish_tank", 15113, ItemRarity.Rare, "A scorched fish."),
+                new MuseumItem("averagemouth_bass", "Averagemouth Bass", "bass_collection", 15020, ItemRarity.Common, "An averagemouth bass."),
+                new MuseumItem("black_bass", "Black Bass", "bass_collection", 15084, ItemRarity.Common, "A black bass."),
+                new MuseumItem("rock_bass", "Rock Bass", "bass_collection", 15092, ItemRarity.Uncommon, "A rock bass."),
+                new MuseumItem("blooming_bass", "Blooming Bass", "bass_collection", 15115, ItemRarity.Rare, "A blooming bass."),
+                new MuseumItem("bonemouth_bass", "Bonemouth Bass", "bass_collection", 15028, ItemRarity.Rare, "A bonemouth bass."),
             });
-            aquarium.Bundles.Add(summerFishTank);
+            aquarium.Bundles.Add(bassCollection);
 
-            // Fall Fish Tank
-            var fallFishTank = new MuseumBundle("fall_fish_tank", "Fall Fish Tank", "aquarium", "Fish found in fall.");
-            fallFishTank.Items.AddRange(new[]
+            // Exotic Fish Bundle
+            var exoticFish = new MuseumBundle("exotic_fish", "Exotic Fish", "aquarium", "Rare and unusual fish species.");
+            exoticFish.Items.AddRange(new[]
             {
-                new MuseumItem("coducopia", "Coducopia", "fall_fish_tank", 15125, ItemRarity.Rare, "A bountiful fish."),
-                new MuseumItem("king_salmon", "King Salmon", "fall_fish_tank", 15126, ItemRarity.Epic, "A majestic salmon."),
-                new MuseumItem("hayfish", "Hayfish", "fall_fish_tank", 15127, ItemRarity.Common, "A harvest fish."),
-                new MuseumItem("acorn_anchovy", "Acorn Anchovy", "fall_fish_tank", 15128, ItemRarity.Common, "An autumn anchovy."),
-                new MuseumItem("vampire_piranha", "Vampire Piranha", "fall_fish_tank", 15131, ItemRarity.Rare, "A spooky piranha."),
-                new MuseumItem("ghostfish", "Ghostfish", "fall_fish_tank", 15132, ItemRarity.Rare, "A spectral fish."),
-                new MuseumItem("pumpkin_jelly", "Pumpkin Jelly", "fall_fish_tank", 15133, ItemRarity.Uncommon, "A pumpkin jellyfish."),
-                new MuseumItem("pirate_perch", "Pirate Perch", "fall_fish_tank", 15134, ItemRarity.Uncommon, "A swashbuckling perch."),
-                new MuseumItem("autumn_leaf_sole", "Autumn Leaf Sole", "fall_fish_tank", 15135, ItemRarity.Uncommon, "A leafy sole."),
+                new MuseumItem("pufferfish", "Pufferfish", "exotic_fish", 15007, ItemRarity.Rare, "A spiny pufferfish."),
+                new MuseumItem("seahorse", "Seahorse", "exotic_fish", 15122, ItemRarity.Epic, "A delicate seahorse."),
+                new MuseumItem("crystal_tetra", "Crystal Tetra", "exotic_fish", 15044, ItemRarity.Rare, "A crystal tetra."),
+                new MuseumItem("koi_fish", "Koi Fish", "exotic_fish", 15090, ItemRarity.Rare, "A beautiful koi fish."),
+                new MuseumItem("royal_koi", "Royal Koi", "exotic_fish", 15057, ItemRarity.Legendary, "A legendary royal koi."),
+                new MuseumItem("golden_carp", "Golden Carp", "exotic_fish", 15026, ItemRarity.Epic, "A shimmering golden carp."),
             });
-            aquarium.Bundles.Add(fallFishTank);
+            aquarium.Bundles.Add(exoticFish);
 
-            // Winter Fish Tank
-            var winterFishTank = new MuseumBundle("winter_fish_tank", "Winter Fish Tank", "aquarium", "Fish found in winter.");
-            winterFishTank.Items.AddRange(new[]
+            // Legendary Sea Creatures Bundle
+            var legendaryCreatures = new MuseumBundle("legendary_creatures", "Legendary Sea Creatures", "aquarium", "Mythical creatures of the deep.");
+            legendaryCreatures.Items.AddRange(new[]
             {
-                new MuseumItem("frostfin", "Frostfin", "winter_fish_tank", 15094, ItemRarity.Rare, "An icy fish."),
-                new MuseumItem("christmas_lightfish", "Christmas Lightfish", "winter_fish_tank", 15095, ItemRarity.Rare, "A festive fish."),
-                new MuseumItem("holly_carp", "Holly Carp", "winter_fish_tank", 15096, ItemRarity.Uncommon, "A holiday carp."),
-                new MuseumItem("jingle_bass", "Jingle Bass", "winter_fish_tank", 15097, ItemRarity.Uncommon, "A jingling bass."),
-                new MuseumItem("frozen_tuna", "Frozen Tuna", "winter_fish_tank", 15098, ItemRarity.Rare, "A frozen tuna."),
-                new MuseumItem("scarffish", "Scarffish", "winter_fish_tank", 15099, ItemRarity.Common, "A cozy fish."),
-                new MuseumItem("heatfin", "Heatfin", "winter_fish_tank", 15100, ItemRarity.Uncommon, "A warming fish."),
-                new MuseumItem("icicle_carp", "Icicle Carp", "winter_fish_tank", 15101, ItemRarity.Uncommon, "An icy carp."),
-                new MuseumItem("blazing_herring", "Blazing Herring", "winter_fish_tank", 15102, ItemRarity.Rare, "A fiery herring."),
+                new MuseumItem("shadow_tuna", "Shadow Tuna", "legendary_creatures", 15029, ItemRarity.Epic, "A mysterious shadow tuna."),
+                new MuseumItem("ghosthead_tuna", "Ghosthead Tuna", "legendary_creatures", 15073, ItemRarity.Epic, "A ghosthead tuna."),
+                new MuseumItem("spiked_salmon", "Spiked Salmon", "legendary_creatures", 15061, ItemRarity.Epic, "A spiked salmon."),
+                new MuseumItem("vampire_squid", "Vampire Squid", "legendary_creatures", 15075, ItemRarity.Legendary, "A vampire squid from the deep."),
+                new MuseumItem("albino_squid", "Albino Squid", "legendary_creatures", 15079, ItemRarity.Legendary, "A rare albino squid."),
+                new MuseumItem("geometric_squid", "Geometric Squid", "legendary_creatures", 15146, ItemRarity.Legendary, "A geometric squid."),
             });
-            aquarium.Bundles.Add(winterFishTank);
+            aquarium.Bundles.Add(legendaryCreatures);
 
-            // Nel'Vari Fish Tank
-            var nelvariFishTank = new MuseumBundle("nelvari_fish_tank", "Nel'Vari Fish Tank", "aquarium", "Fish from Nel'Vari waters.");
-            nelvariFishTank.Items.AddRange(new[]
+            // Shellfish & Crustaceans Bundle
+            var shellfish = new MuseumBundle("shellfish", "Shellfish & Crustaceans", "aquarium", "Shelled creatures from the waters.");
+            shellfish.Items.AddRange(new[]
             {
-                new MuseumItem("robed_parrotfish", "Robed Parrotfish", "nelvari_fish_tank", 15041, ItemRarity.Uncommon, "A robed parrotfish."),
-                new MuseumItem("axolotl", "Axolotl", "nelvari_fish_tank", 15055, ItemRarity.Rare, "A cute axolotl."),
-                new MuseumItem("frilled_betta", "Frilled Betta", "nelvari_fish_tank", 15054, ItemRarity.Uncommon, "A fancy betta."),
-                new MuseumItem("horsefish", "Horsefish", "nelvari_fish_tank", 15053, ItemRarity.Uncommon, "A horse-like fish."),
-                new MuseumItem("flamefish", "Flamefish", "nelvari_fish_tank", 15036, ItemRarity.Rare, "A fiery fish."),
-                new MuseumItem("dragon_gulper", "Dragon Gulper", "nelvari_fish_tank", 15040, ItemRarity.Epic, "A dragon-like fish."),
-                new MuseumItem("neapolitan_fish", "Neapolitan Fish", "nelvari_fish_tank", 15056, ItemRarity.Uncommon, "A tri-colored fish."),
-                new MuseumItem("snobfish", "Snobfish", "nelvari_fish_tank", 15042, ItemRarity.Common, "A snooty fish."),
-                new MuseumItem("kelp_eel", "Kelp Eel", "nelvari_fish_tank", 15045, ItemRarity.Common, "A seaweed eel."),
-                new MuseumItem("princely_frog", "Princely Frog", "nelvari_fish_tank", 15058, ItemRarity.Rare, "A royal frog."),
-                new MuseumItem("angelfin", "Angelfin", "nelvari_fish_tank", 15059, ItemRarity.Uncommon, "An angelic fish."),
-                new MuseumItem("bubblefish", "Bubblefish", "nelvari_fish_tank", 15060, ItemRarity.Common, "A bubbly fish."),
-                new MuseumItem("crystal_tetra", "Crystal Tetra", "nelvari_fish_tank", 15044, ItemRarity.Rare, "A crystalline tetra."),
-                new MuseumItem("sky_ray", "Sky Ray", "nelvari_fish_tank", 15046, ItemRarity.Rare, "A celestial ray."),
+                new MuseumItem("crab", "Crab", "shellfish", 15001, ItemRarity.Common, "A red crab."),
+                new MuseumItem("lobster", "Lobster", "shellfish", 15088, ItemRarity.Uncommon, "A large lobster."),
+                new MuseumItem("deadeye_shrimp", "Deadeye Shrimp", "shellfish", 15033, ItemRarity.Rare, "A deadeye shrimp."),
+                new MuseumItem("clam", "Clam", "shellfish", 2104, ItemRarity.Common, "A fresh clam."),
+                new MuseumItem("dumbo_octopus", "Dumbo Octopus", "shellfish", 15062, ItemRarity.Epic, "An adorable dumbo octopus."),
+                new MuseumItem("scorching_squid", "Scorching Squid", "shellfish", 15107, ItemRarity.Rare, "A scorching squid."),
             });
-            aquarium.Bundles.Add(nelvariFishTank);
-
-            // Withergate Fish Tank
-            var withergateFishTank = new MuseumBundle("withergate_fish_tank", "Withergate Fish Tank", "aquarium", "Fish from Withergate waters.");
-            withergateFishTank.Items.AddRange(new[]
-            {
-                new MuseumItem("kraken", "Kraken", "withergate_fish_tank", 15070, ItemRarity.Legendary, "A legendary kraken."),
-                new MuseumItem("water_bear", "Water Bear", "withergate_fish_tank", 15065, ItemRarity.Rare, "A tiny water bear."),
-                new MuseumItem("bonemouth_bass", "Bonemouth Bass", "withergate_fish_tank", 15028, ItemRarity.Rare, "A skeletal bass."),
-                new MuseumItem("mummy_trout", "Mummy Trout", "withergate_fish_tank", 15069, ItemRarity.Rare, "A wrapped trout."),
-                new MuseumItem("deadeye_shrimp", "Deadeye Shrimp", "withergate_fish_tank", 15033, ItemRarity.Uncommon, "A spooky shrimp."),
-                new MuseumItem("electric_eel", "Electric Eel", "withergate_fish_tank", 15066, ItemRarity.Rare, "A shocking eel."),
-                new MuseumItem("brain_jelly", "Brain Jelly", "withergate_fish_tank", 15068, ItemRarity.Rare, "A brainy jellyfish."),
-                new MuseumItem("redfinned_pincher", "Redfinned Pincher", "withergate_fish_tank", 15067, ItemRarity.Uncommon, "A pinching fish."),
-                new MuseumItem("sea_bat", "Sea Bat", "withergate_fish_tank", 15071, ItemRarity.Uncommon, "A batlike fish."),
-                new MuseumItem("ghosthead_tuna", "Ghosthead Tuna", "withergate_fish_tank", 15073, ItemRarity.Epic, "A ghostly tuna."),
-                new MuseumItem("globfish", "Globfish", "withergate_fish_tank", 15072, ItemRarity.Common, "A blobby fish."),
-                new MuseumItem("living_jelly", "Living Jelly", "withergate_fish_tank", 15031, ItemRarity.Uncommon, "An animated jellyfish."),
-                new MuseumItem("purrmaid", "Purrmaid", "withergate_fish_tank", 15037, ItemRarity.Rare, "A cat-like mermaid fish."),
-                new MuseumItem("slime_leech", "Slime Leech", "withergate_fish_tank", 15035, ItemRarity.Common, "A slimy leech."),
-                new MuseumItem("goblin_shark", "Goblin Shark", "withergate_fish_tank", 15074, ItemRarity.Epic, "A goblin-like shark."),
-                new MuseumItem("moonfish", "Moonfish", "withergate_fish_tank", 15076, ItemRarity.Rare, "A lunar fish."),
-                new MuseumItem("toothy_angler", "Toothy Angler", "withergate_fish_tank", 15030, ItemRarity.Rare, "A toothy angler fish."),
-                new MuseumItem("vampire_squid", "Vampire Squid", "withergate_fish_tank", 15075, ItemRarity.Epic, "A vampiric squid."),
-                new MuseumItem("viperfish", "Viperfish", "withergate_fish_tank", 15077, ItemRarity.Rare, "A venomous fish."),
-                new MuseumItem("albino_squid", "Albino Squid", "withergate_fish_tank", 15079, ItemRarity.Epic, "A pale squid."),
-                new MuseumItem("devilfin", "Devilfin", "withergate_fish_tank", 15080, ItemRarity.Rare, "A devilish fish."),
-                new MuseumItem("shadow_tuna", "Shadow Tuna", "withergate_fish_tank", 15029, ItemRarity.Epic, "A shadowy tuna."),
-            });
-            aquarium.Bundles.Add(withergateFishTank);
-
-            // Large Fish Tank
-            var largeFishTank = new MuseumBundle("large_fish_tank", "Large Fish Tank", "aquarium", "Common fish from all waters.");
-            largeFishTank.Items.AddRange(new[]
-            {
-                new MuseumItem("pygmy_tuna", "Pygmy Tuna", "large_fish_tank", 15023, ItemRarity.Common, "A small tuna."),
-                new MuseumItem("catfish", "Catfish", "large_fish_tank", 15018, ItemRarity.Common, "A whiskered catfish."),
-                new MuseumItem("gold_fish", "Gold Fish", "large_fish_tank", 15008, ItemRarity.Common, "A golden fish."),
-                new MuseumItem("streamline_cod", "Streamline Cod", "large_fish_tank", 15014, ItemRarity.Common, "A sleek cod."),
-                new MuseumItem("salmon", "Salmon", "large_fish_tank", 15085, ItemRarity.Common, "A pink salmon."),
-                new MuseumItem("clownfish", "Clownfish", "large_fish_tank", 15083, ItemRarity.Common, "A funny clownfish."),
-                new MuseumItem("black_bass", "Black Bass", "large_fish_tank", 15084, ItemRarity.Common, "A dark bass."),
-                new MuseumItem("rainbow_trout", "Rainbow Trout", "large_fish_tank", 15004, ItemRarity.Common, "A colorful trout."),
-                new MuseumItem("popeye_goldfish", "Popeye Goldfish", "large_fish_tank", 15082, ItemRarity.Uncommon, "A big-eyed goldfish."),
-                new MuseumItem("pufferfish", "Pufferfish", "large_fish_tank", 15007, ItemRarity.Uncommon, "A spiny pufferfish."),
-                new MuseumItem("ironhead_sturgeon", "Ironhead Sturgeon", "large_fish_tank", 15024, ItemRarity.Rare, "A tough sturgeon."),
-                new MuseumItem("cuddlefish", "Cuddlefish", "large_fish_tank", 15022, ItemRarity.Uncommon, "A cuddly cuttlefish."),
-                new MuseumItem("lobster", "Lobster", "large_fish_tank", 15088, ItemRarity.Uncommon, "A large lobster."),
-                new MuseumItem("silver_carp", "Silver Carp", "large_fish_tank", 15012, ItemRarity.Common, "A silver carp."),
-                new MuseumItem("tuna", "Tuna", "large_fish_tank", 15087, ItemRarity.Uncommon, "A mighty tuna."),
-                new MuseumItem("blunted_swordfish", "Blunted Swordfish", "large_fish_tank", 15017, ItemRarity.Rare, "A swordfish."),
-                new MuseumItem("ribbon_eel", "Ribbon Eel", "large_fish_tank", 15089, ItemRarity.Uncommon, "A ribbon-like eel."),
-                new MuseumItem("tiger_trout", "Tiger Trout", "large_fish_tank", 15086, ItemRarity.Uncommon, "A striped trout."),
-                new MuseumItem("eel", "Eel", "large_fish_tank", 15002, ItemRarity.Common, "A slippery eel."),
-                new MuseumItem("red_snapper", "Red Snapper", "large_fish_tank", 15011, ItemRarity.Uncommon, "A red snapper."),
-                new MuseumItem("carp", "Carp", "large_fish_tank", 15010, ItemRarity.Common, "A golden carp."),
-                new MuseumItem("redeye_piranha", "Redeye Piranha", "large_fish_tank", 15016, ItemRarity.Uncommon, "A fierce piranha."),
-                new MuseumItem("angel_fish", "Angel Fish", "large_fish_tank", 15005, ItemRarity.Common, "An angelic fish."),
-                new MuseumItem("whitebelly_shark", "Whitebelly Shark", "large_fish_tank", 15013, ItemRarity.Rare, "A shark."),
-                new MuseumItem("koi_fish", "Koi Fish", "large_fish_tank", 15090, ItemRarity.Rare, "A beautiful koi."),
-                new MuseumItem("sandstone_fish", "Sandstone Fish", "large_fish_tank", 2118, ItemRarity.Uncommon, "A sandy fish."),
-            });
-            aquarium.Bundles.Add(largeFishTank);
+            aquarium.Bundles.Add(shellfish);
 
             sections.Add(aquarium);
 
@@ -569,176 +308,6 @@ namespace SunHavenMuseumUtilityTracker.Data
                 }
             }
             return null;
-        }
-
-        /// <summary>
-        /// Maps game progress key names to our bundle IDs.
-        /// The game uses names like "ManaBundle", we use "mana_bundle".
-        /// </summary>
-        private static Dictionary<string, string> _progressKeyToBundleId;
-
-        private static void InitializeProgressKeyMapping()
-        {
-            if (_progressKeyToBundleId != null) return;
-
-            // These keys come from MuseumCurator static lists in the game:
-            // - culturalMuseumProgress
-            // - miningMuseumProgress
-            // - aquaticMuseumProgress
-            _progressKeyToBundleId = new Dictionary<string, string>(System.StringComparer.OrdinalIgnoreCase)
-            {
-                // Hall of Gems (miningMuseumProgress)
-                { "ManaBundle", "mana_bundle" },
-                { "MoneyBundle", "money_bundle" },
-                { "GoldenBundle", "golden_bundle" },
-                { "BarsBundle", "bars_bundle" },
-                { "GemBundle", "gems_bundle" },  // Game uses GemBundle, not GemsBundle
-                { "NelvariMinesBundle", "nelvari_mines_bundle" },
-                { "WithergateMinesBundle", "withergate_mines_bundle" },
-
-                // Hall of Culture (culturalMuseumProgress)
-                { "SpringCropsBundle", "spring_crops_bundle" },
-                { "SummerCropsBundle", "summer_crops_bundle" },
-                { "FallCropsBundle", "fall_crops_bundle" },
-                { "WinterCropsBundle", "winter_crops_bundle" },
-                { "NelvariFarmingBundle", "nelvari_crops_bundle" },  // Game uses NelvariFarmingBundle
-                { "WithergateFarmingBundle", "withergate_crops_bundle" },  // Game uses WithergateFarmingBundle
-                { "FlowersBundle", "flowers_bundle" },
-                { "ForagingBundle", "foraging_bundle" },
-                { "ExplorationBundle", "exploration_bundle" },
-                { "CombatBundle", "combat_bundle" },
-                { "AlchemyBundle", "alchemy_bundle" },
-                { "NelvariTempleBooks", "nelvari_temple_bundle" },  // Game uses NelvariTempleBooks
-
-                // Aquarium (aquaticMuseumProgress)
-                { "FishingBundle", "fishing_bundle" },
-                { "MuseumAquariumSpring", "spring_fish_tank" },  // Game uses MuseumAquariumSpring
-                { "MuseumAquariumSummer", "summer_fish_tank" },  // Game uses MuseumAquariumSummer
-                { "MuseumAquariumFall", "fall_fish_tank" },  // Game uses MuseumAquariumFall
-                { "MuseumAquariumWinter", "winter_fish_tank" },  // Game uses MuseumAquariumWinter
-                { "MuseumAquariumNelvari", "nelvari_fish_tank" },  // Game uses MuseumAquariumNelvari
-                { "MuseumAquariumWithergate", "withergate_fish_tank" },  // Game uses MuseumAquariumWithergate
-                { "MuseumAquariumBigTank", "large_fish_tank" },  // Game uses MuseumAquariumBigTank
-            };
-        }
-
-        /// <summary>
-        /// Finds a bundle by the game's progress key name.
-        /// </summary>
-        public static MuseumBundle FindBundleByProgressKey(string progressKey)
-        {
-            InitializeProgressKeyMapping();
-
-            if (!_progressKeyToBundleId.TryGetValue(progressKey, out string bundleId))
-            {
-                // Try to auto-match by converting to our format
-                bundleId = ConvertProgressKeyToBundleId(progressKey);
-            }
-
-            if (string.IsNullOrEmpty(bundleId)) return null;
-
-            foreach (var section in GetAllSections())
-            {
-                foreach (var bundle in section.Bundles)
-                {
-                    if (bundle.Id == bundleId)
-                        return bundle;
-                }
-            }
-
-            return null;
-        }
-
-        /// <summary>
-        /// Converts a progress key like "ManaBundle" to bundle ID like "mana_bundle".
-        /// </summary>
-        private static string ConvertProgressKeyToBundleId(string progressKey)
-        {
-            if (string.IsNullOrEmpty(progressKey)) return null;
-
-            // Convert PascalCase to snake_case
-            var result = new System.Text.StringBuilder();
-            for (int i = 0; i < progressKey.Length; i++)
-            {
-                char c = progressKey[i];
-                if (char.IsUpper(c) && i > 0)
-                {
-                    result.Append('_');
-                }
-                result.Append(char.ToLower(c));
-            }
-
-            return result.ToString();
-        }
-
-        /// <summary>
-        /// Gets all items in a specific bundle.
-        /// </summary>
-        public static List<MuseumItem> GetItemsInBundle(string bundleId)
-        {
-            foreach (var section in GetAllSections())
-            {
-                foreach (var bundle in section.Bundles)
-                {
-                    if (bundle.Id == bundleId)
-                        return bundle.Items;
-                }
-            }
-            return new List<MuseumItem>();
-        }
-
-        /// <summary>
-        /// Gets all bundle IDs.
-        /// </summary>
-        public static List<string> GetAllBundleIds()
-        {
-            var bundleIds = new List<string>();
-            foreach (var section in GetAllSections())
-            {
-                foreach (var bundle in section.Bundles)
-                {
-                    bundleIds.Add(bundle.Id);
-                }
-            }
-            return bundleIds;
-        }
-
-        /// <summary>
-        /// Gets the progress key for a bundle ID.
-        /// </summary>
-        public static string GetProgressKeyForBundle(string bundleId)
-        {
-            InitializeProgressKeyMapping();
-
-            foreach (var kvp in _progressKeyToBundleId)
-            {
-                if (kvp.Value == bundleId)
-                    return kvp.Key;
-            }
-
-            // Try converting bundle_id to BundleId
-            return ConvertBundleIdToProgressKey(bundleId);
-        }
-
-        /// <summary>
-        /// Converts a bundle ID like "mana_bundle" to progress key like "ManaBundle".
-        /// </summary>
-        private static string ConvertBundleIdToProgressKey(string bundleId)
-        {
-            if (string.IsNullOrEmpty(bundleId)) return null;
-
-            var parts = bundleId.Split('_');
-            var result = new System.Text.StringBuilder();
-            foreach (var part in parts)
-            {
-                if (!string.IsNullOrEmpty(part))
-                {
-                    result.Append(char.ToUpper(part[0]));
-                    if (part.Length > 1)
-                        result.Append(part.Substring(1));
-                }
-            }
-            return result.ToString();
         }
     }
 }
