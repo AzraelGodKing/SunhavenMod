@@ -356,3 +356,85 @@ code {
         font-size: 2.2em;
     }
 }
+
+/* -----------------------------------------------------------------
+   DARK MODE
+   ----------------------------------------------------------------- */
+[data-theme="dark"] body {
+    background: linear-gradient(135deg, #1a1610 0%, #2d2418 50%, #1f1a12 100%);
+    color: #e8dfd2;
+}
+
+[data-theme="dark"] h1 {
+    color: #e8dfd2;
+}
+
+[data-theme="dark"] .subtitle {
+    color: #b0a58f;
+}
+
+[data-theme="dark"] .section-title {
+    color: #e8dfd2;
+}
+
+[data-theme="dark"] .section-title::after {
+    background: linear-gradient(90deg, #3fb87a, #f2a65a);
+}
+
+[data-theme="dark"] .mod-card {
+    background: rgba(40, 35, 28, 0.85);
+    border-color: rgba(200, 180, 140, 0.12);
+    box-shadow: 0 18px 40px rgba(0, 0, 0, 0.3);
+}
+
+[data-theme="dark"] .mod-card:hover {
+    border-color: rgba(63, 185, 80, 0.4);
+    box-shadow: 0 24px 50px rgba(0, 0, 0, 0.5);
+}
+
+[data-theme="dark"] .mod-title-area h3 {
+    color: #e8dfd2;
+}
+
+[data-theme="dark"] .mod-tagline {
+    color: #b0a58f;
+}
+
+[data-theme="dark"] .mod-version {
+    background: rgba(200, 180, 140, 0.15);
+    color: #b0a58f;
+}
+
+[data-theme="dark"] .mod-description {
+    color: #b0a58f;
+}
+
+[data-theme="dark"] .mod-feature {
+    background: rgba(63, 185, 80, 0.12);
+    color: #6fcf97;
+}
+
+[data-theme="dark"] .mod-cta-button {
+    box-shadow: 0 6px 18px rgba(0, 0, 0, 0.3);
+}
+
+[data-theme="dark"] .install-step {
+    background: rgba(40, 35, 28, 0.85);
+    border-color: rgba(200, 180, 140, 0.12);
+}
+
+[data-theme="dark"] .install-step h4 {
+    color: #e8dfd2;
+}
+
+[data-theme="dark"] .install-step p {
+    color: #b0a58f;
+}
+
+[data-theme="dark"] .footer {
+    color: #8a7e6e;
+}
+
+[data-theme="dark"] .footer a {
+    color: #6fcf97;
+}

@@ -5,6 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Sun Haven Todo - Task Tracker for Sun Haven</title>
     <link rel="stylesheet" href="todo-style.css">
+    <link rel="stylesheet" href="../shared-styles.css">
+    <script src="../shared.js" defer></script>
 </head>
 <body>
     <nav class="top-nav">
@@ -23,6 +25,20 @@
 
         <section class="intro-section">
             <p>Sun Haven Todo is an in-game task tracker that helps you organize and remember all your farming goals, quests, and daily activities. With a beautiful parchment-themed UI that matches Sun Haven's aesthetic, categories for different activities, priority levels, and per-character saves, you'll stay on top of everything your farm life demands.</p>
+        </section>
+
+        <section class="keybind-section">
+            <h2 class="section-title">Quick Controls</h2>
+            <div class="keybind-grid">
+                <div class="keybind-card">
+                    <div class="keybind-keys"><kbd>Ctrl</kbd> + <kbd>T</kbd></div>
+                    <div class="keybind-action">Open Todo List</div>
+                </div>
+                <div class="keybind-card">
+                    <div class="keybind-keys"><kbd>Esc</kbd></div>
+                    <div class="keybind-action">Close Todo List</div>
+                </div>
+            </div>
         </section>
 
         <section class="notice-section">
@@ -248,6 +264,26 @@
                 </table>
             </div>
             <p class="config-note">Configuration file located at: <code>BepInEx/config/com.azraelgodking.sunhaventodo.cfg</code></p>
+        </section>
+
+        <section class="related-mods">
+            <h2 class="section-title">Pairs Well With</h2>
+            <div class="related-grid">
+                <a href="../RacialBonuses/RacialBonuses.html" class="related-card">
+                    <span class="related-icon">&#x2694;&#xFE0F;</span>
+                    <div class="related-info">
+                        <h4>Haven's Birthright</h4>
+                        <p>Track your racial bonus progression alongside daily tasks</p>
+                    </div>
+                </a>
+                <a href="../BirthdayReminder/BirthdayReminder.html" class="related-card">
+                    <span class="related-icon">&#x1F382;</span>
+                    <div class="related-info">
+                        <h4>Birthday Reminder</h4>
+                        <p>Never forget NPC birthdays while managing your todo list</p>
+                    </div>
+                </a>
+            </div>
         </section>
 
         <footer class="footer">

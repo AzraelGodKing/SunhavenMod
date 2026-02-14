@@ -517,3 +517,109 @@ code {
         grid-template-columns: 1fr;
     }
 }
+
+/* -----------------------------------------------------------------
+   DARK MODE
+   ----------------------------------------------------------------- */
+[data-theme="dark"] body {
+    background: linear-gradient(135deg, #1a1610 0%, #2d2418 50%, #1f1a12 100%);
+    color: #e8dfd2;
+}
+
+[data-theme="dark"] .top-nav {
+    background: rgba(30, 25, 18, 0.95);
+    border-bottom-color: rgba(198, 134, 66, 0.2);
+}
+
+[data-theme="dark"] .nav-current { color: rgba(232, 220, 200, 0.6); }
+[data-theme="dark"] .nav-divider { color: rgba(232, 220, 200, 0.3); }
+
+[data-theme="dark"] .hero {
+    background: linear-gradient(180deg, rgba(198, 134, 66, 0.08) 0%, transparent 100%);
+    border-color: rgba(198, 134, 66, 0.2);
+}
+
+[data-theme="dark"] .hero h1 { color: #e8dfd2; }
+[data-theme="dark"] .hero .full-name { color: #8db88d; }
+[data-theme="dark"] .tagline { color: rgba(232, 223, 210, 0.7); }
+
+[data-theme="dark"] .intro-section {
+    background: rgba(40, 35, 28, 0.6);
+    color: rgba(232, 223, 210, 0.8);
+    border-color: rgba(198, 134, 66, 0.3);
+}
+
+[data-theme="dark"] .notice-box {
+    background: rgba(91, 127, 91, 0.1);
+    border-color: rgba(91, 127, 91, 0.25);
+}
+[data-theme="dark"] .notice-box h3 { color: #8db88d; }
+[data-theme="dark"] .notice-box p { color: rgba(232, 223, 210, 0.75); }
+
+[data-theme="dark"] .feature-card,
+[data-theme="dark"] .museum-section {
+    background: rgba(40, 35, 28, 0.8);
+    border-color: rgba(198, 134, 66, 0.15);
+}
+
+[data-theme="dark"] .feature-card h3 { color: #e8dfd2; }
+[data-theme="dark"] .feature-card p { color: rgba(232, 223, 210, 0.7); }
+
+[data-theme="dark"] .section-header {
+    border-bottom-color: rgba(198, 134, 66, 0.15);
+}
+[data-theme="dark"] .section-header h3 { color: #e8dfd2; }
+[data-theme="dark"] .section-desc { color: rgba(232, 223, 210, 0.65); }
+
+[data-theme="dark"] .bundle-list li {
+    color: rgba(232, 223, 210, 0.8);
+    border-bottom-color: rgba(198, 134, 66, 0.1);
+}
+
+[data-theme="dark"] .rarity-item {
+    background: rgba(40, 35, 28, 0.7);
+    border-color: rgba(198, 134, 66, 0.12);
+}
+[data-theme="dark"] .rarity-label { color: rgba(232, 223, 210, 0.8); }
+
+[data-theme="dark"] .step,
+[data-theme="dark"] .install-step {
+    background: rgba(40, 35, 28, 0.8);
+    border-color: rgba(198, 134, 66, 0.15);
+}
+
+[data-theme="dark"] .step-content h4,
+[data-theme="dark"] .step-info h4 { color: #e8dfd2; }
+[data-theme="dark"] .step-content p,
+[data-theme="dark"] .step-info p { color: rgba(232, 223, 210, 0.7); }
+
+[data-theme="dark"] kbd {
+    background: rgba(198, 134, 66, 0.15);
+    border-color: rgba(198, 134, 66, 0.25);
+    color: #e8dfd2;
+}
+
+[data-theme="dark"] table {
+    background: rgba(40, 35, 28, 0.8);
+}
+[data-theme="dark"] th {
+    background: rgba(198, 134, 66, 0.15);
+    color: #e8dfd2;
+}
+[data-theme="dark"] td {
+    color: rgba(232, 223, 210, 0.75);
+    border-bottom-color: rgba(198, 134, 66, 0.1);
+}
+
+[data-theme="dark"] code {
+    background: rgba(198, 134, 66, 0.12);
+    color: #d4a86a;
+}
+
+[data-theme="dark"] .config-note { color: rgba(232, 223, 210, 0.6); }
+
+[data-theme="dark"] .footer {
+    background: rgba(30, 25, 18, 0.5);
+    border-top-color: rgba(198, 134, 66, 0.15);
+}
+[data-theme="dark"] .footer p { color: rgba(232, 223, 210, 0.6); }

@@ -24,13 +24,45 @@ body {
         radial-gradient(circle at 80% 0%, rgba(63, 107, 79, 0.2), transparent 45%),
         linear-gradient(135deg, #f9f4ec 0%, #efe2d2 100%);
     min-height: 100vh;
-    padding: 40px 20px 60px;
+    padding: 0;
     color: var(--ink);
+}
+
+/* Top Navigation */
+.top-nav {
+    background: rgba(249, 244, 236, 0.95);
+    padding: 14px 40px;
+    border-bottom: 1px solid rgba(42, 32, 22, 0.15);
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    backdrop-filter: blur(8px);
+}
+
+.nav-home {
+    color: var(--gold);
+    text-decoration: none;
+    font-weight: 700;
+    transition: color 0.3s;
+}
+
+.nav-home:hover {
+    color: var(--forest);
+}
+
+.nav-divider {
+    color: rgba(42, 32, 22, 0.35);
+    margin: 0 10px;
+}
+
+.nav-current {
+    color: rgba(42, 32, 22, 0.6);
 }
 
 .container {
     max-width: 1200px;
     margin: 0 auto;
+    padding: 24px 20px 60px;
 }
 
 h1 {
@@ -450,3 +482,124 @@ h1 {
         align-self: flex-end;
     }
 }
+
+/* -----------------------------------------------------------------
+   DARK MODE
+   ----------------------------------------------------------------- */
+[data-theme="dark"] body {
+    background: linear-gradient(135deg, #1a1610 0%, #2d2418 50%, #1f1a12 100%);
+    color: #e8dfd2;
+}
+
+[data-theme="dark"] .top-nav {
+    background: rgba(30, 25, 18, 0.95);
+    border-bottom-color: rgba(192, 138, 43, 0.2);
+}
+
+[data-theme="dark"] .nav-current { color: rgba(232, 220, 200, 0.6); }
+[data-theme="dark"] .nav-divider { color: rgba(232, 220, 200, 0.3); }
+
+[data-theme="dark"] .hero {
+    background: rgba(40, 35, 28, 0.6);
+    border-color: rgba(192, 138, 43, 0.25);
+}
+
+[data-theme="dark"] h1 { color: #e8dfd2; }
+[data-theme="dark"] .subtitle { color: #b0a58f; }
+
+[data-theme="dark"] .race-nav {
+    background: rgba(40, 35, 28, 0.6);
+    border-color: rgba(192, 138, 43, 0.2);
+}
+
+[data-theme="dark"] .race-category {
+    background: rgba(40, 35, 28, 0.5);
+    border-color: rgba(192, 138, 43, 0.15);
+}
+
+[data-theme="dark"] .category-header {
+    border-bottom-color: rgba(200, 180, 140, 0.15);
+}
+[data-theme="dark"] .category-desc { color: #b0a58f; }
+
+[data-theme="dark"] .race-card {
+    background: rgba(30, 25, 20, 0.7);
+    border-color: rgba(128, 128, 128, 0.15);
+}
+
+[data-theme="dark"] .race-header {
+    border-bottom-color: rgba(200, 180, 140, 0.15);
+}
+[data-theme="dark"] .race-header h3 { color: #e8dfd2; }
+[data-theme="dark"] .race-name { color: #e8dfd2; }
+[data-theme="dark"] .race-theme { color: #b0a58f; }
+
+[data-theme="dark"] .bonus-item {
+    border-bottom-color: rgba(200, 180, 140, 0.1);
+}
+
+[data-theme="dark"] .bonus-name { color: #e8dfd2; }
+[data-theme="dark"] .bonus-desc { color: #b0a58f; }
+[data-theme="dark"] .bonus-value {
+    background: rgba(192, 138, 43, 0.2);
+    color: #e8dfd2;
+}
+
+[data-theme="dark"] .active-ability {
+    background: linear-gradient(135deg, rgba(192, 138, 43, 0.08), rgba(192, 138, 43, 0.03));
+    border-color: rgba(192, 138, 43, 0.25);
+}
+[data-theme="dark"] .ability-name { color: #e8dfd2; }
+[data-theme="dark"] .ability-desc { color: #c0b49e; }
+
+[data-theme="dark"] .elf .active-ability {
+    background: linear-gradient(135deg, rgba(63, 143, 95, 0.08), rgba(63, 143, 95, 0.03));
+}
+[data-theme="dark"] .angel .active-ability {
+    background: linear-gradient(135deg, rgba(255, 215, 0, 0.08), rgba(255, 215, 0, 0.03));
+}
+[data-theme="dark"] .demon .active-ability {
+    background: linear-gradient(135deg, rgba(143, 62, 47, 0.1), rgba(143, 62, 47, 0.03));
+}
+[data-theme="dark"] .fire-elemental .active-ability {
+    background: linear-gradient(135deg, rgba(255, 100, 50, 0.1), rgba(255, 100, 50, 0.03));
+}
+[data-theme="dark"] .water-elemental .active-ability {
+    background: linear-gradient(135deg, rgba(59, 110, 143, 0.1), rgba(59, 110, 143, 0.03));
+}
+[data-theme="dark"] .amari-cat .active-ability {
+    background: linear-gradient(135deg, rgba(168, 106, 42, 0.08), rgba(168, 106, 42, 0.03));
+}
+[data-theme="dark"] .amari-dog .active-ability {
+    background: linear-gradient(135deg, rgba(123, 90, 58, 0.08), rgba(123, 90, 58, 0.03));
+}
+[data-theme="dark"] .amari-bird .active-ability {
+    background: linear-gradient(135deg, rgba(108, 92, 154, 0.08), rgba(108, 92, 154, 0.03));
+}
+[data-theme="dark"] .amari-aquatic .active-ability {
+    background: linear-gradient(135deg, rgba(47, 122, 108, 0.08), rgba(47, 122, 108, 0.03));
+}
+[data-theme="dark"] .amari-reptile .active-ability {
+    background: linear-gradient(135deg, rgba(76, 122, 67, 0.08), rgba(76, 122, 67, 0.03));
+}
+[data-theme="dark"] .naga .active-ability {
+    background: linear-gradient(135deg, rgba(47, 122, 108, 0.08), rgba(47, 122, 108, 0.03));
+}
+
+[data-theme="dark"] .changelog-box {
+    background: rgba(40, 35, 28, 0.6);
+    border-color: rgba(192, 138, 43, 0.2);
+}
+[data-theme="dark"] .changelog-entry {
+    border-bottom-color: rgba(200, 180, 140, 0.1);
+}
+[data-theme="dark"] .changelog-content p { color: #b0a58f; }
+
+[data-theme="dark"] .section-title { color: #e8dfd2; }
+[data-theme="dark"] .category-header h2 { color: #e8dfd2; }
+
+[data-theme="dark"] .footer {
+    color: #8a7e6e;
+    border-top-color: rgba(192, 138, 43, 0.15);
+}
+[data-theme="dark"] .footer a { color: #c08a2b; }
