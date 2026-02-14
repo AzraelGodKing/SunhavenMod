@@ -5,6 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Senpai's Chest - Smart Chest Sorting for Sun Haven</title>
     <link rel="stylesheet" href="chest-style.css">
+    <link rel="stylesheet" href="../shared-styles.css">
+    <script src="../shared.js" defer></script>
 </head>
 <body>
     <nav class="top-nav">
@@ -23,6 +25,28 @@
 
         <section class="intro-section">
             <p>Senpai's Chest lets you designate chests as "Smart Chests" with custom sorting rules. Items are automatically pulled from regular chests into the right smart chest based on your rules. Items that don't belong are ejected and rerouted. Set it and forget it.</p>
+        </section>
+
+        <section class="keybind-section">
+            <h2 class="section-title">Quick Controls</h2>
+            <div class="keybind-grid">
+                <div class="keybind-card">
+                    <div class="keybind-keys"><kbd>F9</kbd></div>
+                    <div class="keybind-action">Open Config (Keyboard)</div>
+                </div>
+                <div class="keybind-card">
+                    <div class="keybind-keys"><kbd>LB</kbd> / <kbd>L1</kbd></div>
+                    <div class="keybind-action">Open Config (Controller)</div>
+                </div>
+                <div class="keybind-card">
+                    <div class="keybind-keys"><kbd>D-pad</kbd></div>
+                    <div class="keybind-action">Navigate UI</div>
+                </div>
+                <div class="keybind-card">
+                    <div class="keybind-keys"><kbd>B</kbd> / <kbd>Esc</kbd></div>
+                    <div class="keybind-action">Close Config</div>
+                </div>
+            </div>
         </section>
 
         <section class="notice-section">
@@ -207,6 +231,26 @@
                         <p>Launch Sun Haven, open a chest, and press <kbd>F9</kbd> to start configuring your smart chests.</p>
                     </div>
                 </div>
+            </div>
+        </section>
+
+        <section class="related-mods">
+            <h2 class="section-title">Pairs Well With</h2>
+            <div class="related-grid">
+                <a href="../SMUT/SMUT.html" class="related-card">
+                    <span class="related-icon">&#x1F3DB;</span>
+                    <div class="related-info">
+                        <h4>S.M.U.T.</h4>
+                        <p>Direct integration &mdash; auto-excludes already-donated museum items from sorting</p>
+                    </div>
+                </a>
+                <a href="../TheVault/TheVault.html" class="related-card">
+                    <span class="related-icon">&#x1F512;</span>
+                    <div class="related-info">
+                        <h4>The Vault</h4>
+                        <p>Complete your inventory management with secure currency storage</p>
+                    </div>
+                </a>
             </div>
         </section>
 
