@@ -5,6 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>The Vault - Sun Haven Mod</title>
     <link rel="stylesheet" href="vault-style.css">
+    <link rel="stylesheet" href="../shared-styles.css">
+    <script src="../shared.js" defer></script>
 </head>
 <body>
     <nav class="top-nav">
@@ -23,6 +25,24 @@
 
         <section class="intro-section">
             <p>The Vault is a powerful quality-of-life mod that automatically stores your seasonal tokens, community tokens, and keys in a secure digital vault. No more cluttered inventories or manual currency management - your currencies are safely stored, automatically deposited when picked up, and seamlessly spent at shops and locked doors without ever touching your inventory.</p>
+        </section>
+
+        <section class="keybind-section">
+            <h2 class="section-title">Quick Controls</h2>
+            <div class="keybind-grid">
+                <div class="keybind-card">
+                    <div class="keybind-keys"><kbd>Ctrl</kbd> + <kbd>V</kbd></div>
+                    <div class="keybind-action">Open Vault</div>
+                </div>
+                <div class="keybind-card">
+                    <div class="keybind-keys"><kbd>F8</kbd></div>
+                    <div class="keybind-action">Alt Toggle (Steam Deck)</div>
+                </div>
+                <div class="keybind-card">
+                    <div class="keybind-keys"><kbd>Esc</kbd></div>
+                    <div class="keybind-action">Close Vault</div>
+                </div>
+            </div>
         </section>
 
         <section class="features-section">
@@ -277,6 +297,19 @@
                 </table>
             </div>
             <p class="config-note">Configuration file located at: <code>BepInEx/config/com.azraelgodking.thevault.cfg</code></p>
+        </section>
+
+        <section class="related-mods">
+            <h2 class="section-title">Pairs Well With</h2>
+            <div class="related-grid">
+                <a href="../SenpaisChest/SenpaisChest.html" class="related-card">
+                    <span class="related-icon">&#x1F4E6;</span>
+                    <div class="related-info">
+                        <h4>Senpai's Chest</h4>
+                        <p>Pair currency storage with smart item sorting for full inventory management</p>
+                    </div>
+                </a>
+            </div>
         </section>
 
         <footer class="footer">

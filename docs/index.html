@@ -5,6 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Sun Haven Mods - by AzraelGodKing</title>
     <link rel="stylesheet" href="index-style.css">
+    <link rel="stylesheet" href="shared-styles.css">
+    <script src="shared.js" defer></script>
 </head>
 <body>
     <div class="container">
@@ -16,9 +18,22 @@
         <section class="mods-showcase">
             <h2 class="section-title">Available Mods</h2>
 
+            <div class="mod-filter">
+                <input type="text" class="mod-search" placeholder="Search mods by name, feature, or description..." id="modSearch">
+                <div class="filter-tags">
+                    <button class="filter-tag active" data-tag="all">All</button>
+                    <button class="filter-tag" data-tag="QoL">QoL</button>
+                    <button class="filter-tag" data-tag="Storage">Storage</button>
+                    <button class="filter-tag" data-tag="UI">UI</button>
+                    <button class="filter-tag" data-tag="Social">Social</button>
+                    <button class="filter-tag" data-tag="Tracking">Tracking</button>
+                    <button class="filter-tag" data-tag="Dev">Dev</button>
+                </div>
+            </div>
+
             <div class="mods-grid">
                 <!-- The Vault -->
-                <div class="mod-card vault-theme">
+                <div class="mod-card vault-theme" data-tags="QoL,Storage" data-name="The Vault">
                     <div class="mod-card-header">
                         <span class="mod-icon-large">&#x1F512;</span>
                         <div class="mod-title-area">
@@ -38,7 +53,7 @@
                 </div>
 
                 <!-- Haven's Birthright -->
-                <div class="mod-card birthright-theme">
+                <div class="mod-card birthright-theme" data-tags="QoL" data-name="Haven's Birthright">
                     <span class="update-badge birthright-badge">Updated v1.2.1</span>
                     <div class="mod-card-header">
                         <span class="mod-icon-large">&#x2694;&#xFE0F;</span>
@@ -59,7 +74,7 @@
                 </div>
 
                 <!-- S.M.U.T. - Museum Tracker -->
-                <div class="mod-card smut-theme">
+                <div class="mod-card smut-theme" data-tags="Tracking,UI" data-name="S.M.U.T.">
                     <span class="update-badge">Updated v2.1.1</span>
                     <div class="mod-card-header">
                         <span class="mod-icon-large">&#x1F3DB;</span>
@@ -80,7 +95,7 @@
                 </div>
 
                 <!-- Sun Haven Todo -->
-                <div class="mod-card todo-theme">
+                <div class="mod-card todo-theme" data-tags="QoL,Tracking,UI" data-name="Sun Haven Todo">
                     <div class="mod-card-header">
                         <span class="mod-icon-large">&#x1F4DD;</span>
                         <div class="mod-title-area">
@@ -100,7 +115,7 @@
                 </div>
 
                 <!-- A Squirrel's Birthday Reminder -->
-                <div class="mod-card birthday-theme">
+                <div class="mod-card birthday-theme" data-tags="Social,QoL" data-name="A Squirrel's Birthday Reminder">
                     <div class="mod-card-header">
                         <span class="mod-icon-large">&#x1F382;</span>
                         <div class="mod-title-area">
@@ -120,7 +135,7 @@
                 </div>
 
                 <!-- Senpai's Chest -->
-                <div class="mod-card chest-theme">
+                <div class="mod-card chest-theme" data-tags="QoL,Storage" data-name="Senpai's Chest">
                     <span class="update-badge chest-badge">New!</span>
                     <div class="mod-card-header">
                         <span class="mod-icon-large">&#x1F4E6;</span>
@@ -141,7 +156,7 @@
                 </div>
 
                 <!-- HavenDevTools -->
-                <div class="mod-card devtools-theme">
+                <div class="mod-card devtools-theme" data-tags="Dev" data-name="HavenDevTools">
                     <div class="mod-card-header">
                         <span class="mod-icon-large">&#x1F6E0;&#xFE0F;</span>
                         <div class="mod-title-area">
@@ -191,6 +206,88 @@
                     <div class="step-content">
                         <h4>Play!</h4>
                         <p>Launch Sun Haven and enjoy the mods!</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- FAQ -->
+        <section class="faq-section">
+            <h2 class="section-title">FAQ & Troubleshooting</h2>
+            <div class="faq-list">
+                <details class="faq-item">
+                    <summary class="faq-question">Mod not loading after install?</summary>
+                    <div class="faq-answer">
+                        <p>Make sure you have BepInEx 5.x installed correctly. The mod DLL should be in <code>BepInEx/plugins/</code>. Check <code>BepInEx/LogOutput.log</code> for errors. Ensure you're running a compatible game version.</p>
+                    </div>
+                </details>
+                <details class="faq-item">
+                    <summary class="faq-question">How do I find my config file?</summary>
+                    <div class="faq-answer">
+                        <p>Config files are in <code>BepInEx/config/</code> inside your Sun Haven game folder. Each mod has its own <code>.cfg</code> file. You can edit these with any text editor while the game is closed, or use in-game settings if the mod supports them.</p>
+                    </div>
+                </details>
+                <details class="faq-item">
+                    <summary class="faq-question">Can I use multiple mods together?</summary>
+                    <div class="faq-answer">
+                        <p>Yes! All mods on this hub are designed to work together with no conflicts. Some even have direct integration &mdash; for example, Senpai's Chest automatically excludes already-donated museum items when S.M.U.T. is installed.</p>
+                    </div>
+                </details>
+                <details class="faq-item">
+                    <summary class="faq-question">How do I update a mod?</summary>
+                    <div class="faq-answer">
+                        <p>Simply replace the old DLL file in <code>BepInEx/plugins/</code> with the new version. Your config settings and save data are preserved automatically. If using r2modman/Thunderstore, updates are handled for you.</p>
+                    </div>
+                </details>
+                <details class="faq-item">
+                    <summary class="faq-question">My settings reset after an update?</summary>
+                    <div class="faq-answer">
+                        <p>If a mod adds new config options, BepInEx may regenerate the config file. Your existing settings should be preserved, but new options will use their defaults. Check the <code>.cfg</code> file to verify your preferences.</p>
+                    </div>
+                </details>
+            </div>
+        </section>
+
+        <!-- Recommended Packs -->
+        <section class="mod-packs">
+            <h2 class="section-title">Recommended Packs</h2>
+            <div class="packs-grid">
+                <div class="pack-card">
+                    <h3 class="pack-name">&#x1F3DB; Collector's Pack</h3>
+                    <p class="pack-desc">Track, sort, and store your museum collectibles</p>
+                    <div class="pack-mods">
+                        <a href="SMUT/SMUT.html" class="pack-mod">S.M.U.T.</a>
+                        <a href="SenpaisChest/SenpaisChest.html" class="pack-mod">Senpai's Chest</a>
+                        <a href="TheVault/TheVault.html" class="pack-mod">The Vault</a>
+                    </div>
+                </div>
+                <div class="pack-card">
+                    <h3 class="pack-name">&#x1F495; Social Pack</h3>
+                    <p class="pack-desc">Build relationships and never miss a birthday</p>
+                    <div class="pack-mods">
+                        <a href="BirthdayReminder/BirthdayReminder.html" class="pack-mod">Birthday Reminder</a>
+                        <a href="RacialBonuses/RacialBonuses.html" class="pack-mod">Haven's Birthright</a>
+                    </div>
+                </div>
+                <div class="pack-card">
+                    <h3 class="pack-name">&#x1F33E; Organized Farmer</h3>
+                    <p class="pack-desc">Stay on track with tasks and sorted storage</p>
+                    <div class="pack-mods">
+                        <a href="Todo/todo.html" class="pack-mod">Sun Haven Todo</a>
+                        <a href="SenpaisChest/SenpaisChest.html" class="pack-mod">Senpai's Chest</a>
+                        <a href="TheVault/TheVault.html" class="pack-mod">The Vault</a>
+                    </div>
+                </div>
+                <div class="pack-card full-suite">
+                    <h3 class="pack-name">&#x2B50; Full Suite</h3>
+                    <p class="pack-desc">The complete experience &mdash; all 6 gameplay mods</p>
+                    <div class="pack-mods">
+                        <a href="TheVault/TheVault.html" class="pack-mod">The Vault</a>
+                        <a href="SMUT/SMUT.html" class="pack-mod">S.M.U.T.</a>
+                        <a href="SenpaisChest/SenpaisChest.html" class="pack-mod">Senpai's Chest</a>
+                        <a href="Todo/todo.html" class="pack-mod">Todo</a>
+                        <a href="BirthdayReminder/BirthdayReminder.html" class="pack-mod">Birthday</a>
+                        <a href="RacialBonuses/RacialBonuses.html" class="pack-mod">Birthright</a>
                     </div>
                 </div>
             </div>

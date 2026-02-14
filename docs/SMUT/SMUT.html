@@ -5,6 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>S.M.U.T. - Museum Tracker for Sun Haven</title>
     <link rel="stylesheet" href="smut-style.css">
+    <link rel="stylesheet" href="../shared-styles.css">
+    <script src="../shared.js" defer></script>
 </head>
 <body>
     <nav class="top-nav">
@@ -25,21 +27,58 @@
             <p>S.M.U.T. helps you track which items you've donated to the Sun Haven Museum and which ones you still need. With per-character saves, search functionality, and a beautiful dark-themed UI organized by museum sections and bundles, you'll never lose track of your collection progress again.</p>
         </section>
 
+        <section class="keybind-section">
+            <h2 class="section-title">Quick Controls</h2>
+            <div class="keybind-grid">
+                <div class="keybind-card">
+                    <div class="keybind-keys"><kbd>Ctrl</kbd> + <kbd>C</kbd></div>
+                    <div class="keybind-action">Open Tracker</div>
+                </div>
+                <div class="keybind-card">
+                    <div class="keybind-keys"><kbd>F7</kbd></div>
+                    <div class="keybind-action">Alt Toggle (Steam Deck)</div>
+                </div>
+                <div class="keybind-card">
+                    <div class="keybind-keys"><kbd>Esc</kbd></div>
+                    <div class="keybind-action">Close Tracker</div>
+                </div>
+            </div>
+        </section>
+
         <section class="changelog-section">
-            <h2 class="section-title">What's New in v2.1.1</h2>
-            <div class="changelog-box">
-                <div class="changelog-entry">
-                    <span class="changelog-icon">&#x2728;</span>
-                    <div class="changelog-content">
-                        <h4>UI Updates</h4>
-                        <p>Improved visual styling and layout refinements for a cleaner, more polished experience.</p>
+            <h2 class="section-title">Changelog</h2>
+            <div class="changelog-timeline">
+                <div class="timeline-node current">
+                    <div class="timeline-marker"></div>
+                    <div class="timeline-content">
+                        <span class="timeline-version">v2.1.1</span>
+                        <div class="timeline-entry">
+                            <span class="changelog-icon">&#x2728;</span>
+                            <div class="changelog-content">
+                                <h4>UI Updates</h4>
+                                <p>Improved visual styling and layout refinements for a cleaner, more polished experience.</p>
+                            </div>
+                        </div>
+                        <div class="timeline-entry">
+                            <span class="changelog-icon">&#x1F41B;</span>
+                            <div class="changelog-content">
+                                <h4>Bug Fixes</h4>
+                                <p>Various bug fixes and stability improvements for smoother tracking.</p>
+                            </div>
+                        </div>
                     </div>
                 </div>
-                <div class="changelog-entry">
-                    <span class="changelog-icon">&#x1F41B;</span>
-                    <div class="changelog-content">
-                        <h4>Bug Fixes</h4>
-                        <p>Various bug fixes and stability improvements for smoother tracking.</p>
+                <div class="timeline-node">
+                    <div class="timeline-marker"></div>
+                    <div class="timeline-content">
+                        <span class="timeline-version">v2.0.0</span>
+                        <div class="timeline-entry">
+                            <span class="changelog-icon">&#x1F680;</span>
+                            <div class="changelog-content">
+                                <h4>Major Overhaul</h4>
+                                <p>Complete UI redesign with new tracking system and per-character save support.</p>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -93,11 +132,12 @@
             <h2 class="section-title">Museum Sections</h2>
             <div class="museum-grid">
                 <!-- Hall of Gems -->
-                <div class="museum-section gems">
-                    <div class="section-header">
+                <details class="museum-section gems" open>
+                    <summary class="section-header">
                         <span class="section-icon">&#x1F48E;</span>
                         <h3>The Hall of Gems</h3>
-                    </div>
+                        <span class="collapse-icon">&#x25BC;</span>
+                    </summary>
                     <p class="section-desc">A dazzling collection of precious gems, bars, and magical crystals.</p>
                     <ul class="bundle-list">
                         <li><span class="bundle-icon mana">&#x1F4A7;</span> Mana Bundle</li>
@@ -108,14 +148,15 @@
                         <li><span class="bundle-icon nelvari">&#x1F3D4;</span> Nel'Vari Mines Bundle</li>
                         <li><span class="bundle-icon wither">&#x1F36C;</span> Withergate Mines Bundle</li>
                     </ul>
-                </div>
+                </details>
 
                 <!-- Hall of Culture -->
-                <div class="museum-section culture">
-                    <div class="section-header">
+                <details class="museum-section culture">
+                    <summary class="section-header">
                         <span class="section-icon">&#x1F33E;</span>
                         <h3>The Hall of Culture</h3>
-                    </div>
+                        <span class="collapse-icon">&#x25BC;</span>
+                    </summary>
                     <p class="section-desc">Crops, flowers, artifacts, and treasures from all regions.</p>
                     <ul class="bundle-list">
                         <li><span class="bundle-icon spring">&#x1F331;</span> Spring Crops</li>
@@ -131,14 +172,15 @@
                         <li><span class="bundle-icon alchemy">&#x2697;</span> Alchemy</li>
                         <li><span class="bundle-icon temple">&#x1F4D6;</span> Nel'Vari Temple</li>
                     </ul>
-                </div>
+                </details>
 
                 <!-- Aquarium -->
-                <div class="museum-section aquarium">
-                    <div class="section-header">
+                <details class="museum-section aquarium">
+                    <summary class="section-header">
                         <span class="section-icon">&#x1F41F;</span>
                         <h3>Aquarium</h3>
-                    </div>
+                        <span class="collapse-icon">&#x25BC;</span>
+                    </summary>
                     <p class="section-desc">A collection of fish and aquatic life from all waters.</p>
                     <ul class="bundle-list">
                         <li><span class="bundle-icon fishing">&#x1F3A3;</span> Fishing Bundle</li>
@@ -150,7 +192,7 @@
                         <li><span class="bundle-icon wither">&#x1F480;</span> Withergate Fish Tank</li>
                         <li><span class="bundle-icon large">&#x1F30A;</span> Large Fish Tank</li>
                     </ul>
-                </div>
+                </details>
             </div>
         </section>
 
@@ -293,6 +335,19 @@
                 </table>
             </div>
             <p class="config-note">Configuration file located at: <code>BepInEx/config/com.azraelgodking.sunhavenmuseumutilitytracker.cfg</code></p>
+        </section>
+
+        <section class="related-mods">
+            <h2 class="section-title">Pairs Well With</h2>
+            <div class="related-grid">
+                <a href="../SenpaisChest/SenpaisChest.html" class="related-card">
+                    <span class="related-icon">&#x1F4E6;</span>
+                    <div class="related-info">
+                        <h4>Senpai's Chest</h4>
+                        <p>Direct integration &mdash; museum items auto-excluded from sorting when donated</p>
+                    </div>
+                </a>
+            </div>
         </section>
 
         <footer class="footer">
