@@ -38,14 +38,14 @@
     "version": "1.0.2",
     "name": "HavenDevTools",
     "description": "Developer utilities for mod debugging and game state inspection",
-    "nexus": null,
+    "nexus": "https://www.nexusmods.com/sunhaven/mods/495",
     "changelog": "Initial release"
   },
   "com.azraelgodking.senpaischest": {
     "version": "1.0.0",
     "name": "Senpai's Chest",
     "description": "Smart chest auto-sorting with custom rules by item, type, category, or property",
-    "nexus": null,
+    "nexus": "https://www.nexusmods.com/sunhaven/mods/496",
     "changelog": "Initial release"
   }
 }
