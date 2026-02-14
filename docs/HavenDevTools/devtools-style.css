@@ -119,6 +119,18 @@ body {
     color: var(--green);
 }
 
+.version-badge {
+    display: inline-block;
+    margin-top: 15px;
+    background: linear-gradient(135deg, var(--green), var(--cyan));
+    color: #0d1117;
+    padding: 8px 20px;
+    border-radius: 20px;
+    font-weight: bold;
+    font-size: 1em;
+    font-family: "Consolas", "Monaco", monospace;
+}
+
 @keyframes blink {
     0%, 50% { opacity: 1; }
     51%, 100% { opacity: 0; }
