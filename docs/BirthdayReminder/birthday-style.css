@@ -101,6 +101,17 @@ body {
     color: rgba(44, 31, 44, 0.7);
 }
 
+.version-badge {
+    display: inline-block;
+    margin-top: 15px;
+    background: linear-gradient(135deg, #e84393, #fd79a8);
+    color: #fff;
+    padding: 8px 20px;
+    border-radius: 20px;
+    font-weight: bold;
+    font-size: 1em;
+}
+
 /* Intro Section */
 .intro-section {
     text-align: center;
