@@ -4,18 +4,30 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>S.M.U.T. - Museum Tracker for Sun Haven</title>
+    <meta name="description" content="Track your museum donation progress across all three halls in Sun Haven. Per-character saves, search, and beautiful dark-themed UI.">
+    <meta property="og:title" content="S.M.U.T. - Museum Tracker">
+    <meta property="og:description" content="Track museum donations across all three halls in Sun Haven.">
+    <meta property="og:type" content="website">
+    <meta name="theme-color" content="#0f8e8e">
+    <link rel="icon" type="image/svg+xml" href="../favicon.svg">
     <link rel="stylesheet" href="smut-style.css">
     <link rel="stylesheet" href="../shared-styles.css">
     <script src="../shared.js" defer></script>
 </head>
 <body>
-    <nav class="top-nav">
+    <a href="#main-content" class="skip-to-content">Skip to content</a>
+    <nav class="top-nav" role="navigation" aria-label="Breadcrumb">
         <a href="../index.html" class="nav-home">Mod Hub</a>
         <span class="nav-divider">/</span>
         <span class="nav-current">S.M.U.T.</span>
+        <span class="breadcrumb-date">Updated Feb 2026</span>
     </nav>
 
-    <div class="container">
+    <aside class="toc-sidebar" aria-label="Table of Contents">
+        <h3>Contents</h3>
+    </aside>
+
+    <div class="container" id="main-content" role="main">
         <header class="hero">
             <div class="hero-icon">&#x1F3DB;</div>
             <h1>S.M.U.T.<span class="full-name">Sun Haven Museum Utility Tracker</span></h1>

@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Page Not Found - Sun Haven Mod Hub</title>
+    <link rel="icon" type="image/svg+xml" href="/SunhavenMod/favicon.svg">
+    <link rel="stylesheet" href="shared-styles.css">
+    <style>
+        :root {
+            --ink: #1f1a12;
+            --muted: #5f5245;
+            --accent: #2f8f5b;
+            --accent-2: #f2a65a;
+        }
+
+        body {
+            font-family: "Trebuchet MS", "Lucida Sans Unicode", "Lucida Grande", "Verdana", sans-serif;
+            background:
+                radial-gradient(circle at 15% 10%, rgba(242, 166, 90, 0.25), transparent 45%),
+                radial-gradient(circle at 85% 0%, rgba(47, 143, 91, 0.22), transparent 45%),
+                linear-gradient(135deg, #fef8ef 0%, #f6efe3 45%, #efe1cc 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--ink);
+            margin: 0;
+            padding: 20px;
+        }
+
+        .error-container {
+            text-align: center;
+            max-width: 520px;
+            background: rgba(255, 255, 255, 0.7);
+            border-radius: 24px;
+            padding: 50px 40px;
+            border: 1px solid rgba(31, 26, 18, 0.08);
+            box-shadow: 0 18px 40px rgba(31, 26, 18, 0.12);
+        }
+
+        .error-icon {
+            font-size: 5em;
+            margin-bottom: 16px;
+            animation: float 3s ease-in-out infinite;
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-10px); }
+        }
+
+        .error-code {
+            font-size: 5em;
+            font-weight: 900;
+            background: linear-gradient(135deg, var(--accent), var(--accent-2));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            line-height: 1;
+            margin-bottom: 8px;
+        }
+
+        .error-title {
+            font-size: 1.6em;
+            margin-bottom: 12px;
+            color: var(--ink);
+        }
+
+        .error-message {
+            color: var(--muted);
+            line-height: 1.7;
+            margin-bottom: 30px;
+        }
+
+        .error-home {
+            display: inline-block;
+            padding: 14px 32px;
+            border-radius: 26px;
+            background: linear-gradient(135deg, var(--accent), #3fb87a);
+            color: #fff;
+            text-decoration: none;
+            font-weight: 700;
+            font-size: 1.05em;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        .error-home:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 25px rgba(47, 143, 91, 0.3);
+        }
+
+        [data-theme="dark"] body {
+            background: linear-gradient(135deg, #1a1610 0%, #2d2418 50%, #1f1a12 100%);
+            color: #e8dfd2;
+        }
+
+        [data-theme="dark"] .error-container {
+            background: rgba(40, 35, 28, 0.85);
+            border-color: rgba(200, 180, 140, 0.12);
+            box-shadow: 0 18px 40px rgba(0, 0, 0, 0.3);
+        }
+
+        [data-theme="dark"] .error-title {
+            color: #e8dfd2;
+        }
+
+        [data-theme="dark"] .error-message {
+            color: #b0a58f;
+        }
+    </style>
+    <script>
+        (function() {
+            var stored = localStorage.getItem('sh-mod-theme');
+            if (stored) document.documentElement.setAttribute('data-theme', stored);
+        })();
+    </script>
+</head>
+<body>
+    <div class="error-container">
+        <div class="error-icon">&#x1F33B;</div>
+        <div class="error-code">404</div>
+        <h1 class="error-title">Page Not Found</h1>
+        <p class="error-message">Looks like this page wandered off to Nel'Vari. The page you're looking for doesn't exist or has been moved.</p>
+        <a href="index.html" class="error-home">Back to Mod Hub</a>
+    </div>
+</body>
+</html>

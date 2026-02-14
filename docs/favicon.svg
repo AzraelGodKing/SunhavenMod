@@ -1,0 +1,25 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
+  <defs>
+    <linearGradient id="sun" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#f2a65a"/>
+      <stop offset="100%" stop-color="#e68a2e"/>
+    </linearGradient>
+    <linearGradient id="leaf" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#3fb87a"/>
+      <stop offset="100%" stop-color="#2f8f5b"/>
+    </linearGradient>
+  </defs>
+  <!-- Sun rays -->
+  <g transform="translate(32,28)">
+    <line x1="0" y1="-20" x2="0" y2="-26" stroke="url(#sun)" stroke-width="3" stroke-linecap="round"/>
+    <line x1="14" y1="-14" x2="18" y2="-18" stroke="url(#sun)" stroke-width="3" stroke-linecap="round"/>
+    <line x1="20" y1="0" x2="26" y2="0" stroke="url(#sun)" stroke-width="3" stroke-linecap="round"/>
+    <line x1="-14" y1="-14" x2="-18" y2="-18" stroke="url(#sun)" stroke-width="3" stroke-linecap="round"/>
+    <line x1="-20" y1="0" x2="-26" y2="0" stroke="url(#sun)" stroke-width="3" stroke-linecap="round"/>
+  </g>
+  <!-- Sun circle -->
+  <circle cx="32" cy="28" r="14" fill="url(#sun)"/>
+  <!-- Leaf / Haven -->
+  <path d="M24 42 Q32 30 40 42 Q32 56 24 42Z" fill="url(#leaf)"/>
+  <line x1="32" y1="36" x2="32" y2="50" stroke="#fff" stroke-width="1.5" stroke-linecap="round" opacity="0.6"/>
+</svg>
