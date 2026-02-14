@@ -121,6 +121,13 @@ h1 {
     animation: pulse-glow-gold 2s ease-in-out infinite;
 }
 
+.update-badge.chest-badge {
+    background: linear-gradient(135deg, #ffc332, #e6a800);
+    color: #1a1208;
+    box-shadow: 0 4px 12px rgba(255, 195, 50, 0.3);
+    animation: pulse-glow-gold 2s ease-in-out infinite;
+}
+
 @keyframes pulse-glow {
     0%, 100% {
         box-shadow: 0 4px 12px rgba(15, 142, 142, 0.3);
@@ -221,6 +228,11 @@ h1 {
 .mod-cta-button.birthday-btn {
     background: linear-gradient(135deg, #e84393, #c44569);
     color: #fff;
+}
+
+.mod-cta-button.chest-btn {
+    background: linear-gradient(135deg, #ffc332, #e6a800);
+    color: #1a1208;
 }
 
 .mod-cta-button.devtools-btn {

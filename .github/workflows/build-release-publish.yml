@@ -31,17 +31,19 @@ on:
         required: true
         type: choice
         options:
+          - all
           - havensbirthright
           - sunhavenmuseumutilitytracker
           - squirrelsbirthdayreminder
           - sunhaventodo
           - thevault
           - havendevtools
+          - senpaischest
       publish_thunderstore:
         description: 'Publish to Thunderstore after release?'
         required: true
         type: boolean
-        default: false
+        default: true
       create_github_release:
         description: 'Create GitHub Release?'
         required: true
@@ -55,10 +57,36 @@ env:
   THUNDERSTORE_DEPS: "BepInEx-BepInExPack@5.4.2100"
 
 jobs:
+  # --------------------------------------------------------------------
+  # SETUP — Determine which mod(s) to release
+  # --------------------------------------------------------------------
+  setup:
+    runs-on: ubuntu-latest
+    outputs:
+      matrix: ${{ steps.set-matrix.outputs.matrix }}
+    steps:
+      - name: Set mod matrix
+        id: set-matrix
+        run: |
+          MOD_KEY="${{ github.event.inputs.mod }}"
+          if [ "$MOD_KEY" == "all" ]; then
+            echo 'matrix=["havensbirthright","sunhavenmuseumutilitytracker","squirrelsbirthdayreminder","sunhaventodo","thevault","havendevtools","senpaischest"]' >> "$GITHUB_OUTPUT"
+          else
+            echo "matrix=[\"$MOD_KEY\"]" >> "$GITHUB_OUTPUT"
+          fi
+
+  # --------------------------------------------------------------------
+  # RELEASE — Package, release, and optionally publish each mod
+  # --------------------------------------------------------------------
   release:
+    needs: setup
     runs-on: ubuntu-latest
     permissions:
       contents: write
+    strategy:
+      fail-fast: false
+      matrix:
+        mod: ${{ fromJson(needs.setup.outputs.matrix) }}
 
     steps:
       # ------------------------------------------------------------------
@@ -73,7 +101,7 @@ jobs:
       - name: Set mod configuration
         id: config
         run: |
-          MOD_KEY="${{ github.event.inputs.mod }}"
+          MOD_KEY="${{ matrix.mod }}"
 
           # Map input to versions.json key and project details
           case "$MOD_KEY" in
@@ -112,6 +140,12 @@ jobs:
               MOD_DIR="HavenDevTools"
               DLL_NAME="HavenDevTools"
               THUNDERSTORE_NAME="HavenDevTools"
+              ;;
+            "senpaischest")
+              JSON_KEY="com.azraelgodking.senpaischest"
+              MOD_DIR="SenpaisChest"
+              DLL_NAME="SenpaisChest"
+              THUNDERSTORE_NAME="SenpaisChest"
               ;;
             *)
               echo "❌ Unknown mod: $MOD_KEY"

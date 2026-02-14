@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Senpai's Chest - Smart Chest Sorting for Sun Haven</title>
+    <link rel="stylesheet" href="chest-style.css">
+</head>
+<body>
+    <nav class="top-nav">
+        <a href="../index.html" class="nav-home">Mod Hub</a>
+        <span class="nav-divider">/</span>
+        <span class="nav-current">Senpai's Chest</span>
+    </nav>
+
+    <div class="container">
+        <header class="hero">
+            <div class="hero-icon">&#x1F4E6;</div>
+            <h1>Senpai's Chest</h1>
+            <p class="tagline">Smart Chest Auto-Sorting</p>
+            <span class="version-badge">v1.0.0</span>
+        </header>
+
+        <section class="intro-section">
+            <p>Senpai's Chest lets you designate chests as "Smart Chests" with custom sorting rules. Items are automatically pulled from regular chests into the right smart chest based on your rules. Items that don't belong are ejected and rerouted. Set it and forget it.</p>
+        </section>
+
+        <section class="notice-section">
+            <div class="notice-box">
+                <h3>&#x1F517; S.M.U.T. Integration</h3>
+                <p>If <strong>S.M.U.T.</strong> (Museum Utility Tracker) is installed, the <strong>Museum Items</strong> property will automatically exclude items you've already donated. Only items you still need to donate will be sorted into your museum chest.</p>
+            </div>
+        </section>
+
+        <section class="features-section">
+            <h2 class="section-title">Key Features</h2>
+            <div class="features-grid">
+                <div class="feature-card">
+                    <div class="feature-icon">&#x1F504;</div>
+                    <h3>Automatic Sorting</h3>
+                    <p>Items are automatically scanned and moved from regular chests into the correct smart chest on a configurable timer. No manual sorting needed.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">&#x1F6AB;</div>
+                    <h3>Smart Ejection</h3>
+                    <p>Items that don't match a smart chest's rules are automatically ejected and rerouted to the correct chest or back to a regular chest.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">&#x1F3AE;</div>
+                    <h3>Controller Support</h3>
+                    <p>Full controller navigation in the config UI. Open with LB/L1, navigate with D-pad, close with B. All buttons and fields are selectable.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">&#x1F50D;</div>
+                    <h3>Item Name Search</h3>
+                    <p>Search for items by name instead of memorizing IDs. Results show the item name and ID, and you can click to add a rule instantly.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">&#x1F464;</div>
+                    <h3>Per-Character Saves</h3>
+                    <p>Each character has their own smart chest configuration. Switch characters and your sorting rules are always preserved.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">&#x1F3DB;</div>
+                    <h3>Museum Items Category</h3>
+                    <p>A dedicated property for museum-donable items. With S.M.U.T. installed, already-donated items are automatically excluded from sorting.</p>
+                </div>
+            </div>
+        </section>
+
+        <section class="rules-section">
+            <h2 class="section-title">Rule Types</h2>
+            <div class="rules-grid">
+                <div class="rule-card">
+                    <h4>&#x1F4E6; By Item</h4>
+                    <p>Sort a specific item by searching its name. The mod resolves the name to the correct item ID.</p>
+                    <div class="rule-example">Example: "Gold Bar" &rarr; sorts all Gold Bars</div>
+                </div>
+                <div class="rule-card">
+                    <h4>&#x1F3F7; By Item Type</h4>
+                    <p>Sort all items of a specific type, like Equipment, Furniture, Consumable, etc.</p>
+                    <div class="rule-example">Example: Type "Consumable" &rarr; sorts all food and potions</div>
+                </div>
+                <div class="rule-card">
+                    <h4>&#x1F4C1; By Category</h4>
+                    <p>Sort by the game's internal item category such as Farming, Mining, Fishing, etc.</p>
+                    <div class="rule-example">Example: Category "Mining" &rarr; sorts all ores and gems</div>
+                </div>
+                <div class="rule-card">
+                    <h4>&#x2728; By Property</h4>
+                    <p>Sort by item properties like Gems, Forageables, Meals, Fruits, Potions, Museum Items, and more.</p>
+                    <div class="rule-example">Example: Property "Gems" &rarr; sorts all gem items</div>
+                </div>
+            </div>
+        </section>
+
+        <section class="usage-section">
+            <h2 class="section-title">How to Use</h2>
+            <div class="usage-steps">
+                <div class="step">
+                    <div class="step-number">1</div>
+                    <div class="step-content">
+                        <h4>Open a Chest</h4>
+                        <p>Walk up to any chest in your farm and interact with it to open it normally.</p>
+                    </div>
+                </div>
+                <div class="step">
+                    <div class="step-number">2</div>
+                    <div class="step-content">
+                        <h4>Open Smart Chest Config</h4>
+                        <p>Press <kbd>F9</kbd> on keyboard or <kbd>LB</kbd>/<kbd>L1</kbd> on controller to open the Smart Chest configuration UI.</p>
+                    </div>
+                </div>
+                <div class="step">
+                    <div class="step-number">3</div>
+                    <div class="step-content">
+                        <h4>Add Sorting Rules</h4>
+                        <p>Choose a rule type (By Item, By Type, By Category, or By Property) and select what items this chest should collect.</p>
+                    </div>
+                </div>
+                <div class="step">
+                    <div class="step-number">4</div>
+                    <div class="step-content">
+                        <h4>Let It Sort</h4>
+                        <p>Close the UI and go about your day. Every 60 seconds (configurable), the mod scans all nearby chests and sorts matching items into your smart chests.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section class="config-section">
+            <h2 class="section-title">Configuration</h2>
+            <div class="config-table">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Setting</th>
+                            <th>Default</th>
+                            <th>Description</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>ScanInterval</td>
+                            <td>60s</td>
+                            <td>Seconds between automatic scans (minimum 10)</td>
+                        </tr>
+                        <tr>
+                            <td>EnableNotifications</td>
+                            <td>true</td>
+                            <td>Show in-game notification when items are sorted</td>
+                        </tr>
+                        <tr>
+                            <td>MaxItemsPerScan</td>
+                            <td>50</td>
+                            <td>Maximum item stacks to move per scan cycle</td>
+                        </tr>
+                        <tr>
+                            <td>ToggleKey</td>
+                            <td><kbd>F9</kbd></td>
+                            <td>Key to open the config UI while a chest is open</td>
+                        </tr>
+                        <tr>
+                            <td>RequireCtrlModifier</td>
+                            <td>false</td>
+                            <td>Require Ctrl to be held with the toggle key</td>
+                        </tr>
+                        <tr>
+                            <td>ControllerToggleButton</td>
+                            <td>LB/L1</td>
+                            <td>Controller button to open the config UI</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+            <p class="config-note">Configuration file: <code>BepInEx/config/com.azraelgodking.senpaischest.cfg</code></p>
+        </section>
+
+        <section class="install-section">
+            <h2 class="section-title">Installation</h2>
+            <div class="install-steps">
+                <div class="install-step">
+                    <div class="step-icon">&#x1F4E6;</div>
+                    <div class="step-info">
+                        <h4>1. Install BepInEx</h4>
+                        <p>Download and install BepInEx 5.x for Unity games if you haven't already.</p>
+                    </div>
+                </div>
+                <div class="install-step">
+                    <div class="step-icon">&#x1F4E5;</div>
+                    <div class="step-info">
+                        <h4>2. Download Senpai's Chest</h4>
+                        <p>Get SenpaisChest.dll from <a href="https://www.nexusmods.com/sunhaven" target="_blank">Nexus Mods</a>.</p>
+                    </div>
+                </div>
+                <div class="install-step">
+                    <div class="step-icon">&#x1F4C1;</div>
+                    <div class="step-info">
+                        <h4>3. Install the Mod</h4>
+                        <p>Place the DLL in your <code>BepInEx/plugins/SenpaisChest/</code> folder.</p>
+                    </div>
+                </div>
+                <div class="install-step">
+                    <div class="step-icon">&#x1F3AE;</div>
+                    <div class="step-info">
+                        <h4>4. Play!</h4>
+                        <p>Launch Sun Haven, open a chest, and press <kbd>F9</kbd> to start configuring your smart chests.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <footer class="footer">
+            <p>Senpai's Chest - A Sun Haven Mod by AzraelGodKing</p>
+            <div class="footer-links">
+                <a href="../index.html">Back to Mod Hub</a>
+                <a href="https://www.nexusmods.com/sunhaven" target="_blank">View on Nexus Mods</a>
+            </div>
+        </footer>
+    </div>
+</body>
+</html>
