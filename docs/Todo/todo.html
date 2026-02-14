@@ -4,18 +4,26 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Sun Haven Todo - Task Tracker for Sun Haven</title>
+    <meta name="description" content="In-game task tracker for Sun Haven. Organize farming goals, quests, and daily tasks with categories, priorities, and per-character saves.">
+    <meta property="og:title" content="Sun Haven Todo - Task Tracker">
+    <meta property="og:description" content="Keep track of farming goals, quests, and daily tasks in Sun Haven.">
+    <meta property="og:type" content="website">
+    <meta name="theme-color" content="#f2a65a">
+    <link rel="icon" type="image/svg+xml" href="../favicon.svg">
     <link rel="stylesheet" href="todo-style.css">
     <link rel="stylesheet" href="../shared-styles.css">
     <script src="../shared.js" defer></script>
 </head>
 <body>
-    <nav class="top-nav">
+    <a href="#main-content" class="skip-to-content">Skip to content</a>
+    <nav class="top-nav" role="navigation" aria-label="Breadcrumb">
         <a href="../index.html" class="nav-home">Mod Hub</a>
         <span class="nav-divider">/</span>
         <span class="nav-current">Todo List</span>
+        <span class="breadcrumb-date">Updated Feb 2026</span>
     </nav>
 
-    <div class="container">
+    <div class="container" id="main-content" role="main">
         <header class="hero">
             <div class="hero-icon">&#x1F4DD;</div>
             <h1>Sun Haven Todo<span class="full-name">In-Game Task Tracker</span></h1>
