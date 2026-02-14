@@ -431,10 +431,28 @@ code {
     color: #b0a58f;
 }
 
+[data-theme="dark"] code {
+    background: rgba(200, 180, 140, 0.12);
+    color: #b0a58f;
+}
+
 [data-theme="dark"] .footer {
     color: #8a7e6e;
+    border-top-color: rgba(200, 180, 140, 0.1);
 }
 
 [data-theme="dark"] .footer a {
     color: #6fcf97;
+}
+
+[data-theme="dark"] .footer-disclaimer {
+    color: #8a7e6e;
+}
+
+[data-theme="dark"] .step-content h4 {
+    color: #e8dfd2;
+}
+
+[data-theme="dark"] .step-content p {
+    color: #b0a58f;
 }

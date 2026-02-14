@@ -599,6 +599,55 @@ details[open] .collapse-icon {
 }
 
 /* -----------------------------------------------------------------
+   LIGHT MODE OVERRIDES (for dark-themed pages switching to light)
+   ----------------------------------------------------------------- */
+[data-theme="light"] .theme-toggle {
+    background: rgba(255, 255, 255, 0.85);
+    border-color: rgba(128, 128, 128, 0.25);
+}
+
+[data-theme="light"] .keybind-card {
+    background: rgba(255, 255, 255, 0.7);
+    border-color: rgba(31, 26, 18, 0.12);
+}
+
+[data-theme="light"] .keybind-keys kbd {
+    background: rgba(255, 255, 255, 0.8);
+    border-color: rgba(31, 26, 18, 0.15);
+}
+
+[data-theme="light"] .related-card {
+    background: rgba(255, 255, 255, 0.7);
+    border-color: rgba(31, 26, 18, 0.12);
+}
+
+[data-theme="light"] .timeline-content {
+    background: rgba(255, 255, 255, 0.7);
+    border-color: rgba(31, 26, 18, 0.1);
+}
+
+[data-theme="light"] .timeline-version {
+    background: rgba(47, 143, 91, 0.12);
+    color: #1a7f37;
+}
+
+[data-theme="light"] .changelog-timeline::before {
+    background: linear-gradient(180deg, rgba(47, 143, 91, 0.4), rgba(47, 143, 91, 0.08));
+}
+
+[data-theme="light"] .timeline-marker {
+    background: #2f8f5b;
+    border-color: rgba(47, 143, 91, 0.2);
+}
+
+[data-theme="light"] .copy-btn {
+    border-color: rgba(31, 26, 18, 0.2);
+}
+[data-theme="light"] .copy-btn:hover {
+    background: rgba(47, 143, 91, 0.1);
+}
+
+/* -----------------------------------------------------------------
    RESPONSIVE
    ----------------------------------------------------------------- */
 @media (max-width: 768px) {
