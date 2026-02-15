@@ -1,10 +1,10 @@
 {
   "com.azraelgodking.squirrelsbirthdayreminder": {
-    "version": "1.0.3",
+    "version": "1.1.0",
     "name": "A Squirrel's Birthday Reminder",
     "description": "Never miss an NPC birthday - get reminders and gift suggestions",
     "nexus": "https://www.nexusmods.com/sunhaven/mods/493",
-    "changelog": "Initial release"
+    "changelog": "Added cross-mod Todo integration for birthday gift reminders"
   },
   "com.azraelgodking.havensbirthright": {
     "version": "1.2.1",
@@ -14,18 +14,18 @@
     "changelog": "Feature updates and improvements"
   },
   "com.azraelgodking.sunhavenmuseumutilitytracker": {
-    "version": "2.1.1",
+    "version": "2.2.0",
     "name": "Sunhaven Museum Utility Tracker",
     "description": "Track museum donation progress across all three halls",
     "nexus": "https://www.nexusmods.com/sunhaven/mods/490",
-    "changelog": "UI updates and bug fixes"
+    "changelog": "Added Senpai's Chest and Todo cross-mod integrations"
   },
   "com.azraelgodking.sunhaventodo": {
-    "version": "1.0.1",
+    "version": "1.1.0",
     "name": "Sun Haven Todo",
     "description": "In-game task tracker for farming goals, quests, and daily tasks",
     "nexus": "https://www.nexusmods.com/sunhaven/mods/491",
-    "changelog": "Initial release"
+    "changelog": "Added cross-mod integration for Birthday, S.M.U.T., and Senpai's Chest"
   },
   "com.azraelgodking.thevault": {
     "version": "2.0.4",
@@ -42,10 +42,17 @@
     "changelog": "Initial release"
   },
   "com.azraelgodking.senpaischest": {
-    "version": "1.0.0",
+    "version": "1.1.0",
     "name": "Senpai's Chest",
     "description": "Smart chest auto-sorting with custom rules by item, type, category, or property",
     "nexus": "https://www.nexusmods.com/sunhaven/mods/496",
-    "changelog": "Initial release"
+    "changelog": "Added S.M.U.T. and Todo cross-mod integrations"
+  },
+  "com.azraelgodking.havensalmanac": {
+    "version": "1.1.0",
+    "name": "Haven's Almanac",
+    "description": "Unified mod dashboard - HUD, full dashboard, and daily morning briefing aggregating data from all installed mods",
+    "nexus": "",
+    "changelog": "Added 7 cross-mod integrations and unified data aggregation"
   }
 }

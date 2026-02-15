@@ -1,0 +1,82 @@
+using BepInEx.Configuration;
+using UnityEngine;
+
+namespace HavensAlmanac.Config
+{
+    public static class AlmanacConfig
+    {
+        // Config entries
+        public static ConfigEntry<KeyCode> DashboardToggleKey { get; private set; }
+        public static ConfigEntry<bool> DashboardRequireCtrl { get; private set; }
+        public static ConfigEntry<KeyCode> HUDToggleKey { get; private set; }
+        public static ConfigEntry<bool> HUDEnabled { get; private set; }
+        public static ConfigEntry<float> HUDPositionX { get; private set; }
+        public static ConfigEntry<float> HUDPositionY { get; private set; }
+        public static ConfigEntry<bool> BriefingEnabled { get; private set; }
+        public static ConfigEntry<float> BriefingAutoDismissSeconds { get; private set; }
+        public static ConfigEntry<bool> CheckForUpdates { get; private set; }
+
+        // Static values for PersistentRunner access
+        internal static KeyCode StaticDashboardToggleKey = KeyCode.F5;
+        internal static bool StaticDashboardRequireCtrl = true;
+        internal static KeyCode StaticHUDToggleKey = KeyCode.F4;
+        internal static bool StaticHUDEnabled = true;
+        internal static float StaticHUDPositionX = -1f;
+        internal static float StaticHUDPositionY = -1f;
+        internal static bool StaticBriefingEnabled = true;
+        internal static float StaticBriefingAutoDismiss = 0f;
+
+        public static void Initialize(ConfigFile config)
+        {
+            DashboardToggleKey = config.Bind(
+                "Hotkeys", "DashboardToggleKey", KeyCode.F5,
+                "Key to toggle the full dashboard");
+            StaticDashboardToggleKey = DashboardToggleKey.Value;
+            DashboardToggleKey.SettingChanged += (_, _) => StaticDashboardToggleKey = DashboardToggleKey.Value;
+
+            DashboardRequireCtrl = config.Bind(
+                "Hotkeys", "DashboardRequireCtrl", true,
+                "Require Ctrl modifier for dashboard toggle");
+            StaticDashboardRequireCtrl = DashboardRequireCtrl.Value;
+            DashboardRequireCtrl.SettingChanged += (_, _) => StaticDashboardRequireCtrl = DashboardRequireCtrl.Value;
+
+            HUDToggleKey = config.Bind(
+                "Hotkeys", "HUDToggleKey", KeyCode.F4,
+                "Key to toggle HUD visibility");
+            StaticHUDToggleKey = HUDToggleKey.Value;
+            HUDToggleKey.SettingChanged += (_, _) => StaticHUDToggleKey = HUDToggleKey.Value;
+
+            HUDEnabled = config.Bind(
+                "HUD", "Enabled", true,
+                "Show the compact HUD");
+            StaticHUDEnabled = HUDEnabled.Value;
+            HUDEnabled.SettingChanged += (_, _) => StaticHUDEnabled = HUDEnabled.Value;
+
+            HUDPositionX = config.Bind(
+                "HUD", "PositionX", -1f,
+                "HUD X position (-1 for default)");
+            StaticHUDPositionX = HUDPositionX.Value;
+
+            HUDPositionY = config.Bind(
+                "HUD", "PositionY", -1f,
+                "HUD Y position (-1 for default)");
+            StaticHUDPositionY = HUDPositionY.Value;
+
+            BriefingEnabled = config.Bind(
+                "DailyBriefing", "Enabled", true,
+                "Show daily briefing when you wake up");
+            StaticBriefingEnabled = BriefingEnabled.Value;
+            BriefingEnabled.SettingChanged += (_, _) => StaticBriefingEnabled = BriefingEnabled.Value;
+
+            BriefingAutoDismissSeconds = config.Bind(
+                "DailyBriefing", "AutoDismissSeconds", 0f,
+                "Auto-dismiss briefing after this many seconds (0 to require manual dismiss)");
+            StaticBriefingAutoDismiss = BriefingAutoDismissSeconds.Value;
+            BriefingAutoDismissSeconds.SettingChanged += (_, _) => StaticBriefingAutoDismiss = BriefingAutoDismissSeconds.Value;
+
+            CheckForUpdates = config.Bind(
+                "Updates", "CheckForUpdates", true,
+                "Check for mod updates on startup");
+        }
+    }
+}

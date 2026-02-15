@@ -8,7 +8,7 @@
     <meta property="og:title" content="S.M.U.T. - Museum Tracker">
     <meta property="og:description" content="Track museum donations across all three halls in Sun Haven.">
     <meta property="og:type" content="website">
-    <meta name="theme-color" content="#0f8e8e">
+    <meta name="theme-color" content="#e8c547">
     <link rel="icon" type="image/svg+xml" href="../favicon.svg">
     <link rel="stylesheet" href="smut-style.css">
     <link rel="stylesheet" href="../shared-styles.css">
@@ -28,19 +28,25 @@
     </aside>
 
     <div class="container" id="main-content" role="main">
-        <header class="hero">
+
+        <!-- Museum Entrance Hero -->
+        <header class="hero" style="position:relative;">
+            <div class="hero-arch"></div>
+            <div style="font-size:0.75em; text-transform:uppercase; letter-spacing:0.3em; opacity:0.5; margin-bottom:4px;">The Sun Haven Museum Presents</div>
             <div class="hero-icon">&#x1F3DB;</div>
             <h1>S.M.U.T.<span class="full-name">Sun Haven Museum Utility Tracker</span></h1>
-            <p class="tagline">Track Your Museum Donations</p>
-            <span class="version-badge">v2.1.1</span>
+            <p class="tagline" style="font-style:italic;">Your Personal Curator's Guide to Museum Completion</p>
+            <span class="version-badge">v2.2.0</span>
         </header>
 
-        <section class="intro-section">
-            <p>S.M.U.T. helps you track which items you've donated to the Sun Haven Museum and which ones you still need. With per-character saves, search functionality, and a beautiful dark-themed UI organized by museum sections and bundles, you'll never lose track of your collection progress again.</p>
+        <!-- Exhibit placard intro -->
+        <section class="intro-section" style="border-left:3px solid #e8c547; padding-left:20px;">
+            <p><strong>Exhibition Overview:</strong> S.M.U.T. helps you track which items you've donated to the Sun Haven Museum and which ones you still need. With per-character saves, search functionality, and a beautiful dark-themed UI organized by museum sections and bundles, you'll never lose track of your collection progress again.</p>
         </section>
 
+        <!-- Visitor Information / Controls -->
         <section class="keybind-section">
-            <h2 class="section-title">Quick Controls</h2>
+            <h2 class="section-title">Visitor Information</h2>
             <div class="keybind-grid">
                 <div class="keybind-card">
                     <div class="keybind-keys"><kbd>Ctrl</kbd> + <kbd>C</kbd></div>
@@ -57,24 +63,25 @@
             </div>
         </section>
 
+        <!-- Changelog as museum timeline -->
         <section class="changelog-section">
-            <h2 class="section-title">Changelog</h2>
+            <h2 class="section-title">Restoration Timeline</h2>
             <div class="changelog-timeline">
                 <div class="timeline-node current">
                     <div class="timeline-marker"></div>
                     <div class="timeline-content">
-                        <span class="timeline-version">v2.1.1</span>
+                        <span class="timeline-version">v2.2.0</span>
                         <div class="timeline-entry">
                             <span class="changelog-icon">&#x2728;</span>
                             <div class="changelog-content">
-                                <h4>UI Updates</h4>
+                                <h4>Gallery Renovation</h4>
                                 <p>Improved visual styling and layout refinements for a cleaner, more polished experience.</p>
                             </div>
                         </div>
                         <div class="timeline-entry">
                             <span class="changelog-icon">&#x1F41B;</span>
                             <div class="changelog-content">
-                                <h4>Bug Fixes</h4>
+                                <h4>Exhibit Repairs</h4>
                                 <p>Various bug fixes and stability improvements for smoother tracking.</p>
                             </div>
                         </div>
@@ -87,7 +94,7 @@
                         <div class="timeline-entry">
                             <span class="changelog-icon">&#x1F680;</span>
                             <div class="changelog-content">
-                                <h4>Major Overhaul</h4>
+                                <h4>Grand Reopening</h4>
                                 <p>Complete UI redesign with new tracking system and per-character save support.</p>
                             </div>
                         </div>
@@ -96,16 +103,18 @@
             </div>
         </section>
 
+        <!-- Curator's notices -->
         <section class="notice-section">
-            <div class="notice-box">
-                <h3>&#x1F504; Smart Tracking</h3>
+            <div class="notice-box" style="border-left:3px solid #e8c547;">
+                <h3>&#x1F504; Curator's Auto-Tracking</h3>
                 <p>S.M.U.T. now features <strong>real-time auto-tracking</strong>! When you donate items to museum bundles in-game, they're automatically marked in your tracker. Plus, use the <strong>"Sync with Game"</strong> button to import all completed bundles from your save file.</p>
                 <p>Bundle headers show both your tracked progress and the game's recorded donation count <code>[Game: X]</code> side-by-side!</p>
             </div>
         </section>
 
+        <!-- Features as exhibit highlights -->
         <section class="features-section">
-            <h2 class="section-title">Key Features</h2>
+            <h2 class="section-title">Exhibit Highlights</h2>
             <div class="features-grid">
                 <div class="feature-card">
                     <div class="feature-icon">&#x1F504;</div>
@@ -124,7 +133,7 @@
                 </div>
                 <div class="feature-card">
                     <div class="feature-icon">&#x1F50D;</div>
-                    <h3>Search & Filter</h3>
+                    <h3>Search &amp; Filter</h3>
                     <p>Search for items by name or rarity. Toggle "Show only needed" to hide donated items and focus on what's missing.</p>
                 </div>
                 <div class="feature-card">
@@ -140,9 +149,12 @@
             </div>
         </section>
 
+        <!-- Museum Wings as exhibition floor plan -->
         <section class="museum-section-list">
-            <h2 class="section-title">Museum Sections</h2>
+            <h2 class="section-title">Museum Floor Plan</h2>
+            <p style="text-align:center; font-style:italic; opacity:0.7; margin-bottom:20px;">Click each wing to explore its collections</p>
             <div class="museum-grid">
+
                 <!-- Hall of Gems -->
                 <details class="museum-section gems" open>
                     <summary class="section-header">
@@ -150,6 +162,7 @@
                         <h3>The Hall of Gems</h3>
                         <span class="collapse-icon">&#x25BC;</span>
                     </summary>
+                    <span class="exhibit-label">Wing A &mdash; Ground Floor</span>
                     <p class="section-desc">A dazzling collection of precious gems, bars, and magical crystals.</p>
                     <ul class="bundle-list">
                         <li><span class="bundle-icon mana">&#x1F4A7;</span> Mana Bundle</li>
@@ -169,6 +182,7 @@
                         <h3>The Hall of Culture</h3>
                         <span class="collapse-icon">&#x25BC;</span>
                     </summary>
+                    <span class="exhibit-label">Wing B &mdash; Second Floor</span>
                     <p class="section-desc">Crops, flowers, artifacts, and treasures from all regions.</p>
                     <ul class="bundle-list">
                         <li><span class="bundle-icon spring">&#x1F331;</span> Spring Crops</li>
@@ -193,6 +207,7 @@
                         <h3>Aquarium</h3>
                         <span class="collapse-icon">&#x25BC;</span>
                     </summary>
+                    <span class="exhibit-label">Wing C &mdash; Basement Level</span>
                     <p class="section-desc">A collection of fish and aquatic life from all waters.</p>
                     <ul class="bundle-list">
                         <li><span class="bundle-icon fishing">&#x1F3A3;</span> Fishing Bundle</li>
@@ -208,8 +223,9 @@
             </div>
         </section>
 
+        <!-- Rarity Legend as exhibit classification key -->
         <section class="rarity-section">
-            <h2 class="section-title">Item Rarities</h2>
+            <h2 class="section-title">Artifact Classification</h2>
             <div class="rarity-grid">
                 <div class="rarity-item">
                     <span class="rarity-dot common"></span>
@@ -234,56 +250,58 @@
             </div>
         </section>
 
+        <!-- How to Use as Guided Tour -->
         <section class="usage-section">
-            <h2 class="section-title">How to Use</h2>
+            <h2 class="section-title">Guided Tour</h2>
             <div class="usage-steps">
                 <div class="step">
-                    <div class="step-number">1</div>
+                    <div class="step-number" style="border-radius:50%; border:2px solid #e8c547;">1</div>
                     <div class="step-content">
-                        <h4>Open the Tracker</h4>
+                        <h4>Enter the Museum</h4>
                         <p>Press <kbd>Ctrl</kbd> + <kbd>C</kbd> to open the Museum Tracker window. Press <kbd>Escape</kbd> or the X button to close it.</p>
                     </div>
                 </div>
                 <div class="step">
-                    <div class="step-number">2</div>
+                    <div class="step-number" style="border-radius:50%; border:2px solid #e8c547;">2</div>
                     <div class="step-content">
-                        <h4>Choose a Section</h4>
+                        <h4>Choose a Wing</h4>
                         <p>Click the tabs at the top to switch between The Hall of Gems, The Hall of Culture, and the Aquarium.</p>
                     </div>
                 </div>
                 <div class="step">
-                    <div class="step-number">3</div>
+                    <div class="step-number" style="border-radius:50%; border:2px solid #e8c547;">3</div>
                     <div class="step-content">
-                        <h4>Search or Filter</h4>
+                        <h4>Search the Archives</h4>
                         <p>Use the search box to find specific items, or toggle "Show needed only" to hide already donated items.</p>
                     </div>
                 </div>
                 <div class="step">
-                    <div class="step-number">4</div>
+                    <div class="step-number" style="border-radius:50%; border:2px solid #e8c547;">4</div>
                     <div class="step-content">
-                        <h4>Expand Bundles</h4>
+                        <h4>Explore Collections</h4>
                         <p>Click on any bundle header to expand it and see all the items within that category.</p>
                     </div>
                 </div>
                 <div class="step">
-                    <div class="step-number">5</div>
+                    <div class="step-number" style="border-radius:50%; border:2px solid #e8c547;">5</div>
                     <div class="step-content">
-                        <h4>Mark Donations</h4>
+                        <h4>Catalog Donations</h4>
                         <p>Click the checkbox next to any item to mark it as donated. Items you donate in-game are auto-tracked!</p>
                     </div>
                 </div>
                 <div class="step">
-                    <div class="step-number">6</div>
+                    <div class="step-number" style="border-radius:50%; border:2px solid #e8c547;">6</div>
                     <div class="step-content">
-                        <h4>Sync with Game</h4>
+                        <h4>Verify Records</h4>
                         <p>Click the <strong>"Sync with Game"</strong> button to import completed bundles from your save. The <code>[Game: X]</code> indicator shows the game's recorded donation count.</p>
                     </div>
                 </div>
             </div>
         </section>
 
+        <!-- Installation as Admission -->
         <section class="install-section">
-            <h2 class="section-title">Installation</h2>
+            <h2 class="section-title">Admission (Installation)</h2>
             <div class="install-steps">
                 <div class="install-step">
                     <div class="step-icon">&#x1F4E6;</div>
@@ -309,15 +327,16 @@
                 <div class="install-step">
                     <div class="step-icon">&#x1F3AE;</div>
                     <div class="step-info">
-                        <h4>4. Play!</h4>
+                        <h4>4. Begin Your Collection!</h4>
                         <p>Launch Sun Haven and press <kbd>Ctrl</kbd>+<kbd>C</kbd> to track your museum progress.</p>
                     </div>
                 </div>
             </div>
         </section>
 
+        <!-- Configuration -->
         <section class="config-section">
-            <h2 class="section-title">Configuration</h2>
+            <h2 class="section-title">Curator's Settings</h2>
             <div class="config-table">
                 <table>
                     <thead>
@@ -349,14 +368,22 @@
             <p class="config-note">Configuration file located at: <code>BepInEx/config/com.azraelgodking.sunhavenmuseumutilitytracker.cfg</code></p>
         </section>
 
+        <!-- Related Mods as Partner Exhibitions -->
         <section class="related-mods">
-            <h2 class="section-title">Pairs Well With</h2>
+            <h2 class="section-title">Partner Exhibitions</h2>
             <div class="related-grid">
                 <a href="../SenpaisChest/SenpaisChest.html" class="related-card">
                     <span class="related-icon">&#x1F4E6;</span>
                     <div class="related-info">
                         <h4>Senpai's Chest</h4>
-                        <p>Direct integration &mdash; museum items auto-excluded from sorting when donated</p>
+                        <p>Direct integration &mdash; auto-excludes donated items from sorting and creates museum donation todos</p>
+                    </div>
+                </a>
+                <a href="../Todo/todo.html" class="related-card">
+                    <span class="related-icon">&#x1F4DD;</span>
+                    <div class="related-info">
+                        <h4>Sun Haven Todo</h4>
+                        <p>With Senpai's Chest, undonated museum items auto-create todo reminders that complete on donation</p>
                     </div>
                 </a>
             </div>
