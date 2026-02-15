@@ -1,300 +1,782 @@
-/* Haven's Birthright - Distinct Style */
+/* ===================================================================
+   Haven's Birthright - Ancient Bestiary / Illuminated Manuscript Theme
+   =================================================================== */
 
+@import url('https://fonts.googleapis.com/css2?family=MedievalSharp&family=Uncial+Antiqua&family=Merriweather:ital,wght@0,300;0,400;0,700;0,900;1,400&display=swap');
+
+/* -----------------------------------------------------------------
+   CSS CUSTOM PROPERTIES
+   ----------------------------------------------------------------- */
 :root {
-    --ink: #2a2016;
-    --paper: #f5efe6;
-    --paper-edge: #e7d8c6;
-    --gold: #c08a2b;
-    --forest: #3f6b4f;
-    --ember: #b35c35;
-    --river: #3b6e8f;
-    --serpent: #2f7a6c;
+    /* Manuscript palette */
+    --vellum: #f4ecd8;
+    --vellum-deep: #ede2cc;
+    --vellum-edge: #ddd0b8;
+    --ink: #2a1f0e;
+    --ink-light: #4a3820;
+    --ink-faded: #6f5f4e;
+
+    /* Illumination accents */
+    --gold-leaf: #c08a2b;
+    --gold-bright: #d4a03a;
+    --gold-dim: #9a6e1f;
+    --crimson: #8b0000;
+    --crimson-bright: #a31515;
+    --royal-blue: #1a3a5c;
+    --royal-blue-bright: #264e7a;
+    --forest-green: #2a5e3a;
+
+    /* Category colors */
+    --cat-core: #c08a2b;
+    --cat-celestial: #8b0000;
+    --cat-elemental: #1a3a5c;
+    --cat-amari: #2a5e3a;
+    --cat-serpent: #4a6040;
+
+    /* Race-specific accent colors */
+    --rc-human: #b8942f;
+    --rc-elf: #3a7a4a;
+    --rc-angel: #c9a84b;
+    --rc-demon: #8f3030;
+    --rc-fire: #c05a2a;
+    --rc-water: #2a5a7a;
+    --rc-amari-cat: #a87030;
+    --rc-amari-dog: #7a5a3a;
+    --rc-amari-bird: #5a4a7a;
+    --rc-amari-aquatic: #2a6a5a;
+    --rc-amari-reptile: #4a6a3a;
+    --rc-naga: #3a6a5a;
+
+    /* Spacing & sizing */
+    --container-max: 1200px;
+    --radius-sm: 4px;
+    --radius-md: 8px;
+    --radius-lg: 14px;
+
+    /* Manuscript texture overlay */
+    --parchment-noise: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='200' height='200' filter='url(%23n)' opacity='0.04'/%3E%3C/svg%3E");
 }
 
-* {
+/* -----------------------------------------------------------------
+   RESET & BASE
+   ----------------------------------------------------------------- */
+*,
+*::before,
+*::after {
     margin: 0;
     padding: 0;
     box-sizing: border-box;
 }
 
 body {
-    font-family: "Garamond", "Palatino Linotype", "Book Antiqua", serif;
+    font-family: 'Merriweather', 'Palatino Linotype', 'Book Antiqua', 'Georgia', serif;
     background:
-        radial-gradient(circle at 20% 15%, rgba(192, 138, 43, 0.18), transparent 40%),
-        radial-gradient(circle at 80% 0%, rgba(63, 107, 79, 0.2), transparent 45%),
-        linear-gradient(135deg, #f9f4ec 0%, #efe2d2 100%);
+        var(--parchment-noise),
+        radial-gradient(ellipse at 20% 10%, rgba(192, 138, 43, 0.12) 0%, transparent 50%),
+        radial-gradient(ellipse at 85% 5%, rgba(139, 0, 0, 0.06) 0%, transparent 40%),
+        radial-gradient(ellipse at 50% 100%, rgba(26, 58, 92, 0.06) 0%, transparent 50%),
+        linear-gradient(175deg, #f7f0de 0%, #f4ecd8 30%, #ede2cc 70%, #e6d8be 100%);
+    background-attachment: fixed;
     min-height: 100vh;
     padding: 0;
     color: var(--ink);
+    line-height: 1.7;
+    font-size: 15px;
+    -webkit-font-smoothing: antialiased;
 }
 
-/* Top Navigation */
+/* -----------------------------------------------------------------
+   TOP NAVIGATION (Breadcrumb)
+   ----------------------------------------------------------------- */
 .top-nav {
-    background: rgba(249, 244, 236, 0.95);
+    background: linear-gradient(180deg, rgba(237, 226, 204, 0.97), rgba(244, 236, 216, 0.95));
     padding: 14px 40px;
-    border-bottom: 1px solid rgba(42, 32, 22, 0.15);
+    border-bottom: 3px double var(--gold-leaf);
     position: sticky;
     top: 0;
     z-index: 100;
-    backdrop-filter: blur(8px);
+    backdrop-filter: blur(10px);
+    font-family: 'Merriweather', serif;
 }
 
 .nav-home {
-    color: var(--gold);
+    color: var(--gold-leaf);
     text-decoration: none;
     font-weight: 700;
+    font-size: 0.95em;
     transition: color 0.3s;
+    letter-spacing: 0.3px;
 }
 
 .nav-home:hover {
-    color: var(--forest);
+    color: var(--crimson);
 }
 
 .nav-divider {
-    color: rgba(42, 32, 22, 0.35);
+    color: var(--vellum-edge);
     margin: 0 10px;
+    font-weight: 300;
 }
 
 .nav-current {
-    color: rgba(42, 32, 22, 0.6);
+    color: var(--ink-faded);
+    font-style: italic;
 }
 
+/* -----------------------------------------------------------------
+   CONTAINER - Vellum Manuscript Page
+   ----------------------------------------------------------------- */
 .container {
-    max-width: 1200px;
+    max-width: var(--container-max);
     margin: 0 auto;
-    padding: 24px 20px 60px;
+    padding: 30px 28px 60px;
+    position: relative;
+}
+
+/* Ornamental top border for the manuscript page */
+.container::before {
+    content: '';
+    display: block;
+    height: 4px;
+    margin: 0 -28px 0;
+    background:
+        repeating-linear-gradient(
+            90deg,
+            var(--gold-leaf) 0px,
+            var(--gold-leaf) 12px,
+            transparent 12px,
+            transparent 18px,
+            var(--crimson) 18px,
+            var(--crimson) 22px,
+            transparent 22px,
+            transparent 28px
+        );
+    opacity: 0.5;
+}
+
+/* -----------------------------------------------------------------
+   HERO SECTION - Illuminated Title Page
+   ----------------------------------------------------------------- */
+.hero {
+    text-align: center;
+    padding: 48px 30px 40px;
+    margin-bottom: 36px;
+    background:
+        radial-gradient(ellipse at 50% 0%, rgba(192, 138, 43, 0.10) 0%, transparent 70%),
+        linear-gradient(180deg, rgba(255, 252, 240, 0.6) 0%, rgba(244, 236, 216, 0.3) 100%);
+    border: 2px solid var(--vellum-edge);
+    border-radius: var(--radius-lg);
+    position: relative;
+    overflow: hidden;
+}
+
+/* Ornate illuminated border corners */
+.hero::before,
+.hero::after {
+    content: '';
+    position: absolute;
+    width: 60px;
+    height: 60px;
+    border: 3px solid var(--gold-leaf);
+    opacity: 0.5;
+}
+
+.hero::before {
+    top: 10px;
+    left: 10px;
+    border-right: none;
+    border-bottom: none;
+    border-top-left-radius: 8px;
+}
+
+.hero::after {
+    top: 10px;
+    right: 10px;
+    border-left: none;
+    border-bottom: none;
+    border-top-right-radius: 8px;
+}
+
+/* Bottom corners via the hero-corners decorative element */
+.hero-corners::before,
+.hero-corners::after {
+    content: '';
+    position: absolute;
+    width: 60px;
+    height: 60px;
+    border: 3px solid var(--gold-leaf);
+    opacity: 0.5;
+}
+
+.hero-corners::before {
+    bottom: 10px;
+    left: 10px;
+    border-right: none;
+    border-top: none;
+    border-bottom-left-radius: 8px;
+}
+
+.hero-corners::after {
+    bottom: 10px;
+    right: 10px;
+    border-left: none;
+    border-top: none;
+    border-bottom-right-radius: 8px;
+}
+
+/* Decorative line under hero */
+.hero-rule {
+    display: block;
+    width: 200px;
+    margin: 16px auto 0;
+    height: 2px;
+    border: none;
+    background: linear-gradient(90deg, transparent, var(--gold-leaf), transparent);
+    opacity: 0.6;
 }
 
 h1 {
-    text-align: center;
-    font-size: 3.2em;
+    font-family: 'Uncial Antiqua', 'MedievalSharp', cursive;
+    font-size: 3em;
     margin-bottom: 6px;
     color: var(--ink);
-    letter-spacing: 1px;
+    letter-spacing: 2px;
+    line-height: 1.2;
+    text-shadow: 1px 1px 0 rgba(192, 138, 43, 0.15);
+}
+
+/* Illuminated drop cap for the H */
+.illuminated-initial {
+    font-family: 'Uncial Antiqua', cursive;
+    font-size: 1.35em;
+    color: var(--crimson);
+    text-shadow: 1px 1px 0 rgba(192, 138, 43, 0.3);
+    position: relative;
+    margin-right: -2px;
 }
 
 .subtitle {
     text-align: center;
-    color: #6f5f4e;
-    margin-bottom: 15px;
-    font-size: 1.15em;
+    color: var(--ink-faded);
+    margin-bottom: 16px;
+    font-size: 1.1em;
+    font-style: italic;
+    letter-spacing: 0.5px;
 }
 
-/* Hero Section */
-.hero {
-    text-align: center;
-    padding: 40px 20px;
-    margin-bottom: 30px;
-    background: rgba(255, 255, 255, 0.5);
-    border-radius: 20px;
-    border: 1px solid rgba(192, 138, 43, 0.3);
-}
-
+/* -----------------------------------------------------------------
+   VERSION BADGE - Wax Seal Style
+   ----------------------------------------------------------------- */
 .version-badge {
-    display: inline-block;
-    margin-top: 10px;
-    background: linear-gradient(135deg, var(--gold), #d4a03a);
-    color: #fff;
-    padding: 8px 20px;
-    border-radius: 20px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    margin-top: 12px;
+    width: 72px;
+    height: 72px;
+    border-radius: 50%;
+    background: radial-gradient(circle at 35% 35%, #a31515, #8b0000 50%, #6a0000 100%);
+    color: #f4ecd8;
+    font-family: 'MedievalSharp', cursive;
     font-weight: bold;
-    font-size: 1em;
-    box-shadow: 0 4px 15px rgba(192, 138, 43, 0.3);
+    font-size: 0.95em;
+    box-shadow:
+        0 4px 12px rgba(139, 0, 0, 0.35),
+        inset 0 -2px 6px rgba(0, 0, 0, 0.2),
+        inset 0 2px 4px rgba(255, 200, 200, 0.15);
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+    letter-spacing: 0.5px;
+    position: relative;
+    z-index: 1;
 }
 
-/* Changelog Section */
+/* Wax seal outer ring */
+.version-badge::before {
+    content: '';
+    position: absolute;
+    inset: -4px;
+    border-radius: 50%;
+    border: 2px solid rgba(139, 0, 0, 0.3);
+    z-index: -1;
+}
+
+/* Wax drip effect with wavy border */
+.version-badge::after {
+    content: '';
+    position: absolute;
+    inset: -2px;
+    border-radius: 50%;
+    background: radial-gradient(circle at 35% 35%, transparent 60%, rgba(139, 0, 0, 0.1) 100%);
+    z-index: -1;
+}
+
+/* -----------------------------------------------------------------
+   CHANGELOG - Chronicle / Annals Style
+   ----------------------------------------------------------------- */
 .changelog-section {
     max-width: 800px;
-    margin: 0 auto 40px;
+    margin: 0 auto 44px;
 }
 
 .section-title {
+    font-family: 'MedievalSharp', cursive;
     text-align: center;
-    font-size: 1.6em;
-    margin-bottom: 20px;
-    color: var(--gold);
+    font-size: 1.65em;
+    margin-bottom: 22px;
+    color: var(--ink);
+    position: relative;
+    letter-spacing: 1px;
 }
 
-.changelog-box {
-    background: rgba(255, 255, 255, 0.7);
-    border: 1px solid rgba(192, 138, 43, 0.3);
-    border-radius: 15px;
-    padding: 25px;
+/* Ornamental underline for section titles */
+.section-title::after {
+    content: '';
+    display: block;
+    width: 120px;
+    height: 2px;
+    margin: 10px auto 0;
+    background: linear-gradient(90deg, transparent, var(--gold-leaf), transparent);
 }
 
-.changelog-entry {
-    display: flex;
-    gap: 15px;
-    padding: 15px 0;
-    border-bottom: 1px solid rgba(42, 32, 22, 0.1);
+/* Chronicle-specific title icon */
+.chronicle-title::before {
+    content: '\270D';
+    margin-right: 10px;
+    color: var(--gold-leaf);
 }
 
-.changelog-entry:last-child {
-    border-bottom: none;
-    padding-bottom: 0;
-}
-
-.changelog-entry:first-child {
-    padding-top: 0;
-}
-
-.changelog-icon {
-    font-size: 1.8em;
-    flex-shrink: 0;
-}
-
-.changelog-content h4 {
-    color: var(--gold);
-    margin-bottom: 6px;
-    font-size: 1.1em;
-}
-
-.changelog-content p {
-    color: #6f5f4e;
-    line-height: 1.6;
-}
-
-/* Navigation */
+/* -----------------------------------------------------------------
+   RACE NAVIGATION - Medieval Ribbon Bookmarks
+   ----------------------------------------------------------------- */
 .race-nav {
     display: flex;
     justify-content: center;
     flex-wrap: wrap;
-    gap: 10px;
-    margin-bottom: 40px;
-    padding: 18px;
-    background: rgba(255, 255, 255, 0.7);
-    border-radius: 18px;
-    border: 1px solid rgba(42, 32, 22, 0.08);
+    gap: 8px;
+    margin-bottom: 44px;
+    padding: 20px;
+    background:
+        linear-gradient(180deg, rgba(244, 236, 216, 0.8), rgba(237, 226, 204, 0.6));
+    border: 1px solid var(--vellum-edge);
+    border-radius: var(--radius-lg);
+    position: relative;
+}
+
+/* Decorative header for the nav */
+.race-nav::before {
+    content: '';
+    position: absolute;
+    top: -1px;
+    left: 20%;
+    right: 20%;
+    height: 3px;
+    background: linear-gradient(90deg, transparent, var(--gold-leaf), transparent);
 }
 
 .nav-pill {
-    padding: 10px 18px;
-    border-radius: 22px;
+    padding: 10px 22px;
     text-decoration: none;
-    font-weight: 700;
-    transition: all 0.25s;
-    border: 2px solid;
+    font-family: 'MedievalSharp', cursive;
+    font-weight: 400;
     font-size: 0.95em;
+    letter-spacing: 0.5px;
+    transition: all 0.3s ease;
+    border: none;
+    position: relative;
+    border-radius: 2px;
+    background: transparent;
+    clip-path: polygon(8px 0%, calc(100% - 8px) 0%, 100% 50%, calc(100% - 8px) 100%, 8px 100%, 0% 50%);
+    padding-left: 26px;
+    padding-right: 26px;
 }
 
-.nav-pill.core { border-color: var(--gold); color: var(--gold); }
-.nav-pill.core:hover { background: rgba(192, 138, 43, 0.15); }
+/* Ribbon bookmark shape using pseudo-elements */
+.nav-pill::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    clip-path: polygon(8px 0%, calc(100% - 8px) 0%, 100% 50%, calc(100% - 8px) 100%, 8px 100%, 0% 50%);
+    border-radius: 2px;
+    z-index: -1;
+    transition: all 0.3s ease;
+}
 
-.nav-pill.celestial { border-color: var(--ember); color: var(--ember); }
-.nav-pill.celestial:hover { background: rgba(179, 92, 53, 0.15); }
+.nav-pill.core {
+    color: var(--cat-core);
+}
+.nav-pill.core::before {
+    background: rgba(192, 138, 43, 0.08);
+    border: 1px solid rgba(192, 138, 43, 0.25);
+}
+.nav-pill.core:hover::before {
+    background: rgba(192, 138, 43, 0.18);
+}
 
-.nav-pill.elemental { border-color: var(--river); color: var(--river); }
-.nav-pill.elemental:hover { background: rgba(59, 110, 143, 0.15); }
+.nav-pill.celestial {
+    color: var(--cat-celestial);
+}
+.nav-pill.celestial::before {
+    background: rgba(139, 0, 0, 0.05);
+    border: 1px solid rgba(139, 0, 0, 0.2);
+}
+.nav-pill.celestial:hover::before {
+    background: rgba(139, 0, 0, 0.12);
+}
 
-.nav-pill.amari { border-color: var(--forest); color: var(--forest); }
-.nav-pill.amari:hover { background: rgba(63, 107, 79, 0.15); }
+.nav-pill.elemental {
+    color: var(--cat-elemental);
+}
+.nav-pill.elemental::before {
+    background: rgba(26, 58, 92, 0.05);
+    border: 1px solid rgba(26, 58, 92, 0.2);
+}
+.nav-pill.elemental:hover::before {
+    background: rgba(26, 58, 92, 0.12);
+}
 
-.nav-pill.serpent { border-color: var(--serpent); color: var(--serpent); }
-.nav-pill.serpent:hover { background: rgba(47, 122, 108, 0.15); }
+.nav-pill.amari {
+    color: var(--cat-amari);
+}
+.nav-pill.amari::before {
+    background: rgba(42, 94, 58, 0.05);
+    border: 1px solid rgba(42, 94, 58, 0.2);
+}
+.nav-pill.amari:hover::before {
+    background: rgba(42, 94, 58, 0.12);
+}
 
-/* Sections */
+.nav-pill.serpent {
+    color: var(--cat-serpent);
+}
+.nav-pill.serpent::before {
+    background: rgba(74, 96, 64, 0.05);
+    border: 1px solid rgba(74, 96, 64, 0.2);
+}
+.nav-pill.serpent:hover::before {
+    background: rgba(74, 96, 64, 0.12);
+}
+
+/* Active pill states - handled by shared-styles.css scroll-spy,
+   we override the bg to work with ribbon shape */
+.nav-pill.active {
+    text-shadow: 0 1px 1px rgba(0, 0, 0, 0.2);
+}
+.nav-pill.core.active::before { background: var(--cat-core); }
+.nav-pill.celestial.active::before { background: var(--cat-celestial); }
+.nav-pill.elemental.active::before { background: var(--cat-elemental); }
+.nav-pill.amari.active::before { background: var(--cat-amari); }
+.nav-pill.serpent.active::before { background: var(--cat-serpent); }
+
+/* -----------------------------------------------------------------
+   RACE CATEGORY SECTIONS - Bestiary Chapters
+   ----------------------------------------------------------------- */
 .race-category {
-    margin-bottom: 50px;
-    padding: 30px;
-    border-radius: 22px;
-    border: 2px solid rgba(42, 32, 22, 0.08);
-    background: rgba(255, 255, 255, 0.7);
-    box-shadow: 0 16px 35px rgba(42, 32, 22, 0.15);
+    margin-bottom: 52px;
+    padding: 32px;
+    border-radius: var(--radius-lg);
+    border: 2px solid var(--vellum-edge);
+    background:
+        var(--parchment-noise),
+        linear-gradient(180deg, rgba(255, 252, 240, 0.7) 0%, rgba(244, 236, 216, 0.5) 100%);
+    box-shadow:
+        0 2px 20px rgba(42, 31, 14, 0.08),
+        inset 0 0 60px rgba(237, 226, 204, 0.3);
+    position: relative;
+    overflow: hidden;
+}
+
+/* Aged edge effect */
+.race-category::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: var(--radius-lg);
+    box-shadow: inset 0 0 40px rgba(192, 138, 43, 0.06);
+    pointer-events: none;
 }
 
 .category-header {
     display: flex;
     align-items: center;
     gap: 18px;
-    margin-bottom: 22px;
+    margin-bottom: 24px;
     padding-bottom: 18px;
-    border-bottom: 1px solid rgba(42, 32, 22, 0.12);
+    border-bottom: 2px solid transparent;
+    position: relative;
 }
 
+/* Ornamental header underline */
+.category-header::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 2px;
+    background: repeating-linear-gradient(
+        90deg,
+        currentColor 0px,
+        currentColor 8px,
+        transparent 8px,
+        transparent 14px
+    );
+    opacity: 0.2;
+}
+
+/* Heraldic shield icon wrapper */
 .category-icon {
-    font-size: 2.6em;
+    font-size: 2.4em;
+    width: 60px;
+    height: 60px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 4px 4px 50% 50%;
+    position: relative;
+    flex-shrink: 0;
+}
+
+/* Shield shape background */
+.category-icon::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: 4px 4px 50% 50%;
+    opacity: 0.12;
+    z-index: -1;
 }
 
 .category-title {
-    font-size: 1.8em;
-    font-weight: bold;
+    font-family: 'MedievalSharp', cursive;
+    font-size: 1.75em;
+    font-weight: 400;
     margin: 0;
+    letter-spacing: 1px;
+}
+
+/* Illuminated drop cap for chapter titles */
+.chapter-initial {
+    font-family: 'Uncial Antiqua', cursive;
+    font-size: 1.3em;
+    margin-right: -1px;
 }
 
 .category-desc {
-    font-size: 1em;
-    opacity: 0.75;
+    font-size: 0.95em;
+    opacity: 0.7;
     margin-top: 4px;
+    font-style: italic;
 }
 
+/* Category-specific colors */
 .core-category .category-title,
-.core-category .category-icon { color: var(--gold); }
+.core-category .category-icon { color: var(--cat-core); }
+.core-category .category-icon::before { background: var(--cat-core); }
+.core-category .category-header::after { color: var(--cat-core); }
 
 .celestial-category .category-title,
-.celestial-category .category-icon { color: var(--ember); }
+.celestial-category .category-icon { color: var(--cat-celestial); }
+.celestial-category .category-icon::before { background: var(--cat-celestial); }
+.celestial-category .category-header::after { color: var(--cat-celestial); }
 
 .elemental-category .category-title,
-.elemental-category .category-icon { color: var(--river); }
+.elemental-category .category-icon { color: var(--cat-elemental); }
+.elemental-category .category-icon::before { background: var(--cat-elemental); }
+.elemental-category .category-header::after { color: var(--cat-elemental); }
 
 .amari-category .category-title,
-.amari-category .category-icon { color: var(--forest); }
+.amari-category .category-icon { color: var(--cat-amari); }
+.amari-category .category-icon::before { background: var(--cat-amari); }
+.amari-category .category-header::after { color: var(--cat-amari); }
 
 .serpent-category .category-title,
-.serpent-category .category-icon { color: var(--serpent); }
+.serpent-category .category-icon { color: var(--cat-serpent); }
+.serpent-category .category-icon::before { background: var(--cat-serpent); }
+.serpent-category .category-header::after { color: var(--cat-serpent); }
 
+/* -----------------------------------------------------------------
+   RACES GRID
+   ----------------------------------------------------------------- */
 .races-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-    gap: 20px;
+    grid-template-columns: repeat(auto-fit, minmax(310px, 1fr));
+    gap: 22px;
 }
 
+/* -----------------------------------------------------------------
+   RACE CARDS - Bestiary Entry Style
+   ----------------------------------------------------------------- */
 .race-card {
-    background: var(--paper);
-    border-radius: 16px;
-    padding: 22px;
-    border: 1px solid rgba(42, 32, 22, 0.12);
-    transition: transform 0.25s ease, box-shadow 0.25s ease;
+    background:
+        var(--parchment-noise),
+        linear-gradient(170deg, #faf6ee 0%, var(--vellum) 100%);
+    border-radius: var(--radius-md);
+    padding: 24px;
+    border: 1px solid var(--vellum-edge);
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    position: relative;
 }
 
 .race-card:hover {
     transform: translateY(-4px);
-    box-shadow: 0 12px 25px rgba(42, 32, 22, 0.18);
+    box-shadow:
+        0 12px 30px rgba(42, 31, 14, 0.12),
+        0 2px 8px rgba(42, 31, 14, 0.06);
 }
 
+/* Subtle corner flourish on cards */
+.race-card::before {
+    content: '';
+    position: absolute;
+    top: 6px;
+    left: 6px;
+    width: 24px;
+    height: 24px;
+    border-top: 2px solid var(--gold-leaf);
+    border-left: 2px solid var(--gold-leaf);
+    border-top-left-radius: 4px;
+    opacity: 0.35;
+    transition: opacity 0.3s;
+}
+
+.race-card::after {
+    content: '';
+    position: absolute;
+    bottom: 6px;
+    right: 6px;
+    width: 24px;
+    height: 24px;
+    border-bottom: 2px solid var(--gold-leaf);
+    border-right: 2px solid var(--gold-leaf);
+    border-bottom-right-radius: 4px;
+    opacity: 0.35;
+    transition: opacity 0.3s;
+}
+
+.race-card:hover::before,
+.race-card:hover::after {
+    opacity: 0.6;
+}
+
+/* -----------------------------------------------------------------
+   RACE HEADER - Creature Portrait Frame
+   ----------------------------------------------------------------- */
 .race-header {
     display: flex;
     align-items: center;
-    margin-bottom: 14px;
-    padding-bottom: 12px;
-    border-bottom: 2px solid rgba(42, 32, 22, 0.15);
+    margin-bottom: 16px;
+    padding-bottom: 14px;
+    border-bottom: 2px solid var(--vellum-edge);
+    position: relative;
 }
 
+/* Ornate line under header */
+.race-header::after {
+    content: '';
+    position: absolute;
+    bottom: -2px;
+    left: 0;
+    right: 0;
+    height: 2px;
+    background: linear-gradient(90deg, currentColor, transparent);
+    opacity: 0.15;
+}
+
+/* Creature portrait frame - ornate circle around icon */
 .race-icon {
     font-size: 2.2em;
-    margin-right: 12px;
+    margin-right: 14px;
+    width: 56px;
+    height: 56px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    border: 2px solid var(--vellum-edge);
+    background: rgba(255, 252, 240, 0.8);
+    position: relative;
+    flex-shrink: 0;
+    box-shadow: inset 0 1px 4px rgba(192, 138, 43, 0.1);
+}
+
+/* Ornate ring around portrait */
+.race-icon::after {
+    content: '';
+    position: absolute;
+    inset: -5px;
+    border-radius: 50%;
+    border: 1px dashed var(--gold-leaf);
+    opacity: 0.35;
 }
 
 .race-name {
-    font-size: 1.4em;
-    font-weight: bold;
+    font-family: 'MedievalSharp', cursive;
+    font-size: 1.35em;
+    font-weight: 400;
+    color: var(--ink);
+    letter-spacing: 0.5px;
 }
 
 .race-theme {
-    font-size: 0.92em;
-    opacity: 0.7;
+    font-size: 0.88em;
+    opacity: 0.65;
     font-style: italic;
+    color: var(--ink-faded);
+    margin-top: 2px;
 }
 
+/* Race-specific header accent colors */
+.human .race-header { border-bottom-color: var(--rc-human); color: var(--rc-human); }
+.elf .race-header { border-bottom-color: var(--rc-elf); color: var(--rc-elf); }
+.angel .race-header { border-bottom-color: var(--rc-angel); color: var(--rc-angel); }
+.demon .race-header { border-bottom-color: var(--rc-demon); color: var(--rc-demon); }
+.fire-elemental .race-header { border-bottom-color: var(--rc-fire); color: var(--rc-fire); }
+.water-elemental .race-header { border-bottom-color: var(--rc-water); color: var(--rc-water); }
+.amari-cat .race-header { border-bottom-color: var(--rc-amari-cat); color: var(--rc-amari-cat); }
+.amari-dog .race-header { border-bottom-color: var(--rc-amari-dog); color: var(--rc-amari-dog); }
+.amari-bird .race-header { border-bottom-color: var(--rc-amari-bird); color: var(--rc-amari-bird); }
+.amari-aquatic .race-header { border-bottom-color: var(--rc-amari-aquatic); color: var(--rc-amari-aquatic); }
+.amari-reptile .race-header { border-bottom-color: var(--rc-amari-reptile); color: var(--rc-amari-reptile); }
+.naga .race-header { border-bottom-color: var(--rc-naga); color: var(--rc-naga); }
+
+/* Race-specific icon ring color */
+.human .race-icon { border-color: var(--rc-human); }
+.elf .race-icon { border-color: var(--rc-elf); }
+.angel .race-icon { border-color: var(--rc-angel); }
+.demon .race-icon { border-color: var(--rc-demon); }
+.fire-elemental .race-icon { border-color: var(--rc-fire); }
+.water-elemental .race-icon { border-color: var(--rc-water); }
+.amari-cat .race-icon { border-color: var(--rc-amari-cat); }
+.amari-dog .race-icon { border-color: var(--rc-amari-dog); }
+.amari-bird .race-icon { border-color: var(--rc-amari-bird); }
+.amari-aquatic .race-icon { border-color: var(--rc-amari-aquatic); }
+.amari-reptile .race-icon { border-color: var(--rc-amari-reptile); }
+.naga .race-icon { border-color: var(--rc-naga); }
+
+/* -----------------------------------------------------------------
+   BONUS LIST - Manuscript Marginalia Style
+   ----------------------------------------------------------------- */
 .bonus-list {
     list-style: none;
 }
 
 .bonus-item {
     padding: 10px 0;
-    border-bottom: 1px dashed rgba(42, 32, 22, 0.12);
+    border-bottom: 1px solid rgba(192, 138, 43, 0.12);
     display: flex;
     justify-content: space-between;
     align-items: center;
+    position: relative;
+}
+
+/* Calligraphic bullet point */
+.bonus-item::before {
+    content: '\2726';
+    color: var(--gold-leaf);
+    font-size: 0.7em;
+    margin-right: 10px;
+    flex-shrink: 0;
+    opacity: 0.6;
 }
 
 .bonus-item:last-child {
@@ -302,30 +784,67 @@ h1 {
 }
 
 .bonus-name {
-    font-weight: 600;
+    font-weight: 700;
+    font-size: 0.95em;
+    color: var(--ink);
 }
 
 .bonus-desc {
-    font-size: 0.85em;
-    opacity: 0.7;
+    font-size: 0.82em;
+    color: var(--ink-faded);
+    font-style: italic;
+    margin-top: 1px;
 }
 
 .bonus-value {
-    background: var(--paper-edge);
-    padding: 5px 12px;
-    border-radius: 18px;
-    font-weight: bold;
+    background: linear-gradient(135deg, rgba(192, 138, 43, 0.15), rgba(192, 138, 43, 0.08));
+    border: 1px solid rgba(192, 138, 43, 0.25);
+    padding: 4px 14px;
+    border-radius: 2px;
+    font-family: 'MedievalSharp', cursive;
+    font-weight: 400;
+    font-size: 0.95em;
+    color: var(--gold-dim);
     white-space: nowrap;
+    letter-spacing: 0.3px;
 }
 
-/* Active Ability Section */
+/* -----------------------------------------------------------------
+   ACTIVE ABILITY - Arcane Scroll Insert
+   ----------------------------------------------------------------- */
 .active-ability {
     margin-top: 18px;
-    padding: 18px;
-    background: linear-gradient(135deg, rgba(192, 138, 43, 0.12), rgba(192, 138, 43, 0.05));
-    border-radius: 12px;
-    border: 2px solid rgba(192, 138, 43, 0.35);
+    padding: 20px;
+    background:
+        linear-gradient(135deg, rgba(192, 138, 43, 0.06), rgba(139, 0, 0, 0.03));
+    border-radius: var(--radius-md);
+    border: 1px solid rgba(192, 138, 43, 0.25);
     position: relative;
+    overflow: hidden;
+}
+
+/* Arcane glow border effect */
+.active-ability::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: var(--radius-md);
+    box-shadow: inset 0 0 20px rgba(192, 138, 43, 0.08);
+    pointer-events: none;
+}
+
+/* Scroll curl decoration */
+.active-ability::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    right: 0;
+    width: 30px;
+    height: 30px;
+    background: linear-gradient(225deg, var(--vellum) 50%, transparent 50%);
+    border-bottom-left-radius: 8px;
+    box-shadow: -2px 2px 4px rgba(42, 31, 14, 0.06);
+    opacity: 0.7;
 }
 
 .ability-header {
@@ -336,121 +855,187 @@ h1 {
 }
 
 .ability-icon {
-    font-size: 1.5em;
+    font-size: 1.4em;
 }
 
 .ability-label {
+    font-family: 'MedievalSharp', cursive;
     font-size: 0.8em;
     text-transform: uppercase;
-    letter-spacing: 1px;
-    color: var(--gold);
-    font-weight: bold;
+    letter-spacing: 2px;
+    color: var(--gold-leaf);
+    font-weight: 400;
 }
 
 .ability-name {
+    font-family: 'MedievalSharp', cursive;
     font-size: 1.2em;
-    font-weight: bold;
     color: var(--ink);
     margin-bottom: 8px;
+    letter-spacing: 0.5px;
 }
 
 .ability-desc {
-    font-size: 0.95em;
-    color: #5f4f3a;
-    line-height: 1.5;
-    margin-bottom: 10px;
+    font-size: 0.92em;
+    color: var(--ink-faded);
+    line-height: 1.65;
+    margin-bottom: 12px;
 }
 
 .ability-cooldown {
+    font-family: 'MedievalSharp', cursive;
     font-size: 0.85em;
-    color: var(--gold);
-    font-weight: 600;
-    padding: 4px 10px;
-    background: rgba(192, 138, 43, 0.15);
-    border-radius: 12px;
+    color: var(--gold-dim);
+    font-weight: 400;
+    padding: 5px 14px;
+    background: rgba(192, 138, 43, 0.1);
+    border: 1px solid rgba(192, 138, 43, 0.2);
+    border-radius: 2px;
     display: inline-block;
+    letter-spacing: 0.5px;
 }
 
-/* Race-specific ability borders */
-.human .active-ability { border-color: rgba(192, 138, 43, 0.4); }
-.elf .active-ability { border-color: rgba(63, 143, 95, 0.4); background: linear-gradient(135deg, rgba(63, 143, 95, 0.12), rgba(63, 143, 95, 0.05)); }
-.elf .ability-label, .elf .ability-cooldown { color: #3f8f5f; }
-.elf .ability-cooldown { background: rgba(63, 143, 95, 0.15); }
+/* Race-specific ability styling */
+.fire-elemental .active-ability {
+    border-color: rgba(192, 90, 42, 0.3);
+    background: linear-gradient(135deg, rgba(192, 90, 42, 0.08), rgba(192, 90, 42, 0.02));
+}
+.fire-elemental .ability-label,
+.fire-elemental .ability-cooldown { color: var(--rc-fire); }
+.fire-elemental .ability-cooldown {
+    background: rgba(192, 90, 42, 0.1);
+    border-color: rgba(192, 90, 42, 0.2);
+}
 
-.angel .active-ability { border-color: rgba(201, 178, 107, 0.5); background: linear-gradient(135deg, rgba(255, 215, 0, 0.12), rgba(255, 215, 0, 0.05)); }
-.angel .ability-label, .angel .ability-cooldown { color: #b8a03c; }
-.angel .ability-cooldown { background: rgba(201, 178, 107, 0.2); }
+.water-elemental .active-ability {
+    border-color: rgba(42, 90, 122, 0.3);
+    background: linear-gradient(135deg, rgba(42, 90, 122, 0.08), rgba(42, 90, 122, 0.02));
+}
+.water-elemental .ability-label,
+.water-elemental .ability-cooldown { color: var(--rc-water); }
+.water-elemental .ability-cooldown {
+    background: rgba(42, 90, 122, 0.1);
+    border-color: rgba(42, 90, 122, 0.2);
+}
 
-.demon .active-ability { border-color: rgba(143, 62, 47, 0.5); background: linear-gradient(135deg, rgba(143, 62, 47, 0.15), rgba(143, 62, 47, 0.05)); }
-.demon .ability-label, .demon .ability-cooldown { color: #8f3e2f; }
-.demon .ability-cooldown { background: rgba(143, 62, 47, 0.15); }
+/* Additional race ability overrides */
+.elf .active-ability {
+    border-color: rgba(58, 122, 74, 0.3);
+    background: linear-gradient(135deg, rgba(58, 122, 74, 0.08), rgba(58, 122, 74, 0.02));
+}
+.elf .ability-label, .elf .ability-cooldown { color: var(--rc-elf); }
+.elf .ability-cooldown { background: rgba(58, 122, 74, 0.1); border-color: rgba(58, 122, 74, 0.2); }
 
-.fire-elemental .active-ability { border-color: rgba(201, 106, 47, 0.5); background: linear-gradient(135deg, rgba(255, 100, 50, 0.15), rgba(255, 100, 50, 0.05)); }
-.fire-elemental .ability-label, .fire-elemental .ability-cooldown { color: #c96a2f; }
-.fire-elemental .ability-cooldown { background: rgba(201, 106, 47, 0.15); }
+.angel .active-ability {
+    border-color: rgba(201, 168, 75, 0.35);
+    background: linear-gradient(135deg, rgba(201, 168, 75, 0.08), rgba(201, 168, 75, 0.02));
+}
+.angel .ability-label, .angel .ability-cooldown { color: var(--rc-angel); }
+.angel .ability-cooldown { background: rgba(201, 168, 75, 0.1); border-color: rgba(201, 168, 75, 0.2); }
 
-.water-elemental .active-ability { border-color: rgba(59, 110, 143, 0.5); background: linear-gradient(135deg, rgba(59, 110, 143, 0.15), rgba(59, 110, 143, 0.05)); }
-.water-elemental .ability-label, .water-elemental .ability-cooldown { color: #3b6e8f; }
-.water-elemental .ability-cooldown { background: rgba(59, 110, 143, 0.15); }
+.demon .active-ability {
+    border-color: rgba(143, 48, 48, 0.35);
+    background: linear-gradient(135deg, rgba(143, 48, 48, 0.1), rgba(143, 48, 48, 0.02));
+}
+.demon .ability-label, .demon .ability-cooldown { color: var(--rc-demon); }
+.demon .ability-cooldown { background: rgba(143, 48, 48, 0.1); border-color: rgba(143, 48, 48, 0.2); }
 
-.amari-cat .active-ability { border-color: rgba(168, 106, 42, 0.5); background: linear-gradient(135deg, rgba(168, 106, 42, 0.12), rgba(168, 106, 42, 0.05)); }
-.amari-cat .ability-label, .amari-cat .ability-cooldown { color: #a86a2a; }
-.amari-cat .ability-cooldown { background: rgba(168, 106, 42, 0.15); }
+.amari-cat .active-ability { border-color: rgba(168, 112, 48, 0.35); background: linear-gradient(135deg, rgba(168, 112, 48, 0.08), rgba(168, 112, 48, 0.02)); }
+.amari-cat .ability-label, .amari-cat .ability-cooldown { color: var(--rc-amari-cat); }
+.amari-cat .ability-cooldown { background: rgba(168, 112, 48, 0.1); border-color: rgba(168, 112, 48, 0.2); }
 
-.amari-dog .active-ability { border-color: rgba(123, 90, 58, 0.5); background: linear-gradient(135deg, rgba(123, 90, 58, 0.12), rgba(123, 90, 58, 0.05)); }
-.amari-dog .ability-label, .amari-dog .ability-cooldown { color: #7b5a3a; }
-.amari-dog .ability-cooldown { background: rgba(123, 90, 58, 0.15); }
+.amari-dog .active-ability { border-color: rgba(122, 90, 58, 0.35); background: linear-gradient(135deg, rgba(122, 90, 58, 0.08), rgba(122, 90, 58, 0.02)); }
+.amari-dog .ability-label, .amari-dog .ability-cooldown { color: var(--rc-amari-dog); }
+.amari-dog .ability-cooldown { background: rgba(122, 90, 58, 0.1); border-color: rgba(122, 90, 58, 0.2); }
 
-.amari-bird .active-ability { border-color: rgba(108, 92, 154, 0.5); background: linear-gradient(135deg, rgba(108, 92, 154, 0.12), rgba(108, 92, 154, 0.05)); }
-.amari-bird .ability-label, .amari-bird .ability-cooldown { color: #6c5c9a; }
-.amari-bird .ability-cooldown { background: rgba(108, 92, 154, 0.15); }
+.amari-bird .active-ability { border-color: rgba(90, 74, 122, 0.35); background: linear-gradient(135deg, rgba(90, 74, 122, 0.08), rgba(90, 74, 122, 0.02)); }
+.amari-bird .ability-label, .amari-bird .ability-cooldown { color: var(--rc-amari-bird); }
+.amari-bird .ability-cooldown { background: rgba(90, 74, 122, 0.1); border-color: rgba(90, 74, 122, 0.2); }
 
-.amari-aquatic .active-ability { border-color: rgba(47, 122, 108, 0.5); background: linear-gradient(135deg, rgba(47, 122, 108, 0.12), rgba(47, 122, 108, 0.05)); }
-.amari-aquatic .ability-label, .amari-aquatic .ability-cooldown { color: #2f7a6c; }
-.amari-aquatic .ability-cooldown { background: rgba(47, 122, 108, 0.15); }
+.amari-aquatic .active-ability { border-color: rgba(42, 106, 90, 0.35); background: linear-gradient(135deg, rgba(42, 106, 90, 0.08), rgba(42, 106, 90, 0.02)); }
+.amari-aquatic .ability-label, .amari-aquatic .ability-cooldown { color: var(--rc-amari-aquatic); }
+.amari-aquatic .ability-cooldown { background: rgba(42, 106, 90, 0.1); border-color: rgba(42, 106, 90, 0.2); }
 
-.amari-reptile .active-ability { border-color: rgba(76, 122, 67, 0.5); background: linear-gradient(135deg, rgba(76, 122, 67, 0.12), rgba(76, 122, 67, 0.05)); }
-.amari-reptile .ability-label, .amari-reptile .ability-cooldown { color: #4c7a43; }
-.amari-reptile .ability-cooldown { background: rgba(76, 122, 67, 0.15); }
+.amari-reptile .active-ability { border-color: rgba(74, 106, 58, 0.35); background: linear-gradient(135deg, rgba(74, 106, 58, 0.08), rgba(74, 106, 58, 0.02)); }
+.amari-reptile .ability-label, .amari-reptile .ability-cooldown { color: var(--rc-amari-reptile); }
+.amari-reptile .ability-cooldown { background: rgba(74, 106, 58, 0.1); border-color: rgba(74, 106, 58, 0.2); }
 
-.naga .active-ability { border-color: rgba(47, 122, 108, 0.5); background: linear-gradient(135deg, rgba(47, 122, 108, 0.12), rgba(47, 122, 108, 0.05)); }
-.naga .ability-label, .naga .ability-cooldown { color: #2f7a6c; }
-.naga .ability-cooldown { background: rgba(47, 122, 108, 0.15); }
+.naga .active-ability { border-color: rgba(58, 106, 90, 0.35); background: linear-gradient(135deg, rgba(58, 106, 90, 0.08), rgba(58, 106, 90, 0.02)); }
+.naga .ability-label, .naga .ability-cooldown { color: var(--rc-naga); }
+.naga .ability-cooldown { background: rgba(58, 106, 90, 0.1); border-color: rgba(58, 106, 90, 0.2); }
 
-/* Race-specific accents */
-.human .race-header { border-color: var(--gold); }
-.elf .race-header { border-color: #3f8f5f; }
-.angel .race-header { border-color: #c9b26b; }
-.demon .race-header { border-color: #8f3e2f; }
-.fire-elemental .race-header { border-color: #c96a2f; }
-.water-elemental .race-header { border-color: #3b6e8f; }
-.amari-cat .race-header { border-color: #a86a2a; }
-.amari-dog .race-header { border-color: #7b5a3a; }
-.amari-bird .race-header { border-color: #6c5c9a; }
-.amari-aquatic .race-header { border-color: #2f7a6c; }
-.amari-reptile .race-header { border-color: #4c7a43; }
-.naga .race-header { border-color: #2f7a6c; }
-
+/* -----------------------------------------------------------------
+   FOOTER - Colophon (Manuscript End Page)
+   ----------------------------------------------------------------- */
 .footer {
     text-align: center;
-    margin-top: 40px;
-    padding-top: 20px;
-    border-top: 1px solid rgba(42, 32, 22, 0.15);
-    color: #6f5f4e;
+    margin-top: 48px;
+    padding: 28px 20px 0;
+    position: relative;
+    color: var(--ink-faded);
+}
+
+/* Decorative colophon border */
+.footer::before {
+    content: '';
+    display: block;
+    width: 80%;
+    max-width: 500px;
+    height: 2px;
+    margin: 0 auto 24px;
+    background: linear-gradient(90deg, transparent, var(--gold-leaf), transparent);
+    opacity: 0.5;
+}
+
+/* Colophon ornament */
+.footer-ornament {
+    display: block;
+    text-align: center;
+    font-size: 1.2em;
+    color: var(--gold-leaf);
+    opacity: 0.5;
+    margin-bottom: 16px;
+    letter-spacing: 8px;
+}
+
+.footer p {
+    line-height: 1.7;
 }
 
 .footer a {
-    color: var(--forest);
+    color: var(--royal-blue);
     text-decoration: none;
+    transition: color 0.3s;
+    border-bottom: 1px dotted rgba(26, 58, 92, 0.3);
 }
 
 .footer a:hover {
-    text-decoration: underline;
+    color: var(--crimson);
+    border-bottom-color: var(--crimson);
 }
 
+/* -----------------------------------------------------------------
+   RESPONSIVE DESIGN
+   ----------------------------------------------------------------- */
 @media (max-width: 768px) {
     h1 {
-        font-size: 2.4em;
+        font-size: 2.2em;
+    }
+
+    .hero {
+        padding: 36px 20px 30px;
+    }
+
+    .hero::before,
+    .hero::after {
+        width: 36px;
+        height: 36px;
+    }
+
+    .hero-corners::before,
+    .hero-corners::after {
+        width: 36px;
+        height: 36px;
     }
 
     .race-category {
@@ -462,144 +1047,623 @@ h1 {
         text-align: center;
     }
 
+    .category-icon {
+        margin: 0 auto;
+    }
+
     .race-icon {
-        font-size: 2em;
+        font-size: 1.9em;
+        width: 48px;
+        height: 48px;
+    }
+
+    .races-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .nav-pill {
+        font-size: 0.85em;
+        padding: 8px 18px;
+    }
+
+    .container {
+        padding: 20px 16px 40px;
+    }
+
+    .container::before {
+        margin: 0 -16px;
+    }
+
+    .section-title {
+        font-size: 1.4em;
     }
 }
 
 @media (max-width: 480px) {
-    body {
-        padding: 20px 12px 40px;
+    h1 {
+        font-size: 1.8em;
+    }
+
+    .hero {
+        padding: 28px 16px 24px;
+    }
+
+    .hero::before,
+    .hero::after,
+    .hero-corners::before,
+    .hero-corners::after {
+        width: 24px;
+        height: 24px;
+    }
+
+    .version-badge {
+        width: 60px;
+        height: 60px;
+        font-size: 0.85em;
     }
 
     .bonus-item {
         flex-direction: column;
         align-items: flex-start;
-        gap: 4px;
+        gap: 6px;
+    }
+
+    .bonus-item::before {
+        display: none;
     }
 
     .bonus-value {
         align-self: flex-end;
     }
+
+    .race-card {
+        padding: 18px;
+    }
+
+    .race-card::before,
+    .race-card::after {
+        width: 16px;
+        height: 16px;
+    }
+
+    .active-ability {
+        padding: 14px;
+    }
+
+    .nav-pill {
+        font-size: 0.8em;
+        padding: 7px 16px;
+    }
 }
 
 /* -----------------------------------------------------------------
-   DARK MODE
+   DARK MODE - Deep Midnight Blue with Gold Illumination
    ----------------------------------------------------------------- */
 [data-theme="dark"] body {
-    background: linear-gradient(135deg, #1a1610 0%, #2d2418 50%, #1f1a12 100%);
-    color: #e8dfd2;
+    background:
+        var(--parchment-noise),
+        radial-gradient(ellipse at 20% 10%, rgba(192, 138, 43, 0.06) 0%, transparent 50%),
+        radial-gradient(ellipse at 80% 5%, rgba(139, 0, 0, 0.04) 0%, transparent 40%),
+        linear-gradient(175deg, #12122a 0%, #0f0f1a 40%, #141428 70%, #0d0d18 100%);
+    background-attachment: fixed;
+    color: #ddd4c0;
 }
 
 [data-theme="dark"] .top-nav {
-    background: rgba(30, 25, 18, 0.95);
-    border-bottom-color: rgba(192, 138, 43, 0.2);
+    background: linear-gradient(180deg, rgba(15, 15, 26, 0.97), rgba(18, 18, 40, 0.95));
+    border-bottom-color: rgba(192, 138, 43, 0.3);
 }
 
-[data-theme="dark"] .nav-current { color: rgba(232, 220, 200, 0.6); }
-[data-theme="dark"] .nav-divider { color: rgba(232, 220, 200, 0.3); }
+[data-theme="dark"] .nav-home { color: var(--gold-bright); }
+[data-theme="dark"] .nav-home:hover { color: #e8c060; }
+[data-theme="dark"] .nav-current { color: rgba(221, 212, 192, 0.5); }
+[data-theme="dark"] .nav-divider { color: rgba(221, 212, 192, 0.2); }
 
+/* Dark container */
+[data-theme="dark"] .container::before {
+    opacity: 0.3;
+}
+
+/* Dark hero */
 [data-theme="dark"] .hero {
-    background: rgba(40, 35, 28, 0.6);
-    border-color: rgba(192, 138, 43, 0.25);
-}
-
-[data-theme="dark"] h1 { color: #e8dfd2; }
-[data-theme="dark"] .subtitle { color: #b0a58f; }
-
-[data-theme="dark"] .race-nav {
-    background: rgba(40, 35, 28, 0.6);
+    background:
+        radial-gradient(ellipse at 50% 0%, rgba(192, 138, 43, 0.06) 0%, transparent 70%),
+        linear-gradient(180deg, rgba(20, 20, 40, 0.7), rgba(15, 15, 26, 0.5));
     border-color: rgba(192, 138, 43, 0.2);
 }
 
-[data-theme="dark"] .race-category {
-    background: rgba(40, 35, 28, 0.5);
+[data-theme="dark"] .hero::before,
+[data-theme="dark"] .hero::after {
+    border-color: rgba(192, 138, 43, 0.3);
+}
+
+[data-theme="dark"] .hero-corners::before,
+[data-theme="dark"] .hero-corners::after {
+    border-color: rgba(192, 138, 43, 0.3);
+}
+
+[data-theme="dark"] .hero-rule {
+    background: linear-gradient(90deg, transparent, rgba(192, 138, 43, 0.5), transparent);
+}
+
+[data-theme="dark"] h1 {
+    color: #e8dfc8;
+    text-shadow: 1px 1px 0 rgba(192, 138, 43, 0.1);
+}
+
+[data-theme="dark"] .illuminated-initial {
+    color: var(--gold-bright);
+}
+
+[data-theme="dark"] .subtitle { color: rgba(221, 212, 192, 0.6); }
+
+/* Dark version badge - keep the crimson wax seal */
+[data-theme="dark"] .version-badge {
+    background: radial-gradient(circle at 35% 35%, #8b2020, #6a0000 50%, #4a0000 100%);
+    box-shadow:
+        0 4px 12px rgba(0, 0, 0, 0.5),
+        inset 0 -2px 6px rgba(0, 0, 0, 0.3),
+        inset 0 2px 4px rgba(255, 200, 200, 0.1);
+}
+
+/* Dark race nav */
+[data-theme="dark"] .race-nav {
+    background: linear-gradient(180deg, rgba(20, 20, 40, 0.6), rgba(15, 15, 26, 0.5));
     border-color: rgba(192, 138, 43, 0.15);
 }
 
-[data-theme="dark"] .category-header {
-    border-bottom-color: rgba(200, 180, 140, 0.15);
+[data-theme="dark"] .race-nav::before {
+    background: linear-gradient(90deg, transparent, rgba(192, 138, 43, 0.3), transparent);
 }
-[data-theme="dark"] .category-desc { color: #b0a58f; }
 
+[data-theme="dark"] .nav-pill.core { color: var(--gold-bright); }
+[data-theme="dark"] .nav-pill.core::before { background: rgba(192, 138, 43, 0.06); border-color: rgba(192, 138, 43, 0.2); }
+[data-theme="dark"] .nav-pill.core:hover::before { background: rgba(192, 138, 43, 0.15); }
+
+[data-theme="dark"] .nav-pill.celestial { color: #c04040; }
+[data-theme="dark"] .nav-pill.celestial::before { background: rgba(192, 64, 64, 0.05); border-color: rgba(192, 64, 64, 0.2); }
+[data-theme="dark"] .nav-pill.celestial:hover::before { background: rgba(192, 64, 64, 0.12); }
+
+[data-theme="dark"] .nav-pill.elemental { color: #5a90c0; }
+[data-theme="dark"] .nav-pill.elemental::before { background: rgba(90, 144, 192, 0.05); border-color: rgba(90, 144, 192, 0.2); }
+[data-theme="dark"] .nav-pill.elemental:hover::before { background: rgba(90, 144, 192, 0.12); }
+
+[data-theme="dark"] .nav-pill.amari { color: #5aaa6a; }
+[data-theme="dark"] .nav-pill.amari::before { background: rgba(90, 170, 106, 0.05); border-color: rgba(90, 170, 106, 0.2); }
+[data-theme="dark"] .nav-pill.amari:hover::before { background: rgba(90, 170, 106, 0.12); }
+
+[data-theme="dark"] .nav-pill.serpent { color: #7aaa70; }
+[data-theme="dark"] .nav-pill.serpent::before { background: rgba(122, 170, 112, 0.05); border-color: rgba(122, 170, 112, 0.2); }
+[data-theme="dark"] .nav-pill.serpent:hover::before { background: rgba(122, 170, 112, 0.12); }
+
+/* Dark active pills */
+[data-theme="dark"] .nav-pill.core.active::before { background: var(--gold-leaf); }
+[data-theme="dark"] .nav-pill.celestial.active::before { background: #8b2020; }
+[data-theme="dark"] .nav-pill.elemental.active::before { background: #2a5a8a; }
+[data-theme="dark"] .nav-pill.amari.active::before { background: #2a6a3a; }
+[data-theme="dark"] .nav-pill.serpent.active::before { background: #3a5a3a; }
+
+/* Dark race category sections */
+[data-theme="dark"] .race-category {
+    background:
+        var(--parchment-noise),
+        linear-gradient(180deg, rgba(20, 20, 42, 0.6), rgba(15, 15, 30, 0.5));
+    border-color: rgba(192, 138, 43, 0.12);
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+}
+
+[data-theme="dark"] .race-category::before {
+    box-shadow: inset 0 0 40px rgba(192, 138, 43, 0.02);
+}
+
+[data-theme="dark"] .category-header::after {
+    opacity: 0.15;
+}
+
+[data-theme="dark"] .category-icon::before {
+    opacity: 0.08;
+}
+
+[data-theme="dark"] .core-category .category-title,
+[data-theme="dark"] .core-category .category-icon { color: var(--gold-bright); }
+[data-theme="dark"] .core-category .category-header::after { color: var(--gold-bright); }
+
+[data-theme="dark"] .celestial-category .category-title,
+[data-theme="dark"] .celestial-category .category-icon { color: #c04040; }
+[data-theme="dark"] .celestial-category .category-header::after { color: #c04040; }
+
+[data-theme="dark"] .elemental-category .category-title,
+[data-theme="dark"] .elemental-category .category-icon { color: #5a90c0; }
+[data-theme="dark"] .elemental-category .category-header::after { color: #5a90c0; }
+
+[data-theme="dark"] .amari-category .category-title,
+[data-theme="dark"] .amari-category .category-icon { color: #5aaa6a; }
+[data-theme="dark"] .amari-category .category-header::after { color: #5aaa6a; }
+
+[data-theme="dark"] .serpent-category .category-title,
+[data-theme="dark"] .serpent-category .category-icon { color: #7aaa70; }
+[data-theme="dark"] .serpent-category .category-header::after { color: #7aaa70; }
+
+[data-theme="dark"] .category-desc { color: rgba(221, 212, 192, 0.5); }
+
+/* Dark race cards */
 [data-theme="dark"] .race-card {
-    background: rgba(30, 25, 20, 0.7);
-    border-color: rgba(128, 128, 128, 0.15);
+    background:
+        var(--parchment-noise),
+        linear-gradient(170deg, rgba(22, 22, 44, 0.9), rgba(16, 16, 32, 0.95));
+    border-color: rgba(192, 138, 43, 0.1);
+}
+
+[data-theme="dark"] .race-card:hover {
+    box-shadow:
+        0 12px 30px rgba(0, 0, 0, 0.3),
+        0 0 20px rgba(192, 138, 43, 0.04);
+}
+
+[data-theme="dark"] .race-card::before {
+    border-color: rgba(192, 138, 43, 0.2);
+}
+
+[data-theme="dark"] .race-card::after {
+    border-color: rgba(192, 138, 43, 0.2);
+}
+
+[data-theme="dark"] .race-card:hover::before,
+[data-theme="dark"] .race-card:hover::after {
+    opacity: 0.4;
 }
 
 [data-theme="dark"] .race-header {
-    border-bottom-color: rgba(200, 180, 140, 0.15);
-}
-[data-theme="dark"] .race-header h3 { color: #e8dfd2; }
-[data-theme="dark"] .race-name { color: #e8dfd2; }
-[data-theme="dark"] .race-theme { color: #b0a58f; }
-
-[data-theme="dark"] .bonus-item {
-    border-bottom-color: rgba(200, 180, 140, 0.1);
+    border-bottom-color: rgba(192, 138, 43, 0.12);
 }
 
-[data-theme="dark"] .bonus-name { color: #e8dfd2; }
-[data-theme="dark"] .bonus-desc { color: #b0a58f; }
-[data-theme="dark"] .bonus-value {
-    background: rgba(192, 138, 43, 0.2);
-    color: #e8dfd2;
+[data-theme="dark"] .race-icon {
+    border-color: rgba(192, 138, 43, 0.2);
+    background: rgba(20, 20, 40, 0.6);
 }
 
-[data-theme="dark"] .active-ability {
-    background: linear-gradient(135deg, rgba(192, 138, 43, 0.08), rgba(192, 138, 43, 0.03));
-    border-color: rgba(192, 138, 43, 0.25);
-}
-[data-theme="dark"] .ability-name { color: #e8dfd2; }
-[data-theme="dark"] .ability-desc { color: #c0b49e; }
-
-[data-theme="dark"] .elf .active-ability {
-    background: linear-gradient(135deg, rgba(63, 143, 95, 0.08), rgba(63, 143, 95, 0.03));
-}
-[data-theme="dark"] .angel .active-ability {
-    background: linear-gradient(135deg, rgba(255, 215, 0, 0.08), rgba(255, 215, 0, 0.03));
-}
-[data-theme="dark"] .demon .active-ability {
-    background: linear-gradient(135deg, rgba(143, 62, 47, 0.1), rgba(143, 62, 47, 0.03));
-}
-[data-theme="dark"] .fire-elemental .active-ability {
-    background: linear-gradient(135deg, rgba(255, 100, 50, 0.1), rgba(255, 100, 50, 0.03));
-}
-[data-theme="dark"] .water-elemental .active-ability {
-    background: linear-gradient(135deg, rgba(59, 110, 143, 0.1), rgba(59, 110, 143, 0.03));
-}
-[data-theme="dark"] .amari-cat .active-ability {
-    background: linear-gradient(135deg, rgba(168, 106, 42, 0.08), rgba(168, 106, 42, 0.03));
-}
-[data-theme="dark"] .amari-dog .active-ability {
-    background: linear-gradient(135deg, rgba(123, 90, 58, 0.08), rgba(123, 90, 58, 0.03));
-}
-[data-theme="dark"] .amari-bird .active-ability {
-    background: linear-gradient(135deg, rgba(108, 92, 154, 0.08), rgba(108, 92, 154, 0.03));
-}
-[data-theme="dark"] .amari-aquatic .active-ability {
-    background: linear-gradient(135deg, rgba(47, 122, 108, 0.08), rgba(47, 122, 108, 0.03));
-}
-[data-theme="dark"] .amari-reptile .active-ability {
-    background: linear-gradient(135deg, rgba(76, 122, 67, 0.08), rgba(76, 122, 67, 0.03));
-}
-[data-theme="dark"] .naga .active-ability {
-    background: linear-gradient(135deg, rgba(47, 122, 108, 0.08), rgba(47, 122, 108, 0.03));
-}
-
-[data-theme="dark"] .changelog-box {
-    background: rgba(40, 35, 28, 0.6);
+[data-theme="dark"] .race-icon::after {
     border-color: rgba(192, 138, 43, 0.2);
 }
-[data-theme="dark"] .changelog-entry {
-    border-bottom-color: rgba(200, 180, 140, 0.1);
+
+[data-theme="dark"] .race-name { color: #e8dfc8; }
+[data-theme="dark"] .race-theme { color: rgba(221, 212, 192, 0.5); }
+
+/* Dark race-specific header colors */
+[data-theme="dark"] .human .race-header { border-bottom-color: rgba(184, 148, 47, 0.3); color: #d4aa40; }
+[data-theme="dark"] .human .race-icon { border-color: rgba(184, 148, 47, 0.3); }
+[data-theme="dark"] .elf .race-header { border-bottom-color: rgba(58, 150, 80, 0.3); color: #50b060; }
+[data-theme="dark"] .elf .race-icon { border-color: rgba(58, 150, 80, 0.3); }
+[data-theme="dark"] .angel .race-header { border-bottom-color: rgba(201, 168, 75, 0.3); color: #d4b850; }
+[data-theme="dark"] .angel .race-icon { border-color: rgba(201, 168, 75, 0.3); }
+[data-theme="dark"] .demon .race-header { border-bottom-color: rgba(180, 60, 60, 0.3); color: #c05050; }
+[data-theme="dark"] .demon .race-icon { border-color: rgba(180, 60, 60, 0.3); }
+[data-theme="dark"] .fire-elemental .race-header { border-bottom-color: rgba(192, 100, 50, 0.3); color: #d07030; }
+[data-theme="dark"] .fire-elemental .race-icon { border-color: rgba(192, 100, 50, 0.3); }
+[data-theme="dark"] .water-elemental .race-header { border-bottom-color: rgba(70, 120, 170, 0.3); color: #5a9ac0; }
+[data-theme="dark"] .water-elemental .race-icon { border-color: rgba(70, 120, 170, 0.3); }
+[data-theme="dark"] .amari-cat .race-header { border-bottom-color: rgba(180, 120, 50, 0.3); color: #c08838; }
+[data-theme="dark"] .amari-cat .race-icon { border-color: rgba(180, 120, 50, 0.3); }
+[data-theme="dark"] .amari-dog .race-header { border-bottom-color: rgba(140, 100, 60, 0.3); color: #a07848; }
+[data-theme="dark"] .amari-dog .race-icon { border-color: rgba(140, 100, 60, 0.3); }
+[data-theme="dark"] .amari-bird .race-header { border-bottom-color: rgba(110, 90, 150, 0.3); color: #8070b0; }
+[data-theme="dark"] .amari-bird .race-icon { border-color: rgba(110, 90, 150, 0.3); }
+[data-theme="dark"] .amari-aquatic .race-header { border-bottom-color: rgba(50, 130, 110, 0.3); color: #40a090; }
+[data-theme="dark"] .amari-aquatic .race-icon { border-color: rgba(50, 130, 110, 0.3); }
+[data-theme="dark"] .amari-reptile .race-header { border-bottom-color: rgba(80, 130, 60, 0.3); color: #60a050; }
+[data-theme="dark"] .amari-reptile .race-icon { border-color: rgba(80, 130, 60, 0.3); }
+[data-theme="dark"] .naga .race-header { border-bottom-color: rgba(60, 130, 100, 0.3); color: #50a080; }
+[data-theme="dark"] .naga .race-icon { border-color: rgba(60, 130, 100, 0.3); }
+
+/* Dark bonus items */
+[data-theme="dark"] .bonus-item {
+    border-bottom-color: rgba(192, 138, 43, 0.08);
 }
-[data-theme="dark"] .changelog-content p { color: #b0a58f; }
 
-[data-theme="dark"] .section-title { color: #e8dfd2; }
-[data-theme="dark"] .category-header h2 { color: #e8dfd2; }
+[data-theme="dark"] .bonus-item::before {
+    color: rgba(192, 138, 43, 0.4);
+}
 
+[data-theme="dark"] .bonus-name { color: #ddd4c0; }
+[data-theme="dark"] .bonus-desc { color: rgba(221, 212, 192, 0.5); }
+
+[data-theme="dark"] .bonus-value {
+    background: linear-gradient(135deg, rgba(192, 138, 43, 0.12), rgba(192, 138, 43, 0.06));
+    border-color: rgba(192, 138, 43, 0.2);
+    color: var(--gold-bright);
+}
+
+/* Dark active abilities */
+[data-theme="dark"] .active-ability {
+    background: linear-gradient(135deg, rgba(192, 138, 43, 0.05), rgba(139, 0, 0, 0.02));
+    border-color: rgba(192, 138, 43, 0.15);
+}
+
+[data-theme="dark"] .active-ability::before {
+    box-shadow: inset 0 0 20px rgba(192, 138, 43, 0.04);
+}
+
+[data-theme="dark"] .active-ability::after {
+    background: linear-gradient(225deg, rgba(20, 20, 40, 0.8) 50%, transparent 50%);
+}
+
+[data-theme="dark"] .ability-label { color: var(--gold-bright); }
+[data-theme="dark"] .ability-name { color: #e8dfc8; }
+[data-theme="dark"] .ability-desc { color: rgba(221, 212, 192, 0.65); }
+[data-theme="dark"] .ability-cooldown {
+    color: var(--gold-bright);
+    background: rgba(192, 138, 43, 0.08);
+    border-color: rgba(192, 138, 43, 0.15);
+}
+
+/* Dark race-specific abilities */
+[data-theme="dark"] .fire-elemental .active-ability {
+    border-color: rgba(208, 112, 48, 0.2);
+    background: linear-gradient(135deg, rgba(208, 112, 48, 0.06), rgba(208, 112, 48, 0.02));
+}
+[data-theme="dark"] .fire-elemental .ability-label,
+[data-theme="dark"] .fire-elemental .ability-cooldown { color: #d07030; }
+[data-theme="dark"] .fire-elemental .ability-cooldown { background: rgba(208, 112, 48, 0.08); border-color: rgba(208, 112, 48, 0.15); }
+
+[data-theme="dark"] .water-elemental .active-ability {
+    border-color: rgba(90, 154, 192, 0.2);
+    background: linear-gradient(135deg, rgba(90, 154, 192, 0.06), rgba(90, 154, 192, 0.02));
+}
+[data-theme="dark"] .water-elemental .ability-label,
+[data-theme="dark"] .water-elemental .ability-cooldown { color: #5a9ac0; }
+[data-theme="dark"] .water-elemental .ability-cooldown { background: rgba(90, 154, 192, 0.08); border-color: rgba(90, 154, 192, 0.15); }
+
+[data-theme="dark"] .elf .active-ability { border-color: rgba(80, 176, 96, 0.2); background: linear-gradient(135deg, rgba(80, 176, 96, 0.06), rgba(80, 176, 96, 0.02)); }
+[data-theme="dark"] .elf .ability-label, [data-theme="dark"] .elf .ability-cooldown { color: #50b060; }
+[data-theme="dark"] .elf .ability-cooldown { background: rgba(80, 176, 96, 0.08); border-color: rgba(80, 176, 96, 0.15); }
+
+[data-theme="dark"] .angel .active-ability { border-color: rgba(212, 184, 80, 0.2); background: linear-gradient(135deg, rgba(212, 184, 80, 0.06), rgba(212, 184, 80, 0.02)); }
+[data-theme="dark"] .angel .ability-label, [data-theme="dark"] .angel .ability-cooldown { color: #d4b850; }
+[data-theme="dark"] .angel .ability-cooldown { background: rgba(212, 184, 80, 0.08); border-color: rgba(212, 184, 80, 0.15); }
+
+[data-theme="dark"] .demon .active-ability { border-color: rgba(192, 80, 80, 0.2); background: linear-gradient(135deg, rgba(192, 80, 80, 0.06), rgba(192, 80, 80, 0.02)); }
+[data-theme="dark"] .demon .ability-label, [data-theme="dark"] .demon .ability-cooldown { color: #c05050; }
+[data-theme="dark"] .demon .ability-cooldown { background: rgba(192, 80, 80, 0.08); border-color: rgba(192, 80, 80, 0.15); }
+
+[data-theme="dark"] .amari-cat .active-ability { border-color: rgba(192, 136, 56, 0.2); background: linear-gradient(135deg, rgba(192, 136, 56, 0.06), rgba(192, 136, 56, 0.02)); }
+[data-theme="dark"] .amari-cat .ability-label, [data-theme="dark"] .amari-cat .ability-cooldown { color: #c08838; }
+[data-theme="dark"] .amari-cat .ability-cooldown { background: rgba(192, 136, 56, 0.08); border-color: rgba(192, 136, 56, 0.15); }
+
+[data-theme="dark"] .amari-dog .active-ability { border-color: rgba(160, 120, 72, 0.2); background: linear-gradient(135deg, rgba(160, 120, 72, 0.06), rgba(160, 120, 72, 0.02)); }
+[data-theme="dark"] .amari-dog .ability-label, [data-theme="dark"] .amari-dog .ability-cooldown { color: #a07848; }
+[data-theme="dark"] .amari-dog .ability-cooldown { background: rgba(160, 120, 72, 0.08); border-color: rgba(160, 120, 72, 0.15); }
+
+[data-theme="dark"] .amari-bird .active-ability { border-color: rgba(128, 112, 176, 0.2); background: linear-gradient(135deg, rgba(128, 112, 176, 0.06), rgba(128, 112, 176, 0.02)); }
+[data-theme="dark"] .amari-bird .ability-label, [data-theme="dark"] .amari-bird .ability-cooldown { color: #8070b0; }
+[data-theme="dark"] .amari-bird .ability-cooldown { background: rgba(128, 112, 176, 0.08); border-color: rgba(128, 112, 176, 0.15); }
+
+[data-theme="dark"] .amari-aquatic .active-ability { border-color: rgba(64, 160, 144, 0.2); background: linear-gradient(135deg, rgba(64, 160, 144, 0.06), rgba(64, 160, 144, 0.02)); }
+[data-theme="dark"] .amari-aquatic .ability-label, [data-theme="dark"] .amari-aquatic .ability-cooldown { color: #40a090; }
+[data-theme="dark"] .amari-aquatic .ability-cooldown { background: rgba(64, 160, 144, 0.08); border-color: rgba(64, 160, 144, 0.15); }
+
+[data-theme="dark"] .amari-reptile .active-ability { border-color: rgba(96, 160, 80, 0.2); background: linear-gradient(135deg, rgba(96, 160, 80, 0.06), rgba(96, 160, 80, 0.02)); }
+[data-theme="dark"] .amari-reptile .ability-label, [data-theme="dark"] .amari-reptile .ability-cooldown { color: #60a050; }
+[data-theme="dark"] .amari-reptile .ability-cooldown { background: rgba(96, 160, 80, 0.08); border-color: rgba(96, 160, 80, 0.15); }
+
+[data-theme="dark"] .naga .active-ability { border-color: rgba(80, 160, 128, 0.2); background: linear-gradient(135deg, rgba(80, 160, 128, 0.06), rgba(80, 160, 128, 0.02)); }
+[data-theme="dark"] .naga .ability-label, [data-theme="dark"] .naga .ability-cooldown { color: #50a080; }
+[data-theme="dark"] .naga .ability-cooldown { background: rgba(80, 160, 128, 0.08); border-color: rgba(80, 160, 128, 0.15); }
+
+/* Dark section title */
+[data-theme="dark"] .section-title {
+    color: #e8dfc8;
+}
+
+[data-theme="dark"] .section-title::after {
+    background: linear-gradient(90deg, transparent, rgba(192, 138, 43, 0.4), transparent);
+}
+
+/* Dark changelog / timeline overrides */
+[data-theme="dark"] .changelog-timeline::before {
+    background: linear-gradient(180deg, rgba(192, 138, 43, 0.4), rgba(192, 138, 43, 0.08));
+}
+
+[data-theme="dark"] .timeline-marker {
+    background: var(--gold-leaf);
+    border-color: rgba(192, 138, 43, 0.3);
+}
+
+[data-theme="dark"] .timeline-node.current .timeline-marker {
+    box-shadow: 0 0 12px rgba(192, 138, 43, 0.4);
+    animation: pulse-node-dark 2s ease-in-out infinite;
+}
+
+@keyframes pulse-node-dark {
+    0%, 100% { box-shadow: 0 0 10px rgba(192, 138, 43, 0.3); }
+    50% { box-shadow: 0 0 20px rgba(192, 138, 43, 0.6); }
+}
+
+[data-theme="dark"] .timeline-version {
+    background: rgba(192, 138, 43, 0.15);
+    color: var(--gold-bright);
+}
+
+[data-theme="dark"] .timeline-content {
+    background: rgba(20, 20, 40, 0.5);
+    border-color: rgba(192, 138, 43, 0.1);
+}
+
+[data-theme="dark"] .timeline-entry .changelog-content h4 {
+    color: var(--gold-bright);
+}
+
+[data-theme="dark"] .timeline-entry .changelog-content p {
+    color: rgba(221, 212, 192, 0.6);
+}
+
+/* Dark footer */
 [data-theme="dark"] .footer {
-    color: #8a7e6e;
-    border-top-color: rgba(192, 138, 43, 0.15);
+    color: rgba(221, 212, 192, 0.5);
 }
-[data-theme="dark"] .footer a { color: #c08a2b; }
+
+[data-theme="dark"] .footer::before {
+    background: linear-gradient(90deg, transparent, rgba(192, 138, 43, 0.3), transparent);
+}
+
+[data-theme="dark"] .footer-ornament {
+    color: rgba(192, 138, 43, 0.3);
+}
+
+[data-theme="dark"] .footer a {
+    color: var(--gold-bright);
+    border-bottom-color: rgba(192, 138, 43, 0.2);
+}
+
+[data-theme="dark"] .footer a:hover {
+    color: #e8c060;
+    border-bottom-color: rgba(232, 192, 96, 0.4);
+}
+
+/* Dark related mods */
+[data-theme="dark"] .related-card {
+    background: rgba(20, 20, 40, 0.5);
+    border-color: rgba(192, 138, 43, 0.1);
+}
+
+[data-theme="dark"] .related-card:hover {
+    border-color: rgba(192, 138, 43, 0.3);
+}
+
+[data-theme="dark"] .related-info h4 { color: #e8dfc8; }
+[data-theme="dark"] .related-info p { color: rgba(221, 212, 192, 0.5); }
+
+/* Dark TOC sidebar overrides for this page's gold accent */
+[data-theme="dark"] .toc-sidebar h3 {
+    color: var(--gold-bright);
+    border-bottom-color: rgba(192, 138, 43, 0.2);
+}
+
+[data-theme="dark"] .toc-link:hover,
+[data-theme="dark"] .toc-link.active {
+    color: var(--gold-bright);
+    background: rgba(192, 138, 43, 0.08);
+    border-left-color: var(--gold-bright);
+}
+
+/* Light-mode TOC overrides for this page */
+.toc-sidebar h3 {
+    color: var(--gold-leaf);
+    border-bottom-color: rgba(192, 138, 43, 0.25);
+}
+
+.toc-link:hover,
+.toc-link.active {
+    color: var(--gold-leaf);
+    background: rgba(192, 138, 43, 0.08);
+    border-left-color: var(--gold-leaf);
+}
+
+/* -----------------------------------------------------------------
+   OVERRIDE SHARED TIMELINE COLORS (green -> gold for this page)
+   ----------------------------------------------------------------- */
+.changelog-timeline::before {
+    background: linear-gradient(180deg, rgba(192, 138, 43, 0.5), rgba(192, 138, 43, 0.1));
+}
+
+.timeline-marker {
+    background: var(--gold-leaf);
+    border-color: rgba(192, 138, 43, 0.3);
+}
+
+.timeline-node.current .timeline-marker {
+    box-shadow: 0 0 12px rgba(192, 138, 43, 0.4);
+    animation: pulse-gold 2s ease-in-out infinite;
+}
+
+@keyframes pulse-gold {
+    0%, 100% { box-shadow: 0 0 10px rgba(192, 138, 43, 0.3); }
+    50% { box-shadow: 0 0 20px rgba(192, 138, 43, 0.6); }
+}
+
+.timeline-version {
+    background: rgba(192, 138, 43, 0.12);
+    color: var(--gold-dim);
+}
+
+.timeline-content {
+    background: rgba(255, 252, 240, 0.6);
+    border-color: rgba(192, 138, 43, 0.12);
+}
+
+.timeline-entry .changelog-content h4 {
+    color: var(--gold-leaf);
+}
+
+.timeline-entry .changelog-content p {
+    color: var(--ink-faded);
+}
+
+/* -----------------------------------------------------------------
+   OVERRIDE SHARED BACK-TO-TOP & SKIP-LINK COLORS
+   ----------------------------------------------------------------- */
+.back-to-top {
+    background: linear-gradient(135deg, var(--gold-leaf), var(--gold-bright));
+}
+
+.back-to-top:hover {
+    box-shadow: 0 6px 20px rgba(192, 138, 43, 0.4);
+}
+
+[data-theme="dark"] .back-to-top {
+    background: linear-gradient(135deg, var(--gold-dim), var(--gold-leaf));
+}
+
+.skip-to-content {
+    background: var(--gold-leaf);
+}
+
+*:focus-visible {
+    outline-color: rgba(192, 138, 43, 0.7);
+}
+
+/* -----------------------------------------------------------------
+   RELATED MODS SECTION - Light Mode
+   ----------------------------------------------------------------- */
+.related-card {
+    background: rgba(255, 252, 240, 0.7);
+    border-color: rgba(192, 138, 43, 0.15);
+}
+
+.related-card:hover {
+    border-color: rgba(192, 138, 43, 0.4);
+    box-shadow: 0 8px 20px rgba(42, 31, 14, 0.08);
+}
+
+.related-info h4 {
+    color: var(--ink);
+    font-family: 'MedievalSharp', cursive;
+}
+
+.related-info p {
+    color: var(--ink-faded);
+}
+
+/* -----------------------------------------------------------------
+   PRINT STYLES
+   ----------------------------------------------------------------- */
+@media print {
+    .top-nav,
+    .race-nav,
+    .toc-sidebar,
+    .back-to-top,
+    .theme-toggle,
+    .bug-report-btn,
+    .skip-to-content {
+        display: none !important;
+    }
+
+    body {
+        background: #fff;
+        color: #000;
+    }
+
+    .race-card,
+    .race-category {
+        break-inside: avoid;
+    }
+}

@@ -5,124 +5,220 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Page Not Found - Sun Haven Mod Hub</title>
     <link rel="icon" type="image/svg+xml" href="/SunhavenMod/favicon.svg">
+    <meta name="theme-color" content="#2f8f5b">
     <link rel="stylesheet" href="shared-styles.css">
     <style>
         :root {
-            --ink: #1f1a12;
-            --muted: #5f5245;
-            --accent: #2f8f5b;
-            --accent-2: #f2a65a;
+            --parchment: #f4ead5;
+            --ink-dark: #2b1d0e;
+            --ink-mid: #5c4a35;
+            --ink-faint: #8a7a66;
+            --quest-gold: #c9a84c;
+            --quest-gold-dim: rgba(201, 168, 76, 0.35);
+            --hp-red: #b34040;
+            --mp-blue: #4068b3;
+            --xp-green: #3d8f4f;
+            --border-engrave: rgba(43, 29, 14, 0.18);
         }
+
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
         body {
-            font-family: "Trebuchet MS", "Lucida Sans Unicode", "Lucida Grande", "Verdana", sans-serif;
-            background:
-                radial-gradient(circle at 15% 10%, rgba(242, 166, 90, 0.25), transparent 45%),
-                radial-gradient(circle at 85% 0%, rgba(47, 143, 91, 0.22), transparent 45%),
-                linear-gradient(135deg, #fef8ef 0%, #f6efe3 45%, #efe1cc 100%);
+            font-family: "Palatino Linotype", "Book Antiqua", Palatino, Georgia, serif;
             min-height: 100vh;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: var(--ink);
-            margin: 0;
-            padding: 20px;
+            display: grid;
+            grid-template-rows: auto 1fr auto;
+            color: var(--ink-dark);
+            background:
+                url("data:image/svg+xml,%3Csvg width='60' height='60' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M30 0v60M0 30h60' stroke='%23c9a84c' stroke-width='.3' opacity='.12'/%3E%3C/svg%3E"),
+                linear-gradient(170deg, #e8dcc3 0%, #f4ead5 40%, #e2d4b8 100%);
+            background-size: 60px 60px, 100% 100%;
         }
 
-        .error-container {
-            text-align: center;
-            max-width: 520px;
-            background: rgba(255, 255, 255, 0.7);
-            border-radius: 24px;
-            padding: 50px 40px;
-            border: 1px solid rgba(31, 26, 18, 0.08);
-            box-shadow: 0 18px 40px rgba(31, 26, 18, 0.12);
+        .status-bar {
+            display: flex; align-items: center; justify-content: space-between;
+            flex-wrap: wrap; gap: 10px; padding: 10px 24px;
+            background: linear-gradient(180deg, #3a2a14, #2b1d0e);
+            border-bottom: 3px solid var(--quest-gold-dim);
+            font-family: "Consolas", "Courier New", monospace;
+            font-size: 0.82em; color: #d4c8a8; letter-spacing: 0.5px;
+        }
+        .stat { display: inline-flex; align-items: center; gap: 6px; }
+        .stat-label { color: #8a7a66; }
+        .stat-val { font-weight: 700; }
+        .stat-val.red { color: #e06060; }
+        .stat-val.blue { color: #6090e0; }
+        .stat-val.gold { color: var(--quest-gold); }
+        .stat-val.blink { animation: blink-val 1.4s step-end infinite; }
+        @keyframes blink-val { 0%,100% { opacity:1; } 50% { opacity:0.25; } }
+
+        .stat-bar-track { width: 80px; height: 8px; border-radius: 4px; background: rgba(255,255,255,0.08); overflow: hidden; }
+        .stat-bar-fill { height: 100%; border-radius: 4px; }
+        .stat-bar-fill.hp { width: 30%; background: linear-gradient(90deg, #b34040, #e06060); }
+        .stat-bar-fill.mp { width: 12%; background: linear-gradient(90deg, #4068b3, #6090e0); }
+
+        .quest-log { width: 100%; max-width: 680px; margin: 0 auto; padding: 36px 28px 28px; align-self: center; }
+
+        .quest-scroll {
+            background: linear-gradient(180deg, rgba(244,234,213,0.6), rgba(226,212,184,0.85));
+            border: 2px solid #ddd0b3; border-radius: 4px;
+            box-shadow: inset 0 0 40px rgba(43,29,14,0.06), 0 8px 32px rgba(43,29,14,0.18);
+            position: relative; overflow: hidden;
+        }
+        .quest-scroll::before {
+            content: ""; position: absolute; top: -2px; right: -2px; width: 52px; height: 52px;
+            background: radial-gradient(circle at 65% 35%, #c04040 0%, #8b2020 70%, transparent 71%);
+            clip-path: polygon(100% 0, 0 0, 100% 100%); opacity: 0.75;
         }
 
-        .error-icon {
-            font-size: 5em;
-            margin-bottom: 16px;
-            animation: float 3s ease-in-out infinite;
+        .quest-header { padding: 24px 28px 18px; border-bottom: 1px dashed var(--border-engrave); display: flex; align-items: flex-start; gap: 18px; }
+        .compass-icon { flex-shrink: 0; width: 64px; height: 64px; animation: compass-spin 8s cubic-bezier(0.4,0,0.2,1) infinite; filter: drop-shadow(0 2px 6px rgba(201,168,76,0.4)); }
+        @keyframes compass-spin {
+            0% { transform: rotate(0deg); } 15% { transform: rotate(45deg); } 25% { transform: rotate(42deg); }
+            40% { transform: rotate(190deg); } 50% { transform: rotate(185deg); } 65% { transform: rotate(310deg); }
+            75% { transform: rotate(305deg); } 100% { transform: rotate(360deg); }
         }
+        .quest-title-block { flex: 1; }
+        .quest-label { font-family: "Consolas", monospace; font-size: 0.7em; text-transform: uppercase; letter-spacing: 2px; color: var(--hp-red); }
+        .quest-name { font-size: 1.65em; font-weight: 700; line-height: 1.2; margin-bottom: 4px; }
+        .quest-subtitle { font-style: italic; color: var(--ink-faint); font-size: 0.92em; }
 
-        @keyframes float {
-            0%, 100% { transform: translateY(0); }
-            50% { transform: translateY(-10px); }
+        .event-log { padding: 20px 28px; border-bottom: 1px dashed var(--border-engrave); font-family: "Consolas", monospace; font-size: 0.78em; line-height: 1.9; color: var(--ink-mid); }
+        .log-entry { display: flex; gap: 10px; }
+        .log-time { color: var(--ink-faint); flex-shrink: 0; }
+        .log-text.warn { color: var(--hp-red); }
+        .log-text.info { color: var(--mp-blue); }
+        .log-text.faint { color: var(--ink-faint); font-style: italic; }
+        .log-cursor { display: inline-block; width: 7px; height: 1em; background: var(--ink-mid); vertical-align: text-bottom; animation: cursor-blink 1s step-end infinite; margin-left: 2px; }
+        @keyframes cursor-blink { 0%,100% { opacity:1; } 50% { opacity:0; } }
+
+        .loot-hint { margin: 0 28px; padding: 14px 18px; background: linear-gradient(90deg, var(--quest-gold-dim), rgba(201,168,76,0.12)); border-left: 3px solid var(--quest-gold); font-size: 0.85em; color: var(--ink-mid); border-radius: 0 4px 4px 0; }
+        .loot-hint strong { color: var(--quest-gold); font-variant: small-caps; letter-spacing: 1px; }
+        .loot-hint code { background: rgba(43,29,14,0.08); padding: 1px 6px; border-radius: 3px; font-family: "Consolas", monospace; font-size: 0.92em; word-break: break-all; }
+
+        .dialogue-choices { padding: 22px 28px 26px; }
+        .dialogue-prompt { font-size: 0.82em; color: var(--ink-faint); text-transform: uppercase; letter-spacing: 1.5px; margin-bottom: 14px; font-family: "Consolas", monospace; }
+        .choice { display: flex; align-items: center; gap: 12px; padding: 12px 16px; margin-bottom: 8px; border: 1px solid var(--border-engrave); border-radius: 4px; background: rgba(244,234,213,0.5); text-decoration: none; color: var(--ink-dark); font-size: 0.95em; transition: background 0.2s, border-color 0.2s, transform 0.15s; cursor: pointer; }
+        .choice:last-child { margin-bottom: 0; }
+        .choice:hover { background: rgba(201,168,76,0.15); border-color: var(--quest-gold); transform: translateX(4px); }
+        .choice:hover .choice-key { background: var(--quest-gold); color: var(--ink-dark); }
+        .choice-key { display: inline-flex; align-items: center; justify-content: center; width: 26px; height: 26px; border-radius: 4px; background: rgba(43,29,14,0.1); font-family: "Consolas", monospace; font-weight: 700; font-size: 0.82em; flex-shrink: 0; transition: background 0.2s, color 0.2s; }
+        .choice-text { flex: 1; }
+        .choice-tag { font-family: "Consolas", monospace; font-size: 0.7em; padding: 2px 8px; border-radius: 3px; text-transform: uppercase; letter-spacing: 0.5px; flex-shrink: 0; }
+        .choice-tag.safe { background: rgba(61,143,79,0.15); color: var(--xp-green); }
+        .choice-tag.danger { background: rgba(179,64,64,0.12); color: var(--hp-red); }
+        .choice-tag.mystery { background: rgba(64,104,179,0.12); color: var(--mp-blue); }
+        .choice.disabled { opacity: 0.4; pointer-events: none; filter: grayscale(0.5); }
+
+        .page-footer { text-align: center; padding: 16px 24px; font-family: "Consolas", monospace; font-size: 0.72em; color: var(--ink-faint); letter-spacing: 0.5px; }
+        .page-footer span { opacity: 0.6; }
+
+        /* DARK MODE */
+        [data-theme="dark"] { --ink-dark: #ddd0b3; --ink-mid: #b0a58f; --ink-faint: #7a6e5a; --border-engrave: rgba(200,180,140,0.14); }
+        [data-theme="dark"] body { background: url("data:image/svg+xml,%3Csvg width='60' height='60' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M30 0v60M0 30h60' stroke='%23c9a84c' stroke-width='.3' opacity='.05'/%3E%3C/svg%3E"), linear-gradient(170deg, #1a1610, #221c14 40%, #1a1610); background-size: 60px 60px, 100% 100%; }
+        [data-theme="dark"] .status-bar { background: linear-gradient(180deg, #181210, #0f0c08); border-bottom-color: rgba(201,168,76,0.2); color: #a09480; }
+        [data-theme="dark"] .stat-label { color: #6a5e4a; }
+        [data-theme="dark"] .quest-scroll { background: linear-gradient(180deg, rgba(42,34,24,0.9), rgba(34,28,20,0.95)); border-color: #3d3226; box-shadow: inset 0 0 40px rgba(0,0,0,0.2), 0 8px 32px rgba(0,0,0,0.4); }
+        [data-theme="dark"] .quest-scroll::before { opacity: 0.55; }
+        [data-theme="dark"] .loot-hint { background: linear-gradient(90deg, rgba(201,168,76,0.1), rgba(201,168,76,0.04)); border-left-color: rgba(201,168,76,0.5); }
+        [data-theme="dark"] .loot-hint code { background: rgba(200,180,140,0.1); }
+        [data-theme="dark"] .choice { background: rgba(42,34,24,0.6); border-color: rgba(200,180,140,0.1); }
+        [data-theme="dark"] .choice:hover { background: rgba(201,168,76,0.1); border-color: rgba(201,168,76,0.4); }
+        [data-theme="dark"] .choice-key { background: rgba(200,180,140,0.1); }
+        [data-theme="dark"] .choice:hover .choice-key { background: rgba(201,168,76,0.7); color: #1a1610; }
+
+        @media (max-width: 600px) {
+            .status-bar { font-size: 0.72em; padding: 8px 14px; }
+            .stat-bar-track { width: 50px; }
+            .quest-log { padding: 20px 12px; }
+            .quest-header { padding: 18px; gap: 12px; }
+            .compass-icon { width: 48px; height: 48px; }
+            .quest-name { font-size: 1.3em; }
+            .event-log { padding: 14px 18px; font-size: 0.72em; }
+            .loot-hint { margin: 0 18px; padding: 10px 14px; font-size: 0.8em; }
+            .dialogue-choices { padding: 16px 18px 20px; }
+            .choice { padding: 10px 12px; font-size: 0.88em; }
         }
-
-        .error-code {
-            font-size: 5em;
-            font-weight: 900;
-            background: linear-gradient(135deg, var(--accent), var(--accent-2));
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
-            line-height: 1;
-            margin-bottom: 8px;
-        }
-
-        .error-title {
-            font-size: 1.6em;
-            margin-bottom: 12px;
-            color: var(--ink);
-        }
-
-        .error-message {
-            color: var(--muted);
-            line-height: 1.7;
-            margin-bottom: 30px;
-        }
-
-        .error-home {
-            display: inline-block;
-            padding: 14px 32px;
-            border-radius: 26px;
-            background: linear-gradient(135deg, var(--accent), #3fb87a);
-            color: #fff;
-            text-decoration: none;
-            font-weight: 700;
-            font-size: 1.05em;
-            transition: transform 0.2s, box-shadow 0.2s;
-        }
-
-        .error-home:hover {
-            transform: translateY(-3px);
-            box-shadow: 0 10px 25px rgba(47, 143, 91, 0.3);
-        }
-
-        [data-theme="dark"] body {
-            background: linear-gradient(135deg, #1a1610 0%, #2d2418 50%, #1f1a12 100%);
-            color: #e8dfd2;
-        }
-
-        [data-theme="dark"] .error-container {
-            background: rgba(40, 35, 28, 0.85);
-            border-color: rgba(200, 180, 140, 0.12);
-            box-shadow: 0 18px 40px rgba(0, 0, 0, 0.3);
-        }
-
-        [data-theme="dark"] .error-title {
-            color: #e8dfd2;
-        }
-
-        [data-theme="dark"] .error-message {
-            color: #b0a58f;
+        @media (max-width: 400px) {
+            .quest-header { flex-direction: column; align-items: center; text-align: center; }
         }
     </style>
-    <script>
-        (function() {
-            var stored = localStorage.getItem('sh-mod-theme');
-            if (stored) document.documentElement.setAttribute('data-theme', stored);
-        })();
-    </script>
+    <script>(function(){ var s=localStorage.getItem('sh-mod-theme'); if(s) document.documentElement.setAttribute('data-theme',s); })();</script>
 </head>
 <body>
-    <div class="error-container">
-        <div class="error-icon">&#x1F33B;</div>
-        <div class="error-code">404</div>
-        <h1 class="error-title">Page Not Found</h1>
-        <p class="error-message">Looks like this page wandered off to Nel'Vari. The page you're looking for doesn't exist or has been moved.</p>
-        <a href="index.html" class="error-home">Back to Mod Hub</a>
+    <div class="status-bar" role="banner">
+        <div class="stat"><span class="stat-label">HP</span><div class="stat-bar-track"><div class="stat-bar-fill hp"></div></div><span class="stat-val red">12/???</span></div>
+        <div class="stat"><span class="stat-label">MP</span><div class="stat-bar-track"><div class="stat-bar-fill mp"></div></div><span class="stat-val blue">3/???</span></div>
+        <div class="stat"><span class="stat-label">Location:</span><span class="stat-val gold blink">UNKNOWN REGION</span></div>
+        <div class="stat"><span class="stat-label">Quest:</span><span class="stat-val blink">???</span></div>
     </div>
+
+    <main class="quest-log">
+        <div class="quest-scroll">
+            <div class="quest-header">
+                <svg class="compass-icon" viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                    <circle cx="32" cy="32" r="30" fill="none" stroke="currentColor" stroke-width="1.5" opacity="0.25"/>
+                    <circle cx="32" cy="32" r="22" fill="none" stroke="currentColor" stroke-width="0.8" opacity="0.15"/>
+                    <line x1="32" y1="4" x2="32" y2="10" stroke="currentColor" stroke-width="1.5" opacity="0.5"/>
+                    <line x1="32" y1="54" x2="32" y2="58" stroke="currentColor" stroke-width="1" opacity="0.3"/>
+                    <line x1="4" y1="32" x2="10" y2="32" stroke="currentColor" stroke-width="1" opacity="0.3"/>
+                    <line x1="54" y1="32" x2="58" y2="32" stroke="currentColor" stroke-width="1" opacity="0.3"/>
+                    <polygon points="32,8 28,32 32,28 36,32" fill="#b34040" opacity="0.85"/>
+                    <polygon points="32,56 28,32 32,36 36,32" fill="#c9a84c" opacity="0.6"/>
+                    <circle cx="32" cy="32" r="3" fill="#c9a84c"/>
+                    <text x="32" y="18" text-anchor="middle" font-size="6" font-weight="bold" fill="#b34040" font-family="serif" opacity="0.7">N</text>
+                </svg>
+                <div class="quest-title-block">
+                    <div class="quest-label">QUEST FAILED</div>
+                    <h1 class="quest-name">Lost in Nel'Vari</h1>
+                    <p class="quest-subtitle">Error 404 &mdash; You have wandered beyond the known world.</p>
+                </div>
+            </div>
+
+            <div class="event-log" aria-label="Event log">
+                <div class="log-entry"><span class="log-time">[04:04]</span><span class="log-text">You step off the path and into uncharted territory...</span></div>
+                <div class="log-entry"><span class="log-time">[04:04]</span><span class="log-text warn">WARNING: Map data not found for this region.</span></div>
+                <div class="log-entry"><span class="log-time">[04:04]</span><span class="log-text info">Your compass needle spins wildly. Quest objective unclear.</span></div>
+                <div class="log-entry"><span class="log-time">[04:05]</span><span class="log-text">The fog thickens. Strange runes glow faintly on the ground.</span></div>
+                <div class="log-entry"><span class="log-time">[04:05]</span><span class="log-text faint">A distant voice whispers: "The Hub remembers the way..."<span class="log-cursor"></span></span></div>
+            </div>
+
+            <div class="loot-hint">
+                <strong>Loot Found &mdash; Torn Map Fragment:</strong>
+                The page you sought may have moved or never existed. The path you tried was
+                <code id="failedPath">unknown</code>. Perhaps the Mod Hub holds the answers you seek.
+            </div>
+
+            <div class="dialogue-choices">
+                <div class="dialogue-prompt">Choose your next action:</div>
+                <a href="index.html" class="choice">
+                    <span class="choice-key">A</span>
+                    <span class="choice-text">Follow the whispering voice back to the <strong>Mod Hub</strong>.</span>
+                    <span class="choice-tag safe">Safe</span>
+                </a>
+                <div class="choice disabled" tabindex="-1" aria-disabled="true">
+                    <span class="choice-key">B</span>
+                    <span class="choice-text">Venture deeper into the fog. <em>(Path blocked by ancient wards.)</em></span>
+                    <span class="choice-tag danger">Locked</span>
+                </div>
+                <div class="choice disabled" tabindex="-1" aria-disabled="true">
+                    <span class="choice-key">C</span>
+                    <span class="choice-text">Decipher the glowing runes. <em>(Requires Almanac knowledge.)</em></span>
+                    <span class="choice-tag mystery">Locked</span>
+                </div>
+                <div class="choice disabled" tabindex="-1" aria-disabled="true">
+                    <span class="choice-key">D</span>
+                    <span class="choice-text">Set up camp and wait for dawn. <em>(No bedroll in inventory.)</em></span>
+                    <span class="choice-tag danger">Locked</span>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <footer class="page-footer">
+        <span>SUN HAVEN MOD HUB</span> &middot; <span>SECTOR: NULL</span> &middot; <span>ERROR CODE 404</span>
+    </footer>
+
+    <script>(function(){ var el=document.getElementById('failedPath'); if(el) el.textContent=window.location.pathname||'/unknown'; })();</script>
 </body>
 </html>

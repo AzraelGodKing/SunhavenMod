@@ -14,10 +14,10 @@ namespace TheVault.Patches
     {
         /// <summary>
         /// Maps game item IDs to vault currency types.
-        /// Format: gameItemId -> currencyId
+        /// Format: gameItemId -> (currencyId, autoDeposit)
         /// </summary>
-        private static Dictionary<int, string> _itemToCurrency
-            = new Dictionary<int, string>();
+        private static Dictionary<int, (string currencyId, bool autoDeposit)> _itemToCurrency
+            = new Dictionary<int, (string, bool)>();
 
         /// <summary>
         /// Maps vault currency types to game item IDs (for withdrawing)
@@ -26,35 +26,20 @@ namespace TheVault.Patches
             = new Dictionary<string, int>();
 
         /// <summary>
-        /// Per-currency auto-deposit settings (can be toggled by user)
-        /// Format: currencyId -> autoDepositEnabled
-        /// </summary>
-        private static Dictionary<string, bool> _currencyAutoDeposit
-            = new Dictionary<string, bool>();
-
-        /// <summary>
         /// Whether auto-deposit is enabled globally
         /// </summary>
         public static bool AutoDepositEnabled { get; set; } = false;
-
-        /// <summary>
-        /// When true, bypasses ALL auto-deposit logic. Used during withdrawals.
-        /// This is separate from AutoDepositEnabled to ensure withdrawals work even if
-        /// there are timing issues with the main flag.
-        /// </summary>
-        public static bool IsWithdrawing { get; set; } = false;
 
         /// <summary>
         /// Register a mapping between a game item and vault currency.
         /// </summary>
         /// <param name="gameItemId">The item's ID in Sun Haven's item database</param>
         /// <param name="currencyId">The vault currency ID</param>
-        /// <param name="autoDeposit">Whether to auto-deposit when picked up (default setting)</param>
+        /// <param name="autoDeposit">Whether to auto-deposit when picked up</param>
         public static void RegisterItemCurrencyMapping(int gameItemId, string currencyId, bool autoDeposit = false)
         {
-            _itemToCurrency[gameItemId] = currencyId;
+            _itemToCurrency[gameItemId] = (currencyId, autoDeposit);
             _currencyToItem[currencyId] = gameItemId;
-            _currencyAutoDeposit[currencyId] = autoDeposit;
             Plugin.Log?.LogInfo($"Registered item-currency mapping: Item {gameItemId} <-> {currencyId}");
         }
 
@@ -63,7 +48,7 @@ namespace TheVault.Patches
         /// </summary>
         public static string GetCurrencyForItem(int gameItemId)
         {
-            return _itemToCurrency.TryGetValue(gameItemId, out var currencyId) ? currencyId : null;
+            return _itemToCurrency.TryGetValue(gameItemId, out var mapping) ? mapping.currencyId : null;
         }
 
         /// <summary>
@@ -79,49 +64,8 @@ namespace TheVault.Patches
         /// </summary>
         public static bool ShouldAutoDeposit(int gameItemId)
         {
-            // Never auto-deposit during withdrawals
-            if (IsWithdrawing) return false;
             if (!AutoDepositEnabled) return false;
-
-            // Check if item is registered and has auto-deposit enabled
-            if (!_itemToCurrency.TryGetValue(gameItemId, out var currencyId))
-                return false;
-
-            return _currencyAutoDeposit.TryGetValue(currencyId, out var enabled) && enabled;
-        }
-
-        /// <summary>
-        /// Check if auto-deposit is enabled for a specific currency
-        /// </summary>
-        public static bool IsAutoDepositEnabled(string currencyId)
-        {
-            return _currencyAutoDeposit.TryGetValue(currencyId, out var enabled) && enabled;
-        }
-
-        /// <summary>
-        /// Toggle auto-deposit for a specific currency
-        /// </summary>
-        public static void SetAutoDeposit(string currencyId, bool enabled)
-        {
-            if (_currencyAutoDeposit.ContainsKey(currencyId))
-            {
-                _currencyAutoDeposit[currencyId] = enabled;
-                Plugin.Log?.LogInfo($"Auto-deposit for {currencyId}: {enabled}");
-            }
-        }
-
-        /// <summary>
-        /// Toggle auto-deposit for a specific currency
-        /// </summary>
-        public static bool ToggleAutoDeposit(string currencyId)
-        {
-            if (_currencyAutoDeposit.ContainsKey(currencyId))
-            {
-                _currencyAutoDeposit[currencyId] = !_currencyAutoDeposit[currencyId];
-                Plugin.Log?.LogInfo($"Auto-deposit for {currencyId} toggled to: {_currencyAutoDeposit[currencyId]}");
-                return _currencyAutoDeposit[currencyId];
-            }
-            return false;
+            return _itemToCurrency.TryGetValue(gameItemId, out var mapping) && mapping.autoDeposit;
         }
 
         /// <summary>
@@ -427,26 +371,43 @@ namespace TheVault.Patches
                 {
                     Plugin.Log?.LogWarning("VaultManager is null");
                     return;
-                    return;
                 }
 
-                Plugin.Log?.LogInfo($"Auto-depositing {amount} of item {itemId} as {currencyId} (via Inventory.AddItem with Item object)");
+                Plugin.Log?.LogInfo($"Auto-depositing {amount} of item {itemId} as {currencyId} (via Inventory.AddItem POSTFIX)");
 
-                // Auto-deposit: directly add to vault, skip adding to inventory
-                AddCurrencyToVault(vaultManager, currencyId, amount);
-                Plugin.Log?.LogInfo($"Auto-deposited {amount} of item {itemId} as {currencyId}");
+                _isProcessingAutoDeposit = true;
+                try
+                {
+                    // The item is now in inventory (and notification was shown if sendNotification was true)
+                    // Now remove it from inventory and add to vault
 
-                // Show notification
-                ShowAutoDepositNotification(currencyId, amount);
+                    // Remove from inventory
+                    var invType = __instance.GetType();
+                    var removeMethod = AccessTools.Method(invType, "RemoveItem", new[] { typeof(int), typeof(int), typeof(int) });
+                    if (removeMethod != null)
+                    {
+                        removeMethod.Invoke(__instance, new object[] { itemId, amount, -1 });
+                        Plugin.Log?.LogInfo($"Removed {amount} of item {itemId} from inventory");
+                    }
+                    else
+                    {
+                        Plugin.Log?.LogWarning("Could not find RemoveItem method on inventory");
+                        return;
+                    }
 
-                // Return false to SKIP the original AddItem method - item goes straight to vault
-                return false;
+                    // Add to vault
+                    AddCurrencyToVault(vaultManager, currencyId, amount);
+                    Plugin.Log?.LogInfo($"Auto-deposited {amount} of item {itemId} as {currencyId} to vault");
+                }
+                finally
+                {
+                    _isProcessingAutoDeposit = false;
+                }
             }
             catch (Exception ex)
             {
-                Plugin.Log?.LogError($"Error in OnInventoryAddItemObject: {ex.Message}\n{ex.StackTrace}");
-                // On error, let the original method run
-                return true;
+                _isProcessingAutoDeposit = false;
+                Plugin.Log?.LogError($"Error in OnInventoryAddItemObjectPostfix: {ex.Message}\n{ex.StackTrace}");
             }
         }
 
@@ -842,21 +803,6 @@ namespace TheVault.Patches
         }
 
         /// <summary>
-        /// Log all registered item-currency mappings (for debugging)
-        /// </summary>
-        public static void LogAllMappings()
-        {
-            Plugin.Log?.LogInfo("[DEBUG] === Item-Currency Mappings ===");
-            foreach (var kvp in _itemToCurrency)
-            {
-                bool autoDeposit = _currencyAutoDeposit.TryGetValue(kvp.Value, out var enabled) && enabled;
-                Plugin.Log?.LogInfo($"  Item {kvp.Key} -> {kvp.Value} (auto-deposit: {autoDeposit})");
-            }
-            Plugin.Log?.LogInfo($"[DEBUG] Total mappings: {_itemToCurrency.Count}");
-            Plugin.Log?.LogInfo($"[DEBUG] Auto-deposit enabled: {AutoDepositEnabled}");
-        }
-
-        /// <summary>
         /// Flag to temporarily skip vault addition in GetAmount (used by RemoveItem prefix)
         /// </summary>
         private static bool _skipVaultInGetAmount = false;
@@ -924,9 +870,6 @@ namespace TheVault.Patches
             __state = 0;
             try
             {
-                // Skip vault logic when we're doing auto-deposit removal
-                if (_isProcessingAutoDeposit) return;
-
                 if (!IsVaultCurrency(id)) return;
 
                 // Get current inventory count before removal (RAW, without vault)
@@ -962,9 +905,6 @@ namespace TheVault.Patches
         {
             try
             {
-                // Skip vault logic when we're doing auto-deposit removal
-                if (_isProcessingAutoDeposit) return;
-
                 if (!IsVaultCurrency(id)) return;
 
                 int inventoryHadBefore = __state;

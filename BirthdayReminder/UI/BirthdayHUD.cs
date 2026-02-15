@@ -208,6 +208,9 @@ namespace BirthdayReminder.UI
 
         private void Update()
         {
+            // Always check for date changes, even when hidden
+            _manager?.CheckForDateChange(Time.unscaledDeltaTime);
+
             if (!_isVisible) return;
 
             // Update status message timer

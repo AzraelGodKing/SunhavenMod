@@ -128,6 +128,13 @@ h1 {
     animation: pulse-glow-gold 2s ease-in-out infinite;
 }
 
+.update-badge.almanac-badge {
+    background: linear-gradient(135deg, #d4a33a, #8b6914);
+    color: #fff;
+    box-shadow: 0 4px 12px rgba(212, 163, 58, 0.3);
+    animation: pulse-glow-gold 2s ease-in-out infinite;
+}
+
 @keyframes pulse-glow {
     0%, 100% {
         box-shadow: 0 4px 12px rgba(15, 142, 142, 0.3);
@@ -244,6 +251,11 @@ h1 {
 .mod-cta-button.chest-btn {
     background: linear-gradient(135deg, #ffc332, #e6a800);
     color: #1a1208;
+}
+
+.mod-cta-button.almanac-btn {
+    background: linear-gradient(135deg, #d4a33a, #8b6914);
+    color: #fff;
 }
 
 .mod-cta-button.devtools-btn {

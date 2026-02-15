@@ -20,6 +20,11 @@ namespace BirthdayReminder.Data
         // Cached date for HUD display (avoids logging spam from per-frame calls)
         private string _cachedDateString = "";
 
+        // Staleness check: track the date we last checked so we can detect day changes
+        private string _lastCheckedDateKey = "";
+        private float _stalenessCheckTimer = 0f;
+        private const float STALENESS_CHECK_INTERVAL = 10f; // Check every 10 seconds
+
         // Cached reflection data for game API access
         private static bool _reflectionInitialized = false;
         private static Type _npcManagerType;
@@ -60,6 +65,34 @@ namespace BirthdayReminder.Data
                     _statusMessage = "";
                 }
             }
+        }
+
+        /// <summary>
+        /// Periodic check: if the in-game date has changed since we last checked,
+        /// automatically refresh birthday data. Call from Update().
+        /// </summary>
+        public void CheckForDateChange(float deltaTime)
+        {
+            _stalenessCheckTimer += deltaTime;
+            if (_stalenessCheckTimer < STALENESS_CHECK_INTERVAL)
+                return;
+            _stalenessCheckTimer = 0f;
+
+            try
+            {
+                var (year, season, day) = GetCurrentDate();
+                if (string.IsNullOrEmpty(season))
+                    return;
+
+                string dateKey = $"{year}_{season}_{day}";
+                if (dateKey != _lastCheckedDateKey)
+                {
+                    Plugin.Log?.LogInfo($"[BirthdayManager] Date changed to {season} {day} — refreshing birthdays");
+                    _lastCheckedDateKey = dateKey;
+                    CheckTodaysBirthdays();
+                }
+            }
+            catch { }
         }
 
         /// <summary>
@@ -169,6 +202,7 @@ namespace BirthdayReminder.Data
 
                 // Update cached date string for HUD display
                 _cachedDateString = $"{season} {day:D2}";
+                _lastCheckedDateKey = $"{year}_{season}_{day}";
 
                 // Reset gift tracking if it's a new day
                 var characterName = GetCurrentCharacterName();

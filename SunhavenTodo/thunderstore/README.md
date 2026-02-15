@@ -28,3 +28,4 @@ Edit `BepInEx/config/com.azraelgodking.sunhaventodo.cfg` to customize settings.
 
 - [Nexus Mods](https://www.nexusmods.com/sunhaven/mods/491)
 - [Documentation](https://azraelgodking.github.io/SunhavenMod/todo.html)
+- [Report Bugs on Discord](https://discord.gg/Vwh2y7qMXv)

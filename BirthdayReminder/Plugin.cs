@@ -356,7 +356,7 @@ namespace BirthdayReminder
             // Check for birthdays
             _staticManager?.CheckTodaysBirthdays();
 
-            // Show HUD if there are birthdays
+            // Show HUD if there are birthdays, hide if not
             if (_staticManager != null && _staticManager.HasBirthdays)
             {
                 EnsureUIComponentsExist();
@@ -364,6 +364,11 @@ namespace BirthdayReminder
 
                 // Send native game notifications for each birthday
                 SendAllBirthdayNotifications();
+            }
+            else
+            {
+                _staticHUD?.Hide();
+                Log?.LogInfo("[BirthdayReminder] No birthdays today - HUD hidden");
             }
         }
 

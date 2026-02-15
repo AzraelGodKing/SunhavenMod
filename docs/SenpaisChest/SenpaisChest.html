@@ -24,19 +24,25 @@
     </nav>
 
     <div class="container" id="main-content" role="main">
-        <header class="hero">
+
+        <!-- Blueprint Workshop Hero -->
+        <header class="hero" style="border:2px dashed rgba(255,195,50,0.3); background:repeating-linear-gradient(0deg, transparent, transparent 19px, rgba(255,195,50,0.04) 19px, rgba(255,195,50,0.04) 20px);">
+            <div style="font-size:0.7em; text-transform:uppercase; letter-spacing:0.3em; opacity:0.4; margin-bottom:6px;">Engineering Specification Document</div>
             <div class="hero-icon">&#x1F4E6;</div>
             <h1>Senpai's Chest</h1>
-            <p class="tagline">Smart Chest Auto-Sorting</p>
-            <span class="version-badge">v1.0.0</span>
+            <p class="tagline">Smart Chest Auto-Sorting System</p>
+            <span class="version-badge">v1.1.0</span>
+            <div style="font-size:0.75em; opacity:0.4; margin-top:8px;">REV. B &bull; Classification: Quality-of-Life &bull; Status: Production</div>
         </header>
 
-        <section class="intro-section">
-            <p>Senpai's Chest lets you designate chests as "Smart Chests" with custom sorting rules. Items are automatically pulled from regular chests into the right smart chest based on your rules. Items that don't belong are ejected and rerouted. Set it and forget it.</p>
+        <!-- Technical brief intro -->
+        <section class="intro-section" style="border-left:3px solid #ffc332; padding-left:20px;">
+            <p><strong>Abstract:</strong> Senpai's Chest lets you designate chests as "Smart Chests" with custom sorting rules. Items are automatically pulled from regular chests into the right smart chest based on your rules. Items that don't belong are ejected and rerouted. Set it and forget it.</p>
         </section>
 
+        <!-- Control Interface -->
         <section class="keybind-section">
-            <h2 class="section-title">Quick Controls</h2>
+            <h2 class="section-title">Control Interface</h2>
             <div class="keybind-grid">
                 <div class="keybind-card">
                     <div class="keybind-keys"><kbd>F9</kbd></div>
@@ -57,116 +63,130 @@
             </div>
         </section>
 
+        <!-- Integration notices as engineering notes -->
         <section class="notice-section">
-            <div class="notice-box">
-                <h3>&#x1F517; S.M.U.T. Integration</h3>
+            <div class="notice-box" style="border-left:3px solid #ffc332;">
+                <h3>&#x1F517; S.M.U.T. Interface Module</h3>
                 <p>If <strong>S.M.U.T.</strong> (Museum Utility Tracker) is installed, the <strong>Museum Items</strong> property will automatically exclude items you've already donated. Only items you still need to donate will be sorted into your museum chest.</p>
+            </div>
+            <div class="notice-box" style="border-left:3px solid #c4956a;">
+                <h3>&#x1F4DD; Todo Subsystem Link</h3>
+                <p>When both <strong>S.M.U.T.</strong> and <strong>Sun Haven Todo</strong> are installed, Senpai's Chest will <strong>automatically create todo tasks</strong> for undonated museum items found in your chests. When you donate the item, the todo is <strong>auto-completed</strong> &mdash; so you never forget to visit the museum!</p>
             </div>
         </section>
 
+        <!-- Features as system components -->
         <section class="features-section">
-            <h2 class="section-title">Key Features</h2>
+            <h2 class="section-title">System Components</h2>
             <div class="features-grid">
                 <div class="feature-card">
                     <div class="feature-icon">&#x1F504;</div>
-                    <h3>Automatic Sorting</h3>
+                    <h3>Sort Engine</h3>
                     <p>Items are automatically scanned and moved from regular chests into the correct smart chest on a configurable timer. No manual sorting needed.</p>
                 </div>
                 <div class="feature-card">
                     <div class="feature-icon">&#x1F6AB;</div>
-                    <h3>Smart Ejection</h3>
+                    <h3>Ejection Module</h3>
                     <p>Items that don't match a smart chest's rules are automatically ejected and rerouted to the correct chest or back to a regular chest.</p>
                 </div>
                 <div class="feature-card">
                     <div class="feature-icon">&#x1F3AE;</div>
-                    <h3>Controller Support</h3>
+                    <h3>Controller Driver</h3>
                     <p>Full controller navigation in the config UI. Open with LB/L1, navigate with D-pad, close with B. All buttons and fields are selectable.</p>
                 </div>
                 <div class="feature-card">
                     <div class="feature-icon">&#x1F50D;</div>
-                    <h3>Item Name Search</h3>
+                    <h3>Item Resolver</h3>
                     <p>Search for items by name instead of memorizing IDs. Results show the item name and ID, and you can click to add a rule instantly.</p>
                 </div>
                 <div class="feature-card">
                     <div class="feature-icon">&#x1F464;</div>
-                    <h3>Per-Character Saves</h3>
+                    <h3>Save Manager</h3>
                     <p>Each character has their own smart chest configuration. Switch characters and your sorting rules are always preserved.</p>
                 </div>
                 <div class="feature-card">
                     <div class="feature-icon">&#x1F3DB;</div>
-                    <h3>Museum Items Category</h3>
+                    <h3>Museum Filter</h3>
                     <p>A dedicated property for museum-donable items. With S.M.U.T. installed, already-donated items are automatically excluded from sorting.</p>
                 </div>
+                <div class="feature-card">
+                    <div class="feature-icon">&#x1F4DD;</div>
+                    <h3>Todo Bridge</h3>
+                    <p>With S.M.U.T. and Todo installed, auto-creates todo tasks for undonated museum items found in chests. Todos auto-complete when donated.</p>
+                </div>
             </div>
         </section>
 
+        <!-- Rule Types as technical specifications -->
         <section class="rules-section">
-            <h2 class="section-title">Rule Types</h2>
+            <h2 class="section-title">Sorting Rule Specifications</h2>
             <div class="rules-grid">
-                <div class="rule-card">
-                    <h4>&#x1F4E6; By Item</h4>
+                <div class="rule-card" style="border-top:3px solid #ffc332;">
+                    <h4>&#x1F4E6; Rule Type: ITEM</h4>
                     <p>Sort a specific item by searching its name. The mod resolves the name to the correct item ID.</p>
-                    <div class="rule-example">Example: "Gold Bar" &rarr; sorts all Gold Bars</div>
+                    <div class="rule-example">Input: "Gold Bar" &rarr; Output: Sorts all Gold Bars to this chest</div>
                 </div>
-                <div class="rule-card">
-                    <h4>&#x1F3F7; By Item Type</h4>
+                <div class="rule-card" style="border-top:3px solid #4caf50;">
+                    <h4>&#x1F3F7; Rule Type: TYPE</h4>
                     <p>Sort all items of a specific type, like Equipment, Furniture, Consumable, etc.</p>
-                    <div class="rule-example">Example: Type "Consumable" &rarr; sorts all food and potions</div>
+                    <div class="rule-example">Input: Type "Consumable" &rarr; Output: Sorts all food and potions</div>
                 </div>
-                <div class="rule-card">
-                    <h4>&#x1F4C1; By Category</h4>
+                <div class="rule-card" style="border-top:3px solid #2d6cdf;">
+                    <h4>&#x1F4C1; Rule Type: CATEGORY</h4>
                     <p>Sort by the game's internal item category such as Farming, Mining, Fishing, etc.</p>
-                    <div class="rule-example">Example: Category "Mining" &rarr; sorts all ores and gems</div>
+                    <div class="rule-example">Input: Category "Mining" &rarr; Output: Sorts all ores and gems</div>
                 </div>
-                <div class="rule-card">
-                    <h4>&#x2728; By Property</h4>
+                <div class="rule-card" style="border-top:3px solid #9c27b0;">
+                    <h4>&#x2728; Rule Type: PROPERTY</h4>
                     <p>Sort by item properties like Gems, Forageables, Meals, Fruits, Potions, Museum Items, and more.</p>
-                    <div class="rule-example">Example: Property "Gems" &rarr; sorts all gem items</div>
+                    <div class="rule-example">Input: Property "Gems" &rarr; Output: Sorts all gem items</div>
                 </div>
             </div>
         </section>
 
+        <!-- Usage as operational procedure -->
         <section class="usage-section">
-            <h2 class="section-title">How to Use</h2>
+            <h2 class="section-title">Operating Procedure</h2>
             <div class="usage-steps">
                 <div class="step">
-                    <div class="step-number">1</div>
+                    <div class="step-number" style="background:linear-gradient(135deg, #ffc332, #e0a800);">1</div>
                     <div class="step-content">
-                        <h4>Open a Chest</h4>
+                        <h4>Access Target Chest</h4>
                         <p>Walk up to any chest in your farm and interact with it to open it normally.</p>
                     </div>
                 </div>
                 <div class="step">
-                    <div class="step-number">2</div>
+                    <div class="step-number" style="background:linear-gradient(135deg, #ffc332, #e0a800);">2</div>
                     <div class="step-content">
-                        <h4>Open Smart Chest Config</h4>
+                        <h4>Initialize Smart Mode</h4>
                         <p>Press <kbd>F9</kbd> on keyboard or <kbd>LB</kbd>/<kbd>L1</kbd> on controller to open the Smart Chest configuration UI.</p>
                     </div>
                 </div>
                 <div class="step">
-                    <div class="step-number">3</div>
+                    <div class="step-number" style="background:linear-gradient(135deg, #ffc332, #e0a800);">3</div>
                     <div class="step-content">
-                        <h4>Add Sorting Rules</h4>
+                        <h4>Define Rule Set</h4>
                         <p>Choose a rule type (By Item, By Type, By Category, or By Property) and select what items this chest should collect.</p>
                     </div>
                 </div>
                 <div class="step">
-                    <div class="step-number">4</div>
+                    <div class="step-number" style="background:linear-gradient(135deg, #ffc332, #e0a800);">4</div>
                     <div class="step-content">
-                        <h4>Let It Sort</h4>
+                        <h4>Engage Auto-Sort</h4>
                         <p>Close the UI and go about your day. Every 60 seconds (configurable), the mod scans all nearby chests and sorts matching items into your smart chests.</p>
                     </div>
                 </div>
             </div>
         </section>
 
+        <!-- Configuration as engineering parameters -->
         <section class="config-section">
-            <h2 class="section-title">Configuration</h2>
+            <h2 class="section-title">System Parameters</h2>
             <div class="config-table">
                 <table>
                     <thead>
                         <tr>
-                            <th>Setting</th>
+                            <th>Parameter</th>
                             <th>Default</th>
                             <th>Description</th>
                         </tr>
@@ -208,8 +228,9 @@
             <p class="config-note">Configuration file: <code>BepInEx/config/com.azraelgodking.senpaischest.cfg</code></p>
         </section>
 
+        <!-- Installation as assembly instructions -->
         <section class="install-section">
-            <h2 class="section-title">Installation</h2>
+            <h2 class="section-title">Assembly Instructions</h2>
             <div class="install-steps">
                 <div class="install-step">
                     <div class="step-icon">&#x1F4E6;</div>
@@ -228,28 +249,36 @@
                 <div class="install-step">
                     <div class="step-icon">&#x1F4C1;</div>
                     <div class="step-info">
-                        <h4>3. Install the Mod</h4>
+                        <h4>3. Install the Module</h4>
                         <p>Place the DLL in your <code>BepInEx/plugins/SenpaisChest/</code> folder.</p>
                     </div>
                 </div>
                 <div class="install-step">
                     <div class="step-icon">&#x1F3AE;</div>
                     <div class="step-info">
-                        <h4>4. Play!</h4>
+                        <h4>4. Commission!</h4>
                         <p>Launch Sun Haven, open a chest, and press <kbd>F9</kbd> to start configuring your smart chests.</p>
                     </div>
                 </div>
             </div>
         </section>
 
+        <!-- Related Mods as compatible systems -->
         <section class="related-mods">
-            <h2 class="section-title">Pairs Well With</h2>
+            <h2 class="section-title">Compatible Systems</h2>
             <div class="related-grid">
                 <a href="../SMUT/SMUT.html" class="related-card">
                     <span class="related-icon">&#x1F3DB;</span>
                     <div class="related-info">
                         <h4>S.M.U.T.</h4>
-                        <p>Direct integration &mdash; auto-excludes already-donated museum items from sorting</p>
+                        <p>Direct integration &mdash; auto-excludes donated items and creates museum donation todos</p>
+                    </div>
+                </a>
+                <a href="../Todo/todo.html" class="related-card">
+                    <span class="related-icon">&#x1F4DD;</span>
+                    <div class="related-info">
+                        <h4>Sun Haven Todo</h4>
+                        <p>Direct integration &mdash; undonated museum items in chests auto-create todo reminders</p>
                     </div>
                 </a>
                 <a href="../TheVault/TheVault.html" class="related-card">

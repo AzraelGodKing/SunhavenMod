@@ -8,7 +8,7 @@
     <meta property="og:title" content="A Squirrel's Birthday Reminder">
     <meta property="og:description" content="Never miss an NPC birthday in Sun Haven. Get reminders and gift suggestions.">
     <meta property="og:type" content="website">
-    <meta name="theme-color" content="#e84393">
+    <meta name="theme-color" content="#b76e79">
     <link rel="icon" type="image/svg+xml" href="../favicon.svg">
     <link rel="stylesheet" href="birthday-style.css">
     <link rel="stylesheet" href="../shared-styles.css">
@@ -24,17 +24,23 @@
     </nav>
 
     <div class="container" id="main-content" role="main">
-        <header class="hero">
-            <div class="hero-icon">&#x1F382;</div>
-            <h1>A Squirrel's Birthday Reminder<span class="full-name">Never Miss a Birthday Again</span></h1>
-            <p class="tagline">Automatic NPC Birthday Notifications with Gift Suggestions</p>
-            <span class="version-badge">v1.0.3</span>
+
+        <!-- Party Invitation Hero -->
+        <header class="hero" style="position:relative; overflow:hidden;">
+            <div style="font-size:3em; margin-bottom:8px;">&#x1F382;</div>
+            <p style="font-size:0.85em; text-transform:uppercase; letter-spacing:0.25em; opacity:0.7; margin:0;">You Are Cordially Invited To</p>
+            <h1 style="font-size:2em; margin:6px 0;">A Squirrel's Birthday Reminder<span class="full-name" style="display:block; font-size:0.45em; margin-top:4px;">Automatic NPC Birthday Notifications</span></h1>
+            <p class="tagline">Never Miss a Birthday in Sun Haven</p>
+            <span class="version-badge">v1.1.0</span>
+            <div style="margin-top:12px; font-size:0.8em; opacity:0.6;">&#x2605; &#x2605; &#x2605;</div>
         </header>
 
-        <section class="intro-section">
+        <!-- Invitation-style intro -->
+        <section class="intro-section" style="text-align:center; font-style:italic; border-left:none; padding:16px 24px;">
             <p>A Squirrel's Birthday Reminder automatically notifies you when NPCs have birthdays in Sun Haven. Wake up each morning to see who's celebrating, get personalized gift suggestions for loved and liked items, and track who you've already gifted. Build friendships faster by never missing an opportunity to give the perfect gift!</p>
         </section>
 
+        <!-- Quick Controls -->
         <section class="keybind-section">
             <h2 class="section-title">Quick Controls</h2>
             <div class="keybind-grid">
@@ -45,15 +51,21 @@
             </div>
         </section>
 
+        <!-- Special notices styled as gift tags -->
         <section class="notice-section">
-            <div class="notice-box">
+            <div class="notice-box" style="border-left:4px solid #b76e79;">
                 <h3>&#x1F381; Smart Gift Suggestions</h3>
                 <p>The HUD shows <strong>3 random gift suggestions</strong> from each NPC's loved and liked items. Click "Show All Gifts" to see the complete list of preferred items for planning ahead!</p>
             </div>
+            <div class="notice-box" style="border-left:4px solid #c4956a;">
+                <h3>&#x1F4DD; Todo Integration</h3>
+                <p>When <strong>Sun Haven Todo</strong> is installed, birthday reminders are <strong>automatically added as todo tasks</strong> each morning. When you give an NPC their birthday gift, the todo is <strong>auto-completed</strong> for you &mdash; no manual tracking needed!</p>
+            </div>
         </section>
 
+        <!-- Features as gift boxes -->
         <section class="features-section">
-            <h2 class="section-title">Key Features</h2>
+            <h2 class="section-title">What's In The Box</h2>
             <div class="features-grid">
                 <div class="feature-card">
                     <div class="feature-icon">&#x1F514;</div>
@@ -85,82 +97,90 @@
                     <h3>Auto-Hide Timer</h3>
                     <p>The HUD automatically fades away after a configurable time, or toggle it manually with a hotkey.</p>
                 </div>
+                <div class="feature-card">
+                    <div class="feature-icon">&#x1F517;</div>
+                    <h3>Todo Integration</h3>
+                    <p>With Sun Haven Todo installed, birthday reminders auto-create todo tasks and auto-complete when you give the gift.</p>
+                </div>
             </div>
         </section>
 
+        <!-- Birthday Calendar - the unique layout -->
         <section class="museum-section-list">
-            <h2 class="section-title">Birthday Seasons</h2>
-            <div class="npc-grid">
+            <h2 class="section-title">Seasonal Birthday Calendar</h2>
+            <div class="npc-grid" style="display:grid; grid-template-columns:repeat(auto-fit, minmax(260px, 1fr)); gap:20px;">
+
                 <!-- Spring -->
-                <div class="npc-section spring">
-                    <div class="section-header">
-                        <span class="section-icon">&#x1F331;</span>
-                        <h3>Spring Birthdays</h3>
+                <div class="npc-section spring" style="position:relative;">
+                    <div class="section-header" style="text-align:center; padding:16px 12px 8px;">
+                        <span class="section-icon" style="font-size:2em;">&#x1F331;</span>
+                        <h3 style="margin:4px 0 0;">Spring</h3>
                     </div>
-                    <p class="section-desc">NPCs celebrating in the season of renewal.</p>
-                    <ul class="npc-list">
-                        <li><span class="npc-icon">&#x1F382;</span> Claude - Spring 2</li>
-                        <li><span class="npc-icon">&#x1F382;</span> Lucia - Spring 5</li>
-                        <li><span class="npc-icon">&#x1F382;</span> Xyla - Spring 7</li>
-                        <li><span class="npc-icon">&#x1F382;</span> Nathaniel - Spring 10</li>
-                        <li><span class="npc-icon">&#x1F382;</span> Catherine - Spring 15</li>
-                        <li><span class="npc-icon">&#x1F382;</span> And more...</li>
+                    <p class="section-desc" style="text-align:center; font-style:italic; font-size:0.85em;">Season of renewal &amp; new beginnings</p>
+                    <ul class="npc-list" style="list-style:none; padding:0 16px 16px;">
+                        <li style="display:flex; justify-content:space-between; padding:6px 0; border-bottom:1px dashed rgba(139,148,158,0.2);"><span>Claude</span> <span style="opacity:0.7;">Day 2</span></li>
+                        <li style="display:flex; justify-content:space-between; padding:6px 0; border-bottom:1px dashed rgba(139,148,158,0.2);"><span>Lucia</span> <span style="opacity:0.7;">Day 5</span></li>
+                        <li style="display:flex; justify-content:space-between; padding:6px 0; border-bottom:1px dashed rgba(139,148,158,0.2);"><span>Xyla</span> <span style="opacity:0.7;">Day 7</span></li>
+                        <li style="display:flex; justify-content:space-between; padding:6px 0; border-bottom:1px dashed rgba(139,148,158,0.2);"><span>Nathaniel</span> <span style="opacity:0.7;">Day 10</span></li>
+                        <li style="display:flex; justify-content:space-between; padding:6px 0; border-bottom:1px dashed rgba(139,148,158,0.2);"><span>Catherine</span> <span style="opacity:0.7;">Day 15</span></li>
+                        <li style="text-align:center; padding:6px 0; opacity:0.5; font-style:italic;">And more...</li>
                     </ul>
                 </div>
 
                 <!-- Summer -->
-                <div class="npc-section summer">
-                    <div class="section-header">
-                        <span class="section-icon">&#x2600;</span>
-                        <h3>Summer Birthdays</h3>
+                <div class="npc-section summer" style="position:relative;">
+                    <div class="section-header" style="text-align:center; padding:16px 12px 8px;">
+                        <span class="section-icon" style="font-size:2em;">&#x2600;</span>
+                        <h3 style="margin:4px 0 0;">Summer</h3>
                     </div>
-                    <p class="section-desc">NPCs celebrating in the warm season.</p>
-                    <ul class="npc-list">
-                        <li><span class="npc-icon">&#x1F382;</span> Anne - Summer 3</li>
-                        <li><span class="npc-icon">&#x1F382;</span> Jun - Summer 8</li>
-                        <li><span class="npc-icon">&#x1F382;</span> Wornhardt - Summer 12</li>
-                        <li><span class="npc-icon">&#x1F382;</span> Darius - Summer 18</li>
-                        <li><span class="npc-icon">&#x1F382;</span> Vaan - Summer 22</li>
-                        <li><span class="npc-icon">&#x1F382;</span> And more...</li>
+                    <p class="section-desc" style="text-align:center; font-style:italic; font-size:0.85em;">Warm days &amp; sunshine celebrations</p>
+                    <ul class="npc-list" style="list-style:none; padding:0 16px 16px;">
+                        <li style="display:flex; justify-content:space-between; padding:6px 0; border-bottom:1px dashed rgba(139,148,158,0.2);"><span>Anne</span> <span style="opacity:0.7;">Day 3</span></li>
+                        <li style="display:flex; justify-content:space-between; padding:6px 0; border-bottom:1px dashed rgba(139,148,158,0.2);"><span>Jun</span> <span style="opacity:0.7;">Day 8</span></li>
+                        <li style="display:flex; justify-content:space-between; padding:6px 0; border-bottom:1px dashed rgba(139,148,158,0.2);"><span>Wornhardt</span> <span style="opacity:0.7;">Day 12</span></li>
+                        <li style="display:flex; justify-content:space-between; padding:6px 0; border-bottom:1px dashed rgba(139,148,158,0.2);"><span>Darius</span> <span style="opacity:0.7;">Day 18</span></li>
+                        <li style="display:flex; justify-content:space-between; padding:6px 0; border-bottom:1px dashed rgba(139,148,158,0.2);"><span>Vaan</span> <span style="opacity:0.7;">Day 22</span></li>
+                        <li style="text-align:center; padding:6px 0; opacity:0.5; font-style:italic;">And more...</li>
                     </ul>
                 </div>
 
                 <!-- Fall -->
-                <div class="npc-section fall">
-                    <div class="section-header">
-                        <span class="section-icon">&#x1F342;</span>
-                        <h3>Fall Birthdays</h3>
+                <div class="npc-section fall" style="position:relative;">
+                    <div class="section-header" style="text-align:center; padding:16px 12px 8px;">
+                        <span class="section-icon" style="font-size:2em;">&#x1F342;</span>
+                        <h3 style="margin:4px 0 0;">Fall</h3>
                     </div>
-                    <p class="section-desc">NPCs celebrating in the harvest season.</p>
-                    <ul class="npc-list">
-                        <li><span class="npc-icon">&#x1F382;</span> Lynn - Fall 1</li>
-                        <li><span class="npc-icon">&#x1F382;</span> Donovan - Fall 6</li>
-                        <li><span class="npc-icon">&#x1F382;</span> Iris - Fall 14</li>
-                        <li><span class="npc-icon">&#x1F382;</span> Wesley - Fall 19</li>
-                        <li><span class="npc-icon">&#x1F382;</span> Liam - Fall 25</li>
-                        <li><span class="npc-icon">&#x1F382;</span> And more...</li>
+                    <p class="section-desc" style="text-align:center; font-style:italic; font-size:0.85em;">Harvest season &amp; cozy gatherings</p>
+                    <ul class="npc-list" style="list-style:none; padding:0 16px 16px;">
+                        <li style="display:flex; justify-content:space-between; padding:6px 0; border-bottom:1px dashed rgba(139,148,158,0.2);"><span>Lynn</span> <span style="opacity:0.7;">Day 1</span></li>
+                        <li style="display:flex; justify-content:space-between; padding:6px 0; border-bottom:1px dashed rgba(139,148,158,0.2);"><span>Donovan</span> <span style="opacity:0.7;">Day 6</span></li>
+                        <li style="display:flex; justify-content:space-between; padding:6px 0; border-bottom:1px dashed rgba(139,148,158,0.2);"><span>Iris</span> <span style="opacity:0.7;">Day 14</span></li>
+                        <li style="display:flex; justify-content:space-between; padding:6px 0; border-bottom:1px dashed rgba(139,148,158,0.2);"><span>Wesley</span> <span style="opacity:0.7;">Day 19</span></li>
+                        <li style="display:flex; justify-content:space-between; padding:6px 0; border-bottom:1px dashed rgba(139,148,158,0.2);"><span>Liam</span> <span style="opacity:0.7;">Day 25</span></li>
+                        <li style="text-align:center; padding:6px 0; opacity:0.5; font-style:italic;">And more...</li>
                     </ul>
                 </div>
 
                 <!-- Winter -->
-                <div class="npc-section winter">
-                    <div class="section-header">
-                        <span class="section-icon">&#x2744;</span>
-                        <h3>Winter Birthdays</h3>
+                <div class="npc-section winter" style="position:relative;">
+                    <div class="section-header" style="text-align:center; padding:16px 12px 8px;">
+                        <span class="section-icon" style="font-size:2em;">&#x2744;</span>
+                        <h3 style="margin:4px 0 0;">Winter</h3>
                     </div>
-                    <p class="section-desc">NPCs celebrating in the cold season.</p>
-                    <ul class="npc-list">
-                        <li><span class="npc-icon">&#x1F382;</span> Kitty - Winter 4</li>
-                        <li><span class="npc-icon">&#x1F382;</span> Solon - Winter 9</li>
-                        <li><span class="npc-icon">&#x1F382;</span> Peter - Winter 15</li>
-                        <li><span class="npc-icon">&#x1F382;</span> Calvin - Winter 21</li>
-                        <li><span class="npc-icon">&#x1F382;</span> Miyeon - Winter 27</li>
-                        <li><span class="npc-icon">&#x1F382;</span> And more...</li>
+                    <p class="section-desc" style="text-align:center; font-style:italic; font-size:0.85em;">Snowflakes &amp; heartfelt gifts</p>
+                    <ul class="npc-list" style="list-style:none; padding:0 16px 16px;">
+                        <li style="display:flex; justify-content:space-between; padding:6px 0; border-bottom:1px dashed rgba(139,148,158,0.2);"><span>Kitty</span> <span style="opacity:0.7;">Day 4</span></li>
+                        <li style="display:flex; justify-content:space-between; padding:6px 0; border-bottom:1px dashed rgba(139,148,158,0.2);"><span>Solon</span> <span style="opacity:0.7;">Day 9</span></li>
+                        <li style="display:flex; justify-content:space-between; padding:6px 0; border-bottom:1px dashed rgba(139,148,158,0.2);"><span>Peter</span> <span style="opacity:0.7;">Day 15</span></li>
+                        <li style="display:flex; justify-content:space-between; padding:6px 0; border-bottom:1px dashed rgba(139,148,158,0.2);"><span>Calvin</span> <span style="opacity:0.7;">Day 21</span></li>
+                        <li style="display:flex; justify-content:space-between; padding:6px 0; border-bottom:1px dashed rgba(139,148,158,0.2);"><span>Miyeon</span> <span style="opacity:0.7;">Day 27</span></li>
+                        <li style="text-align:center; padding:6px 0; opacity:0.5; font-style:italic;">And more...</li>
                     </ul>
                 </div>
             </div>
         </section>
 
+        <!-- Gift Preference Levels -->
         <section class="rarity-section">
             <h2 class="section-title">Gift Preference Levels</h2>
             <div class="rarity-grid">
@@ -175,49 +195,51 @@
             </div>
         </section>
 
+        <!-- How to Use - styled as party planning steps -->
         <section class="usage-section">
-            <h2 class="section-title">How to Use</h2>
+            <h2 class="section-title">Party Planning Guide</h2>
             <div class="usage-steps">
                 <div class="step">
-                    <div class="step-number">1</div>
+                    <div class="step-number" style="background:linear-gradient(135deg, #b76e79, #d4919b);">1</div>
                     <div class="step-content">
-                        <h4>Wake Up</h4>
+                        <h4>Wake Up &amp; Check</h4>
                         <p>When your character wakes up each morning, the Birthday HUD will automatically appear if any NPCs have birthdays that day.</p>
                     </div>
                 </div>
                 <div class="step">
-                    <div class="step-number">2</div>
+                    <div class="step-number" style="background:linear-gradient(135deg, #b76e79, #d4919b);">2</div>
                     <div class="step-content">
-                        <h4>Check Gift Suggestions</h4>
+                        <h4>Browse Gift Ideas</h4>
                         <p>The HUD shows 3 random gift suggestions for each birthday NPC. Click <strong>"Show All Gifts"</strong> to see the complete list of loved and liked items.</p>
                     </div>
                 </div>
                 <div class="step">
-                    <div class="step-number">3</div>
+                    <div class="step-number" style="background:linear-gradient(135deg, #b76e79, #d4919b);">3</div>
                     <div class="step-content">
-                        <h4>Give Your Gift</h4>
+                        <h4>Deliver the Gift</h4>
                         <p>Find the NPC in the game and give them one of their preferred gifts. Birthday gifts give bonus friendship points!</p>
                     </div>
                 </div>
                 <div class="step">
-                    <div class="step-number">4</div>
+                    <div class="step-number" style="background:linear-gradient(135deg, #b76e79, #d4919b);">4</div>
                     <div class="step-content">
-                        <h4>Mark as Gifted</h4>
+                        <h4>Mark Complete</h4>
                         <p>Click the <strong>"Mark Gifted"</strong> button next to an NPC's name to track that you've given them their birthday gift.</p>
                     </div>
                 </div>
                 <div class="step">
-                    <div class="step-number">5</div>
+                    <div class="step-number" style="background:linear-gradient(135deg, #b76e79, #d4919b);">5</div>
                     <div class="step-content">
-                        <h4>Toggle Visibility</h4>
+                        <h4>Hide Until Tomorrow</h4>
                         <p>Press <kbd>B</kbd> to toggle the Birthday HUD on or off at any time. The HUD auto-hides after a configurable duration.</p>
                     </div>
                 </div>
             </div>
         </section>
 
+        <!-- Installation -->
         <section class="install-section">
-            <h2 class="section-title">Installation</h2>
+            <h2 class="section-title">RSVP (Installation)</h2>
             <div class="install-steps">
                 <div class="install-step">
                     <div class="step-icon">&#x1F4E6;</div>
@@ -243,15 +265,16 @@
                 <div class="install-step">
                     <div class="step-icon">&#x1F3AE;</div>
                     <div class="step-info">
-                        <h4>4. Play!</h4>
+                        <h4>4. Join the Party!</h4>
                         <p>Launch Sun Haven and sleep until the next birthday to see the HUD in action!</p>
                     </div>
                 </div>
             </div>
         </section>
 
+        <!-- Configuration -->
         <section class="config-section">
-            <h2 class="section-title">Configuration</h2>
+            <h2 class="section-title">Settings</h2>
             <div class="config-table">
                 <table>
                     <thead>
@@ -283,8 +306,9 @@
             <p class="config-note">Configuration file located at: <code>BepInEx/config/com.azraelgodking.squirrelsbirthdayreminder.cfg</code></p>
         </section>
 
+        <!-- Related Mods -->
         <section class="related-mods">
-            <h2 class="section-title">Pairs Well With</h2>
+            <h2 class="section-title">Best Party Partners</h2>
             <div class="related-grid">
                 <a href="../RacialBonuses/RacialBonuses.html" class="related-card">
                     <span class="related-icon">&#x2694;&#xFE0F;</span>
@@ -297,7 +321,7 @@
                     <span class="related-icon">&#x1F4DD;</span>
                     <div class="related-info">
                         <h4>Sun Haven Todo</h4>
-                        <p>Track your gift-giving goals and social tasks in-game</p>
+                        <p>Direct integration &mdash; birthday gifts auto-create todos that complete when you give the gift</p>
                     </div>
                 </a>
             </div>

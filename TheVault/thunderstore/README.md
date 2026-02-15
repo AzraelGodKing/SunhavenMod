@@ -30,3 +30,4 @@ Edit `BepInEx/config/com.azraelgodking.thevault.cfg` to customize settings.
 
 - [Nexus Mods](https://www.nexusmods.com/sunhaven/mods/488)
 - [Documentation](https://azraelgodking.github.io/SunhavenMod/TheVault.html)
+- [Report Bugs on Discord](https://discord.gg/Vwh2y7qMXv)

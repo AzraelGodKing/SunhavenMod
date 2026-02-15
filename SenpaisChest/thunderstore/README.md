@@ -40,3 +40,9 @@ Edit `BepInEx/config/com.azraelgodking.senpaischest.cfg`:
 - Smart Chests will not pull items from other Smart Chests (prevents loops)
 - Chests currently being used by a player are skipped during scans
 - Item rules are saved per chest position, so moving a chest resets its config
+
+## Links
+
+- [Nexus Mods](https://www.nexusmods.com/sunhaven/mods/496)
+- [Documentation](https://azraelgodking.github.io/SunhavenMod/SenpaisChest/SenpaisChest.html)
+- [Report Bugs on Discord](https://discord.gg/Vwh2y7qMXv)
