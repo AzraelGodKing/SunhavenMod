@@ -273,6 +273,70 @@ namespace SunHavenMuseumUtilityTracker.Data
         }
 
         /// <summary>
+        /// Gets all bundle IDs across all sections.
+        /// </summary>
+        public static List<string> GetAllBundleIds()
+        {
+            var ids = new List<string>();
+            foreach (var section in GetAllSections())
+            {
+                foreach (var bundle in section.Bundles)
+                {
+                    ids.Add(bundle.Id);
+                }
+            }
+            return ids;
+        }
+
+        /// <summary>
+        /// Gets the game progress key for a bundle. Used to check completion status in game saves.
+        /// </summary>
+        public static string GetProgressKeyForBundle(string bundleId)
+        {
+            foreach (var section in GetAllSections())
+            {
+                foreach (var bundle in section.Bundles)
+                {
+                    if (bundle.Id == bundleId)
+                        return bundle.Id;
+                }
+            }
+            return null;
+        }
+
+        /// <summary>
+        /// Gets all items within a specific bundle.
+        /// </summary>
+        public static List<MuseumItem> GetItemsInBundle(string bundleId)
+        {
+            foreach (var section in GetAllSections())
+            {
+                foreach (var bundle in section.Bundles)
+                {
+                    if (bundle.Id == bundleId)
+                        return bundle.Items;
+                }
+            }
+            return new List<MuseumItem>();
+        }
+
+        /// <summary>
+        /// Finds a bundle by its game progress key.
+        /// </summary>
+        public static MuseumBundle FindBundleByProgressKey(string progressKey)
+        {
+            foreach (var section in GetAllSections())
+            {
+                foreach (var bundle in section.Bundles)
+                {
+                    if (bundle.Id == progressKey)
+                        return bundle;
+                }
+            }
+            return null;
+        }
+
+        /// <summary>
         /// Finds an item by its game item ID.
         /// </summary>
         public static MuseumItem FindByGameItemId(int gameItemId)
