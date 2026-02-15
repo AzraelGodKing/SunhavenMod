@@ -26,3 +26,8 @@ Edit `BepInEx/config/com.azraelgodking.havendevtools.cfg` to customize settings.
 ## Note
 
 This is a developer tool and may impact performance. Not recommended for normal gameplay.
+
+## Links
+
+- [Documentation](https://azraelgodking.github.io/SunhavenMod/HavenDevTools/HavenDevTools.html)
+- [Report Bugs on Discord](https://discord.gg/Vwh2y7qMXv)

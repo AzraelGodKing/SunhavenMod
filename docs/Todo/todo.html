@@ -8,7 +8,7 @@
     <meta property="og:title" content="Sun Haven Todo - Task Tracker">
     <meta property="og:description" content="Keep track of farming goals, quests, and daily tasks in Sun Haven.">
     <meta property="og:type" content="website">
-    <meta name="theme-color" content="#f2a65a">
+    <meta name="theme-color" content="#c4956a">
     <link rel="icon" type="image/svg+xml" href="../favicon.svg">
     <link rel="stylesheet" href="todo-style.css">
     <link rel="stylesheet" href="../shared-styles.css">
@@ -24,19 +24,25 @@
     </nav>
 
     <div class="container" id="main-content" role="main">
-        <header class="hero">
+
+        <!-- Journal Cover Hero -->
+        <header class="hero" style="position:relative; border:2px solid rgba(196,149,106,0.3); border-radius:4px;">
+            <div style="font-size:0.7em; text-transform:uppercase; letter-spacing:0.3em; opacity:0.4; margin-bottom:8px;">The Farmer's Personal Journal</div>
             <div class="hero-icon">&#x1F4DD;</div>
             <h1>Sun Haven Todo<span class="full-name">In-Game Task Tracker</span></h1>
-            <p class="tagline">Never Forget Your Farm Tasks Again</p>
-            <span class="version-badge">v1.0.1</span>
+            <p class="tagline" style="font-style:italic;">Never Forget Your Farm Tasks Again</p>
+            <span class="version-badge">v1.1.0</span>
+            <div style="margin-top:10px; font-size:0.8em; opacity:0.4;">~ A Record of Things To Do ~</div>
         </header>
 
-        <section class="intro-section">
-            <p>Sun Haven Todo is an in-game task tracker that helps you organize and remember all your farming goals, quests, and daily activities. With a beautiful parchment-themed UI that matches Sun Haven's aesthetic, categories for different activities, priority levels, and per-character saves, you'll stay on top of everything your farm life demands.</p>
+        <!-- Journal entry intro -->
+        <section class="intro-section" style="font-style:italic; border-left:3px solid #c4956a; padding-left:20px;">
+            <p>Dear Journal, Sun Haven Todo is an in-game task tracker that helps you organize and remember all your farming goals, quests, and daily activities. With a beautiful parchment-themed UI that matches Sun Haven's aesthetic, categories for different activities, priority levels, and per-character saves, you'll stay on top of everything your farm life demands.</p>
         </section>
 
+        <!-- Controls -->
         <section class="keybind-section">
-            <h2 class="section-title">Quick Controls</h2>
+            <h2 class="section-title">How to Open</h2>
             <div class="keybind-grid">
                 <div class="keybind-card">
                     <div class="keybind-keys"><kbd>Ctrl</kbd> + <kbd>T</kbd></div>
@@ -49,15 +55,25 @@
             </div>
         </section>
 
+        <!-- Journal margin notes -->
         <section class="notice-section">
-            <div class="notice-box">
-                <h3>&#x2728; Game Integration</h3>
+            <div class="notice-box" style="border-left:3px solid #c4956a;">
+                <h3>&#x2728; A Note About Gameplay</h3>
                 <p>When you open the Todo List, <strong>player input is disabled</strong> so you won't accidentally move your character while managing tasks. Press <kbd>Escape</kbd> or close the window to resume playing!</p>
+            </div>
+            <div class="notice-box" style="border-left:3px solid #8b6914;">
+                <h3>&#x1F517; Enchanted Quill (Auto-Todos)</h3>
+                <p>Other mods can <strong>automatically create and complete todos</strong> for you:</p>
+                <ul style="margin: 8px 0 0 20px; line-height: 1.8;">
+                    <li><strong>Birthday Reminder</strong> &mdash; Creates "Give [NPC] a birthday gift!" todos each morning, auto-completes when you give the gift</li>
+                    <li><strong>Senpai's Chest + S.M.U.T.</strong> &mdash; Creates "Donate [Item] to the museum" todos when undonated items are found in chests, auto-completes when donated</li>
+                </ul>
             </div>
         </section>
 
+        <!-- Features as journal entries -->
         <section class="features-section">
-            <h2 class="section-title">Key Features</h2>
+            <h2 class="section-title">Journal Entries</h2>
             <div class="features-grid">
                 <div class="feature-card">
                     <div class="feature-icon">&#x1F4CB;</div>
@@ -81,7 +97,7 @@
                 </div>
                 <div class="feature-card">
                     <div class="feature-icon">&#x1F50D;</div>
-                    <h3>Search & Filter</h3>
+                    <h3>Search &amp; Filter</h3>
                     <p>Search for tasks by name or filter by category. Toggle completed tasks on or off to focus on what's left.</p>
                 </div>
                 <div class="feature-card">
@@ -89,17 +105,23 @@
                     <h3>Progress Tracking</h3>
                     <p>See your completion statistics with a visual progress bar. Track how many tasks you've finished vs. how many remain.</p>
                 </div>
+                <div class="feature-card">
+                    <div class="feature-icon">&#x1F517;</div>
+                    <h3>Cross-Mod Integration</h3>
+                    <p>Other mods can auto-create and auto-complete todos. Birthday gifts, museum donations, and more &mdash; all tracked automatically.</p>
+                </div>
             </div>
         </section>
 
+        <!-- Task Categories as journal chapters -->
         <section class="museum-section-list">
-            <h2 class="section-title">Task Categories</h2>
+            <h2 class="section-title">Journal Chapters</h2>
             <div class="museum-grid">
                 <!-- Farm Activities -->
                 <div class="museum-section gems">
                     <div class="section-header">
                         <span class="section-icon">&#x1F33E;</span>
-                        <h3>Farm Activities</h3>
+                        <h3>Daily Chores</h3>
                     </div>
                     <p class="section-desc">Categories for your daily farm life.</p>
                     <ul class="bundle-list">
@@ -114,7 +136,7 @@
                 <div class="museum-section culture">
                     <div class="section-header">
                         <span class="section-icon">&#x2694;</span>
-                        <h3>Adventure Activities</h3>
+                        <h3>Adventures Ahead</h3>
                     </div>
                     <p class="section-desc">Track your combat and exploration goals.</p>
                     <ul class="bundle-list">
@@ -128,7 +150,7 @@
                 <div class="museum-section aquarium">
                     <div class="section-header">
                         <span class="section-icon">&#x1F465;</span>
-                        <h3>Social & General</h3>
+                        <h3>Friends &amp; Odds and Ends</h3>
                     </div>
                     <p class="section-desc">Relationships and miscellaneous tasks.</p>
                     <ul class="bundle-list">
@@ -139,8 +161,9 @@
             </div>
         </section>
 
+        <!-- Priority Levels as ink colors -->
         <section class="rarity-section">
-            <h2 class="section-title">Priority Levels</h2>
+            <h2 class="section-title">Ink Colors (Priority)</h2>
             <div class="rarity-grid">
                 <div class="rarity-item">
                     <span class="rarity-dot common"></span>
@@ -161,49 +184,51 @@
             </div>
         </section>
 
+        <!-- How to Use as writing guide -->
         <section class="usage-section">
-            <h2 class="section-title">How to Use</h2>
+            <h2 class="section-title">Writing in Your Journal</h2>
             <div class="usage-steps">
                 <div class="step">
-                    <div class="step-number">1</div>
+                    <div class="step-number" style="background:linear-gradient(135deg, #c4956a, #a07850);">1</div>
                     <div class="step-content">
-                        <h4>Open the Todo List</h4>
+                        <h4>Open Your Journal</h4>
                         <p>Press <kbd>Ctrl</kbd> + <kbd>T</kbd> to open the Todo List window. The game will pause automatically so you can manage your tasks.</p>
                     </div>
                 </div>
                 <div class="step">
-                    <div class="step-number">2</div>
+                    <div class="step-number" style="background:linear-gradient(135deg, #c4956a, #a07850);">2</div>
                     <div class="step-content">
-                        <h4>Add a Task</h4>
+                        <h4>Jot Down a Task</h4>
                         <p>Click the <strong>+ Add</strong> button to create a new task. Enter a title, optional description, select a priority level and category.</p>
                     </div>
                 </div>
                 <div class="step">
-                    <div class="step-number">3</div>
+                    <div class="step-number" style="background:linear-gradient(135deg, #c4956a, #a07850);">3</div>
                     <div class="step-content">
-                        <h4>Filter by Category</h4>
+                        <h4>Flip to a Chapter</h4>
                         <p>Use the category tabs to filter your tasks. Click "All" to see everything, or select a specific category like Farming or Combat.</p>
                     </div>
                 </div>
                 <div class="step">
-                    <div class="step-number">4</div>
+                    <div class="step-number" style="background:linear-gradient(135deg, #c4956a, #a07850);">4</div>
                     <div class="step-content">
-                        <h4>Complete Tasks</h4>
+                        <h4>Cross It Off</h4>
                         <p>Click the checkbox next to any task to mark it as complete. Completed tasks move to the bottom and are grayed out.</p>
                     </div>
                 </div>
                 <div class="step">
-                    <div class="step-number">5</div>
+                    <div class="step-number" style="background:linear-gradient(135deg, #c4956a, #a07850);">5</div>
                     <div class="step-content">
-                        <h4>Clean Up</h4>
+                        <h4>Tear Out Old Pages</h4>
                         <p>Use "Clear Done" to remove all completed tasks, or click the X button on individual tasks to delete them.</p>
                     </div>
                 </div>
             </div>
         </section>
 
+        <!-- Installation -->
         <section class="install-section">
-            <h2 class="section-title">Installation</h2>
+            <h2 class="section-title">Getting Your Journal</h2>
             <div class="install-steps">
                 <div class="install-step">
                     <div class="step-icon">&#x1F4E6;</div>
@@ -229,15 +254,16 @@
                 <div class="install-step">
                     <div class="step-icon">&#x1F3AE;</div>
                     <div class="step-info">
-                        <h4>4. Play!</h4>
+                        <h4>4. Start Writing!</h4>
                         <p>Launch Sun Haven and press <kbd>Ctrl</kbd>+<kbd>T</kbd> to start tracking your tasks.</p>
                     </div>
                 </div>
             </div>
         </section>
 
+        <!-- Configuration -->
         <section class="config-section">
-            <h2 class="section-title">Configuration</h2>
+            <h2 class="section-title">Journal Settings</h2>
             <div class="config-table">
                 <table>
                     <thead>
@@ -274,8 +300,9 @@
             <p class="config-note">Configuration file located at: <code>BepInEx/config/com.azraelgodking.sunhaventodo.cfg</code></p>
         </section>
 
+        <!-- Related Mods as writing companions -->
         <section class="related-mods">
-            <h2 class="section-title">Pairs Well With</h2>
+            <h2 class="section-title">Writing Companions</h2>
             <div class="related-grid">
                 <a href="../RacialBonuses/RacialBonuses.html" class="related-card">
                     <span class="related-icon">&#x2694;&#xFE0F;</span>
@@ -288,7 +315,14 @@
                     <span class="related-icon">&#x1F382;</span>
                     <div class="related-info">
                         <h4>Birthday Reminder</h4>
-                        <p>Never forget NPC birthdays while managing your todo list</p>
+                        <p>Direct integration &mdash; birthday gift reminders auto-create todos that complete on gifting</p>
+                    </div>
+                </a>
+                <a href="../SenpaisChest/SenpaisChest.html" class="related-card">
+                    <span class="related-icon">&#x1F4E6;</span>
+                    <div class="related-info">
+                        <h4>Senpai's Chest</h4>
+                        <p>Direct integration &mdash; undonated museum items in chests auto-create donation todos</p>
                     </div>
                 </a>
             </div>

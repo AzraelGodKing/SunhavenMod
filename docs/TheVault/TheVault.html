@@ -24,19 +24,33 @@
     </nav>
 
     <div class="container" id="main-content" role="main">
-        <header class="hero">
-            <div class="hero-icon">&#x1F512;</div>
-            <h1>The Vault</h1>
-            <p class="tagline">Secure Currency Storage for Sun Haven</p>
-            <span class="version-badge">v2.0.4</span>
+
+        <!-- Bank Dashboard Hero -->
+        <header class="hero" style="border-bottom:2px solid #2d6cdf;">
+            <div style="display:flex; align-items:center; justify-content:center; gap:12px; margin-bottom:8px;">
+                <div class="hero-icon" style="margin:0; font-size:2.5em;">&#x1F512;</div>
+                <div style="text-align:left;">
+                    <h1 style="margin:0; font-size:1.8em;">The Vault</h1>
+                    <p class="tagline" style="margin:0; font-size:0.85em;">Secure Currency Storage for Sun Haven</p>
+                </div>
+            </div>
+            <div style="display:flex; gap:16px; justify-content:center; align-items:center; margin-top:12px; flex-wrap:wrap;">
+                <span class="version-badge">v2.0.4</span>
+                <span style="font-size:0.8em; opacity:0.6;">Account Status: <span style="color:#3fb950;">ACTIVE</span></span>
+                <span style="font-size:0.8em; opacity:0.6;">Encryption: <span style="color:#3fb950;">AES-256</span></span>
+            </div>
+            <div class="hero-corner-bl" aria-hidden="true"></div>
+            <div class="hero-corner-br" aria-hidden="true"></div>
         </header>
 
-        <section class="intro-section">
-            <p>The Vault is a powerful quality-of-life mod that automatically stores your seasonal tokens, community tokens, and keys in a secure digital vault. No more cluttered inventories or manual currency management - your currencies are safely stored, automatically deposited when picked up, and seamlessly spent at shops and locked doors without ever touching your inventory.</p>
+        <!-- Account summary intro -->
+        <section class="intro-section" style="border-left:3px solid #2d6cdf; padding-left:20px;">
+            <p><strong>Account Summary:</strong> The Vault is a powerful quality-of-life mod that automatically stores your seasonal tokens, community tokens, and keys in a secure digital vault. No more cluttered inventories or manual currency management - your currencies are safely stored, automatically deposited when picked up, and seamlessly spent at shops and locked doors without ever touching your inventory.</p>
         </section>
 
+        <!-- Access Controls -->
         <section class="keybind-section">
-            <h2 class="section-title">Quick Controls</h2>
+            <h2 class="section-title">Access Controls</h2>
             <div class="keybind-grid">
                 <div class="keybind-card">
                     <div class="keybind-keys"><kbd>Ctrl</kbd> + <kbd>V</kbd></div>
@@ -53,8 +67,9 @@
             </div>
         </section>
 
+        <!-- Features as vault services -->
         <section class="features-section">
-            <h2 class="section-title">Key Features</h2>
+            <h2 class="section-title">Vault Services</h2>
             <div class="features-grid">
                 <div class="feature-card">
                     <div class="feature-icon">&#x1F4E5;</div>
@@ -99,11 +114,12 @@
             </div>
         </section>
 
+        <!-- Currency accounts as ledger -->
         <section class="currencies-section">
-            <h2 class="section-title">Supported Currencies</h2>
+            <h2 class="section-title">Asset Ledger</h2>
             <p class="section-desc">The Vault supports all major collectible currencies in Sun Haven. Each currency can have auto-deposit toggled individually.</p>
             <div class="currency-grid">
-                <div class="currency-category seasonal">
+                <div class="currency-category seasonal" style="border-top:3px solid #4caf50;">
                     <div class="category-header">
                         <span class="category-icon">&#x2600;</span>
                         <h3>Seasonal Tokens</h3>
@@ -116,7 +132,7 @@
                         <li><span class="token winter">&#x2744;</span> Winter Token</li>
                     </ul>
                 </div>
-                <div class="currency-category keys">
+                <div class="currency-category keys" style="border-top:3px solid #ff9800;">
                     <div class="category-header">
                         <span class="category-icon">&#x1F5DD;</span>
                         <h3>Keys</h3>
@@ -132,7 +148,7 @@
                         <li><span class="key special">&#x26bf;</span> King's Lost Mine Key</li>
                     </ul>
                 </div>
-                <div class="currency-category special">
+                <div class="currency-category special" style="border-top:3px solid #9c27b0;">
                     <div class="category-header">
                         <span class="category-icon">&#x2605;</span>
                         <h3>Special</h3>
@@ -150,78 +166,81 @@
             </div>
         </section>
 
+        <!-- How to Use as transaction flow -->
         <section class="usage-section">
-            <h2 class="section-title">How to Use</h2>
+            <h2 class="section-title">Transaction Guide</h2>
             <div class="usage-steps">
                 <div class="step">
-                    <div class="step-number">1</div>
+                    <div class="step-number" style="background:linear-gradient(135deg, #2d6cdf, #1a4fad);">1</div>
                     <div class="step-content">
-                        <h4>Check the HUD</h4>
+                        <h4>Check the Dashboard</h4>
                         <p>A persistent HUD bar at the top of your screen shows all your vault currencies at a glance with their actual game icons. Large values display in compact format (1K, 50K, 1M).</p>
                     </div>
                 </div>
                 <div class="step">
-                    <div class="step-number">2</div>
+                    <div class="step-number" style="background:linear-gradient(135deg, #2d6cdf, #1a4fad);">2</div>
                     <div class="step-content">
-                        <h4>Open the Vault</h4>
+                        <h4>Access Your Vault</h4>
                         <p>Press <kbd>Ctrl</kbd> + <kbd>V</kbd> (or <kbd>F8</kbd> on Steam Deck) to open the vault interface. Press <kbd>Escape</kbd> or click Close to exit.</p>
                     </div>
                 </div>
                 <div class="step">
-                    <div class="step-number">3</div>
+                    <div class="step-number" style="background:linear-gradient(135deg, #2d6cdf, #1a4fad);">3</div>
                     <div class="step-content">
-                        <h4>Browse Your Currencies</h4>
+                        <h4>Review Holdings</h4>
                         <p>Switch between tabs (Seasonal, Keys, Special) to see stored amounts. Each currency shows a toggle button to enable/disable auto-deposit for that specific item.</p>
                     </div>
                 </div>
                 <div class="step">
-                    <div class="step-number">4</div>
+                    <div class="step-number" style="background:linear-gradient(135deg, #2d6cdf, #1a4fad);">4</div>
                     <div class="step-content">
-                        <h4>Automatic Collection</h4>
+                        <h4>Automatic Deposits</h4>
                         <p>Just play normally! When you pick up tokens or keys, they're automatically deposited to your vault (if auto-deposit is enabled). You'll still see the pickup notification.</p>
                     </div>
                 </div>
                 <div class="step">
-                    <div class="step-number">5</div>
+                    <div class="step-number" style="background:linear-gradient(135deg, #2d6cdf, #1a4fad);">5</div>
                     <div class="step-content">
-                        <h4>Shop &amp; Unlock Seamlessly</h4>
+                        <h4>Spend Seamlessly</h4>
                         <p>Visit any shop or locked door - The Vault automatically uses your stored currencies. No need to withdraw first; purchases and unlocks work directly from the vault.</p>
                     </div>
                 </div>
                 <div class="step">
-                    <div class="step-number">6</div>
+                    <div class="step-number" style="background:linear-gradient(135deg, #2d6cdf, #1a4fad);">6</div>
                     <div class="step-content">
-                        <h4>Withdraw When Needed</h4>
+                        <h4>Make Withdrawals</h4>
                         <p>Use the quick -1, -5, or -10 buttons next to each currency, or select a row and enter a custom amount to withdraw items back to your inventory.</p>
                     </div>
                 </div>
             </div>
         </section>
 
+        <!-- How It Works as system architecture -->
         <section class="integration-section">
-            <h2 class="section-title">How It Works</h2>
+            <h2 class="section-title">System Architecture</h2>
             <div class="integration-info">
-                <div class="integration-item">
-                    <h4>&#x1F4E5; Pickup Interception</h4>
+                <div class="integration-item" style="border-left:3px solid #4caf50; padding-left:16px;">
+                    <h4>&#x1F4E5; Deposit Pipeline</h4>
                     <p>When you pick up a supported currency, The Vault intercepts the item after it enters your inventory, removes it, and deposits it directly to your vault. You still see the normal pickup notification so you know what you collected.</p>
                 </div>
-                <div class="integration-item">
-                    <h4>&#x1F6D2; Shop Integration</h4>
+                <div class="integration-item" style="border-left:3px solid #2d6cdf; padding-left:16px;">
+                    <h4>&#x1F6D2; Payment Gateway</h4>
                     <p>The Vault patches the game's inventory check system. When a shop checks if you have enough tokens or keys to make a purchase, it automatically includes your vault balance. When you buy, the vault is deducted first before your inventory.</p>
                 </div>
-                <div class="integration-item">
-                    <h4>&#x1F5DD; Door &amp; Chest Integration</h4>
+                <div class="integration-item" style="border-left:3px solid #ff9800; padding-left:16px;">
+                    <h4>&#x1F5DD; Access Control</h4>
                     <p>Similarly, locked doors and treasure chests that require keys will check your vault. If you have the right key in your vault, the door or chest will unlock and the key will be consumed from your vault automatically.</p>
                 </div>
-                <div class="integration-item">
-                    <h4>&#x1F4BE; Save System</h4>
+                <div class="integration-item" style="border-left:3px solid #9c27b0; padding-left:16px;">
+                    <h4>&#x1F4BE; Data Protection</h4>
                     <p>Vault data is stored separately from your game save in the BepInEx config folder, tied to your character name. Auto-save runs every 5 minutes, plus saves trigger when the game saves or when you quit.</p>
                 </div>
             </div>
         </section>
 
+        <!-- Installation -->
         <section class="install-section">
-            <h2 class="section-title">Installation</h2>
+            <h2 class="section-title">Account Setup</h2>
             <div class="install-steps">
                 <div class="install-step">
                     <div class="step-icon">&#x1F4E6;</div>
@@ -247,15 +266,16 @@
                 <div class="install-step">
                     <div class="step-icon">&#x1F3AE;</div>
                     <div class="step-info">
-                        <h4>4. Play!</h4>
+                        <h4>4. Open for Business!</h4>
                         <p>Launch Sun Haven and press Ctrl+V to access your vault.</p>
                     </div>
                 </div>
             </div>
         </section>
 
+        <!-- Configuration -->
         <section class="config-section">
-            <h2 class="section-title">Configuration</h2>
+            <h2 class="section-title">Vault Parameters</h2>
             <div class="config-table">
                 <table>
                     <thead>
@@ -307,8 +327,9 @@
             <p class="config-note">Configuration file located at: <code>BepInEx/config/com.azraelgodking.thevault.cfg</code></p>
         </section>
 
+        <!-- Related Mods -->
         <section class="related-mods">
-            <h2 class="section-title">Pairs Well With</h2>
+            <h2 class="section-title">Affiliated Services</h2>
             <div class="related-grid">
                 <a href="../SenpaisChest/SenpaisChest.html" class="related-card">
                     <span class="related-icon">&#x1F4E6;</span>

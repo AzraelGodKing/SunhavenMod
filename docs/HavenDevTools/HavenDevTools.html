@@ -24,21 +24,35 @@
     </nav>
 
     <div class="container" id="main-content" role="main">
-        <!-- Hero Section -->
-        <section class="hero">
-            <div class="hero-icon">&#x1F6E0;&#xFE0F;</div>
-            <h1>HavenDevTools</h1>
-            <p class="tagline">Developer & Debugging Utilities for Sun Haven<span class="cursor">|</span></p>
-            <span class="version-badge">v1.0.2</span>
+
+        <!-- Boot Sequence Hero -->
+        <section class="hero" style="text-align:left; font-family:monospace; line-height:1.9;">
+            <div style="color:#6e7681; font-size:0.85em;">
+                <span>BIOS v5.4.x &mdash; BepInEx Runtime Environment</span><br>
+                <span>Detecting plugins&hellip; <span style="color:#3fb950;">OK</span></span><br>
+                <span>Loading HavenDevTools&hellip; <span style="color:#3fb950;">OK</span></span>
+            </div>
+            <h1 style="margin:12px 0 4px;font-size:1.6em;">
+                <span style="color:#3fb950;">&gt;</span> HavenDevTools <span class="version-badge">v1.0.2</span>
+            </h1>
+            <p class="tagline" style="margin:0;color:#8b949e;">Developer &amp; Debugging Utilities for Sun Haven<span class="cursor">|</span></p>
+            <p style="margin:10px 0 0;color:#6e7681;font-size:0.85em;">Type <code>help</code> for available commands &mdash; Press <kbd>F12</kbd> to toggle console</p>
         </section>
 
-        <!-- Intro -->
-        <div class="intro-section">
-            <p>A comprehensive development toolkit for Sun Haven mod developers. Provides real-time game state inspection, advanced logging, debug overlays, and utilities for testing and troubleshooting mods.</p>
-        </div>
+        <!-- Man-page style intro -->
+        <section class="intro-section" style="font-family:monospace;">
+            <h2 class="section-title" style="letter-spacing:0.15em;">NAME</h2>
+            <p style="padding-left:20px;"><strong>havendevtools</strong> &mdash; a comprehensive development toolkit for Sun Haven mod developers. Provides real-time game state inspection, advanced logging, debug overlays, and utilities for testing and troubleshooting mods.</p>
 
+            <h2 class="section-title" style="letter-spacing:0.15em; margin-top:24px;">SYNOPSIS</h2>
+            <div style="padding-left:20px;color:#c9d1d9;">
+                <code style="color:#79c0ff;">havendevtools</code> [<code>--toggle</code> <kbd>F12</kbd>] [<code>--overlay</code> <kbd>F11</kbd>] [<code>--autocomplete</code> <kbd>Tab</kbd>]
+            </div>
+        </section>
+
+        <!-- Keybinds as shell aliases -->
         <section class="keybind-section">
-            <h2 class="section-title">Quick Controls</h2>
+            <h2 class="section-title" style="letter-spacing:0.15em;">KEY BINDINGS</h2>
             <div class="keybind-grid">
                 <div class="keybind-card">
                     <div class="keybind-keys"><kbd>F12</kbd></div>
@@ -55,132 +69,212 @@
             </div>
         </section>
 
-        <!-- Features Grid -->
-        <h2 class="section-title">Core Features</h2>
+        <!-- Features as process list / top output -->
+        <h2 class="section-title" style="letter-spacing:0.15em;">MODULES &nbsp;<span style="color:#6e7681;font-weight:normal;font-size:0.75em;">(6 loaded, 0 failed)</span></h2>
         <div class="features-grid">
             <div class="feature-card">
-                <div class="feature-icon">&#x1F50D;</div>
-                <h3>State Inspector</h3>
-                <p>Inspect player stats, inventory, active quests, NPC relationships, and game variables in real-time with a searchable interface.</p>
+                <div class="terminal-dots">
+                    <span class="dot close"></span>
+                    <span class="dot minimize"></span>
+                    <span class="dot maximize"></span>
+                    <span class="terminal-title">PID 001 &mdash; state-inspector</span>
+                </div>
+                <div class="card-body">
+                    <div class="feature-icon">&#x1F50D;</div>
+                    <h3>State Inspector</h3>
+                    <p>Inspect player stats, inventory, active quests, NPC relationships, and game variables in real-time with a searchable interface.</p>
+                </div>
             </div>
             <div class="feature-card">
-                <div class="feature-icon">&#x1F4DD;</div>
-                <h3>Advanced Logging</h3>
-                <p>Categorized log levels (Debug, Info, Warning, Error) with timestamps, stack traces, and log filtering by mod or category.</p>
+                <div class="terminal-dots">
+                    <span class="dot close"></span>
+                    <span class="dot minimize"></span>
+                    <span class="dot maximize"></span>
+                    <span class="terminal-title">PID 002 &mdash; logger</span>
+                </div>
+                <div class="card-body">
+                    <div class="feature-icon">&#x1F4DD;</div>
+                    <h3>Advanced Logging</h3>
+                    <p>Categorized log levels (Debug, Info, Warning, Error) with timestamps, stack traces, and log filtering by mod or category.</p>
+                </div>
             </div>
             <div class="feature-card">
-                <div class="feature-icon">&#x1F3AE;</div>
-                <h3>Debug Overlay</h3>
-                <p>Toggle on-screen overlays showing FPS, memory usage, active scene, player position, and custom debug variables.</p>
+                <div class="terminal-dots">
+                    <span class="dot close"></span>
+                    <span class="dot minimize"></span>
+                    <span class="dot maximize"></span>
+                    <span class="terminal-title">PID 003 &mdash; overlay</span>
+                </div>
+                <div class="card-body">
+                    <div class="feature-icon">&#x1F3AE;</div>
+                    <h3>Debug Overlay</h3>
+                    <p>Toggle on-screen overlays showing FPS, memory usage, active scene, player position, and custom debug variables.</p>
+                </div>
             </div>
             <div class="feature-card">
-                <div class="feature-icon">&#x26A1;</div>
-                <h3>Command Console</h3>
-                <p>Execute debug commands to modify game state, spawn items, teleport, adjust time, and test mod functionality.</p>
+                <div class="terminal-dots">
+                    <span class="dot close"></span>
+                    <span class="dot minimize"></span>
+                    <span class="dot maximize"></span>
+                    <span class="terminal-title">PID 004 &mdash; console</span>
+                </div>
+                <div class="card-body">
+                    <div class="feature-icon">&#x26A1;</div>
+                    <h3>Command Console</h3>
+                    <p>Execute debug commands to modify game state, spawn items, teleport, adjust time, and test mod functionality.</p>
+                </div>
             </div>
             <div class="feature-card">
-                <div class="feature-icon">&#x1F504;</div>
-                <h3>Hot Reload</h3>
-                <p>Reload configuration files and certain mod components without restarting the game for faster iteration.</p>
+                <div class="terminal-dots">
+                    <span class="dot close"></span>
+                    <span class="dot minimize"></span>
+                    <span class="dot maximize"></span>
+                    <span class="terminal-title">PID 005 &mdash; hotreload</span>
+                </div>
+                <div class="card-body">
+                    <div class="feature-icon">&#x1F504;</div>
+                    <h3>Hot Reload</h3>
+                    <p>Reload configuration files and certain mod components without restarting the game for faster iteration.</p>
+                </div>
             </div>
             <div class="feature-card">
-                <div class="feature-icon">&#x1F4CA;</div>
-                <h3>Performance Monitor</h3>
-                <p>Track frame times, memory allocation, and identify performance bottlenecks in real-time graphs.</p>
+                <div class="terminal-dots">
+                    <span class="dot close"></span>
+                    <span class="dot minimize"></span>
+                    <span class="dot maximize"></span>
+                    <span class="terminal-title">PID 006 &mdash; perfmon</span>
+                </div>
+                <div class="card-body">
+                    <div class="feature-icon">&#x1F4CA;</div>
+                    <h3>Performance Monitor</h3>
+                    <p>Track frame times, memory allocation, and identify performance bottlenecks in real-time graphs.</p>
+                </div>
             </div>
         </div>
 
-        <!-- Tool Categories -->
-        <h2 class="section-title">Available Tools</h2>
-        <p class="section-desc">Organized by functionality for quick access</p>
+        <!-- Tool categories as directory tree -->
+        <h2 class="section-title" style="letter-spacing:0.15em;">DIRECTORY TREE</h2>
+        <p class="section-desc" style="font-family:monospace;color:#8b949e;">$ tree ~/havendevtools/tools/</p>
         <div class="tool-grid">
             <div class="tool-category inspection">
-                <div class="category-header">
-                    <span class="category-icon">&#x1F50E;</span>
-                    <h3>Inspection Tools</h3>
+                <div class="terminal-dots">
+                    <span class="dot close"></span>
+                    <span class="dot minimize"></span>
+                    <span class="dot maximize"></span>
+                    <span class="terminal-title">~/tools/inspection</span>
                 </div>
-                <p class="category-desc">Examine game state and object properties</p>
-                <ul class="tool-list">
-                    <li>Player Stats Viewer</li>
-                    <li>Inventory Inspector</li>
-                    <li>NPC Relationship Data</li>
-                    <li>Quest State Tracker</li>
-                    <li>Scene Hierarchy Browser</li>
-                </ul>
+                <div class="card-body">
+                    <div class="category-header">
+                        <span class="category-icon">&#x1F50E;</span>
+                        <h3>Inspection Tools</h3>
+                    </div>
+                    <p class="category-desc">Examine game state and object properties</p>
+                    <ul class="tool-list">
+                        <li>Player Stats Viewer</li>
+                        <li>Inventory Inspector</li>
+                        <li>NPC Relationship Data</li>
+                        <li>Quest State Tracker</li>
+                        <li>Scene Hierarchy Browser</li>
+                    </ul>
+                </div>
             </div>
 
             <div class="tool-category logging">
-                <div class="category-header">
-                    <span class="category-icon">&#x1F4C4;</span>
-                    <h3>Logging Tools</h3>
+                <div class="terminal-dots">
+                    <span class="dot close"></span>
+                    <span class="dot minimize"></span>
+                    <span class="dot maximize"></span>
+                    <span class="terminal-title">~/tools/logging</span>
                 </div>
-                <p class="category-desc">Track and filter debug output</p>
-                <ul class="tool-list">
-                    <li>Console Log Window</li>
-                    <li>Log Level Filters</li>
-                    <li>Stack Trace Viewer</li>
-                    <li>Log Export (JSON/TXT)</li>
-                    <li>Error Aggregation</li>
-                </ul>
+                <div class="card-body">
+                    <div class="category-header">
+                        <span class="category-icon">&#x1F4C4;</span>
+                        <h3>Logging Tools</h3>
+                    </div>
+                    <p class="category-desc">Track and filter debug output</p>
+                    <ul class="tool-list">
+                        <li>Console Log Window</li>
+                        <li>Log Level Filters</li>
+                        <li>Stack Trace Viewer</li>
+                        <li>Log Export (JSON/TXT)</li>
+                        <li>Error Aggregation</li>
+                    </ul>
+                </div>
             </div>
 
             <div class="tool-category testing">
-                <div class="category-header">
-                    <span class="category-icon">&#x1F9EA;</span>
-                    <h3>Testing Tools</h3>
+                <div class="terminal-dots">
+                    <span class="dot close"></span>
+                    <span class="dot minimize"></span>
+                    <span class="dot maximize"></span>
+                    <span class="terminal-title">~/tools/testing</span>
                 </div>
-                <p class="category-desc">Test functionality and simulate scenarios</p>
-                <ul class="tool-list">
-                    <li>Item Spawner</li>
-                    <li>Time Manipulation</li>
-                    <li>Event Trigger</li>
-                    <li>Stat Modifier</li>
-                    <li>Save State Manager</li>
-                </ul>
+                <div class="card-body">
+                    <div class="category-header">
+                        <span class="category-icon">&#x1F9EA;</span>
+                        <h3>Testing Tools</h3>
+                    </div>
+                    <p class="category-desc">Test functionality and simulate scenarios</p>
+                    <ul class="tool-list">
+                        <li>Item Spawner</li>
+                        <li>Time Manipulation</li>
+                        <li>Event Trigger</li>
+                        <li>Stat Modifier</li>
+                        <li>Save State Manager</li>
+                    </ul>
+                </div>
             </div>
 
             <div class="tool-category utilities">
-                <div class="category-header">
-                    <span class="category-icon">&#x2699;&#xFE0F;</span>
-                    <h3>Utilities</h3>
+                <div class="terminal-dots">
+                    <span class="dot close"></span>
+                    <span class="dot minimize"></span>
+                    <span class="dot maximize"></span>
+                    <span class="terminal-title">~/tools/utilities</span>
                 </div>
-                <p class="category-desc">General development helpers</p>
-                <ul class="tool-list">
-                    <li>Scene Teleporter</li>
-                    <li>Config Editor</li>
-                    <li>Heartbeat Monitor</li>
-                    <li>Reflection Helper</li>
-                    <li>Asset Browser</li>
-                </ul>
+                <div class="card-body">
+                    <div class="category-header">
+                        <span class="category-icon">&#x2699;&#xFE0F;</span>
+                        <h3>Utilities</h3>
+                    </div>
+                    <p class="category-desc">General development helpers</p>
+                    <ul class="tool-list">
+                        <li>Scene Teleporter</li>
+                        <li>Config Editor</li>
+                        <li>Heartbeat Monitor</li>
+                        <li>Reflection Helper</li>
+                        <li>Asset Browser</li>
+                    </ul>
+                </div>
             </div>
         </div>
 
-        <!-- Usage Instructions -->
-        <h2 class="section-title">Quick Start</h2>
-        <div class="usage-steps">
+        <!-- Quick Start as shell session -->
+        <h2 class="section-title" style="letter-spacing:0.15em;">QUICK START</h2>
+        <div class="usage-steps" style="font-family:monospace;">
             <div class="step">
-                <div class="step-number">1</div>
+                <div class="step-number">$</div>
                 <div class="step-content">
                     <h4>Open DevTools Console</h4>
                     <p>Press <kbd>F12</kbd> or <kbd>`</kbd> (backtick) to toggle the developer console overlay.</p>
                 </div>
             </div>
             <div class="step">
-                <div class="step-number">2</div>
+                <div class="step-number">$</div>
                 <div class="step-content">
                     <h4>Navigate Panels</h4>
                     <p>Use the tab bar to switch between Inspector, Console, Performance, and Tools panels.</p>
                 </div>
             </div>
             <div class="step">
-                <div class="step-number">3</div>
+                <div class="step-number">$</div>
                 <div class="step-content">
                     <h4>Execute Commands</h4>
                     <p>Type commands in the console input. Use <kbd>Tab</kbd> for autocomplete and <kbd>Up/Down</kbd> for history.</p>
                 </div>
             </div>
             <div class="step">
-                <div class="step-number">4</div>
+                <div class="step-number">$</div>
                 <div class="step-content">
                     <h4>Toggle Overlays</h4>
                     <p>Press <kbd>F11</kbd> to toggle the performance overlay, or use <code>overlay.toggle</code> command.</p>
@@ -188,9 +282,15 @@
             </div>
         </div>
 
-        <!-- Common Commands -->
-        <h2 class="section-title">Common Commands</h2>
+        <!-- Commands as man page reference table -->
+        <h2 class="section-title" style="letter-spacing:0.15em;">COMMANDS</h2>
         <div class="config-table">
+            <div class="table-bar">
+                <span class="dot close"></span>
+                <span class="dot minimize"></span>
+                <span class="dot maximize"></span>
+                <span class="table-bar-title">$ havendevtools --list-commands</span>
+            </div>
             <table>
                 <thead>
                     <tr>
@@ -236,14 +336,20 @@
         </div>
 
         <!-- Warning -->
-        <div class="warning-box">
-            <h4>&#x26A0;&#xFE0F; Development Tool</h4>
+        <div class="warning-box" style="font-family:monospace;">
+            <h4>&#x26A0;&#xFE0F; WARNING: Development Tool</h4>
             <p>HavenDevTools is intended for mod development and debugging purposes. Some features can modify game state in ways that may affect save files. Always backup your saves before extensive testing. Available on <a href="https://www.nexusmods.com/sunhaven/mods/495" target="_blank">Nexus Mods</a> and <a href="https://thunderstore.io/c/sun-haven/p/AzraelGodKing/HavenDevTools/" target="_blank">Thunderstore</a>.</p>
         </div>
 
-        <!-- Configuration -->
-        <h2 class="section-title">Configuration</h2>
+        <!-- Configuration as config dump -->
+        <h2 class="section-title" style="letter-spacing:0.15em;">CONFIGURATION</h2>
         <div class="config-table">
+            <div class="table-bar">
+                <span class="dot close"></span>
+                <span class="dot minimize"></span>
+                <span class="dot maximize"></span>
+                <span class="table-bar-title">$ cat ~/.config/havendevtools/config.cfg</span>
+            </div>
             <table>
                 <thead>
                     <tr>
@@ -286,16 +392,33 @@
                 </tbody>
             </table>
         </div>
-        <p class="config-note">Configuration file: <code>BepInEx/config/com.azraelgodking.havendevtools.cfg</code></p>
+        <p class="config-note" style="font-family:monospace;">Configuration file: <code>BepInEx/config/com.azraelgodking.havendevtools.cfg</code></p>
+
+        <!-- Installation as package manager -->
+        <section class="install-section" style="font-family:monospace;">
+            <h2 class="section-title" style="letter-spacing:0.15em;">INSTALLATION</h2>
+            <div style="background:var(--card-bg, #161b22);border:1px solid var(--border-color, #30363d);border-radius:8px;padding:20px;line-height:2.2;">
+                <div style="color:#8b949e;"># Step 1: Install BepInEx runtime</div>
+                <div><span style="color:#3fb950;">$</span> install bepinex-5.x --target sunhaven</div>
+                <div style="color:#8b949e;margin-top:8px;"># Step 2: Download HavenDevTools</div>
+                <div><span style="color:#3fb950;">$</span> wget <a href="https://www.nexusmods.com/sunhaven/mods/495" target="_blank" style="color:#79c0ff;">nexusmods.com/sunhaven/mods/495</a> -O HavenDevTools.dll</div>
+                <div style="color:#8b949e;margin-top:8px;"># Step 3: Install the mod</div>
+                <div><span style="color:#3fb950;">$</span> cp HavenDevTools.dll BepInEx/plugins/</div>
+                <div style="color:#8b949e;margin-top:8px;"># Step 4: Launch and verify</div>
+                <div><span style="color:#3fb950;">$</span> sunhaven --launch &amp;&amp; echo "Press F12 to open DevTools"</div>
+                <div style="color:#3fb950;margin-top:4px;">&#x2714; Installation complete.</div>
+            </div>
+        </section>
 
         <!-- Footer -->
-        <div class="footer">
-            <p>HavenDevTools - A Sun Haven Development Tool by AzraelGodKing</p>
+        <div class="footer" style="font-family:monospace;">
+            <p style="color:#6e7681;">// HavenDevTools - A Sun Haven Development Tool by AzraelGodKing</p>
             <div class="footer-links" style="margin-top: 15px;">
-                <a href="../index.html">Back to Mod Hub</a>
+                <a href="../index.html">cd ~/modhub</a>
                 <a href="https://www.nexusmods.com/sunhaven/mods/495" target="_blank">View on Nexus Mods</a>
                 <a href="https://thunderstore.io/c/sun-haven/p/AzraelGodKing/HavenDevTools/" target="_blank">View on Thunderstore</a>
             </div>
+            <p style="color:#6e7681;margin-top:10px;font-size:0.8em;">EOF</p>
         </div>
     </div>
 </body>

@@ -26,6 +26,14 @@ namespace SenpaisChest.Data
         private static MethodInfo _databaseGetDataMethod;
         private static bool _reflectionInitialized;
 
+        // Museum donation check cache (S.M.U.T. integration via reflection)
+        private static bool _museumReflectionInitialized;
+        private static bool _museumModAvailable;
+        private static MethodInfo _getDonationManagerMethod;
+        private static MethodInfo _hasDonatedByGameIdMethod;
+        private static MethodInfo _findByGameItemIdMethod;
+        private static PropertyInfo _isLoadedProperty;
+
         public bool IsDirty => _isDirty;
 
         public void LoadData(SmartChestSaveData data)
@@ -92,7 +100,9 @@ namespace SenpaisChest.Data
 
         public bool IsSmartChest(string chestId)
         {
-            return _smartChests.ContainsKey(chestId) && _smartChests[chestId].IsEnabled;
+            return _smartChests.ContainsKey(chestId)
+                && _smartChests[chestId].IsEnabled
+                && _smartChests[chestId].Rules.Count > 0;
         }
 
         public void RemoveSmartChest(string chestId)
@@ -233,6 +243,105 @@ namespace SenpaisChest.Data
             return false;
         }
 
+        /// <summary>
+        /// Searches the item database by name or ID. Returns results as (ID, Name) pairs
+        /// sorted with exact matches first, then starts-with, then contains.
+        /// </summary>
+        public static List<KeyValuePair<int, string>> SearchItems(string query, int maxResults = 20)
+        {
+            var results = new List<KeyValuePair<int, string>>();
+            if (string.IsNullOrEmpty(query) || query.Length < 2)
+                return results;
+
+            try
+            {
+                if (_itemInfoDbInstance == null || (_itemInfoDbInstance is UnityEngine.Object obj && obj == null))
+                {
+                    _itemInfoDbInstance = GetSingletonInstance("Wish.ItemInfoDatabase");
+                    if (_itemInfoDbInstance != null)
+                    {
+                        _allItemSellInfosField = _itemInfoDbInstance.GetType()
+                            .GetField("allItemSellInfos", BindingFlags.Public | BindingFlags.Instance);
+                    }
+                }
+
+                if (_itemInfoDbInstance == null || _allItemSellInfosField == null)
+                    return results;
+
+                var dict = _allItemSellInfosField.GetValue(_itemInfoDbInstance) as Dictionary<int, ItemSellInfo>;
+                if (dict == null)
+                    return results;
+
+                string queryLower = query.ToLowerInvariant();
+                bool isNumeric = int.TryParse(query, out int queryId);
+
+                // Collect matches into buckets: exact, starts-with, contains
+                var exact = new List<KeyValuePair<int, string>>();
+                var startsWith = new List<KeyValuePair<int, string>>();
+                var contains = new List<KeyValuePair<int, string>>();
+
+                foreach (var kvp in dict)
+                {
+                    if (kvp.Value == null || string.IsNullOrEmpty(kvp.Value.name))
+                        continue;
+
+                    var entry = new KeyValuePair<int, string>(kvp.Key, kvp.Value.name);
+                    string nameLower = kvp.Value.name.ToLowerInvariant();
+
+                    // Exact ID match
+                    if (isNumeric && kvp.Key == queryId)
+                    {
+                        exact.Add(entry);
+                        continue;
+                    }
+
+                    // Exact name match
+                    if (nameLower == queryLower)
+                    {
+                        exact.Add(entry);
+                    }
+                    else if (nameLower.StartsWith(queryLower))
+                    {
+                        startsWith.Add(entry);
+                    }
+                    else if (nameLower.Contains(queryLower))
+                    {
+                        contains.Add(entry);
+                    }
+                    else if (isNumeric && kvp.Key.ToString().Contains(query))
+                    {
+                        contains.Add(entry);
+                    }
+                }
+
+                // Sort each bucket alphabetically by name
+                startsWith.Sort((a, b) => string.Compare(a.Value, b.Value, StringComparison.OrdinalIgnoreCase));
+                contains.Sort((a, b) => string.Compare(a.Value, b.Value, StringComparison.OrdinalIgnoreCase));
+
+                results.AddRange(exact);
+                results.AddRange(startsWith);
+                results.AddRange(contains);
+
+                if (results.Count > maxResults)
+                    results.RemoveRange(maxResults, results.Count - maxResults);
+            }
+            catch (Exception ex)
+            {
+                Plugin.Log?.LogWarning($"Error searching items: {ex.Message}");
+            }
+
+            return results;
+        }
+
+        /// <summary>
+        /// Gets a single item's name by ID. Returns null if not found.
+        /// </summary>
+        public static string GetItemName(int itemId)
+        {
+            var info = GetItemSellInfo(itemId);
+            return info?.name;
+        }
+
         #endregion
 
         #region Scan Engine
@@ -240,7 +349,10 @@ namespace SenpaisChest.Data
         public void ExecuteScan(int maxItemsPerScan, bool enableNotifications)
         {
             if (_smartChests.Count == 0)
+            {
+                Plugin.Log?.LogDebug("[Scan] No smart chests configured, skipping scan");
                 return;
+            }
 
             InitReflection();
 
@@ -248,7 +360,18 @@ namespace SenpaisChest.Data
             var associatedChests = ChestManager.associatedChests;
 
             if (inventories == null || inventories.Count == 0)
+            {
+                Plugin.Log?.LogDebug("[Scan] No inventories loaded, skipping scan");
                 return;
+            }
+
+            if (associatedChests == null || associatedChests.Count == 0)
+            {
+                Plugin.Log?.LogDebug("[Scan] No associated chests found, skipping scan");
+                return;
+            }
+
+            Plugin.Log?.LogInfo($"[Scan] Starting scan: {_smartChests.Count} smart chest(s), {associatedChests.Count} associated chest(s)");
 
             int totalMoved = 0;
             var modifiedChests = new HashSet<Chest>();
@@ -264,6 +387,8 @@ namespace SenpaisChest.Data
                 }
             }
 
+            Plugin.Log?.LogDebug($"[Scan] Built chest lookup: {chestLookup.Count} unique chests");
+
             foreach (var smartChestEntry in _smartChests)
             {
                 if (totalMoved >= maxItemsPerScan)
@@ -271,17 +396,29 @@ namespace SenpaisChest.Data
 
                 var smartData = smartChestEntry.Value;
                 if (!smartData.IsEnabled || smartData.Rules.Count == 0)
+                {
+                    Plugin.Log?.LogDebug($"[Scan] Skipping '{smartData.ChestName}' (enabled={smartData.IsEnabled}, rules={smartData.Rules.Count})");
                     continue;
+                }
 
                 if (!chestLookup.TryGetValue(smartData.ChestId, out var targetPair))
+                {
+                    Plugin.Log?.LogWarning($"[Scan] Smart chest '{smartData.ChestName}' (id={smartData.ChestId}) not found in loaded chests");
                     continue;
+                }
 
                 var targetInventory = targetPair.Key;
                 var targetChest = targetPair.Value;
 
                 if (IsChestInUse(targetChest))
+                {
+                    Plugin.Log?.LogDebug($"[Scan] Target chest '{smartData.ChestName}' is in use, skipping");
                     continue;
+                }
 
+                Plugin.Log?.LogInfo($"[Scan] Scanning for items matching '{smartData.ChestName}' ({smartData.Rules.Count} rules)");
+
+                int sourcesScanned = 0;
                 foreach (var sourceEntry in chestLookup)
                 {
                     if (totalMoved >= maxItemsPerScan)
@@ -299,15 +436,109 @@ namespace SenpaisChest.Data
                     if (IsSmartChest(sourceEntry.Key))
                         continue;
 
+                    sourcesScanned++;
                     int moved = TransferMatchingItems(sourceInventory, sourceChest,
                         targetInventory, targetChest, smartData.Rules,
-                        maxItemsPerScan - totalMoved, enableNotifications);
+                        maxItemsPerScan - totalMoved);
 
                     if (moved > 0)
                     {
                         totalMoved += moved;
                         modifiedChests.Add(sourceChest);
                         modifiedChests.Add(targetChest);
+                    }
+                }
+
+                Plugin.Log?.LogDebug($"[Scan] Scanned {sourcesScanned} source chests for '{smartData.ChestName}'");
+            }
+
+            // Phase 2: Eject non-matching items from smart chests
+            foreach (var smartChestEntry in _smartChests)
+            {
+                if (totalMoved >= maxItemsPerScan)
+                    break;
+
+                var smartData = smartChestEntry.Value;
+                if (!smartData.IsEnabled || smartData.Rules.Count == 0)
+                    continue;
+
+                if (!chestLookup.TryGetValue(smartData.ChestId, out var smartPair))
+                    continue;
+
+                var smartInventory = smartPair.Key;
+                var smartChest = smartPair.Value;
+
+                if (IsChestInUse(smartChest))
+                    continue;
+
+                var smartItems = smartInventory.Items;
+                if (smartItems == null)
+                    continue;
+
+                int slotCount = Mathf.Min(smartInventory.maxSlots, smartItems.Count);
+
+                for (int i = slotCount - 1; i >= 0 && totalMoved < maxItemsPerScan; i--)
+                {
+                    var slotData = smartItems[i];
+                    if (slotData.id <= 0 || slotData.amount <= 0)
+                        continue;
+
+                    // Item matches this chest's rules — it belongs here
+                    if (MatchesAnyRule(slotData.id, smartData.Rules))
+                        continue;
+
+                    var sellInfo = GetItemSellInfo(slotData.id);
+                    var itemName = sellInfo?.name ?? $"Item {slotData.id}";
+
+                    // Try to find another smart chest that wants this item
+                    bool ejected = false;
+                    foreach (var otherEntry in _smartChests)
+                    {
+                        if (otherEntry.Key == smartData.ChestId)
+                            continue;
+                        if (!otherEntry.Value.IsEnabled || otherEntry.Value.Rules.Count == 0)
+                            continue;
+                        if (!MatchesAnyRule(slotData.id, otherEntry.Value.Rules))
+                            continue;
+                        if (!chestLookup.TryGetValue(otherEntry.Value.ChestId, out var destPair))
+                            continue;
+                        if (IsChestInUse(destPair.Value))
+                            continue;
+
+                        int amountToAccept;
+                        if (!destPair.Key.CanAcceptItem(slotData.item, slotData.amount, out amountToAccept) || amountToAccept <= 0)
+                            continue;
+
+                        Plugin.Log?.LogInfo($"[Scan] Ejecting {itemName} x{amountToAccept} from '{smartData.ChestName}' to smart chest '{otherEntry.Value.ChestName}'");
+                        TransferItemData(smartInventory, i, destPair.Key, slotData.item, amountToAccept);
+                        modifiedChests.Add(smartChest);
+                        modifiedChests.Add(destPair.Value);
+                        totalMoved++;
+                        ejected = true;
+                        break;
+                    }
+
+                    if (ejected)
+                        continue;
+
+                    // No matching smart chest — send to any normal chest with space
+                    foreach (var normalEntry in chestLookup)
+                    {
+                        if (IsSmartChest(normalEntry.Key))
+                            continue;
+                        if (IsChestInUse(normalEntry.Value.Value))
+                            continue;
+
+                        int amountToAccept;
+                        if (!normalEntry.Value.Key.CanAcceptItem(slotData.item, slotData.amount, out amountToAccept) || amountToAccept <= 0)
+                            continue;
+
+                        Plugin.Log?.LogInfo($"[Scan] Ejecting {itemName} x{amountToAccept} from '{smartData.ChestName}' to normal chest");
+                        TransferItemData(smartInventory, i, normalEntry.Value.Key, slotData.item, amountToAccept);
+                        modifiedChests.Add(smartChest);
+                        modifiedChests.Add(normalEntry.Value.Value);
+                        totalMoved++;
+                        break;
                     }
                 }
             }
@@ -328,16 +559,27 @@ namespace SenpaisChest.Data
 
             if (totalMoved > 0)
             {
-                Plugin.Log?.LogInfo($"Smart Chest scan complete: moved {totalMoved} item stacks");
+                Plugin.Log?.LogInfo($"[Scan] Complete: sorted {totalMoved} item stack(s)");
+                if (enableNotifications)
+                {
+                    SendNotification("Senpai's Chest: Sorted");
+                }
+            }
+            else
+            {
+                Plugin.Log?.LogInfo("[Scan] Complete: no items to sort");
             }
         }
 
         private int TransferMatchingItems(Inventory sourceInv, Chest sourceChest,
             Inventory targetInv, Chest targetChest,
-            List<SmartChestRule> rules, int maxItems, bool notify)
+            List<SmartChestRule> rules, int maxItems)
         {
             int moved = 0;
             var sourceItems = sourceInv.Items;
+            if (sourceItems == null)
+                return 0;
+
             int count = Mathf.Min(sourceInv.maxSlots, sourceItems.Count);
 
             for (int i = count - 1; i >= 0 && moved < maxItems; i--)
@@ -351,20 +593,19 @@ namespace SenpaisChest.Data
 
                 int amountToAccept;
                 if (!targetInv.CanAcceptItem(slotData.item, slotData.amount, out amountToAccept))
+                {
+                    Plugin.Log?.LogDebug($"[Scan] Target cannot accept item {slotData.id} (amount={slotData.amount})");
                     continue;
+                }
 
                 if (amountToAccept <= 0)
                     continue;
 
+                var sellInfo = GetItemSellInfo(slotData.id);
+                var itemName = sellInfo?.name ?? $"Item {slotData.id}";
+                Plugin.Log?.LogInfo($"[Scan] Moving {itemName} x{amountToAccept}");
+
                 TransferItemData(sourceInv, i, targetInv, slotData.item, amountToAccept);
-
-                if (notify)
-                {
-                    var sellInfo = GetItemSellInfo(slotData.id);
-                    var name = sellInfo?.name ?? $"Item {slotData.id}";
-                    SendNotification($"Smart Chest: {name} x{amountToAccept}");
-                }
-
                 moved++;
             }
 
@@ -374,55 +615,9 @@ namespace SenpaisChest.Data
         private void TransferItemData(Inventory sourceInv, int sourceSlot,
             Inventory targetInv, Item item, int amount)
         {
-            var sourceItems = sourceInv.Items;
-
-            // Remove from source
-            if (sourceItems[sourceSlot].amount > amount)
-            {
-                sourceItems[sourceSlot].amount -= amount;
-            }
-            else
-            {
-                sourceItems[sourceSlot].RemoveItem();
-            }
-
-            // Add to target
-            var targetItems = targetInv.Items;
-            int targetCount = Mathf.Min(targetInv.maxSlots, targetItems.Count);
-            int remaining = amount;
-
-            // Stack on existing matching items
-            for (int i = 0; i < targetCount && remaining > 0; i++)
-            {
-                if (targetItems[i].item != null && targetItems[i].item.Equals(item) && targetItems[i].amount > 0)
-                {
-                    var sellInfo = GetItemSellInfo(item.ID());
-                    int stackSize = sellInfo?.stackSize ?? 50;
-                    int space = stackSize - targetItems[i].amount;
-                    if (space > 0)
-                    {
-                        int toAdd = Mathf.Min(space, remaining);
-                        targetItems[i].amount += toAdd;
-                        remaining -= toAdd;
-                    }
-                }
-            }
-
-            // Place remaining in empty slots
-            for (int i = 0; i < targetCount && remaining > 0; i++)
-            {
-                if (targetItems[i].id <= 0 || targetItems[i].item.ID() == 0)
-                {
-                    var sellInfo = GetItemSellInfo(item.ID());
-                    int stackSize = sellInfo?.stackSize ?? 50;
-                    int toAdd = Mathf.Min(stackSize, remaining);
-
-                    targetItems[i].item = item.DeepCloneItem();
-                    targetItems[i].id = item.ID();
-                    targetItems[i].amount = toAdd;
-                    remaining -= toAdd;
-                }
-            }
+            // Use the game's own Inventory API — handles stacking, empty slots, and UI updates
+            targetInv.AddItem(item, amount, false);
+            sourceInv.RemoveItemAt(sourceSlot, amount);
         }
 
         #endregion
@@ -452,6 +647,9 @@ namespace SenpaisChest.Data
                     return sellInfo.itemType.ToString() == rule.ItemTypeName;
 
                 case RuleType.ByProperty:
+                    if (rule.PropertyName == "isNotDonated")
+                        return IsMuseumItemNotDonated(itemId);
+
                     var info = GetItemSellInfo(itemId);
                     if (info == null) return false;
                     switch (rule.PropertyName)
@@ -505,6 +703,94 @@ namespace SenpaisChest.Data
             }
 
             return matched;
+        }
+
+        /// <summary>
+        /// Checks if an item is a museum item that hasn't been donated yet.
+        /// Uses reflection to access S.M.U.T. (soft dependency).
+        /// </summary>
+        private static bool IsMuseumItemNotDonated(int itemId)
+        {
+            if (!_museumReflectionInitialized)
+            {
+                _museumReflectionInitialized = true;
+                try
+                {
+                    var pluginType = AccessTools.TypeByName("SunHavenMuseumUtilityTracker.Plugin");
+                    if (pluginType != null)
+                    {
+                        _getDonationManagerMethod = pluginType.GetMethod("GetDonationManager",
+                            BindingFlags.Public | BindingFlags.Static);
+
+                        var contentType = AccessTools.TypeByName("SunHavenMuseumUtilityTracker.Data.MuseumContent");
+                        if (contentType != null)
+                        {
+                            _findByGameItemIdMethod = contentType.GetMethod("FindByGameItemId",
+                                BindingFlags.Public | BindingFlags.Static);
+                        }
+
+                        _museumModAvailable = _getDonationManagerMethod != null && _findByGameItemIdMethod != null;
+
+                        if (_museumModAvailable)
+                            Plugin.Log?.LogInfo("[Museum] S.M.U.T. integration available for isNotDonated rule");
+                        else
+                            Plugin.Log?.LogWarning("[Museum] S.M.U.T. found but missing expected methods");
+                    }
+                    else
+                    {
+                        Plugin.Log?.LogInfo("[Museum] S.M.U.T. not installed — isNotDonated rule will not match any items");
+                    }
+                }
+                catch (Exception ex)
+                {
+                    Plugin.Log?.LogWarning($"[Museum] Failed to initialize S.M.U.T. reflection: {ex.Message}");
+                }
+            }
+
+            if (!_museumModAvailable)
+                return false;
+
+            try
+            {
+                // Check if it's a museum item
+                var museumItem = _findByGameItemIdMethod.Invoke(null, new object[] { itemId });
+                if (museumItem == null)
+                    return false;
+
+                // Get the donation manager (re-fetch each time in case it was recreated)
+                var donationManager = _getDonationManagerMethod.Invoke(null, null);
+                if (donationManager == null)
+                    return false;
+
+                // Cache the HasDonatedByGameId method if needed
+                if (_hasDonatedByGameIdMethod == null)
+                {
+                    _hasDonatedByGameIdMethod = donationManager.GetType().GetMethod("HasDonatedByGameId",
+                        BindingFlags.Public | BindingFlags.Instance);
+                    if (_hasDonatedByGameIdMethod == null)
+                        return false;
+
+                    // Also get IsLoaded property
+                    _isLoadedProperty = donationManager.GetType().GetProperty("IsLoaded",
+                        BindingFlags.Public | BindingFlags.Instance);
+                }
+
+                // Check if donation data is loaded
+                if (_isLoadedProperty != null)
+                {
+                    var isLoaded = (bool)_isLoadedProperty.GetValue(donationManager);
+                    if (!isLoaded)
+                        return false;
+                }
+
+                // Check if NOT donated
+                var isDonated = (bool)_hasDonatedByGameIdMethod.Invoke(donationManager, new object[] { itemId });
+                return !isDonated;
+            }
+            catch
+            {
+                return false;
+            }
         }
 
         #endregion

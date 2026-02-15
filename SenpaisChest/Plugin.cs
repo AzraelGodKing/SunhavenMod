@@ -186,10 +186,18 @@ namespace SenpaisChest
                     typeof(Plugin), nameof(OnChestInteract),
                     new[] { typeof(int) });
 
-                // Chest.EndInteract → clear tracked chest
-                PatchMethod(typeof(Chest), "EndInteract",
-                    typeof(Plugin), nameof(OnChestEndInteract),
-                    new[] { typeof(int) });
+                // Chest.EndInteract → block close while config UI is open
+                var endInteractOriginal = AccessTools.Method(typeof(Chest), "EndInteract", new[] { typeof(int) });
+                if (endInteractOriginal != null)
+                {
+                    var prefix = new HarmonyMethod(AccessTools.Method(typeof(Plugin), nameof(OnChestEndInteract_Prefix)));
+                    _harmony.Patch(endInteractOriginal, prefix: prefix);
+                    Log.LogInfo("Patched Chest.EndInteract (prefix)");
+                }
+                else
+                {
+                    Log.LogWarning("Could not find method Chest.EndInteract");
+                }
 
                 Log.LogInfo("Harmony patches applied successfully");
             }
@@ -261,13 +269,21 @@ namespace SenpaisChest
             CurrentInteractingChest = __instance;
         }
 
-        private static void OnChestEndInteract(Chest __instance, int interactType)
+        private static bool OnChestEndInteract_Prefix(Chest __instance, int interactType)
         {
+            if (CurrentInteractingChest == __instance && _staticUI != null && _staticUI.IsVisible)
+            {
+                // Block the chest from closing while our config UI is open
+                return false;
+            }
+
+            // Allow chest to close normally and clean up
             if (CurrentInteractingChest == __instance)
             {
                 CurrentInteractingChest = null;
                 _staticUI?.Hide();
             }
+            return true;
         }
 
         #endregion
@@ -326,6 +342,7 @@ namespace SenpaisChest
         private float _scanTimer;
         private float _autoSaveTimer;
         private const float AUTO_SAVE_INTERVAL = 300f; // 5 minutes
+        private int _lastCountdownSecond = -1;
 
         private void Update()
         {
@@ -336,12 +353,24 @@ namespace SenpaisChest
                 return;
 
             float dt = Time.unscaledDeltaTime;
+            float scanInterval = config.GetScanInterval();
 
             // Scan timer
             _scanTimer += dt;
-            if (_scanTimer >= config.GetScanInterval())
+
+            // Countdown logging: log each second from 10 down to 1
+            float timeRemaining = scanInterval - _scanTimer;
+            int secondsRemaining = (int)Math.Ceiling(timeRemaining);
+            if (secondsRemaining >= 1 && secondsRemaining <= 10 && secondsRemaining != _lastCountdownSecond)
+            {
+                _lastCountdownSecond = secondsRemaining;
+                Plugin.Log?.LogInfo($"[Scan] Next scan in {secondsRemaining}...");
+            }
+
+            if (_scanTimer >= scanInterval)
             {
                 _scanTimer = 0f;
+                _lastCountdownSecond = -1;
                 try
                 {
                     manager.ExecuteScan(

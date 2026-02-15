@@ -1,0 +1,249 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Haven's Almanac - Unified Mod Dashboard</title>
+    <meta name="description" content="Unified mod dashboard for Sun Haven. Compact HUD, full dashboard, and daily morning briefing aggregating data from all installed mods.">
+    <meta property="og:title" content="Haven's Almanac - Unified Mod Dashboard">
+    <meta property="og:description" content="Aggregates data from all your Sun Haven mods into a compact HUD, dashboard, and daily briefing.">
+    <meta property="og:type" content="website">
+    <meta name="theme-color" content="#c9982e">
+    <link rel="icon" type="image/svg+xml" href="../favicon.svg">
+    <link rel="stylesheet" href="almanac-style.css">
+    <link rel="stylesheet" href="../shared-styles.css">
+    <script src="../shared.js" defer></script>
+</head>
+<body>
+    <a href="#main-content" class="skip-to-content">Skip to content</a>
+    <nav class="top-nav" role="navigation" aria-label="Breadcrumb">
+        <a href="../index.html" class="nav-home">Mod Hub</a>
+        <span class="nav-divider">/</span>
+        <span class="nav-current">Haven's Almanac</span>
+        <span class="breadcrumb-date">Updated Feb 2026</span>
+    </nav>
+
+    <div class="container" id="main-content" role="main">
+        <!-- Title Page -->
+        <header class="hero">
+            <div class="hero-icon">&#x1F4D6;</div>
+            <h1>Haven's Almanac</h1>
+            <p class="tagline">Unified Mod Dashboard<span class="cursor">|</span></p>
+            <span class="version-badge">v1.1.0</span>
+        </header>
+
+        <!-- Epigraph -->
+        <section class="intro-section">
+            <p>Haven's Almanac brings all your Sun Haven mods together in one place. A compact HUD shows at-a-glance status, a full dashboard provides detailed views, and a daily morning briefing summarizes what matters most when you wake up. Soft-depends on all mods &mdash; only displays data from what you have installed.</p>
+        </section>
+
+        <div class="ornamental-divider"></div>
+
+        <!-- Quick Controls -->
+        <section class="keybind-section">
+            <h2 class="section-title">Quick Controls</h2>
+            <div class="keybind-grid">
+                <div class="keybind-card">
+                    <div class="keybind-keys"><kbd>Ctrl</kbd> + <kbd>F5</kbd></div>
+                    <div class="keybind-action">Toggle Dashboard</div>
+                </div>
+                <div class="keybind-card">
+                    <div class="keybind-keys"><kbd>F4</kbd></div>
+                    <div class="keybind-action">Toggle HUD</div>
+                </div>
+                <div class="keybind-card">
+                    <div class="keybind-keys"><kbd>Esc</kbd></div>
+                    <div class="keybind-action">Dismiss Briefing</div>
+                </div>
+            </div>
+        </section>
+
+        <div class="ornamental-divider"></div>
+
+        <!-- Core Features -->
+        <h2 class="section-title">Core Features</h2>
+        <div class="features-grid">
+            <div class="feature-card">
+                <div class="feature-icon">&#x1F4CA;</div>
+                <h3>Compact HUD</h3>
+                <p>An always-visible, draggable widget showing a one-line status summary for each installed mod. Position it anywhere &mdash; your placement is saved across sessions.</p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon">&#x1F4CB;</div>
+                <h3>Full Dashboard</h3>
+                <p>A comprehensive scrollable window with collapsible sections for every mod. Toggle with Ctrl+F5 for a detailed view of all your mod data in one place.</p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon">&#x2600;&#xFE0F;</div>
+                <h3>Daily Briefing</h3>
+                <p>A morning summary popup that appears when you wake up. Shows today's birthdays, active tasks, museum progress, and more. Dismiss when you're ready.</p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon">&#x1F517;</div>
+                <h3>Soft Dependencies</h3>
+                <p>No hard requirements on any mod. The Almanac detects which mods are installed and only shows sections for the ones you have. At least one is needed.</p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon">&#x1F504;</div>
+                <h3>Auto-Refresh</h3>
+                <p>Data refreshes automatically every few seconds. Switch characters and the Almanac updates. Sleep overnight and the briefing re-triggers with fresh data.</p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon">&#x1F3A8;</div>
+                <h3>Themed UI</h3>
+                <p>Warm parchment and gold aesthetic that fits Sun Haven's cozy atmosphere. All windows are draggable and remember their position.</p>
+            </div>
+        </div>
+
+        <div class="ornamental-divider"></div>
+
+        <!-- Supported Mods -->
+        <h2 class="section-title">Supported Mods</h2>
+        <p class="section-desc">Haven's Almanac reads from these mods and displays their data. Install any combination.</p>
+        <div class="mod-grid">
+            <div class="mod-card">
+                <span class="mod-card-icon">&#x1F4DD;</span>
+                <div>
+                    <h4>Sun Haven Todo</h4>
+                    <p>Active tasks, completion percentage, and task counts by category.</p>
+                </div>
+            </div>
+            <div class="mod-card">
+                <span class="mod-card-icon">&#x1F382;</span>
+                <div>
+                    <h4>Birthday Reminder</h4>
+                    <p>Today's NPC birthdays, ungifted count, and gift suggestions.</p>
+                </div>
+            </div>
+            <div class="mod-card">
+                <span class="mod-card-icon">&#x1F3DB;</span>
+                <div>
+                    <h4>S.M.U.T.</h4>
+                    <p>Museum donation progress across all three halls with completion percentage.</p>
+                </div>
+            </div>
+            <div class="mod-card">
+                <span class="mod-card-icon">&#x1F4E6;</span>
+                <div>
+                    <h4>Senpai's Chest</h4>
+                    <p>Number of configured smart chests and their active rule counts.</p>
+                </div>
+            </div>
+            <div class="mod-card">
+                <span class="mod-card-icon">&#x1F512;</span>
+                <div>
+                    <h4>The Vault</h4>
+                    <p>Stored currency types and their counts from your secure vault.</p>
+                </div>
+            </div>
+            <div class="mod-card">
+                <span class="mod-card-icon">&#x2694;&#xFE0F;</span>
+                <div>
+                    <h4>Haven's Birthright</h4>
+                    <p>Current race, active racial bonuses, and ability status.</p>
+                </div>
+            </div>
+            <div class="mod-card">
+                <span class="mod-card-icon">&#x1F6E0;&#xFE0F;</span>
+                <div>
+                    <h4>HavenDevTools</h4>
+                    <p>Dev tools authorization status and current player name.</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="ornamental-divider"></div>
+
+        <!-- How It Works -->
+        <h2 class="section-title">How It Works</h2>
+        <div class="usage-steps">
+            <div class="step">
+                <div class="step-number">1</div>
+                <div class="step-content">
+                    <h4>Install Your Mods</h4>
+                    <p>Install Haven's Almanac alongside any combination of supported mods. At least one is required for content to display.</p>
+                </div>
+            </div>
+            <div class="step">
+                <div class="step-number">2</div>
+                <div class="step-content">
+                    <h4>Load Into the Game</h4>
+                    <p>The Almanac detects installed mods on startup and initializes data providers for each one. The HUD appears automatically.</p>
+                </div>
+            </div>
+            <div class="step">
+                <div class="step-number">3</div>
+                <div class="step-content">
+                    <h4>Check Your Briefing</h4>
+                    <p>When you wake up each morning, the Daily Briefing popup summarizes birthdays, tasks, museum progress, and more. Dismiss with the button or <kbd>Esc</kbd>.</p>
+                </div>
+            </div>
+            <div class="step">
+                <div class="step-number">4</div>
+                <div class="step-content">
+                    <h4>Open the Dashboard</h4>
+                    <p>Press <kbd>Ctrl</kbd> + <kbd>F5</kbd> anytime for the full dashboard with detailed sections from every installed mod.</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="ornamental-divider"></div>
+
+        <!-- Configuration -->
+        <h2 class="section-title">Configuration</h2>
+        <div class="config-table">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Setting</th>
+                        <th>Default</th>
+                        <th>Description</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><code>DashboardToggleKey</code></td>
+                        <td><kbd>F5</kbd></td>
+                        <td>Key to toggle the full dashboard</td>
+                    </tr>
+                    <tr>
+                        <td><code>DashboardRequireCtrl</code></td>
+                        <td>true</td>
+                        <td>Require Ctrl modifier for dashboard toggle</td>
+                    </tr>
+                    <tr>
+                        <td><code>HUDToggleKey</code></td>
+                        <td><kbd>F4</kbd></td>
+                        <td>Key to toggle HUD visibility</td>
+                    </tr>
+                    <tr>
+                        <td><code>HUD Enabled</code></td>
+                        <td>true</td>
+                        <td>Show the compact HUD widget</td>
+                    </tr>
+                    <tr>
+                        <td><code>BriefingEnabled</code></td>
+                        <td>true</td>
+                        <td>Show the daily briefing on wake-up</td>
+                    </tr>
+                    <tr>
+                        <td><code>AutoDismissSeconds</code></td>
+                        <td>0</td>
+                        <td>Auto-dismiss briefing (0 = manual dismiss only)</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+        <p class="config-note">Configuration file: <code>BepInEx/config/com.azraelgodking.havensalmanac.cfg</code></p>
+
+        <!-- Colophon / Footer -->
+        <footer class="footer">
+            <p>Haven's Almanac - A Sun Haven Mod by AzraelGodKing</p>
+            <div class="footer-links">
+                <a href="../index.html">Back to Mod Hub</a>
+                <a href="https://thunderstore.io/c/sun-haven/p/AzraelGodKing/HavensAlmanac/" target="_blank">View on Thunderstore</a>
+            </div>
+        </footer>
+    </div>
+</body>
+</html>

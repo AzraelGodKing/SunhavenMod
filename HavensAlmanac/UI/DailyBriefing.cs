@@ -1,0 +1,216 @@
+using System;
+using HavensAlmanac.Config;
+using HavensAlmanac.Data;
+using SunhavenMods.Shared;
+using UnityEngine;
+
+namespace HavensAlmanac.UI
+{
+    /// <summary>
+    /// Morning summary popup that auto-shows when the player wakes up.
+    /// Displays key info from each installed mod and auto-dismisses.
+    /// </summary>
+    public class DailyBriefing : MonoBehaviour
+    {
+        private const int WINDOW_ID = 98782;
+        private const float WIDTH = 500f;
+        private const float MIN_HEIGHT = 250f;
+
+        private AlmanacDataAggregator _aggregator;
+        private Rect _windowRect;
+        private bool _isVisible;
+        private float _contentHeight = MIN_HEIGHT;
+
+        // Styles
+        private bool _stylesInitialized;
+        private GUIStyle _windowStyle;
+        private GUIStyle _titleStyle;
+        private GUIStyle _sectionTitleStyle;
+        private GUIStyle _contentStyle;
+        private GUIStyle _dismissButtonStyle;
+        private Texture2D _bgTexture;
+
+        public bool IsVisible => _isVisible;
+
+        public void Initialize(AlmanacDataAggregator aggregator)
+        {
+            _aggregator = aggregator;
+            CenterWindow();
+        }
+
+        public void ShowBriefing()
+        {
+            if (!AlmanacConfig.StaticBriefingEnabled) return;
+            if (_aggregator == null || _aggregator.InstalledModCount == 0) return;
+
+            _aggregator.RefreshAll();
+
+            // Only show if at least one provider has briefing content
+            bool hasContent = false;
+            foreach (var provider in _aggregator.Providers)
+            {
+                if (provider.IsReady)
+                {
+                    hasContent = true;
+                    break;
+                }
+            }
+
+            if (!hasContent) return;
+
+            CenterWindow();
+            _isVisible = true;
+        }
+
+        public void Hide() => _isVisible = false;
+
+        private void CenterWindow()
+        {
+            _windowRect = new Rect(
+                (Screen.width - WIDTH) / 2f,
+                (Screen.height - MIN_HEIGHT) / 2f - 50f,
+                WIDTH, MIN_HEIGHT);
+        }
+
+        private void Update()
+        {
+            if (!_isVisible) return;
+
+            // Escape to dismiss
+            if (Input.GetKeyDown(KeyCode.Escape))
+                Hide();
+        }
+
+        private void OnGUI()
+        {
+            if (!_isVisible || _aggregator == null) return;
+
+            if (!_stylesInitialized)
+                InitializeStyles();
+
+            // Dynamic height — clamp to screen bounds
+            float maxHeight = Screen.height - 60f;
+            _windowRect.height = Mathf.Clamp(_contentHeight, MIN_HEIGHT, maxHeight);
+
+            // Re-center horizontally, keep vertically on screen
+            _windowRect.x = (Screen.width - _windowRect.width) / 2f;
+            _windowRect.y = Mathf.Clamp(_windowRect.y, 20f, Screen.height - _windowRect.height - 20f);
+
+            _windowRect = GUI.Window(WINDOW_ID, _windowRect, DrawWindow, "", _windowStyle);
+        }
+
+        private void DrawWindow(int id)
+        {
+            // Header
+            GUILayout.Label("Good Morning!", _titleStyle);
+            GUILayout.Space(6);
+
+            bool anyContent = false;
+
+            foreach (var provider in _aggregator.Providers)
+            {
+                if (!provider.IsReady) continue;
+
+                try
+                {
+                    // Use a temporary vertical group to test if the provider draws anything
+                    GUILayout.BeginVertical();
+                    GUILayout.Label($"{provider.ModIcon} {provider.ModName}", _sectionTitleStyle);
+
+                    bool drew = provider.DrawBriefingSection();
+                    GUILayout.EndVertical();
+
+                    if (drew)
+                    {
+                        anyContent = true;
+                        GUILayout.Space(6);
+                    }
+                }
+                catch
+                {
+                    GUILayout.EndVertical();
+                }
+            }
+
+            if (!anyContent)
+            {
+                GUILayout.Label("Nothing noteworthy today. Have a great day!", _contentStyle);
+            }
+
+            GUILayout.Space(10);
+
+            // Dismiss button — centered
+            GUILayout.BeginHorizontal();
+            GUILayout.FlexibleSpace();
+            if (GUILayout.Button("Dismiss", _dismissButtonStyle, GUILayout.Width(120), GUILayout.Height(30)))
+                Hide();
+            GUILayout.FlexibleSpace();
+            GUILayout.EndHorizontal();
+
+            // Track actual content height for dynamic window sizing
+            if (Event.current.type == UnityEngine.EventType.Repaint)
+            {
+                var lastRect = GUILayoutUtility.GetLastRect();
+                _contentHeight = lastRect.yMax + 28f;
+            }
+
+            // Drag header only
+            GUI.DragWindow(new Rect(0, 0, _windowRect.width, 30));
+        }
+
+        private void InitializeStyles()
+        {
+            _stylesInitialized = true;
+
+            var bgColor = new Color(0.15f, 0.12f, 0.09f, 0.96f);
+            var goldText = new Color(0.95f, 0.85f, 0.55f);
+            var lightText = new Color(0.91f, 0.87f, 0.82f);
+            var dimText = new Color(0.6f, 0.55f, 0.45f);
+
+            _bgTexture = GUIStyleHelper.MakeSolidTexture(bgColor);
+
+            _windowStyle = new GUIStyle(GUI.skin.window)
+            {
+                padding = new RectOffset(16, 16, 12, 12),
+                border = new RectOffset(2, 2, 2, 2)
+            };
+            _windowStyle.normal.background = _bgTexture;
+            _windowStyle.onNormal.background = _bgTexture;
+
+            _titleStyle = new GUIStyle(GUI.skin.label)
+            {
+                fontStyle = FontStyle.Bold,
+                fontSize = 18,
+                alignment = TextAnchor.MiddleCenter
+            };
+            _titleStyle.normal.textColor = goldText;
+
+            _sectionTitleStyle = new GUIStyle(GUI.skin.label)
+            {
+                fontStyle = FontStyle.Bold,
+                fontSize = 13
+            };
+            _sectionTitleStyle.normal.textColor = goldText;
+
+            _contentStyle = new GUIStyle(GUI.skin.label)
+            {
+                fontSize = 12,
+                fontStyle = FontStyle.Italic,
+                alignment = TextAnchor.MiddleCenter,
+                wordWrap = true
+            };
+            _contentStyle.normal.textColor = lightText;
+
+            _dismissButtonStyle = new GUIStyle(GUI.skin.button)
+            {
+                fontSize = 13,
+                fontStyle = FontStyle.Bold
+            };
+        }
+
+        private void OnDestroy()
+        {
+            if (_bgTexture != null) Destroy(_bgTexture);
+        }
+    }
+}
