@@ -49,10 +49,10 @@
     "changelog": "Added S.M.U.T. and Todo cross-mod integrations"
   },
   "com.azraelgodking.havensalmanac": {
-    "version": "1.1.0",
+    "version": "1.0.0",
     "name": "Haven's Almanac",
     "description": "Unified mod dashboard - HUD, full dashboard, and daily morning briefing aggregating data from all installed mods",
     "nexus": "",
-    "changelog": "Added 7 cross-mod integrations and unified data aggregation"
+    "changelog": "Initial release"
   }
 }
