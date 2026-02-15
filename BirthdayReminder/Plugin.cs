@@ -4,6 +4,7 @@ using BepInEx;
 using BepInEx.Configuration;
 using BepInEx.Logging;
 using BirthdayReminder.Data;
+using BirthdayReminder.Integration;
 using BirthdayReminder.UI;
 using HarmonyLib;
 using SunhavenMods.Shared;
@@ -14,6 +15,7 @@ using UnityEngine.SceneManagement;
 namespace BirthdayReminder
 {
     [BepInPlugin(PluginInfo.PLUGIN_GUID, PluginInfo.PLUGIN_NAME, PluginInfo.PLUGIN_VERSION)]
+    [BepInDependency("com.azraelgodking.sunhaventodo", BepInDependency.DependencyFlags.SoftDependency)]
     public class Plugin : BaseUnityPlugin
     {
         public static Plugin Instance { get; private set; }
@@ -25,6 +27,9 @@ namespace BirthdayReminder
         private static GameObject _hudObject;
         private static float _staticHUDPositionX = -1f;
         private static float _staticHUDPositionY = -1f;
+
+        // Cross-mod integration
+        private static TodoIntegration _todoIntegration;
 
         // Configuration
         private ConfigEntry<bool> _enabled;
@@ -75,6 +80,7 @@ namespace BirthdayReminder
             CreatePersistentRunner();
             InitializeManager();
             ApplyPatches();
+            InitializeIntegrations();
 
             SceneManager.sceneLoaded += OnSceneLoaded;
 
@@ -171,6 +177,26 @@ namespace BirthdayReminder
         {
             _manager = new BirthdayManager();
             _staticManager = _manager;
+        }
+
+        private void InitializeIntegrations()
+        {
+            try
+            {
+                // Check if SunhavenTodo is loaded
+                if (BepInEx.Bootstrap.Chainloader.PluginInfos.ContainsKey("com.azraelgodking.sunhaventodo"))
+                {
+                    _todoIntegration = new TodoIntegration(_staticManager);
+                }
+                else
+                {
+                    Log.LogInfo("[Integrations] SunhavenTodo not found - birthday todos disabled");
+                }
+            }
+            catch (Exception ex)
+            {
+                Log.LogWarning($"[Integrations] Error initializing: {ex.Message}");
+            }
         }
 
         private void ApplyPatches()
@@ -458,6 +484,7 @@ namespace BirthdayReminder
 
         public static BirthdayManager GetManager() => _staticManager;
         public static BirthdayHUD GetHUD() => _staticHUD;
+        public static TodoIntegration GetTodoIntegration() => _todoIntegration;
         public static KeyCode StaticToggleKey => _staticToggleKey;
         public static bool StaticDebugMode => _staticDebugMode;
         public static bool StaticUseNativeNotifications => _staticUseNativeNotifications;
@@ -607,6 +634,9 @@ namespace BirthdayReminder
 
                 // Reset birthday tracking for new character
                 _staticManager?.ResetForNewCharacter(newCharacterName);
+
+                // Reset cross-mod integration tracking
+                _todoIntegration?.Reset();
 
                 // Hide HUD until we check birthdays
                 _staticHUD?.Hide();
@@ -834,6 +864,9 @@ namespace BirthdayReminder
                         {
                             manager.MarkGifted(npcName);
                             Plugin.Log?.LogInfo($"[BirthdayReminder] Marked {npcName} as gifted on their birthday!");
+
+                            // Directly notify the Todo integration to complete the birthday todo
+                            Plugin.GetTodoIntegration()?.OnGiftGiven(npcName);
                         }
                     }
                 }

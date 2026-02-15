@@ -2,6 +2,7 @@ using BepInEx;
 using BepInEx.Logging;
 using SenpaisChest.Config;
 using SenpaisChest.Data;
+using SenpaisChest.Integration;
 using SenpaisChest.UI;
 using SunhavenMods.Shared;
 using HarmonyLib;
@@ -13,6 +14,8 @@ using Wish;
 namespace SenpaisChest
 {
     [BepInPlugin(PluginInfo.PLUGIN_GUID, PluginInfo.PLUGIN_NAME, PluginInfo.PLUGIN_VERSION)]
+    [BepInDependency("com.azraelgodking.sunhavenmuseumutilitytracker", BepInDependency.DependencyFlags.SoftDependency)]
+    [BepInDependency("com.azraelgodking.sunhaventodo", BepInDependency.DependencyFlags.SoftDependency)]
     public class Plugin : BaseUnityPlugin
     {
         public static Plugin Instance { get; private set; }
@@ -23,6 +26,9 @@ namespace SenpaisChest
         private static SmartChestSaveSystem _staticSaveSystem;
         private static SmartChestUI _staticUI;
         private static SmartChestConfig _staticConfig;
+
+        // Cross-mod integration
+        private static MuseumTodoIntegration _museumTodoIntegration;
 
         // Track the chest the player is currently interacting with
         internal static Chest CurrentInteractingChest;
@@ -73,6 +79,9 @@ namespace SenpaisChest
                 // Apply Harmony patches
                 _harmony = new Harmony(PluginInfo.PLUGIN_GUID);
                 ApplyPatches();
+
+                // Initialize cross-mod integrations
+                InitializeIntegrations();
 
                 // Subscribe to scene loading
                 SceneManager.sceneLoaded += OnSceneLoaded;
@@ -134,6 +143,31 @@ namespace SenpaisChest
             catch (Exception ex)
             {
                 Log?.LogError($"[EnsureUI] Error recreating UI: {ex.Message}");
+            }
+        }
+
+        private void InitializeIntegrations()
+        {
+            try
+            {
+                var pluginInfos = BepInEx.Bootstrap.Chainloader.PluginInfos;
+                bool hasSmut = pluginInfos.ContainsKey("com.azraelgodking.sunhavenmuseumutilitytracker");
+                bool hasTodo = pluginInfos.ContainsKey("com.azraelgodking.sunhaventodo");
+
+                if (hasSmut && hasTodo)
+                {
+                    _museumTodoIntegration = new MuseumTodoIntegration();
+                }
+                else
+                {
+                    if (!hasSmut) Log.LogInfo("[Integrations] S.M.U.T. not found");
+                    if (!hasTodo) Log.LogInfo("[Integrations] SunhavenTodo not found");
+                    Log.LogInfo("[Integrations] Museum todo integration disabled (requires both S.M.U.T. and Todo)");
+                }
+            }
+            catch (Exception ex)
+            {
+                Log.LogWarning($"[Integrations] Error initializing: {ex.Message}");
             }
         }
 
@@ -208,6 +242,7 @@ namespace SenpaisChest
 
                 Log?.LogInfo($"Player initialized: {characterName}");
                 _staticManager?.SetCharacterName(characterName);
+                _museumTodoIntegration?.Reset();
 
                 var data = _staticSaveSystem?.Load(characterName);
                 _staticManager?.LoadData(data);
@@ -278,6 +313,7 @@ namespace SenpaisChest
         internal static SmartChestSaveSystem GetSaveSystem() => _staticSaveSystem;
         internal static SmartChestUI GetUI() => _staticUI;
         internal static SmartChestConfig GetConfig() => _staticConfig;
+        internal static MuseumTodoIntegration GetMuseumTodoIntegration() => _museumTodoIntegration;
 
         #endregion
     }
@@ -311,6 +347,9 @@ namespace SenpaisChest
                     manager.ExecuteScan(
                         config.MaxItemsPerScan.Value,
                         config.EnableNotifications.Value);
+
+                    // After scan, check for museum items in chests
+                    Plugin.GetMuseumTodoIntegration()?.OnScanComplete();
                 }
                 catch (Exception ex)
                 {
