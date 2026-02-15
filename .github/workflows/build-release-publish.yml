@@ -39,6 +39,7 @@ on:
           - thevault
           - havendevtools
           - senpaischest
+          - havensalmanac
       publish_thunderstore:
         description: 'Publish to Thunderstore after release?'
         required: true
@@ -70,7 +71,7 @@ jobs:
         run: |
           MOD_KEY="${{ github.event.inputs.mod }}"
           if [ "$MOD_KEY" == "all" ]; then
-            echo 'matrix=["havensbirthright","sunhavenmuseumutilitytracker","squirrelsbirthdayreminder","sunhaventodo","thevault","havendevtools","senpaischest"]' >> "$GITHUB_OUTPUT"
+            echo 'matrix=["havensbirthright","sunhavenmuseumutilitytracker","squirrelsbirthdayreminder","sunhaventodo","thevault","havendevtools","senpaischest","havensalmanac"]' >> "$GITHUB_OUTPUT"
           else
             echo "matrix=[\"$MOD_KEY\"]" >> "$GITHUB_OUTPUT"
           fi
@@ -146,6 +147,12 @@ jobs:
               MOD_DIR="SenpaisChest"
               DLL_NAME="SenpaisChest"
               THUNDERSTORE_NAME="SenpaisChest"
+              ;;
+            "havensalmanac")
+              JSON_KEY="com.azraelgodking.havensalmanac"
+              MOD_DIR="HavensAlmanac"
+              DLL_NAME="HavensAlmanac"
+              THUNDERSTORE_NAME="HavensAlmanac"
               ;;
             *)
               echo "❌ Unknown mod: $MOD_KEY"
