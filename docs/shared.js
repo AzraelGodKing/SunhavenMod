@@ -153,7 +153,8 @@ document.addEventListener('DOMContentLoaded', function() {
             'Sun Haven Todo': 'com.azraelgodking.sunhaventodo',
             "A Squirrel's Birthday Reminder": 'com.azraelgodking.squirrelsbirthdayreminder',
             "Senpai's Chest": 'com.azraelgodking.senpaischest',
-            'HavenDevTools': 'com.azraelgodking.havendevtools'
+            'HavenDevTools': 'com.azraelgodking.havendevtools',
+            "Haven's Almanac": 'com.azraelgodking.havensalmanac'
         };
 
         // Determine base path for versions.json
@@ -198,7 +199,8 @@ document.addEventListener('DOMContentLoaded', function() {
                         'Todo List': 'com.azraelgodking.sunhaventodo',
                         'Birthday Reminder': 'com.azraelgodking.squirrelsbirthdayreminder',
                         "Senpai's Chest": 'com.azraelgodking.senpaischest',
-                        'HavenDevTools': 'com.azraelgodking.havendevtools'
+                        'HavenDevTools': 'com.azraelgodking.havendevtools',
+                        "Haven's Almanac": 'com.azraelgodking.havensalmanac'
                     };
                     var pageKey = navToKey[pageName];
                     if (pageKey && data[pageKey]) {
