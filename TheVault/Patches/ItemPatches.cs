@@ -1,8 +1,6 @@
 using HarmonyLib;
 using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Reflection;
 using TheVault.Vault;
 
 namespace TheVault.Patches
@@ -14,11 +12,6 @@ namespace TheVault.Patches
     /// </summary>
     public static class ItemPatches
     {
-        /// <summary>
-        /// Enable verbose debug logging. Set to false for release to improve performance.
-        /// </summary>
-        private const bool DEBUG_LOGGING = false;
-
         /// <summary>
         /// Maps game item IDs to vault currency types.
         /// Format: gameItemId -> currencyId
@@ -52,347 +45,6 @@ namespace TheVault.Patches
         public static bool IsWithdrawing { get; set; } = false;
 
         /// <summary>
-        /// Tracks recently withdrawn items with timestamps. Items in this dictionary will not be auto-deposited
-        /// until the withdrawal window expires. This handles async inventory operations where the postfix
-        /// might fire after the withdrawal method returns.
-        /// Key: itemId, Value: DateTime when withdrawal started
-        /// </summary>
-        private static Dictionary<int, DateTime> _withdrawingItems = new Dictionary<int, DateTime>();
-
-        /// <summary>
-        /// Time window (in milliseconds) to block auto-deposit after a withdrawal starts.
-        /// This should be long enough to cover any async delays in inventory operations.
-        /// </summary>
-        private const int WITHDRAWAL_BLOCK_WINDOW_MS = 2000;
-
-        #region Cached Reflection (PERFORMANCE CRITICAL)
-        // Cache all reflection lookups to avoid expensive AccessTools calls on every item pickup
-
-        private static bool _reflectionCacheInitialized = false;
-        private static Type _inventoryType;
-        private static Type _playerType;
-        private static Type _itemType;
-        private static MethodInfo _cachedGetAmountMethod;
-        private static MethodInfo _cachedRemoveItemMethod;
-        private static MethodInfo _cachedRemoveAllMethod;
-        private static PropertyInfo _cachedLocalPlayerProperty;
-        private static PropertyInfo _cachedInventoryProperty;
-        private static FieldInfo _cachedInventoryField;
-        private static FieldInfo _cachedItemIdField;
-        private static PropertyInfo _cachedItemIdProperty;
-        private static MethodInfo _cachedItemIdMethod;
-
-        // Cached database lookups for item names (PERFORMANCE CRITICAL)
-        private static bool _databaseCacheInitialized = false;
-        private static Type _databaseType;
-        private static Type _itemDatabaseType;
-        private static MethodInfo _cachedDatabaseGetItemMethod;
-        private static PropertyInfo _cachedItemDatabaseInstanceProp;
-        private static MethodInfo _cachedItemDatabaseGetItemMethod;
-        private static PropertyInfo _cachedItemNameProperty;
-
-        // Cache for item display names - once we look up a name, we never need to again
-        private static readonly Dictionary<int, string> _itemNameCache = new Dictionary<int, string>();
-
-        /// <summary>
-        /// Initialize the reflection cache. Called once on first use.
-        /// </summary>
-        private static void InitializeReflectionCache()
-        {
-            if (_reflectionCacheInitialized) return;
-
-            try
-            {
-                _playerType = typeof(Wish.Player);
-                _inventoryType = AccessTools.TypeByName("Wish.Inventory") ?? AccessTools.TypeByName("Wish.PlayerInventory");
-                _itemType = AccessTools.TypeByName("Wish.Item");
-
-                // Cache player access
-                _cachedLocalPlayerProperty = AccessTools.Property(_playerType, "LocalPlayer") ?? AccessTools.Property(_playerType, "Instance");
-
-                // Cache inventory access on player
-                _cachedInventoryProperty = AccessTools.Property(_playerType, "Inventory") ?? AccessTools.Property(_playerType, "PlayerInventory");
-                if (_cachedInventoryProperty == null)
-                {
-                    _cachedInventoryField = AccessTools.Field(_playerType, "inventory") ??
-                                           AccessTools.Field(_playerType, "_inventory") ??
-                                           AccessTools.Field(_playerType, "playerInventory") ??
-                                           AccessTools.Field(_playerType, "_playerInventory");
-                }
-
-                // Cache inventory methods
-                if (_inventoryType != null)
-                {
-                    _cachedGetAmountMethod = AccessTools.Method(_inventoryType, "GetAmount", new[] { typeof(int) });
-                    _cachedRemoveItemMethod = AccessTools.Method(_inventoryType, "RemoveItem", new[] { typeof(int), typeof(int), typeof(int) });
-                    _cachedRemoveAllMethod = AccessTools.Method(_inventoryType, "RemoveAll", new[] { typeof(int) });
-                }
-
-                // Cache item ID access
-                if (_itemType != null)
-                {
-                    _cachedItemIdField = AccessTools.Field(_itemType, "id") ?? AccessTools.Field(_itemType, "_id");
-                    _cachedItemIdProperty = AccessTools.Property(_itemType, "id") ?? AccessTools.Property(_itemType, "Id") ?? AccessTools.Property(_itemType, "ItemID");
-                    _cachedItemIdMethod = AccessTools.Method(_itemType, "ID");
-                }
-
-                _reflectionCacheInitialized = true;
-                Plugin.Log?.LogInfo("ItemPatches reflection cache initialized");
-            }
-            catch (Exception ex)
-            {
-                Plugin.Log?.LogError($"Failed to initialize reflection cache: {ex.Message}");
-            }
-        }
-
-        /// <summary>
-        /// Initialize the database cache for item name lookups. Called lazily on first use.
-        /// </summary>
-        private static void InitializeDatabaseCache()
-        {
-            if (_databaseCacheInitialized) return;
-
-            try
-            {
-                // Cache Database type and GetItem method
-                _databaseType = AccessTools.TypeByName("Wish.Database");
-                if (_databaseType != null)
-                {
-                    _cachedDatabaseGetItemMethod = AccessTools.Method(_databaseType, "GetItem", new[] { typeof(int) });
-                }
-
-                // Cache ItemDatabase type and methods
-                _itemDatabaseType = AccessTools.TypeByName("Wish.ItemDatabase");
-                if (_itemDatabaseType != null)
-                {
-                    _cachedItemDatabaseInstanceProp = AccessTools.Property(_itemDatabaseType, "Instance");
-                    _cachedItemDatabaseGetItemMethod = AccessTools.Method(_itemDatabaseType, "GetItem", new[] { typeof(int) });
-                }
-
-                // Cache item name property (will be set on first successful item lookup)
-                // We try common property names
-                if (_itemType != null)
-                {
-                    _cachedItemNameProperty = AccessTools.Property(_itemType, "name") ??
-                                              AccessTools.Property(_itemType, "Name") ??
-                                              AccessTools.Property(_itemType, "itemName") ??
-                                              AccessTools.Property(_itemType, "ItemName");
-                }
-
-                _databaseCacheInitialized = true;
-                if (DEBUG_LOGGING) Plugin.Log?.LogInfo("ItemPatches database cache initialized");
-            }
-            catch (Exception ex)
-            {
-                Plugin.Log?.LogError($"Failed to initialize database cache: {ex.Message}");
-                _databaseCacheInitialized = true; // Mark as initialized to prevent repeated failures
-            }
-        }
-
-        /// <summary>
-        /// Get player inventory using cached reflection. Returns null if not available.
-        /// </summary>
-        private static object GetPlayerInventoryCached()
-        {
-            InitializeReflectionCache();
-
-            try
-            {
-                if (_cachedLocalPlayerProperty == null) return null;
-
-                var player = _cachedLocalPlayerProperty.GetValue(null);
-                if (player == null) return null;
-
-                if (_cachedInventoryProperty != null)
-                    return _cachedInventoryProperty.GetValue(player);
-                if (_cachedInventoryField != null)
-                    return _cachedInventoryField.GetValue(player);
-
-                return null;
-            }
-            catch
-            {
-                return null;
-            }
-        }
-
-        /// <summary>
-        /// Get item ID using cached reflection. Much faster than GetItemId.
-        /// </summary>
-        private static int GetItemIdFast(object item)
-        {
-            if (item == null) return -1;
-
-            InitializeReflectionCache();
-
-            try
-            {
-                // Try cached field first (fastest)
-                if (_cachedItemIdField != null)
-                {
-                    var result = _cachedItemIdField.GetValue(item);
-                    if (result is int id) return id;
-                }
-
-                // Try cached property
-                if (_cachedItemIdProperty != null)
-                {
-                    var result = _cachedItemIdProperty.GetValue(item);
-                    if (result is int id) return id;
-                }
-
-                // Try cached method
-                if (_cachedItemIdMethod != null)
-                {
-                    var result = _cachedItemIdMethod.Invoke(item, null);
-                    if (result is int id) return id;
-                }
-
-                // Fallback to full search (first time or if cache failed)
-                return GetItemIdSlow(item);
-            }
-            catch
-            {
-                return -1;
-            }
-        }
-
-        /// <summary>
-        /// Slow path for getting item ID - only used as fallback
-        /// </summary>
-        private static int GetItemIdSlow(object item)
-        {
-            if (item == null) return -1;
-
-            try
-            {
-                var itemType = item.GetType();
-
-                // Try common field/property names
-                var idField = AccessTools.Field(itemType, "id") ?? AccessTools.Field(itemType, "_id");
-                if (idField != null)
-                {
-                    var result = idField.GetValue(item);
-                    if (result is int id)
-                    {
-                        // Cache for future use
-                        _cachedItemIdField = idField;
-                        return id;
-                    }
-                }
-
-                var idProp = AccessTools.Property(itemType, "id") ?? AccessTools.Property(itemType, "Id") ?? AccessTools.Property(itemType, "ItemID");
-                if (idProp != null)
-                {
-                    var result = idProp.GetValue(item);
-                    if (result is int id)
-                    {
-                        _cachedItemIdProperty = idProp;
-                        return id;
-                    }
-                }
-
-                var idMethod = AccessTools.Method(itemType, "ID");
-                if (idMethod != null)
-                {
-                    var result = idMethod.Invoke(item, null);
-                    if (result is int id)
-                    {
-                        _cachedItemIdMethod = idMethod;
-                        return id;
-                    }
-                }
-            }
-            catch { }
-
-            return -1;
-        }
-
-        #endregion
-
-        /// <summary>
-        /// Reset all static state. Called when returning to menu to ensure clean state for next character.
-        /// </summary>
-        public static void ResetState()
-        {
-            Plugin.Log?.LogInfo("ItemPatches: Resetting all static state for character switch");
-
-            // Clear tracking dictionaries
-            _withdrawingItems.Clear();
-            _recentlyDepositedItems.Clear();
-            _processingAutoDepositItems.Clear();
-            _pendingDeposits.Clear();
-            _currentlyProcessingDeposits.Clear();
-
-            // Reset flags
-            IsWithdrawing = false;
-
-            // Clear notification system cache (will re-initialize on next use)
-            _notificationStackInstance = null;
-            _notificationSystemInitialized = false;
-
-            Plugin.Log?.LogInfo("ItemPatches: State reset complete");
-        }
-
-        /// <summary>
-        /// Mark an item as being withdrawn (prevents auto-deposit for WITHDRAWAL_BLOCK_WINDOW_MS)
-        /// </summary>
-        public static void StartWithdrawing(int itemId)
-        {
-            _withdrawingItems[itemId] = GetCachedNow();
-            if (DEBUG_LOGGING) Plugin.Log?.LogInfo($"Started withdrawing item {itemId} - auto-deposit blocked for {WITHDRAWAL_BLOCK_WINDOW_MS}ms");
-        }
-
-        /// <summary>
-        /// Explicitly stop withdrawing an item (optional - withdrawal will auto-expire)
-        /// This is kept for backwards compatibility but the time-based expiry is the primary mechanism.
-        /// </summary>
-        public static void StopWithdrawing(int itemId)
-        {
-            // Don't actually remove - let the time window handle it
-            // This prevents race conditions where StopWithdrawing is called before postfixes run
-            if (DEBUG_LOGGING) Plugin.Log?.LogInfo($"StopWithdrawing called for item {itemId} - will auto-expire");
-        }
-
-        // Cache the current time to avoid multiple DateTime.Now calls per frame
-        private static DateTime _cachedNow;
-        private static int _cachedNowFrame = -1;
-
-        /// <summary>
-        /// Get cached DateTime.Now to reduce allocations. Updates once per frame.
-        /// </summary>
-        private static DateTime GetCachedNow()
-        {
-            int currentFrame = UnityEngine.Time.frameCount;
-            if (_cachedNowFrame != currentFrame)
-            {
-                _cachedNow = DateTime.Now;
-                _cachedNowFrame = currentFrame;
-            }
-            return _cachedNow;
-        }
-
-        /// <summary>
-        /// Check if an item was recently withdrawn (within WITHDRAWAL_BLOCK_WINDOW_MS)
-        /// </summary>
-        public static bool IsItemBeingWithdrawn(int itemId)
-        {
-            if (_withdrawingItems.Count == 0) return false;
-
-            if (_withdrawingItems.TryGetValue(itemId, out DateTime withdrawStart))
-            {
-                double elapsed = (GetCachedNow() - withdrawStart).TotalMilliseconds;
-                if (elapsed < WITHDRAWAL_BLOCK_WINDOW_MS)
-                {
-                    return true;
-                }
-                // Expired - clean up
-                _withdrawingItems.Remove(itemId);
-            }
-            return false;
-        }
-
-        /// <summary>
         /// Register a mapping between a game item and vault currency.
         /// </summary>
         /// <param name="gameItemId">The item's ID in Sun Haven's item database</param>
@@ -423,27 +75,19 @@ namespace TheVault.Patches
         }
 
         /// <summary>
-        /// Check if an item should be auto-deposited.
-        /// PERFORMANCE: This is called on every item pickup, so it must be fast.
+        /// Check if an item should be auto-deposited
         /// </summary>
         public static bool ShouldAutoDeposit(int gameItemId)
         {
-            // Fast path: check if auto-deposit is globally disabled
+            // Never auto-deposit during withdrawals
+            if (IsWithdrawing) return false;
             if (!AutoDepositEnabled) return false;
 
-            // Fast path: check if item is even registered (most items aren't vault items)
+            // Check if item is registered and has auto-deposit enabled
             if (!_itemToCurrency.TryGetValue(gameItemId, out var currencyId))
                 return false;
 
-            // Check per-currency setting
-            if (!_currencyAutoDeposit.TryGetValue(currencyId, out var enabled) || !enabled)
-                return false;
-
-            // Slower checks only after we know item is a vault item with auto-deposit enabled
-            if (IsWithdrawing) return false;
-            if (IsItemBeingWithdrawn(gameItemId)) return false;
-
-            return true;
+            return _currencyAutoDeposit.TryGetValue(currencyId, out var enabled) && enabled;
         }
 
         /// <summary>
@@ -462,7 +106,7 @@ namespace TheVault.Patches
             if (_currencyAutoDeposit.ContainsKey(currencyId))
             {
                 _currencyAutoDeposit[currencyId] = enabled;
-                if (DEBUG_LOGGING) Plugin.Log?.LogInfo($"Auto-deposit for {currencyId}: {enabled}");
+                Plugin.Log?.LogInfo($"Auto-deposit for {currencyId}: {enabled}");
             }
         }
 
@@ -474,7 +118,7 @@ namespace TheVault.Patches
             if (_currencyAutoDeposit.ContainsKey(currencyId))
             {
                 _currencyAutoDeposit[currencyId] = !_currencyAutoDeposit[currencyId];
-                if (DEBUG_LOGGING) Plugin.Log?.LogInfo($"Auto-deposit for {currencyId} toggled to: {_currencyAutoDeposit[currencyId]}");
+                Plugin.Log?.LogInfo($"Auto-deposit for {currencyId} toggled to: {_currencyAutoDeposit[currencyId]}");
                 return _currencyAutoDeposit[currencyId];
             }
             return false;
@@ -579,7 +223,7 @@ namespace TheVault.Patches
                 if (RemoveItemFromInventory(itemId, amount))
                 {
                     AddCurrencyToVault(vaultManager, currencyId, amount);
-                    if (DEBUG_LOGGING) Plugin.Log?.LogInfo($"Auto-deposited {amount} of item {itemId} as {currencyId}");
+                    Plugin.Log?.LogInfo($"Auto-deposited {amount} of item {itemId} as {currencyId}");
 
                     // Show notification
                     ShowAutoDepositNotification(currencyId, amount);
@@ -612,7 +256,7 @@ namespace TheVault.Patches
             // The AddItem POSTFIX will handle moving the item to vault after notification is shown
             if (ShouldAutoDeposit(item))
             {
-                if (DEBUG_LOGGING) Plugin.Log?.LogInfo($"OnPlayerPickupPrefix: item={item}, amount={amount} - will be auto-deposited via AddItem POSTFIX");
+                Plugin.Log?.LogInfo($"OnPlayerPickupPrefix: item={item}, amount={amount} - will be auto-deposited via AddItem POSTFIX");
             }
             return true;
         }
@@ -624,7 +268,7 @@ namespace TheVault.Patches
         public static void OnPlayerPickup(int item, int amount, bool rollForExtra)
         {
             // This postfix only runs if the prefix returned true (item was not auto-deposited)
-            if (DEBUG_LOGGING) Plugin.Log?.LogInfo($"OnPlayerPickup POSTFIX called: item={item}, amount={amount} (item added to inventory normally)");
+            Plugin.Log?.LogInfo($"OnPlayerPickup POSTFIX called: item={item}, amount={amount} (item added to inventory normally)");
         }
 
         /// <summary>
@@ -636,10 +280,9 @@ namespace TheVault.Patches
         {
             try
             {
-                if (IsProcessingAutoDeposit(itemId)) return;
-                if (WasRecentlyDeposited(itemId)) return;
+                if (_isProcessingAutoDeposit) return;
 
-                if (DEBUG_LOGGING) Plugin.Log?.LogInfo($"OnInventoryAddItem called: itemId={itemId}, amount={amount}");
+                Plugin.Log?.LogInfo($"OnInventoryAddItem called: itemId={itemId}, amount={amount}");
 
                 if (!ShouldAutoDeposit(itemId))
                 {
@@ -658,33 +301,30 @@ namespace TheVault.Patches
                     return;
                 }
 
-                StartProcessingAutoDeposit(itemId);
+                _isProcessingAutoDeposit = true;
                 try
                 {
-                    if (DEBUG_LOGGING) Plugin.Log?.LogInfo($"Auto-depositing {amount} of item {itemId} as {currencyId} (via Inventory.AddItem)");
+                    Plugin.Log?.LogInfo($"Auto-depositing {amount} of item {itemId} as {currencyId} (via Inventory.AddItem)");
 
-                    // Use cached reflection for performance
-                    InitializeReflectionCache();
-
-                    // Remove from inventory using cached method
-                    if (_cachedRemoveItemMethod != null)
+                    // Remove from inventory
+                    var invType = __instance.GetType();
+                    var removeMethod = AccessTools.Method(invType, "RemoveItem", new[] { typeof(int), typeof(int), typeof(int) });
+                    if (removeMethod != null)
                     {
-                        if (DEBUG_LOGGING) Plugin.Log?.LogInfo($"[DEBUG] OnInventoryAddItem - Calling cached RemoveItem({itemId}, {amount}, -1)...");
-                        _cachedRemoveItemMethod.Invoke(__instance, new object[] { itemId, amount, -1 });
+                        removeMethod.Invoke(__instance, new object[] { itemId, amount, -1 });
                     }
 
                     AddCurrencyToVault(vaultManager, currencyId, amount);
-                    MarkAsDeposited(itemId);
-                    if (DEBUG_LOGGING) Plugin.Log?.LogInfo($"Auto-deposited {amount} of item {itemId} as {currencyId}");
+                    Plugin.Log?.LogInfo($"Auto-deposited {amount} of item {itemId} as {currencyId}");
                 }
                 finally
                 {
-                    StopProcessingAutoDeposit(itemId);
+                    _isProcessingAutoDeposit = false;
                 }
             }
             catch (Exception ex)
             {
-                StopProcessingAutoDeposit(itemId);
+                _isProcessingAutoDeposit = false;
                 Plugin.Log?.LogError($"Error in OnInventoryAddItem: {ex.Message}\n{ex.StackTrace}");
             }
         }
@@ -698,10 +338,9 @@ namespace TheVault.Patches
         {
             try
             {
-                if (IsProcessingAutoDeposit(itemId)) return;
-                if (WasRecentlyDeposited(itemId)) return;
+                if (_isProcessingAutoDeposit) return;
 
-                if (DEBUG_LOGGING) Plugin.Log?.LogInfo($"OnInventoryAddItemWithNotify called: itemId={itemId}, amount={amount}, notify={notify}");
+                Plugin.Log?.LogInfo($"OnInventoryAddItemWithNotify called: itemId={itemId}, amount={amount}, notify={notify}");
 
                 if (!ShouldAutoDeposit(itemId))
                 {
@@ -720,395 +359,54 @@ namespace TheVault.Patches
                     return;
                 }
 
-                StartProcessingAutoDeposit(itemId);
+                _isProcessingAutoDeposit = true;
                 try
                 {
-                    if (DEBUG_LOGGING) Plugin.Log?.LogInfo($"Auto-depositing {amount} of item {itemId} as {currencyId} (via Inventory.AddItem with notify)");
+                    Plugin.Log?.LogInfo($"Auto-depositing {amount} of item {itemId} as {currencyId} (via Inventory.AddItem with notify)");
 
-                    // Use cached reflection for performance
-                    InitializeReflectionCache();
-
-                    // Remove from inventory using cached method
-                    if (_cachedRemoveItemMethod != null)
+                    // Remove from inventory
+                    var invType = __instance.GetType();
+                    var removeMethod = AccessTools.Method(invType, "RemoveItem", new[] { typeof(int), typeof(int), typeof(int) });
+                    if (removeMethod != null)
                     {
-                        if (DEBUG_LOGGING) Plugin.Log?.LogInfo($"[DEBUG] OnInventoryAddItemWithNotify - Calling cached RemoveItem({itemId}, {amount}, -1)...");
-                        _cachedRemoveItemMethod.Invoke(__instance, new object[] { itemId, amount, -1 });
+                        removeMethod.Invoke(__instance, new object[] { itemId, amount, -1 });
                     }
 
                     AddCurrencyToVault(vaultManager, currencyId, amount);
-                    MarkAsDeposited(itemId);
-                    if (DEBUG_LOGGING) Plugin.Log?.LogInfo($"Auto-deposited {amount} of item {itemId} as {currencyId}");
+                    Plugin.Log?.LogInfo($"Auto-deposited {amount} of item {itemId} as {currencyId}");
                 }
                 finally
                 {
-                    StopProcessingAutoDeposit(itemId);
+                    _isProcessingAutoDeposit = false;
                 }
             }
             catch (Exception ex)
             {
-                StopProcessingAutoDeposit(itemId);
+                _isProcessingAutoDeposit = false;
                 Plugin.Log?.LogError($"Error in OnInventoryAddItemWithNotify: {ex.Message}\n{ex.StackTrace}");
             }
         }
 
         /// <summary>
-        /// Set of item IDs currently being processed for auto-deposit.
-        /// Using a set instead of a boolean flag allows concurrent processing of different item types.
+        /// Flag to prevent recursive auto-deposit when we're adding items back to inventory during withdraw
         /// </summary>
-        private static HashSet<int> _processingAutoDepositItems = new HashSet<int>();
-
-        /// <summary>
-        /// Queue of pending deposits. Items are added here and processed after a short delay
-        /// to allow multiple stacks picked up simultaneously to be batched together.
-        /// Key: itemId, Value: (totalAmount, lastAddedTime)
-        /// </summary>
-        private static Dictionary<int, (int amount, DateTime addedTime)> _pendingDeposits = new Dictionary<int, (int, DateTime)>();
-
-        /// <summary>
-        /// Lock object for thread-safe access to pending deposits
-        /// </summary>
-        private static readonly object _pendingDepositsLock = new object();
-
-        /// <summary>
-        /// Delay (in milliseconds) before processing pending deposits.
-        /// This allows multiple stacks picked up at the same time to be batched.
-        /// </summary>
-        private const int DEPOSIT_BATCH_DELAY_MS = 100;
-
-        /// <summary>
-        /// Tracks items currently being processed to prevent re-entry
-        /// </summary>
-        private static HashSet<int> _currentlyProcessingDeposits = new HashSet<int>();
-
-        /// <summary>
-        /// Tracks recently deposited items with timestamps to prevent duplicate deposits
-        /// from multiple patched methods firing for the same pickup event.
-        /// Key: itemId, Value: DateTime of last deposit
-        /// </summary>
-        private static Dictionary<int, DateTime> _recentlyDepositedItems = new Dictionary<int, DateTime>();
-
-        /// <summary>
-        /// Time window (in milliseconds) to consider a deposit as "recent" and skip duplicate processing.
-        /// This should be long enough to cover multiple postfix methods firing for the same pickup event.
-        /// </summary>
-        private const int RECENT_DEPOSIT_WINDOW_MS = 500;
-
-        /// <summary>
-        /// Check if a specific item is currently being processed for auto-deposit
-        /// </summary>
-        private static bool IsProcessingAutoDeposit(int itemId)
-        {
-            return _processingAutoDepositItems.Contains(itemId);
-        }
-
-        /// <summary>
-        /// Check if an item was recently deposited (within RECENT_DEPOSIT_WINDOW_MS)
-        /// </summary>
-        private static bool WasRecentlyDeposited(int itemId)
-        {
-            if (_recentlyDepositedItems.Count == 0) return false;
-
-            if (_recentlyDepositedItems.TryGetValue(itemId, out DateTime lastDeposit))
-            {
-                double elapsed = (GetCachedNow() - lastDeposit).TotalMilliseconds;
-                if (elapsed < RECENT_DEPOSIT_WINDOW_MS)
-                {
-                    return true;
-                }
-                // Expired - clean up
-                _recentlyDepositedItems.Remove(itemId);
-            }
-            return false;
-        }
-
-        /// <summary>
-        /// Mark an item as recently deposited
-        /// </summary>
-        private static void MarkAsDeposited(int itemId)
-        {
-            _recentlyDepositedItems[itemId] = GetCachedNow();
-        }
-
-        /// <summary>
-        /// Mark an item as being processed for auto-deposit
-        /// </summary>
-        private static void StartProcessingAutoDeposit(int itemId)
-        {
-            _processingAutoDepositItems.Add(itemId);
-        }
-
-        /// <summary>
-        /// Mark an item as no longer being processed for auto-deposit
-        /// </summary>
-        private static void StopProcessingAutoDeposit(int itemId)
-        {
-            _processingAutoDepositItems.Remove(itemId);
-        }
-
-        /// <summary>
-        /// PREFIX patch for Inventory.AddItem(Item, int, int, bool, bool, bool).
-        /// This is the actual method called by Wish.Pickup when items are collected from the ground.
-        /// Signature: AddItem(Item item, int amount, int slot, bool sendNotification, bool specialItem, bool superSecretCheck)
-        /// We use PREFIX to intercept BEFORE the item enters inventory, deposit directly to vault, and skip the original method.
-        /// PERFORMANCE: This runs on EVERY item pickup so it must be as fast as possible.
-        /// </summary>
-        /// <returns>False to skip original method (item goes directly to vault), True to let original run normally</returns>
-        public static bool OnInventoryAddItemObjectPrefix(object __instance, object item, int amount, int slot, bool sendNotification, bool specialItem, bool superSecretCheck)
-        {
-            // Use fast item ID lookup
-            int itemId = GetItemIdFast(item);
-
-            try
-            {
-                // Skip if we're currently processing a withdrawal for this item
-                if (IsWithdrawing) return true;
-                if (IsItemBeingWithdrawn(itemId)) return true;
-
-                // Skip if not registered for auto-deposit
-                if (!ShouldAutoDeposit(itemId)) return true;
-
-                string currencyId = GetCurrencyForItem(itemId);
-                if (string.IsNullOrEmpty(currencyId)) return true;
-
-                var vaultManager = Plugin.GetVaultManager();
-                if (vaultManager == null) return true;
-
-                if (DEBUG_LOGGING) Plugin.Log?.LogInfo($"[PREFIX] Intercepting {amount} of item {itemId} - depositing directly to vault as {currencyId}");
-
-                // Mark as deposited IMMEDIATELY to prevent POSTFIX from also depositing
-                MarkAsDeposited(itemId);
-
-                // Add directly to vault - item never enters inventory
-                AddCurrencyToVault(vaultManager, currencyId, amount);
-                if (DEBUG_LOGGING) Plugin.Log?.LogInfo($"[PREFIX] Deposited {amount} of item {itemId} to vault");
-
-                // Show notification using the game's native notification system
-                // We pass the item object directly to trigger the same notification the player would see
-                if (sendNotification)
-                {
-                    TriggerPickupNotification(item, amount);
-                }
-
-                // Return FALSE to skip the original AddItem method - item goes directly to vault
-                return false;
-            }
-            catch (Exception ex)
-            {
-                Plugin.Log?.LogError($"Error in OnInventoryAddItemObjectPrefix: {ex.Message}");
-                // On error, let the original method run
-                return true;
-            }
-        }
-
-        /// <summary>
-        /// Cached reference to NotificationStack instance
-        /// </summary>
-        private static object _notificationStackInstance;
-        private static MethodInfo _addNotificationMethod;
-        private static bool _notificationSystemInitialized;
-
-        /// <summary>
-        /// Trigger the game's native pickup notification for an item.
-        /// Uses NotificationStack.SendNotification(string text, int id, int amount, bool unique, bool error)
-        /// </summary>
-        private static void TriggerPickupNotification(object item, int amount)
-        {
-            try
-            {
-                int itemId = GetItemIdFast(item);
-
-                // Initialize notification system on first use
-                if (!_notificationSystemInitialized)
-                {
-                    InitializeNotificationSystem();
-                    _notificationSystemInitialized = true;
-                }
-
-                // Try to get instance at runtime if we don't have it yet
-                if (_notificationStackInstance == null && _addNotificationMethod != null)
-                {
-                    TryGetNotificationStackInstance();
-                }
-
-                // Use SendNotification(string text, int id, int amount, bool unique, bool error)
-                if (_addNotificationMethod != null && _notificationStackInstance != null)
-                {
-                    try
-                    {
-                        string itemName = GetItemDisplayName(itemId);
-                        // Parameters: text (item name), id (item ID), amount, unique (false = can stack), error (false = not an error)
-                        _addNotificationMethod.Invoke(_notificationStackInstance, new object[] { itemName, itemId, amount, false, false });
-                        if (DEBUG_LOGGING) Plugin.Log?.LogInfo($"[NOTIFY] Sent notification: {amount}x {itemName} (id={itemId})");
-                        return;
-                    }
-                    catch (Exception ex)
-                    {
-                        Plugin.Log?.LogWarning($"[NOTIFY] SendNotification failed: {ex.Message}");
-                    }
-                }
-
-                // Fallback: log only
-                string fallbackName = GetItemDisplayName(itemId);
-                if (DEBUG_LOGGING) Plugin.Log?.LogInfo($"[NOTIFY] Auto-deposited {amount}x {fallbackName} to vault (notification unavailable)");
-            }
-            catch (Exception ex)
-            {
-                Plugin.Log?.LogError($"[NOTIFY] Error triggering notification: {ex.Message}");
-            }
-        }
-
-        /// <summary>
-        /// Try to get the NotificationStack instance at runtime
-        /// </summary>
-        private static void TryGetNotificationStackInstance()
-        {
-            try
-            {
-                var notificationStackType = AccessTools.TypeByName("Wish.NotificationStack");
-                if (notificationStackType == null) return;
-
-                // Try SingletonBehaviour<NotificationStack>.Instance
-                var singletonType = AccessTools.TypeByName("Wish.SingletonBehaviour`1");
-                if (singletonType != null)
-                {
-                    var genericSingleton = singletonType.MakeGenericType(notificationStackType);
-                    var instanceProp = AccessTools.Property(genericSingleton, "Instance");
-                    if (instanceProp != null)
-                    {
-                        _notificationStackInstance = instanceProp.GetValue(null);
-                        if (_notificationStackInstance != null)
-                        {
-                            Plugin.Log?.LogInfo("[NOTIFY] Got NotificationStack instance at runtime via SingletonBehaviour");
-                            return;
-                        }
-                    }
-                }
-
-                // Try FindObjectOfType as fallback
-                var findMethod = typeof(UnityEngine.Object).GetMethod("FindObjectOfType", Type.EmptyTypes);
-                if (findMethod != null)
-                {
-                    var genericFind = findMethod.MakeGenericMethod(notificationStackType);
-                    _notificationStackInstance = genericFind.Invoke(null, null);
-                    if (_notificationStackInstance != null)
-                    {
-                        Plugin.Log?.LogInfo("[NOTIFY] Got NotificationStack instance at runtime via FindObjectOfType");
-                    }
-                }
-            }
-            catch (Exception ex)
-            {
-                Plugin.Log?.LogWarning($"[NOTIFY] Failed to get NotificationStack instance: {ex.Message}");
-            }
-        }
-
-        /// <summary>
-        /// Initialize the notification system by finding the correct types and methods.
-        /// Sun Haven uses: NotificationStack.SendNotification(string text, int id, int amount, bool unique, bool error)
-        /// Access via SingletonBehaviour&lt;NotificationStack&gt;.Instance
-        /// </summary>
-        private static void InitializeNotificationSystem()
-        {
-            try
-            {
-                Plugin.Log?.LogInfo("[NOTIFY] Initializing notification system...");
-
-                // NotificationStack is accessed via SingletonBehaviour<NotificationStack>.Instance
-                // The method signature is: SendNotification(string text, int id, int amount, bool unique, bool error)
-                var notificationStackType = AccessTools.TypeByName("Wish.NotificationStack");
-                if (notificationStackType == null)
-                {
-                    Plugin.Log?.LogWarning("[NOTIFY] NotificationStack type not found");
-                    return;
-                }
-
-                if (DEBUG_LOGGING) Plugin.Log?.LogInfo($"[NOTIFY] Found NotificationStack type: {notificationStackType.FullName}");
-
-                // Try to get instance via SingletonBehaviour<NotificationStack>.Instance
-                var singletonType = AccessTools.TypeByName("Wish.SingletonBehaviour`1");
-                if (singletonType != null)
-                {
-                    var genericSingleton = singletonType.MakeGenericType(notificationStackType);
-                    var instanceProp = AccessTools.Property(genericSingleton, "Instance");
-                    if (instanceProp != null)
-                    {
-                        _notificationStackInstance = instanceProp.GetValue(null);
-                        if (DEBUG_LOGGING) Plugin.Log?.LogInfo($"[NOTIFY] Got NotificationStack via SingletonBehaviour: {(_notificationStackInstance != null ? "success" : "null")}");
-                    }
-                }
-
-                // Fallback: try direct Instance property
-                if (_notificationStackInstance == null)
-                {
-                    var directInstanceProp = AccessTools.Property(notificationStackType, "Instance");
-                    if (directInstanceProp != null)
-                    {
-                        _notificationStackInstance = directInstanceProp.GetValue(null);
-                        if (DEBUG_LOGGING) Plugin.Log?.LogInfo($"[NOTIFY] Got NotificationStack via direct Instance: {(_notificationStackInstance != null ? "success" : "null")}");
-                    }
-                }
-
-                // Fallback: try to find it via UnityEngine.Object.FindObjectOfType
-                if (_notificationStackInstance == null)
-                {
-                    var findMethod = typeof(UnityEngine.Object).GetMethod("FindObjectOfType", new Type[0]);
-                    if (findMethod != null)
-                    {
-                        var genericFind = findMethod.MakeGenericMethod(notificationStackType);
-                        _notificationStackInstance = genericFind.Invoke(null, null);
-                        if (DEBUG_LOGGING) Plugin.Log?.LogInfo($"[NOTIFY] Got NotificationStack via FindObjectOfType: {(_notificationStackInstance != null ? "success" : "null")}");
-                    }
-                }
-
-                if (_notificationStackInstance == null)
-                {
-                    Plugin.Log?.LogWarning("[NOTIFY] Could not get NotificationStack instance - will try at runtime");
-                }
-
-                // Find SendNotification method: SendNotification(string text, int id, int amount, bool unique, bool error)
-                _addNotificationMethod = AccessTools.Method(notificationStackType, "SendNotification",
-                    new[] { typeof(string), typeof(int), typeof(int), typeof(bool), typeof(bool) });
-
-                if (_addNotificationMethod != null)
-                {
-                    Plugin.Log?.LogInfo("[NOTIFY] Found SendNotification(string, int, int, bool, bool) method");
-                }
-                else
-                {
-                    Plugin.Log?.LogWarning("[NOTIFY] Could not find SendNotification method");
-                }
-            }
-            catch (Exception ex)
-            {
-                Plugin.Log?.LogError($"[NOTIFY] Error initializing notification system: {ex.Message}");
-            }
-        }
+        private static bool _isProcessingAutoDeposit = false;
 
         /// <summary>
         /// POSTFIX patch for Inventory.AddItem(Item, int, int, bool, bool, bool).
-        /// This is kept as a backup/fallback in case the PREFIX doesn't fire or returns true.
-        /// NOTE: If PREFIX handled the deposit (returned false), this POSTFIX should NOT run because
-        /// the original method was skipped. However, we keep the WasRecentlyDeposited check as a safety measure.
+        /// This is the actual method called by Wish.Pickup when items are collected from the ground.
         /// Signature: AddItem(Item item, int amount, int slot, bool sendNotification, bool specialItem, bool superSecretCheck)
+        /// We use POSTFIX so the original method runs first (showing the notification), then we move the item to vault.
         /// </summary>
         public static void OnInventoryAddItemObjectPostfix(object __instance, object item, int amount, int slot, bool sendNotification, bool specialItem, bool superSecretCheck)
         {
-            // Get the item ID from the Item object first so we can use item-specific tracking
-            int itemId = GetItemIdFast(item);
-
             try
             {
-                // IMPORTANT: If PREFIX already handled this item and returned false, this POSTFIX should not run.
-                // But if it somehow does run (e.g., PREFIX returned true), check if it was recently deposited.
-                if (WasRecentlyDeposited(itemId))
-                {
-                    Plugin.Log?.LogInfo($"[POSTFIX] Item {itemId} was recently deposited by PREFIX, skipping");
-                    return;
-                }
+                // Prevent recursive calls when we're doing withdrawals or other operations
+                if (_isProcessingAutoDeposit) return;
 
-                // Prevent recursive calls when we're doing withdrawals or other operations for THIS specific item
-                if (IsProcessingAutoDeposit(itemId)) return;
-
+                // Get the item ID from the Item object
+                int itemId = GetItemId(item);
                 Plugin.Log?.LogInfo($"OnInventoryAddItemObjectPostfix called: itemId={itemId}, amount={amount}, sendNotification={sendNotification}");
 
                 if (!ShouldAutoDeposit(itemId))
@@ -1129,154 +427,26 @@ namespace TheVault.Patches
                 {
                     Plugin.Log?.LogWarning("VaultManager is null");
                     return;
+                    return;
                 }
 
-                if (DEBUG_LOGGING) Plugin.Log?.LogInfo($"Auto-depositing {amount} of item {itemId} as {currencyId} (via Inventory.AddItem POSTFIX)");
+                Plugin.Log?.LogInfo($"Auto-depositing {amount} of item {itemId} as {currencyId} (via Inventory.AddItem with Item object)");
 
-                // Mark as deposited IMMEDIATELY before any processing to prevent duplicate calls
-                // that happen on the same frame/call stack
-                MarkAsDeposited(itemId);
+                // Auto-deposit: directly add to vault, skip adding to inventory
+                AddCurrencyToVault(vaultManager, currencyId, amount);
+                Plugin.Log?.LogInfo($"Auto-deposited {amount} of item {itemId} as {currencyId}");
 
-                StartProcessingAutoDeposit(itemId);
-                try
-                {
-                    // The item is now in inventory (and notification was shown if sendNotification was true)
-                    // Now remove it from inventory and add to vault
+                // Show notification
+                ShowAutoDepositNotification(currencyId, amount);
 
-                    // IMPORTANT: We must use the PLAYER's inventory, not __instance which might be
-                    // a different inventory (chest, shop, etc.). The postfix fires on any Inventory.AddItem call.
-                    // Use cached reflection for performance
-                    InitializeReflectionCache();
-                    object playerInventory = GetPlayerInventoryCached();
-                    if (playerInventory == null)
-                    {
-                        if (DEBUG_LOGGING) Plugin.Log?.LogWarning("[DEBUG] Could not get player inventory - using __instance as fallback");
-                        playerInventory = __instance;
-                    }
-
-                    // Use cached methods for performance (avoid AccessTools.Method on every call)
-                    // Remove from player's inventory using cached RemoveAll or RemoveItem method
-                    if (_cachedRemoveAllMethod != null)
-                    {
-                        if (DEBUG_LOGGING) Plugin.Log?.LogInfo($"[DEBUG] Calling cached RemoveAll({itemId}) on player inventory...");
-                        _cachedRemoveAllMethod.Invoke(playerInventory, new object[] { itemId });
-                    }
-                    else if (_cachedRemoveItemMethod != null)
-                    {
-                        try
-                        {
-                            if (DEBUG_LOGGING) Plugin.Log?.LogInfo($"[DEBUG] Calling cached RemoveItem({itemId}, {amount}, -1) on player inventory...");
-                            _cachedRemoveItemMethod.Invoke(playerInventory, new object[] { itemId, amount, -1 });
-                        }
-                        catch (Exception removeEx)
-                        {
-                            var innerEx = removeEx.InnerException ?? removeEx;
-                            Plugin.Log?.LogError($"RemoveItem failed: {innerEx.Message}");
-                            return;
-                        }
-                    }
-                    else
-                    {
-                        Plugin.Log?.LogWarning("No cached RemoveItem or RemoveAll method available");
-                        return;
-                    }
-
-                    // Add to vault (already marked as deposited at the start of processing)
-                    AddCurrencyToVault(vaultManager, currencyId, amount);
-                    if (DEBUG_LOGGING) Plugin.Log?.LogInfo($"Auto-deposited {amount} of item {itemId} as {currencyId} to vault");
-                }
-                finally
-                {
-                    StopProcessingAutoDeposit(itemId);
-                }
+                // Return false to SKIP the original AddItem method - item goes straight to vault
+                return false;
             }
             catch (Exception ex)
             {
-                StopProcessingAutoDeposit(itemId);
-                // Get inner exception for better error message
-                var innerEx = ex.InnerException ?? ex;
-                Plugin.Log?.LogError($"Error in OnInventoryAddItemObjectPostfix: {innerEx.Message}\n{innerEx.StackTrace}");
-            }
-        }
-
-        /// <summary>
-        /// Get the player's inventory object. This ensures we always operate on the player's
-        /// actual inventory rather than some other inventory instance (chest, shop, etc.)
-        /// </summary>
-        private static object GetPlayerInventory()
-        {
-            try
-            {
-                // Get LocalPlayer via reflection
-                var playerType = typeof(Wish.Player);
-                var localPlayerProperty = AccessTools.Property(playerType, "LocalPlayer");
-                if (localPlayerProperty == null)
-                {
-                    // Try Instance as fallback
-                    localPlayerProperty = AccessTools.Property(playerType, "Instance");
-                }
-                if (localPlayerProperty == null)
-                {
-                    Plugin.Log?.LogWarning("[DEBUG] GetPlayerInventory: Could not find LocalPlayer or Instance property");
-                    return null;
-                }
-
-                var player = localPlayerProperty.GetValue(null);
-                if (player == null)
-                {
-                    Plugin.Log?.LogWarning("[DEBUG] GetPlayerInventory: LocalPlayer is null");
-                    return null;
-                }
-
-                // Try various property/field names for the inventory
-                var inventoryProperty = AccessTools.Property(playerType, "Inventory");
-                if (inventoryProperty != null)
-                {
-                    var inv = inventoryProperty.GetValue(player);
-                    if (inv != null)
-                    {
-                        if (DEBUG_LOGGING) Plugin.Log?.LogInfo($"[DEBUG] GetPlayerInventory: Found via Inventory property");
-                        return inv;
-                    }
-                }
-
-                var playerInventoryProperty = AccessTools.Property(playerType, "PlayerInventory");
-                if (playerInventoryProperty != null)
-                {
-                    var inv = playerInventoryProperty.GetValue(player);
-                    if (inv != null)
-                    {
-                        if (DEBUG_LOGGING) Plugin.Log?.LogInfo($"[DEBUG] GetPlayerInventory: Found via PlayerInventory property");
-                        return inv;
-                    }
-                }
-
-                // Try fields
-                var inventoryField = AccessTools.Field(playerType, "inventory");
-                if (inventoryField == null)
-                    inventoryField = AccessTools.Field(playerType, "_inventory");
-                if (inventoryField == null)
-                    inventoryField = AccessTools.Field(playerType, "playerInventory");
-                if (inventoryField == null)
-                    inventoryField = AccessTools.Field(playerType, "_playerInventory");
-
-                if (inventoryField != null)
-                {
-                    var inv = inventoryField.GetValue(player);
-                    if (inv != null)
-                    {
-                        if (DEBUG_LOGGING) Plugin.Log?.LogInfo($"[DEBUG] GetPlayerInventory: Found via {inventoryField.Name} field");
-                        return inv;
-                    }
-                }
-
-                Plugin.Log?.LogWarning("[DEBUG] GetPlayerInventory: Could not find inventory on player");
-                return null;
-            }
-            catch (Exception ex)
-            {
-                Plugin.Log?.LogError($"[DEBUG] GetPlayerInventory error: {ex.Message}");
-                return null;
+                Plugin.Log?.LogError($"Error in OnInventoryAddItemObject: {ex.Message}\n{ex.StackTrace}");
+                // On error, let the original method run
+                return true;
             }
         }
 
@@ -1420,7 +590,7 @@ namespace TheVault.Patches
                 if (removeMethod != null)
                 {
                     var result = removeMethod.Invoke(player, new object[] { itemId, amount });
-                    if (DEBUG_LOGGING) Plugin.Log?.LogInfo($"RemoveItem via Player returned: {result}");
+                    Plugin.Log?.LogInfo($"RemoveItem via Player returned: {result}");
                     return result is bool b && b;
                 }
 
@@ -1453,7 +623,7 @@ namespace TheVault.Patches
                     if (invRemoveMethod != null)
                     {
                         var result = invRemoveMethod.Invoke(inventory, new object[] { itemId, amount });
-                        if (DEBUG_LOGGING) Plugin.Log?.LogInfo($"RemoveItem(int,int) returned: {result}");
+                        Plugin.Log?.LogInfo($"RemoveItem(int,int) returned: {result}");
                         return result is bool b ? b : true;
                     }
 
@@ -1462,7 +632,7 @@ namespace TheVault.Patches
                     if (invRemoveMethod != null)
                     {
                         var result = invRemoveMethod.Invoke(inventory, new object[] { itemId, amount, false });
-                        if (DEBUG_LOGGING) Plugin.Log?.LogInfo($"RemoveItem(int,int,bool) returned: {result}");
+                        Plugin.Log?.LogInfo($"RemoveItem(int,int,bool) returned: {result}");
                         return result is bool b ? b : true;
                     }
 
@@ -1471,7 +641,7 @@ namespace TheVault.Patches
                     if (invRemoveMethod != null)
                     {
                         var result = invRemoveMethod.Invoke(inventory, new object[] { itemId, amount });
-                        if (DEBUG_LOGGING) Plugin.Log?.LogInfo($"RemoveItemAmount returned: {result}");
+                        Plugin.Log?.LogInfo($"RemoveItemAmount returned: {result}");
                         return result is bool b ? b : true;
                     }
 
@@ -1571,9 +741,9 @@ namespace TheVault.Patches
             {
                 vaultManager.AddKeys(currencyId.Substring("key_".Length), amount);
             }
-            else if (currencyId.StartsWith("special_"))
+            else if (currencyId.StartsWith("ticket_"))
             {
-                vaultManager.AddSpecial(currencyId.Substring("special_".Length), amount);
+                vaultManager.AddTickets(currencyId.Substring("ticket_".Length), amount);
             }
             else if (currencyId.StartsWith("orb_"))
             {
@@ -1602,10 +772,14 @@ namespace TheVault.Patches
             else if (currencyId.StartsWith("key_"))
             {
                 return vaultManager.RemoveKeys(currencyId.Substring("key_".Length), amount);
-            }            
-            else if (currencyId.StartsWith("special_"))
+            }
+            else if (currencyId.StartsWith("ticket_"))
             {
-                return vaultManager.RemoveSpecial(currencyId.Substring("special_".Length), amount);
+                return vaultManager.RemoveTickets(currencyId.Substring("ticket_".Length), amount);
+            }
+            else if (currencyId.StartsWith("orb_"))
+            {
+                return vaultManager.RemoveOrbs(currencyId.Substring("orb_".Length), amount);
             }
             else if (currencyId.StartsWith("custom_"))
             {
@@ -1647,9 +821,9 @@ namespace TheVault.Patches
             {
                 return vaultManager.GetKeys(currencyId.Substring("key_".Length));
             }
-            else if (currencyId.StartsWith("special_"))
+            else if (currencyId.StartsWith("ticket_"))
             {
-                return vaultManager.GetSpecial(currencyId.Substring("special_".Length));
+                return vaultManager.GetTickets(currencyId.Substring("ticket_".Length));
             }
             else if (currencyId.StartsWith("orb_"))
             {
@@ -1678,8 +852,8 @@ namespace TheVault.Patches
                 bool autoDeposit = _currencyAutoDeposit.TryGetValue(kvp.Value, out var enabled) && enabled;
                 Plugin.Log?.LogInfo($"  Item {kvp.Key} -> {kvp.Value} (auto-deposit: {autoDeposit})");
             }
-            if (DEBUG_LOGGING) Plugin.Log?.LogInfo($"[DEBUG] Total mappings: {_itemToCurrency.Count}");
-            if (DEBUG_LOGGING) Plugin.Log?.LogInfo($"[DEBUG] Auto-deposit enabled: {AutoDepositEnabled}");
+            Plugin.Log?.LogInfo($"[DEBUG] Total mappings: {_itemToCurrency.Count}");
+            Plugin.Log?.LogInfo($"[DEBUG] Auto-deposit enabled: {AutoDepositEnabled}");
         }
 
         /// <summary>
@@ -1750,8 +924,8 @@ namespace TheVault.Patches
             __state = 0;
             try
             {
-                // Skip vault logic when we're doing auto-deposit removal for this specific item
-                if (IsProcessingAutoDeposit(id)) return;
+                // Skip vault logic when we're doing auto-deposit removal
+                if (_isProcessingAutoDeposit) return;
 
                 if (!IsVaultCurrency(id)) return;
 
@@ -1770,7 +944,7 @@ namespace TheVault.Patches
                     {
                         _skipVaultInGetAmount = false;
                     }
-                    if (DEBUG_LOGGING) Plugin.Log?.LogInfo($"RemoveItem prefix: item {id}, rawInventory={__state}, requestedAmount={amount}");
+                    Plugin.Log?.LogInfo($"RemoveItem prefix: item {id}, rawInventory={__state}, requestedAmount={amount}");
                 }
             }
             catch (Exception ex)
@@ -1788,8 +962,8 @@ namespace TheVault.Patches
         {
             try
             {
-                // Skip vault logic when we're doing auto-deposit removal for this specific item
-                if (IsProcessingAutoDeposit(id)) return;
+                // Skip vault logic when we're doing auto-deposit removal
+                if (_isProcessingAutoDeposit) return;
 
                 if (!IsVaultCurrency(id)) return;
 
@@ -1798,7 +972,7 @@ namespace TheVault.Patches
                 // If inventory had enough, nothing to do with vault
                 if (inventoryHadBefore >= amount)
                 {
-                    if (DEBUG_LOGGING) Plugin.Log?.LogInfo($"RemoveItem postfix: item {id}, inventory had enough ({inventoryHadBefore} >= {amount})");
+                    Plugin.Log?.LogInfo($"RemoveItem postfix: item {id}, inventory had enough ({inventoryHadBefore} >= {amount})");
                     return;
                 }
 
@@ -1816,7 +990,7 @@ namespace TheVault.Patches
                 {
                     // Deduct from vault
                     bool removed = RemoveCurrencyFromVault(vaultManager, currencyId, fromVault);
-                    if (DEBUG_LOGGING) Plugin.Log?.LogInfo($"RemoveItem postfix: deducted {fromVault} of item {id} from vault (success={removed})");
+                    Plugin.Log?.LogInfo($"RemoveItem postfix: deducted {fromVault} of item {id} from vault (success={removed})");
                 }
                 else if (fromVault > 0)
                 {
@@ -2119,166 +1293,161 @@ namespace TheVault.Patches
 
         /// <summary>
         /// Get an Item object from the game's database by ID.
-        /// Uses cached reflection for performance.
         /// </summary>
         private static object GetItemObject(int itemId)
         {
-            // Initialize caches
-            InitializeReflectionCache();
-            InitializeDatabaseCache();
-
             try
             {
-                // Try Database.GetItem using cached method
-                if (_cachedDatabaseGetItemMethod != null)
+                // Try Database.GetData<Item>(itemId)
+                var databaseType = AccessTools.TypeByName("Wish.Database");
+                if (databaseType != null)
                 {
-                    var item = _cachedDatabaseGetItemMethod.Invoke(null, new object[] { itemId });
-                    if (item != null)
+                    var itemType = AccessTools.TypeByName("Wish.Item");
+                    if (itemType != null)
                     {
-                        if (DEBUG_LOGGING) Plugin.Log?.LogInfo($"Got Item object via Database.GetItem({itemId})");
-                        return item;
+                        // Try GetData<T> generic method
+                        var getDataMethod = databaseType.GetMethod("GetData", new[] { typeof(int) });
+                        if (getDataMethod != null && getDataMethod.IsGenericMethod)
+                        {
+                            var genericMethod = getDataMethod.MakeGenericMethod(itemType);
+                            var item = genericMethod.Invoke(null, new object[] { itemId });
+                            if (item != null)
+                            {
+                                Plugin.Log?.LogInfo($"Got Item object via Database.GetData<Item>({itemId})");
+                                return item;
+                            }
+                        }
+
+                        // Try GetItem static method
+                        var getItemMethod = AccessTools.Method(databaseType, "GetItem", new[] { typeof(int) });
+                        if (getItemMethod != null)
+                        {
+                            var item = getItemMethod.Invoke(null, new object[] { itemId });
+                            if (item != null)
+                            {
+                                Plugin.Log?.LogInfo($"Got Item object via Database.GetItem({itemId})");
+                                return item;
+                            }
+                        }
                     }
                 }
 
-                // Try ItemDatabase.Instance.GetItem using cached method
-                if (_cachedItemDatabaseInstanceProp != null && _cachedItemDatabaseGetItemMethod != null)
+                // Try ItemDatabase.Instance.GetItem
+                var itemDbType = AccessTools.TypeByName("Wish.ItemDatabase");
+                if (itemDbType != null)
                 {
-                    var instance = _cachedItemDatabaseInstanceProp.GetValue(null);
-                    if (instance != null)
+                    var instanceProp = AccessTools.Property(itemDbType, "Instance");
+                    if (instanceProp != null)
                     {
-                        var item = _cachedItemDatabaseGetItemMethod.Invoke(instance, new object[] { itemId });
-                        if (item != null)
+                        var instance = instanceProp.GetValue(null);
+                        if (instance != null)
                         {
-                            if (DEBUG_LOGGING) Plugin.Log?.LogInfo($"Got Item object via ItemDatabase.GetItem({itemId})");
-                            return item;
+                            var getItemMethod = AccessTools.Method(itemDbType, "GetItem", new[] { typeof(int) });
+                            if (getItemMethod != null)
+                            {
+                                var item = getItemMethod.Invoke(instance, new object[] { itemId });
+                                if (item != null)
+                                {
+                                    Plugin.Log?.LogInfo($"Got Item object via ItemDatabase.GetItem({itemId})");
+                                    return item;
+                                }
+                            }
                         }
                     }
                 }
             }
             catch (Exception ex)
             {
-                if (DEBUG_LOGGING) Plugin.Log?.LogError($"GetItemObject error: {ex.Message}");
+                Plugin.Log?.LogError($"GetItemObject error: {ex.Message}");
             }
             return null;
         }
 
         /// <summary>
         /// Get display name for an item ID using the game's item database.
-        /// Uses cached reflection and caches item names for performance.
         /// </summary>
         private static string GetItemDisplayName(int itemId)
         {
-            // Check cache first - fastest path
-            if (_itemNameCache.TryGetValue(itemId, out string cachedName))
-            {
-                return cachedName;
-            }
-
-            // Initialize database cache on first use
-            InitializeReflectionCache();
-            InitializeDatabaseCache();
-
-            string foundName = null;
-
             try
             {
-                // Try Database.GetItem using cached method
-                if (_cachedDatabaseGetItemMethod != null)
+                // Try to get item name from database
+                var databaseType = AccessTools.TypeByName("Wish.Database");
+                if (databaseType != null)
                 {
-                    var item = _cachedDatabaseGetItemMethod.Invoke(null, new object[] { itemId });
-                    if (item != null)
+                    var getItemMethod = AccessTools.Method(databaseType, "GetItem", new[] { typeof(int) });
+                    if (getItemMethod != null)
                     {
-                        foundName = GetItemNameFromObject(item);
+                        var item = getItemMethod.Invoke(null, new object[] { itemId });
+                        if (item != null)
+                        {
+                            var nameProperty = AccessTools.Property(item.GetType(), "name");
+                            if (nameProperty == null)
+                                nameProperty = AccessTools.Property(item.GetType(), "Name");
+                            if (nameProperty == null)
+                                nameProperty = AccessTools.Property(item.GetType(), "itemName");
+                            if (nameProperty == null)
+                                nameProperty = AccessTools.Property(item.GetType(), "ItemName");
+
+                            if (nameProperty != null)
+                            {
+                                var name = nameProperty.GetValue(item) as string;
+                                if (!string.IsNullOrEmpty(name))
+                                    return name;
+                            }
+                        }
                     }
                 }
 
-                // Try ItemDatabase.Instance.GetItem using cached method
-                if (foundName == null && _cachedItemDatabaseInstanceProp != null && _cachedItemDatabaseGetItemMethod != null)
+                // Try ItemDatabase
+                var itemDbType = AccessTools.TypeByName("Wish.ItemDatabase");
+                if (itemDbType != null)
                 {
-                    var instance = _cachedItemDatabaseInstanceProp.GetValue(null);
-                    if (instance != null)
+                    var instanceProp = AccessTools.Property(itemDbType, "Instance");
+                    if (instanceProp != null)
                     {
-                        var item = _cachedItemDatabaseGetItemMethod.Invoke(instance, new object[] { itemId });
-                        if (item != null)
+                        var instance = instanceProp.GetValue(null);
+                        if (instance != null)
                         {
-                            foundName = GetItemNameFromObject(item);
+                            var getItemMethod = AccessTools.Method(itemDbType, "GetItem", new[] { typeof(int) });
+                            if (getItemMethod != null)
+                            {
+                                var item = getItemMethod.Invoke(instance, new object[] { itemId });
+                                if (item != null)
+                                {
+                                    var nameProp = AccessTools.Property(item.GetType(), "name") ??
+                                                   AccessTools.Property(item.GetType(), "Name") ??
+                                                   AccessTools.Property(item.GetType(), "itemName");
+                                    if (nameProp != null)
+                                    {
+                                        var name = nameProp.GetValue(item) as string;
+                                        if (!string.IsNullOrEmpty(name))
+                                            return name;
+                                    }
+                                }
+                            }
                         }
                     }
                 }
             }
             catch (Exception ex)
             {
-                if (DEBUG_LOGGING) Plugin.Log?.LogError($"Error getting item name: {ex.Message}");
+                Plugin.Log?.LogError($"Error getting item name: {ex.Message}");
             }
 
             // Fallback: format from currency ID
-            if (string.IsNullOrEmpty(foundName))
+            string currencyId = GetCurrencyForItem(itemId);
+            if (!string.IsNullOrEmpty(currencyId) && currencyId.Contains("_"))
             {
-                string currencyId = GetCurrencyForItem(itemId);
-                if (!string.IsNullOrEmpty(currencyId) && currencyId.Contains("_"))
+                string[] parts = currencyId.Split('_');
+                if (parts.Length >= 2)
                 {
-                    string[] parts = currencyId.Split('_');
-                    if (parts.Length >= 2)
-                    {
-                        string name = parts[1];
-                        // Capitalize first letter
-                        foundName = char.ToUpper(name[0]) + name.Substring(1);
-                    }
+                    string name = parts[1];
+                    // Capitalize first letter
+                    return char.ToUpper(name[0]) + name.Substring(1);
                 }
             }
 
-            // Final fallback
-            if (string.IsNullOrEmpty(foundName))
-            {
-                foundName = $"Item {itemId}";
-            }
-
-            // Cache the result for future lookups
-            _itemNameCache[itemId] = foundName;
-            return foundName;
-        }
-
-        /// <summary>
-        /// Extract item name from an item object using cached property.
-        /// </summary>
-        private static string GetItemNameFromObject(object item)
-        {
-            if (item == null) return null;
-
-            try
-            {
-                // Use cached property if available
-                if (_cachedItemNameProperty != null)
-                {
-                    var name = _cachedItemNameProperty.GetValue(item) as string;
-                    if (!string.IsNullOrEmpty(name))
-                        return name;
-                }
-
-                // Fallback: try to find the property on this specific type
-                var itemType = item.GetType();
-                var nameProp = AccessTools.Property(itemType, "name") ??
-                               AccessTools.Property(itemType, "Name") ??
-                               AccessTools.Property(itemType, "itemName") ??
-                               AccessTools.Property(itemType, "ItemName");
-
-                if (nameProp != null)
-                {
-                    // Cache it for future use if we found one
-                    if (_cachedItemNameProperty == null)
-                        _cachedItemNameProperty = nameProp;
-
-                    var name = nameProp.GetValue(item) as string;
-                    if (!string.IsNullOrEmpty(name))
-                        return name;
-                }
-            }
-            catch
-            {
-                // Silently fail, return null
-            }
-
-            return null;
+            return $"Item {itemId}";
         }
     }
 }

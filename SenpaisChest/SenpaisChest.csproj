@@ -87,6 +87,18 @@
     </Reference>
   </ItemGroup>
 
+  <!-- Soft Dependencies: SMUT + SunhavenTodo (optional integration) -->
+  <ItemGroup>
+    <Reference Include="SunHavenMuseumUtilityTracker">
+      <HintPath>..\builds\SunHavenMuseumUtilityTracker\SunHavenMuseumUtilityTracker.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
+    <Reference Include="SunhavenTodo">
+      <HintPath>..\builds\SunhavenTodo\SunhavenTodo.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
+  </ItemGroup>
+
   <!-- Shared Utilities (linked files) -->
   <ItemGroup>
     <Compile Include="..\SharedUtilities\VersionChecker.cs" Link="Shared\VersionChecker.cs" />
