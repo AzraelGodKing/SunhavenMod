@@ -1,8 +1,9 @@
 using System;
 using System.Collections.Generic;
+using HarmonyLib;
+using SunhavenMods.Shared;
 using TheVault.Patches;
 using TheVault.Vault;
-using HarmonyLib;
 using UnityEngine;
 using Wish;
 

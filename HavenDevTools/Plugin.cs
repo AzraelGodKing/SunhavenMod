@@ -283,8 +283,9 @@ namespace HavenDevTools
                         }
                     }
                 }
-                catch
+                catch (Exception ex)
                 {
+                    Log?.LogDebug($"[HavenDevTools] Player name fallback: {ex.Message}");
                     _currentPlayerName = "Unknown";
                 }
 
@@ -344,7 +345,10 @@ namespace HavenDevTools
                                 break;
                             }
                         }
-                        catch { }
+                        catch (Exception ex)
+                        {
+                            Log?.LogDebug($"[HavenDevTools] TryGetSteamId assembly search: {ex.Message}");
+                        }
                     }
                 }
 
@@ -365,8 +369,9 @@ namespace HavenDevTools
 
                 return steamIdStr;
             }
-            catch
+            catch (Exception ex)
             {
+                Plugin.Log?.LogDebug($"[HavenDevTools] TryGetSteamId: {ex.Message}");
                 return null;
             }
         }

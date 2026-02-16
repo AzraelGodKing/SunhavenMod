@@ -92,7 +92,10 @@ namespace BirthdayReminder.Data
                     CheckTodaysBirthdays();
                 }
             }
-            catch { }
+            catch (Exception ex)
+            {
+                Plugin.Log?.LogDebug($"[BirthdayManager] Date check: {ex.Message}");
+            }
         }
 
         /// <summary>
@@ -479,7 +482,10 @@ namespace BirthdayReminder.Data
                                     if (valueStr.Length > 100) valueStr = valueStr.Substring(0, 100) + "...";
                                     Plugin.Log?.LogInfo($"[DEBUG]     {prop.Name} ({prop.PropertyType.Name}) = {valueStr}");
                                 }
-                                catch { }
+                                catch (Exception ex)
+                                {
+                                    Plugin.Log?.LogDebug($"[BirthdayManager] DEBUG property reflection: {prop.Name}: {ex.Message}");
+                                }
                             }
                         }
                     }
@@ -567,8 +573,9 @@ namespace BirthdayReminder.Data
                 var directInstanceProp = AccessTools.Property(targetType, "Instance");
                 return directInstanceProp?.GetValue(null);
             }
-            catch
+            catch (Exception ex)
             {
+                Plugin.Log?.LogDebug($"[BirthdayManager] GetSingletonInstance: {ex.Message}");
                 return null;
             }
         }

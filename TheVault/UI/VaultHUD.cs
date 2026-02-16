@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using SunhavenMods.Shared;
 using TheVault.Patches;
 using TheVault.Vault;
 using UnityEngine;

@@ -114,7 +114,8 @@ namespace TheVault
                 _staticVaultHUD = _vaultHUD;
 
                 // Initialize icon cache for UI icons
-                IconCache.Initialize();
+                SunhavenMods.Shared.IconCache.Initialize(Log);
+                RegisterIconCacheCurrencies();
 
                 // Register item-to-currency mappings for deposit/withdraw
                 RegisterItemMappings();
@@ -284,6 +285,30 @@ namespace TheVault
                 true,
                 "Check for mod updates on startup"
             );
+        }
+
+        /// <summary>
+        /// Register currency-to-item mappings for IconCache (used by VaultUI/VaultHUD).
+        /// </summary>
+        private void RegisterIconCacheCurrencies()
+        {
+            SunhavenMods.Shared.IconCache.RegisterCurrency("seasonal_Spring", ItemIds.SpringToken);
+            SunhavenMods.Shared.IconCache.RegisterCurrency("seasonal_Summer", ItemIds.SummerToken);
+            SunhavenMods.Shared.IconCache.RegisterCurrency("seasonal_Fall", ItemIds.FallToken);
+            SunhavenMods.Shared.IconCache.RegisterCurrency("seasonal_Winter", ItemIds.WinterToken);
+            SunhavenMods.Shared.IconCache.RegisterCurrency("key_copper", ItemIds.CopperKey);
+            SunhavenMods.Shared.IconCache.RegisterCurrency("key_iron", ItemIds.IronKey);
+            SunhavenMods.Shared.IconCache.RegisterCurrency("key_adamant", ItemIds.AdamantKey);
+            SunhavenMods.Shared.IconCache.RegisterCurrency("key_mithril", ItemIds.MithrilKey);
+            SunhavenMods.Shared.IconCache.RegisterCurrency("key_sunite", ItemIds.SuniteKey);
+            SunhavenMods.Shared.IconCache.RegisterCurrency("key_glorite", ItemIds.GloriteKey);
+            SunhavenMods.Shared.IconCache.RegisterCurrency("key_kingslostmine", ItemIds.KingsLostMineKey);
+            SunhavenMods.Shared.IconCache.RegisterCurrency("special_communitytoken", ItemIds.CommunityToken);
+            SunhavenMods.Shared.IconCache.RegisterCurrency("special_doubloon", ItemIds.Doubloon);
+            SunhavenMods.Shared.IconCache.RegisterCurrency("special_blackbottlecap", ItemIds.BlackBottleCap);
+            SunhavenMods.Shared.IconCache.RegisterCurrency("special_redcarnivalticket", ItemIds.RedCarnivalTicket);
+            SunhavenMods.Shared.IconCache.RegisterCurrency("special_candycornpieces", ItemIds.CandyCornPieces);
+            SunhavenMods.Shared.IconCache.RegisterCurrency("special_manashard", ItemIds.ManaShard);
         }
 
         /// <summary>

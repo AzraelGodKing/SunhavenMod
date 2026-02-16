@@ -125,7 +125,7 @@ namespace SenpaisChest.UI
             if (chestToClose != null)
             {
                 try { chestToClose.EndInteract(0); }
-                catch { }
+                catch (Exception ex) { Plugin.Log?.LogDebug($"[SmartChestUI] EndInteract on close: {ex.Message}"); }
             }
         }
 
@@ -185,7 +185,7 @@ namespace SenpaisChest.UI
                         return chestData.name;
                 }
             }
-            catch { }
+            catch (Exception ex) { Plugin.Log?.LogDebug($"[SmartChestUI] GetChestName fallback: {ex.Message}"); }
             return "Chest";
         }
 

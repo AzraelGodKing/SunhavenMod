@@ -264,7 +264,10 @@ namespace HavenDevTools.Services
                     return _itemCache.TryGetValue(id, out var info) ? info : null;
                 }
             }
-            catch { }
+            catch (Exception ex)
+            {
+                Plugin.Log?.LogDebug($"[ItemInspector] GetItemInfo: {ex.Message}");
+            }
 
             return null;
         }

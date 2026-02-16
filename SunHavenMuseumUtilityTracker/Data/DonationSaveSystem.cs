@@ -135,7 +135,8 @@ namespace SunHavenMuseumUtilityTracker.Data
                 // Cleanup temp file
                 if (File.Exists(tempPath))
                 {
-                    try { File.Delete(tempPath); } catch { }
+                    try { File.Delete(tempPath); }
+                catch (Exception delEx) { Plugin.Log?.LogWarning($"[DonationSave] Cleanup temp file failed: {delEx.Message}"); }
                 }
 
                 return false;

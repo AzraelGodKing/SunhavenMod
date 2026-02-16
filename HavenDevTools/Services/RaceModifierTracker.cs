@@ -141,8 +141,9 @@ namespace HavenDevTools.Services
                 {
                     raceEnum = Enum.Parse(raceEnumType, raceName, true);
                 }
-                catch
+                catch (Exception ex)
                 {
+                    Plugin.Log?.LogDebug($"[RaceModifierTracker] Enum.Parse for race '{raceName}': {ex.Message}");
                     return result;
                 }
 

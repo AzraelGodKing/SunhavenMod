@@ -8,13 +8,6 @@
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
   </PropertyGroup>
 
-  <!-- Game and BepInEx paths -->
-  <PropertyGroup>
-    <SunHavenPath>F:\SteamLibrary\steamapps\common\Sun Haven</SunHavenPath>
-    <BepInExPath>$(SunHavenPath)\BepInEx</BepInExPath>
-    <ManagedPath>$(SunHavenPath)\Sun Haven_Data\Managed</ManagedPath>
-  </PropertyGroup>
-
   <!-- BepInEx References -->
   <ItemGroup>
     <Reference Include="BepInEx">
@@ -83,6 +76,7 @@
   <ItemGroup>
     <Compile Include="..\SharedUtilities\VersionChecker.cs" Link="Shared\VersionChecker.cs" />
     <Compile Include="..\SharedUtilities\ReflectionHelper.cs" Link="Shared\ReflectionHelper.cs" />
+    <Compile Include="..\SharedUtilities\IconCache.cs" Link="Shared\IconCache.cs" />
   </ItemGroup>
 
   <!-- Copy to BepInEx plugins folder and builds folder after build -->

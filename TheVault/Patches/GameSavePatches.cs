@@ -201,7 +201,10 @@ namespace TheVault.Patches
                             if (valStr.Length > 100) valStr = valStr.Substring(0, 100) + "...";
                             Plugin.Log?.LogInfo($"  characterData.{prop.Name} ({prop.PropertyType.Name}) = {valStr}");
                         }
-                        catch { }
+                        catch (Exception ex)
+                        {
+                            Plugin.Log?.LogDebug($"[GameSavePatches] Ignore optional property reflection: {prop.Name}: {ex.Message}");
+                        }
                     }
                 }
             }
@@ -236,7 +239,10 @@ namespace TheVault.Patches
                     var val = prop.GetValue(saveData);
                     Plugin.Log?.LogInfo($"  Property: {prop.Name} ({prop.PropertyType.Name}) = {val}");
                 }
-                catch { }
+                catch (Exception ex)
+                {
+                    Plugin.Log?.LogDebug($"[GameSavePatches] Ignore optional property reflection: {prop.Name}: {ex.Message}");
+                }
             }
             foreach (var field in type.GetFields(BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic))
             {
@@ -245,7 +251,10 @@ namespace TheVault.Patches
                     var val = field.GetValue(saveData);
                     Plugin.Log?.LogInfo($"  Field: {field.Name} ({field.FieldType.Name}) = {val}");
                 }
-                catch { }
+                catch (Exception ex)
+                {
+                    Plugin.Log?.LogDebug($"[GameSavePatches] Ignore optional field reflection: {field.Name}: {ex.Message}");
+                }
             }
 
             return null;

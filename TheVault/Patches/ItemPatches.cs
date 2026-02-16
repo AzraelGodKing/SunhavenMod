@@ -438,7 +438,10 @@ namespace TheVault.Patches
                             var val = f.GetValue(item);
                             Plugin.Log?.LogInfo($"  Field: {f.Name} ({f.FieldType.Name}) = {val}");
                         }
-                        catch { }
+                        catch (Exception ex)
+                        {
+                            Plugin.Log?.LogDebug($"[ItemPatches] Ignore optional field reflection: {f.Name}: {ex.Message}");
+                        }
                     }
                 }
 
@@ -452,7 +455,10 @@ namespace TheVault.Patches
                             var val = p.GetValue(item);
                             Plugin.Log?.LogInfo($"  Property: {p.Name} ({p.PropertyType.Name}) = {val}");
                         }
-                        catch { }
+                        catch (Exception ex)
+                        {
+                            Plugin.Log?.LogDebug($"[ItemPatches] Ignore optional property reflection: {p.Name}: {ex.Message}");
+                        }
                     }
                 }
 
