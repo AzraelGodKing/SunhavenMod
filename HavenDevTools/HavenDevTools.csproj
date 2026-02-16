@@ -8,13 +8,6 @@
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
   </PropertyGroup>
 
-  <!-- Game and BepInEx paths -->
-  <PropertyGroup>
-    <SunHavenPath>F:\SteamLibrary\steamapps\common\Sun Haven</SunHavenPath>
-    <BepInExPath>$(SunHavenPath)\BepInEx</BepInExPath>
-    <ManagedPath>$(SunHavenPath)\Sun Haven_Data\Managed</ManagedPath>
-  </PropertyGroup>
-
   <!-- BepInEx References -->
   <ItemGroup>
     <Reference Include="BepInEx">

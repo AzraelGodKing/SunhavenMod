@@ -613,8 +613,9 @@ namespace BirthdayReminder
                 var directInstanceProp = AccessTools.Property(targetType, "Instance");
                 return directInstanceProp?.GetValue(null);
             }
-            catch
+            catch (Exception ex)
             {
+                Plugin.Log?.LogDebug($"[BirthdayReminder] GetSingletonInstance: {ex.Message}");
                 return null;
             }
         }

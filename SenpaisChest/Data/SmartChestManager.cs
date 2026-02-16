@@ -204,7 +204,7 @@ namespace SenpaisChest.Data
                 if (dict != null && dict.ContainsKey(itemId))
                     return dict[itemId];
             }
-            catch { }
+            catch (Exception ex) { Plugin.Log?.LogDebug($"[SmartChestManager] GetItemSellInfo: {ex.Message}"); }
             return null;
         }
 
@@ -225,7 +225,7 @@ namespace SenpaisChest.Data
                 _sendNotificationMethod?.Invoke(_notificationStackInstance,
                     new object[] { message, 0, 0, true, false });
             }
-            catch { }
+            catch (Exception ex) { Plugin.Log?.LogDebug($"[SmartChestManager] SendNotification: {ex.Message}"); }
         }
 
         private bool IsChestInUse(Chest chest)
@@ -239,7 +239,7 @@ namespace SenpaisChest.Data
                     return chestData?.inUse ?? false;
                 }
             }
-            catch { }
+            catch (Exception ex) { Plugin.Log?.LogDebug($"[SmartChestManager] IsChestInUse: {ex.Message}"); }
             return false;
         }
 

@@ -796,7 +796,10 @@ namespace HavenDevTools.UI
                             }
                         }
                     }
-                    catch { }
+                    catch (Exception ex)
+                    {
+                        Plugin.Log?.LogDebug($"[DebugWindow] Player stats property iteration: {ex.Message}");
+                    }
                 }
             }
             catch (Exception ex)
