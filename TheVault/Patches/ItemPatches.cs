@@ -31,6 +31,61 @@ namespace TheVault.Patches
         public static bool AutoDepositEnabled { get; set; } = false;
 
         /// <summary>
+        /// Global flag: we are withdrawing items to inventory (bypass auto-deposit).
+        /// </summary>
+        public static bool IsWithdrawing { get; set; } = false;
+
+        /// <summary>
+        /// Item IDs currently being withdrawn (bypass auto-deposit for these).
+        /// </summary>
+        private static readonly HashSet<int> _withdrawingItemIds = new HashSet<int>();
+
+        /// <summary>
+        /// Check if auto-deposit is enabled for a currency.
+        /// </summary>
+        public static bool IsAutoDepositEnabled(string currencyId)
+        {
+            int itemId = GetItemForCurrency(currencyId);
+            if (itemId < 0) return false;
+            return AutoDepositEnabled && _itemToCurrency.TryGetValue(itemId, out var m) && m.autoDeposit;
+        }
+
+        /// <summary>
+        /// Toggle auto-deposit for a currency.
+        /// </summary>
+        public static void ToggleAutoDeposit(string currencyId)
+        {
+            int itemId = GetItemForCurrency(currencyId);
+            if (itemId < 0 || !_itemToCurrency.TryGetValue(itemId, out var m)) return;
+            _itemToCurrency[itemId] = (m.currencyId, !m.autoDeposit);
+        }
+
+        /// <summary>
+        /// Mark that we are withdrawing this item (bypass auto-deposit).
+        /// </summary>
+        public static void StartWithdrawing(int itemId)
+        {
+            _withdrawingItemIds.Add(itemId);
+        }
+
+        /// <summary>
+        /// Clear withdrawing state for this item.
+        /// </summary>
+        public static void StopWithdrawing(int itemId)
+        {
+            _withdrawingItemIds.Remove(itemId);
+        }
+
+        /// <summary>
+        /// Reset state when returning to menu.
+        /// </summary>
+        public static void ResetState()
+        {
+            IsWithdrawing = false;
+            _withdrawingItemIds.Clear();
+        }
+
+        /// <summary>
         /// Register a mapping between a game item and vault currency.
         /// </summary>
         /// <param name="gameItemId">The item's ID in Sun Haven's item database</param>
@@ -224,7 +279,7 @@ namespace TheVault.Patches
         {
             try
             {
-                if (_isProcessingAutoDeposit) return;
+                if (_isProcessingAutoDeposit || IsWithdrawing || _withdrawingItemIds.Contains(itemId)) return;
 
                 Plugin.Log?.LogInfo($"OnInventoryAddItem called: itemId={itemId}, amount={amount}");
 
@@ -282,7 +337,7 @@ namespace TheVault.Patches
         {
             try
             {
-                if (_isProcessingAutoDeposit) return;
+                if (_isProcessingAutoDeposit || IsWithdrawing || _withdrawingItemIds.Contains(itemId)) return;
 
                 Plugin.Log?.LogInfo($"OnInventoryAddItemWithNotify called: itemId={itemId}, amount={amount}, notify={notify}");
 
@@ -351,6 +406,7 @@ namespace TheVault.Patches
 
                 // Get the item ID from the Item object
                 int itemId = GetItemId(item);
+                if (IsWithdrawing || _withdrawingItemIds.Contains(itemId)) return;
                 Plugin.Log?.LogInfo($"OnInventoryAddItemObjectPostfix called: itemId={itemId}, amount={amount}, sendNotification={sendNotification}");
 
                 if (!ShouldAutoDeposit(itemId))
