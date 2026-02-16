@@ -584,7 +584,7 @@ namespace HavensBirthright
                                 Plugin.Log?.LogInfo($"[TidalBlessing]   farmingData: {idict.Count} total, {hoedCount} hoed, {wateredCount} watered");
                             }
                         }
-                        catch { }
+                        catch (Exception ex) { Plugin.Log?.LogDebug($"[BirthrightRunner] TidalBlessing diagnostic: {ex.Message}"); }
                     }
 
                     Plugin.Log?.LogInfo($"[TidalBlessing]   Scene: {SceneHelpers.GetCurrentSceneName()}");

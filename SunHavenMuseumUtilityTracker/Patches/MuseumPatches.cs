@@ -68,7 +68,10 @@ namespace SunHavenMuseumUtilityTracker.Patches
                             break;
                         }
                     }
-                    catch { }
+                    catch (Exception ex)
+                    {
+                        Plugin.Log?.LogDebug($"[MuseumPatches] Skipping assembly for MuseumCurator search: {ex.Message}");
+                    }
                 }
 
                 Plugin.Log?.LogInfo($"[DISCOVER] Searched {assemblyCount} assemblies");
@@ -97,7 +100,10 @@ namespace SunHavenMuseumUtilityTracker.Patches
                                 }
                             }
                         }
-                        catch { }
+                        catch (Exception ex)
+                        {
+                            Plugin.Log?.LogDebug($"[MuseumPatches] Skipping assembly for Museum types: {ex.Message}");
+                        }
                     }
                     return;
                 }

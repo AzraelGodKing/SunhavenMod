@@ -547,7 +547,10 @@ namespace TheVault.Vault
                                 break;
                             }
                         }
-                        catch { }
+                        catch (Exception ex)
+                        {
+                            Plugin.Log?.LogDebug($"[VaultSave] Skipping assembly for Steam search: {ex.Message}");
+                        }
                     }
                 }
 
