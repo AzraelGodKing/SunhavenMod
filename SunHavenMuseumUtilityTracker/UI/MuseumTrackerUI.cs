@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+using SunhavenMods.Shared;
 using SunHavenMuseumUtilityTracker.Data;
 using SunHavenMuseumUtilityTracker.Patches;
 using UnityEngine;
@@ -169,7 +170,7 @@ namespace SunHavenMuseumUtilityTracker.UI
             float y = (Screen.height - WINDOW_HEIGHT) / 2f;
             _windowRect = new Rect(x, y, WINDOW_WIDTH, WINDOW_HEIGHT);
 
-            IconCache.Initialize();
+            SunhavenMods.Shared.IconCache.Initialize(Plugin.Log);
             Plugin.Log?.LogInfo("MuseumTrackerUI initialized");
         }
 

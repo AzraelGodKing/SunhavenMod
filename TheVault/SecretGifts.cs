@@ -406,7 +406,10 @@ namespace TheVault
                                 break;
                             }
                         }
-                        catch { }
+                        catch (Exception ex)
+                        {
+                            Plugin.Log?.LogDebug($"[SecretGifts] Skipping assembly for Steam search: {ex.Message}");
+                        }
                     }
                 }
 

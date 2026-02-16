@@ -4,82 +4,179 @@ using System.Linq.Expressions;
 using System.Reflection;
 using UnityEngine;
 using HarmonyLib;
+using BepInEx.Logging;
 
-namespace SunHavenMuseumUtilityTracker.UI
+namespace SunhavenMods.Shared
 {
     /// <summary>
     /// Caches item icons from the game's Database for use in IMGUI.
     /// Loads icons asynchronously and converts Sprites to Texture2D for IMGUI compatibility.
+    /// Shared between TheVault and SunHavenMuseumUtilityTracker.
     /// </summary>
     public static class IconCache
     {
-        // Cache of loaded textures keyed by item ID
         private static readonly Dictionary<int, Texture2D> _iconCache = new Dictionary<int, Texture2D>();
-
-        // Track which items are currently being loaded to avoid duplicate requests
         private static readonly HashSet<int> _loadingItems = new HashSet<int>();
-
-        // Track which items failed to load
         private static readonly HashSet<int> _failedItems = new HashSet<int>();
+        private static readonly Dictionary<string, int> _currencyToItemId = new Dictionary<string, int>();
 
-        // Default fallback texture (generated once)
         private static Texture2D _fallbackTexture;
-
-        // Cached reflection types
+        private static ManualLogSource _log;
         private static Type _databaseType;
         private static Type _itemDataType;
         private static MethodInfo _getDataMethod;
         private static bool _reflectionInitialized;
-
-        // Track if initialized
-        private static bool _initialized = false;
+        private static bool _initialized;
+        private static bool _iconsLoaded;
 
         /// <summary>
-        /// Initialize the icon cache - creates fallback texture only.
+        /// Initialize the icon cache. Call during plugin initialization.
         /// </summary>
-        public static void Initialize()
+        /// <param name="log">Logger for diagnostics (can be null)</param>
+        /// <param name="preloadItemIds">Optional item IDs to preload (e.g. currency IDs). If null, icons load on demand.</param>
+        public static void Initialize(ManualLogSource log, int[] preloadItemIds = null)
         {
-            if (_initialized) return;
+            _log = log;
+            if (_initialized)
+            {
+                _log?.LogDebug("[IconCache] Already initialized");
+                return;
+            }
             _initialized = true;
 
-            Plugin.Log?.LogInfo("[IconCache] Initializing icon cache...");
-
-            // Create fallback texture
+            _log?.LogInfo("[IconCache] Initializing icon cache...");
             _fallbackTexture = CreateFallbackTexture();
-            Plugin.Log?.LogInfo("[IconCache] Created fallback texture");
+            _log?.LogInfo("[IconCache] Created fallback texture");
+
+            if (preloadItemIds != null && preloadItemIds.Length > 0)
+            {
+                _log?.LogInfo("[IconCache] Preload item IDs registered (loading deferred until LoadAllIcons)");
+            }
         }
 
         /// <summary>
-        /// Initialize reflection types for Database access.
+        /// Register a currency ID to item ID mapping. Used by TheVault.
         /// </summary>
+        public static void RegisterCurrency(string currencyId, int itemId)
+        {
+            _currencyToItemId[currencyId] = itemId;
+        }
+
+        /// <summary>
+        /// Load all registered currency icons. Call after game is ready (e.g. player initialized).
+        /// </summary>
+        public static void LoadAllIcons()
+        {
+            if (_iconsLoaded)
+            {
+                _log?.LogDebug("[IconCache] Icons already loaded, skipping");
+                return;
+            }
+
+            if (!InitializeReflection())
+            {
+                _log?.LogError("[IconCache] Failed to initialize reflection, cannot load icons");
+                _iconsLoaded = true;
+                return;
+            }
+
+            foreach (var kvp in _currencyToItemId)
+            {
+                _log?.LogDebug($"[IconCache] Queuing load for: {kvp.Key} (ItemID: {kvp.Value})");
+                LoadIcon(kvp.Value);
+            }
+
+            _iconsLoaded = true;
+            _log?.LogInfo($"[IconCache] Queued {_currencyToItemId.Count} icons for loading");
+        }
+
+        /// <summary>
+        /// Get icon for a currency ID.
+        /// </summary>
+        public static Texture2D GetIconForCurrency(string currencyId)
+        {
+            if (_currencyToItemId.TryGetValue(currencyId, out int itemId))
+            {
+                return GetIcon(itemId);
+            }
+            return GetFallbackTexture();
+        }
+
+        /// <summary>
+        /// Get icon for an item ID.
+        /// </summary>
+        public static Texture2D GetIcon(int itemId)
+        {
+            if (_iconCache.TryGetValue(itemId, out Texture2D cached))
+            {
+                return cached;
+            }
+
+            if (!_loadingItems.Contains(itemId) && !_failedItems.Contains(itemId))
+            {
+                LoadIcon(itemId);
+            }
+
+            return GetFallbackTexture();
+        }
+
+        /// <summary>
+        /// Null-safe fallback texture. Ensures callers never get null.
+        /// </summary>
+        private static Texture2D GetFallbackTexture()
+        {
+            if (_fallbackTexture == null)
+            {
+                _fallbackTexture = CreateFallbackTexture();
+            }
+            return _fallbackTexture;
+        }
+
+        /// <summary>
+        /// Check if an icon is loaded for an item ID.
+        /// </summary>
+        public static bool IsIconLoaded(int itemId)
+        {
+            return _iconCache.ContainsKey(itemId);
+        }
+
+        /// <summary>
+        /// Check if an icon is loaded for a currency ID.
+        /// </summary>
+        public static bool IsIconLoaded(string currencyId)
+        {
+            return _currencyToItemId.TryGetValue(currencyId, out int itemId) && IsIconLoaded(itemId);
+        }
+
+        /// <summary>
+        /// Get item ID for a currency ID.
+        /// </summary>
+        public static int GetItemIdForCurrency(string currencyId)
+        {
+            return _currencyToItemId.TryGetValue(currencyId, out int itemId) ? itemId : -1;
+        }
+
         private static bool InitializeReflection()
         {
-            if (_reflectionInitialized) return _databaseType != null && _itemDataType != null && _getDataMethod != null;
-
+            if (_reflectionInitialized)
+            {
+                return _databaseType != null && _itemDataType != null && _getDataMethod != null;
+            }
             _reflectionInitialized = true;
 
             try
             {
-                // Find Database type - try multiple namespaces
-                string[] databaseTypeNames = new[]
-                {
-                    "Database",
-                    "Wish.Database",
-                    "PSS.Database",
-                    "SunHaven.Database",
-                };
-
+                string[] databaseTypeNames = { "Database", "Wish.Database", "PSS.Database", "SunHaven.Database" };
                 foreach (var typeName in databaseTypeNames)
                 {
                     _databaseType = AccessTools.TypeByName(typeName);
                     if (_databaseType != null)
                     {
-                        Plugin.Log?.LogInfo($"[IconCache] Found Database type: {_databaseType.FullName}");
+                        _log?.LogInfo($"[IconCache] Found Database type: {_databaseType.FullName}");
                         break;
                     }
                 }
 
-                // If still not found, search all loaded assemblies
                 if (_databaseType == null)
                 {
                     foreach (var assembly in AppDomain.CurrentDomain.GetAssemblies())
@@ -90,13 +187,12 @@ namespace SunHavenMuseumUtilityTracker.UI
                             {
                                 if (type.Name == "Database" && !type.IsNested)
                                 {
-                                    var typeMethods = type.GetMethods(BindingFlags.Public | BindingFlags.Static);
-                                    foreach (var m in typeMethods)
+                                    foreach (var m in type.GetMethods(BindingFlags.Public | BindingFlags.Static))
                                     {
                                         if (m.Name == "GetData" && m.IsGenericMethod)
                                         {
                                             _databaseType = type;
-                                            Plugin.Log?.LogInfo($"[IconCache] Found Database type: {type.FullName}");
+                                            _log?.LogInfo($"[IconCache] Found Database type: {type.FullName}");
                                             break;
                                         }
                                     }
@@ -105,39 +201,37 @@ namespace SunHavenMuseumUtilityTracker.UI
                             }
                             if (_databaseType != null) break;
                         }
-                        catch { }
+                        catch (Exception ex)
+                        {
+                            _log?.LogDebug($"[IconCache] Skipping assembly {assembly.GetName().Name}: {ex.Message}");
+                        }
                     }
                 }
 
                 if (_databaseType == null)
                 {
-                    Plugin.Log?.LogError("[IconCache] Could not find Database type");
+                    _log?.LogError("[IconCache] Could not find Database type");
                     return false;
                 }
 
-                // Find ItemData type
                 _itemDataType = AccessTools.TypeByName("Wish.ItemData");
                 if (_itemDataType == null)
                 {
-                    Plugin.Log?.LogError("[IconCache] Could not find Wish.ItemData type");
+                    _log?.LogError("[IconCache] Could not find Wish.ItemData type");
                     return false;
                 }
 
-                // Find the generic GetData method
                 var methods = _databaseType.GetMethods(BindingFlags.Public | BindingFlags.Static);
                 foreach (var method in methods)
                 {
                     if (method.Name == "GetData" && method.IsGenericMethod)
                     {
-                        var genericParams = method.GetGenericArguments();
                         var methodParams = method.GetParameters();
-
-                        // We want GetData<T>(int id, Action<T> callback, Action failCallback)
-                        if (genericParams.Length == 1 && methodParams.Length == 3 &&
+                        if (method.GetGenericArguments().Length == 1 && methodParams.Length == 3 &&
                             methodParams[0].ParameterType == typeof(int))
                         {
                             _getDataMethod = method.MakeGenericMethod(_itemDataType);
-                            Plugin.Log?.LogInfo("[IconCache] Found Database.GetData method");
+                            _log?.LogInfo("[IconCache] Found Database.GetData method");
                             break;
                         }
                     }
@@ -145,7 +239,7 @@ namespace SunHavenMuseumUtilityTracker.UI
 
                 if (_getDataMethod == null)
                 {
-                    Plugin.Log?.LogError("[IconCache] Could not find Database.GetData method");
+                    _log?.LogError("[IconCache] Could not find Database.GetData method");
                     return false;
                 }
 
@@ -153,50 +247,17 @@ namespace SunHavenMuseumUtilityTracker.UI
             }
             catch (Exception ex)
             {
-                Plugin.Log?.LogError($"[IconCache] Error initializing reflection: {ex.Message}");
+                _log?.LogError($"[IconCache] Error initializing reflection: {ex.Message}");
                 return false;
             }
         }
 
-        /// <summary>
-        /// Get the icon texture for an item ID.
-        /// Returns the cached texture if available, or a fallback texture while loading.
-        /// </summary>
-        public static Texture2D GetIcon(int itemId)
-        {
-            // Return cached texture if available
-            if (_iconCache.TryGetValue(itemId, out Texture2D cached))
-            {
-                return cached;
-            }
-
-            // Start loading if not already loading or failed
-            if (!_loadingItems.Contains(itemId) && !_failedItems.Contains(itemId))
-            {
-                LoadIcon(itemId);
-            }
-
-            return _fallbackTexture;
-        }
-
-        /// <summary>
-        /// Check if an icon is loaded and ready to use.
-        /// </summary>
-        public static bool IsIconLoaded(int itemId)
-        {
-            return _iconCache.ContainsKey(itemId);
-        }
-
-        /// <summary>
-        /// Load an icon from the game's database using reflection.
-        /// </summary>
         private static void LoadIcon(int itemId)
         {
             if (_loadingItems.Contains(itemId) || _iconCache.ContainsKey(itemId))
             {
                 return;
             }
-
             _loadingItems.Add(itemId);
 
             try
@@ -208,7 +269,6 @@ namespace SunHavenMuseumUtilityTracker.UI
                     return;
                 }
 
-                // Create the success callback using Expression trees
                 var callbackDelegateType = typeof(Action<>).MakeGenericType(_itemDataType);
                 var itemDataParam = Expression.Parameter(_itemDataType, "itemData");
                 var itemIdConst = Expression.Constant(itemId);
@@ -216,25 +276,19 @@ namespace SunHavenMuseumUtilityTracker.UI
                 var callExpr = Expression.Call(onLoadedMethod, itemIdConst, Expression.Convert(itemDataParam, typeof(object)));
                 var successCallback = Expression.Lambda(callbackDelegateType, callExpr, itemDataParam).Compile();
 
-                // Create the fail callback
                 var onFailedMethod = typeof(IconCache).GetMethod(nameof(OnIconLoadFailed), BindingFlags.NonPublic | BindingFlags.Static);
-                var failCallExpr = Expression.Call(onFailedMethod, itemIdConst);
-                var failCallback = Expression.Lambda<Action>(failCallExpr).Compile();
+                var failCallback = Expression.Lambda<Action>(Expression.Call(onFailedMethod, itemIdConst)).Compile();
 
-                // Invoke Database.GetData<ItemData>(itemId, successCallback, failCallback)
                 _getDataMethod.Invoke(null, new object[] { itemId, successCallback, failCallback });
             }
             catch (Exception ex)
             {
-                Plugin.Log?.LogDebug($"[IconCache] Error loading icon {itemId}: {ex.Message}");
+                _log?.LogDebug($"[IconCache] Error loading icon {itemId}: {ex.Message}");
                 _failedItems.Add(itemId);
                 _loadingItems.Remove(itemId);
             }
         }
 
-        /// <summary>
-        /// Internal callback when an icon is loaded from the database.
-        /// </summary>
         private static void OnIconLoadedInternal(int itemId, object itemData)
         {
             _loadingItems.Remove(itemId);
@@ -250,7 +304,6 @@ namespace SunHavenMuseumUtilityTracker.UI
                 Type actualType = itemData.GetType();
                 object spriteObj = null;
 
-                // Try finding "icon" with various binding flags
                 var bindingFlagSets = new[]
                 {
                     BindingFlags.Public | BindingFlags.Instance,
@@ -259,7 +312,6 @@ namespace SunHavenMuseumUtilityTracker.UI
                     BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance | BindingFlags.FlattenHierarchy,
                 };
 
-                // Try property first
                 foreach (var flags in bindingFlagSets)
                 {
                     var iconProp = actualType.GetProperty("icon", flags);
@@ -270,7 +322,6 @@ namespace SunHavenMuseumUtilityTracker.UI
                     }
                 }
 
-                // Try field if property not found
                 if (spriteObj == null)
                 {
                     foreach (var flags in bindingFlagSets)
@@ -284,7 +335,6 @@ namespace SunHavenMuseumUtilityTracker.UI
                     }
                 }
 
-                // Walk up inheritance hierarchy if still not found
                 if (spriteObj == null)
                 {
                     Type currentType = actualType;
@@ -299,7 +349,6 @@ namespace SunHavenMuseumUtilityTracker.UI
                                 break;
                             }
                         }
-
                         if (spriteObj == null)
                         {
                             var fields = currentType.GetFields(BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance | BindingFlags.DeclaredOnly);
@@ -312,7 +361,6 @@ namespace SunHavenMuseumUtilityTracker.UI
                                 }
                             }
                         }
-
                         currentType = currentType.BaseType;
                     }
                 }
@@ -328,23 +376,17 @@ namespace SunHavenMuseumUtilityTracker.UI
             }
             catch (Exception ex)
             {
-                Plugin.Log?.LogDebug($"[IconCache] Error processing icon {itemId}: {ex.Message}");
+                _log?.LogDebug($"[IconCache] Error processing icon {itemId}: {ex.Message}");
                 _failedItems.Add(itemId);
             }
         }
 
-        /// <summary>
-        /// Internal callback when icon loading fails.
-        /// </summary>
         private static void OnIconLoadFailed(int itemId)
         {
             _loadingItems.Remove(itemId);
             _failedItems.Add(itemId);
         }
 
-        /// <summary>
-        /// Cache a sprite by converting it to a Texture2D.
-        /// </summary>
         private static void CacheSprite(int itemId, Sprite sprite)
         {
             if (sprite == null || sprite.texture == null)
@@ -356,15 +398,12 @@ namespace SunHavenMuseumUtilityTracker.UI
             try
             {
                 Texture2D texture;
-
                 if (sprite.rect.width == sprite.texture.width && sprite.rect.height == sprite.texture.height)
                 {
-                    // Sprite uses the full texture
                     texture = sprite.texture;
                 }
                 else
                 {
-                    // Sprite is a sub-region, extract it
                     texture = ExtractSpriteTexture(sprite);
                 }
 
@@ -379,14 +418,11 @@ namespace SunHavenMuseumUtilityTracker.UI
             }
             catch (Exception ex)
             {
-                Plugin.Log?.LogDebug($"[IconCache] Error caching sprite {itemId}: {ex.Message}");
+                _log?.LogDebug($"[IconCache] Error caching sprite {itemId}: {ex.Message}");
                 _failedItems.Add(itemId);
             }
         }
 
-        /// <summary>
-        /// Extract a sprite's region from its atlas texture.
-        /// </summary>
         private static Texture2D ExtractSpriteTexture(Sprite sprite)
         {
             try
@@ -404,18 +440,15 @@ namespace SunHavenMuseumUtilityTracker.UI
                 Color[] pixels = sprite.texture.GetPixels((int)rect.x, (int)rect.y, width, height);
                 extracted.SetPixels(pixels);
                 extracted.Apply();
-
                 return extracted;
             }
-            catch
+            catch (Exception ex)
             {
+                _log?.LogDebug($"[IconCache] Error extracting sprite texture: {ex.Message}");
                 return null;
             }
         }
 
-        /// <summary>
-        /// Copy a sprite's texture using RenderTexture for non-readable textures.
-        /// </summary>
         private static Texture2D CopyTextureViaRenderTexture(Sprite sprite)
         {
             try
@@ -424,13 +457,7 @@ namespace SunHavenMuseumUtilityTracker.UI
                 int width = (int)rect.width;
                 int height = (int)rect.height;
 
-                RenderTexture rt = RenderTexture.GetTemporary(
-                    sprite.texture.width,
-                    sprite.texture.height,
-                    0,
-                    RenderTextureFormat.ARGB32
-                );
-
+                RenderTexture rt = RenderTexture.GetTemporary(sprite.texture.width, sprite.texture.height, 0, RenderTextureFormat.ARGB32);
                 Graphics.Blit(sprite.texture, rt);
 
                 RenderTexture previousRT = RenderTexture.active;
@@ -442,18 +469,15 @@ namespace SunHavenMuseumUtilityTracker.UI
 
                 RenderTexture.active = previousRT;
                 RenderTexture.ReleaseTemporary(rt);
-
                 return extracted;
             }
-            catch
+            catch (Exception ex)
             {
+                _log?.LogDebug($"[IconCache] Error copying texture via RenderTexture: {ex.Message}");
                 return null;
             }
         }
 
-        /// <summary>
-        /// Create a fallback texture for items without icons.
-        /// </summary>
         private static Texture2D CreateFallbackTexture()
         {
             int size = 32;
@@ -471,19 +495,20 @@ namespace SunHavenMuseumUtilityTracker.UI
                         tex.SetPixel(x, y, bgColor);
                 }
             }
-
             tex.Apply();
             return tex;
         }
 
         /// <summary>
-        /// Clear the icon cache.
+        /// Clear the cache. Resets initialized state so next Initialize runs fully.
         /// </summary>
         public static void Clear()
         {
             _iconCache.Clear();
             _loadingItems.Clear();
             _failedItems.Clear();
+            _initialized = false;
+            _iconsLoaded = false;
         }
 
         /// <summary>
@@ -492,6 +517,15 @@ namespace SunHavenMuseumUtilityTracker.UI
         public static (int loaded, int loading, int failed) GetStats()
         {
             return (_iconCache.Count, _loadingItems.Count, _failedItems.Count);
+        }
+
+        /// <summary>
+        /// Log current cache status.
+        /// </summary>
+        public static void LogStatus()
+        {
+            var stats = GetStats();
+            _log?.LogInfo($"[IconCache] Loaded: {stats.loaded}, Loading: {stats.loading}, Failed: {stats.failed}");
         }
     }
 }
