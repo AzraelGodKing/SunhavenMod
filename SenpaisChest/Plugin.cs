@@ -44,7 +44,6 @@ namespace SenpaisChest
         private static SmartChestPersistentRunner _updateRunner;
 
         // Scene tracking
-        private string _lastKnownScene = "";
         private bool _wasInMenuScene = true;
 
         private void Awake()
@@ -301,7 +300,6 @@ namespace SenpaisChest
             }
 
             _wasInMenuScene = isMenuScene;
-            _lastKnownScene = scene.name;
         }
 
         #endregion

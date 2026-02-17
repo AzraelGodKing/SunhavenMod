@@ -20,8 +20,6 @@ namespace SenpaisChest.Data
 
         // Reflection cache
         private static FieldInfo _chestDataField;
-        private static object _itemInfoDbInstance;
-        private static FieldInfo _allItemSellInfosField;
         private static object _notificationStackInstance;
         private static MethodInfo _sendNotificationMethod;
         private static MethodInfo _databaseGetDataMethod;
@@ -129,6 +127,25 @@ namespace SenpaisChest.Data
 
         #region Reflection Helpers
 
+        /// <summary>
+        /// Gets the display name for a chest using the cached Chest.data field.
+        /// </summary>
+        public static string GetChestName(Chest chest)
+        {
+            try
+            {
+                InitReflection();
+                if (_chestDataField != null)
+                {
+                    var chestData = _chestDataField.GetValue(chest) as ChestData;
+                    if (chestData != null && !string.IsNullOrEmpty(chestData.name))
+                        return chestData.name;
+                }
+            }
+            catch (Exception ex) { Plugin.Log?.LogDebug($"[SmartChestManager] GetChestName: {ex.Message}"); }
+            return "Chest";
+        }
+
         private static void InitReflection()
         {
             if (_reflectionInitialized)
@@ -160,53 +177,12 @@ namespace SenpaisChest.Data
             }
         }
 
-        private static object GetSingletonInstance(string typeName)
-        {
-            try
-            {
-                var singletonType = AccessTools.TypeByName("Wish.SingletonBehaviour`1");
-                if (singletonType == null)
-                    return null;
-
-                var targetType = AccessTools.TypeByName(typeName);
-                if (targetType == null)
-                    return null;
-
-                var constructedType = singletonType.MakeGenericType(targetType);
-                var instanceProp = constructedType.GetProperty("Instance",
-                    BindingFlags.Public | BindingFlags.Static | BindingFlags.FlattenHierarchy);
-
-                return instanceProp?.GetValue(null);
-            }
-            catch
-            {
-                return null;
-            }
-        }
-
+        /// <summary>
+        /// Gets the full ItemSellInfo for an item by ID. Delegates to shared ItemSearch.
+        /// </summary>
         private static ItemSellInfo GetItemSellInfo(int itemId)
         {
-            try
-            {
-                if (_itemInfoDbInstance == null || (_itemInfoDbInstance is UnityEngine.Object obj && obj == null))
-                {
-                    _itemInfoDbInstance = GetSingletonInstance("Wish.ItemInfoDatabase");
-                    if (_itemInfoDbInstance != null)
-                    {
-                        _allItemSellInfosField = _itemInfoDbInstance.GetType()
-                            .GetField("allItemSellInfos", BindingFlags.Public | BindingFlags.Instance);
-                    }
-                }
-
-                if (_itemInfoDbInstance == null || _allItemSellInfosField == null)
-                    return null;
-
-                var dict = _allItemSellInfosField.GetValue(_itemInfoDbInstance) as Dictionary<int, ItemSellInfo>;
-                if (dict != null && dict.ContainsKey(itemId))
-                    return dict[itemId];
-            }
-            catch (Exception ex) { Plugin.Log?.LogDebug($"[SmartChestManager] GetItemSellInfo: {ex.Message}"); }
-            return null;
+            return ItemSearch.GetItemSellInfo(itemId);
         }
 
         private static void SendNotification(string message)
@@ -215,7 +191,8 @@ namespace SenpaisChest.Data
             {
                 if (_notificationStackInstance == null || (_notificationStackInstance is UnityEngine.Object obj && obj == null))
                 {
-                    _notificationStackInstance = GetSingletonInstance("Wish.NotificationStack");
+                    var stackType = ReflectionHelper.FindWishType("NotificationStack");
+                    _notificationStackInstance = stackType != null ? ReflectionHelper.GetSingletonInstance(stackType) : null;
                     if (_notificationStackInstance != null)
                     {
                         _sendNotificationMethod = _notificationStackInstance.GetType()
@@ -242,25 +219,6 @@ namespace SenpaisChest.Data
             }
             catch (Exception ex) { Plugin.Log?.LogDebug($"[SmartChestManager] IsChestInUse: {ex.Message}"); }
             return false;
-        }
-
-        /// <summary>
-        /// Searches the item database by name or ID. Returns results as (ID, Name) pairs
-        /// sorted with exact matches first, then starts-with, then contains.
-        /// Uses shared ItemSearch.
-        /// </summary>
-        public static List<KeyValuePair<int, string>> SearchItems(string query, int maxResults = 20)
-        {
-            return ItemSearch.SearchItems(query ?? "", maxResults);
-        }
-
-        /// <summary>
-        /// Gets a single item's name by ID. Returns null if not found.
-        /// Uses shared ItemSearch.
-        /// </summary>
-        public static string GetItemName(int itemId)
-        {
-            return ItemSearch.GetItemName(itemId);
         }
 
         #endregion
@@ -708,8 +666,9 @@ namespace SenpaisChest.Data
                 var isDonated = (bool)_hasDonatedByGameIdMethod.Invoke(donationManager, new object[] { itemId });
                 return !isDonated;
             }
-            catch
+            catch (Exception ex)
             {
+                Plugin.Log?.LogDebug($"[SmartChestManager] IsMuseumItemNotDonated({itemId}): {ex.Message}");
                 return false;
             }
         }

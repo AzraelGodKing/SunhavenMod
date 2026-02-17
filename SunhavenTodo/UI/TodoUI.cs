@@ -39,6 +39,13 @@ namespace SunhavenTodo.UI
         private bool _showCompletedItems = true;
         private string _searchQuery = "";
 
+        // Cached filtered+sorted list for DrawTodoList (avoids per-frame LINQ allocations)
+        private readonly List<TodoItem> _cachedDrawList = new List<TodoItem>();
+        private bool _cachedDrawListDirty = true;
+        private int _cachedFilterCategory = -2;
+        private bool _cachedFilterShowCompleted = true;
+        private string _cachedFilterSearch = null;
+
         // Manager reference
         private TodoManager _manager;
 
@@ -394,11 +401,31 @@ namespace SunhavenTodo.UI
 
         private void DrawTodoList()
         {
-            var todos = GetFilteredTodos().ToList();
+            // Invalidate cache when filter state changes
+            if (_cachedFilterCategory != _selectedCategoryFilter || _cachedFilterShowCompleted != _showCompletedItems || _cachedFilterSearch != _searchQuery)
+                _cachedDrawListDirty = true;
+
+            if (_cachedDrawListDirty)
+            {
+                _cachedDrawListDirty = false;
+                _cachedFilterCategory = _selectedCategoryFilter;
+                _cachedFilterShowCompleted = _showCompletedItems;
+                _cachedFilterSearch = _searchQuery;
+                _cachedDrawList.Clear();
+                foreach (var t in GetFilteredTodos())
+                    _cachedDrawList.Add(t);
+                _cachedDrawList.Sort((a, b) =>
+                {
+                    if (a.IsCompleted != b.IsCompleted) return a.IsCompleted.CompareTo(b.IsCompleted);
+                    int pri = ((int)b.Priority).CompareTo((int)a.Priority);
+                    if (pri != 0) return pri;
+                    return b.CreatedAt.CompareTo(a.CreatedAt);
+                });
+            }
 
             _scrollPosition = GUILayout.BeginScrollView(_scrollPosition, GUILayout.ExpandHeight(true));
 
-            if (todos.Count == 0)
+            if (_cachedDrawList.Count == 0)
             {
                 GUILayout.Space(20);
                 GUILayout.BeginHorizontal();
@@ -410,16 +437,9 @@ namespace SunhavenTodo.UI
             }
             else
             {
-                // Sort: uncompleted first, then by priority (urgent first), then by date
-                var sorted = todos
-                    .OrderBy(t => t.IsCompleted)
-                    .ThenByDescending(t => (int)t.Priority)
-                    .ThenByDescending(t => t.CreatedAt)
-                    .ToList();
-
-                for (int i = 0; i < sorted.Count; i++)
+                for (int i = 0; i < _cachedDrawList.Count; i++)
                 {
-                    DrawTodoItem(sorted[i], i);
+                    DrawTodoItem(_cachedDrawList[i], i);
                 }
             }
 
@@ -444,6 +464,7 @@ namespace SunhavenTodo.UI
             if (isCompleted != item.IsCompleted)
             {
                 _manager.ToggleComplete(item.Id);
+                _cachedDrawListDirty = true;
             }
 
             GUILayout.Space(4);
@@ -466,6 +487,7 @@ namespace SunhavenTodo.UI
             if (GUILayout.Button("x", _buttonStyle, GUILayout.Width(22), GUILayout.Height(22)))
             {
                 _manager.RemoveTodo(item.Id);
+                _cachedDrawListDirty = true;
             }
 
             GUILayout.EndHorizontal();
@@ -616,7 +638,7 @@ namespace SunhavenTodo.UI
             {
                 _manager.AddTodo(item);
             }
-
+            _cachedDrawListDirty = true;
             _showAddForm = false;
             ResetAddForm();
         }

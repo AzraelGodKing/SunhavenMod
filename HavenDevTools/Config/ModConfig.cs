@@ -13,12 +13,6 @@ namespace HavenDevTools.Config
         public static ConfigEntry<bool> ShowOverlayOnStart { get; private set; }
         public static ConfigEntry<string> OverlayPosition { get; private set; }
 
-        // Debug Window Settings
-        public static ConfigEntry<bool> ShowItemIds { get; private set; }
-        public static ConfigEntry<bool> ShowCurrencies { get; private set; }
-        public static ConfigEntry<bool> ShowBundles { get; private set; }
-        public static ConfigEntry<bool> ShowRaceBonuses { get; private set; }
-
         // Updates
         public static ConfigEntry<bool> CheckForUpdates { get; private set; }
 
@@ -52,35 +46,6 @@ namespace HavenDevTools.Config
                 "Position",
                 "TopRight",
                 "Overlay position: TopLeft, TopRight, BottomLeft, BottomRight"
-            );
-
-            // Debug Window Settings
-            ShowItemIds = config.Bind(
-                "DebugWindow",
-                "ShowItemIds",
-                true,
-                "Show item ID lookup section in debug window"
-            );
-
-            ShowCurrencies = config.Bind(
-                "DebugWindow",
-                "ShowCurrencies",
-                true,
-                "Show currency tracker section in debug window (requires The Vault)"
-            );
-
-            ShowBundles = config.Bind(
-                "DebugWindow",
-                "ShowBundles",
-                true,
-                "Show bundle inspector section in debug window (requires S.M.U.T.)"
-            );
-
-            ShowRaceBonuses = config.Bind(
-                "DebugWindow",
-                "ShowRaceBonuses",
-                true,
-                "Show race modifier tracker section in debug window (requires Haven's Birthright)"
             );
 
             // Updates

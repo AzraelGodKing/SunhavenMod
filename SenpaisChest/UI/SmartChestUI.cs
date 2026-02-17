@@ -75,7 +75,6 @@ namespace SenpaisChest.UI
         private Texture2D _closeBtnTex;
         private Texture2D _closeBtnHoverTex;
         private Texture2D _fieldBgTex;
-        private Texture2D _separatorTex;
 
         // Styles
         private GUIStyle _windowStyle;
@@ -176,21 +175,12 @@ namespace SenpaisChest.UI
             _isVisible = true;
         }
 
+        /// <summary>
+        /// Delegates to SmartChestManager.GetChestName which caches the Chest.data field.
+        /// </summary>
         private string GetChestName(Chest chest)
         {
-            try
-            {
-                var dataField = typeof(Chest).GetField("data",
-                    System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
-                if (dataField != null)
-                {
-                    var chestData = dataField.GetValue(chest) as ChestData;
-                    if (chestData != null && !string.IsNullOrEmpty(chestData.name))
-                        return chestData.name;
-                }
-            }
-            catch (Exception ex) { Plugin.Log?.LogDebug($"[SmartChestUI] GetChestName fallback: {ex.Message}"); }
-            return "Chest";
+            return SmartChestManager.GetChestName(chest);
         }
 
         private void OnGUI()
@@ -363,7 +353,7 @@ namespace SenpaisChest.UI
                     if (_itemIdInput != _lastSearchQuery)
                     {
                         _lastSearchQuery = _itemIdInput;
-                        _searchResults = SmartChestManager.SearchItems(_itemIdInput, 20);
+                        _searchResults = ItemSearch.SearchItems(_itemIdInput, 20);
                         _searchScrollPos = Vector2.zero;
                     }
 
@@ -458,7 +448,7 @@ namespace SenpaisChest.UI
         {
             if (rule.Type == RuleType.ByItemId)
             {
-                var name = SmartChestManager.GetItemName(rule.ItemId);
+                var name = ItemSearch.GetItemName(rule.ItemId);
                 string baseText = !string.IsNullOrEmpty(name)
                     ? $"{name} ({rule.ItemId})"
                     : $"Item ID: {rule.ItemId}";
@@ -486,8 +476,9 @@ namespace SenpaisChest.UI
 
                 return !donationManager.HasDonatedByGameId(gameItemId);
             }
-            catch
+            catch (Exception ex)
             {
+                Plugin.Log?.LogDebug($"[SmartChestUI] IsUndonatedMuseumItem({gameItemId}): {ex.Message}");
                 return false;
             }
         }
@@ -597,7 +588,6 @@ namespace SenpaisChest.UI
             _closeBtnTex = MakeTex(1, 1, _redDanger);
             _closeBtnHoverTex = MakeTex(1, 1, _redHover);
             _fieldBgTex = MakeTex(1, 1, _fieldBg);
-            _separatorTex = MakeTex(1, 1, _borderGold);
         }
 
         private void CreateStyles()
@@ -826,7 +816,6 @@ namespace SenpaisChest.UI
             if (_closeBtnTex != null) Destroy(_closeBtnTex);
             if (_closeBtnHoverTex != null) Destroy(_closeBtnHoverTex);
             if (_fieldBgTex != null) Destroy(_fieldBgTex);
-            if (_separatorTex != null) Destroy(_separatorTex);
         }
     }
 }
