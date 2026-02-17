@@ -49,6 +49,11 @@ namespace TheVault.UI
         private float _lastUpdateTime;
         private const float UPDATE_INTERVAL = 0.5f; // Update every 0.5 seconds
 
+        // Cached grouped dictionaries (refreshed in Update to avoid per-frame allocations)
+        private readonly Dictionary<string, int> _cachedSeasonal = new Dictionary<string, int>();
+        private readonly Dictionary<string, int> _cachedKeys = new Dictionary<string, int>();
+        private readonly Dictionary<string, int> _cachedSpecial = new Dictionary<string, int>();
+
         public enum HUDPosition
         {
             TopLeft,
@@ -146,11 +151,34 @@ namespace TheVault.UI
 
         private void Update()
         {
-            // Periodically update cached currencies
+            // Periodically update cached currencies and grouped caches
             if (_isEnabled && _vaultManager != null && Time.time - _lastUpdateTime > UPDATE_INTERVAL)
             {
                 _cachedCurrencies = _vaultManager.GetAllNonZeroCurrencies();
+                RefreshGroupedCaches();
                 _lastUpdateTime = Time.time;
+            }
+        }
+
+        private void RefreshGroupedCaches()
+        {
+            _cachedSeasonal.Clear();
+            foreach (var currencyId in _allSeasonalTokens)
+            {
+                _cachedCurrencies.TryGetValue(currencyId, out int value);
+                _cachedSeasonal[currencyId] = value;
+            }
+            _cachedKeys.Clear();
+            foreach (var currencyId in _allKeys)
+            {
+                _cachedCurrencies.TryGetValue(currencyId, out int value);
+                _cachedKeys[currencyId] = value;
+            }
+            _cachedSpecial.Clear();
+            foreach (var currencyId in _allSpecialCurrencies)
+            {
+                _cachedCurrencies.TryGetValue(currencyId, out int value);
+                _cachedSpecial[currencyId] = value;
             }
         }
 
@@ -164,6 +192,10 @@ namespace TheVault.UI
             if (vaultUI != null && vaultUI.IsVisible) return;
 
             InitializeStyles();
+
+            // Ensure grouped caches are populated on first show (before first Update interval)
+            if (_cachedSeasonal.Count == 0 && _cachedCurrencies.Count > 0)
+                RefreshGroupedCaches();
 
             // Calculate HUD width based on content
             float hudWidth = CalculateHUDWidth();
@@ -181,16 +213,12 @@ namespace TheVault.UI
             GUILayout.BeginArea(new Rect(hudRect.x + PADDING, hudRect.y + 3, hudRect.width - PADDING * 2, hudRect.height - 6));
             GUILayout.BeginHorizontal();
 
-            var seasonal = GetSeasonalTokens();  // Always has items (shows 0 values)
-            var keys = GetKeys();                // Always has items (shows 0 values)
-            var special = GetSpecialCurrencies(); // Always has items (shows 0 values)
-
-            // All groups are always shown
-            DrawCurrencyItems(seasonal);
+            // All groups are always shown (use cached dicts to avoid per-frame allocations)
+            DrawCurrencyItems(_cachedSeasonal);
             DrawSeparator();
-            DrawCurrencyItems(keys);
+            DrawCurrencyItems(_cachedKeys);
             DrawSeparator();
-            DrawCurrencyItems(special);
+            DrawCurrencyItems(_cachedSpecial);
 
             GUILayout.EndHorizontal();
             GUILayout.EndArea();
@@ -210,14 +238,10 @@ namespace TheVault.UI
         {
             float width = PADDING * 2;
 
-            var seasonal = GetSeasonalTokens();  // Always has items
-            var keys = GetKeys();                // Always has items
-            var special = GetSpecialCurrencies(); // Always has items
-
-            // All groups are always shown
-            width += CalculateGroupWidth(seasonal);
-            width += CalculateGroupWidth(keys);
-            width += CalculateGroupWidth(special);
+            // Use cached dicts to avoid allocations
+            width += CalculateGroupWidth(_cachedSeasonal);
+            width += CalculateGroupWidth(_cachedKeys);
+            width += CalculateGroupWidth(_cachedSpecial);
 
             // Add separator spacing between all 3 groups
             width += 2 * GROUP_SPACING;
@@ -316,32 +340,6 @@ namespace TheVault.UI
             }
         }
 
-        private Dictionary<string, int> GetSeasonalTokens()
-        {
-            var result = new Dictionary<string, int>();
-            // Always include all seasonal tokens, even if 0
-            foreach (var currencyId in _allSeasonalTokens)
-            {
-                int value = 0;
-                _cachedCurrencies.TryGetValue(currencyId, out value);
-                result[currencyId] = value;
-            }
-            return result;
-        }
-
-        private Dictionary<string, int> GetKeys()
-        {
-            var result = new Dictionary<string, int>();
-            // Always include all keys, even if 0
-            foreach (var currencyId in _allKeys)
-            {
-                int value = 0;
-                _cachedCurrencies.TryGetValue(currencyId, out value);
-                result[currencyId] = value;
-            }
-            return result;
-        }
-
         // All seasonal token IDs that should always be shown
         private static readonly string[] _allSeasonalTokens = new[]
         {
@@ -373,19 +371,6 @@ namespace TheVault.UI
             "special_candycornpieces",
             "special_manashard"
         };
-
-        private Dictionary<string, int> GetSpecialCurrencies()
-        {
-            var result = new Dictionary<string, int>();
-            // Always include all special currencies, even if 0
-            foreach (var currencyId in _allSpecialCurrencies)
-            {
-                int value = 0;
-                _cachedCurrencies.TryGetValue(currencyId, out value);
-                result[currencyId] = value;
-            }
-            return result;
-        }
 
         /// <summary>
         /// Format a number with K/M suffixes for compact display.

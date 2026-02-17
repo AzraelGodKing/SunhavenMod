@@ -25,6 +25,8 @@ namespace BirthdayReminder.Data
         private float _stalenessCheckTimer = 0f;
         private const float STALENESS_CHECK_INTERVAL = 10f; // Check every 10 seconds
 
+        private static readonly Random _random = new Random();
+
         // Cached reflection data for game API access
         private static bool _reflectionInitialized = false;
         private static Type _npcManagerType;
@@ -235,8 +237,8 @@ namespace BirthdayReminder.Data
                     string giftHint;
                     if (npc.LovedGifts.Count > 0)
                     {
-                        // Use the NPC's loved gifts from game data (or cache)
-                        var randomGifts = npc.LovedGifts.OrderBy(x => Guid.NewGuid()).Take(3).ToList();
+                        // Use the NPC's loved gifts from game data (or cache); pick up to 3 at random without Guid/LINQ allocations
+                        var randomGifts = TakeRandom(npc.LovedGifts, 3);
                         giftHint = $"Loves: {string.Join(", ", randomGifts)}";
                     }
                     else
@@ -264,6 +266,27 @@ namespace BirthdayReminder.Data
             }
 
             OnBirthdaysUpdated?.Invoke();
+        }
+
+        /// <summary>
+        /// Returns up to <paramref name="count"/> items chosen at random using Fisher-Yates shuffle.
+        /// Avoids Guid and LINQ allocations.
+        /// </summary>
+        private static List<string> TakeRandom(IList<string> source, int count)
+        {
+            if (source == null || source.Count == 0) return new List<string>();
+            var list = new List<string>(source);
+            if (list.Count <= count) return list;
+            // Fisher-Yates shuffle, then take first count
+            for (int i = list.Count - 1; i > 0; i--)
+            {
+                int j = _random.Next(i + 1);
+                var tmp = list[i];
+                list[i] = list[j];
+                list[j] = tmp;
+            }
+            list.RemoveRange(count, list.Count - count);
+            return list;
         }
 
         /// <summary>

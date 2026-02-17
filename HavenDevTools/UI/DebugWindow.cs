@@ -297,7 +297,7 @@ namespace HavenDevTools.UI
             if (_itemSearchText != _lastItemSearchQuery)
             {
                 _lastItemSearchQuery = _itemSearchText;
-                _searchResults = ItemInspector.SearchItems(_itemSearchText, 50);
+                _searchResults = ItemSearch.SearchItems(_itemSearchText, 50);
             }
 
             if (_selectedItemId > 0)
@@ -651,7 +651,26 @@ namespace HavenDevTools.UI
             GUILayout.Label("Use this to generate hashes for new authorized Steam IDs", _labelStyle);
             if (GUILayout.Button("Log Current Steam ID Hash", _buttonStyle))
             {
-                Plugin.Log?.LogInfo("Check BepInEx console for your Steam ID hash");
+                try
+                {
+                    var steamId = typeof(Plugin).GetMethod("TryGetSteamId",
+                        System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Static)
+                        ?.Invoke(null, null) as string;
+                    if (!string.IsNullOrEmpty(steamId))
+                    {
+                        string hash = Plugin.GenerateHash(steamId);
+                        Plugin.Log?.LogInfo($"Steam ID: {steamId}");
+                        Plugin.Log?.LogInfo($"Steam ID Hash: {hash}");
+                    }
+                    else
+                    {
+                        Plugin.Log?.LogWarning("Could not retrieve Steam ID");
+                    }
+                }
+                catch (Exception ex)
+                {
+                    Plugin.Log?.LogError($"Error generating hash: {ex.Message}");
+                }
             }
 
             GUILayout.EndVertical();

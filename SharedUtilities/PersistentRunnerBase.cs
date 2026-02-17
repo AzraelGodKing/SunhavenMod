@@ -19,6 +19,8 @@ namespace SunhavenMods.Shared
         private bool _wasInGame = false;
         private float _lastHeartbeat = 0f;
         private string _lastSceneName = "";
+        private float _lastSceneCheckTime = 0f;
+        private const float SceneCheckInterval = 0.5f;
 
         /// <summary>
         /// Interval between heartbeat logs (seconds). Set to 0 to disable.
@@ -87,12 +89,17 @@ namespace SunhavenMods.Shared
                 }
             }
 
-            // Scene transition detection (backup polling)
-            string currentScene = SceneManager.GetActiveScene().name;
-            if (currentScene != _lastSceneName)
+            // Scene transition detection (backup polling, throttled to avoid per-frame allocation)
+            float now = Time.unscaledTime;
+            if (now - _lastSceneCheckTime >= SceneCheckInterval)
             {
-                _lastSceneName = currentScene;
-                HandleSceneChange(currentScene);
+                _lastSceneCheckTime = now;
+                string currentScene = SceneManager.GetActiveScene().name;
+                if (currentScene != _lastSceneName)
+                {
+                    _lastSceneName = currentScene;
+                    HandleSceneChange(currentScene);
+                }
             }
 
             // Delegate to derived class
