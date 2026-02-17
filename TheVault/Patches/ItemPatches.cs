@@ -1,6 +1,7 @@
 using HarmonyLib;
 using System;
 using System.Collections.Generic;
+using System.Reflection;
 using TheVault.Vault;
 
 namespace TheVault.Patches
@@ -39,6 +40,14 @@ namespace TheVault.Patches
         /// Item IDs currently being withdrawn (bypass auto-deposit for these).
         /// </summary>
         private static readonly HashSet<int> _withdrawingItemIds = new HashSet<int>();
+
+        /// <summary>
+        /// Cached reflection for fast GetItemId (runs on every pickup - must be fast).
+        /// </summary>
+        private static bool _itemIdReflectionCached = false;
+        private static FieldInfo _cachedItemIdField;
+        private static PropertyInfo _cachedItemIdProperty;
+        private static MethodInfo _cachedItemIdMethod;
 
         /// <summary>
         /// Check if auto-deposit is enabled for a currency.
@@ -251,23 +260,7 @@ namespace TheVault.Patches
         /// </summary>
         public static bool OnPlayerPickupPrefix(int item, int amount, bool rollForExtra)
         {
-            // Just log for debugging - let the original method run
-            // The AddItem POSTFIX will handle moving the item to vault after notification is shown
-            if (ShouldAutoDeposit(item))
-            {
-                Plugin.Log?.LogInfo($"OnPlayerPickupPrefix: item={item}, amount={amount} - will be auto-deposited via AddItem POSTFIX");
-            }
-            return true;
-        }
-
-        /// <summary>
-        /// POSTFIX patch for Player.Pickup method (backup for debugging).
-        /// Signature: Pickup(int item, int amount = 1, bool rollForExtra = false)
-        /// </summary>
-        public static void OnPlayerPickup(int item, int amount, bool rollForExtra)
-        {
-            // This postfix only runs if the prefix returned true (item was not auto-deposited)
-            Plugin.Log?.LogInfo($"OnPlayerPickup POSTFIX called: item={item}, amount={amount} (item added to inventory normally)");
+            return true; // Let original run; AddItem prefix handles auto-deposit
         }
 
         /// <summary>
@@ -280,9 +273,6 @@ namespace TheVault.Patches
             try
             {
                 if (_isProcessingAutoDeposit || IsWithdrawing || _withdrawingItemIds.Contains(itemId)) return;
-
-                Plugin.Log?.LogInfo($"OnInventoryAddItem called: itemId={itemId}, amount={amount}");
-
                 if (!ShouldAutoDeposit(itemId))
                 {
                     return;
@@ -303,18 +293,15 @@ namespace TheVault.Patches
                 _isProcessingAutoDeposit = true;
                 try
                 {
-                    Plugin.Log?.LogInfo($"Auto-depositing {amount} of item {itemId} as {currencyId} (via Inventory.AddItem)");
-
-                    // Remove from inventory
-                    var invType = __instance.GetType();
-                    var removeMethod = AccessTools.Method(invType, "RemoveItem", new[] { typeof(int), typeof(int), typeof(int) });
-                    if (removeMethod != null)
+                    // Remove from inventory - try inventory instance first, then Player fallback
+                    bool removed = TryRemoveFromInventory(__instance, itemId, amount) || RemoveItemFromInventory(itemId, amount);
+                    if (!removed)
                     {
-                        removeMethod.Invoke(__instance, new object[] { itemId, amount, -1 });
+                        Plugin.Log?.LogWarning($"Failed to remove {amount} of item {itemId} from inventory for auto-deposit");
+                        return;
                     }
 
                     AddCurrencyToVault(vaultManager, currencyId, amount);
-                    Plugin.Log?.LogInfo($"Auto-deposited {amount} of item {itemId} as {currencyId}");
                 }
                 finally
                 {
@@ -324,7 +311,7 @@ namespace TheVault.Patches
             catch (Exception ex)
             {
                 _isProcessingAutoDeposit = false;
-                Plugin.Log?.LogError($"Error in OnInventoryAddItem: {ex.Message}\n{ex.StackTrace}");
+                Plugin.Log?.LogError($"Error in OnInventoryAddItem: {ex.Message}");
             }
         }
 
@@ -338,9 +325,6 @@ namespace TheVault.Patches
             try
             {
                 if (_isProcessingAutoDeposit || IsWithdrawing || _withdrawingItemIds.Contains(itemId)) return;
-
-                Plugin.Log?.LogInfo($"OnInventoryAddItemWithNotify called: itemId={itemId}, amount={amount}, notify={notify}");
-
                 if (!ShouldAutoDeposit(itemId))
                 {
                     return;
@@ -361,18 +345,15 @@ namespace TheVault.Patches
                 _isProcessingAutoDeposit = true;
                 try
                 {
-                    Plugin.Log?.LogInfo($"Auto-depositing {amount} of item {itemId} as {currencyId} (via Inventory.AddItem with notify)");
-
-                    // Remove from inventory
-                    var invType = __instance.GetType();
-                    var removeMethod = AccessTools.Method(invType, "RemoveItem", new[] { typeof(int), typeof(int), typeof(int) });
-                    if (removeMethod != null)
+                    // Remove from inventory - try inventory instance first, then Player fallback
+                    bool removed = TryRemoveFromInventory(__instance, itemId, amount) || RemoveItemFromInventory(itemId, amount);
+                    if (!removed)
                     {
-                        removeMethod.Invoke(__instance, new object[] { itemId, amount, -1 });
+                        Plugin.Log?.LogWarning($"Failed to remove {amount} of item {itemId} from inventory for auto-deposit");
+                        return;
                     }
 
                     AddCurrencyToVault(vaultManager, currencyId, amount);
-                    Plugin.Log?.LogInfo($"Auto-deposited {amount} of item {itemId} as {currencyId}");
                 }
                 finally
                 {
@@ -382,7 +363,7 @@ namespace TheVault.Patches
             catch (Exception ex)
             {
                 _isProcessingAutoDeposit = false;
-                Plugin.Log?.LogError($"Error in OnInventoryAddItemWithNotify: {ex.Message}\n{ex.StackTrace}");
+                Plugin.Log?.LogError($"Error in OnInventoryAddItemWithNotify: {ex.Message}");
             }
         }
 
@@ -392,10 +373,53 @@ namespace TheVault.Patches
         private static bool _isProcessingAutoDeposit = false;
 
         /// <summary>
+        /// PREFIX patch for Inventory.AddItem(Item, int, int, bool, bool, bool).
+        /// Called by Wish.Pickup.goToPlayer() when picking up items from the ground.
+        /// Returns false to SKIP the original - item never enters inventory, goes straight to vault.
+        /// </summary>
+        public static bool OnInventoryAddItemObjectPrefix(object __instance, object item, int amount, int slot, bool sendNotification, bool specialItem, bool superSecretCheck)
+        {
+            try
+            {
+                if (_isProcessingAutoDeposit) return true;
+
+                int itemId = GetItemId(item);
+                if (itemId < 0) return true;
+
+                if (IsWithdrawing || _withdrawingItemIds.Contains(itemId)) return true;
+
+                if (!ShouldAutoDeposit(itemId)) return true;
+
+                string currencyId = GetCurrencyForItem(itemId);
+                if (string.IsNullOrEmpty(currencyId)) return true;
+
+                var vaultManager = Plugin.GetVaultManager();
+                if (vaultManager == null) return true;
+
+                _isProcessingAutoDeposit = true;
+                try
+                {
+                    AddCurrencyToVault(vaultManager, currencyId, amount);
+                    if (sendNotification)
+                        ShowAutoDepositNotification(currencyId, amount);
+                    return false; // Skip original - item does NOT go to inventory
+                }
+                finally
+                {
+                    _isProcessingAutoDeposit = false;
+                }
+            }
+            catch (Exception ex)
+            {
+                _isProcessingAutoDeposit = false;
+                Plugin.Log?.LogError($"Error in OnInventoryAddItemObjectPrefix: {ex.Message}\n{ex.StackTrace}");
+                return true; // Let original run on error
+            }
+        }
+
+        /// <summary>
         /// POSTFIX patch for Inventory.AddItem(Item, int, int, bool, bool, bool).
-        /// This is the actual method called by Wish.Pickup when items are collected from the ground.
-        /// Signature: AddItem(Item item, int amount, int slot, bool sendNotification, bool specialItem, bool superSecretCheck)
-        /// We use POSTFIX so the original method runs first (showing the notification), then we move the item to vault.
+        /// Backup path - only runs if PREFIX returned true (e.g. withdraw, or non-auto-deposit item).
         /// </summary>
         public static void OnInventoryAddItemObjectPostfix(object __instance, object item, int amount, int slot, bool sendNotification, bool specialItem, bool superSecretCheck)
         {
@@ -407,8 +431,6 @@ namespace TheVault.Patches
                 // Get the item ID from the Item object
                 int itemId = GetItemId(item);
                 if (IsWithdrawing || _withdrawingItemIds.Contains(itemId)) return;
-                Plugin.Log?.LogInfo($"OnInventoryAddItemObjectPostfix called: itemId={itemId}, amount={amount}, sendNotification={sendNotification}");
-
                 if (!ShouldAutoDeposit(itemId))
                 {
                     // Not registered for auto-deposit
@@ -416,20 +438,9 @@ namespace TheVault.Patches
                 }
 
                 string currencyId = GetCurrencyForItem(itemId);
-                if (string.IsNullOrEmpty(currencyId))
-                {
-                    Plugin.Log?.LogWarning($"No currency ID found for item {itemId}");
-                    return;
-                }
-
+                if (string.IsNullOrEmpty(currencyId)) return;
                 var vaultManager = Plugin.GetVaultManager();
-                if (vaultManager == null)
-                {
-                    Plugin.Log?.LogWarning("VaultManager is null");
-                    return;
-                }
-
-                Plugin.Log?.LogInfo($"Auto-depositing {amount} of item {itemId} as {currencyId} (via Inventory.AddItem POSTFIX)");
+                if (vaultManager == null) return;
 
                 _isProcessingAutoDeposit = true;
                 try
@@ -437,23 +448,11 @@ namespace TheVault.Patches
                     // The item is now in inventory (and notification was shown if sendNotification was true)
                     // Now remove it from inventory and add to vault
 
-                    // Remove from inventory
-                    var invType = __instance.GetType();
-                    var removeMethod = AccessTools.Method(invType, "RemoveItem", new[] { typeof(int), typeof(int), typeof(int) });
-                    if (removeMethod != null)
-                    {
-                        removeMethod.Invoke(__instance, new object[] { itemId, amount, -1 });
-                        Plugin.Log?.LogInfo($"Removed {amount} of item {itemId} from inventory");
-                    }
-                    else
-                    {
-                        Plugin.Log?.LogWarning("Could not find RemoveItem method on inventory");
-                        return;
-                    }
-
+                    // Remove from inventory - try inventory instance first, then Player fallback
+                    bool removed = TryRemoveFromInventory(__instance, itemId, amount) || RemoveItemFromInventory(itemId, amount);
+                    if (!removed) return;
                     // Add to vault
                     AddCurrencyToVault(vaultManager, currencyId, amount);
-                    Plugin.Log?.LogInfo($"Auto-deposited {amount} of item {itemId} as {currencyId} to vault");
                 }
                 finally
                 {
@@ -468,121 +467,123 @@ namespace TheVault.Patches
         }
 
         /// <summary>
-        /// Get the item ID from a Wish.Item object using reflection.
+        /// Initialize cached reflection for GetItemId. Runs once per game session.
+        /// </summary>
+        private static void EnsureItemIdCache()
+        {
+            if (_itemIdReflectionCached) return;
+            lock (typeof(ItemPatches))
+            {
+                if (_itemIdReflectionCached) return;
+                try
+                {
+                    var itemType = AccessTools.TypeByName("Wish.Item") ?? typeof(object);
+                    _cachedItemIdField = AccessTools.Field(itemType, "id")
+                        ?? AccessTools.Field(itemType, "_id");
+                    if (_cachedItemIdField == null)
+                    {
+                        _cachedItemIdProperty = AccessTools.Property(itemType, "id")
+                            ?? AccessTools.Property(itemType, "Id")
+                            ?? AccessTools.Property(itemType, "ItemID");
+                    }
+                    if (_cachedItemIdField == null && _cachedItemIdProperty == null)
+                        _cachedItemIdMethod = AccessTools.Method(itemType, "ID");
+                    _itemIdReflectionCached = true;
+                }
+                catch { _itemIdReflectionCached = true; }
+            }
+        }
+
+        /// <summary>
+        /// Get item ID using cached reflection. Fast path for pickup hot path.
         /// </summary>
         private static int GetItemId(object item)
         {
-            if (item == null)
-            {
-                Plugin.Log?.LogWarning("GetItemId: item is null");
-                return -1;
-            }
-
+            if (item == null) return -1;
+            EnsureItemIdCache();
             try
             {
-                var itemType = item.GetType();
-                Plugin.Log?.LogInfo($"GetItemId: item type is {itemType.FullName}");
-
-                // Log all members to help debug
-                var fields = itemType.GetFields(System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
-                foreach (var f in fields)
+                if (_cachedItemIdField != null)
                 {
-                    if (f.Name.ToLowerInvariant().Contains("id"))
-                    {
-                        try
-                        {
-                            var val = f.GetValue(item);
-                            Plugin.Log?.LogInfo($"  Field: {f.Name} ({f.FieldType.Name}) = {val}");
-                        }
-                        catch (Exception ex)
-                        {
-                            Plugin.Log?.LogDebug($"[ItemPatches] Ignore optional field reflection: {f.Name}: {ex.Message}");
-                        }
-                    }
+                    var r = _cachedItemIdField.GetValue(item);
+                    if (r is int id) return id;
                 }
-
-                var props = itemType.GetProperties(System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
-                foreach (var p in props)
+                if (_cachedItemIdProperty != null)
                 {
-                    if (p.Name.ToLowerInvariant().Contains("id"))
-                    {
-                        try
-                        {
-                            var val = p.GetValue(item);
-                            Plugin.Log?.LogInfo($"  Property: {p.Name} ({p.PropertyType.Name}) = {val}");
-                        }
-                        catch (Exception ex)
-                        {
-                            Plugin.Log?.LogDebug($"[ItemPatches] Ignore optional property reflection: {p.Name}: {ex.Message}");
-                        }
-                    }
+                    var r = _cachedItemIdProperty.GetValue(item);
+                    if (r is int id) return id;
                 }
-
-                // Try id field (lowercase) - common in Unity
-                var idField = AccessTools.Field(itemType, "id");
-                if (idField != null)
+                if (_cachedItemIdMethod != null)
                 {
-                    var result = idField.GetValue(item);
-                    Plugin.Log?.LogInfo($"Found id field, value: {result}");
-                    if (result is int id) return id;
+                    var r = _cachedItemIdMethod.Invoke(item, null);
+                    if (r is int id) return id;
                 }
-
-                // Try ID() method
-                var idMethod = AccessTools.Method(itemType, "ID");
-                if (idMethod != null)
-                {
-                    var result = idMethod.Invoke(item, null);
-                    Plugin.Log?.LogInfo($"Found ID() method, value: {result}");
-                    if (result is int id) return id;
-                }
-
-                // Try id property (lowercase)
-                var idProperty = AccessTools.Property(itemType, "id");
-                if (idProperty != null)
-                {
-                    var result = idProperty.GetValue(item);
-                    Plugin.Log?.LogInfo($"Found id property, value: {result}");
-                    if (result is int id) return id;
-                }
-
-                // Try Id property (PascalCase)
-                idProperty = AccessTools.Property(itemType, "Id");
-                if (idProperty != null)
-                {
-                    var result = idProperty.GetValue(item);
-                    Plugin.Log?.LogInfo($"Found Id property, value: {result}");
-                    if (result is int id) return id;
-                }
-
-                // Try _id field
-                idField = AccessTools.Field(itemType, "_id");
-                if (idField != null)
-                {
-                    var result = idField.GetValue(item);
-                    Plugin.Log?.LogInfo($"Found _id field, value: {result}");
-                    if (result is int id) return id;
-                }
-
-                // Try ItemID property
-                idProperty = AccessTools.Property(itemType, "ItemID");
-                if (idProperty != null)
-                {
-                    var result = idProperty.GetValue(item);
-                    Plugin.Log?.LogInfo($"Found ItemID property, value: {result}");
-                    if (result is int id) return id;
-                }
-
-                Plugin.Log?.LogWarning($"Could not find ID on item type {itemType.FullName}");
             }
-            catch (Exception ex)
-            {
-                Plugin.Log?.LogError($"Error getting item ID: {ex.Message}\n{ex.StackTrace}");
-            }
-
+            catch { }
             return -1;
         }
 
         #region Inventory Operations
+
+        /// <summary>
+        /// Try to remove an item from a specific inventory instance.
+        /// Tries multiple RemoveItem signatures since Sun Haven's API may vary.
+        /// </summary>
+        private static bool TryRemoveFromInventory(object inventory, int itemId, int amount)
+        {
+            if (inventory == null) return false;
+            var invType = inventory.GetType();
+
+            // Try RemoveItem(int id, int amount, int slot)
+            var m = AccessTools.Method(invType, "RemoveItem", new[] { typeof(int), typeof(int), typeof(int) });
+            if (m != null)
+            {
+                try
+                {
+                    var result = m.Invoke(inventory, new object[] { itemId, amount, -1 });
+                    if (result is bool b) return b;
+                    return true; // void or other return - assume success
+                }
+                catch (Exception ex)
+                {
+                    Plugin.Log?.LogDebug($"[ItemPatches] RemoveItem(int,int,int) failed: {ex.Message}");
+                }
+            }
+
+            // Try RemoveItem(int id, int amount)
+            m = AccessTools.Method(invType, "RemoveItem", new[] { typeof(int), typeof(int) });
+            if (m != null)
+            {
+                try
+                {
+                    var result = m.Invoke(inventory, new object[] { itemId, amount });
+                    if (result is bool b) return b;
+                    return true;
+                }
+                catch (Exception ex)
+                {
+                    Plugin.Log?.LogDebug($"[ItemPatches] RemoveItem(int,int) failed: {ex.Message}");
+                }
+            }
+
+            // Try RemoveItemAmount(int id, int amount)
+            m = AccessTools.Method(invType, "RemoveItemAmount", new[] { typeof(int), typeof(int) });
+            if (m != null)
+            {
+                try
+                {
+                    var result = m.Invoke(inventory, new object[] { itemId, amount });
+                    if (result is bool b) return b;
+                    return true;
+                }
+                catch (Exception ex)
+                {
+                    Plugin.Log?.LogDebug($"[ItemPatches] RemoveItemAmount failed: {ex.Message}");
+                }
+            }
+
+            return false;
+        }
 
         /// <summary>
         /// Remove an item from player inventory.
@@ -760,6 +761,10 @@ namespace TheVault.Patches
             {
                 vaultManager.AddCommunityTokens(currencyId.Substring("community_".Length), amount);
             }
+            else if (currencyId.StartsWith("special_"))
+            {
+                vaultManager.AddSpecial(currencyId.Substring("special_".Length), amount);
+            }
             else if (currencyId.StartsWith("key_"))
             {
                 vaultManager.AddKeys(currencyId.Substring("key_".Length), amount);
@@ -791,6 +796,10 @@ namespace TheVault.Patches
             else if (currencyId.StartsWith("community_"))
             {
                 return vaultManager.RemoveCommunityTokens(currencyId.Substring("community_".Length), amount);
+            }
+            else if (currencyId.StartsWith("special_"))
+            {
+                return vaultManager.RemoveSpecial(currencyId.Substring("special_".Length), amount);
             }
             else if (currencyId.StartsWith("key_"))
             {
@@ -839,6 +848,10 @@ namespace TheVault.Patches
             else if (currencyId.StartsWith("community_"))
             {
                 return vaultManager.GetCommunityTokens(currencyId.Substring("community_".Length));
+            }
+            else if (currencyId.StartsWith("special_"))
+            {
+                return vaultManager.GetSpecial(currencyId.Substring("special_".Length));
             }
             else if (currencyId.StartsWith("key_"))
             {
@@ -1011,40 +1024,66 @@ namespace TheVault.Patches
         /// Shows the native game pickup notification for auto-deposited items.
         /// This triggers the same popup players see when picking up any item.
         /// </summary>
+        private static object _cachedNotifyInstance;
+        private static MethodInfo _cachedNotifyMethod;
+
         private static void ShowAutoDepositNotification(string currencyId, int amount)
         {
             try
             {
                 int itemId = GetItemForCurrency(currencyId);
-                if (itemId < 0)
+                if (itemId < 0) return;
+
+                if (_cachedNotifyInstance != null && _cachedNotifyMethod != null)
                 {
-                    Plugin.Log?.LogWarning($"ShowAutoDepositNotification: No item ID for currency {currencyId}");
+                    _cachedNotifyMethod.Invoke(_cachedNotifyInstance, new object[] { itemId, amount });
                     return;
                 }
 
-                Plugin.Log?.LogInfo($"ShowAutoDepositNotification: Attempting notification for item {itemId} x{amount}");
-
-                // Method 1: Try SingletonBehaviour<Notifications>.Instance.SendNotification (most common in Sun Haven)
-                if (TrySendViaNotifications(itemId, amount)) return;
-
-                // Method 2: Try NotificationStack
-                if (TrySendViaNotificationStack(itemId, amount)) return;
-
-                // Method 3: Try UIHandler or similar UI manager
-                if (TrySendViaUIHandler(itemId, amount)) return;
-
-                // Method 4: Try Player notification methods
-                if (TrySendViaPlayer(itemId, amount)) return;
-
-                // Method 5: Search all loaded types for notification-related singletons
-                if (TrySendViaReflectionSearch(itemId, amount)) return;
-
-                Plugin.Log?.LogWarning("Could not find a notification method - item deposited silently");
+                TryCacheAndSendNotification(itemId, amount);
             }
-            catch (Exception ex)
+            catch { }
+        }
+
+        private static void TryCacheAndSendNotification(int itemId, int amount)
+        {
+            try
             {
-                Plugin.Log?.LogError($"Error showing auto-deposit notification: {ex.Message}");
+                var stackType = AccessTools.TypeByName("Wish.NotificationStack");
+                if (stackType != null)
+                {
+                    var instProp = AccessTools.Property(stackType, "Instance");
+                    if (instProp != null)
+                    {
+                        var inst = instProp.GetValue(null);
+                        var sendMethod = AccessTools.Method(stackType, "SendNotification", new[] { typeof(int), typeof(int) });
+                        if (inst != null && sendMethod != null)
+                        {
+                            _cachedNotifyInstance = inst;
+                            _cachedNotifyMethod = sendMethod;
+                            sendMethod.Invoke(inst, new object[] { itemId, amount });
+                            return;
+                        }
+                    }
+                }
+                var notifType = AccessTools.TypeByName("Wish.Notifications");
+                if (notifType != null)
+                {
+                    var instProp = AccessTools.Property(notifType, "Instance");
+                    if (instProp != null)
+                    {
+                        var inst = instProp.GetValue(null);
+                        var sendMethod = AccessTools.Method(notifType, "SendNotification", new[] { typeof(int), typeof(int) });
+                        if (inst != null && sendMethod != null)
+                        {
+                            _cachedNotifyInstance = inst;
+                            _cachedNotifyMethod = sendMethod;
+                            sendMethod.Invoke(inst, new object[] { itemId, amount });
+                        }
+                    }
+                }
             }
+            catch { }
         }
 
         private static bool TrySendViaNotifications(int itemId, int amount)
