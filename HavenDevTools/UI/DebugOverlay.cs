@@ -75,9 +75,8 @@ namespace HavenDevTools.UI
                 _gold = currencyTracker?.GetGold() ?? 0;
 
                 // Held item
-                var itemInspector = Plugin.GetItemInspector();
-                var heldItem = itemInspector?.GetHeldItem();
-                _heldItemInfo = heldItem != null ? $"[{heldItem.Id}] {heldItem.Name}" : "None";
+                var heldItem = Plugin.GetItemInspector()?.GetHeldItem();
+                _heldItemInfo = heldItem.HasValue ? $"{heldItem.Value.name} ({heldItem.Value.id})" : "None";
 
                 // Position
                 if (Wish.Player.Instance != null)
