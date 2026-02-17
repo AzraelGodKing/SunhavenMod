@@ -96,6 +96,7 @@
   <ItemGroup>
     <Compile Include="..\SharedUtilities\VersionChecker.cs" Link="Shared\VersionChecker.cs" />
     <Compile Include="..\SharedUtilities\ReflectionHelper.cs" Link="Shared\ReflectionHelper.cs" />
+    <Compile Include="..\SharedUtilities\ItemSearch.cs" Link="Shared\ItemSearch.cs" />
   </ItemGroup>
 
   <!-- Copy to BepInEx plugins folder and builds folder after build -->

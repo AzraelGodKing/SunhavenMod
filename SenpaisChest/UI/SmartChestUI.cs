@@ -1,6 +1,9 @@
 using System;
 using System.Collections.Generic;
 using SenpaisChest.Data;
+using SunhavenMods.Shared;
+using SunHavenMuseumUtilityTracker;
+using SunHavenMuseumUtilityTracker.Data;
 using UnityEngine;
 using Wish;
 
@@ -55,6 +58,7 @@ namespace SenpaisChest.UI
         private readonly Color _btnHover = new Color(0.30f, 0.32f, 0.44f, 1f);
         private readonly Color _ruleBoxColor = new Color(0.18f, 0.19f, 0.28f, 1f);
         private readonly Color _fieldBg = new Color(0.12f, 0.13f, 0.22f, 1f);
+        private readonly Color _museumHighlight = new Color(0.35f, 0.65f, 0.85f, 1f); // Museum item indicator
         private Texture2D _solidBg;
 
         // Textures
@@ -367,7 +371,7 @@ namespace SenpaisChest.UI
                     if (_selectedItemId > 0)
                     {
                         GUILayout.Space(2);
-                        GUILayout.Label($"Selected: {_selectedItemName} ({_selectedItemId})", _labelStyle);
+                        GUILayout.Label($"Selected: {ItemSearch.FormatDisplay(_selectedItemName, _selectedItemId)}", _labelStyle);
                     }
 
                     // Show search results
@@ -377,12 +381,27 @@ namespace SenpaisChest.UI
                         _searchScrollPos = GUILayout.BeginScrollView(_searchScrollPos, GUILayout.Height(120));
                         foreach (var result in _searchResults)
                         {
+                            bool isMuseum = IsUndonatedMuseumItem(result.Key);
+                            string label = ItemSearch.FormatDisplay(result.Value, result.Key);
+                            if (isMuseum)
+                                label += " [Museum]";
+
+                            GUILayout.BeginHorizontal();
+                            if (isMuseum)
+                            {
+                                // Left border indicator for undonated museum items
+                                var barRect = GUILayoutUtility.GetRect(4, 22, GUILayout.Width(4), GUILayout.Height(22));
+                                GUI.color = _museumHighlight;
+                                GUI.DrawTexture(barRect, Texture2D.whiteTexture);
+                                GUI.color = Color.white;
+                            }
                             var style = (result.Key == _selectedItemId) ? _searchResultSelectedStyle : _searchResultStyle;
-                            if (GUILayout.Button($"{result.Value} ({result.Key})", style, GUILayout.Height(22)))
+                            if (GUILayout.Button(label, style, GUILayout.Height(22)))
                             {
                                 _selectedItemId = result.Key;
                                 _selectedItemName = result.Value;
                             }
+                            GUILayout.EndHorizontal();
                         }
                         GUILayout.EndScrollView();
                     }
@@ -440,11 +459,37 @@ namespace SenpaisChest.UI
             if (rule.Type == RuleType.ByItemId)
             {
                 var name = SmartChestManager.GetItemName(rule.ItemId);
-                if (!string.IsNullOrEmpty(name))
-                    return $"{name} ({rule.ItemId})";
-                return $"Item ID: {rule.ItemId}";
+                string baseText = !string.IsNullOrEmpty(name)
+                    ? $"{name} ({rule.ItemId})"
+                    : $"Item ID: {rule.ItemId}";
+                if (IsUndonatedMuseumItem(rule.ItemId))
+                    baseText += " [Museum]";
+                return baseText;
             }
             return rule.GetDisplayText();
+        }
+
+        /// <summary>
+        /// Returns true if the item is a museum item that hasn't been donated yet.
+        /// Requires S.M.U.T. to be loaded. Returns false if S.M.U.T. is not present.
+        /// </summary>
+        private bool IsUndonatedMuseumItem(int gameItemId)
+        {
+            try
+            {
+                var donationManager = SunHavenMuseumUtilityTracker.Plugin.GetDonationManager();
+                if (donationManager == null || !donationManager.IsLoaded)
+                    return false;
+
+                if (MuseumContent.FindByGameItemId(gameItemId) == null)
+                    return false;
+
+                return !donationManager.HasDonatedByGameId(gameItemId);
+            }
+            catch
+            {
+                return false;
+            }
         }
 
         private void AddRule()

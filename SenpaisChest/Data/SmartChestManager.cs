@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using HarmonyLib;
+using SunhavenMods.Shared;
 using UnityEngine;
 using Wish;
 
@@ -246,100 +247,20 @@ namespace SenpaisChest.Data
         /// <summary>
         /// Searches the item database by name or ID. Returns results as (ID, Name) pairs
         /// sorted with exact matches first, then starts-with, then contains.
+        /// Uses shared ItemSearch.
         /// </summary>
         public static List<KeyValuePair<int, string>> SearchItems(string query, int maxResults = 20)
         {
-            var results = new List<KeyValuePair<int, string>>();
-            if (string.IsNullOrEmpty(query) || query.Length < 2)
-                return results;
-
-            try
-            {
-                if (_itemInfoDbInstance == null || (_itemInfoDbInstance is UnityEngine.Object obj && obj == null))
-                {
-                    _itemInfoDbInstance = GetSingletonInstance("Wish.ItemInfoDatabase");
-                    if (_itemInfoDbInstance != null)
-                    {
-                        _allItemSellInfosField = _itemInfoDbInstance.GetType()
-                            .GetField("allItemSellInfos", BindingFlags.Public | BindingFlags.Instance);
-                    }
-                }
-
-                if (_itemInfoDbInstance == null || _allItemSellInfosField == null)
-                    return results;
-
-                var dict = _allItemSellInfosField.GetValue(_itemInfoDbInstance) as Dictionary<int, ItemSellInfo>;
-                if (dict == null)
-                    return results;
-
-                string queryLower = query.ToLowerInvariant();
-                bool isNumeric = int.TryParse(query, out int queryId);
-
-                // Collect matches into buckets: exact, starts-with, contains
-                var exact = new List<KeyValuePair<int, string>>();
-                var startsWith = new List<KeyValuePair<int, string>>();
-                var contains = new List<KeyValuePair<int, string>>();
-
-                foreach (var kvp in dict)
-                {
-                    if (kvp.Value == null || string.IsNullOrEmpty(kvp.Value.name))
-                        continue;
-
-                    var entry = new KeyValuePair<int, string>(kvp.Key, kvp.Value.name);
-                    string nameLower = kvp.Value.name.ToLowerInvariant();
-
-                    // Exact ID match
-                    if (isNumeric && kvp.Key == queryId)
-                    {
-                        exact.Add(entry);
-                        continue;
-                    }
-
-                    // Exact name match
-                    if (nameLower == queryLower)
-                    {
-                        exact.Add(entry);
-                    }
-                    else if (nameLower.StartsWith(queryLower))
-                    {
-                        startsWith.Add(entry);
-                    }
-                    else if (nameLower.Contains(queryLower))
-                    {
-                        contains.Add(entry);
-                    }
-                    else if (isNumeric && kvp.Key.ToString().Contains(query))
-                    {
-                        contains.Add(entry);
-                    }
-                }
-
-                // Sort each bucket alphabetically by name
-                startsWith.Sort((a, b) => string.Compare(a.Value, b.Value, StringComparison.OrdinalIgnoreCase));
-                contains.Sort((a, b) => string.Compare(a.Value, b.Value, StringComparison.OrdinalIgnoreCase));
-
-                results.AddRange(exact);
-                results.AddRange(startsWith);
-                results.AddRange(contains);
-
-                if (results.Count > maxResults)
-                    results.RemoveRange(maxResults, results.Count - maxResults);
-            }
-            catch (Exception ex)
-            {
-                Plugin.Log?.LogWarning($"Error searching items: {ex.Message}");
-            }
-
-            return results;
+            return ItemSearch.SearchItems(query ?? "", maxResults);
         }
 
         /// <summary>
         /// Gets a single item's name by ID. Returns null if not found.
+        /// Uses shared ItemSearch.
         /// </summary>
         public static string GetItemName(int itemId)
         {
-            var info = GetItemSellInfo(itemId);
-            return info?.name;
+            return ItemSearch.GetItemName(itemId);
         }
 
         #endregion

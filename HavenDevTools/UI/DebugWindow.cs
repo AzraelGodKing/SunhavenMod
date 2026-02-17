@@ -31,11 +31,14 @@ namespace HavenDevTools.UI
         private int _selectedTab;
         private readonly string[] _tabNames = { "Items", "Currencies", "Bundles", "Race Bonuses", "Utility" };
 
-        // Item search
+        // Item search (Senpai's Chest style)
         private string _itemSearchText = "";
+        private string _lastItemSearchQuery = null;
         private string _itemIdInput = "";
         private string _spawnAmount = "1";
-        private List<GameItemInfo> _searchResults = new List<GameItemInfo>();
+        private int _selectedItemId;
+        private string _selectedItemName = "";
+        private List<KeyValuePair<int, string>> _searchResults = new List<KeyValuePair<int, string>>();
         private Vector2 _itemScrollPosition;
 
         // Currency state
@@ -272,71 +275,86 @@ namespace HavenDevTools.UI
 
             // Held item
             var heldItem = Plugin.GetItemInspector()?.GetHeldItem();
-            if (heldItem != null)
-            {
-                GUILayout.Label($"Held Item: [{heldItem.Id}] {heldItem.Name}", _labelStyle);
-            }
+            if (heldItem.HasValue)
+                GUILayout.Label($"Held: {heldItem.Value.name} ({heldItem.Value.id})", _labelStyle);
             else
-            {
-                GUILayout.Label("Held Item: None", _labelStyle);
-            }
+                GUILayout.Label("Held: None", _labelStyle);
 
             GUILayout.Space(10);
 
-            // Search
-            GUILayout.Label("Search Items:", _labelStyle);
+            // Search (Senpai's Chest style - live search, 2+ chars)
+            GUILayout.Label("Search:", _labelStyle);
             GUILayout.BeginHorizontal();
-            _itemSearchText = GUILayout.TextField(_itemSearchText, _textFieldStyle, GUILayout.Width(250));
-            if (GUILayout.Button("Search", _buttonStyle, GUILayout.Width(80)))
-            {
-                _searchResults = Plugin.GetItemInspector()?.SearchByName(_itemSearchText) ?? new List<GameItemInfo>();
-            }
-            if (GUILayout.Button("Clear", _buttonStyle, GUILayout.Width(60)))
+            _itemSearchText = GUILayout.TextField(_itemSearchText, _textFieldStyle);
+            if (GUILayout.Button("Clear", _buttonStyle, GUILayout.Width(50)))
             {
                 _itemSearchText = "";
+                _lastItemSearchQuery = "";
                 _searchResults.Clear();
             }
             GUILayout.EndHorizontal();
 
-            // Results
+            if (_itemSearchText != _lastItemSearchQuery)
+            {
+                _lastItemSearchQuery = _itemSearchText;
+                _searchResults = ItemInspector.SearchItems(_itemSearchText, 50);
+            }
+
+            if (_selectedItemId > 0)
+            {
+                GUILayout.Space(2);
+                GUILayout.Label($"Selected: {ItemSearch.FormatDisplay(_selectedItemName, _selectedItemId)}", _labelStyle);
+            }
+
             if (_searchResults.Count > 0)
             {
-                GUILayout.Label($"Results ({_searchResults.Count}):", _labelStyle);
-                _itemScrollPosition = GUILayout.BeginScrollView(_itemScrollPosition, GUILayout.Height(150));
-                foreach (var item in _searchResults)
+                GUILayout.Space(4);
+                float h = Mathf.Min(180, 24 + _searchResults.Count * 22);
+                _itemScrollPosition = GUILayout.BeginScrollView(_itemScrollPosition, GUILayout.Height(h));
+                foreach (var result in _searchResults)
                 {
-                    GUILayout.BeginHorizontal();
-                    GUILayout.Label($"[{item.Id}] {item.Name}", _labelStyle, GUILayout.Width(300));
-                    if (GUILayout.Button("Spawn", _buttonStyle, GUILayout.Width(60)))
+                    string label = ItemSearch.FormatDisplay(result.Value, result.Key);
+                    bool selected = result.Key == _selectedItemId;
+                    if (GUILayout.Button(label, selected ? _buttonStyle : _labelStyle, GUILayout.Height(22)))
                     {
-                        _itemIdInput = item.Id.ToString();
+                        _selectedItemId = result.Key;
+                        _selectedItemName = result.Value;
+                        _itemIdInput = result.Key.ToString();
                     }
-                    GUILayout.EndHorizontal();
                 }
                 GUILayout.EndScrollView();
+            }
+            else if (_itemSearchText.Length >= 2)
+            {
+                GUILayout.Space(2);
+                GUILayout.Label("No items found.", _labelStyle);
             }
 
             GUILayout.Space(10);
 
-            // Spawn by ID
-            GUILayout.Label("Spawn Item:", _labelStyle);
+            // Spawn
+            GUILayout.Label("Spawn:", _labelStyle);
             GUILayout.BeginHorizontal();
-            GUILayout.Label("ID:", _labelStyle, GUILayout.Width(25));
-            _itemIdInput = GUILayout.TextField(_itemIdInput, _textFieldStyle, GUILayout.Width(80));
-            GUILayout.Label("Qty:", _labelStyle, GUILayout.Width(30));
-            _spawnAmount = GUILayout.TextField(_spawnAmount, _textFieldStyle, GUILayout.Width(50));
-            if (GUILayout.Button("1", _buttonStyle, GUILayout.Width(25))) _spawnAmount = "1";
-            if (GUILayout.Button("10", _buttonStyle, GUILayout.Width(30))) _spawnAmount = "10";
-            if (GUILayout.Button("99", _buttonStyle, GUILayout.Width(30))) _spawnAmount = "99";
+            GUILayout.Label("ID:", _labelStyle, GUILayout.Width(22));
+            _itemIdInput = GUILayout.TextField(_itemIdInput, _textFieldStyle, GUILayout.Width(70));
+            GUILayout.Label("Qty:", _labelStyle, GUILayout.Width(28));
+            _spawnAmount = GUILayout.TextField(_spawnAmount, _textFieldStyle, GUILayout.Width(40));
+            if (GUILayout.Button("1", _buttonStyle, GUILayout.Width(22))) _spawnAmount = "1";
+            if (GUILayout.Button("10", _buttonStyle, GUILayout.Width(28))) _spawnAmount = "10";
+            if (GUILayout.Button("99", _buttonStyle, GUILayout.Width(28))) _spawnAmount = "99";
             GUILayout.EndHorizontal();
 
+            GUILayout.BeginHorizontal();
             if (GUILayout.Button("Spawn to Inventory", _buttonStyle))
             {
-                if (int.TryParse(_itemIdInput, out int itemId) && int.TryParse(_spawnAmount, out int amount))
-                {
+                if (int.TryParse(_itemIdInput, out int itemId) && int.TryParse(_spawnAmount, out int amount) && amount > 0)
                     Plugin.GetItemInspector()?.SpawnItem(itemId, amount);
-                }
             }
+            if (_selectedItemId > 0 && GUILayout.Button("Spawn 1", _buttonStyle, GUILayout.Width(70)))
+            {
+                Plugin.GetItemInspector()?.SpawnItem(_selectedItemId, 1);
+            }
+            GUILayout.EndHorizontal();
 
             GUILayout.EndVertical();
         }
@@ -606,17 +624,6 @@ namespace HavenDevTools.UI
 
             // Version Checker Section
             DrawVersionCheckerSection();
-
-            GUILayout.Space(10);
-
-            // Item cache
-            var itemInspector = Plugin.GetItemInspector();
-            GUILayout.Label($"Item Cache: {itemInspector?.CacheCount ?? 0} items ({(itemInspector?.IsCacheBuilt == true ? "built" : "not built")})", _labelStyle);
-
-            if (GUILayout.Button("Build Item Cache", _buttonStyle))
-            {
-                itemInspector?.BuildCache();
-            }
 
             GUILayout.Space(10);
 
