@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Reflection;
+using BepInEx.Logging;
 using HarmonyLib;
 using Wish;
 
@@ -13,8 +14,15 @@ namespace SunhavenMods.Shared
     /// </summary>
     public static class ItemSearch
     {
+        private static readonly ManualLogSource _log = Logger.CreateLogSource("ItemSearch");
+
         private static object _dbInstance;
         private static FieldInfo _dictField;
+
+        // Reusable buffers for SearchItems to avoid per-call allocations (cleared and refilled each call)
+        private static readonly List<KeyValuePair<int, string>> _bufferExact = new List<KeyValuePair<int, string>>();
+        private static readonly List<KeyValuePair<int, string>> _bufferStartsWith = new List<KeyValuePair<int, string>>();
+        private static readonly List<KeyValuePair<int, string>> _bufferContains = new List<KeyValuePair<int, string>>();
 
         /// <summary>
         /// Format item for display: "Item Name (#Item ID)"
@@ -43,9 +51,9 @@ namespace SunhavenMods.Shared
                 string queryLower = query.Trim().ToLowerInvariant();
                 bool isNumeric = int.TryParse(query.Trim(), out int queryId);
 
-                var exact = new List<KeyValuePair<int, string>>();
-                var startsWith = new List<KeyValuePair<int, string>>();
-                var contains = new List<KeyValuePair<int, string>>();
+                _bufferExact.Clear();
+                _bufferStartsWith.Clear();
+                _bufferContains.Clear();
 
                 foreach (var kvp in dict)
                 {
@@ -58,30 +66,33 @@ namespace SunhavenMods.Shared
 
                     if (isNumeric && id == queryId)
                     {
-                        exact.Add(entry);
+                        _bufferExact.Add(entry);
                         continue;
                     }
                     if (nameLower == queryLower)
-                        exact.Add(entry);
+                        _bufferExact.Add(entry);
                     else if (nameLower.StartsWith(queryLower))
-                        startsWith.Add(entry);
+                        _bufferStartsWith.Add(entry);
                     else if (nameLower.Contains(queryLower))
-                        contains.Add(entry);
+                        _bufferContains.Add(entry);
                     else if (isNumeric && id.ToString().Contains(query.Trim()))
-                        contains.Add(entry);
+                        _bufferContains.Add(entry);
                 }
 
-                startsWith.Sort((a, b) => string.Compare(a.Value, b.Value, StringComparison.OrdinalIgnoreCase));
-                contains.Sort((a, b) => string.Compare(a.Value, b.Value, StringComparison.OrdinalIgnoreCase));
+                _bufferStartsWith.Sort((a, b) => string.Compare(a.Value, b.Value, StringComparison.OrdinalIgnoreCase));
+                _bufferContains.Sort((a, b) => string.Compare(a.Value, b.Value, StringComparison.OrdinalIgnoreCase));
 
-                results.AddRange(exact);
-                results.AddRange(startsWith);
-                results.AddRange(contains);
+                results.AddRange(_bufferExact);
+                results.AddRange(_bufferStartsWith);
+                results.AddRange(_bufferContains);
 
                 if (results.Count > maxResults)
                     results.RemoveRange(maxResults, results.Count - maxResults);
             }
-            catch { }
+            catch (Exception ex)
+            {
+                _log?.LogDebug($"[ItemSearch] SearchItems error: {ex.Message}");
+            }
 
             return results;
         }
@@ -97,7 +108,30 @@ namespace SunhavenMods.Shared
                 if (dict == null || !dict.ContainsKey(itemId)) return null;
                 return dict[itemId]?.name;
             }
-            catch { return null; }
+            catch (Exception ex)
+            {
+                _log?.LogDebug($"[ItemSearch] GetItemName({itemId}): {ex.Message}");
+                return null;
+            }
+        }
+
+        /// <summary>
+        /// Get the full ItemSellInfo for an item by ID. Returns null if not found.
+        /// Used by SmartChestManager for rule matching (isGem, itemType, etc.).
+        /// </summary>
+        public static ItemSellInfo GetItemSellInfo(int itemId)
+        {
+            try
+            {
+                var dict = GetItemDictionary();
+                if (dict != null && dict.TryGetValue(itemId, out var info))
+                    return info;
+            }
+            catch (Exception ex)
+            {
+                _log?.LogDebug($"[ItemSearch] GetItemSellInfo({itemId}): {ex.Message}");
+            }
+            return null;
         }
 
         /// <summary>
@@ -126,7 +160,11 @@ namespace SunhavenMods.Shared
 
                 return _dictField.GetValue(_dbInstance) as Dictionary<int, ItemSellInfo>;
             }
-            catch { return null; }
+            catch (Exception ex)
+            {
+                _log?.LogDebug($"[ItemSearch] GetItemDictionary: {ex.Message}");
+                return null;
+            }
         }
 
         private static object GetSingletonInstance(string typeName)
@@ -147,8 +185,9 @@ namespace SunhavenMods.Shared
 
                 return instanceProp?.GetValue(null);
             }
-            catch
+            catch (Exception ex)
             {
+                _log?.LogDebug($"[ItemSearch] GetSingletonInstance({typeName}): {ex.Message}");
                 return null;
             }
         }

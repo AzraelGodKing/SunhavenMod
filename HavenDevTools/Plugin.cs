@@ -58,7 +58,6 @@ namespace HavenDevTools
         public static bool HasHavensBirthright { get; private set; }
 
         private Harmony _harmony;
-        private string _lastScene = "";
 
         private void Awake()
         {
@@ -236,17 +235,6 @@ namespace HavenDevTools
                 // Reset authorization state on return to menu
                 _isAuthorized = false;
                 _currentPlayerName = null;
-            }
-        }
-
-        private void Update()
-        {
-            // Scene polling backup
-            string currentScene = SceneManager.GetActiveScene().name;
-            if (currentScene != _lastScene)
-            {
-                Log.LogInfo($"[ScenePoll] Scene changed: '{_lastScene}' -> '{currentScene}'");
-                _lastScene = currentScene;
             }
         }
 
@@ -435,7 +423,6 @@ namespace HavenDevTools
     /// </summary>
     public class PersistentRunner : MonoBehaviour
     {
-        private string _lastScene = "";
         private float _heartbeatTimer = 0f;
         private int _heartbeatCount = 0;
         private const float HEARTBEAT_INTERVAL = 30f;
@@ -449,7 +436,6 @@ namespace HavenDevTools
         private void Update()
         {
             CheckHotkeys();
-            CheckSceneChange();
 
             // Heartbeat - prove the runner is still alive
             _heartbeatTimer += Time.deltaTime;
@@ -457,7 +443,7 @@ namespace HavenDevTools
             {
                 _heartbeatTimer = 0f;
                 _heartbeatCount++;
-                Plugin.Log?.LogInfo($"[PersistentRunner Heartbeat #{_heartbeatCount}] Scene: {_lastScene}, Authorized: {Plugin.IsAuthorized}, Player: {Plugin.CurrentPlayerName ?? "none"}");
+                Plugin.Log?.LogInfo($"[PersistentRunner Heartbeat #{_heartbeatCount}] Authorized: {Plugin.IsAuthorized}, Player: {Plugin.CurrentPlayerName ?? "none"}");
             }
         }
 
@@ -480,22 +466,6 @@ namespace HavenDevTools
             catch (Exception ex)
             {
                 Plugin.Log?.LogError($"[PersistentRunner] Hotkey error: {ex.Message}");
-            }
-        }
-
-        private void CheckSceneChange()
-        {
-            string currentScene = SceneManager.GetActiveScene().name;
-            if (currentScene != _lastScene)
-            {
-                Plugin.Log?.LogInfo($"[PersistentRunner] Scene changed: '{_lastScene}' -> '{currentScene}'");
-                _lastScene = currentScene;
-
-                string lower = currentScene.ToLowerInvariant();
-                if (lower.Contains("menu") || lower.Contains("title"))
-                {
-                    Plugin.Log?.LogInfo("[PersistentRunner] Menu scene detected");
-                }
             }
         }
 

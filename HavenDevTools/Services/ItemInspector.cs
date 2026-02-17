@@ -1,5 +1,4 @@
 using System;
-using System.Collections.Generic;
 using System.Reflection;
 using HarmonyLib;
 using SunhavenMods.Shared;
@@ -18,22 +17,6 @@ namespace HavenDevTools.Services
         public ItemInspector()
         {
             Plugin.Log?.LogInfo("[ItemInspector] Initialized");
-        }
-
-        /// <summary>
-        /// Search items by name or ID. Uses shared ItemSearch.
-        /// </summary>
-        public static List<KeyValuePair<int, string>> SearchItems(string query, int maxResults = 50)
-        {
-            return ItemSearch.SearchItems(query ?? "", maxResults);
-        }
-
-        /// <summary>
-        /// Get item name by ID. Uses shared ItemSearch.
-        /// </summary>
-        public static string GetItemName(int itemId)
-        {
-            return ItemSearch.GetItemName(itemId);
         }
 
         /// <summary>
@@ -96,7 +79,10 @@ namespace HavenDevTools.Services
                     return _cachedAddItemMethod;
                 }
             }
-            catch { }
+            catch (Exception ex)
+            {
+                Plugin.Log?.LogDebug($"[ItemInspector] GetAddItemMethod: {ex.Message}");
+            }
             return null;
         }
 
@@ -133,10 +119,14 @@ namespace HavenDevTools.Services
                 if (idProp == null) return null;
 
                 int id = (int)idProp.GetValue(item);
-                string name = GetItemName(id) ?? $"Item {id}";
+                string name = ItemSearch.GetItemName(id) ?? $"Item {id}";
                 return (id, name);
             }
-            catch { return null; }
+            catch (Exception ex)
+            {
+                Plugin.Log?.LogDebug($"[ItemInspector] GetHeldItem: {ex.Message}");
+                return null;
+            }
         }
     }
 }
