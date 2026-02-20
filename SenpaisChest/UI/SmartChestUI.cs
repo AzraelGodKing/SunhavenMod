@@ -1,5 +1,7 @@
 using System;
 using System.Collections.Generic;
+using System.Reflection;
+using SenpaisChest.Config;
 using SenpaisChest.Data;
 using SunhavenMods.Shared;
 using SunHavenMuseumUtilityTracker;
@@ -9,8 +11,11 @@ using Wish;
 
 namespace SenpaisChest.UI
 {
+    [UnityEngine.DefaultExecutionOrder(-30000)]
     public class SmartChestUI : MonoBehaviour
     {
+        private const string PAUSE_ID = "SenpaisChest_Config";
+
         private SmartChestManager _manager;
         private bool _isVisible;
         private Chest _currentChest;
@@ -19,7 +24,11 @@ namespace SenpaisChest.UI
 
         // Window
         private Rect _windowRect = new Rect(100, 100, 420, 500);
-        private Vector2 _rulesScrollPos;
+
+        // Note panel shown when chest is open ("Press F9 to configure")
+        private GameObject _notePanelRoot;
+        private Rect _noteRect;
+        private bool _noteRectDirty = true;
         private float _contentHeight = 500f;
 
         // Add rule form state
@@ -42,13 +51,14 @@ namespace SenpaisChest.UI
         private static readonly string[] ItemTypeNames = { "Normal", "Armor", "Food", "Fish", "Crop", "WateringCan", "Animal", "Pet", "Tool" };
         private static readonly string[] PropertyNames = { "isGem", "isForageable", "isAnimalProduct", "isMeal", "isFruit", "isArtisanryItem", "isPotion", "isNotDonated" };
         private static readonly string[] PropertyDisplayNames = { "Gems", "Forageables", "Animal Products", "Meals", "Fruits", "Artisanry Items", "Potions", "Museum (Not Donated)" };
+        private const string SearchFieldControlName = "SmartChestItemSearch";
 
-        // Color palette — dark navy theme with gold accents (all fully opaque)
+        // Color palette — dark navy theme with gold accents
         private readonly Color _bgDark = new Color(0.15f, 0.16f, 0.24f, 1f);
         private readonly Color _borderGold = new Color(0.75f, 0.65f, 0.30f, 1f);
-        private readonly Color _goldText = new Color(0.95f, 0.85f, 0.35f);
-        private readonly Color _whiteText = new Color(0.95f, 0.95f, 0.95f);
-        private readonly Color _dimText = new Color(0.6f, 0.6f, 0.7f);
+        private readonly Color _goldText = new Color(0.95f, 0.85f, 0.35f, 1f);
+        private readonly Color _whiteText = new Color(0.95f, 0.95f, 0.95f, 1f);
+        private readonly Color _dimText = new Color(0.6f, 0.6f, 0.7f, 1f);
         private readonly Color _greenActive = new Color(0.20f, 0.55f, 0.45f, 1f);
         private readonly Color _greenHover = new Color(0.25f, 0.65f, 0.52f, 1f);
         private readonly Color _greenBright = new Color(0.30f, 0.70f, 0.55f, 1f);
@@ -58,10 +68,24 @@ namespace SenpaisChest.UI
         private readonly Color _btnHover = new Color(0.30f, 0.32f, 0.44f, 1f);
         private readonly Color _ruleBoxColor = new Color(0.18f, 0.19f, 0.28f, 1f);
         private readonly Color _fieldBg = new Color(0.12f, 0.13f, 0.22f, 1f);
-        private readonly Color _museumHighlight = new Color(0.35f, 0.65f, 0.85f, 1f); // Museum item indicator
-        private Texture2D _solidBg;
+        private readonly Color _museumHighlight = new Color(0.35f, 0.65f, 0.85f, 1f);
+        private readonly Color _parchmentLight = new Color(0.96f, 0.93f, 0.86f, 0.98f);
+        private readonly Color _parchment = new Color(0.92f, 0.87f, 0.78f, 0.97f);
+        private readonly Color _parchmentDark = new Color(0.85f, 0.78f, 0.65f, 0.95f);
+        private readonly Color _woodDark = new Color(0.35f, 0.25f, 0.15f);
+        private readonly Color _woodMedium = new Color(0.50f, 0.38f, 0.25f);
+        private readonly Color _woodLight = new Color(0.65f, 0.52f, 0.38f);
+        private readonly Color _goldPale = new Color(0.92f, 0.82f, 0.55f);
+        private readonly Color _goldRich = new Color(0.72f, 0.55f, 0.20f);
+        private readonly Color _borderWood = new Color(0.45f, 0.35f, 0.22f, 0.9f);
+        private readonly Color _chestTextDark = new Color(0.08f, 0.06f, 0.05f, 1f);
+        private readonly Color _chestTextDim = new Color(0.14f, 0.11f, 0.09f, 1f);
+        private readonly Color _crimsonTitle = new Color(0.52f, 0.18f, 0.12f, 1f);
+        private readonly Color _crimsonTitleLight = new Color(0.58f, 0.22f, 0.16f, 1f);
+        private readonly Color _innerBorderCrimson = new Color(0.42f, 0.18f, 0.14f, 1f);
 
         // Textures
+        private Texture2D _solidBg;
         private Texture2D _windowBg;
         private Texture2D _ruleBg;
         private Texture2D _btnInactiveTex;
@@ -75,10 +99,43 @@ namespace SenpaisChest.UI
         private Texture2D _closeBtnTex;
         private Texture2D _closeBtnHoverTex;
         private Texture2D _fieldBgTex;
+        private Texture2D _chestParchmentBg;
+        private Texture2D _chestWoodBorderTex;
+        private Texture2D _chestRuleBoxTex;
+        private Texture2D _chestSelectorTex;
+        private Texture2D _chestSelectorHoverTex;
+        private Texture2D _chestSelectorActiveTex;
+        private Texture2D _chestAddBtnTex;
+        private Texture2D _chestAddBtnHoverTex;
+        private Texture2D _chestWoodBtnTex;
+        private Texture2D _chestWoodBtnHoverTex;
+        private Texture2D _chestDangerBtnTex;
+        private Texture2D _chestDangerBtnHoverTex;
+        private Texture2D _chestFieldBgTex;
+        private Texture2D _chestGoldLineTex;
+        private Texture2D _noteBannerBg;
+        private Texture2D _noteBannerBorderTex;
+        private Texture2D _configTitleBarTex;
+        private Texture2D _configContentBg;
+        private Texture2D _configGoldSeparatorTex;
+        private Texture2D _configSectionHeaderTex;
+        private Texture2D _configSearchFieldTex;
+        private Texture2D _configRemoveBtnTex;
+        private Texture2D _configRemoveBtnHoverTex;
+        private Texture2D _configCloseBtnTex;
+        private Texture2D _configCloseBtnHoverTex;
+        private Texture2D _configWindowBg;
+        private Texture2D _configInnerBorderTex;
 
         // Styles
         private GUIStyle _windowStyle;
         private GUIStyle _titleStyle;
+        private GUIStyle _chestTitleStyle;
+        private GUIStyle _chestLabelStyle;
+        private GUIStyle _chestLabelBoldStyle;
+        private GUIStyle _chestLabelDimStyle;
+        private GUIStyle _chestSectionHeaderStyle;
+        private GUIStyle _chestToggleStyle;
         private GUIStyle _sectionHeaderStyle;
         private GUIStyle _labelStyle;
         private GUIStyle _labelBoldStyle;
@@ -96,9 +153,29 @@ namespace SenpaisChest.UI
         private GUIStyle _closeBottomButtonStyle;
         private GUIStyle _searchResultStyle;
         private GUIStyle _searchResultSelectedStyle;
+        private GUIStyle _chestRuleBoxStyle;
+        private GUIStyle _chestRuleTextStyle;
+        private GUIStyle _chestSelectorStyle;
+        private GUIStyle _chestSelectorActiveStyle;
+        private GUIStyle _chestAddButtonStyle;
+        private GUIStyle _chestDangerButtonStyle;
+        private GUIStyle _chestCloseButtonStyle;
+        private GUIStyle _chestSearchFieldStyle;
+        private GUIStyle _chestRemoveRuleBtnStyle;
+        private GUIStyle _chestSearchResultStyle;
+        private GUIStyle _chestSearchResultSelectedStyle;
+        private GUIStyle _noteBannerStyle;
+        private GUIStyle _configTitleStyle;
+        private GUIStyle _configSectionHeaderBoxStyle;
+        private GUIStyle _configSearchFieldStyle;
+        private GUIStyle _configRemoveButtonStyle;
+        private GUIStyle _configCloseBottomStyle;
+        private GUIStyle _configWindowStyle;
         private bool _stylesInitialized;
 
         public bool IsVisible => _isVisible;
+        /// <summary>True when config is drawn inside the chest UI panel (we should not block closing the chest).</summary>
+        public bool IsEmbedded => false;
 
         public void Initialize(SmartChestManager manager)
         {
@@ -110,25 +187,58 @@ namespace SenpaisChest.UI
             _isVisible = true;
         }
 
+        /// <summary>Full cleanup when chest closes. Clears note and config, closes chest.</summary>
         public void Hide()
         {
             _isVisible = false;
+            BlockGameInput(false);
             var chestToClose = _currentChest;
             _currentChest = null;
             _currentData = null;
+            _notePanelRoot = null;
+            _noteRectDirty = true;
 
-            // Clear our tracking first (before EndInteract fires our prefix)
             Plugin.CurrentInteractingChest = null;
-
-            // Save any pending changes
             SaveIfDirty();
 
-            // Force the chest to properly end its interaction so it's no longer "in use"
-            // (our EndInteract prefix may have blocked the game's close attempt earlier)
             if (chestToClose != null)
             {
                 try { chestToClose.EndInteract(0); }
                 catch (Exception ex) { Plugin.Log?.LogDebug($"[SmartChestUI] EndInteract on close: {ex.Message}"); }
+            }
+        }
+
+        /// <summary>Closes the config window only. Chest stays open and note remains visible.</summary>
+        public void HideConfig()
+        {
+            _isVisible = false;
+            BlockGameInput(false);
+            SaveIfDirty();
+        }
+
+        /// <summary>Block/unblock game input so only Senpai's Chest UI receives it (e.g. Backspace won't close chest).</summary>
+        private void BlockGameInput(bool block)
+        {
+            try
+            {
+                if (Player.Instance != null)
+                {
+                    if (block)
+                        Player.Instance.AddPauseObject(PAUSE_ID);
+                    else
+                        Player.Instance.RemovePauseObject(PAUSE_ID);
+                }
+                var playerInputType = Type.GetType("PlayerInput, Assembly-CSharp");
+                if (playerInputType != null)
+                {
+                    var method = playerInputType.GetMethod(block ? "DisableInput" : "EnableInput",
+                        BindingFlags.Public | BindingFlags.Static, null, new[] { typeof(string) }, null);
+                    method?.Invoke(null, new object[] { PAUSE_ID });
+                }
+            }
+            catch (Exception ex)
+            {
+                Plugin.Log?.LogDebug($"[SmartChestUI] BlockGameInput failed: {ex.Message}");
             }
         }
 
@@ -144,7 +254,7 @@ namespace SenpaisChest.UI
         {
             if (_isVisible && _currentChest == chest)
             {
-                Hide();
+                HideConfig();
                 return;
             }
 
@@ -173,6 +283,47 @@ namespace SenpaisChest.UI
             _selectedProperty = 0;
 
             _isVisible = true;
+            BlockGameInput(true);
+            PositionWindowNextToChestPanel();
+        }
+
+        /// <summary>
+        /// Shows the note ("Press F9 to configure") in the given panel when chest is open. Config opens only via F9.
+        /// </summary>
+        public void ShowNoteForChest(Chest chest, GameObject panelRoot)
+        {
+            _currentChest = chest;
+            _chestId = SmartChestManager.GetChestId(chest);
+            if (string.IsNullOrEmpty(_chestId))
+            {
+                Plugin.Log?.LogWarning("[SmartChestUI] Cannot show note: no valid chest ID");
+                return;
+            }
+            string chestName = GetChestName(chest);
+            _currentData = _manager.GetOrCreateSmartChest(_chestId, chestName);
+            _notePanelRoot = panelRoot;
+            _noteRectDirty = true;
+            _isVisible = false; // Config not shown; only note
+            Plugin.Log?.LogDebug($"[SmartChestUI] ShowNoteForChest: chest={chest != null}, panelRoot={panelRoot != null}");
+        }
+
+        /// <summary>
+        /// Positions the config window at the bottom of the screen (same area as embedded panel)
+        /// when the chest UI is open, so config is always in the same place.
+        /// </summary>
+        private void PositionWindowNextToChestPanel()
+        {
+            if (_currentChest == null) return;
+
+            // Place floating window at bottom of screen to match embedded panel position
+            const float bottomMargin = 8f;
+            const float windowHeight = 400f;
+            float y = bottomMargin;
+            float h = Mathf.Min(windowHeight, Screen.height - bottomMargin);
+            _windowRect.width = 420f;
+            _windowRect.height = h;
+            _windowRect.x = Mathf.Clamp((Screen.width - _windowRect.width) * 0.5f, 0, Screen.width - _windowRect.width);
+            _windowRect.y = y; // GUI coords: y=0 is bottom, so this is just above bottom margin
         }
 
         /// <summary>
@@ -185,17 +336,41 @@ namespace SenpaisChest.UI
 
         private void OnGUI()
         {
-            if (!_isVisible || _currentData == null)
-                return;
-
             if (!_stylesInitialized)
                 InitializeStyles();
 
-            // Dynamic height — clamp to screen bounds
+            // Note panel: "Press F9 to configure rules" when chest is open and config not visible
+            if (_notePanelRoot != null && !_isVisible)
+            {
+                if (!_notePanelRoot.activeInHierarchy)
+                {
+                    _notePanelRoot = null;
+                    return;
+                }
+                if (_noteRectDirty || Event.current.type == UnityEngine.EventType.Layout)
+                {
+                    _noteRect = GetScreenRectFromTransform(_notePanelRoot.transform);
+                    _noteRectDirty = false;
+                }
+                Rect drawRect = _noteRect;
+                if (drawRect.width <= 0 || drawRect.height <= 0)
+                {
+                    drawRect = new Rect((Screen.width - 340f) * 0.5f, 8f, 340f, 34f);
+                }
+                drawRect = ClampRectToScreen(drawRect);
+
+                GUI.BeginGroup(drawRect);
+                DrawNoteContent(drawRect.width, drawRect.height);
+                GUI.EndGroup();
+                return;
+            }
+
+            if (!_isVisible || _currentData == null)
+                return;
+
+            // Floating config window (opened via F9)
             float maxHeight = Screen.height - 40f;
             _windowRect.height = Mathf.Clamp(_contentHeight, 300f, maxHeight);
-
-            // Keep window on screen
             _windowRect.x = Mathf.Clamp(_windowRect.x, 0, Screen.width - _windowRect.width);
             _windowRect.y = Mathf.Clamp(_windowRect.y, 0, Screen.height - _windowRect.height);
 
@@ -204,27 +379,132 @@ namespace SenpaisChest.UI
                 _windowRect,
                 DrawWindow,
                 "",
-                _windowStyle);
+                _configWindowStyle);
+        }
+
+        /// <summary>
+        /// Converts a RectTransform to screen-space Rect (Unity GUI: origin bottom-left).
+        /// </summary>
+        private static Rect GetScreenRectFromTransform(Transform transform)
+        {
+            var rt = transform as RectTransform;
+            if (rt == null) return new Rect(0, 0, 400, 400);
+            var canvas = rt.GetComponentInParent<Canvas>();
+            
+            Vector3[] corners = new Vector3[4];
+            rt.GetWorldCorners(corners);
+            
+            Vector2 min, max;
+            if (canvas != null && canvas.renderMode == RenderMode.ScreenSpaceOverlay)
+            {
+                // For ScreenSpaceOverlay, GetWorldCorners returns screen coordinates
+                // corners[0] = bottom-left, corners[1] = top-left, corners[2] = top-right, corners[3] = bottom-right
+                min = new Vector2(corners[0].x, corners[0].y); // bottom-left
+                max = new Vector2(corners[2].x, corners[2].y); // top-right
+            }
+            else
+            {
+                // For Camera or WorldSpace, convert world to screen
+                var cam = canvas != null ? canvas.worldCamera : Camera.main;
+                min = RectTransformUtility.WorldToScreenPoint(cam, corners[0]);
+                max = RectTransformUtility.WorldToScreenPoint(cam, corners[2]);
+            }
+            
+            // Convert to GUI coordinates (bottom-left origin)
+            // Unity GUI uses bottom-left origin, so Y needs to be flipped
+            float x = min.x;
+            float y = Screen.height - max.y; // Flip Y: GUI origin is bottom-left
+            float width = max.x - min.x;
+            float height = max.y - min.y;
+            
+            Rect result = new Rect(x, y, width, height);
+            return result;
+        }
+
+        /// <summary>
+        /// Clamps a rect to stay fully within the visible screen (Unity GUI: bottom-left origin).
+        /// </summary>
+        private static Rect ClampRectToScreen(Rect rect)
+        {
+            float w = Mathf.Min(rect.width, Screen.width);
+            float h = Mathf.Min(rect.height, Screen.height);
+            float x = Mathf.Clamp(rect.x, 0, Screen.width - w);
+            float y = Mathf.Clamp(rect.y, 0, Screen.height - h);
+            return new Rect(x, y, w, h);
         }
 
         private void DrawWindow(int windowId)
         {
-            // Draw solid background to guarantee opacity
-            GUI.DrawTexture(new Rect(0, 0, _windowRect.width, _windowRect.height), _solidBg);
+            DrawConfigContent(new Rect(0, 0, _windowRect.width, _windowRect.height), withWindowChrome: true);
+        }
 
-            // Title bar
+        private void DrawConfigContent(Rect rect, bool withWindowChrome)
+        {
+            if (Event.current.type == UnityEngine.EventType.KeyDown)
+            {
+                if (Event.current.keyCode == KeyCode.Escape)
+                {
+                    Event.current.Use();
+                    HideConfig();
+                    return;
+                }
+            }
+
+            bool compact = !withWindowChrome;
+            bool useParchmentTheme = withWindowChrome;
+
+            if (withWindowChrome)
+            {
+                const float titleBarHeight = 36f;
+                const float outerBorder = 5f;
+                const float innerBorderW = 1f;
+
+                if (_configInnerBorderTex != null)
+                {
+                    float innerX = outerBorder;
+                    float innerY = outerBorder;
+                    float innerW = rect.width - outerBorder * 2;
+                    float innerH = rect.height - outerBorder * 2;
+                    GUI.DrawTexture(new Rect(innerX, innerY, innerW, innerBorderW), _configInnerBorderTex);
+                    GUI.DrawTexture(new Rect(innerX, innerY + innerH - innerBorderW, innerW, innerBorderW), _configInnerBorderTex);
+                    GUI.DrawTexture(new Rect(innerX, innerY, innerBorderW, innerH), _configInnerBorderTex);
+                    GUI.DrawTexture(new Rect(innerX + innerW - innerBorderW, innerY, innerBorderW, innerH), _configInnerBorderTex);
+                }
+
+                if (_configTitleBarTex != null)
+                    GUI.DrawTexture(new Rect(0, 0, rect.width, titleBarHeight), _configTitleBarTex);
+                GUILayout.BeginArea(new Rect(0, 0, rect.width, titleBarHeight));
+                GUILayout.BeginHorizontal();
+                GUILayout.FlexibleSpace();
+                GUILayout.Label("Senpai's Chest Config", _configTitleStyle, GUILayout.ExpandWidth(true));
+                GUILayout.FlexibleSpace();
+                if (GUILayout.Button("X", _closeButtonStyle, GUILayout.Width(28), GUILayout.Height(24)))
+                    HideConfig();
+                GUILayout.Space(4);
+                GUILayout.EndHorizontal();
+                GUILayout.EndArea();
+
+                GUILayout.Space(titleBarHeight + 2);
+                if (_configGoldSeparatorTex != null)
+                {
+                    var sepRect = GUILayoutUtility.GetRect(rect.width - 24, 2);
+                    GUI.DrawTexture(sepRect, _configGoldSeparatorTex);
+                }
+                GUILayout.Space(8);
+            }
+
+            if (withWindowChrome)
+                GUILayout.Space(4);
+            const float colSpacing = 8f;
+            float colWidth = compact ? (rect.width - colSpacing) / 2f : 0f;
+            if (compact)
+            {
+                GUILayout.BeginHorizontal(GUILayout.Width(rect.width));
+                GUILayout.BeginVertical(GUILayout.Width(colWidth));
+            }
+
             GUILayout.BeginHorizontal();
-            GUILayout.Label($"Smart Chest Config - {_currentData.ChestName}", _titleStyle);
-            GUILayout.FlexibleSpace();
-            if (GUILayout.Button("X", _closeButtonStyle, GUILayout.Width(26), GUILayout.Height(22)))
-                Hide();
-            GUILayout.EndHorizontal();
-
-            GUILayout.Space(4);
-
-            // Enable toggle
-            GUILayout.BeginHorizontal();
-            bool newEnabled = GUILayout.Toggle(_currentData.IsEnabled, " Smart Chest Enabled", _toggleStyle);
+            bool newEnabled = GUILayout.Toggle(_currentData.IsEnabled, " Smart Chest Enabled", useParchmentTheme ? _chestToggleStyle : _toggleStyle);
             if (newEnabled != _currentData.IsEnabled)
             {
                 _currentData.IsEnabled = newEnabled;
@@ -233,39 +513,50 @@ namespace SenpaisChest.UI
             }
             GUILayout.EndHorizontal();
 
-            GUILayout.Space(8);
+            if (useParchmentTheme && _configGoldSeparatorTex != null)
+            {
+                var sepR = GUILayoutUtility.GetRect(rect.width - 24, 2);
+                GUI.DrawTexture(sepR, _configGoldSeparatorTex);
+                GUILayout.Space(6);
+            }
+            else
+                GUILayout.Space(compact ? 4 : 8);
 
-            // Rules section header
-            GUILayout.Label("Item Rules:", _sectionHeaderStyle);
-            GUILayout.Space(4);
+            var sectionHeaderStyle = useParchmentTheme ? _configSectionHeaderBoxStyle : (compact ? _chestSectionHeaderStyle : _sectionHeaderStyle);
+            GUILayout.Label("Item Rules", sectionHeaderStyle);
+            GUILayout.Space(compact ? 2 : 4);
+
+            if (useParchmentTheme && _configGoldSeparatorTex != null)
+            {
+                var sepR2 = GUILayoutUtility.GetRect(rect.width - 24, 2);
+                GUI.DrawTexture(sepR2, _configGoldSeparatorTex);
+                GUILayout.Space(4);
+            }
 
             if (_currentData.Rules.Count == 0)
             {
-                GUILayout.Label("  No rules configured. Add rules below.", _labelDimStyle);
+                GUILayout.Label("  No rules configured. Add rules below.", useParchmentTheme ? _chestLabelDimStyle : (compact ? _chestLabelDimStyle : _labelDimStyle));
             }
             else
             {
-                // Adaptive scroll height: show all rules up to a max, then scroll
-                float ruleItemHeight = 36f;
-                float rulesHeight = Mathf.Min(_currentData.Rules.Count * ruleItemHeight, 180f);
-
-                _rulesScrollPos = GUILayout.BeginScrollView(_rulesScrollPos, GUILayout.Height(rulesHeight));
+                float ruleItemHeight = compact ? 24f : 36f;
+                float maxRulesHeight = compact ? 100f : 180f;
+                float rulesHeight = Mathf.Min(_currentData.Rules.Count * ruleItemHeight, maxRulesHeight);
+                GUILayout.BeginVertical(GUILayout.Height(rulesHeight));
                 int removeIndex = -1;
-
                 for (int i = 0; i < _currentData.Rules.Count; i++)
                 {
-                    GUILayout.BeginHorizontal(_ruleBoxStyle);
-                    GUILayout.Label($"{i + 1}. {GetRuleDisplayText(_currentData.Rules[i])}", _ruleTextStyle, GUILayout.ExpandWidth(true));
-                    if (GUILayout.Button("X", _removeRuleBtnStyle, GUILayout.Width(26), GUILayout.Height(22)))
-                    {
+                    var ruleBoxStyle = useParchmentTheme ? _chestRuleBoxStyle : (compact ? _chestRuleBoxStyle : _ruleBoxStyle);
+                    var ruleTextStyle = useParchmentTheme ? _chestRuleTextStyle : (compact ? _chestRuleTextStyle : _ruleTextStyle);
+                    var removeBtnStyle = useParchmentTheme ? _chestRemoveRuleBtnStyle : (compact ? _chestRemoveRuleBtnStyle : _removeRuleBtnStyle);
+                    GUILayout.BeginHorizontal(ruleBoxStyle);
+                    GUILayout.Label($"{i + 1}. {GetRuleDisplayText(_currentData.Rules[i])}", ruleTextStyle, GUILayout.ExpandWidth(true));
+                    if (GUILayout.Button("X", removeBtnStyle, GUILayout.Width(26), GUILayout.Height(22)))
                         removeIndex = i;
-                    }
                     GUILayout.EndHorizontal();
-                    GUILayout.Space(2);
+                    GUILayout.Space(compact ? 1 : 2);
                 }
-
-                GUILayout.EndScrollView();
-
+                GUILayout.EndVertical();
                 if (removeIndex >= 0)
                 {
                     _currentData.Rules.RemoveAt(removeIndex);
@@ -274,82 +565,181 @@ namespace SenpaisChest.UI
                 }
             }
 
-            GUILayout.Space(10);
-
-            // Add rule section
-            GUILayout.Label("Add New Rule:", _sectionHeaderStyle);
-            GUILayout.Space(6);
-
-            // Rule type selector — 2x2 grid
-            GUILayout.BeginHorizontal();
-            DrawSelectorButton(0, GUILayout.Height(28));
-            DrawSelectorButton(1, GUILayout.Height(28));
-            GUILayout.EndHorizontal();
-            GUILayout.Space(2);
-            GUILayout.BeginHorizontal();
-            DrawSelectorButton(2, GUILayout.Height(28));
-            DrawSelectorButton(3, GUILayout.Height(28));
-            GUILayout.EndHorizontal();
-
-            GUILayout.Space(8);
-
-            // Type-specific input
-            DrawRuleInput();
-
-            GUILayout.Space(8);
-
-            // Add button
-            if (GUILayout.Button("Add Rule", _addButtonStyle, GUILayout.Height(30)))
+            if (useParchmentTheme && _configGoldSeparatorTex != null)
             {
-                AddRule();
+                var sepR3 = GUILayoutUtility.GetRect(rect.width - 24, 2);
+                GUI.DrawTexture(sepR3, _configGoldSeparatorTex);
+                GUILayout.Space(8);
+            }
+            else
+                GUILayout.Space(compact ? 4 : 10);
+
+            GUILayout.Label("Add New Rule", sectionHeaderStyle);
+            GUILayout.Space(compact ? 2 : 6);
+
+            if (useParchmentTheme && _configGoldSeparatorTex != null)
+            {
+                var sepR4 = GUILayoutUtility.GetRect(rect.width - 24, 2);
+                GUI.DrawTexture(sepR4, _configGoldSeparatorTex);
+                GUILayout.Space(4);
             }
 
-            GUILayout.Space(12);
-
-            // Bottom buttons
             GUILayout.BeginHorizontal();
-            if (GUILayout.Button("Remove Smart Chest", _dangerButtonStyle, GUILayout.Height(28)))
+            DrawSelectorButton(0, useParchmentTheme || compact, GUILayout.Height((useParchmentTheme || compact) ? 24 : 28));
+            DrawSelectorButton(1, useParchmentTheme || compact, GUILayout.Height((useParchmentTheme || compact) ? 24 : 28));
+            GUILayout.EndHorizontal();
+            GUILayout.Space(compact ? 1 : 2);
+            GUILayout.BeginHorizontal();
+            DrawSelectorButton(2, useParchmentTheme || compact, GUILayout.Height((useParchmentTheme || compact) ? 24 : 28));
+            DrawSelectorButton(3, useParchmentTheme || compact, GUILayout.Height((useParchmentTheme || compact) ? 24 : 28));
+            GUILayout.EndHorizontal();
+            GUILayout.Space(compact ? 4 : 8);
+
+            if (useParchmentTheme && _configGoldSeparatorTex != null)
+            {
+                var sepR5 = GUILayoutUtility.GetRect(rect.width - 24, 2);
+                GUI.DrawTexture(sepR5, _configGoldSeparatorTex);
+                GUILayout.Space(4);
+            }
+
+            DrawRuleInput(useParchmentTheme || compact, useWhiteSearchField: useParchmentTheme);
+            GUILayout.Space(compact ? 4 : 8);
+
+            if (useParchmentTheme && _configGoldSeparatorTex != null)
+            {
+                var sepR6 = GUILayoutUtility.GetRect(rect.width - 24, 2);
+                GUI.DrawTexture(sepR6, _configGoldSeparatorTex);
+                GUILayout.Space(6);
+            }
+
+            var addBtnStyle = useParchmentTheme ? _chestAddButtonStyle : (compact ? _chestAddButtonStyle : _addButtonStyle);
+            if (GUILayout.Button("Add Rule", addBtnStyle, GUILayout.Height((useParchmentTheme || compact) ? 24 : 30)))
+                AddRule();
+
+            if (compact)
+            {
+                GUILayout.EndVertical();
+                GUILayout.Space(colSpacing);
+                GUILayout.BeginVertical(GUILayout.Width(colWidth));
+                DrawEmbeddedRightColumn(compact);
+                GUILayout.EndVertical();
+                GUILayout.EndHorizontal();
+            }
+            else
+            {
+                if (useParchmentTheme && _configGoldSeparatorTex != null)
+                {
+                    var sepR7 = GUILayoutUtility.GetRect(rect.width - 24, 2);
+                    GUI.DrawTexture(sepR7, _configGoldSeparatorTex);
+                    GUILayout.Space(8);
+                }
+                else
+                    GUILayout.Space(12);
+                GUILayout.BeginHorizontal();
+                if (GUILayout.Button("Remove Smart Chest", useParchmentTheme ? _configRemoveButtonStyle : _dangerButtonStyle, GUILayout.Height(28)))
+                {
+                    _manager.RemoveSmartChest(_chestId);
+                    SaveIfDirty();
+                    HideConfig();
+                }
+                GUILayout.Space(8);
+                if (GUILayout.Button("Close", useParchmentTheme ? _configCloseBottomStyle : _closeBottomButtonStyle, GUILayout.Height(28)))
+                    HideConfig();
+                GUILayout.EndHorizontal();
+            }
+
+            if (withWindowChrome)
+            {
+                if (Event.current.type == UnityEngine.EventType.Repaint)
+                {
+                    var lastRect = GUILayoutUtility.GetLastRect();
+                    _contentHeight = lastRect.yMax + 24f;
+                }
+                GUI.DragWindow(new Rect(0, 0, rect.width, 28));
+            }
+
+            if (Event.current.type == UnityEngine.EventType.KeyDown && Event.current.keyCode == KeyCode.Backspace)
+                Event.current.Use();
+        }
+
+        private void DrawEmbeddedRightColumn(bool compact)
+        {
+            GUILayout.Space(4);
+            GUILayout.Label("Summary", _chestSectionHeaderStyle, GUILayout.ExpandWidth(true));
+            int ruleCount = _currentData?.Rules?.Count ?? 0;
+            string status = _currentData?.IsEnabled == true ? "Active" : "Disabled";
+            GUILayout.BeginVertical(_chestRuleBoxStyle);
+            GUILayout.Label($"Rules: {ruleCount} | Status: {status}", _chestLabelStyle, GUILayout.ExpandWidth(true));
+            if (ruleCount > 0)
+            {
+                GUILayout.Label("Accepts:", _chestLabelBoldStyle, GUILayout.ExpandWidth(true));
+                for (int i = 0; i < ruleCount; i++)
+                    GUILayout.Label($"  • {GetRuleDisplayText(_currentData.Rules[i])}", _chestLabelDimStyle, GUILayout.ExpandWidth(true));
+            }
+            GUILayout.EndVertical();
+            GUILayout.Space(4);
+            GUILayout.Label("Tips", _chestSectionHeaderStyle, GUILayout.ExpandWidth(true));
+            GUILayout.BeginVertical(_chestRuleBoxStyle);
+            GUILayout.Label("• Rules filter auto-sort. Multiple = AND.", _chestRuleTextStyle, GUILayout.ExpandWidth(true));
+            GUILayout.Label("• Transfer SAME/ALL applies rules.", _chestRuleTextStyle, GUILayout.ExpandWidth(true));
+            GUILayout.EndVertical();
+            GUILayout.Space(8);
+            if (GUILayout.Button("Remove Smart Chest", _chestDangerButtonStyle, GUILayout.Height(20), GUILayout.ExpandWidth(true)))
             {
                 _manager.RemoveSmartChest(_chestId);
                 SaveIfDirty();
-                Hide();
+                HideConfig();
             }
-            GUILayout.Space(8);
-            if (GUILayout.Button("Close", _closeBottomButtonStyle, GUILayout.Height(28)))
-            {
-                Hide();
-            }
-            GUILayout.EndHorizontal();
-
-            // Track actual content height for dynamic window sizing
-            if (Event.current.type == UnityEngine.EventType.Repaint)
-            {
-                var lastRect = GUILayoutUtility.GetLastRect();
-                _contentHeight = lastRect.yMax + 24f; // 24px for window padding
-            }
-
-            // Drag header area
-            GUI.DragWindow(new Rect(0, 0, _windowRect.width, 28));
+            GUILayout.Space(2);
+            if (GUILayout.Button("Close", _chestCloseButtonStyle, GUILayout.Height(20), GUILayout.ExpandWidth(true)))
+                HideConfig();
         }
 
-        private void DrawSelectorButton(int index, params GUILayoutOption[] options)
+        private void DrawNoteContent(float width, float height)
         {
-            var style = (index == _selectedRuleType) ? _selectorActiveStyle : _selectorStyle;
+            if (!_stylesInitialized) InitializeStyles();
+            string keyStr = SmartChestConfig.StaticRequireCtrl ? $"Ctrl+{SmartChestConfig.StaticToggleKey}" : SmartChestConfig.StaticToggleKey.ToString();
+            string text = $"Press [{keyStr}] to configure smart chest rules";
+            if (_noteBannerBg != null)
+                GUI.DrawTexture(new Rect(0, 0, width, height), _noteBannerBg);
+            const float bw = 1f;
+            if (_noteBannerBorderTex != null)
+            {
+                GUI.DrawTexture(new Rect(0, 0, width, bw), _noteBannerBorderTex);
+                GUI.DrawTexture(new Rect(0, height - bw, width, bw), _noteBannerBorderTex);
+                GUI.DrawTexture(new Rect(0, 0, bw, height), _noteBannerBorderTex);
+                GUI.DrawTexture(new Rect(width - bw, 0, bw, height), _noteBannerBorderTex);
+            }
+            GUILayout.BeginArea(new Rect(0, 0, width, height));
+            GUILayout.FlexibleSpace();
+            GUILayout.BeginHorizontal();
+            GUILayout.FlexibleSpace();
+            GUILayout.Label(text, _noteBannerStyle);
+            GUILayout.FlexibleSpace();
+            GUILayout.EndHorizontal();
+            GUILayout.FlexibleSpace();
+            GUILayout.EndArea();
+        }
+
+        private void DrawSelectorButton(int index, bool compact, params GUILayoutOption[] options)
+        {
+            var style = compact
+                ? ((index == _selectedRuleType) ? _chestSelectorActiveStyle : _chestSelectorStyle)
+                : ((index == _selectedRuleType) ? _selectorActiveStyle : _selectorStyle);
             if (GUILayout.Button(RuleTypeNames[index], style, options))
                 _selectedRuleType = index;
         }
 
-        private void DrawRuleInput()
+        private void DrawRuleInput(bool useChestStyles, bool useWhiteSearchField = false)
         {
+            var labelBold = useChestStyles ? _chestLabelBoldStyle : _labelBoldStyle;
+            var label = useChestStyles ? _chestLabelStyle : _labelStyle;
+            var labelDim = useChestStyles ? _chestLabelDimStyle : _labelDimStyle;
+            var searchFieldStyle = useWhiteSearchField ? _configSearchFieldStyle : (useChestStyles ? _chestSearchFieldStyle : _textFieldStyle);
+
             switch (_selectedRuleType)
             {
                 case 0: // ByItemId
-                    GUILayout.BeginHorizontal();
-                    GUILayout.Label("Search:", _labelBoldStyle, GUILayout.Width(55));
-                    _itemIdInput = GUILayout.TextField(_itemIdInput, _textFieldStyle);
-                    GUILayout.EndHorizontal();
-
-                    // Run search when query changes
                     if (_itemIdInput != _lastSearchQuery)
                     {
                         _lastSearchQuery = _itemIdInput;
@@ -357,14 +747,18 @@ namespace SenpaisChest.UI
                         _searchScrollPos = Vector2.zero;
                     }
 
-                    // Show selected item
+                    GUILayout.BeginHorizontal();
+                    GUILayout.Label("Search:", labelBold, GUILayout.Width(55));
+                    GUI.SetNextControlName(SearchFieldControlName);
+                    _itemIdInput = GUILayout.TextField(_itemIdInput, searchFieldStyle);
+                    GUILayout.EndHorizontal();
+
                     if (_selectedItemId > 0)
                     {
                         GUILayout.Space(2);
-                        GUILayout.Label($"Selected: {ItemSearch.FormatDisplay(_selectedItemName, _selectedItemId)}", _labelStyle);
+                        GUILayout.Label($"Selected: {ItemSearch.FormatDisplay(_selectedItemName, _selectedItemId)}", label);
                     }
 
-                    // Show search results
                     if (_searchResults.Count > 0)
                     {
                         GUILayout.Space(4);
@@ -372,21 +766,22 @@ namespace SenpaisChest.UI
                         foreach (var result in _searchResults)
                         {
                             bool isMuseum = IsUndonatedMuseumItem(result.Key);
-                            string label = ItemSearch.FormatDisplay(result.Value, result.Key);
+                            string resultLabel = ItemSearch.FormatDisplay(result.Value, result.Key);
                             if (isMuseum)
-                                label += " [Museum]";
+                                resultLabel += " [Museum]";
 
                             GUILayout.BeginHorizontal();
                             if (isMuseum)
                             {
-                                // Left border indicator for undonated museum items
                                 var barRect = GUILayoutUtility.GetRect(4, 22, GUILayout.Width(4), GUILayout.Height(22));
                                 GUI.color = _museumHighlight;
                                 GUI.DrawTexture(barRect, Texture2D.whiteTexture);
                                 GUI.color = Color.white;
                             }
-                            var style = (result.Key == _selectedItemId) ? _searchResultSelectedStyle : _searchResultStyle;
-                            if (GUILayout.Button(label, style, GUILayout.Height(22)))
+                            var resultStyle = useChestStyles
+                                ? ((result.Key == _selectedItemId) ? _chestSearchResultSelectedStyle : _chestSearchResultStyle)
+                                : ((result.Key == _selectedItemId) ? _searchResultSelectedStyle : _searchResultStyle);
+                            if (GUILayout.Button(resultLabel, resultStyle, GUILayout.Height(22)))
                             {
                                 _selectedItemId = result.Key;
                                 _selectedItemName = result.Value;
@@ -398,29 +793,32 @@ namespace SenpaisChest.UI
                     else if (_itemIdInput.Length >= 2)
                     {
                         GUILayout.Space(2);
-                        GUILayout.Label("  No items found.", _labelDimStyle);
+                        GUILayout.Label("  No items found.", labelDim);
                     }
+
                     break;
 
                 case 1: // ByCategory
-                    GUILayout.Label("Category:", _labelBoldStyle);
-                    DrawOptionGrid(CategoryNames, ref _selectedCategory, 3);
+                    GUILayout.Label("Category:", labelBold);
+                    DrawOptionGrid(CategoryNames, ref _selectedCategory, 3, useChestStyles);
                     break;
 
                 case 2: // ByItemType
-                    GUILayout.Label("Item Type:", _labelBoldStyle);
-                    DrawOptionGrid(ItemTypeNames, ref _selectedItemType, 3);
+                    GUILayout.Label("Item Type:", labelBold);
+                    DrawOptionGrid(ItemTypeNames, ref _selectedItemType, 3, useChestStyles);
                     break;
 
                 case 3: // ByProperty
-                    GUILayout.Label("Property:", _labelBoldStyle);
-                    DrawOptionGrid(PropertyDisplayNames, ref _selectedProperty, 2);
+                    GUILayout.Label("Property:", labelBold);
+                    DrawOptionGrid(PropertyDisplayNames, ref _selectedProperty, useChestStyles ? 3 : 2, useChestStyles);
                     break;
             }
         }
 
-        private void DrawOptionGrid(string[] options, ref int selected, int columns)
+        private void DrawOptionGrid(string[] options, ref int selected, int columns, bool useChestStyles = false)
         {
+            var selStyle = useChestStyles ? _chestSelectorStyle : _selectorStyle;
+            var selActiveStyle = useChestStyles ? _chestSelectorActiveStyle : _selectorActiveStyle;
             int rows = (options.Length + columns - 1) / columns;
             for (int row = 0; row < rows; row++)
             {
@@ -430,7 +828,7 @@ namespace SenpaisChest.UI
                     int idx = row * columns + col;
                     if (idx < options.Length)
                     {
-                        var style = (idx == selected) ? _selectorActiveStyle : _selectorStyle;
+                        var style = (idx == selected) ? selActiveStyle : selStyle;
                         if (GUILayout.Button(options[idx], style, GUILayout.Height(24)))
                             selected = idx;
                     }
@@ -588,6 +986,34 @@ namespace SenpaisChest.UI
             _closeBtnTex = MakeTex(1, 1, _redDanger);
             _closeBtnHoverTex = MakeTex(1, 1, _redHover);
             _fieldBgTex = MakeTex(1, 1, _fieldBg);
+            _chestParchmentBg = MakeParchmentTexture(32, 64, _parchment, _parchmentLight, _borderWood, 3);
+            _chestWoodBorderTex = MakeTex(1, 1, _borderWood);
+            _chestRuleBoxTex = MakeRoundedRect(16, 16, _parchmentDark, _borderWood, 2);
+            _chestSelectorTex = MakeRoundedRect(8, 8, _parchmentDark, _borderWood, 2);
+            _chestSelectorHoverTex = MakeRoundedRect(8, 8, _woodLight, _borderWood, 2);
+            _chestSelectorActiveTex = MakeRoundedRect(8, 8, _goldPale, _goldRich, 2);
+            _chestAddBtnTex = MakeRoundedRect(8, 8, new Color(0.30f, 0.55f, 0.45f), new Color(0.20f, 0.40f, 0.35f), 2);
+            _chestAddBtnHoverTex = MakeRoundedRect(8, 8, new Color(0.38f, 0.65f, 0.52f), new Color(0.25f, 0.48f, 0.42f), 2);
+            _chestWoodBtnTex = MakeRoundedRect(8, 8, _woodMedium, _woodDark, 2);
+            _chestWoodBtnHoverTex = MakeRoundedRect(8, 8, _woodLight, _woodMedium, 2);
+            _chestDangerBtnTex = MakeRoundedRect(8, 8, _redDanger, new Color(0.55f, 0.15f, 0.15f), 2);
+            _chestDangerBtnHoverTex = MakeRoundedRect(8, 8, _redHover, new Color(0.65f, 0.18f, 0.18f), 2);
+            _chestFieldBgTex = MakeRoundedRect(6, 6, _parchmentLight, _borderWood, 1);
+            _chestGoldLineTex = MakeGradientTex(64, 3, _goldPale, _goldRich);
+            _noteBannerBg = MakeTex(4, 4, new Color(0.45f, 0.10f, 0.08f, 1f));
+            _noteBannerBorderTex = MakeTex(1, 1, _goldRich);
+
+            _configTitleBarTex = MakeGradientTex(64, 32, _crimsonTitleLight, _crimsonTitle);
+            _configContentBg = MakeParchmentTexture(64, 128, _parchment, _parchmentLight, _borderWood, 0);
+            _configGoldSeparatorTex = MakeGradientTex(64, 2, _goldPale, _goldRich);
+            _configSectionHeaderTex = MakeRoundedRect(16, 16, _parchmentDark, _goldRich, 2);
+            _configSearchFieldTex = MakeRoundedRect(8, 8, Color.white, new Color(0.25f, 0.2f, 0.18f), 1);
+            _configRemoveBtnTex = MakeRoundedRect(8, 8, _crimsonTitle, new Color(0.4f, 0.12f, 0.08f), 1);
+            _configRemoveBtnHoverTex = MakeRoundedRect(8, 8, _crimsonTitleLight, new Color(0.45f, 0.15f, 0.10f), 1);
+            _configCloseBtnTex = MakeRoundedRect(8, 8, _woodMedium, _woodDark, 1);
+            _configCloseBtnHoverTex = MakeRoundedRect(8, 8, _woodLight, _woodMedium, 1);
+            _configWindowBg = MakeBorderedTex(64, 64, _parchmentLight, _goldRich, 5);
+            _configInnerBorderTex = MakeTex(1, 1, _innerBorderCrimson);
         }
 
         private void CreateStyles()
@@ -629,10 +1055,7 @@ namespace SenpaisChest.UI
                 wordWrap = true
             };
 
-            _labelBoldStyle = new GUIStyle(_labelStyle)
-            {
-                fontStyle = FontStyle.Bold
-            };
+            _labelBoldStyle = new GUIStyle(_labelStyle) { fontStyle = FontStyle.Bold };
 
             _labelDimStyle = new GUIStyle(_labelStyle)
             {
@@ -648,10 +1071,7 @@ namespace SenpaisChest.UI
                 margin = new RectOffset(4, 4, 2, 2)
             };
 
-            _ruleTextStyle = new GUIStyle(_labelStyle)
-            {
-                fontSize = 13
-            };
+            _ruleTextStyle = new GUIStyle(_labelStyle) { fontSize = 13 };
 
             _removeRuleBtnStyle = new GUIStyle
             {
@@ -675,10 +1095,7 @@ namespace SenpaisChest.UI
                 padding = new RectOffset(2, 2, 1, 1)
             };
 
-            _toggleStyle = new GUIStyle(GUI.skin.toggle)
-            {
-                fontSize = 13
-            };
+            _toggleStyle = new GUIStyle(GUI.skin.toggle) { fontSize = 13 };
             _toggleStyle.normal.textColor = _whiteText;
             _toggleStyle.onNormal.textColor = _whiteText;
             _toggleStyle.hover.textColor = _whiteText;
@@ -761,6 +1178,165 @@ namespace SenpaisChest.UI
                 normal = { background = _btnActiveTex, textColor = _whiteText },
                 hover = { background = _btnActiveHoverTex, textColor = _whiteText }
             };
+
+            _chestToggleStyle = new GUIStyle(_toggleStyle) { fontSize = 14 };
+            _chestToggleStyle.normal.textColor = _chestTextDark;
+            _chestToggleStyle.onNormal.textColor = _chestTextDark;
+            _chestToggleStyle.hover.textColor = _chestTextDark;
+            _chestToggleStyle.onHover.textColor = _chestTextDark;
+
+            _chestTitleStyle = new GUIStyle(_titleStyle)
+            {
+                normal = { textColor = _woodDark }, hover = { textColor = _woodDark }, active = { textColor = _woodDark },
+                focused = { textColor = _woodDark }, onNormal = { textColor = _woodDark }, onHover = { textColor = _woodDark },
+                onActive = { textColor = _woodDark }, onFocused = { textColor = _woodDark }, fontSize = 17
+            };
+
+            _chestSectionHeaderStyle = new GUIStyle(_sectionHeaderStyle)
+            {
+                normal = { textColor = _woodDark }, hover = { textColor = _woodDark }, active = { textColor = _woodDark },
+                focused = { textColor = _woodDark }, onNormal = { textColor = _woodDark }, onHover = { textColor = _woodDark },
+                onActive = { textColor = _woodDark }, onFocused = { textColor = _woodDark }, fontSize = 16
+            };
+
+            _chestLabelStyle = new GUIStyle(_labelStyle) { normal = { textColor = _chestTextDark }, fontSize = 14 };
+            _chestLabelBoldStyle = new GUIStyle(_chestLabelStyle) { fontStyle = FontStyle.Bold };
+            _chestLabelDimStyle = new GUIStyle(_chestLabelStyle)
+            {
+                fontSize = 13, fontStyle = FontStyle.Italic, normal = { textColor = _chestTextDim }
+            };
+
+            _chestRuleBoxStyle = new GUIStyle { normal = { background = _chestRuleBoxTex }, padding = new RectOffset(10, 8, 6, 6), margin = new RectOffset(4, 4, 2, 2) };
+            _chestRuleTextStyle = new GUIStyle(_labelStyle) { fontSize = 13, normal = { textColor = _woodDark }, hover = { textColor = _woodDark }, active = { textColor = _woodDark } };
+            _chestSelectorStyle = new GUIStyle
+            {
+                fontSize = 12, fontStyle = FontStyle.Bold,
+                normal = { background = _chestSelectorTex, textColor = _woodDark },
+                hover = { background = _chestSelectorHoverTex, textColor = _woodDark },
+                active = { background = _chestSelectorActiveTex, textColor = _woodDark },
+                alignment = TextAnchor.MiddleCenter, padding = new RectOffset(8, 8, 5, 5), margin = new RectOffset(2, 2, 1, 1)
+            };
+            _chestSelectorActiveStyle = new GUIStyle(_chestSelectorStyle)
+            {
+                normal = { background = _chestSelectorActiveTex, textColor = _woodDark },
+                hover = { background = _chestSelectorActiveTex, textColor = _woodDark }
+            };
+            _chestAddButtonStyle = new GUIStyle
+            {
+                fontSize = 14, fontStyle = FontStyle.Bold,
+                normal = { background = _chestAddBtnTex, textColor = _parchmentLight },
+                hover = { background = _chestAddBtnHoverTex, textColor = _parchmentLight },
+                active = { background = _chestAddBtnHoverTex, textColor = _parchmentLight },
+                alignment = TextAnchor.MiddleCenter, padding = new RectOffset(10, 10, 5, 5)
+            };
+            _chestDangerButtonStyle = new GUIStyle
+            {
+                fontSize = 12, fontStyle = FontStyle.Bold,
+                normal = { background = _chestDangerBtnTex, textColor = _whiteText },
+                hover = { background = _chestDangerBtnHoverTex, textColor = _whiteText },
+                active = { background = _chestDangerBtnHoverTex, textColor = _whiteText },
+                alignment = TextAnchor.MiddleCenter, padding = new RectOffset(10, 10, 4, 4)
+            };
+            _chestCloseButtonStyle = new GUIStyle
+            {
+                fontSize = 12, fontStyle = FontStyle.Bold,
+                normal = { background = _chestWoodBtnTex, textColor = _parchmentLight },
+                hover = { background = _chestWoodBtnHoverTex, textColor = _parchmentLight },
+                active = { background = _chestWoodBtnHoverTex, textColor = _parchmentLight },
+                alignment = TextAnchor.MiddleCenter, padding = new RectOffset(10, 10, 4, 4)
+            };
+            _chestSearchFieldStyle = new GUIStyle
+            {
+                fontSize = 13,
+                normal = { background = _chestFieldBgTex, textColor = _woodDark },
+                focused = { background = _chestFieldBgTex, textColor = _woodDark },
+                hover = { background = _chestFieldBgTex, textColor = _woodDark },
+                padding = new RectOffset(8, 8, 5, 5), border = new RectOffset(2, 2, 2, 2)
+            };
+            _chestRemoveRuleBtnStyle = new GUIStyle
+            {
+                fontSize = 13, fontStyle = FontStyle.Bold,
+                normal = { background = _chestDangerBtnTex, textColor = _whiteText },
+                hover = { background = _chestDangerBtnHoverTex, textColor = _whiteText },
+                active = { background = _chestDangerBtnHoverTex, textColor = _whiteText },
+                alignment = TextAnchor.MiddleCenter, padding = new RectOffset(2, 2, 2, 2)
+            };
+            _chestSearchResultStyle = new GUIStyle
+            {
+                fontSize = 12,
+                normal = { background = _chestRuleBoxTex, textColor = _woodDark },
+                hover = { background = _chestSelectorHoverTex, textColor = _woodDark },
+                active = { background = _chestSelectorActiveTex, textColor = _woodDark },
+                alignment = TextAnchor.MiddleLeft, padding = new RectOffset(8, 8, 3, 3), margin = new RectOffset(0, 0, 1, 1)
+            };
+            _chestSearchResultSelectedStyle = new GUIStyle(_chestSearchResultStyle)
+            {
+                fontStyle = FontStyle.Bold,
+                normal = { background = _chestSelectorActiveTex, textColor = _woodDark },
+                hover = { background = _chestSelectorActiveTex, textColor = _woodDark }
+            };
+
+            _noteBannerStyle = new GUIStyle
+            {
+                fontSize = 14, fontStyle = FontStyle.Bold,
+                normal = { textColor = new Color(0.95f, 0.92f, 0.85f) },
+                alignment = TextAnchor.MiddleCenter,
+                padding = new RectOffset(8, 4, 8, 4)
+            };
+
+            _configTitleStyle = new GUIStyle
+            {
+                fontSize = 16, fontStyle = FontStyle.Bold,
+                normal = { textColor = Color.white },
+                alignment = TextAnchor.MiddleCenter,
+                padding = new RectOffset(4, 4, 4, 4)
+            };
+
+            _configSectionHeaderBoxStyle = new GUIStyle
+            {
+                fontSize = 14, fontStyle = FontStyle.Bold,
+                normal = { background = _configSectionHeaderTex, textColor = _chestTextDark },
+                alignment = TextAnchor.MiddleCenter,
+                padding = new RectOffset(12, 8, 6, 6),
+                margin = new RectOffset(0, 0, 0, 0)
+            };
+
+            _configSearchFieldStyle = new GUIStyle
+            {
+                fontSize = 13,
+                normal = { background = _configSearchFieldTex, textColor = _chestTextDark },
+                focused = { background = _configSearchFieldTex, textColor = _chestTextDark },
+                padding = new RectOffset(8, 8, 5, 5),
+                border = new RectOffset(2, 2, 2, 2)
+            };
+
+            _configRemoveButtonStyle = new GUIStyle
+            {
+                fontSize = 12, fontStyle = FontStyle.Bold,
+                normal = { background = _configRemoveBtnTex, textColor = Color.white },
+                hover = { background = _configRemoveBtnHoverTex, textColor = Color.white },
+                active = { background = _configRemoveBtnHoverTex, textColor = Color.white },
+                alignment = TextAnchor.MiddleCenter,
+                padding = new RectOffset(10, 10, 6, 6)
+            };
+
+            _configCloseBottomStyle = new GUIStyle
+            {
+                fontSize = 12, fontStyle = FontStyle.Bold,
+                normal = { background = _configCloseBtnTex, textColor = Color.white },
+                hover = { background = _configCloseBtnHoverTex, textColor = Color.white },
+                active = { background = _configCloseBtnHoverTex, textColor = Color.white },
+                alignment = TextAnchor.MiddleCenter,
+                padding = new RectOffset(10, 10, 6, 6)
+            };
+
+            _configWindowStyle = new GUIStyle(GUI.skin.window)
+            {
+                padding = new RectOffset(5, 5, 5, 5),
+                border = new RectOffset(5, 5, 5, 5)
+            };
+            _configWindowStyle.normal.background = _configWindowBg;
+            _configWindowStyle.onNormal.background = _configWindowBg;
         }
 
         #endregion
@@ -798,6 +1374,71 @@ namespace SenpaisChest.UI
             return tex;
         }
 
+        private Texture2D MakeGradientTex(int width, int height, Color topColor, Color bottomColor)
+        {
+            var tex = new Texture2D(width, height);
+            var pixels = new Color[width * height];
+            for (int y = 0; y < height; y++)
+            {
+                float t = (float)y / (height - 1);
+                Color rowColor = Color.Lerp(bottomColor, topColor, t);
+                for (int x = 0; x < width; x++)
+                    pixels[y * width + x] = rowColor;
+            }
+            tex.SetPixels(pixels);
+            tex.Apply();
+            return tex;
+        }
+
+        private Texture2D MakeRoundedRect(int width, int height, Color fillColor, Color borderColor, int borderWidth)
+        {
+            var tex = new Texture2D(width, height);
+            var pixels = new Color[width * height];
+            for (int y = 0; y < height; y++)
+            {
+                for (int x = 0; x < width; x++)
+                {
+                    bool isBorder = x < borderWidth || x >= width - borderWidth ||
+                                   y < borderWidth || y >= height - borderWidth;
+                    pixels[y * width + x] = isBorder ? borderColor : fillColor;
+                }
+            }
+            tex.SetPixels(pixels);
+            tex.Apply();
+            return tex;
+        }
+
+        private Texture2D MakeParchmentTexture(int width, int height, Color baseColor, Color lightColor, Color borderColor, int borderWidth)
+        {
+            var tex = new Texture2D(width, height);
+            var pixels = new Color[width * height];
+            var rand = new System.Random(42);
+            for (int y = 0; y < height; y++)
+            {
+                float gradientT = (float)y / (height - 1);
+                Color rowBase = Color.Lerp(lightColor, baseColor, gradientT * 0.3f);
+                for (int x = 0; x < width; x++)
+                {
+                    bool isBorder = x < borderWidth || x >= width - borderWidth ||
+                                   y < borderWidth || y >= height - borderWidth;
+                    if (isBorder)
+                        pixels[y * width + x] = borderColor;
+                    else
+                    {
+                        float noise = (float)rand.NextDouble() * 0.03f - 0.015f;
+                        pixels[y * width + x] = new Color(
+                            Mathf.Clamp01(rowBase.r + noise),
+                            Mathf.Clamp01(rowBase.g + noise),
+                            Mathf.Clamp01(rowBase.b + noise),
+                            rowBase.a);
+                    }
+                }
+            }
+            tex.SetPixels(pixels);
+            tex.Apply();
+            return tex;
+        }
+
         #endregion
 
         private void OnDestroy()
@@ -816,6 +1457,33 @@ namespace SenpaisChest.UI
             if (_closeBtnTex != null) Destroy(_closeBtnTex);
             if (_closeBtnHoverTex != null) Destroy(_closeBtnHoverTex);
             if (_fieldBgTex != null) Destroy(_fieldBgTex);
+            if (_chestParchmentBg != null) Destroy(_chestParchmentBg);
+            if (_chestWoodBorderTex != null) Destroy(_chestWoodBorderTex);
+            if (_chestRuleBoxTex != null) Destroy(_chestRuleBoxTex);
+            if (_chestSelectorTex != null) Destroy(_chestSelectorTex);
+            if (_chestSelectorHoverTex != null) Destroy(_chestSelectorHoverTex);
+            if (_chestSelectorActiveTex != null) Destroy(_chestSelectorActiveTex);
+            if (_chestAddBtnTex != null) Destroy(_chestAddBtnTex);
+            if (_chestAddBtnHoverTex != null) Destroy(_chestAddBtnHoverTex);
+            if (_chestWoodBtnTex != null) Destroy(_chestWoodBtnTex);
+            if (_chestWoodBtnHoverTex != null) Destroy(_chestWoodBtnHoverTex);
+            if (_chestDangerBtnTex != null) Destroy(_chestDangerBtnTex);
+            if (_chestDangerBtnHoverTex != null) Destroy(_chestDangerBtnHoverTex);
+            if (_chestFieldBgTex != null) Destroy(_chestFieldBgTex);
+            if (_chestGoldLineTex != null) Destroy(_chestGoldLineTex);
+            if (_noteBannerBg != null) Destroy(_noteBannerBg);
+            if (_noteBannerBorderTex != null) Destroy(_noteBannerBorderTex);
+            if (_configTitleBarTex != null) Destroy(_configTitleBarTex);
+            if (_configContentBg != null) Destroy(_configContentBg);
+            if (_configGoldSeparatorTex != null) Destroy(_configGoldSeparatorTex);
+            if (_configSectionHeaderTex != null) Destroy(_configSectionHeaderTex);
+            if (_configSearchFieldTex != null) Destroy(_configSearchFieldTex);
+            if (_configRemoveBtnTex != null) Destroy(_configRemoveBtnTex);
+            if (_configRemoveBtnHoverTex != null) Destroy(_configRemoveBtnHoverTex);
+            if (_configCloseBtnTex != null) Destroy(_configCloseBtnTex);
+            if (_configCloseBtnHoverTex != null) Destroy(_configCloseBtnHoverTex);
+            if (_configWindowBg != null) Destroy(_configWindowBg);
+            if (_configInnerBorderTex != null) Destroy(_configInnerBorderTex);
         }
     }
 }
