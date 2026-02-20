@@ -42,7 +42,7 @@
     "changelog": "Initial release"
   },
   "com.azraelgodking.senpaischest": {
-    "version": "1.1.0",
+    "version": "1.2.0",
     "name": "Senpai's Chest",
     "description": "Smart chest auto-sorting with custom rules by item, type, category, or property",
     "nexus": "https://www.nexusmods.com/sunhaven/mods/496",
