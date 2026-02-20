@@ -1,3 +1,4 @@
+#pragma warning disable CS0436 // Type conflicts with imported type - we explicitly use SunhavenMods.Shared types
 using BepInEx;
 using BepInEx.Logging;
 using SenpaisChest.Config;
@@ -7,7 +8,9 @@ using SenpaisChest.UI;
 using SunhavenMods.Shared;
 using HarmonyLib;
 using System;
+using System.Reflection;
 using UnityEngine;
+using UnityEngine.UI;
 using UnityEngine.SceneManagement;
 using Wish;
 
@@ -88,7 +91,7 @@ namespace SenpaisChest
                 // Check for updates
                 if (_config.CheckForUpdates.Value)
                 {
-                    VersionChecker.CheckForUpdate(PluginInfo.PLUGIN_GUID, PluginInfo.PLUGIN_VERSION, Log,
+                    SunhavenMods.Shared.VersionChecker.CheckForUpdate(PluginInfo.PLUGIN_GUID, PluginInfo.PLUGIN_VERSION, Log,
                         result => result.NotifyUpdateAvailable(Log));
                 }
 
@@ -198,6 +201,71 @@ namespace SenpaisChest
                     Log.LogWarning("Could not find method Chest.EndInteract");
                 }
 
+                // UIHandler.OpenUI → add "Senpai's Chest" button to chest panel when opened
+                var uiHandlerType = AccessTools.TypeByName("Wish.UIHandler");
+                var iExternalType = AccessTools.TypeByName("Wish.IExternalUIHandler");
+                if (uiHandlerType != null && iExternalType != null)
+                {
+                    var openUIMethod = AccessTools.Method(uiHandlerType, "OpenUI", new[] { typeof(GameObject), typeof(Transform), typeof(bool), typeof(bool), iExternalType });
+                    if (openUIMethod != null)
+                    {
+                        var openUIPostfix = new HarmonyMethod(AccessTools.Method(typeof(Plugin), nameof(OnUIHandlerOpenUI_Postfix)));
+                        _harmony.Patch(openUIMethod, postfix: openUIPostfix);
+                        Log.LogInfo("Patched UIHandler.OpenUI (postfix)");
+                    }
+                    else
+                    {
+                        Log.LogWarning("Could not find method UIHandler.OpenUI");
+                    }
+                }
+                else
+                {
+                    Log.LogWarning("Could not find Wish.UIHandler or Wish.IExternalUIHandler for chest button integration");
+                }
+
+                // Input.GetKeyDown and GetKey → block Backspace from reaching game when Senpai's Chest config is open
+                var inputGetKeyDown = AccessTools.Method(typeof(UnityEngine.Input), "GetKeyDown", new[] { typeof(UnityEngine.KeyCode) });
+                if (inputGetKeyDown != null)
+                {
+                    _harmony.Patch(inputGetKeyDown, prefix: new HarmonyMethod(AccessTools.Method(typeof(Plugin), nameof(OnInputGetKeyDown_Prefix))));
+                    Log.LogInfo("Patched Input.GetKeyDown (prefix)");
+                }
+                var inputGetKey = AccessTools.Method(typeof(UnityEngine.Input), "GetKey", new[] { typeof(UnityEngine.KeyCode) });
+                if (inputGetKey != null)
+                {
+                    _harmony.Patch(inputGetKey, prefix: new HarmonyMethod(AccessTools.Method(typeof(Plugin), nameof(OnInputGetKey_Prefix))));
+                    Log.LogInfo("Patched Input.GetKey (prefix)");
+                }
+                var inputGetButtonDown = AccessTools.Method(typeof(UnityEngine.Input), "GetButtonDown", new[] { typeof(string) });
+                if (inputGetButtonDown != null)
+                {
+                    _harmony.Patch(inputGetButtonDown, prefix: new HarmonyMethod(AccessTools.Method(typeof(Plugin), nameof(OnInputGetButtonDown_Prefix))));
+                    Log.LogInfo("Patched Input.GetButtonDown (prefix)");
+                }
+
+                // Wish.PlayerInput.GetButtonDown(string) → the game uses Rewired via this custom class,
+                // and the string overload bypasses the AllowInput/DisableInput system entirely.
+                // OnUICancel calls PlayerInput.GetButtonDown("UICancel") which maps Backspace to close
+                // the chest. We block it here so Backspace works in the search field without closing the chest.
+                var wishPlayerInputType = AccessTools.TypeByName("Wish.PlayerInput");
+                if (wishPlayerInputType != null)
+                {
+                    var getButtonDownStr = AccessTools.Method(wishPlayerInputType, "GetButtonDown", new[] { typeof(string) });
+                    if (getButtonDownStr != null)
+                    {
+                        _harmony.Patch(getButtonDownStr, prefix: new HarmonyMethod(AccessTools.Method(typeof(Plugin), nameof(OnPlayerInputGetButtonDown_Prefix))));
+                        Log.LogInfo("Patched PlayerInput.GetButtonDown(string) (prefix)");
+                    }
+                    else
+                    {
+                        Log.LogWarning("Could not find method PlayerInput.GetButtonDown(string)");
+                    }
+                }
+                else
+                {
+                    Log.LogWarning("Could not find Wish.PlayerInput type for UICancel blocking");
+                }
+
                 Log.LogInfo("Harmony patches applied successfully");
             }
             catch (Exception ex)
@@ -266,13 +334,81 @@ namespace SenpaisChest
                 return;
 
             CurrentInteractingChest = __instance;
+
+            // Schedule adding "Senpai's Chest" button to the chest panel (we know a chest was just opened)
+            try
+            {
+                var chestType = __instance.GetType();
+                var uiField = chestType.GetField("ui", BindingFlags.NonPublic | BindingFlags.Instance);
+                if (uiField != null && uiField.GetValue(__instance) is GameObject chestUi && chestUi != null)
+                {
+                    _pendingChestPanel = chestUi;
+                    _pendingChest = __instance;
+                    _pendingChestButtonFrames = 3; // Wait 3 frames for UI to be fully initialized
+                    Log?.LogInfo($"[SenpaisChest] Scheduled embedded panel from Chest.Interact (will add in 3 frames) - UI active: {chestUi.activeInHierarchy}");
+                }
+            }
+            catch (Exception ex)
+            {
+                Log?.LogDebug($"[SenpaisChest] Could not schedule chest button: {ex.Message}");
+            }
+        }
+
+        private static bool OnInputGetKeyDown_Prefix(UnityEngine.KeyCode key, ref bool __result)
+        {
+            if (key != UnityEngine.KeyCode.Backspace)
+                return true;
+            if (_staticUI == null || !_staticUI.IsVisible)
+                return true;
+            __result = false;
+            return false;
+        }
+
+        private static bool OnInputGetKey_Prefix(UnityEngine.KeyCode key, ref bool __result)
+        {
+            if (key != UnityEngine.KeyCode.Backspace)
+                return true;
+            if (_staticUI == null || !_staticUI.IsVisible)
+                return true;
+            __result = false;
+            return false;
+        }
+
+        private static bool OnInputGetButtonDown_Prefix(string buttonName, ref bool __result)
+        {
+            if (string.IsNullOrEmpty(buttonName))
+                return true;
+            if (!buttonName.Equals("Cancel", StringComparison.OrdinalIgnoreCase))
+                return true;
+            if (_staticUI == null || !_staticUI.IsVisible)
+                return true;
+            __result = false;
+            return false;
+        }
+
+        /// <summary>
+        /// Blocks Wish.PlayerInput.GetButtonDown(string) for "UICancel" when the config UI is open.
+        /// The game's OnUICancel component polls this every frame and closes the chest on Backspace.
+        /// The string overload bypasses PlayerInput's AllowInput/DisableInput system, so we must
+        /// intercept it here to prevent Backspace from closing the chest while typing in the search bar.
+        /// </summary>
+        private static bool OnPlayerInputGetButtonDown_Prefix(string button, ref bool __result)
+        {
+            if (_staticUI == null || !_staticUI.IsVisible)
+                return true;
+            if (button == "UICancel" || button == "Close")
+            {
+                __result = false;
+                return false;
+            }
+            return true;
         }
 
         private static bool OnChestEndInteract_Prefix(Chest __instance, int interactType)
         {
-            if (CurrentInteractingChest == __instance && _staticUI != null && _staticUI.IsVisible)
+            if (CurrentInteractingChest == __instance && _staticUI != null && _staticUI.IsVisible && !_staticUI.IsEmbedded)
             {
-                // Block the chest from closing while our config UI is open
+                // Block the chest from closing only when the floating config window is open (not when embedded panel is shown)
                 return false;
             }
 
@@ -283,6 +419,164 @@ namespace SenpaisChest
                 _staticUI?.Hide();
             }
             return true;
+        }
+
+        /// <summary>
+        /// After the game opens a chest UI, schedule adding a "Senpai's Chest" button (deferred so ChestUI.Start has run).
+        /// </summary>
+        private static void OnUIHandlerOpenUI_Postfix(object __instance, GameObject ui, Transform parent, bool playAudio, bool animate, object externalUIHandler)
+        {
+            if (ui == null || externalUIHandler == null) return;
+            if (!(externalUIHandler is Chest chest)) return;
+
+            try
+            {
+                _pendingChestPanel = ui;
+                _pendingChest = chest;
+                _pendingChestButtonFrames = 3; // add panel after 3 frames so ChestUI.Start and layout are fully ready
+                Log?.LogInfo($"[SenpaisChest] Scheduled embedded panel (will add in 3 frames) - UI active: {ui.activeInHierarchy}");
+            }
+            catch (Exception ex)
+            {
+                Log?.LogWarning($"[SenpaisChest] Failed to schedule embedded panel: {ex.Message}");
+            }
+        }
+
+        private static GameObject _pendingChestPanel;
+        private static Chest _pendingChest;
+        private static int _pendingChestButtonFrames;
+
+        internal static void ProcessPendingChestButton()
+        {
+            if (_pendingChestButtonFrames <= 0 || _pendingChestPanel == null || _pendingChest == null)
+                return;
+            _pendingChestButtonFrames--;
+            if (_pendingChestButtonFrames != 0) return;
+
+            var panel = _pendingChestPanel;
+            var c = _pendingChest;
+            
+            Log?.LogInfo($"[SenpaisChest] Processing pending panel: panel={panel != null}, active={panel?.activeInHierarchy}, chest={c != null}");
+            
+            if (panel == null || !panel.activeInHierarchy)
+            {
+                Log?.LogInfo($"[SenpaisChest] Skip add panel: panel null or inactive (panel={panel != null}, active={panel?.activeInHierarchy})");
+                _pendingChestPanel = null;
+                _pendingChest = null;
+                return;
+            }
+
+            // Verify chest UI components exist
+            var canvas = panel.GetComponentInParent<Canvas>();
+            Log?.LogInfo($"[SenpaisChest] Chest UI state - Canvas: {canvas != null}, Canvas active: {canvas?.gameObject.activeInHierarchy}, RenderMode: {canvas?.renderMode}");
+
+            try
+            {
+                AddSenpaisChestNotePanel(panel, c);
+            }
+            catch (Exception ex)
+            {
+                Log?.LogWarning($"[SenpaisChest] Failed to add embedded panel: {ex.Message}\n{ex.StackTrace}");
+            }
+            finally
+            {
+                _pendingChestPanel = null;
+                _pendingChest = null;
+            }
+        }
+
+        private const string SenpaisChestConfigPanelName = "SenpaisChest_ConfigPanel";
+
+        /// <summary>
+        /// Adds a note panel to the chest UI: "Press F9 to configure rules". Config opens only via F9 as a movable floating window.
+        /// </summary>
+        private static void AddSenpaisChestNotePanel(GameObject chestUiRoot, Chest chest)
+        {
+            if (chestUiRoot == null || !chestUiRoot.activeInHierarchy)
+            {
+                Log?.LogDebug($"[SenpaisChest] Cannot add panel: chestUiRoot is null or inactive (null={chestUiRoot == null}, active={chestUiRoot?.activeInHierarchy})");
+                return;
+            }
+            
+            // Check if panel already exists
+            var existingPanel = chestUiRoot.transform.Find(SenpaisChestConfigPanelName);
+            if (existingPanel != null)
+            {
+                Log?.LogInfo($"[SenpaisChest] Panel already exists, reusing - active: {existingPanel.gameObject.activeInHierarchy}");
+                var ui = GetUI();
+                if (ui != null)
+                {
+                    ui.ShowNoteForChest(chest, existingPanel.gameObject);
+                }
+                return;
+            }
+
+            // Find the Canvas that contains the chest UI (required for proper rendering)
+            var canvas = chestUiRoot.GetComponentInParent<Canvas>();
+            if (canvas == null)
+            {
+                Log?.LogWarning("[SenpaisChest] Chest UI root is not under a Canvas, cannot create embedded panel");
+                return;
+            }
+
+            // Parent the panel to the chest UI root so it sits at the bottom of the chest window,
+            // below the inventory grids, instead of at the bottom of the full screen.
+            Transform parentContainer = chestUiRoot.transform;
+
+            try
+            {
+                var panelGo = new GameObject(SenpaisChestConfigPanelName);
+                panelGo.transform.SetParent(parentContainer, false);
+                panelGo.transform.SetAsLastSibling();
+                panelGo.SetActive(true); // Ensure it's active
+
+                var rt = panelGo.AddComponent<RectTransform>();
+                // Anchor to bottom-center of chest UI; compact note: "Press F9 to configure rules"
+                const float notePanelHeight = 34f;
+                const float notePanelWidth = 340f;
+                rt.anchorMin = new Vector2(0.5f, 0f);
+                rt.anchorMax = new Vector2(0.5f, 0f);
+                rt.pivot = new Vector2(0.5f, 0f);
+                rt.anchoredPosition = Vector2.zero;
+                rt.sizeDelta = new Vector2(notePanelWidth, notePanelHeight);
+                
+                Log?.LogInfo($"[SenpaisChest] Panel RectTransform - anchorMin={rt.anchorMin}, anchorMax={rt.anchorMax}, sizeDelta={rt.sizeDelta}, rect={rt.rect}");
+
+                // Ensure the panel doesn't block raycasts (so it doesn't interfere with chest UI interaction)
+                var canvasGroup = panelGo.AddComponent<CanvasGroup>();
+                canvasGroup.blocksRaycasts = false;
+                canvasGroup.interactable = false;
+                canvasGroup.alpha = 1f; // Ensure it's fully visible
+
+                // Force layout update to ensure RectTransform is properly calculated
+                UnityEngine.UI.LayoutRebuilder.ForceRebuildLayoutImmediate(rt);
+
+                // Verify the rect is valid before showing embedded UI
+                if (rt.rect.width <= 0 || rt.rect.height <= 0)
+                {
+                    Log?.LogWarning($"[SenpaisChest] Panel rect is invalid (width={rt.rect.width}, height={rt.rect.height}), waiting one more frame");
+                    // Schedule retry after one more frame
+                    _pendingChestPanel = chestUiRoot;
+                    _pendingChest = chest;
+                    _pendingChestButtonFrames = 1;
+                    return;
+                }
+
+                var ui = GetUI();
+                if (ui != null)
+                {
+                    ui.ShowNoteForChest(chest, panelGo);
+                    Log?.LogInfo($"[SenpaisChest] Added note panel (Press F9 to configure) - chestUiRoot active: {chestUiRoot.activeInHierarchy}, panel active: {panelGo.activeInHierarchy}, rect: {rt.rect}");
+                }
+                else
+                {
+                    Log?.LogWarning("[SenpaisChest] UI component is null, cannot show embedded panel");
+                }
+            }
+            catch (Exception ex)
+            {
+                Log?.LogError($"[SenpaisChest] Exception creating embedded panel: {ex}");
+            }
         }
 
         #endregion
@@ -344,6 +638,8 @@ namespace SenpaisChest
 
         private void Update()
         {
+            Plugin.ProcessPendingChestButton();
+
             var config = Plugin.GetConfig();
             var manager = Plugin.GetManager();
 

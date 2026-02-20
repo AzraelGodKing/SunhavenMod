@@ -1,3 +1,4 @@
+#pragma warning disable CS0436 // Type conflicts with imported type - we explicitly use SunhavenMods.Shared types
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -191,8 +192,8 @@ namespace SenpaisChest.Data
             {
                 if (_notificationStackInstance == null || (_notificationStackInstance is UnityEngine.Object obj && obj == null))
                 {
-                    var stackType = ReflectionHelper.FindWishType("NotificationStack");
-                    _notificationStackInstance = stackType != null ? ReflectionHelper.GetSingletonInstance(stackType) : null;
+                    var stackType = SunhavenMods.Shared.ReflectionHelper.FindWishType("NotificationStack");
+                    _notificationStackInstance = stackType != null ? SunhavenMods.Shared.ReflectionHelper.GetSingletonInstance(stackType) : null;
                     if (_notificationStackInstance != null)
                     {
                         _sendNotificationMethod = _notificationStackInstance.GetType()

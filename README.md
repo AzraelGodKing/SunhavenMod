@@ -1,48 +1,98 @@
 # Sun Haven Mods
 
-A collection of Sun Haven mods maintained in this repository.
+A collection of BepInEx mods for [Sun Haven](https://store.steampowered.com/app/1432860/Sun_Haven/).
 
 ## Mods
 
-| Mod | Description | Hotkey |
-|-----|-------------|--------|
-| **HavensBirthright** | Adds unique racial bonuses and traits for each playable race | - |
-| **TheVault** | Adds a spell-driven vault currency system | - |
-| **TheList** | In-game todo list and journal with per-character saves | `J` or `F9` |
-| **SunHavenMuseumUtilityTracker** | Track museum donations across all sections | `Ctrl+C` |
+| Mod | Description | Version |
+|-----|-------------|---------|
+| [**Senpai's Chest**](SenpaisChest/) | Smart chests with configurable item rules for automatic storage sorting | 1.2.0 |
+| [**Sunhaven Todo**](SunhavenTodo/) | In-game todo list and journal with per-character saves | 1.1.0 |
+| [**Sun Haven Museum Utility Tracker**](SunHavenMuseumUtilityTracker/) | Track museum donations across all sections | 2.2.0 |
+| [**The Vault**](TheVault/) | Spell-driven vault currency system for gold management | 2.0.3 |
+| [**Haven's Birthright**](HavensBirthright/) | Unique racial bonuses and traits for each playable race | 1.2.0 |
+| [**Haven's Almanac**](HavensAlmanac/) | Mod compatibility registry and info hub | 1.0.0 |
+| [**A Squirrel's Birthday Reminder**](BirthdayReminder/) | Reminds you of villagers' birthdays | 1.1.0 |
+| [**Haven Dev Tools**](HavenDevTools/) | Developer utilities and debugging tools | 1.0.1 |
 
-### HavensBirthright
+---
+
+### Senpai's Chest
+
+Smart chests that automatically collect items matching your rules. Open a chest, press F9 to configure, add rules (by item, category, type, or property), and let the mod sort your storage.
+
+### Sunhaven Todo
+
+In-game todo list and journal. Create tasks with categories, priorities, and notes. Each character has a separate list that persists between sessions. Hotkey: **J** or **F9**.
+
+### Sun Haven Museum Utility Tracker (S.M.U.T.)
+
+Track museum donation progress across all three sections:
+- **Hall of Gems** — Gems, minerals, ores, crystals
+- **Hall of Culture** — Artifacts, fossils, relics
+- **Aquarium** — Freshwater, saltwater, exotic fish
+
+Per-character saves, item icons, and bundle progress. Hotkey: **Ctrl+C**.
+
+### The Vault
+
+Spell-driven vault system for managing gold. Store and retrieve currency through in-game spells.
+
+### Haven's Birthright
+
 Adds unique racial bonuses and traits for each playable race in Sun Haven.
 
-### TheVault
-Adds a spell-driven vault currency system for managing your gold.
+### Haven's Almanac
 
-### TheList
-A full-featured in-game todo list and journal. Create tasks with categories, priorities, and notes. Each character has their own separate list that persists between sessions.
+Mod compatibility registry. Detects installed mods and provides a centralized info hub for players and mod authors.
 
-### SunHavenMuseumUtilityTracker (S.M.U.T.)
-Track your museum donation progress across all three museum sections:
-- **The Hall of Gems** - Precious gems, minerals, ores, and magical crystals
-- **The Hall of Culture** - Ancient artifacts, fossils, and cultural relics
-- **Aquarium** - Freshwater, saltwater, exotic fish, and sea creatures
+### A Squirrel's Birthday Reminder
 
-Features per-character saves, item icons, and progress tracking for each bundle.
+Displays reminders for villagers' birthdays so you never miss a gift.
+
+### Haven Dev Tools
+
+Development and debugging utilities for mod authors. Not intended for typical players.
+
+---
 
 ## Installation
 
-1. Install [BepInEx 5.x](https://github.com/BepInEx/BepInEx) for Sun Haven by following its installation guide.
-2. Build the mod you want or download its release.
-3. Copy the mod DLL into the appropriate plugin folder:
-   - `Sun Haven/BepInEx/plugins/HavensBirthright/`
-   - `Sun Haven/BepInEx/plugins/TheVault/`
-   - `Sun Haven/BepInEx/plugins/TheList/`
-   - `Sun Haven/BepInEx/plugins/SunHavenMuseumUtilityTracker/`
+1. Install [BepInEx 5.x](https://docs.bepinex.dev/articles/user_guide/installation/index.html) for Sun Haven.
+2. Download the mod or build from source.
+3. Place the mod DLL in `Sun Haven/BepInEx/plugins/` (or in a subfolder such as `SenpaisChest/`).
 4. Launch the game.
+
+### Build from Source
+
+```bash
+dotnet build SunhavenMod/<ModName>/<ModName>.csproj
+```
+
+Output goes to `bin/Debug/net48/` and is typically copied to the BepInEx plugins folder.
+
+---
 
 ## Repository Layout
 
-- `HavensBirthright/` - Racial bonuses mod
-- `TheVault/` - Vault currency mod
-- `TheList/` - Todo list mod
-- `SunHavenMuseumUtilityTracker/` - Museum tracker mod
-- `docs/` - Shared documentation
+```
+SunhavenMod/
+├── SenpaisChest/          # Smart chests
+├── SunhavenTodo/          # Todo list & journal
+├── SunHavenMuseumUtilityTracker/  # Museum tracker
+├── TheVault/              # Vault currency
+├── HavensBirthright/      # Racial bonuses
+├── HavensAlmanac/         # Mod registry
+├── BirthdayReminder/      # Birthday reminders
+├── HavenDevTools/         # Dev tools
+├── SharedUtilities/       # Shared code (VersionChecker, etc.)
+└── docs/                  # Shared documentation
+```
+
+---
+
+## Links
+
+- [Nexus Mods (Senpai's Chest)](https://www.nexusmods.com/sunhaven/mods/496)
+- [Documentation](https://azraelgodking.github.io/SunhavenMod/)
+- [Discord](https://discord.gg/Vwh2y7qMXv)
