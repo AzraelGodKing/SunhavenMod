@@ -130,7 +130,25 @@ jobs:
           while IFS= read -r JSON_KEY; do
             [ -z "$JSON_KEY" ] && continue
             CURRENT=$(jq -r ".[\"$JSON_KEY\"].version" docs/versions.json)
-            [ -z "$CURRENT" ] || [ "$CURRENT" == "null" ] && continue
+            [ -z "$CURRENT" ] || [ "$CURRENT" == "null" ] && CURRENT="0.0.0"
+            MOD_DIR=$(echo "$MOD_DIR_MAP" | grep "^$JSON_KEY:" | cut -d: -f2 | tr -d ' ')
+            [ -z "$MOD_DIR" ] && continue
+            # Use max version across versions.json, PluginInfo/Plugin.cs, and thunderstore (keeps all in sync)
+            VER_JSON="$CURRENT"
+            if [ -f "$MOD_DIR/PluginInfo.cs" ]; then
+              VER_CS=$(sed -n 's/.*PLUGIN_VERSION = "\([^"]*\)".*/\1/p' "$MOD_DIR/PluginInfo.cs" | head -1)
+            elif [ -f "$MOD_DIR/Plugin.cs" ]; then
+              VER_CS=$(sed -n 's/.*PLUGIN_VERSION = "\([^"]*\)".*/\1/p' "$MOD_DIR/Plugin.cs" | head -1)
+            else
+              VER_CS="0.0.0"
+            fi
+            [ -z "$VER_CS" ] && VER_CS="0.0.0"
+            VER_TS="0.0.0"
+            if [ -f "$MOD_DIR/thunderstore/manifest.json" ]; then
+              VER_TS=$(jq -r '.version_number' "$MOD_DIR/thunderstore/manifest.json" 2>/dev/null || echo "0.0.0")
+              [ -z "$VER_TS" ] || [ "$VER_TS" == "null" ] && VER_TS="0.0.0"
+            fi
+            CURRENT=$(printf '%s\n' "$VER_JSON" "$VER_CS" "$VER_TS" | sort -V | tail -1)
 
             case "$BUMP_TYPE" in
               major) NEW=$(bump_major "$CURRENT") ;;
@@ -143,10 +161,6 @@ jobs:
 
             # Update versions.json
             jq ".[\"$JSON_KEY\"].version = \"$NEW\"" docs/versions.json > tmp.json && mv tmp.json docs/versions.json
-
-            # Resolve mod dir
-            MOD_DIR=$(echo "$MOD_DIR_MAP" | grep "^$JSON_KEY:" | cut -d: -f2 | tr -d ' ')
-            [ -z "$MOD_DIR" ] && continue
 
             # Update PluginInfo.cs or Plugin.cs
             if [ -f "$MOD_DIR/PluginInfo.cs" ]; then
@@ -166,6 +180,7 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
+          set -e
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
           git add docs/versions.json
@@ -182,7 +197,8 @@ jobs:
           BUMP="${{ steps.bump.outputs.bump_type }}"
           BASE_REF="${{ github.event.pull_request.base.ref }}"
           PR_NUM="${{ github.event.pull_request.number }}"
-          BUMP_BRANCH="chore/version-bump-$PR_NUM"
+          # Unique branch name avoids collision on re-run; run_id ensures one branch per workflow run
+          BUMP_BRANCH="chore/version-bump-$PR_NUM-${{ github.run_id }}"
           git checkout -b "$BUMP_BRANCH"
           git commit -m "chore: auto-bump versions ($BUMP from $SOURCE)"
           git push -u origin "$BUMP_BRANCH"
