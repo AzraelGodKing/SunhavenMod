@@ -62,6 +62,13 @@ namespace SunhavenTodo
         public static KeyCode StaticHUDToggleKey => _staticHUDToggleKey;
         public static bool StaticHUDEnabled => _staticHUDEnabled;
 
+        /// <summary>Returns the display string for the open-list shortcut (e.g. "Ctrl+T" or "J").</summary>
+        public static string GetOpenListShortcutDisplay()
+        {
+            var key = StaticToggleKey.ToString();
+            return StaticRequireCtrl ? $"Ctrl+{key}" : key;
+        }
+
         private void Awake()
         {
             Instance = this;
