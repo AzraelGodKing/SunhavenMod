@@ -1,3 +1,4 @@
+#pragma warning disable CS0436 // Type conflicts with imported type - this is our VersionChecker/ReflectionHelper
 using System;
 using System.Collections;
 using System.Net;
@@ -210,7 +211,7 @@ namespace SunhavenMods.Shared
         /// Sends an in-game notification about an available update.
         /// Uses the native Sun Haven notification system if available.
         /// </summary>
-        public static void NotifyUpdateAvailable(this VersionChecker.VersionCheckResult result, ManualLogSource logger = null)
+        public static void NotifyUpdateAvailable(this SunhavenMods.Shared.VersionChecker.VersionCheckResult result, ManualLogSource logger = null)
         {
             if (!result.UpdateAvailable)
                 return;
@@ -220,11 +221,11 @@ namespace SunhavenMods.Shared
             // Try to use native notification system
             try
             {
-                var notificationStackType = ReflectionHelper.FindWishType("NotificationStack");
+                var notificationStackType = SunhavenMods.Shared.ReflectionHelper.FindWishType("NotificationStack");
                 if (notificationStackType != null)
                 {
                     // Use reflection to get SingletonBehaviour<NotificationStack>.Instance
-                    var singletonBaseType = ReflectionHelper.FindType("SingletonBehaviour`1", "Wish");
+                    var singletonBaseType = SunhavenMods.Shared.ReflectionHelper.FindType("SingletonBehaviour`1", "Wish");
                     if (singletonBaseType != null)
                     {
                         var singletonType = singletonBaseType.MakeGenericType(notificationStackType);
