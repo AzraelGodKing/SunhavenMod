@@ -234,6 +234,12 @@ namespace SunhavenTodo.UI
                 fontStyle = FontStyle.Italic,
                 normal = { textColor = new Color(_textDark.r, _textDark.g, _textDark.b, 0.5f) }
             };
+            var shortcut = Plugin.GetOpenListShortcutDisplay();
+            GUILayout.Label($"{shortcut} to open", hintStyle, GUILayout.Height(HEADER_HEIGHT));
+
+            GUILayout.FlexibleSpace();
+
+            // Drag hint
             GUILayout.Label("drag to move", hintStyle, GUILayout.Height(HEADER_HEIGHT));
 
             GUILayout.Space(8);
