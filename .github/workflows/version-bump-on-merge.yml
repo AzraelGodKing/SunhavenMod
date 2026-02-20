@@ -1,0 +1,179 @@
+# =============================================================================
+# Auto Version Bump on PR Merge
+# =============================================================================
+# TRIGGER: When a PR is merged into main/master
+# BEHAVIOR: Bumps version of mods with changed files based on source branch:
+#   - feat/*   -> minor bump (1.2.3 -> 1.3.0)
+#   - fix/*    -> patch bump (1.2.3 -> 1.2.4)
+#   - release/* or major/* -> major bump (1.2.3 -> 2.0.0)
+# =============================================================================
+
+name: Version Bump on Merge
+
+on:
+  pull_request:
+    types: [closed]
+    branches: [main, master]
+
+jobs:
+  version-bump:
+    runs-on: ubuntu-latest
+    if: github.event.pull_request.merged == true
+    permissions:
+      contents: write
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Determine bump type
+        id: bump
+        run: |
+          HEAD_REF="${{ github.event.pull_request.head.ref }}"
+          BUMP_TYPE=""
+          case "$HEAD_REF" in
+            feat/*)    BUMP_TYPE="minor" ;;
+            fix/*)     BUMP_TYPE="patch" ;;
+            release/*) BUMP_TYPE="major" ;;
+            major/*)   BUMP_TYPE="major" ;;
+            *)         echo "No matching branch prefix (feat/fix/release/major) - skipping"
+                       echo "bump_type=" >> "$GITHUB_OUTPUT"
+                       exit 0
+          esac
+          echo "bump_type=$BUMP_TYPE" >> "$GITHUB_OUTPUT"
+          echo "source_branch=$HEAD_REF" >> "$GITHUB_OUTPUT"
+          echo "Bump type: $BUMP_TYPE (from $HEAD_REF)"
+
+      - name: Skip - no bump type
+        if: steps.bump.outputs.bump_type == ''
+        run: echo "Skipping - branch does not match feat/fix/release/major"
+
+      - name: Get changed files and affected mods
+        if: steps.bump.outputs.bump_type != ''
+        id: mods
+        run: |
+          BASE="${{ github.event.pull_request.base.sha }}"
+          HEAD="${{ github.event.pull_request.merge_commit_sha }}"
+          CHANGED=$(git diff --name-only "$BASE" "$HEAD" 2>/dev/null || true)
+
+          AFFECTED=""
+          echo "$CHANGED" | while read -r f; do
+            case "$f" in
+              SenpaisChest/*)              echo "com.azraelgodking.senpaischest" ;;
+              HavensBirthright/*)          echo "com.azraelgodking.havensbirthright" ;;
+              SunHavenMuseumUtilityTracker/*) echo "com.azraelgodking.sunhavenmuseumutilitytracker" ;;
+              BirthdayReminder/*)          echo "com.azraelgodking.squirrelsbirthdayreminder" ;;
+              SunhavenTodo/*)              echo "com.azraelgodking.sunhaventodo" ;;
+              TheVault/*)                  echo "com.azraelgodking.thevault" ;;
+              HavenDevTools/*)             echo "com.azraelgodking.havendevtools" ;;
+              HavensAlmanac/*)             echo "com.azraelgodking.havensalmanac" ;;
+              *)                           ;;
+            esac
+          done | sort -u > affected_mods.txt
+
+          if [ ! -s affected_mods.txt ]; then
+            echo "No mod directories changed - skipping bump"
+            echo "has_mods=false" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+
+          echo "has_mods=true" >> "$GITHUB_OUTPUT"
+          echo "Affected mods:"
+          cat affected_mods.txt
+
+      - name: Bump versions and update files
+        if: steps.bump.outputs.bump_type != '' && steps.mods.outputs.has_mods == 'true'
+        run: |
+          BUMP_TYPE="${{ steps.bump.outputs.bump_type }}"
+          SOURCE_BRANCH="${{ steps.bump.outputs.source_branch }}"
+
+          bump_major() {
+            local v=$1
+            local m=$(echo "$v" | cut -d. -f1)
+            local mi=$(echo "$v" | cut -d. -f2)
+            local p=$(echo "$v" | cut -d. -f3)
+            [ -z "$p" ] && p=0
+            echo "$((m+1)).0.0"
+          }
+          bump_minor() {
+            local v=$1
+            local m=$(echo "$v" | cut -d. -f1)
+            local mi=$(echo "$v" | cut -d. -f2)
+            local p=$(echo "$v" | cut -d. -f3)
+            [ -z "$mi" ] && mi=0
+            echo "$m.$((mi+1)).0"
+          }
+          bump_patch() {
+            local v=$1
+            local m=$(echo "$v" | cut -d. -f1)
+            local mi=$(echo "$v" | cut -d. -f2)
+            local p=$(echo "$v" | cut -d. -f3)
+            [ -z "$p" ] && p=0
+            echo "$m.$mi.$((p+1))"
+          }
+
+          MOD_DIR_MAP="
+          com.azraelgodking.senpaischest:SenpaisChest
+          com.azraelgodking.havensbirthright:HavensBirthright
+          com.azraelgodking.sunhavenmuseumutilitytracker:SunHavenMuseumUtilityTracker
+          com.azraelgodking.squirrelsbirthdayreminder:BirthdayReminder
+          com.azraelgodking.sunhaventodo:SunhavenTodo
+          com.azraelgodking.thevault:TheVault
+          com.azraelgodking.havendevtools:HavenDevTools
+          com.azraelgodking.havensalmanac:HavensAlmanac
+          "
+
+          while IFS= read -r JSON_KEY; do
+            [ -z "$JSON_KEY" ] && continue
+            CURRENT=$(jq -r ".[\"$JSON_KEY\"].version" docs/versions.json)
+            [ -z "$CURRENT" ] || [ "$CURRENT" == "null" ] && continue
+
+            case "$BUMP_TYPE" in
+              major) NEW=$(bump_major "$CURRENT") ;;
+              minor) NEW=$(bump_minor "$CURRENT") ;;
+              patch) NEW=$(bump_patch "$CURRENT") ;;
+              *) continue ;;
+            esac
+
+            echo "Bumping $JSON_KEY: $CURRENT -> $NEW"
+
+            # Update versions.json
+            jq ".[\"$JSON_KEY\"].version = \"$NEW\"" docs/versions.json > tmp.json && mv tmp.json docs/versions.json
+
+            # Resolve mod dir
+            MOD_DIR=$(echo "$MOD_DIR_MAP" | grep "^$JSON_KEY:" | cut -d: -f2 | tr -d ' ')
+            [ -z "$MOD_DIR" ] && continue
+
+            # Update PluginInfo.cs or Plugin.cs
+            if [ -f "$MOD_DIR/PluginInfo.cs" ]; then
+              sed -i "s/PLUGIN_VERSION = \"[^\"]*\"/PLUGIN_VERSION = \"$NEW\"/" "$MOD_DIR/PluginInfo.cs"
+            elif [ -f "$MOD_DIR/Plugin.cs" ]; then
+              sed -i "s/PLUGIN_VERSION = \"[^\"]*\"/PLUGIN_VERSION = \"$NEW\"/" "$MOD_DIR/Plugin.cs"
+            fi
+
+            # Update thunderstore manifest
+            if [ -f "$MOD_DIR/thunderstore/manifest.json" ]; then
+              jq ".version_number = \"$NEW\"" "$MOD_DIR/thunderstore/manifest.json" > tmp.json && mv tmp.json "$MOD_DIR/thunderstore/manifest.json"
+            fi
+          done < affected_mods.txt
+
+      - name: Commit and push
+        if: steps.bump.outputs.bump_type != '' && steps.mods.outputs.has_mods == 'true'
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add docs/versions.json
+          for d in SenpaisChest HavensBirthright SunHavenMuseumUtilityTracker BirthdayReminder SunhavenTodo TheVault HavenDevTools HavensAlmanac; do
+            git add "$d/PluginInfo.cs" 2>/dev/null || true
+            git add "$d/Plugin.cs" 2>/dev/null || true
+            git add "$d/thunderstore/manifest.json" 2>/dev/null || true
+          done
+          if git diff --staged --quiet; then
+            echo "No version changes to commit"
+            exit 0
+          fi
+          SOURCE="${{ steps.bump.outputs.source_branch }}"
+          BUMP="${{ steps.bump.outputs.bump_type }}"
+          git commit -m "chore: auto-bump versions ($BUMP from $SOURCE)"
+          git push
