@@ -37,6 +37,7 @@ namespace SenpaisChest.UI
         private int _selectedCategory;
         private int _selectedItemType;
         private int _selectedProperty;
+        private int _selectedGroup;
 
         // Item search state
         private string _lastSearchQuery = "";
@@ -45,8 +46,20 @@ namespace SenpaisChest.UI
         private int _selectedItemId = -1;
         private string _selectedItemName = "";
 
+        // Groups management
+        private bool _groupsWindowVisible;
+        private Rect _groupsWindowRect = new Rect(150, 150, 400, 450);
+        private ItemGroup _editingGroup;
+        private string _newGroupName = "";
+        private string _groupItemSearch = "";
+        private string _groupItemSearchLast = "";
+        private List<KeyValuePair<int, string>> _groupSearchResults = new List<KeyValuePair<int, string>>();
+        private Vector2 _groupSearchScroll;
+        private Vector2 _groupListScroll;
+        private Vector2 _groupItemsScroll;
+
         // Dropdown options
-        private static readonly string[] RuleTypeNames = { "By Item", "By Category", "By Item Type", "By Property" };
+        private static readonly string[] RuleTypeNames = { "By Item", "By Category", "By Item Type", "By Property", "By Group" };
         private static readonly string[] CategoryNames = { "Equip", "Use", "Craftable", "Monster", "Furniture", "Quest" };
         private static readonly string[] ItemTypeNames = { "Normal", "Armor", "Food", "Fish", "Crop", "WateringCan", "Animal", "Pet", "Tool" };
         private static readonly string[] PropertyNames = { "isGem", "isForageable", "isAnimalProduct", "isMeal", "isFruit", "isArtisanryItem", "isPotion", "isNotDonated" };
@@ -212,6 +225,7 @@ namespace SenpaisChest.UI
         public void HideConfig()
         {
             _isVisible = false;
+            _groupsWindowVisible = false;
             BlockGameInput(false);
             SaveIfDirty();
         }
@@ -299,8 +313,8 @@ namespace SenpaisChest.UI
                 Plugin.Log?.LogWarning("[SmartChestUI] Cannot show note: no valid chest ID");
                 return;
             }
-            string chestName = GetChestName(chest);
-            _currentData = _manager.GetOrCreateSmartChest(_chestId, chestName);
+            // Do not call GetOrCreateSmartChest here; chest is only registered when user opens config (F9)
+            _currentData = null;
             _notePanelRoot = panelRoot;
             _noteRectDirty = true;
             _isVisible = false; // Config not shown; only note
@@ -380,6 +394,16 @@ namespace SenpaisChest.UI
                 DrawWindow,
                 "",
                 _configWindowStyle);
+
+            if (_groupsWindowVisible)
+            {
+                _groupsWindowRect = GUI.Window(
+                    PluginInfo.PLUGIN_GUID.GetHashCode() + 1,
+                    _groupsWindowRect,
+                    DrawGroupsWindow,
+                    "Manage Groups",
+                    _configWindowStyle);
+            }
         }
 
         /// <summary>
@@ -587,11 +611,14 @@ namespace SenpaisChest.UI
             GUILayout.BeginHorizontal();
             DrawSelectorButton(0, useParchmentTheme || compact, GUILayout.Height((useParchmentTheme || compact) ? 24 : 28));
             DrawSelectorButton(1, useParchmentTheme || compact, GUILayout.Height((useParchmentTheme || compact) ? 24 : 28));
+            DrawSelectorButton(2, useParchmentTheme || compact, GUILayout.Height((useParchmentTheme || compact) ? 24 : 28));
             GUILayout.EndHorizontal();
             GUILayout.Space(compact ? 1 : 2);
             GUILayout.BeginHorizontal();
-            DrawSelectorButton(2, useParchmentTheme || compact, GUILayout.Height((useParchmentTheme || compact) ? 24 : 28));
             DrawSelectorButton(3, useParchmentTheme || compact, GUILayout.Height((useParchmentTheme || compact) ? 24 : 28));
+            DrawSelectorButton(4, useParchmentTheme || compact, GUILayout.Height((useParchmentTheme || compact) ? 24 : 28));
+            if (GUILayout.Button("Manage Groups", useParchmentTheme ? _configCloseBottomStyle : _closeBottomButtonStyle, GUILayout.Height((useParchmentTheme || compact) ? 22 : 26)))
+                _groupsWindowVisible = true;
             GUILayout.EndHorizontal();
             GUILayout.Space(compact ? 4 : 8);
 
@@ -693,6 +720,129 @@ namespace SenpaisChest.UI
             GUILayout.Space(2);
             if (GUILayout.Button("Close", _chestCloseButtonStyle, GUILayout.Height(20), GUILayout.ExpandWidth(true)))
                 HideConfig();
+        }
+
+        private void DrawGroupsWindow(int windowId)
+        {
+            if (!_stylesInitialized) InitializeStyles();
+            var labelBold = _chestLabelBoldStyle;
+            var label = _chestLabelStyle;
+            var labelDim = _chestLabelDimStyle;
+
+            GUILayout.Label("Create or edit groups. Use 'By Group' when adding rules to attach a group to a chest.", labelDim, GUILayout.ExpandWidth(true));
+            GUILayout.Space(6);
+
+            GUILayout.BeginHorizontal();
+            _newGroupName = GUILayout.TextField(_newGroupName ?? "", _configSearchFieldStyle ?? _chestSearchFieldStyle, GUILayout.ExpandWidth(true));
+            if (GUILayout.Button("New Group", _chestAddButtonStyle, GUILayout.Width(90)))
+            {
+                var name = (_newGroupName ?? "").Trim();
+                if (name.Length > 0 && _manager.GetGroup(name) == null)
+                {
+                    _manager.GetOrCreateGroup(name);
+                    _newGroupName = "";
+                    _editingGroup = _manager.GetGroup(name);
+                    _manager.MarkDirty();
+                    SaveIfDirty();
+                }
+            }
+            GUILayout.EndHorizontal();
+            GUILayout.Space(8);
+
+            var groups = _manager.GetGroups();
+            if (groups.Count > 0)
+            {
+                GUILayout.Label("Groups:", labelBold);
+                _groupListScroll = GUILayout.BeginScrollView(_groupListScroll, GUILayout.Height(100));
+                for (int i = 0; i < groups.Count; i++)
+                {
+                    var g = groups[i];
+                    GUILayout.BeginHorizontal();
+                    bool isEditing = _editingGroup == g;
+                    var btnStyle = isEditing ? _chestSelectorActiveStyle : _chestSelectorStyle;
+                    if (GUILayout.Button($"{g.Name} ({g.ItemIds?.Count ?? 0})", btnStyle, GUILayout.ExpandWidth(true)))
+                        _editingGroup = g;
+                    if (GUILayout.Button("X", _chestRemoveRuleBtnStyle, GUILayout.Width(26), GUILayout.Height(22)))
+                    {
+                        _manager.RemoveGroup(g.Name);
+                        if (_editingGroup == g) _editingGroup = null;
+                        _manager.MarkDirty();
+                        SaveIfDirty();
+                        }
+                    GUILayout.EndHorizontal();
+                }
+                GUILayout.EndScrollView();
+                GUILayout.Space(6);
+            }
+
+            if (_editingGroup != null && _manager.GetGroup(_editingGroup.Name) != null)
+            {
+                GUILayout.Label($"Editing: {_editingGroup.Name}", labelBold);
+                if (_editingGroup.ItemIds != null && _editingGroup.ItemIds.Count > 0)
+                {
+                    _groupItemsScroll = GUILayout.BeginScrollView(_groupItemsScroll, GUILayout.Height(80));
+                    for (int i = _editingGroup.ItemIds.Count - 1; i >= 0; i--)
+                    {
+                        int id = _editingGroup.ItemIds[i];
+                        var itemName = ItemSearch.GetItemName(id) ?? $"#{id}";
+                        GUILayout.BeginHorizontal();
+                        GUILayout.Label(itemName, label, GUILayout.ExpandWidth(true));
+                        if (GUILayout.Button("X", _chestRemoveRuleBtnStyle, GUILayout.Width(24), GUILayout.Height(20)))
+                        {
+                            _editingGroup.ItemIds.RemoveAt(i);
+                            _manager.MarkDirty();
+                            SaveIfDirty();
+                        }
+                        GUILayout.EndHorizontal();
+                    }
+                    GUILayout.EndScrollView();
+                }
+                else
+                {
+                    GUILayout.Label("  No items. Search below to add.", labelDim);
+                }
+                GUILayout.Space(4);
+                GUILayout.Label("Add item (search):", labelBold);
+                if (_groupItemSearch != _groupItemSearchLast)
+                {
+                    _groupItemSearchLast = _groupItemSearch ?? "";
+                    _groupSearchResults = string.IsNullOrEmpty(_groupItemSearchLast) || _groupItemSearchLast.Length < 2
+                        ? new List<KeyValuePair<int, string>>()
+                        : ItemSearch.SearchItems(_groupItemSearchLast, 15);
+                }
+                _groupItemSearch = GUILayout.TextField(_groupItemSearch ?? "", _configSearchFieldStyle ?? _chestSearchFieldStyle);
+                if (_groupSearchResults.Count > 0)
+                {
+                    _groupSearchScroll = GUILayout.BeginScrollView(_groupSearchScroll, GUILayout.Height(100));
+                    foreach (var kv in _groupSearchResults)
+                    {
+                        if (GUILayout.Button(ItemSearch.FormatDisplay(kv.Value, kv.Key), _chestSearchResultStyle, GUILayout.Height(22)))
+                        {
+                            if (_editingGroup.ItemIds == null) _editingGroup.ItemIds = new List<int>();
+                            if (!_editingGroup.ItemIds.Contains(kv.Key))
+                            {
+                                _editingGroup.ItemIds.Add(kv.Key);
+                                _manager.MarkDirty();
+                                SaveIfDirty();
+                            }
+                            _groupItemSearch = "";
+                            _groupItemSearchLast = "";
+                            _groupSearchResults.Clear();
+                            break;
+                        }
+                    }
+                    GUILayout.EndScrollView();
+                }
+            }
+
+            GUILayout.FlexibleSpace();
+            if (GUILayout.Button("Close", _chestCloseButtonStyle, GUILayout.Height(28)))
+            {
+                _groupsWindowVisible = false;
+                _editingGroup = null;
+                _newGroupName = "";
+            }
+            GUI.DragWindow(new Rect(0, 0, 400, 24));
         }
 
         private void DrawNoteContent(float width, float height)
@@ -812,6 +962,28 @@ namespace SenpaisChest.UI
                     GUILayout.Label("Property:", labelBold);
                     DrawOptionGrid(PropertyDisplayNames, ref _selectedProperty, useChestStyles ? 3 : 2, useChestStyles);
                     break;
+
+                case 4: // ByGroup
+                    var groups = _manager.GetGroups();
+                    GUILayout.Label("Group:", labelBold);
+                    if (groups.Count == 0)
+                    {
+                        GUILayout.Label("  No groups yet. Click Manage Groups to create one.", labelDim);
+                    }
+                    else
+                    {
+                        for (int i = 0; i < groups.Count; i++)
+                        {
+                            var g = groups[i];
+                            var grpStyle = useChestStyles
+                                ? (i == _selectedGroup ? _chestSearchResultSelectedStyle : _chestSearchResultStyle)
+                                : (i == _selectedGroup ? _searchResultSelectedStyle : _searchResultStyle);
+                            string grpLabel = $"{g.Name} ({g.ItemIds?.Count ?? 0} items)";
+                            if (GUILayout.Button(grpLabel, grpStyle, GUILayout.Height(24)))
+                                _selectedGroup = i;
+                        }
+                    }
+                    break;
             }
         }
 
@@ -923,6 +1095,20 @@ namespace SenpaisChest.UI
                         rule = new SmartChestRule { Type = RuleType.ByProperty, PropertyName = PropertyNames[_selectedProperty] };
                     }
                     break;
+
+                case 4: // ByGroup
+                    var groups = _manager.GetGroups();
+                    if (_selectedGroup >= 0 && _selectedGroup < groups.Count)
+                    {
+                        var g = groups[_selectedGroup];
+                        if (g != null && !string.IsNullOrEmpty(g.Name))
+                            rule = new SmartChestRule { Type = RuleType.ByGroup, GroupName = g.Name };
+                    }
+                    else
+                    {
+                        Plugin.Log?.LogWarning("Select a group, or create one in Manage Groups first");
+                    }
+                    break;
             }
 
             if (rule != null)
@@ -933,7 +1119,8 @@ namespace SenpaisChest.UI
                         existing.ItemId == rule.ItemId &&
                         existing.CategoryName == rule.CategoryName &&
                         existing.ItemTypeName == rule.ItemTypeName &&
-                        existing.PropertyName == rule.PropertyName)
+                        existing.PropertyName == rule.PropertyName &&
+                        existing.GroupName == rule.GroupName)
                     {
                         Plugin.Log?.LogInfo("Rule already exists, skipping duplicate");
                         return;

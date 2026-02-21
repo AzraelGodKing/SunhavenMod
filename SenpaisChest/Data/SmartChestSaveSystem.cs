@@ -204,6 +204,10 @@ namespace SenpaisChest.Data
 
                     sb.Append("          \"PropertyName\": ");
                     WriteJsonString(sb, rule.PropertyName ?? "");
+                    sb.AppendLine(",");
+
+                    sb.Append("          \"GroupName\": ");
+                    WriteJsonString(sb, rule.GroupName ?? "");
                     sb.AppendLine();
 
                     sb.Append("        }");
@@ -221,6 +225,30 @@ namespace SenpaisChest.Data
                     sb.AppendLine();
             }
 
+            sb.AppendLine("  ],");
+            sb.AppendLine("  \"Groups\": [");
+            var groups = data.Groups ?? new List<ItemGroup>();
+            for (int i = 0; i < groups.Count; i++)
+            {
+                var g = groups[i];
+                sb.AppendLine("    {");
+                sb.Append("      \"Name\": ");
+                WriteJsonString(sb, g.Name ?? "");
+                sb.AppendLine(",");
+                sb.AppendLine("      \"ItemIds\": [");
+                var ids = g.ItemIds ?? new List<int>();
+                for (int j = 0; j < ids.Count; j++)
+                {
+                    sb.Append("        ");
+                    sb.Append(ids[j]);
+                    if (j < ids.Count - 1) sb.AppendLine(",");
+                    else sb.AppendLine();
+                }
+                sb.AppendLine("      ]");
+                sb.Append("    }");
+                if (i < groups.Count - 1) sb.AppendLine(",");
+                else sb.AppendLine();
+            }
             sb.AppendLine("  ]");
             sb.Append("}");
             return sb.ToString();
@@ -281,7 +309,7 @@ namespace SenpaisChest.Data
                         if (chestDict.TryGetValue("ChestName", out var cname))
                             chest.ChestName = cname as string ?? "";
                         if (chestDict.TryGetValue("IsEnabled", out var cenabled))
-                            chest.IsEnabled = cenabled is bool b ? b : true;
+                            chest.IsEnabled = cenabled is bool b ? b : false;
 
                         if (chestDict.TryGetValue("Rules", out var rulesObj) && rulesObj is List<object> rulesList)
                         {
@@ -302,12 +330,33 @@ namespace SenpaisChest.Data
                                     rule.ItemTypeName = typeNameVal as string ?? "";
                                 if (ruleDict.TryGetValue("PropertyName", out var propVal))
                                     rule.PropertyName = propVal as string ?? "";
+                                if (ruleDict.TryGetValue("GroupName", out var grpVal))
+                                    rule.GroupName = grpVal as string ?? "";
 
                                 chest.Rules.Add(rule);
                             }
                         }
 
                         data.Chests.Add(chest);
+                    }
+                }
+
+                if (root.TryGetValue("Groups", out var groupsObj) && groupsObj is List<object> groupsList)
+                {
+                    foreach (var groupObj in groupsList)
+                    {
+                        if (!(groupObj is Dictionary<string, object> groupDict))
+                            continue;
+                        var g = new ItemGroup();
+                        if (groupDict.TryGetValue("Name", out var gname))
+                            g.Name = gname as string ?? "";
+                        if (groupDict.TryGetValue("ItemIds", out var idsObj) && idsObj is List<object> idsList)
+                        {
+                            foreach (var idObj in idsList)
+                                g.ItemIds.Add(ToInt(idObj));
+                        }
+                        if (!string.IsNullOrWhiteSpace(g.Name))
+                            data.Groups.Add(g);
                     }
                 }
 

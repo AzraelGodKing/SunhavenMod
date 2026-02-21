@@ -11,6 +11,7 @@
   - **By Category** — Equip, Use, Craftable, Monster, Furniture, Quest
   - **By Item Type** — Normal, Armor, Food, Fish, Crop, Watering Can, Animal, Pet, Tool
   - **By Property** — Gems, Forageables, Animal Products, Meals, Fruits, Artisanry Items, Potions, Museum (Not Donated)
+  - **By Group** — Your own custom subcategories (e.g. Flowers, Vegetables). Create groups in Manage Groups, add items via search, then attach to chests with one click.
 - **Per-Character Saves** — Each character's Smart Chest settings are saved separately
 - **Multiplayer Safe** — Skips chests that other players are using
 
@@ -40,6 +41,15 @@ Edit `BepInEx/config/com.azraelgodking.senpaischest.cfg`:
 - Smart Chests do not pull from other Smart Chests (prevents loops)
 - Chests in use by another player are skipped
 - Configuration is tied to chest position; moving a chest resets its config
+
+## Tips — Fine-Grained Sorting
+
+The game's ItemType "Crop" includes flowers, vegetables, and all crop types. Use **By Group** for the easiest way to separate them:
+
+1. Open a chest, press F9, and click **Manage Groups**
+2. Create a group (e.g. "Flowers"), search for items, and add them
+3. Use **By Group** when adding rules to attach the group to any chest with one click
+4. Reuse the same group across multiple chests—edit it once to update all of them
 
 ## Links
 

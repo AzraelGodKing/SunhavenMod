@@ -4,9 +4,9 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Senpai's Chest - Smart Chest Sorting for Sun Haven</title>
-    <meta name="description" content="Smart chest auto-sorting for Sun Haven. Designate chests with custom sorting rules by item, type, category, or property.">
+    <meta name="description" content="Smart chest auto-sorting for Sun Haven. Custom rules by item, type, category, property, or your own groups. Manage Groups tab for custom subcategories like Flowers and Vegetables.">
     <meta property="og:title" content="Senpai's Chest - Smart Chest Sorting">
-    <meta property="og:description" content="Auto-sort your chests in Sun Haven with custom rules by item, type, or category.">
+    <meta property="og:description" content="Auto-sort chests with custom rules by item, type, category, property, or your own groups. Manage Groups for custom subcategories.">
     <meta property="og:type" content="website">
     <meta name="theme-color" content="#ffc332">
     <link rel="icon" type="image/svg+xml" href="../favicon.svg">
@@ -37,7 +37,7 @@
 
         <!-- Technical brief intro -->
         <section class="intro-section" style="border-left:3px solid #ffc332; padding-left:20px;">
-            <p><strong>Abstract:</strong> Senpai's Chest lets you designate chests as "Smart Chests" with custom sorting rules. Items are automatically pulled from regular chests into the right smart chest based on your rules. Items that don't belong are ejected and rerouted. Set it and forget it.</p>
+            <p><strong>Abstract:</strong> Senpai's Chest lets you designate chests as "Smart Chests" with custom sorting rules. Items are automatically pulled from regular chests into the right smart chest based on your rules. Use built-in rule types or create your own <strong>Groups</strong> (e.g. Flowers, Vegetables) in the <strong>Manage Groups</strong> tab. Items that don't belong are ejected and rerouted. Set it and forget it.</p>
         </section>
 
         <!-- Control Interface -->
@@ -59,6 +59,10 @@
                 <div class="keybind-card">
                     <div class="keybind-keys"><kbd>B</kbd> / <kbd>Esc</kbd></div>
                     <div class="keybind-action">Close Config</div>
+                </div>
+                <div class="keybind-card">
+                    <div class="keybind-keys">Manage Groups</div>
+                    <div class="keybind-action">Button in config to create/edit custom groups</div>
                 </div>
             </div>
         </section>
@@ -114,6 +118,11 @@
                     <h3>Todo Bridge</h3>
                     <p>With S.M.U.T. and Todo installed, auto-creates todo tasks for undonated museum items found in chests. Todos auto-complete when donated.</p>
                 </div>
+                <div class="feature-card">
+                    <div class="feature-icon">&#x1F4CB;</div>
+                    <h3>Manage Groups Tab</h3>
+                    <p>Create custom subcategories (e.g. Flowers, Vegetables, Withergate Crops) and attach them to chests with one click. Edit a group once to update every chest using it. Reuse groups across multiple chests.</p>
+                </div>
             </div>
         </section>
 
@@ -141,6 +150,11 @@
                     <p>Sort by item properties like Gems, Forageables, Meals, Fruits, Potions, Museum Items, and more.</p>
                     <div class="rule-example">Input: Property "Gems" &rarr; Output: Sorts all gem items</div>
                 </div>
+                <div class="rule-card" style="border-top:3px solid #ff9800;">
+                    <h4>&#x1F4CB; Rule Type: GROUP</h4>
+                    <p>Sort by your own custom groups. Create groups in the <strong>Manage Groups</strong> tab, add items via search, then attach them to chests with one click. Ideal for separating flowers from crops or defining your own categories.</p>
+                    <div class="rule-example">Input: Group "Flowers" &rarr; Output: Sorts all items in that group to this chest</div>
+                </div>
             </div>
         </section>
 
@@ -166,7 +180,7 @@
                     <div class="step-number" style="background:linear-gradient(135deg, #ffc332, #e0a800);">3</div>
                     <div class="step-content">
                         <h4>Define Rule Set</h4>
-                        <p>Choose a rule type (By Item, By Type, By Category, or By Property) and select what items this chest should collect.</p>
+                        <p>Choose a rule type (By Item, By Type, By Category, By Property, or By Group) and select what items this chest should collect. Use <strong>Manage Groups</strong> to create custom subcategories (e.g. Flowers, Vegetables) and attach them to chests with one click.</p>
                     </div>
                 </div>
                 <div class="step">

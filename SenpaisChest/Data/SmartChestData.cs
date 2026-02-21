@@ -8,7 +8,19 @@ namespace SenpaisChest.Data
         ByItemId,
         ByCategory,
         ByItemType,
-        ByProperty
+        ByProperty,
+        ByGroup
+    }
+
+    /// <summary>
+    /// Player-defined group of item IDs (e.g. "Flowers", "Vegetables").
+    /// Stored per-character, reusable across chests.
+    /// </summary>
+    [Serializable]
+    public class ItemGroup
+    {
+        public string Name = "";
+        public List<int> ItemIds = new List<int>();
     }
 
     [Serializable]
@@ -19,6 +31,7 @@ namespace SenpaisChest.Data
         public string CategoryName = "";
         public string ItemTypeName = "";
         public string PropertyName = "";
+        public string GroupName = "";
 
         public string GetDisplayText()
         {
@@ -32,6 +45,8 @@ namespace SenpaisChest.Data
                     return $"Type: {ItemTypeName}";
                 case RuleType.ByProperty:
                     return $"Property: {PropertyName}";
+                case RuleType.ByGroup:
+                    return $"Group: {GroupName}";
                 default:
                     return "Unknown Rule";
             }
@@ -43,7 +58,7 @@ namespace SenpaisChest.Data
     {
         public string ChestId = "";
         public string ChestName = "";
-        public bool IsEnabled = true;
+        public bool IsEnabled = false;
         public List<SmartChestRule> Rules = new List<SmartChestRule>();
 
         public SmartChestData() { }
@@ -52,7 +67,7 @@ namespace SenpaisChest.Data
         {
             ChestId = chestId;
             ChestName = chestName;
-            IsEnabled = true;
+            IsEnabled = false;
             Rules = new List<SmartChestRule>();
         }
     }
@@ -62,6 +77,7 @@ namespace SenpaisChest.Data
     {
         public string CharacterName = "";
         public List<SmartChestData> Chests = new List<SmartChestData>();
+        public List<ItemGroup> Groups = new List<ItemGroup>();
 
         public SmartChestSaveData() { }
 
@@ -69,6 +85,7 @@ namespace SenpaisChest.Data
         {
             CharacterName = characterName;
             Chests = new List<SmartChestData>();
+            Groups = new List<ItemGroup>();
         }
     }
 

@@ -13,6 +13,7 @@ namespace SenpaisChest.Data
     public class SmartChestManager
     {
         private readonly Dictionary<string, SmartChestData> _smartChests = new Dictionary<string, SmartChestData>();
+        private readonly Dictionary<string, ItemGroup> _groups = new Dictionary<string, ItemGroup>(StringComparer.OrdinalIgnoreCase);
         private string _characterName = "";
         private bool _isDirty;
 
@@ -39,6 +40,7 @@ namespace SenpaisChest.Data
         public void LoadData(SmartChestSaveData data)
         {
             _smartChests.Clear();
+            _groups.Clear();
             _categoryCache.Clear();
 
             if (data == null)
@@ -51,7 +53,16 @@ namespace SenpaisChest.Data
                 _smartChests[chest.ChestId] = chest;
             }
 
-            Plugin.Log?.LogInfo($"Loaded {_smartChests.Count} smart chest configurations");
+            if (data.Groups != null)
+            {
+                foreach (var g in data.Groups)
+                {
+                    if (!string.IsNullOrWhiteSpace(g.Name) && g.ItemIds != null)
+                        _groups[g.Name] = g;
+                }
+            }
+
+            Plugin.Log?.LogInfo($"Loaded {_smartChests.Count} smart chest(s), {_groups.Count} group(s)");
         }
 
         public SmartChestSaveData GetSaveData()
@@ -59,8 +70,47 @@ namespace SenpaisChest.Data
             return new SmartChestSaveData
             {
                 CharacterName = _characterName,
-                Chests = _smartChests.Values.ToList()
+                Chests = _smartChests.Values.ToList(),
+                Groups = _groups.Values.ToList()
             };
+        }
+
+        public IReadOnlyList<ItemGroup> GetGroups() => _groups.Values.ToList();
+
+        public ItemGroup GetGroup(string name)
+        {
+            return !string.IsNullOrEmpty(name) && _groups.TryGetValue(name, out var g) ? g : null;
+        }
+
+        public ItemGroup GetOrCreateGroup(string name)
+        {
+            if (string.IsNullOrWhiteSpace(name)) return null;
+            var key = name.Trim();
+            if (_groups.TryGetValue(key, out var existing))
+                return existing;
+            var g = new ItemGroup { Name = key, ItemIds = new List<int>() };
+            _groups[key] = g;
+            _isDirty = true;
+            return g;
+        }
+
+        public void RenameGroup(string oldName, string newName)
+        {
+            if (string.IsNullOrWhiteSpace(oldName) || string.IsNullOrWhiteSpace(newName)) return;
+            var oldKey = oldName.Trim();
+            var newKey = newName.Trim();
+            if (!_groups.TryGetValue(oldKey, out var g)) return;
+            if (_groups.ContainsKey(newKey) && !string.Equals(oldKey, newKey, StringComparison.OrdinalIgnoreCase)) return;
+            _groups.Remove(oldKey);
+            g.Name = newKey;
+            _groups[newKey] = g;
+            _isDirty = true;
+        }
+
+        public void RemoveGroup(string name)
+        {
+            if (!string.IsNullOrEmpty(name) && _groups.Remove(name.Trim()))
+                _isDirty = true;
         }
 
         public void SetCharacterName(string name)
@@ -547,6 +597,9 @@ namespace SenpaisChest.Data
                 case RuleType.ByCategory:
                     return MatchesCategory(itemId, rule.CategoryName);
 
+                case RuleType.ByGroup:
+                    return MatchesGroup(itemId, rule.GroupName);
+
                 default:
                     return false;
             }
@@ -583,6 +636,13 @@ namespace SenpaisChest.Data
             }
 
             return matched;
+        }
+
+        private bool MatchesGroup(int itemId, string groupName)
+        {
+            if (string.IsNullOrEmpty(groupName)) return false;
+            var g = GetGroup(groupName);
+            return g != null && g.ItemIds != null && g.ItemIds.Contains(itemId);
         }
 
         /// <summary>
