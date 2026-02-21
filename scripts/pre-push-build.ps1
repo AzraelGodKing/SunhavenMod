@@ -3,8 +3,8 @@
     Pre-push bump and build for Sun Haven mods.
 
 .DESCRIPTION
-    Bumps PluginInfo.cs/Plugin.cs and builds so the DLL has the correct version before push.
-    versions.json and manifest.json are NOT updated -- version-bump-on-merge does that on PR merge.
+    Bumps all version locations and builds: versions.json, PluginInfo.cs/Plugin.cs,
+    thunderstore/manifest.json. Run before push — version-bump-on-merge workflow has been dropped.
 
 .PARAMETER Mod
     Mod key (e.g. senpaischest, havensbirthright). Required unless -All is used.
@@ -77,19 +77,39 @@ function Bump-Version {
     }
 }
 
+function Update-VersionsJson {
+    param([string]$JsonKey, [string]$Version)
+    $content = Get-Content $VersionsPath -Raw
+    $pattern = "(`"$([regex]::Escape($JsonKey))`":\s*\{\s*`"version`":\s*)`"[^`"]*`""
+    $replacement = "`${1}`"$Version`""
+    if ($content -match $pattern) {
+        $content = $content -replace $pattern, $replacement
+        Set-Content $VersionsPath -Value $content -NoNewline
+        Write-Host "  Updated versions.json -> $Version"
+    } else {
+        Write-Warning "  Could not find $JsonKey in versions.json"
+    }
+}
+
 function Sync-AndBuild {
     param(
         [string]$ModKey,
-        [string]$Version
+        [string]$Version,
+        [bool]$UpdateVersionsJson
     )
     $info = $ModMap[$ModKey]
     if (-not $info) { throw "Unknown mod: $ModKey" }
+    $jsonKey = $info[0]
     $modDir = $info[1]
     $usePluginInfo = $info[2]
 
     $modPath = Join-Path $RepoRoot $modDir
 
-    # Update PluginInfo.cs or Plugin.cs only (NOT versions.json or manifest.json)
+    if ($UpdateVersionsJson) {
+        Update-VersionsJson -JsonKey $jsonKey -Version $Version
+    }
+
+    # Update PluginInfo.cs or Plugin.cs
     $versionFile = if ($usePluginInfo) { "PluginInfo.cs" } else { "Plugin.cs" }
     $versionFilePath = Join-Path $modPath $versionFile
     if (-not (Test-Path $versionFilePath)) {
@@ -99,6 +119,17 @@ function Sync-AndBuild {
         $content = $content -replace 'PLUGIN_VERSION = "[^"]*"', "PLUGIN_VERSION = `"$Version`""
         Set-Content $versionFilePath -Value $content -NoNewline
         Write-Host "  Updated $versionFile -> $Version"
+    }
+
+    # Update thunderstore/manifest.json
+    $manifestPath = Join-Path $modPath "thunderstore\manifest.json"
+    if (Test-Path $manifestPath) {
+        $content = Get-Content $manifestPath -Raw
+        $content = $content -replace '"version_number":\s*"[^"]*"', "`"version_number`": `"$Version`""
+        Set-Content $manifestPath -Value $content -NoNewline
+        Write-Host "  Updated thunderstore/manifest.json -> $Version"
+    } else {
+        Write-Warning "  manifest.json not found: $manifestPath"
     }
 
     # Build (DLL gets version from PluginInfo at compile time)
@@ -158,7 +189,7 @@ foreach ($modKey in $modsToProcess) {
         Write-Host "Syncing ${modDir} to $targetVersion (no bump)"
     }
 
-    Sync-AndBuild -ModKey $modKey -Version $targetVersion
+    Sync-AndBuild -ModKey $modKey -Version $targetVersion -UpdateVersionsJson ([bool]$Bump)
 }
 
 Write-Host "Done. DLL(s) in builds/ have correct version."
