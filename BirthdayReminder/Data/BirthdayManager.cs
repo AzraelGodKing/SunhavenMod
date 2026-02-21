@@ -25,7 +25,7 @@ namespace BirthdayReminder.Data
         private float _stalenessCheckTimer = 0f;
         private const float STALENESS_CHECK_INTERVAL = 10f; // Check every 10 seconds
 
-        private static readonly Random _random = new Random();
+        private static readonly System.Random _random = new System.Random();
 
         // Cached reflection data for game API access
         private static bool _reflectionInitialized = false;
