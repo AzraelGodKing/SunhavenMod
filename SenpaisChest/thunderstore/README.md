@@ -4,6 +4,7 @@
 
 ## Features
 
+- **Chest Labels** — Labels above chests (Chest, Large Wooden Chest, BankChest). Configurable visibility. Excludes Hoppers and Animal Feeders.
 - **Smart Chests** — Mark any chest as a Smart Chest and define rules for which items it collects
 - **Automatic Sorting** — Smart Chests periodically scan nearby chests and pull matching items (scan interval configurable)
 - **Flexible Rules** — Filter items by:
@@ -29,6 +30,9 @@ Edit `BepInEx/config/com.azraelgodking.senpaischest.cfg`:
 
 | Setting | Default | Description |
 |---------|---------|-------------|
+| EnableChestLabels | true | Show labels above chests |
+| LabelVisibility | Visible | Chest labels: Visible, OnHover, or Hidden |
+| IconVisibility | Visible | Item icons in labels: Visible, OnHover, or Hidden |
 | ScanInterval | 60 | Seconds between scans (min: 10) |
 | EnableNotifications | true | Show notifications when items are moved |
 | MaxItemsPerScan | 50 | Max item stacks moved per scan (reduces lag) |
