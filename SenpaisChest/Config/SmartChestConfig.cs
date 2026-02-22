@@ -12,9 +12,16 @@ namespace SenpaisChest.Config
         public ConfigEntry<bool> RequireCtrlModifier { get; private set; }
         public ConfigEntry<bool> CheckForUpdates { get; private set; }
 
+        // Chest Labels (integrated)
+        public ConfigEntry<bool> EnableChestLabels { get; private set; }
+        public ConfigEntry<ChestLabelVisibility> LabelVisibility { get; private set; }
+        public ConfigEntry<ChestLabelVisibility> IconVisibility { get; private set; }
+
         // Static copies for PersistentRunner access
         internal static KeyCode StaticToggleKey = KeyCode.F9;
         internal static bool StaticRequireCtrl = false;
+
+        public enum ChestLabelVisibility { Hidden, OnHover, Visible }
 
         public void Initialize(ConfigFile config)
         {
@@ -58,6 +65,27 @@ namespace SenpaisChest.Config
                 "CheckForUpdates",
                 true,
                 "Check for mod updates on startup"
+            );
+
+            EnableChestLabels = config.Bind(
+                "ChestLabels",
+                "EnableChestLabels",
+                true,
+                "Show labels above chests (Wooden Chest, Large Wooden Chest, etc.). Excludes Hoppers and Animal Feeders."
+            );
+
+            LabelVisibility = config.Bind(
+                "ChestLabels",
+                "LabelVisibility",
+                ChestLabelVisibility.Visible,
+                "When to show chest labels: Visible, OnHover, or Hidden"
+            );
+
+            IconVisibility = config.Bind(
+                "ChestLabels",
+                "IconVisibility",
+                ChestLabelVisibility.Visible,
+                "When to show item icons (when label starts with item ID): Visible, OnHover, or Hidden"
             );
 
             // Initialize static values

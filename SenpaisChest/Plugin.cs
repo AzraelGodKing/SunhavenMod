@@ -97,6 +97,8 @@ namespace SenpaisChest
 
                 Log.LogInfo($"{PluginInfo.PLUGIN_NAME} loaded successfully!");
                 Log.LogInfo($"Press {(_config.RequireCtrlModifier.Value ? "Ctrl+" : "")}{_config.ToggleKey.Value} to configure a chest while interacting with it");
+                if (_config.EnableChestLabels.Value)
+                    Log.LogInfo("Chest Labels enabled - labels shown above Chest and BankChest (not Hoppers/Animal Feeders)");
             }
             catch (Exception ex)
             {
@@ -266,11 +268,46 @@ namespace SenpaisChest
                     Log.LogWarning("Could not find Wish.PlayerInput type for UICancel blocking");
                 }
 
+                // Chest Labels (labels above chests - enabled via config)
+                ApplyChestLabelPatches();
+
                 Log.LogInfo("Harmony patches applied successfully");
             }
             catch (Exception ex)
             {
                 Log.LogError($"Failed to apply patches: {ex}");
+            }
+        }
+
+        private void ApplyChestLabelPatches()
+        {
+            var patchType = typeof(SenpaisChest.ChestLabels.ChestLabelPatch);
+            var setMetaPostfix = AccessTools.Method(patchType, "SetMeta_Postfix");
+            var onEnablePostfix = AccessTools.Method(patchType, "OnEnable_Postfix");
+            var interactionPostfix = AccessTools.Method(patchType, "InteractionPoint_Postfix");
+
+            foreach (var methodName in new[] { "SetMeta", "ReceiveNewMeta", "SaveMeta" })
+            {
+                var target = AccessTools.Method(typeof(Chest), methodName);
+                if (target != null)
+                {
+                    _harmony.Patch(target, postfix: new HarmonyMethod(setMetaPostfix));
+                    Log.LogInfo($"Patched Chest.{methodName} (labels)");
+                }
+            }
+
+            var onEnable = AccessTools.Method(typeof(Chest), "OnEnable");
+            if (onEnable != null)
+            {
+                _harmony.Patch(onEnable, postfix: new HarmonyMethod(onEnablePostfix));
+                Log.LogInfo("Patched Chest.OnEnable (labels)");
+            }
+
+            var getInteractionPoint = AccessTools.Method(typeof(Chest), "get_InteractionPoint");
+            if (getInteractionPoint != null)
+            {
+                _harmony.Patch(getInteractionPoint, postfix: new HarmonyMethod(interactionPostfix));
+                Log.LogInfo("Patched Chest.get_InteractionPoint (labels)");
             }
         }
 
@@ -633,7 +670,9 @@ namespace SenpaisChest
     {
         private float _scanTimer;
         private float _autoSaveTimer;
+        private float _chestLabelScanTimer;
         private const float AUTO_SAVE_INTERVAL = 300f; // 5 minutes
+        private const float CHEST_LABEL_SCAN_INTERVAL = 2f;
         private int _lastCountdownSecond = -1;
 
         private void Update()
@@ -641,6 +680,23 @@ namespace SenpaisChest
             Plugin.ProcessPendingChestButton();
 
             var config = Plugin.GetConfig();
+
+            // Chest Labels: periodic scan for chests that need labels
+            if (config != null && config.EnableChestLabels.Value)
+            {
+                _chestLabelScanTimer += Time.unscaledDeltaTime;
+                if (_chestLabelScanTimer >= CHEST_LABEL_SCAN_INTERVAL)
+                {
+                    _chestLabelScanTimer = 0f;
+                    var chests = UnityEngine.Object.FindObjectsOfType<Chest>();
+                    foreach (var chest in chests)
+                    {
+                        if (chest != null && chest.gameObject != null)
+                            SenpaisChest.ChestLabels.ChestLabelPatch.EnsureLabel(chest);
+                    }
+                }
+            }
+
             var manager = Plugin.GetManager();
 
             if (config == null || manager == null)
