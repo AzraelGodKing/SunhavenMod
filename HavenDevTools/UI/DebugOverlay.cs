@@ -1,6 +1,5 @@
 using System;
 using HavenDevTools.Config;
-using HavenDevTools.Services;
 using UnityEngine;
 using Wish;
 
@@ -141,7 +140,7 @@ namespace HavenDevTools.UI
         private Rect GetOverlayRect(OverlayPositionType position)
         {
             float width = 220;
-            float height = 130;
+            float height = ModConfig.ShowPerformance?.Value ?? true ? 155 : 130;
             float margin = 10;
 
             return position switch
@@ -164,6 +163,15 @@ namespace HavenDevTools.UI
             DrawRow("Gold:", _gold.ToString("N0"));
             DrawRow("Position:", _position);
             DrawRow("Held:", _heldItemInfo);
+
+            if (ModConfig.ShowPerformance?.Value ?? true)
+            {
+                float fps = 1f / Mathf.Max(0.0001f, Time.deltaTime);
+                long memBytes = GC.GetTotalMemory(false);
+                float memMB = memBytes / (1024f * 1024f);
+                DrawRow("FPS:", fps.ToString("F1"));
+                DrawRow("Memory:", $"{memMB:F1} MB");
+            }
 
             GUILayout.FlexibleSpace();
             GUILayout.Label($"F11: Window | F6: Toggle", _labelStyle);
