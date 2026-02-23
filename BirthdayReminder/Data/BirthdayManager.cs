@@ -521,21 +521,32 @@ namespace BirthdayReminder.Data
         {
             try
             {
-                // Use DayCycle class directly - much more reliable
+                // Skip date lookup on LoadScreen - GameSave.CurrentWorld may be null
+                var gameSaveType = AccessTools.TypeByName("Wish.GameSave");
+                if (gameSaveType != null)
+                {
+                    var instanceProp = AccessTools.Property(gameSaveType, "Instance");
+                    var instance = instanceProp?.GetValue(null);
+                    if (instance != null)
+                    {
+                        var currentSaveProp = AccessTools.Property(gameSaveType, "CurrentSave");
+                        var currentSave = currentSaveProp?.GetValue(instance);
+                        if (currentSave == null)
+                            return (1, "Spring", 1); // No save loaded (e.g. main menu / LoadScreen)
+                    }
+                }
+
                 var dayCycleType = AccessTools.TypeByName("Wish.DayCycle");
                 if (dayCycleType != null)
                 {
-                    // Get static properties
                     var yearProp = AccessTools.Property(dayCycleType, "Year");
                     var monthDayProp = AccessTools.Property(dayCycleType, "MonthDay");
 
                     int year = yearProp != null ? (int)yearProp.GetValue(null) : 1;
                     int day = monthDayProp != null ? (int)monthDayProp.GetValue(null) : 1;
 
-                    // Get Season from instance (it's not static)
                     var dayCycleInstance = GetSingletonInstance(dayCycleType);
                     string season = "Spring";
-
                     if (dayCycleInstance != null)
                     {
                         var seasonProp = AccessTools.Property(dayCycleType, "Season");
@@ -546,17 +557,15 @@ namespace BirthdayReminder.Data
                         }
                     }
 
-                    // Only log when explicitly requested (birthday checks, not per-frame HUD updates)
                     if (logDate)
-                    {
                         Plugin.Log?.LogInfo($"[BirthdayManager] Got date from DayCycle: Year {year}, {season} {day}");
-                    }
                     return (year, season, day);
                 }
             }
             catch (Exception ex)
             {
-                Plugin.Log?.LogError($"[BirthdayManager] Error getting date: {ex.Message}");
+                // Expected on LoadScreen/main menu when DayCycle/CurrentWorld not ready
+                Plugin.Log?.LogDebug($"[BirthdayManager] Date unavailable (may be on LoadScreen): {ex.Message}");
             }
 
             return (1, "Spring", 1);
