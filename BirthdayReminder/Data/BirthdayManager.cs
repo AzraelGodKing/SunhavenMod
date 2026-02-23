@@ -38,6 +38,7 @@ namespace BirthdayReminder.Data
         private static FieldInfo _love2Field;
         private static FieldInfo _like2Field;
         private static FieldInfo _gaveGiftForDayField;
+        private static FieldInfo _giftTableField; // NPCAI.giftTable is a field, not a property
         private static bool _useGameData = false;
 
         public event Action OnBirthdaysUpdated;
@@ -149,18 +150,20 @@ namespace BirthdayReminder.Data
                     _like2Field = AccessTools.Field(_npcGiftTableType, "like2");
                 }
 
-                // Get NPCAI type for gaveGiftForDay
+                // Get NPCAI type for gaveGiftForDay and giftTable
                 var npcaiType = AccessTools.TypeByName("Wish.NPCAI");
                 if (npcaiType != null)
                 {
                     _gaveGiftForDayField = AccessTools.Field(npcaiType, "gaveGiftForDay");
+                    _giftTableField = AccessTools.Field(npcaiType, "giftTable"); // private field in NPCAI
                 }
 
                 // Check if we have enough to use game data
                 _useGameData = _npcManagerInstanceProp != null &&
                                _npcsDictField != null &&
                                _birthDayField != null &&
-                               _birthMonthField != null;
+                               _birthMonthField != null &&
+                               _giftTableField != null;
 
                 if (_useGameData)
                 {
@@ -487,30 +490,13 @@ namespace BirthdayReminder.Data
                         }
                     }
 
-                    // Check for characterData specifically
-                    var charDataProp = AccessTools.Property(npcType, "characterData")
-                                       ?? AccessTools.Property(npcType, "CharacterData");
-                    if (charDataProp != null)
+                    // Note: NPCAI does not have characterData/CharacterData - those are on GameSave.CurrentSave.
+                    // NPCAI has giftTable (field) for birthday/gift data.
+                    var giftTableField = AccessTools.Field(npcType, "giftTable");
+                    if (giftTableField != null)
                     {
-                        var charData = charDataProp.GetValue(npc);
-                        if (charData != null)
-                        {
-                            Plugin.Log?.LogInfo($"[DEBUG] --- characterData PROPERTIES ({charData.GetType().Name}) ---");
-                            foreach (var prop in charData.GetType().GetProperties(System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.Public))
-                            {
-                                try
-                                {
-                                    var value = prop.GetValue(charData);
-                                    string valueStr = value?.ToString() ?? "null";
-                                    if (valueStr.Length > 100) valueStr = valueStr.Substring(0, 100) + "...";
-                                    Plugin.Log?.LogInfo($"[DEBUG]     {prop.Name} ({prop.PropertyType.Name}) = {valueStr}");
-                                }
-                                catch (Exception ex)
-                                {
-                                    Plugin.Log?.LogDebug($"[BirthdayManager] DEBUG property reflection: {prop.Name}: {ex.Message}");
-                                }
-                            }
-                        }
+                        var gt = giftTableField.GetValue(npc);
+                        Plugin.Log?.LogInfo($"[DEBUG] giftTable (field) = {gt?.GetType().Name ?? "null"}");
                     }
 
                     Plugin.Log?.LogInfo($"[DEBUG] ========== END {npcName} ==========");
@@ -702,16 +688,15 @@ namespace BirthdayReminder.Data
                         // Get NPC name
                         var npcType = npc.GetType();
                         var nameProp = AccessTools.Property(npcType, "NPCName")
+                                       ?? AccessTools.Property(npcType, "ActualNPCName")
+                                       ?? AccessTools.Property(npcType, "OriginalName")
                                        ?? AccessTools.Property(npcType, "npcName")
                                        ?? AccessTools.Property(npcType, "Name");
                         string npcName = nameProp?.GetValue(npc)?.ToString();
                         if (string.IsNullOrEmpty(npcName)) continue;
 
-                        // Get NPCGiftTable (characterData or giftTable)
-                        var giftTableProp = AccessTools.Property(npcType, "characterData")
-                                            ?? AccessTools.Property(npcType, "giftTable")
-                                            ?? AccessTools.Property(npcType, "CharacterData");
-                        var giftTable = giftTableProp?.GetValue(npc);
+                        // Get NPCGiftTable - NPCAI.giftTable is a private field (not characterData/CharacterData)
+                        var giftTable = _giftTableField?.GetValue(npc);
                         if (giftTable == null) continue;
 
                         // Get birthDay and birthMonth from NPCGiftTable
