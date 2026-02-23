@@ -10,44 +10,41 @@ namespace HavensBirthright.Patches
     public static class EconomyPatches
     {
         /// <summary>
-        /// Patch NPCAI.AddFriendship to modify relationship point gains.
+        /// Patch NPCAI.AddRelationship (game uses float, not AddFriendship int).
         /// Applies bonuses (Human, Amari Dog) and drawback penalties (Demon).
         /// </summary>
-        public static void ModifyRelationshipGain(ref int val)
+        public static void ModifyRelationshipGain(ref float increase)
         {
             if (!RacialConfig.EnableRacialBonuses.Value)
                 return;
 
-            // Only apply to positive gains (not relationship loss)
-            if (val <= 0)
+            if (increase <= 0f)
                 return;
 
             var manager = Plugin.GetRacialBonusManager();
             if (manager == null)
                 return;
 
-            int originalVal = val;
+            float originalVal = increase;
 
-            // Apply racial bonus (Human, Amari Dog)
             if (manager.HasBonus(BonusType.RelationshipGain))
             {
                 float bonus = manager.GetBonusValue(BonusType.RelationshipGain);
-                val = Mathf.RoundToInt(val * (1f + bonus / 100f));
+                increase *= (1f + bonus / 100f);
             }
 
-            // Apply Demon drawback: reduced relationship gain
             if (AbilityConfig.EnableRacialDrawbacks != null && AbilityConfig.EnableRacialDrawbacks.Value)
             {
                 var race = manager.GetPlayerRace();
                 if (race.HasValue && race.Value == Race.Demon)
                 {
                     float penalty = AbilityConfig.DemonDistrustedRelationshipPenalty.Value;
-                    val = Mathf.RoundToInt(val * (1f - penalty / 100f));
+                    increase *= (1f - penalty / 100f);
                 }
             }
 
-            if (val != originalVal)
-                Plugin.Log.LogDebug($"RelationshipGain modified: {originalVal} -> {val}");
+            if (Mathf.Abs(increase - originalVal) > 0.001f)
+                Plugin.Log.LogDebug($"RelationshipGain modified: {originalVal} -> {increase}");
         }
 
         /// <summary>

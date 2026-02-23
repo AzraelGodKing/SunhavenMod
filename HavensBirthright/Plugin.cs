@@ -86,13 +86,21 @@ namespace HavensBirthright
                     PatchMethod(playerType, "ReceiveDamage",
                         typeof(Patches.CombatPatches), "OnDamageReceivedPostfix");
 
-                    // Patch NPCAI.AddFriendship for relationship bonuses/drawbacks
+                    // Patch NPCAI.AddRelationship (game API: float increase, float romanceBonus, bool showUI)
                     var npcaiType = AccessTools.TypeByName("Wish.NPCAI");
                     if (npcaiType != null)
                     {
-                        PatchMethodPrefix(npcaiType, "AddFriendship",
-                            typeof(Patches.EconomyPatches), "ModifyRelationshipGain",
-                            new[] { typeof(int) });
+                        var addRelMethod = AccessTools.Method(npcaiType, "AddRelationship", new[] { typeof(float), typeof(float), typeof(bool) });
+                        if (addRelMethod != null)
+                        {
+                            var prefix = AccessTools.Method(typeof(Patches.EconomyPatches), "ModifyRelationshipGain");
+                            _harmony.Patch(addRelMethod, prefix: new HarmonyLib.HarmonyMethod(prefix));
+                            Log.LogInfo("Successfully patched NPCAI.AddRelationship");
+                        }
+                        else
+                        {
+                            Log.LogWarning("Could not find NPCAI.AddRelationship - relationship bonuses will not work");
+                        }
                     }
                     else
                     {
