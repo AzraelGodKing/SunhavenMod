@@ -357,57 +357,24 @@ namespace TheVault
                 PatchMethod(playerType, "InitializeAsOwner",
                     typeof(PlayerPatches), "OnPlayerInitialized");
 
-                // Patch shop purchase methods for vault currency checks
-                var shopMenuType = AccessTools.TypeByName("Wish.ShopMenu");
-                if (shopMenuType != null)
-                {
-                    PatchMethodPrefix(shopMenuType, "BuyItem",
-                        typeof(ShopPatches), "OnBeforeBuyItem");
-                }
-                else
-                {
-                    Log.LogWarning("Could not find ShopMenu type - shop vault integration unavailable");
-                }
+                // Patch shop purchase methods for vault currency checks (game uses Wish.Shop, not ShopMenu)
+                PatchShopBuyItem();
 
-                // Patch save/load for vault persistence
-                var saveLoadType = AccessTools.TypeByName("Wish.SaveLoadManager");
-                if (saveLoadType != null)
-                {
-                    PatchMethod(saveLoadType, "Save",
-                        typeof(SaveLoadPatches), "OnGameSaved");
+                // Patch save/load for vault persistence (game uses GameSave.SaveGame / LoadGame, not SaveLoadManager)
+                PatchGameSaveSaveLoad();
 
-                    PatchMethod(saveLoadType, "Load",
-                        typeof(SaveLoadPatches), "OnGameLoaded");
-                }
-                else
-                {
-                    Log.LogWarning("Could not find SaveLoadManager - using fallback save triggers");
-                }
-
-                // Patch return to menu for state reset (critical for character switching)
+                // Patch return to menu for state reset (MainMenuController.HomeMenu when entering main menu)
                 var mainMenuType = AccessTools.TypeByName("Wish.MainMenuController");
                 if (mainMenuType != null)
                 {
-                    // Try to patch ReturnToMainMenu or similar method
-                    PatchMethod(mainMenuType, "ReturnToMainMenu",
+                    PatchMethod(mainMenuType, "HomeMenu",
                         typeof(SaveLoadPatches), "OnReturnToMenu");
                 }
 
-                // Also try patching the title screen load
                 var titleType = AccessTools.TypeByName("Wish.TitleScreen");
                 if (titleType != null)
                 {
                     PatchMethod(titleType, "Start",
-                        typeof(SaveLoadPatches), "OnReturnToMenu");
-                }
-
-                // Try GameManager's return to menu method
-                var gameManagerType = AccessTools.TypeByName("Wish.GameManager");
-                if (gameManagerType != null)
-                {
-                    PatchMethod(gameManagerType, "ReturnToMainMenu",
-                        typeof(SaveLoadPatches), "OnReturnToMenu");
-                    PatchMethod(gameManagerType, "QuitToMainMenu",
                         typeof(SaveLoadPatches), "OnReturnToMenu");
                 }
 
@@ -491,8 +458,7 @@ namespace TheVault
         }
 
         /// <summary>
-        /// Patch GameSave class to detect when characters are loaded.
-        /// This is crucial for detecting character switches that don't trigger scene reloads.
+        /// Patch GameSave for character load detection (LoadCharacter). Save/Load triggers are in PatchGameSaveSaveLoad.
         /// </summary>
         private void PatchGameSave()
         {
@@ -505,20 +471,7 @@ namespace TheVault
                     return;
                 }
 
-                // Patch Load method
-                var loadMethod = AccessTools.Method(gameSaveType, "Load");
-                if (loadMethod != null)
-                {
-                    var postfix = AccessTools.Method(typeof(GameSavePatches), "OnGameSaveLoad");
-                    if (postfix != null)
-                    {
-                        _harmony.Patch(loadMethod, postfix: new HarmonyMethod(postfix));
-                        Log.LogInfo("Patched GameSave.Load");
-                    }
-                }
-
-                // Patch LoadCharacter method (critical for character switching)
-                var loadCharMethod = AccessTools.Method(gameSaveType, "LoadCharacter");
+                var loadCharMethod = AccessTools.Method(gameSaveType, "LoadCharacter", new[] { typeof(int) });
                 if (loadCharMethod != null)
                 {
                     var postfix = AccessTools.Method(typeof(GameSavePatches), "OnLoadCharacter");
@@ -528,22 +481,106 @@ namespace TheVault
                         Log.LogInfo("Patched GameSave.LoadCharacter");
                     }
                 }
+            }
+            catch (Exception ex)
+            {
+                Log.LogError($"Error patching GameSave: {ex.Message}");
+            }
+        }
 
-                // Patch SetCurrentCharacter
-                var setCharMethod = AccessTools.Method(gameSaveType, "SetCurrentCharacter");
-                if (setCharMethod != null)
+        /// <summary>
+        /// Patch GameSave.SaveGame and LoadGame for vault persistence (game has no SaveLoadManager).
+        /// </summary>
+        private void PatchGameSaveSaveLoad()
+        {
+            try
+            {
+                var gameSaveType = AccessTools.TypeByName("Wish.GameSave");
+                if (gameSaveType == null) return;
+
+                var saveGameMethod = AccessTools.Method(gameSaveType, "SaveGame");
+                if (saveGameMethod != null)
                 {
-                    var postfix = AccessTools.Method(typeof(GameSavePatches), "OnSetCurrentCharacter");
+                    var postfix = AccessTools.Method(typeof(SaveLoadPatches), "OnGameSaved");
                     if (postfix != null)
                     {
-                        _harmony.Patch(setCharMethod, postfix: new HarmonyMethod(postfix));
-                        Log.LogInfo("Patched GameSave.SetCurrentCharacter");
+                        _harmony.Patch(saveGameMethod, postfix: new HarmonyMethod(postfix));
+                        Log.LogInfo("Patched GameSave.SaveGame");
+                    }
+                }
+
+                var loadGameMethod = AccessTools.Method(gameSaveType, "LoadGame");
+                if (loadGameMethod != null)
+                {
+                    var postfix = AccessTools.Method(typeof(SaveLoadPatches), "OnGameLoaded");
+                    if (postfix != null)
+                    {
+                        _harmony.Patch(loadGameMethod, postfix: new HarmonyMethod(postfix));
+                        Log.LogInfo("Patched GameSave.LoadGame");
                     }
                 }
             }
             catch (Exception ex)
             {
-                Log.LogError($"Error patching GameSave: {ex.Message}");
+                Log.LogError($"Error patching GameSave save/load: {ex.Message}");
+            }
+        }
+
+        /// <summary>
+        /// Patch Wish.Shop.BuyItem for vault purchase checks (game uses Shop, not ShopMenu).
+        /// </summary>
+        private void PatchShopBuyItem()
+        {
+            try
+            {
+                var shopType = AccessTools.TypeByName("Wish.Shop");
+                if (shopType == null)
+                {
+                    Log.LogWarning("Could not find Wish.Shop type - shop vault integration unavailable");
+                    return;
+                }
+                var shopItemInfo2Type = AccessTools.TypeByName("Wish.ShopItemInfo2");
+                var shopLoot2Type = AccessTools.TypeByName("Wish.ShopLoot2");
+                if (shopItemInfo2Type != null)
+                {
+                    var buyItemMethod = AccessTools.Method(shopType, "BuyItem", new[] { shopItemInfo2Type, typeof(int) });
+                    if (buyItemMethod != null)
+                    {
+                        var prefix = AccessTools.Method(typeof(ShopPatches), "OnBeforeBuyItem");
+                        if (prefix != null)
+                        {
+                            _harmony.Patch(buyItemMethod, prefix: new HarmonyMethod(prefix));
+                            Log.LogInfo("Patched Shop.BuyItem(ShopItemInfo2,int) for vault");
+                        }
+                    }
+                }
+                if (shopLoot2Type != null)
+                {
+                    var buyItemMethod = AccessTools.Method(shopType, "BuyItem", new[] { shopLoot2Type, typeof(int) });
+                    if (buyItemMethod != null)
+                    {
+                        var prefix = AccessTools.Method(typeof(ShopPatches), "OnBeforeBuyItem");
+                        if (prefix != null)
+                        {
+                            _harmony.Patch(buyItemMethod, prefix: new HarmonyMethod(prefix));
+                            Log.LogInfo("Patched Shop.BuyItem(ShopLoot2,int) for vault");
+                        }
+                    }
+                    var buyItemSingle = AccessTools.Method(shopType, "BuyItem", new[] { shopLoot2Type });
+                    if (buyItemSingle != null)
+                    {
+                        var prefix = AccessTools.Method(typeof(ShopPatches), "OnBeforeBuyItemSingle");
+                        if (prefix != null)
+                        {
+                            _harmony.Patch(buyItemSingle, prefix: new HarmonyMethod(prefix));
+                            Log.LogInfo("Patched Shop.BuyItem(ShopLoot2) for vault");
+                        }
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                Log.LogError($"Error patching Shop: {ex.Message}");
             }
         }
 
@@ -763,15 +800,17 @@ namespace TheVault
                     Log.LogWarning("Could not find Wish.Item type");
                 }
 
-                // Also try to patch AddItem with int signatures as fallback
+                // Fallback: game has AddItem(int, int, bool) not AddItem(int, int)
                 var addItemIntMethod = AccessTools.Method(inventoryType, "AddItem", new[] { typeof(int), typeof(int) });
+                if (addItemIntMethod == null)
+                    addItemIntMethod = AccessTools.Method(inventoryType, "AddItem", new[] { typeof(int), typeof(int), typeof(bool) });
                 if (addItemIntMethod != null)
                 {
                     var postfix = AccessTools.Method(typeof(ItemPatches), "OnInventoryAddItem");
                     if (postfix != null)
                     {
                         _harmony.Patch(addItemIntMethod, postfix: new HarmonyMethod(postfix));
-                        Log.LogInfo($"Successfully patched {inventoryType.Name}.AddItem(int,int) for auto-deposit");
+                        Log.LogInfo($"Successfully patched {inventoryType.Name}.AddItem for auto-deposit");
                     }
                 }
 

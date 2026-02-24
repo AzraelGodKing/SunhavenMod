@@ -1,3 +1,4 @@
+using HarmonyLib;
 using HavensBirthright.Abilities;
 using UnityEngine;
 
@@ -48,8 +49,7 @@ namespace HavensBirthright.Patches
         }
 
         /// <summary>
-        /// Patch ShopMenu.BuyItem to apply shop discounts.
-        /// Affects: Human (ShopDiscount)
+        /// Modifies price by discount (used by OnBeforeShopBuyItem).
         /// </summary>
         public static void ModifyBuyPrice(ref int price)
         {
@@ -65,6 +65,33 @@ namespace HavensBirthright.Patches
                 if (price < 1) price = 1;
                 Plugin.Log.LogDebug($"ShopDiscount applied: {originalPrice} -> {price}");
             }
+        }
+
+        /// <summary>
+        /// Prefix for Wish.Shop.BuyItem(ShopItemInfo2, int) and BuyItem(ShopLoot2, int). Applies shop discount to itemInfo.price.
+        /// </summary>
+        public static void OnBeforeShopBuyItem(object __0, int __1)
+        {
+            ApplyShopDiscountToItemInfo(__0);
+        }
+
+        /// <summary>
+        /// Prefix for Wish.Shop.BuyItem(ShopLoot2). Applies shop discount to itemInfo.price.
+        /// </summary>
+        public static void OnBeforeShopBuyItemSingle(object __0)
+        {
+            ApplyShopDiscountToItemInfo(__0);
+        }
+
+        private static void ApplyShopDiscountToItemInfo(object itemInfo)
+        {
+            if (itemInfo == null) return;
+            var t = itemInfo.GetType();
+            var priceField = AccessTools.Field(t, "price");
+            if (priceField == null) return;
+            int price = (int)priceField.GetValue(itemInfo);
+            ModifyBuyPrice(ref price);
+            priceField.SetValue(itemInfo, price);
         }
     }
 }
