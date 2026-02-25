@@ -1,6 +1,6 @@
 {
     "name": "SenpaisChest",
-    "version_number": "2.0.0",
+    "version_number": "2.0.1",
     "website_url": "",
     "description": "Smart Chests with configurable item rules for automatic storage organization in Sun Haven.",
     "dependencies": [

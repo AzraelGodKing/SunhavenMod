@@ -1,6 +1,6 @@
 # The Vault
 
-Secure storage for seasonal tokens, community tokens, and keys in Sun Haven.
+**Version 2.0.5** — Secure storage for seasonal tokens, community tokens, and keys in Sun Haven. Auto-deposit, persistent HUD, shop and door integration, per-character vaults.
 
 ## Features
 
@@ -19,8 +19,8 @@ Secure storage for seasonal tokens, community tokens, and keys in Sun Haven.
 ## Installation
 
 1. Install BepInEx 5.x
-2. Place `TheVault.dll` in `BepInEx/plugins/`
-3. Launch the game
+2. Place `TheVault.dll` in `BepInEx/plugins/TheVault/`
+3. Launch the game. Open vault: **Ctrl+V** or **F8** (Steam Deck).
 
 ## Configuration
 

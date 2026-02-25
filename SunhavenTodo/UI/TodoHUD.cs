@@ -273,15 +273,12 @@ namespace SunhavenTodo.UI
         {
             var bgTex = index % 2 == 0 ? _itemEven : _itemOdd;
 
-            GUILayout.BeginHorizontal(_itemStyle, GUILayout.Height(ITEM_HEIGHT));
-
-            // Draw alternating background
-            var lastRect = GUILayoutUtility.GetLastRect();
+            Rect rowRect = GUILayoutUtility.GetRect(0, ITEM_HEIGHT, GUILayout.ExpandWidth(true));
             if (Event.current.type == EventType.Repaint && bgTex != null)
-            {
-                GUI.DrawTexture(lastRect, bgTex);
-            }
+                GUI.DrawTexture(rowRect, bgTex);
 
+            GUILayout.BeginArea(rowRect);
+            GUILayout.BeginHorizontal(_itemStyle, GUILayout.Height(ITEM_HEIGHT));
             GUILayout.Space(6);
 
             // Priority indicator
@@ -302,6 +299,7 @@ namespace SunhavenTodo.UI
 
             GUILayout.Space(6);
             GUILayout.EndHorizontal();
+            GUILayout.EndArea();
         }
 
         private string GetPriorityIcon(TodoPriority priority)

@@ -1,6 +1,6 @@
 # Haven's Almanac
 
-Unified mod dashboard for Sun Haven. Aggregates data from all your installed mods into one place.
+**Version 1.0.1** — Unified mod dashboard for Sun Haven. Aggregates data from all your installed mods into one place: compact HUD, full dashboard (Ctrl+F5), daily briefing, draggable UI.
 
 ## Features
 
