@@ -289,6 +289,6 @@ namespace HavensBirthright
     {
         public const string PLUGIN_GUID = "com.azraelgodking.havensbirthright";
         public const string PLUGIN_NAME = "Haven's Birthright";
-        public const string PLUGIN_VERSION = "1.2.2";
+        public const string PLUGIN_VERSION = "1.2.3";
     }
 }

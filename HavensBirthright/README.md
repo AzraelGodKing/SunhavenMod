@@ -149,6 +149,9 @@ You can:
 
 ## Changelog
 
+### v1.2.3
+- Documentation and comment updates.
+
 ### v1.2.0 — Elemental Enhancements
 - **Tidal Blessing** (Water Elemental): Auto-water hoed tiles near the player at HP cost
 - **Infernal Forge** (Fire Elemental): Auto-smelt ore into bars with tiered mana costs

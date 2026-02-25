@@ -107,6 +107,7 @@ Press **F10** to access debug tools if you're an authorized user. This includes:
 
 ## Version History
 
+- **2.2.1** - Current release; manual tracking, search, filter, polished UI, per-character saves
 - **1.0.0** - Initial release with manual tracking, search, filter, and polished UI
 
 ## License

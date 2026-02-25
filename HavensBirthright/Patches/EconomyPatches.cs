@@ -5,14 +5,14 @@ using UnityEngine;
 namespace HavensBirthright.Patches
 {
     /// <summary>
-    /// Patches for economy and social mechanics.
-    /// Handles relationship gains, shop discounts, and drawback penalties.
+    /// Harmony patches for economy and social systems: relationship gains and shop buy prices.
     /// </summary>
     public static class EconomyPatches
     {
         /// <summary>
-        /// Patch NPCAI.AddRelationship (game uses float, not AddFriendship int).
-        /// Applies bonuses (Human, Amari Dog) and drawback penalties (Demon).
+        /// Adjusts the relationship gain value before the game applies it (hooked into NPCAI.AddRelationship).
+        /// If racial bonuses are on: multiplies gain by (1 + RelationshipGain bonus %). If drawbacks are on and
+        /// player is Demon: multiplies gain by (1 - Demon distrust penalty %). Logs when the value changes.
         /// </summary>
         public static void ModifyRelationshipGain(ref float increase)
         {
@@ -28,12 +28,14 @@ namespace HavensBirthright.Patches
 
             float originalVal = increase;
 
+            // Apply racial bonus (e.g. Human/Amari Dog) as a percentage increase.
             if (manager.HasBonus(BonusType.RelationshipGain))
             {
                 float bonus = manager.GetBonusValue(BonusType.RelationshipGain);
                 increase *= (1f + bonus / 100f);
             }
 
+            // Apply Demon drawback: reduce relationship gain by configured penalty.
             if (AbilityConfig.EnableRacialDrawbacks != null && AbilityConfig.EnableRacialDrawbacks.Value)
             {
                 var race = manager.GetPlayerRace();
@@ -49,7 +51,8 @@ namespace HavensBirthright.Patches
         }
 
         /// <summary>
-        /// Modifies price by discount (used by OnBeforeShopBuyItem).
+        /// Reduces the given price by the player's ShopDiscount racial bonus (percentage). Minimum price is 1.
+        /// Only runs when racial bonuses are enabled and the player has the ShopDiscount bonus.
         /// </summary>
         public static void ModifyBuyPrice(ref int price)
         {
@@ -68,7 +71,8 @@ namespace HavensBirthright.Patches
         }
 
         /// <summary>
-        /// Prefix for Wish.Shop.BuyItem(ShopItemInfo2, int) and BuyItem(ShopLoot2, int). Applies shop discount to itemInfo.price.
+        /// Harmony prefix for shop BuyItem(ShopItemInfo2/ShopLoot2, int). Mutates the first argument's "price" field
+        /// via ApplyShopDiscountToItemInfo so the discount is applied before the game charges the player.
         /// </summary>
         public static void OnBeforeShopBuyItem(object __0, int __1)
         {
@@ -76,13 +80,18 @@ namespace HavensBirthright.Patches
         }
 
         /// <summary>
-        /// Prefix for Wish.Shop.BuyItem(ShopLoot2). Applies shop discount to itemInfo.price.
+        /// Harmony prefix for shop BuyItem(ShopLoot2) (single-arg overload). Same as OnBeforeShopBuyItem: applies
+        /// discount to the item's "price" field before the purchase runs.
         /// </summary>
         public static void OnBeforeShopBuyItemSingle(object __0)
         {
             ApplyShopDiscountToItemInfo(__0);
         }
 
+        /// <summary>
+        /// Uses reflection to read the "price" field from the given shop item object, runs ModifyBuyPrice on it,
+        /// then writes the new price back so the game uses the discounted value.
+        /// </summary>
         private static void ApplyShopDiscountToItemInfo(object itemInfo)
         {
             if (itemInfo == null) return;
