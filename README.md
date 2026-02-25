@@ -6,14 +6,14 @@ A collection of BepInEx mods for [Sun Haven](https://store.steampowered.com/app/
 
 | Mod | Description | Version |
 |-----|-------------|---------|
-| [**Senpai's Chest**](SenpaisChest/) | Smart chests with configurable item rules for automatic storage sorting | 1.2.0 |
-| [**Sunhaven Todo**](SunhavenTodo/) | In-game todo list and journal with per-character saves | 1.1.0 |
-| [**Sun Haven Museum Utility Tracker**](SunHavenMuseumUtilityTracker/) | Track museum donations across all sections | 2.2.0 |
-| [**The Vault**](TheVault/) | Spell-driven vault currency system for gold management | 2.0.3 |
-| [**Haven's Birthright**](HavensBirthright/) | Unique racial bonuses and traits for each playable race | 1.2.0 |
-| [**Haven's Almanac**](HavensAlmanac/) | Mod compatibility registry and info hub | 1.0.0 |
-| [**A Squirrel's Birthday Reminder**](BirthdayReminder/) | Reminds you of villagers' birthdays | 1.1.0 |
-| [**Haven Dev Tools**](HavenDevTools/) | Developer utilities and debugging tools | 1.0.1 |
+| [**Senpai's Chest**](SenpaisChest/) | Smart chests with configurable item rules for automatic storage sorting | 2.0.1 |
+| [**Sunhaven Todo**](SunhavenTodo/) | In-game todo list and journal with per-character saves | 1.1.2 |
+| [**Sun Haven Museum Utility Tracker**](SunHavenMuseumUtilityTracker/) | Track museum donations across all sections | 2.2.1 |
+| [**The Vault**](TheVault/) | Secure vault for tokens and keys with HUD and shop/door integration | 2.0.5 |
+| [**Haven's Birthright**](HavensBirthright/) | Unique racial bonuses and traits for each playable race | 1.2.3 |
+| [**Haven's Almanac**](HavensAlmanac/) | Mod compatibility registry and info hub | 1.0.1 |
+| [**A Squirrel's Birthday Reminder**](BirthdayReminder/) | Reminds you of villagers' birthdays | 1.1.1 |
+| [**Haven Dev Tools**](HavenDevTools/) | Developer utilities and debugging tools | 1.0.3 |
 
 ---
 
@@ -36,7 +36,7 @@ Per-character saves, item icons, and bundle progress. Hotkey: **Ctrl+C**.
 
 ### The Vault
 
-Spell-driven vault system for managing gold. Store and retrieve currency through in-game spells.
+Secure storage for seasonal tokens, keys, and special currencies. Auto-deposit on pickup, persistent HUD, and seamless shop/door integration. Per-character vaults; open with **Ctrl+V** or **F8** (Steam Deck).
 
 ### Haven's Birthright
 

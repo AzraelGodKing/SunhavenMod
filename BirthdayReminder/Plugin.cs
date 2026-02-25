@@ -218,21 +218,28 @@ namespace BirthdayReminder
                     }
                 }
 
-                // Patch gifting to track birthday gifts
+                // Patch gifting to track birthday gifts (game uses NPCAI.Gift(Item), not AddFriendship)
                 var npcAIType = AccessTools.TypeByName("Wish.NPCAI");
                 if (npcAIType != null)
                 {
-                    // Specify parameter type to find the correct overload
-                    var addFriendshipMethod = AccessTools.Method(npcAIType, "AddFriendship", new[] { typeof(int) });
-                    if (addFriendshipMethod != null)
+                    var itemType = AccessTools.TypeByName("Wish.Item");
+                    if (itemType != null)
                     {
-                        var patchMethod = AccessTools.Method(typeof(GiftPatches), nameof(GiftPatches.OnAddFriendship));
-                        _harmony.Patch(addFriendshipMethod, postfix: new HarmonyMethod(patchMethod));
-                        Log.LogInfo("Applied gift tracking patch");
+                        var giftMethod = AccessTools.Method(npcAIType, "Gift", new[] { itemType });
+                        if (giftMethod != null)
+                        {
+                            var patchMethod = AccessTools.Method(typeof(GiftPatches), nameof(GiftPatches.OnGiftGiven));
+                            _harmony.Patch(giftMethod, postfix: new HarmonyMethod(patchMethod));
+                            Log.LogInfo("Applied gift tracking patch (NPCAI.Gift)");
+                        }
+                        else
+                        {
+                            Log.LogWarning("Could not find NPCAI.Gift(Item) method - gift tracking will not work");
+                        }
                     }
                     else
                     {
-                        Log.LogWarning("Could not find NPCAI.AddFriendship(int) method - gift tracking will not work");
+                        Log.LogWarning("Could not find Wish.Item type - gift tracking will not work");
                     }
                 }
                 else
@@ -834,47 +841,42 @@ namespace BirthdayReminder
     }
 
     /// <summary>
-    /// Gift tracking patches
+    /// Gift tracking patches - patches NPCAI.Gift(Item) since AddFriendship was removed
     /// </summary>
     public static class GiftPatches
     {
         /// <summary>
-        /// Track when friendship is added (gift given)
+        /// Track when a gift is given (postfix on NPCAI.Gift)
         /// </summary>
-        public static void OnAddFriendship(object __instance, int __0)
+        public static void OnGiftGiven(object __instance, object __0)
         {
             try
             {
-                // __instance is the NPCAI
-                // __0 is the friendship amount
+                // __instance is the NPCAI, __0 is the Item
+                if (__instance == null) return;
 
-                // Only track if it's a significant gift (birthday bonus would be higher)
-                if (__0 <= 0) return;
-
-                // Get NPC name
                 var npcType = __instance.GetType();
-                var nameProp = AccessTools.Property(npcType, "NPCName")
+                var nameProp = AccessTools.Property(npcType, "OriginalName")
+                               ?? AccessTools.Property(npcType, "ActualNPCName")
+                               ?? AccessTools.Property(npcType, "NPCName")
                                ?? AccessTools.Property(npcType, "npcName")
                                ?? AccessTools.Property(npcType, "Name");
 
                 string npcName = nameProp?.GetValue(__instance)?.ToString();
+                if (string.IsNullOrEmpty(npcName)) return;
 
-                if (!string.IsNullOrEmpty(npcName))
+                var manager = Plugin.GetManager();
+                if (manager == null || !manager.HasBirthdays) return;
+
+                var birthdayInfo = manager.TodaysBirthdays.Find(b =>
+                    string.Equals(b.NPCName, npcName, StringComparison.OrdinalIgnoreCase) ||
+                    (b.NPCName != null && b.NPCName.Contains("+" + npcName)));
+                if (birthdayInfo != null && !birthdayInfo.HasBeenGifted)
                 {
-                    var manager = Plugin.GetManager();
-                    if (manager != null && manager.HasBirthdays)
-                    {
-                        // Check if this NPC has a birthday today
-                        var birthdayInfo = manager.TodaysBirthdays.Find(b => b.NPCName == npcName);
-                        if (birthdayInfo != null && !birthdayInfo.HasBeenGifted)
-                        {
-                            manager.MarkGifted(npcName);
-                            Plugin.Log?.LogInfo($"[BirthdayReminder] Marked {npcName} as gifted on their birthday!");
+                    manager.MarkGifted(npcName);
+                    Plugin.Log?.LogInfo($"[BirthdayReminder] Marked {npcName} as gifted on their birthday!");
 
-                            // Directly notify the Todo integration to complete the birthday todo
-                            Plugin.GetTodoIntegration()?.OnGiftGiven(npcName);
-                        }
-                    }
+                    Plugin.GetTodoIntegration()?.OnGiftGiven(npcName);
                 }
             }
             catch (Exception ex)

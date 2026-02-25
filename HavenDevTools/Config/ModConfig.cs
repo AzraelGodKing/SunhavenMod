@@ -12,6 +12,11 @@ namespace HavenDevTools.Config
         // Overlay Settings
         public static ConfigEntry<bool> ShowOverlayOnStart { get; private set; }
         public static ConfigEntry<string> OverlayPosition { get; private set; }
+        public static ConfigEntry<bool> ShowPerformance { get; private set; }
+
+        // Log Viewer
+        public static ConfigEntry<int> MaxLogEntries { get; private set; }
+        public static ConfigEntry<string> LogLevelFilter { get; private set; }
 
         // Updates
         public static ConfigEntry<bool> CheckForUpdates { get; private set; }
@@ -46,6 +51,28 @@ namespace HavenDevTools.Config
                 "Position",
                 "TopRight",
                 "Overlay position: TopLeft, TopRight, BottomLeft, BottomRight"
+            );
+
+            ShowPerformance = config.Bind(
+                "Overlay",
+                "ShowPerformance",
+                true,
+                "Show FPS and memory usage in the debug overlay"
+            );
+
+            // Log Viewer
+            MaxLogEntries = config.Bind(
+                "LogViewer",
+                "MaxLogEntries",
+                500,
+                "Maximum number of log entries to keep in the in-game log viewer"
+            );
+
+            LogLevelFilter = config.Bind(
+                "LogViewer",
+                "LogLevelFilter",
+                "Info",
+                "Minimum log level to display: Debug, Info, Warning, Error"
             );
 
             // Updates

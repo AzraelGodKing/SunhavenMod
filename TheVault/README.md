@@ -65,6 +65,9 @@ After first launch, edit the config file at:
 
 ## Changelog
 
+### v2.0.5
+- Changelog and README updates.
+
 ### v2.0.3
 - **Performance Fix**: Fixed lag when picking up vault items by adding reflection caching and item name caching
 
