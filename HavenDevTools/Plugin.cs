@@ -20,6 +20,10 @@ namespace HavenDevTools
     [BepInDependency("com.azraelgodking.thevault", BepInDependency.DependencyFlags.SoftDependency)]
     [BepInDependency("com.azraelgodking.sunhavenmuseumutilitytracker", BepInDependency.DependencyFlags.SoftDependency)]
     [BepInDependency("com.azraelgodking.havensbirthright", BepInDependency.DependencyFlags.SoftDependency)]
+    [BepInDependency("com.azraelgodking.senpaischest", BepInDependency.DependencyFlags.SoftDependency)]
+    [BepInDependency("com.azraelgodking.squirrelsbirthdayreminder", BepInDependency.DependencyFlags.SoftDependency)]
+    [BepInDependency("com.azraelgodking.sunhaventodo", BepInDependency.DependencyFlags.SoftDependency)]
+    // NOTE: Do NOT add BepInDependency on HavensAlmanac - it creates a cyclic dep (Almanac already depends on HavenDevTools).
     public class Plugin : BaseUnityPlugin
     {
         public static Plugin Instance { get; private set; }
@@ -33,6 +37,8 @@ namespace HavenDevTools
         private static RaceModifierTracker _staticRaceModifierTracker;
         private static DebugWindow _staticDebugWindow;
         private static DebugOverlay _staticDebugOverlay;
+        private static CommandConsole _staticCommandConsole;
+        private static LogViewerPanel _staticLogViewer;
 
         // Persistent runner
         private static GameObject _persistentRunner;
@@ -56,6 +62,10 @@ namespace HavenDevTools
         public static bool HasTheVault { get; private set; }
         public static bool HasSMUT { get; private set; }
         public static bool HasHavensBirthright { get; private set; }
+        public static bool HasSenpaisChest { get; private set; }
+        public static bool HasBirthdayReminder { get; private set; }
+        public static bool HasSunhavenTodo { get; private set; }
+        public static bool HasHavensAlmanac { get; private set; }
 
         private Harmony _harmony;
 
@@ -87,6 +97,8 @@ namespace HavenDevTools
                 _staticCurrencyTracker = new CurrencyTracker();
                 _staticBundleInspector = new BundleInspector();
                 _staticRaceModifierTracker = new RaceModifierTracker();
+                _staticCommandConsole = new CommandConsole();
+                _staticLogViewer = new LogViewerPanel();
 
                 // Create UI components
                 CreateUIComponents();
@@ -108,7 +120,7 @@ namespace HavenDevTools
                 Log.LogInfo($"{PluginInfo.PLUGIN_NAME} loaded successfully!");
                 Log.LogInfo($"Press {ModConfig.ToggleKey.Value} to open the debug window (requires authorization)");
                 Log.LogInfo($"Press {ModConfig.OverlayToggleKey.Value} to toggle the overlay");
-                Log.LogInfo($"Detected mods - TheVault: {HasTheVault}, SMUT: {HasSMUT}, HavensBirthright: {HasHavensBirthright}");
+                Log.LogInfo($"Detected mods - TheVault: {HasTheVault}, SMUT: {HasSMUT}, Birthright: {HasHavensBirthright}, SenpaisChest: {HasSenpaisChest}, Birthday: {HasBirthdayReminder}, Todo: {HasSunhavenTodo}, Almanac: {HasHavensAlmanac}");
             }
             catch (Exception ex)
             {
@@ -177,6 +189,8 @@ namespace HavenDevTools
                 if (_staticCurrencyTracker == null) _staticCurrencyTracker = new CurrencyTracker();
                 if (_staticBundleInspector == null) _staticBundleInspector = new BundleInspector();
                 if (_staticRaceModifierTracker == null) _staticRaceModifierTracker = new RaceModifierTracker();
+                if (_staticCommandConsole == null) _staticCommandConsole = new CommandConsole();
+                if (_staticLogViewer == null) _staticLogViewer = new LogViewerPanel();
             }
             catch (Exception ex)
             {
@@ -192,9 +206,13 @@ namespace HavenDevTools
                 if (name == "TheVault") HasTheVault = true;
                 if (name == "SunHavenMuseumUtilityTracker") HasSMUT = true;
                 if (name == "HavensBirthright") HasHavensBirthright = true;
+                if (name == "SenpaisChest") HasSenpaisChest = true;
+                if (name == "BirthdayReminder") HasBirthdayReminder = true;
+                if (name == "SunhavenTodo") HasSunhavenTodo = true;
+                if (name == "HavensAlmanac") HasHavensAlmanac = true;
             }
 
-            Log.LogInfo($"Mod detection complete - TheVault: {HasTheVault}, SMUT: {HasSMUT}, HavensBirthright: {HasHavensBirthright}");
+            Log.LogInfo($"Mod detection complete - TheVault: {HasTheVault}, SMUT: {HasSMUT}, Birthright: {HasHavensBirthright}, SenpaisChest: {HasSenpaisChest}, Birthday: {HasBirthdayReminder}, Todo: {HasSunhavenTodo}, Almanac: {HasHavensAlmanac}");
         }
 
         private void PatchPlayerInit()
@@ -389,6 +407,8 @@ namespace HavenDevTools
 
         public static DebugWindow GetDebugWindow() => _staticDebugWindow;
         public static DebugOverlay GetDebugOverlay() => _staticDebugOverlay;
+        public static CommandConsole GetCommandConsole() => _staticCommandConsole;
+        public static LogViewerPanel GetLogViewer() => _staticLogViewer;
 
         public static void ToggleDebugWindow()
         {
@@ -479,6 +499,6 @@ namespace HavenDevTools
     {
         public const string PLUGIN_GUID = "com.azraelgodking.havendevtools";
         public const string PLUGIN_NAME = "Haven Dev Tools";
-        public const string PLUGIN_VERSION = "1.0.2";
+        public const string PLUGIN_VERSION = "1.0.3";
     }
 }

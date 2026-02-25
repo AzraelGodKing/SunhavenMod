@@ -493,7 +493,6 @@ namespace SunHavenMuseumUtilityTracker.Patches
 
             try
             {
-                // Find HungryMonster type
                 var hungryMonsterType = AccessTools.TypeByName("Wish.HungryMonster") ?? AccessTools.TypeByName("HungryMonster");
                 if (hungryMonsterType == null)
                 {
@@ -501,18 +500,24 @@ namespace SunHavenMuseumUtilityTracker.Patches
                     return;
                 }
 
-                // Patch SaveInventory - called when items are saved after donation
-                var saveInventoryMethod = AccessTools.Method(hungryMonsterType, "SaveInventory");
-                if (saveInventoryMethod != null)
+                // Patch Chest.SaveInventory (declared method) - HarmonyX expects patching base, not override
+                var chestType = AccessTools.TypeByName("Wish.Chest") ?? AccessTools.TypeByName("Chest");
+                if (chestType != null)
                 {
-                    var postfix = AccessTools.Method(typeof(HungryMonsterPatches), nameof(OnSaveInventory));
-                    harmony.Patch(saveInventoryMethod, postfix: new HarmonyMethod(postfix));
-                    Plugin.Log?.LogInfo("[HungryMonsterPatches] Patched HungryMonster.SaveInventory");
+                    var saveInventoryMethod = AccessTools.DeclaredMethod(chestType, "SaveInventory");
+                    if (saveInventoryMethod == null)
+                        saveInventoryMethod = AccessTools.Method(chestType, "SaveInventory");
+                    if (saveInventoryMethod != null)
+                    {
+                        var postfix = AccessTools.Method(typeof(HungryMonsterPatches), nameof(OnSaveInventory));
+                        harmony.Patch(saveInventoryMethod, postfix: new HarmonyMethod(postfix));
+                        Plugin.Log?.LogInfo("[HungryMonsterPatches] Patched Chest.SaveInventory (HungryMonster filter in postfix)");
+                    }
+                    else
+                        Plugin.Log?.LogWarning("[HungryMonsterPatches] Could not find Chest.SaveInventory");
                 }
                 else
-                {
-                    Plugin.Log?.LogWarning("[HungryMonsterPatches] Could not find SaveInventory method");
-                }
+                    Plugin.Log?.LogWarning("[HungryMonsterPatches] Could not find Chest type");
 
                 _isHooked = true;
             }

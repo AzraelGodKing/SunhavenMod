@@ -1,6 +1,8 @@
 using System;
 using System.Collections.Generic;
+using HavenDevTools.API;
 using HavenDevTools.Config;
+using HavenDevTools.Integrations;
 using HavenDevTools.Services;
 using SunhavenMods.Shared;
 using UnityEngine;
@@ -29,7 +31,9 @@ namespace HavenDevTools.UI
 
         // Tab state
         private int _selectedTab;
-        private readonly string[] _tabNames = { "Items", "Currencies", "Bundles", "Race Bonuses", "Utility" };
+        private readonly string[] _tabNames = { "Tools", "Azrael's Mods", "Extensions" };
+        private int _toolsSubTab;
+        private readonly string[] _toolsSubTabNames = { "Items", "Currencies", "Console", "Log", "Perf", "Utility" };
 
         // Item search (Senpai's Chest style)
         private string _itemSearchText = "";
@@ -61,12 +65,14 @@ namespace HavenDevTools.UI
         // Known mod GUIDs and versions
         private static readonly (string guid, string name, string version)[] _knownMods = new[]
         {
-            ("com.azraelgodking.havendevtools", "Haven Dev Tools", "1.0.1"),
+            ("com.azraelgodking.havendevtools", "Haven Dev Tools", "1.0.2"),
+            ("com.azraelgodking.senpaischest", "Senpai's Chest", "2.0.0"),
             ("com.azraelgodking.squirrelsbirthdayreminder", "Birthday Reminder", "1.0.2"),
             ("com.azraelgodking.havensbirthright", "Haven's Birthright", "1.0.2"),
             ("com.azraelgodking.sunhavenmuseumutilitytracker", "S.M.U.T.", "2.0.1"),
             ("com.azraelgodking.sunhaventodo", "Sunhaven Todo", "1.0.0"),
             ("com.azraelgodking.thevault", "The Vault", "2.0.3"),
+            ("com.azraelgodking.havensalmanac", "Haven's Almanac", "1.0.0"),
         };
 
         private const string PAUSE_ID = "HavenDevTools_Debug";
@@ -229,9 +235,11 @@ namespace HavenDevTools.UI
 
             // Mod status
             GUILayout.BeginHorizontal();
-            GUILayout.Label($"TheVault: {(Plugin.HasTheVault ? "Yes" : "No")}", _labelStyle, GUILayout.Width(120));
-            GUILayout.Label($"SMUT: {(Plugin.HasSMUT ? "Yes" : "No")}", _labelStyle, GUILayout.Width(100));
-            GUILayout.Label($"Birthright: {(Plugin.HasHavensBirthright ? "Yes" : "No")}", _labelStyle);
+            GUILayout.Label($"TheVault: {(Plugin.HasTheVault ? "Yes" : "No")}", _labelStyle, GUILayout.Width(100));
+            GUILayout.Label($"SMUT: {(Plugin.HasSMUT ? "Yes" : "No")}", _labelStyle, GUILayout.Width(80));
+            GUILayout.Label($"Birthright: {(Plugin.HasHavensBirthright ? "Yes" : "No")}", _labelStyle, GUILayout.Width(100));
+            GUILayout.Label($"Senpai: {(Plugin.HasSenpaisChest ? "Yes" : "No")}", _labelStyle, GUILayout.Width(80));
+            GUILayout.Label($"Todo: {(Plugin.HasSunhavenTodo ? "Yes" : "No")}", _labelStyle);
             GUILayout.EndHorizontal();
 
             GUILayout.Space(10);
@@ -245,11 +253,9 @@ namespace HavenDevTools.UI
 
             switch (_selectedTab)
             {
-                case 0: DrawItemsTab(); break;
-                case 1: DrawCurrenciesTab(); break;
-                case 2: DrawBundlesTab(); break;
-                case 3: DrawRaceBonusesTab(); break;
-                case 4: DrawUtilityTab(); break;
+                case 0: DrawToolsTab(); break;
+                case 1: AzraelsModsPanel.Draw(_boxStyle, _buttonStyle, _labelStyle, _sectionHeaderStyle); break;
+                case 2: DrawExtensionsTab(); break;
             }
 
             GUILayout.EndScrollView();
@@ -262,8 +268,108 @@ namespace HavenDevTools.UI
                 Hide();
             }
 
-            GUI.DragWindow(new Rect(0, 0, 500, 30));
+                GUI.DragWindow(new Rect(0, 0, 500, 30));
         }
+
+        private void DrawExtensionsTab()
+        {
+            var panels = DevToolsRegistry.Panels;
+            if (panels.Count == 0)
+            {
+                GUILayout.BeginVertical(_boxStyle);
+                GUILayout.Label("Extensions", _sectionHeaderStyle);
+                GUILayout.Space(5);
+                GUILayout.Label("No extension panels registered. Mods can implement IDevToolsPanel and call DevToolsRegistry.Register() to add panels here.", _labelStyle);
+                GUILayout.EndVertical();
+                return;
+            }
+
+            foreach (var panel in panels)
+            {
+                GUILayout.BeginVertical(_boxStyle);
+                GUILayout.Label(panel.DisplayName, _sectionHeaderStyle);
+                GUILayout.Space(5);
+                try
+                {
+                    panel.Draw(_boxStyle, _buttonStyle, _labelStyle);
+                }
+                catch (Exception ex)
+                {
+                    GUILayout.Label($"Error: {ex.Message}", _labelStyle);
+                }
+                GUILayout.EndVertical();
+                GUILayout.Space(8);
+            }
+        }
+
+        #region Tools Tab
+
+        private void DrawToolsTab()
+        {
+            _toolsSubTab = GUILayout.Toolbar(_toolsSubTab, _toolsSubTabNames, _buttonStyle);
+            GUILayout.Space(8);
+
+            switch (_toolsSubTab)
+            {
+                case 0: DrawItemsTab(); break;
+                case 1: DrawCurrenciesTab(); break;
+                case 2: DrawConsoleTab(); break;
+                case 3: DrawLogViewerTab(); break;
+                case 4: DrawPerformanceTab(); break;
+                case 5: DrawUtilityTab(); break;
+            }
+        }
+
+        private void DrawConsoleTab()
+        {
+            GUILayout.BeginVertical(_boxStyle);
+            GUILayout.Label("Command Console", _sectionHeaderStyle);
+            GUILayout.Space(5);
+            GUILayout.Label("Type commands and press Enter. Supported: spawn, tp, time.set, reload.config", _labelStyle);
+            var console = Plugin.GetCommandConsole();
+            if (console != null)
+            {
+                console.Draw(_boxStyle, _buttonStyle, _labelStyle, _textFieldStyle);
+            }
+            else
+            {
+                GUILayout.Label("(Console service initializing...)", _labelStyle);
+            }
+            GUILayout.EndVertical();
+        }
+
+        private void DrawLogViewerTab()
+        {
+            GUILayout.BeginVertical(_boxStyle);
+            GUILayout.Label("Log Viewer", _sectionHeaderStyle);
+            GUILayout.Space(5);
+            var logViewer = Plugin.GetLogViewer();
+            if (logViewer != null)
+            {
+                logViewer.Draw(_boxStyle, _buttonStyle, _labelStyle);
+            }
+            else
+            {
+                GUILayout.Label("(Log viewer initializing...)", _labelStyle);
+            }
+            GUILayout.EndVertical();
+        }
+
+        private void DrawPerformanceTab()
+        {
+            GUILayout.BeginVertical(_boxStyle);
+            GUILayout.Label("Performance", _sectionHeaderStyle);
+            GUILayout.Space(5);
+            float fps = 1f / Mathf.Max(0.0001f, Time.deltaTime);
+            long memBytes = GC.GetTotalMemory(false);
+            float memMB = memBytes / (1024f * 1024f);
+            GUILayout.Label($"FPS: {fps:F1}", _labelStyle);
+            GUILayout.Label($"Memory: {memMB:F1} MB", _labelStyle);
+            GUILayout.Label("(Also shown in overlay when ShowPerformance is enabled)", _labelStyle);
+            GUILayout.EndVertical();
+        }
+
+        #endregion
 
         #region Items Tab
 
@@ -624,6 +730,15 @@ namespace HavenDevTools.UI
 
             // Version Checker Section
             DrawVersionCheckerSection();
+
+            GUILayout.Space(10);
+
+            // Config
+            GUILayout.Label("Config:", _sectionHeaderStyle);
+            if (GUILayout.Button("Reload HavenDevTools Config", _buttonStyle))
+            {
+                ConfigReloader.ReloadHavenDevToolsConfig();
+            }
 
             GUILayout.Space(10);
 

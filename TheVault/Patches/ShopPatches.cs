@@ -38,72 +38,47 @@ namespace TheVault.Patches
         }
 
         /// <summary>
-        /// Prefix patch for ShopMenu.BuyItem
-        /// Checks if the item requires vault currency and handles the transaction.
+        /// Prefix for Wish.Shop.BuyItem(ShopItemInfo2, int) and BuyItem(ShopLoot2, int). Item info is first arg.
         /// </summary>
-        /// <returns>False to skip original method if handled by vault, true otherwise</returns>
-        public static bool OnBeforeBuyItem(object __instance, ref bool __result)
+        public static bool OnBeforeBuyItem(object __instance, object __0, int __1)
         {
             try
             {
-                // Get the item being purchased
-                int itemId = GetCurrentItemId(__instance);
-                if (itemId < 0) return true; // Let original method handle it
-
-                // Check if this item requires vault currency
+                int itemId = GetItemIdFromItemInfo(__0);
+                if (itemId < 0) return true;
                 if (!_vaultPurchaseRequirements.TryGetValue(itemId, out var requirement))
-                {
-                    return true; // Normal purchase, let original handle it
-                }
-
+                    return true;
                 var vaultManager = Plugin.GetVaultManager();
                 if (vaultManager == null)
                 {
                     Plugin.Log?.LogWarning("VaultManager not available for purchase check");
                     return true;
                 }
-
-                // Check if player has enough vault currency
                 if (!vaultManager.HasCurrency(requirement.currencyId, requirement.amount))
                 {
                     Plugin.Log?.LogInfo($"Purchase blocked: insufficient {requirement.currencyId} (need {requirement.amount})");
-
-                    // Show insufficient funds message
                     ShowInsufficientFundsMessage(requirement.currencyId, requirement.amount);
-
-                    __result = false;
-                    return false; // Skip original method
+                    return false; // Skip original (Shop.BuyItem is void)
                 }
-
-                // Deduct vault currency
-                // Note: The actual item giving is handled by the original method
-                // We just need to intercept to check/deduct custom currency
-
                 Plugin.Log?.LogInfo($"Vault purchase approved: {requirement.amount} {requirement.currencyId}");
-
-                // Let original method continue - it will handle giving the item
-                // We deduct currency in the postfix if purchase succeeds
                 return true;
             }
             catch (Exception ex)
             {
                 Plugin.Log?.LogError($"Error in OnBeforeBuyItem: {ex.Message}");
-                return true; // Let original handle it on error
+                return true;
             }
         }
 
         /// <summary>
-        /// Postfix patch for successful purchases - deducts vault currency after confirmation
+        /// Postfix for Shop.BuyItem - deducts vault currency after successful purchase. Item info is first arg.
         /// </summary>
-        public static void OnAfterBuyItem(object __instance, bool __result)
+        public static void OnAfterBuyItem(object __instance, object __0, int __1)
         {
-            if (!__result) return; // Purchase failed, don't deduct
-
             try
             {
-                int itemId = GetCurrentItemId(__instance);
+                int itemId = GetItemIdFromItemInfo(__0);
                 if (itemId < 0) return;
-
                 if (!_vaultPurchaseRequirements.TryGetValue(itemId, out var requirement))
                 {
                     return; // Not a vault purchase
@@ -123,49 +98,49 @@ namespace TheVault.Patches
         }
 
         /// <summary>
-        /// Get the current item ID from the shop menu instance
+        /// Prefix for Wish.Shop.BuyItem(ShopLoot2) - single arg is item info.
         /// </summary>
-        private static int GetCurrentItemId(object shopMenu)
+        public static bool OnBeforeBuyItemSingle(object __instance, object __0)
         {
             try
             {
-                // Try to find the selected item ID
-                // This depends on Sun Haven's ShopMenu implementation
-
-                var selectedItemField = AccessTools.Field(shopMenu.GetType(), "selectedItemID");
-                if (selectedItemField != null)
+                int itemId = GetItemIdFromItemInfo(__0);
+                if (itemId < 0) return true;
+                if (!_vaultPurchaseRequirements.TryGetValue(itemId, out var requirement))
+                    return true;
+                var vaultManager = Plugin.GetVaultManager();
+                if (vaultManager == null) { Plugin.Log?.LogWarning("VaultManager not available"); return true; }
+                if (!vaultManager.HasCurrency(requirement.currencyId, requirement.amount))
                 {
-                    return (int)selectedItemField.GetValue(shopMenu);
+                    ShowInsufficientFundsMessage(requirement.currencyId, requirement.amount);
+                    return false;
                 }
-
-                var selectedItemProperty = AccessTools.Property(shopMenu.GetType(), "SelectedItemID");
-                if (selectedItemProperty != null)
-                {
-                    return (int)selectedItemProperty.GetValue(shopMenu);
-                }
-
-                // Try currentItem field
-                var currentItemField = AccessTools.Field(shopMenu.GetType(), "currentItem");
-                if (currentItemField != null)
-                {
-                    var item = currentItemField.GetValue(shopMenu);
-                    if (item != null)
-                    {
-                        var idField = AccessTools.Field(item.GetType(), "id");
-                        if (idField != null)
-                        {
-                            return (int)idField.GetValue(item);
-                        }
-                    }
-                }
-
-                return -1;
+                return true;
             }
             catch (Exception ex)
             {
-                Plugin.Log?.LogError($"Error getting item ID: {ex.Message}");
+                Plugin.Log?.LogError($"Error in OnBeforeBuyItemSingle: {ex.Message}");
+                return true;
+            }
+        }
+
+        /// <summary>
+        /// Get item ID from ShopItemInfo2 or ShopLoot2 (first argument of Shop.BuyItem).
+        /// </summary>
+        private static int GetItemIdFromItemInfo(object itemInfo)
+        {
+            if (itemInfo == null) return -1;
+            try
+            {
+                var idField = AccessTools.Field(itemInfo.GetType(), "id");
+                if (idField != null)
+                    return (int)idField.GetValue(itemInfo);
+                var idProp = AccessTools.Property(itemInfo.GetType(), "id");
+                if (idProp != null)
+                    return (int)idProp.GetValue(itemInfo);
                 return -1;
             }
+            catch { return -1; }
         }
 
         /// <summary>

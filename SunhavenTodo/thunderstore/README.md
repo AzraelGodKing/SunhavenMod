@@ -1,6 +1,6 @@
 # Sun Haven Todo
 
-In-game task tracker for farming goals, quests, and daily tasks.
+**Version 1.1.2** — In-game task tracker for farming goals, quests, and daily tasks. Categories, priorities, per-character saves, parchment-style UI. Hotkey: **J** or **F9**.
 
 ## Features
 
@@ -18,7 +18,7 @@ Press the configured hotkey to open the todo list UI.
 
 1. Install BepInEx 5.x
 2. Place `SunhavenTodo.dll` in `BepInEx/plugins/`
-3. Launch the game
+3. Launch the game. Open todo: **J** or **F9**.
 
 ## Configuration
 

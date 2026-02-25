@@ -268,6 +268,19 @@ namespace SenpaisChest
                     Log.LogWarning("Could not find Wish.PlayerInput type for UICancel blocking");
                 }
 
+                // ChestManager.RemoveInventory → cleanup our data when a chest is removed from the world
+                var chestManagerType = typeof(ChestManager);
+                var inventoryType = AccessTools.TypeByName("Wish.Inventory");
+                if (chestManagerType != null && inventoryType != null)
+                {
+                    var removeInvMethod = AccessTools.Method(chestManagerType, "RemoveInventory", new[] { inventoryType, typeof(Chest) });
+                    if (removeInvMethod != null)
+                    {
+                        _harmony.Patch(removeInvMethod, postfix: new HarmonyMethod(AccessTools.Method(typeof(Plugin), nameof(OnChestManagerRemoveInventory_Postfix))));
+                        Log.LogInfo("Patched ChestManager.RemoveInventory (cleanup on chest remove)");
+                    }
+                }
+
                 // Chest Labels (labels above chests - enabled via config)
                 ApplyChestLabelPatches();
 
@@ -388,6 +401,31 @@ namespace SenpaisChest
             catch (Exception ex)
             {
                 Log?.LogDebug($"[SenpaisChest] Could not schedule chest button: {ex.Message}");
+            }
+        }
+
+        /// <summary>
+        /// Called after the game removes a chest from ChestManager (e.g. chest picked up/destroyed).
+        /// Removes our smart chest data so we don't keep orphaned entries.
+        /// </summary>
+        private static void OnChestManagerRemoveInventory_Postfix(object __0, Chest __1)
+        {
+            if (__1 == null) return;
+            try
+            {
+                var chestId = SmartChestManager.GetChestId(__1);
+                if (string.IsNullOrEmpty(chestId)) return;
+                var manager = GetManager();
+                if (manager == null) return;
+                if (manager.GetSmartChest(chestId) != null)
+                {
+                    manager.RemoveSmartChest(chestId);
+                    Log?.LogInfo($"[SenpaisChest] Cleaned up smart chest data for removed chest: {chestId}");
+                }
+            }
+            catch (Exception ex)
+            {
+                Log?.LogWarning($"[SenpaisChest] Cleanup on chest remove: {ex.Message}");
             }
         }
 

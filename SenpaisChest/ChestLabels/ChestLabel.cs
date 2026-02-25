@@ -105,6 +105,7 @@ namespace SenpaisChest.ChestLabels
 
         public void DoUpdate()
         {
+            if (_label == null) return; // Not initialized yet (InitWhenReady may still be running)
             var chest = transform.GetComponentInParent<Chest>();
             if (chest == null) return;
             var data = chest.GetChestData();
@@ -118,6 +119,7 @@ namespace SenpaisChest.ChestLabels
 
         public void SetTextAndIcon(string text, int color)
         {
+            if (_label == null) return; // Guard against DoUpdate before Init completes
             text ??= "";
             var parts = text.Split(new[] { ' ' }, 2);
 

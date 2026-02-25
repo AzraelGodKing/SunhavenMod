@@ -1,6 +1,6 @@
 # Haven's Birthright
 
-Unique racial bonuses and abilities for all 12 playable races in Sun Haven.
+**Version 1.2.3** — Unique racial bonuses, active abilities, drawbacks, and conditional synergies for all 12 playable races in Sun Haven.
 
 ## Features
 
@@ -36,7 +36,7 @@ Unique racial bonuses and abilities for all 12 playable races in Sun Haven.
 ## Installation
 
 1. Install BepInEx 5.x
-2. Place `HavensBirthright.dll` in `BepInEx/plugins/`
+2. Place `HavensBirthright.dll` in `BepInEx/plugins/HavensBirthright/`
 3. Launch the game
 
 ## Configuration

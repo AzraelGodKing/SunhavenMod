@@ -451,14 +451,12 @@ namespace SunhavenTodo.UI
             var bgTex = item.IsCompleted ? _itemCompleted : (index % 2 == 0 ? _itemEven : _itemOdd);
             var itemStyle = item.IsCompleted ? _itemCompletedStyle : _itemStyle;
 
-            GUILayout.BeginHorizontal(itemStyle, GUILayout.Height(ITEM_HEIGHT));
-
-            var lastRect = GUILayoutUtility.GetLastRect();
+            Rect rowRect = GUILayoutUtility.GetRect(0, ITEM_HEIGHT, GUILayout.ExpandWidth(true));
             if (Event.current.type == UnityEngine.EventType.Repaint && bgTex != null)
-            {
-                GUI.DrawTexture(lastRect, bgTex);
-            }
+                GUI.DrawTexture(rowRect, bgTex);
 
+            GUILayout.BeginArea(rowRect);
+            GUILayout.BeginHorizontal(itemStyle, GUILayout.Height(ITEM_HEIGHT));
             // Checkbox
             var isCompleted = GUILayout.Toggle(item.IsCompleted, "", GUILayout.Width(20));
             if (isCompleted != item.IsCompleted)
@@ -491,6 +489,7 @@ namespace SunhavenTodo.UI
             }
 
             GUILayout.EndHorizontal();
+            GUILayout.EndArea();
         }
 
         private void DrawAddForm()

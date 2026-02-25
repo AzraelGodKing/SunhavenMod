@@ -86,30 +86,29 @@ namespace HavensBirthright
                     PatchMethod(playerType, "ReceiveDamage",
                         typeof(Patches.CombatPatches), "OnDamageReceivedPostfix");
 
-                    // Patch NPCAI.AddFriendship for relationship bonuses/drawbacks
+                    // Patch NPCAI.AddRelationship (game API: float increase, float romanceBonus, bool showUI)
                     var npcaiType = AccessTools.TypeByName("Wish.NPCAI");
                     if (npcaiType != null)
                     {
-                        PatchMethodPrefix(npcaiType, "AddFriendship",
-                            typeof(Patches.EconomyPatches), "ModifyRelationshipGain",
-                            new[] { typeof(int) });
+                        var addRelMethod = AccessTools.Method(npcaiType, "AddRelationship", new[] { typeof(float), typeof(float), typeof(bool) });
+                        if (addRelMethod != null)
+                        {
+                            var prefix = AccessTools.Method(typeof(Patches.EconomyPatches), "ModifyRelationshipGain");
+                            _harmony.Patch(addRelMethod, prefix: new HarmonyLib.HarmonyMethod(prefix));
+                            Log.LogInfo("Successfully patched NPCAI.AddRelationship");
+                        }
+                        else
+                        {
+                            Log.LogWarning("Could not find NPCAI.AddRelationship - relationship bonuses will not work");
+                        }
                     }
                     else
                     {
                         Log.LogWarning("Could not find NPCAI type - relationship bonuses will not work");
                     }
 
-                    // Patch ShopMenu.BuyItem for shop discounts
-                    var shopMenuType = AccessTools.TypeByName("Wish.ShopMenu");
-                    if (shopMenuType != null)
-                    {
-                        PatchMethodPrefix(shopMenuType, "BuyItem",
-                            typeof(Patches.EconomyPatches), "ModifyBuyPrice");
-                    }
-                    else
-                    {
-                        Log.LogWarning("Could not find ShopMenu type - shop discounts will not work");
-                    }
+                    // Patch Wish.Shop.BuyItem for shop discounts (game uses Shop, not ShopMenu)
+                    PatchShopBuyItemForDiscount();
 
                     // Patch Player.AddMana to block mana regen while Infernal Forge is active
                     PatchMethodPrefix(playerType, "AddMana",
@@ -225,6 +224,43 @@ namespace HavensBirthright
         }
 
         /// <summary>
+        /// Patch Wish.Shop.BuyItem so shop discount is applied (game uses Shop, not ShopMenu).
+        /// </summary>
+        private void PatchShopBuyItemForDiscount()
+        {
+            try
+            {
+                var shopType = AccessTools.TypeByName("Wish.Shop");
+                if (shopType == null)
+                {
+                    Log.LogWarning("Could not find Wish.Shop type - shop discounts will not work");
+                    return;
+                }
+                var shopItemInfo2Type = AccessTools.TypeByName("Wish.ShopItemInfo2");
+                var shopLoot2Type = AccessTools.TypeByName("Wish.ShopLoot2");
+                if (shopItemInfo2Type != null)
+                {
+                    var buyItemMethod = AccessTools.Method(shopType, "BuyItem", new[] { shopItemInfo2Type, typeof(int) });
+                    if (buyItemMethod != null)
+                        PatchMethodPrefix(shopType, "BuyItem", typeof(Patches.EconomyPatches), "OnBeforeShopBuyItem", new[] { shopItemInfo2Type, typeof(int) });
+                }
+                if (shopLoot2Type != null)
+                {
+                    var buyItemMethod = AccessTools.Method(shopType, "BuyItem", new[] { shopLoot2Type, typeof(int) });
+                    if (buyItemMethod != null)
+                        PatchMethodPrefix(shopType, "BuyItem", typeof(Patches.EconomyPatches), "OnBeforeShopBuyItem", new[] { shopLoot2Type, typeof(int) });
+                    var buyItemSingle = AccessTools.Method(shopType, "BuyItem", new[] { shopLoot2Type });
+                    if (buyItemSingle != null)
+                        PatchMethodPrefix(shopType, "BuyItem", typeof(Patches.EconomyPatches), "OnBeforeShopBuyItemSingle", new[] { shopLoot2Type });
+                }
+            }
+            catch (Exception ex)
+            {
+                Log.LogError($"Failed to patch Shop for discount: {ex.Message}");
+            }
+        }
+
+        /// <summary>
         /// Gets the racial bonus manager instance
         /// </summary>
         public static RacialBonusManager GetRacialBonusManager()
@@ -253,6 +289,6 @@ namespace HavensBirthright
     {
         public const string PLUGIN_GUID = "com.azraelgodking.havensbirthright";
         public const string PLUGIN_NAME = "Haven's Birthright";
-        public const string PLUGIN_VERSION = "1.2.2";
+        public const string PLUGIN_VERSION = "1.2.3";
     }
 }

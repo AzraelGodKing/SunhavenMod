@@ -1,6 +1,6 @@
 # A Squirrel's Birthday Reminder
 
-Never miss an NPC birthday in Sun Haven! Get reminders and gift suggestions.
+**Version 1.1.1** — Never miss an NPC birthday in Sun Haven. Auto reminders, gift suggestions, gift tracking, draggable HUD.
 
 ## Features
 
@@ -17,7 +17,7 @@ The mod automatically displays birthday reminders when you load into the game on
 
 1. Install BepInEx 5.x
 2. Place `BirthdayReminder.dll` in `BepInEx/plugins/`
-3. Launch the game
+3. Launch the game. Reminders show automatically on NPC birthdays.
 
 ## Configuration
 

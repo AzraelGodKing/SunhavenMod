@@ -470,36 +470,44 @@ namespace SunhavenTodo
         {
             try
             {
-                // Try to get character name from GameSave
+                // Use GameSave.CurrentCharacter (static) - returns CharacterData with characterName
                 var gameSaveType = AccessTools.TypeByName("Wish.GameSave");
                 if (gameSaveType != null)
                 {
-                    var currentProp = AccessTools.Property(gameSaveType, "Current");
-                    if (currentProp != null)
+                    var currentCharProp = AccessTools.Property(gameSaveType, "CurrentCharacter");
+                    if (currentCharProp != null)
                     {
-                        var current = currentProp.GetValue(null);
-                        if (current != null)
+                        var currentChar = currentCharProp.GetValue(null);
+                        if (currentChar != null)
                         {
-                            var characterNameProp = AccessTools.Property(current.GetType(), "characterName");
+                            var characterNameProp = AccessTools.Property(currentChar.GetType(), "characterName");
                             if (characterNameProp != null)
                             {
-                                var name = characterNameProp.GetValue(current) as string;
+                                var name = characterNameProp.GetValue(currentChar) as string;
                                 if (!string.IsNullOrEmpty(name))
                                     return name;
                             }
                         }
                     }
-                }
-
-                // Fallback: try to get from player instance
-                if (player != null)
-                {
-                    var nameProp = AccessTools.Property(player.GetType(), "playerName");
-                    if (nameProp != null)
+                    // Fallback: SingletonBehaviour<GameSave>.Instance.CurrentSave.characterData.characterName
+                    var instanceProp = AccessTools.Property(gameSaveType, "Instance");
+                    var instance = instanceProp?.GetValue(null);
+                    if (instance != null)
                     {
-                        var name = nameProp.GetValue(player) as string;
-                        if (!string.IsNullOrEmpty(name))
-                            return name;
+                        var currentSaveProp = AccessTools.Property(gameSaveType, "CurrentSave");
+                        var currentSave = currentSaveProp?.GetValue(instance);
+                        if (currentSave != null)
+                        {
+                            var charDataProp = AccessTools.Property(currentSave.GetType(), "characterData");
+                            var charData = charDataProp?.GetValue(currentSave);
+                            if (charData != null)
+                            {
+                                var characterNameProp = AccessTools.Property(charData.GetType(), "characterName");
+                                var name = characterNameProp?.GetValue(charData) as string;
+                                if (!string.IsNullOrEmpty(name))
+                                    return name;
+                            }
+                        }
                     }
                 }
             }

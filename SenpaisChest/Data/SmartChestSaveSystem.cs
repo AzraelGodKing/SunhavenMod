@@ -52,7 +52,7 @@ namespace SenpaisChest.Data
 
             if (string.IsNullOrEmpty(data.CharacterName))
             {
-                Plugin.Log?.LogWarning("[Save] Cannot save: CharacterName is empty");
+                Plugin.Log?.LogDebug("[Save] Cannot save: CharacterName is empty (expected on main menu)");
                 return;
             }
 

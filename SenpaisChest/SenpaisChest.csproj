@@ -92,6 +92,11 @@
     </Reference>
   </ItemGroup>
 
+  <!-- Allow HavenDevTools to access internal APIs for Azrael's Mods integration -->
+  <ItemGroup>
+    <InternalsVisibleTo Include="HavenDevTools" />
+  </ItemGroup>
+
   <!-- Soft Dependencies: SMUT + SunhavenTodo (optional integration) -->
   <ItemGroup>
     <Reference Include="SunHavenMuseumUtilityTracker">

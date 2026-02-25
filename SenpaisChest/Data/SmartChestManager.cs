@@ -163,6 +163,27 @@ namespace SenpaisChest.Data
             }
         }
 
+        /// <summary>
+        /// Removes smart chest entries whose chest no longer exists in the world (e.g. picked up or destroyed).
+        /// Call this when you have a current chest lookup from ChestManager.associatedChests.
+        /// </summary>
+        public void RemoveOrphanedSmartChests(Dictionary<string, KeyValuePair<Inventory, Chest>> chestLookup)
+        {
+            if (chestLookup == null) return;
+            var toRemove = new List<string>();
+            foreach (var kvp in _smartChests)
+            {
+                if (!chestLookup.ContainsKey(kvp.Key))
+                    toRemove.Add(kvp.Key);
+            }
+            foreach (var chestId in toRemove)
+            {
+                _smartChests.Remove(chestId);
+                _isDirty = true;
+                Plugin.Log?.LogInfo($"[SenpaisChest] Removed orphaned smart chest data: {chestId}");
+            }
+        }
+
         public static string GetChestId(Chest chest)
         {
             if (chest == null)
@@ -318,6 +339,9 @@ namespace SenpaisChest.Data
             }
 
             Plugin.Log?.LogDebug($"[Scan] Built chest lookup: {chestLookup.Count} unique chests");
+
+            // Remove smart chest entries for chests that no longer exist in the world (e.g. picked up, destroyed)
+            RemoveOrphanedSmartChests(chestLookup);
 
             foreach (var smartChestEntry in _smartChests)
             {

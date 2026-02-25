@@ -8,8 +8,12 @@ Place your compiled DLLs here before running the GitHub Actions workflow.
 builds/
 ├── HavensBirthright/
 │   └── HavensBirthright.dll
+├── HavensAlmanac/
+│   └── HavensAlmanac.dll
 ├── SunHavenMuseumUtilityTracker/
 │   └── SunHavenMuseumUtilityTracker.dll
+├── SenpaisChest/
+│   └── SenpaisChest.dll
 ├── BirthdayReminder/
 │   └── BirthdayReminder.dll
 ├── SunhavenTodo/

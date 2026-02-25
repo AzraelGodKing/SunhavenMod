@@ -1,6 +1,6 @@
 {
   "name": "HavenDevTools",
-  "version_number": "1.0.2",
+  "version_number": "1.0.3",
   "website_url": "",
   "description": "Developer utilities for mod debugging and game state inspection",
   "dependencies": ["BepInEx-BepInExPack-5.4.2100"]

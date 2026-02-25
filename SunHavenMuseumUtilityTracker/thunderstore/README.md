@@ -1,6 +1,6 @@
 # S.M.U.T. - Sun Haven Museum Utility Tracker
 
-Track your museum donation progress across all three halls in Sun Haven.
+**Version 2.2.1** — Track your museum donation progress across all three halls (Hall of Gems, Hall of Culture, Aquarium) in Sun Haven. Manual tracking, per-character saves, item icons, search and filter.
 
 ## Features
 
@@ -12,13 +12,13 @@ Track your museum donation progress across all three halls in Sun Haven.
 
 ## Usage
 
-Press the configured hotkey (default: M) to open the museum tracker UI.
+Press **Ctrl+C** (configurable) to open the museum tracker UI.
 
 ## Installation
 
 1. Install BepInEx 5.x
 2. Place `SunHavenMuseumUtilityTracker.dll` in `BepInEx/plugins/`
-3. Launch the game
+3. Launch the game. Open tracker: **Ctrl+C**.
 
 ## Configuration
 

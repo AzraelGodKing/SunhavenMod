@@ -709,36 +709,33 @@ namespace TheVault.Patches
                 var player = localPlayerProperty.GetValue(null);
                 if (player == null) return false;
 
-                // Try to find AddItem method
-                var addMethod = AccessTools.Method(playerType, "AddItem", new[] { typeof(int), typeof(int) });
-                if (addMethod != null)
-                {
-                    var result = addMethod.Invoke(player, new object[] { itemId, amount });
-                    return result is bool b && b;
-                }
-
-                // Try alternate method
-                addMethod = AccessTools.Method(playerType, "AddItemToInventory", new[] { typeof(int), typeof(int) });
-                if (addMethod != null)
-                {
-                    var result = addMethod.Invoke(player, new object[] { itemId, amount });
-                    return result is bool b && b;
-                }
-
-                // Try getting inventory
                 var inventoryProperty = AccessTools.Property(playerType, "Inventory");
                 if (inventoryProperty != null)
                 {
                     var inventory = inventoryProperty.GetValue(player);
                     if (inventory != null)
                     {
-                        var invAddMethod = AccessTools.Method(inventory.GetType(), "AddItem", new[] { typeof(int), typeof(int) });
+                        // Game has AddItem(int, int, bool) and AddItem(int, int, int, bool, bool)
+                        var invAddMethod = AccessTools.Method(inventory.GetType(), "AddItem", new[] { typeof(int), typeof(int), typeof(bool) });
                         if (invAddMethod != null)
                         {
-                            var result = invAddMethod.Invoke(inventory, new object[] { itemId, amount });
-                            return result is bool b && b;
+                            invAddMethod.Invoke(inventory, new object[] { itemId, amount, true });
+                            return true;
+                        }
+                        var invAddMethod5 = AccessTools.Method(inventory.GetType(), "AddItem", new[] { typeof(int), typeof(int), typeof(int), typeof(bool), typeof(bool) });
+                        if (invAddMethod5 != null)
+                        {
+                            invAddMethod5.Invoke(inventory, new object[] { itemId, amount, 0, true, true });
+                            return true;
                         }
                     }
+                }
+
+                var addMethod = AccessTools.Method(playerType, "AddItemToInventory", new[] { typeof(int), typeof(int) });
+                if (addMethod != null)
+                {
+                    var result = addMethod.Invoke(player, new object[] { itemId, amount });
+                    return result is bool b && b;
                 }
 
                 Plugin.Log?.LogWarning("Could not find a method to add items to inventory");

@@ -38,6 +38,7 @@ namespace BirthdayReminder.Data
         private static FieldInfo _love2Field;
         private static FieldInfo _like2Field;
         private static FieldInfo _gaveGiftForDayField;
+        private static FieldInfo _giftTableField; // NPCAI.giftTable is a field, not a property
         private static bool _useGameData = false;
 
         public event Action OnBirthdaysUpdated;
@@ -149,18 +150,20 @@ namespace BirthdayReminder.Data
                     _like2Field = AccessTools.Field(_npcGiftTableType, "like2");
                 }
 
-                // Get NPCAI type for gaveGiftForDay
+                // Get NPCAI type for gaveGiftForDay and giftTable
                 var npcaiType = AccessTools.TypeByName("Wish.NPCAI");
                 if (npcaiType != null)
                 {
                     _gaveGiftForDayField = AccessTools.Field(npcaiType, "gaveGiftForDay");
+                    _giftTableField = AccessTools.Field(npcaiType, "giftTable"); // private field in NPCAI
                 }
 
                 // Check if we have enough to use game data
                 _useGameData = _npcManagerInstanceProp != null &&
                                _npcsDictField != null &&
                                _birthDayField != null &&
-                               _birthMonthField != null;
+                               _birthMonthField != null &&
+                               _giftTableField != null;
 
                 if (_useGameData)
                 {
@@ -487,30 +490,13 @@ namespace BirthdayReminder.Data
                         }
                     }
 
-                    // Check for characterData specifically
-                    var charDataProp = AccessTools.Property(npcType, "characterData")
-                                       ?? AccessTools.Property(npcType, "CharacterData");
-                    if (charDataProp != null)
+                    // Note: NPCAI does not have characterData/CharacterData - those are on GameSave.CurrentSave.
+                    // NPCAI has giftTable (field) for birthday/gift data.
+                    var giftTableField = AccessTools.Field(npcType, "giftTable");
+                    if (giftTableField != null)
                     {
-                        var charData = charDataProp.GetValue(npc);
-                        if (charData != null)
-                        {
-                            Plugin.Log?.LogInfo($"[DEBUG] --- characterData PROPERTIES ({charData.GetType().Name}) ---");
-                            foreach (var prop in charData.GetType().GetProperties(System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.Public))
-                            {
-                                try
-                                {
-                                    var value = prop.GetValue(charData);
-                                    string valueStr = value?.ToString() ?? "null";
-                                    if (valueStr.Length > 100) valueStr = valueStr.Substring(0, 100) + "...";
-                                    Plugin.Log?.LogInfo($"[DEBUG]     {prop.Name} ({prop.PropertyType.Name}) = {valueStr}");
-                                }
-                                catch (Exception ex)
-                                {
-                                    Plugin.Log?.LogDebug($"[BirthdayManager] DEBUG property reflection: {prop.Name}: {ex.Message}");
-                                }
-                            }
-                        }
+                        var gt = giftTableField.GetValue(npc);
+                        Plugin.Log?.LogInfo($"[DEBUG] giftTable (field) = {gt?.GetType().Name ?? "null"}");
                     }
 
                     Plugin.Log?.LogInfo($"[DEBUG] ========== END {npcName} ==========");
@@ -535,21 +521,32 @@ namespace BirthdayReminder.Data
         {
             try
             {
-                // Use DayCycle class directly - much more reliable
+                // Skip date lookup on LoadScreen - GameSave.CurrentWorld may be null
+                var gameSaveType = AccessTools.TypeByName("Wish.GameSave");
+                if (gameSaveType != null)
+                {
+                    var instanceProp = AccessTools.Property(gameSaveType, "Instance");
+                    var instance = instanceProp?.GetValue(null);
+                    if (instance != null)
+                    {
+                        var currentSaveProp = AccessTools.Property(gameSaveType, "CurrentSave");
+                        var currentSave = currentSaveProp?.GetValue(instance);
+                        if (currentSave == null)
+                            return (1, "Spring", 1); // No save loaded (e.g. main menu / LoadScreen)
+                    }
+                }
+
                 var dayCycleType = AccessTools.TypeByName("Wish.DayCycle");
                 if (dayCycleType != null)
                 {
-                    // Get static properties
                     var yearProp = AccessTools.Property(dayCycleType, "Year");
                     var monthDayProp = AccessTools.Property(dayCycleType, "MonthDay");
 
                     int year = yearProp != null ? (int)yearProp.GetValue(null) : 1;
                     int day = monthDayProp != null ? (int)monthDayProp.GetValue(null) : 1;
 
-                    // Get Season from instance (it's not static)
                     var dayCycleInstance = GetSingletonInstance(dayCycleType);
                     string season = "Spring";
-
                     if (dayCycleInstance != null)
                     {
                         var seasonProp = AccessTools.Property(dayCycleType, "Season");
@@ -560,17 +557,15 @@ namespace BirthdayReminder.Data
                         }
                     }
 
-                    // Only log when explicitly requested (birthday checks, not per-frame HUD updates)
                     if (logDate)
-                    {
                         Plugin.Log?.LogInfo($"[BirthdayManager] Got date from DayCycle: Year {year}, {season} {day}");
-                    }
                     return (year, season, day);
                 }
             }
             catch (Exception ex)
             {
-                Plugin.Log?.LogError($"[BirthdayManager] Error getting date: {ex.Message}");
+                // Expected on LoadScreen/main menu when DayCycle/CurrentWorld not ready
+                Plugin.Log?.LogDebug($"[BirthdayManager] Date unavailable (may be on LoadScreen): {ex.Message}");
             }
 
             return (1, "Spring", 1);
@@ -702,16 +697,15 @@ namespace BirthdayReminder.Data
                         // Get NPC name
                         var npcType = npc.GetType();
                         var nameProp = AccessTools.Property(npcType, "NPCName")
+                                       ?? AccessTools.Property(npcType, "ActualNPCName")
+                                       ?? AccessTools.Property(npcType, "OriginalName")
                                        ?? AccessTools.Property(npcType, "npcName")
                                        ?? AccessTools.Property(npcType, "Name");
                         string npcName = nameProp?.GetValue(npc)?.ToString();
                         if (string.IsNullOrEmpty(npcName)) continue;
 
-                        // Get NPCGiftTable (characterData or giftTable)
-                        var giftTableProp = AccessTools.Property(npcType, "characterData")
-                                            ?? AccessTools.Property(npcType, "giftTable")
-                                            ?? AccessTools.Property(npcType, "CharacterData");
-                        var giftTable = giftTableProp?.GetValue(npc);
+                        // Get NPCGiftTable - NPCAI.giftTable is a private field (not characterData/CharacterData)
+                        var giftTable = _giftTableField?.GetValue(npc);
                         if (giftTable == null) continue;
 
                         // Get birthDay and birthMonth from NPCGiftTable
@@ -799,7 +793,8 @@ namespace BirthdayReminder.Data
         }
 
         /// <summary>
-        /// Get item name from item ID using the game's Database.
+        /// Get item name from item ID. NPCGiftTable love2/like2 contain SerializedItemData (field 'id'), not raw ints.
+        /// Uses ItemInfoDatabase for sync lookup (avoids PSS.Database async callbacks).
         /// </summary>
         private string GetItemNameFromId(object itemIdOrObj)
         {
@@ -810,35 +805,58 @@ namespace BirthdayReminder.Data
                 {
                     itemId = id;
                 }
-                else
+                else if (itemIdOrObj != null)
                 {
-                    // Could be an Item object or enum, try to get ID
-                    var idProp = itemIdOrObj.GetType().GetProperty("id")
-                                 ?? itemIdOrObj.GetType().GetProperty("ID");
-                    if (idProp != null)
+                    var t = itemIdOrObj.GetType();
+                    // SerializedItemData has 'id' as a FIELD, not property
+                    var idField = t.GetField("id", BindingFlags.Public | BindingFlags.Instance);
+                    var idProp = idField == null ? (t.GetProperty("id") ?? t.GetProperty("ID")) : null;
+                    if (idField != null)
                     {
-                        itemId = (int)idProp.GetValue(itemIdOrObj);
+                        itemId = (int)idField.GetValue(itemIdOrObj);
+                    }
+                    else if (idProp != null)
+                    {
+                        var v = idProp.GetValue(itemIdOrObj);
+                        itemId = v is int i ? i : Convert.ToInt32(v);
                     }
                     else
                     {
-                        // Try casting to int (for enums)
                         itemId = Convert.ToInt32(itemIdOrObj);
                     }
                 }
-
-                // Get item from Database
-                var databaseType = AccessTools.TypeByName("Wish.Database");
-                if (databaseType != null)
+                else
                 {
-                    var getItemMethod = AccessTools.Method(databaseType, "GetItem", new[] { typeof(int) });
-                    if (getItemMethod != null)
+                    return null;
+                }
+
+                // Use ItemInfoDatabase (sync) - allItemSellInfos: Dictionary<int, ItemSellInfo> with .name field
+                var itemInfoDbType = AccessTools.TypeByName("Wish.ItemInfoDatabase");
+                if (itemInfoDbType != null)
+                {
+                    var instanceProp = itemInfoDbType.GetProperty("Instance", BindingFlags.Public | BindingFlags.Static);
+                    var instance = instanceProp?.GetValue(null);
+                    if (instance != null)
                     {
-                        var item = getItemMethod.Invoke(null, new object[] { itemId });
-                        if (item != null)
+                        var allItemSellInfosField = AccessTools.Field(itemInfoDbType, "allItemSellInfos");
+                        var dict = allItemSellInfosField?.GetValue(instance);
+                        if (dict != null)
                         {
-                            var nameProp = AccessTools.Property(item.GetType(), "name")
-                                           ?? AccessTools.Property(item.GetType(), "Name");
-                            return nameProp?.GetValue(item)?.ToString();
+                            var containsKey = dict.GetType().GetMethod("ContainsKey", new[] { typeof(int) });
+                            var getItem = dict.GetType().GetMethod("get_Item", new[] { typeof(int) });
+                            if (containsKey != null && getItem != null && (bool)containsKey.Invoke(dict, new object[] { itemId }))
+                            {
+                                var info = getItem.Invoke(dict, new object[] { itemId });
+                                if (info != null)
+                                {
+                                    var nameField = info.GetType().GetField("name", BindingFlags.Public | BindingFlags.Instance);
+                                    var nameProp = nameField == null ? info.GetType().GetProperty("name") ?? info.GetType().GetProperty("Name") : null;
+                                    if (nameField != null)
+                                        return nameField.GetValue(info) as string;
+                                    if (nameProp != null)
+                                        return nameProp.GetValue(info) as string;
+                                }
+                            }
                         }
                     }
                 }
@@ -949,33 +967,11 @@ namespace BirthdayReminder.Data
             // If it's a string, return it directly
             if (item is string str) return str;
 
-            // If it's an int (item ID), try to get the name from the database
+            // If it's an int (item ID), use ItemInfoDatabase via GetItemNameFromId
             if (item is int itemId)
             {
-                try
-                {
-                    var databaseType = AccessTools.TypeByName("Wish.Database");
-                    if (databaseType != null)
-                    {
-                        var getItemMethod = AccessTools.Method(databaseType, "GetItem", new[] { typeof(int) });
-                        if (getItemMethod != null)
-                        {
-                            var itemObj = getItemMethod.Invoke(null, new object[] { itemId });
-                            if (itemObj != null)
-                            {
-                                var nameProp = AccessTools.Property(itemObj.GetType(), "name")
-                                               ?? AccessTools.Property(itemObj.GetType(), "Name");
-                                return nameProp?.GetValue(itemObj)?.ToString();
-                            }
-                        }
-                    }
-                }
-                catch (Exception ex)
-                {
-                    Plugin.Log?.LogDebug($"[BirthdayManager] Error getting gift name for item {itemId}: {ex.Message}");
-                }
-
-                return $"Item #{itemId}";
+                var name = GetItemNameFromId(itemId);
+                return !string.IsNullOrEmpty(name) ? name : $"Item #{itemId}";
             }
 
             // Try to get name property
