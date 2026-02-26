@@ -273,12 +273,14 @@ namespace SunhavenTodo.UI
         {
             var bgTex = index % 2 == 0 ? _itemEven : _itemOdd;
 
-            Rect rowRect = GUILayoutUtility.GetRect(0, ITEM_HEIGHT, GUILayout.ExpandWidth(true));
-            if (Event.current.type == EventType.Repaint && bgTex != null)
-                GUI.DrawTexture(rowRect, bgTex);
+            // Use row style with background so content stays in layout flow (avoids blank title in some setups)
+            var rowStyle = new GUIStyle(_itemStyle)
+            {
+                normal = { background = bgTex },
+                padding = new RectOffset(6, 6, 2, 2)
+            };
 
-            GUILayout.BeginArea(rowRect);
-            GUILayout.BeginHorizontal(_itemStyle, GUILayout.Height(ITEM_HEIGHT));
+            GUILayout.BeginHorizontal(rowStyle, GUILayout.Height(ITEM_HEIGHT));
             GUILayout.Space(6);
 
             // Priority indicator
@@ -293,13 +295,13 @@ namespace SunhavenTodo.UI
 
             GUILayout.Space(4);
 
-            // Title (truncated if too long)
-            var displayTitle = item.Title.Length > 25 ? item.Title.Substring(0, 22) + "..." : item.Title;
+            // Title (truncated if too long; guard against null/empty)
+            var title = string.IsNullOrWhiteSpace(item.Title) ? "(No title)" : item.Title;
+            var displayTitle = title.Length > 25 ? title.Substring(0, 22) + "..." : title;
             GUILayout.Label(displayTitle, _titleStyle, GUILayout.ExpandWidth(true));
 
             GUILayout.Space(6);
             GUILayout.EndHorizontal();
-            GUILayout.EndArea();
         }
 
         private string GetPriorityIcon(TodoPriority priority)
