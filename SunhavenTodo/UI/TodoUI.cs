@@ -451,12 +451,14 @@ namespace SunhavenTodo.UI
             var bgTex = item.IsCompleted ? _itemCompleted : (index % 2 == 0 ? _itemEven : _itemOdd);
             var itemStyle = item.IsCompleted ? _itemCompletedStyle : _itemStyle;
 
-            Rect rowRect = GUILayoutUtility.GetRect(0, ITEM_HEIGHT, GUILayout.ExpandWidth(true));
-            if (Event.current.type == UnityEngine.EventType.Repaint && bgTex != null)
-                GUI.DrawTexture(rowRect, bgTex);
+            // Use a row style with background so the row stays in layout flow (avoids BeginArea + ScrollView coordinate bug that made titles appear blank)
+            var rowStyle = new GUIStyle(itemStyle)
+            {
+                normal = { background = bgTex },
+                padding = new RectOffset(8, 8, 4, 4)
+            };
 
-            GUILayout.BeginArea(rowRect);
-            GUILayout.BeginHorizontal(itemStyle, GUILayout.Height(ITEM_HEIGHT));
+            GUILayout.BeginHorizontal(rowStyle, GUILayout.Height(ITEM_HEIGHT));
             // Checkbox
             var isCompleted = GUILayout.Toggle(item.IsCompleted, "", GUILayout.Width(20));
             if (isCompleted != item.IsCompleted)
@@ -477,9 +479,10 @@ namespace SunhavenTodo.UI
 
             GUILayout.Space(4);
 
-            // Title (using cached styles)
+            // Title (using cached styles; guard against null/empty so row is never blank)
             var titleStyle = item.IsCompleted ? _completedTitleStyle : _labelBoldStyle;
-            GUILayout.Label(item.Title, titleStyle, GUILayout.ExpandWidth(true));
+            var titleText = string.IsNullOrWhiteSpace(item.Title) ? "(No title)" : item.Title;
+            GUILayout.Label(titleText, titleStyle, GUILayout.ExpandWidth(true));
 
             // Delete button
             if (GUILayout.Button("x", _buttonStyle, GUILayout.Width(22), GUILayout.Height(22)))
@@ -489,7 +492,6 @@ namespace SunhavenTodo.UI
             }
 
             GUILayout.EndHorizontal();
-            GUILayout.EndArea();
         }
 
         private void DrawAddForm()
@@ -531,13 +533,23 @@ namespace SunhavenTodo.UI
 
             GUILayout.Space(6);
 
-            // Category
-            GUILayout.BeginHorizontal();
-            GUILayout.Label("Category:", _labelStyle, GUILayout.Width(60));
+            // Category (one style per button so the selected category is clearly highlighted)
+            GUILayout.Label("Category:", _labelStyle);
             var categories = Enum.GetNames(typeof(TodoCategory));
-            _selectedCategory = GUILayout.SelectionGrid(_selectedCategory, categories, 5, _tabStyle, GUILayout.Height(50));
-            GUILayout.FlexibleSpace();
-            GUILayout.EndHorizontal();
+            const int categoryCols = 5;
+            for (int rowStart = 0; rowStart < categories.Length; rowStart += categoryCols)
+            {
+                GUILayout.BeginHorizontal();
+                for (int col = 0; col < categoryCols && rowStart + col < categories.Length; col++)
+                {
+                    int i = rowStart + col;
+                    var style = i == _selectedCategory ? _tabActiveStyle : _tabStyle;
+                    if (GUILayout.Button(categories[i], style, GUILayout.Height(24)))
+                        _selectedCategory = i;
+                }
+                GUILayout.FlexibleSpace();
+                GUILayout.EndHorizontal();
+            }
 
             GUILayout.Space(10);
 
@@ -621,11 +633,12 @@ namespace SunhavenTodo.UI
         {
             if (string.IsNullOrWhiteSpace(_newTodoTitle)) return;
 
+            var category = (TodoCategory)_selectedCategory;
             var item = new TodoItem(
                 _newTodoTitle.Trim(),
                 _newTodoDescription?.Trim() ?? "",
                 (TodoPriority)_selectedPriority,
-                (TodoCategory)_selectedCategory
+                category
             );
 
             if (_editingItemId != null)
@@ -636,6 +649,8 @@ namespace SunhavenTodo.UI
             else
             {
                 _manager.AddTodo(item);
+                // Switch filter to the category they just added so the new task is visible and the tab is highlighted
+                _selectedCategoryFilter = (int)category;
             }
             _cachedDrawListDirty = true;
             _showAddForm = false;
