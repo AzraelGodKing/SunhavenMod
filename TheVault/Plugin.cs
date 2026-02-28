@@ -44,6 +44,7 @@ namespace TheVault
         private ConfigEntry<KeyCode> _altToggleKey;
         private ConfigEntry<bool> _enableHUD;
         private ConfigEntry<string> _hudPosition;
+        private ConfigEntry<float> _hudScale;
         private ConfigEntry<KeyCode> _hudToggleKey;
         private ConfigEntry<bool> _enableAutoSave;
         private ConfigEntry<float> _autoSaveInterval;
@@ -83,6 +84,7 @@ namespace TheVault
             {
                 // Initialize configuration
                 InitializeConfig();
+                SubscribeConfigChanged();
 
                 // Initialize vault system
                 // Store in both instance and static fields so they survive Plugin destruction
@@ -110,7 +112,8 @@ namespace TheVault
                 _vaultHUD = uiObject.AddComponent<VaultHUD>();
                 _vaultHUD.Initialize(_vaultManager);
                 _vaultHUD.SetEnabled(_enableHUD.Value);
-                _vaultHUD.SetPosition(ParseHUDPosition(_hudPosition.Value));
+            _vaultHUD.SetPosition(ParseHUDPosition(_hudPosition.Value));
+            _vaultHUD.SetScale(Mathf.Clamp(_hudScale.Value, 0.5f, 3f));
                 _staticVaultHUD = _vaultHUD;
 
                 // Initialize icon cache for UI icons
@@ -258,6 +261,13 @@ namespace TheVault
                 "HUD position: TopLeft, TopCenter, TopRight, BottomLeft, BottomCenter, BottomRight"
             );
 
+            _hudScale = Config.Bind(
+                "HUD",
+                "Scale",
+                1.0f,
+                "Scale factor for the HUD bar (1.0 = default size, 0.5 = half size, 2.0 = double size)"
+            );
+
             _hudToggleKey = Config.Bind(
                 "HUD",
                 "ToggleKey",
@@ -285,7 +295,87 @@ namespace TheVault
                 true,
                 "Check for mod updates on startup"
             );
+
         }
+
+        /// <summary>
+        /// Subscribe to config changes so that when the user edits config in-game (e.g. ConfigurationManager or our Settings panel),
+        /// we immediately update static state and UI.
+        /// </summary>
+        private void SubscribeConfigChanged()
+        {
+            void OnConfigChanged(object s, EventArgs e) => ApplyConfigToState();
+            _toggleKey.SettingChanged += OnConfigChanged;
+            _requireCtrlModifier.SettingChanged += OnConfigChanged;
+            _altToggleKey.SettingChanged += OnConfigChanged;
+            _enableHUD.SettingChanged += OnConfigChanged;
+            _hudPosition.SettingChanged += OnConfigChanged;
+            _hudScale.SettingChanged += OnConfigChanged;
+            _hudToggleKey.SettingChanged += OnConfigChanged;
+        }
+
+        /// <summary>
+        /// Apply current config values to static state and UI (no file reload).
+        /// </summary>
+        private void ApplyConfigToState()
+        {
+            try
+            {
+                StaticToggleKey = _toggleKey.Value;
+                StaticRequireCtrl = _requireCtrlModifier.Value;
+                StaticAltToggleKey = _altToggleKey.Value;
+                StaticHUDToggleKey = _hudToggleKey.Value;
+
+                var vaultUI = GetVaultUI();
+                if (vaultUI != null)
+                {
+                    vaultUI.SetToggleKey(StaticToggleKey, StaticRequireCtrl);
+                    vaultUI.SetAltToggleKey(StaticAltToggleKey);
+                }
+
+                var vaultHUD = GetVaultHUD();
+                if (vaultHUD != null)
+                {
+                    vaultHUD.SetEnabled(_enableHUD.Value);
+                    vaultHUD.SetPosition(ParseHUDPosition(_hudPosition.Value));
+                    vaultHUD.SetScale(Mathf.Clamp(_hudScale.Value, 0.5f, 3f));
+                }
+            }
+            catch (Exception ex)
+            {
+                Log?.LogError($"[The Vault] ApplyConfigToState failed: {ex.Message}");
+            }
+        }
+
+        /// <summary>
+        /// Reload config from disk and re-apply to UI and static state.
+        /// Call after the player edits the config file, or from a keybind.
+        /// </summary>
+        public void ReloadConfig()
+        {
+            try
+            {
+                Config.Reload();
+                ApplyConfigToState();
+                Log?.LogInfo("[The Vault] Config reloaded from file");
+            }
+            catch (Exception ex)
+            {
+                Log?.LogError($"[The Vault] Config reload failed: {ex.Message}");
+            }
+        }
+
+        // --- Config getters/setters for in-game Settings UI (values persist to config file) ---
+        public static KeyCode GetConfigToggleKey() => Instance?._toggleKey?.Value ?? KeyCode.V;
+        public static void SetConfigToggleKey(KeyCode k) { if (Instance?._toggleKey != null) Instance._toggleKey.Value = k; }
+        public static bool GetConfigRequireCtrl() => Instance?._requireCtrlModifier?.Value ?? true;
+        public static void SetConfigRequireCtrl(bool v) { if (Instance?._requireCtrlModifier != null) Instance._requireCtrlModifier.Value = v; }
+        public static KeyCode GetConfigAltToggleKey() => Instance?._altToggleKey?.Value ?? KeyCode.F8;
+        public static void SetConfigAltToggleKey(KeyCode k) { if (Instance?._altToggleKey != null) Instance._altToggleKey.Value = k; }
+        public static bool GetConfigHUDEnabled() => Instance?._enableHUD?.Value ?? true;
+        public static void SetConfigHUDEnabled(bool v) { if (Instance?._enableHUD != null) Instance._enableHUD.Value = v; }
+        public static float GetConfigHUDScale() => Instance?._hudScale?.Value ?? 1f;
+        public static void SetConfigHUDScale(float v) { if (Instance?._hudScale != null) Instance._hudScale.Value = Mathf.Clamp(v, 0.5f, 3f); }
 
         /// <summary>
         /// Register currency-to-item mappings for IconCache (used by VaultUI/VaultHUD).
@@ -343,6 +433,9 @@ namespace TheVault
             ItemPatches.RegisterItemCurrencyMapping(ItemIds.RedCarnivalTicket, "special_redcarnivalticket", autoDeposit: true);
             ItemPatches.RegisterItemCurrencyMapping(ItemIds.CandyCornPieces, "special_candycornpieces", autoDeposit: true);
             ItemPatches.RegisterItemCurrencyMapping(ItemIds.ManaShard, "special_manashard", autoDeposit: true);
+
+            // Eagerly build pickup hot-path cache so first pickup doesn't lag
+            ItemPatches.InitializePickupCache();
 
             Log.LogInfo("Registered item-to-currency mappings with auto-deposit enabled");
         }
@@ -1102,7 +1195,7 @@ namespace TheVault
     {
         public const string PLUGIN_GUID = "com.azraelgodking.thevault";
         public const string PLUGIN_NAME = "The Vault";
-        public const string PLUGIN_VERSION = "2.0.5";
+        public const string PLUGIN_VERSION = "2.0.6";
     }
 
     /// <summary>
@@ -1151,6 +1244,10 @@ namespace TheVault
 
             // Handle hotkey detection for Vault UI (since VaultUI might be destroyed)
             CheckHotkeys();
+
+            // Drain auto-deposit notifications off the pickup path (reduces lag)
+            if (PlayerPatches.IsVaultLoaded)
+                ItemPatches.DrainAutoDepositNotifications();
         }
 
         private void CheckHotkeys()
@@ -1181,6 +1278,7 @@ namespace TheVault
                     var vaultHUD = Plugin.GetVaultHUD();
                     vaultHUD?.Toggle();
                 }
+
             }
             catch (Exception ex)
             {

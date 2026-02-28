@@ -28,7 +28,7 @@
     "changelog": "Added cross-mod integration for Birthday, S.M.U.T., and Senpai's Chest"
   },
   "com.azraelgodking.thevault": {
-    "version": "2.0.5",
+    "version": "2.0.6",
     "name": "The Vault",
     "description": "Secure storage for seasonal tokens, community tokens, and keys",
     "nexus": "https://www.nexusmods.com/sunhaven/mods/488",

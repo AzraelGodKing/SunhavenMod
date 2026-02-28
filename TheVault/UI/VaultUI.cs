@@ -48,6 +48,8 @@ namespace TheVault.UI
         private Texture2D _withdrawHover;
         private Texture2D _tabNormal;
         private Texture2D _tabSelected;
+        private Texture2D _headerBarBg;
+        private GUIStyle _headerBarStyle;
 
         // Colors - Enhanced color scheme
         private readonly Color _windowBgColor = new Color(0.12f, 0.12f, 0.18f, 0.98f);
@@ -76,24 +78,45 @@ namespace TheVault.UI
         private Texture2D _toggleOffBg;
         private Texture2D _toggleOffHover;
 
-        // Window dimensions
+        // Window dimensions (reactive to content)
         private const float WINDOW_WIDTH = 460f;
-        private const float WINDOW_HEIGHT = 480f;
+        private const float ROW_HEIGHT = 40f;
+        private const float HEADER_HEIGHT = 118f;
+        private const float FOOTER_HEIGHT = 150f; // includes DrawControls (Sweep, hint) + dividers + buttons
+        private const float MIN_CONTENT_HEIGHT = 120f;
+        private const float MAX_CONTENT_HEIGHT = 420f;
+        private const float SETTINGS_CONTENT_HEIGHT = 340f;
 
         // Toggle key
         private KeyCode _toggleKey = KeyCode.V;
         private bool _requiresModifier = true; // Requires Ctrl+V by default
         private KeyCode _altToggleKey = KeyCode.F8; // Alternative key for Steam Deck (no modifier)
 
+        // Settings panel (in-game config editing)
+        private bool _showSettings;
+        private Vector2 _settingsScroll;
+        private static readonly KeyCode[] SettingsKeyOptions = new[]
+        {
+            KeyCode.None, KeyCode.F1, KeyCode.F2, KeyCode.F3, KeyCode.F4, KeyCode.F5, KeyCode.F6,
+            KeyCode.F7, KeyCode.F8, KeyCode.F9, KeyCode.F10, KeyCode.F11, KeyCode.F12,
+            KeyCode.V, KeyCode.B, KeyCode.G, KeyCode.K, KeyCode.U, KeyCode.H
+        };
+        private static readonly string[] SettingsKeyNames = new[]
+        {
+            "None", "F1", "F2", "F3", "F4", "F5", "F6", "F7", "F8", "F9", "F10", "F11", "F12",
+            "V", "B", "G", "K", "U", "H"
+        };
+
         public void Initialize(VaultManager vaultManager)
         {
             _vaultManager = vaultManager;
             _isVisible = false;
 
-            // Center window on screen
+            // Center window on screen (initial size)
+            float initialHeight = HEADER_HEIGHT + 260f + FOOTER_HEIGHT;
             float x = (Screen.width - WINDOW_WIDTH) / 2f;
-            float y = (Screen.height - WINDOW_HEIGHT) / 2f;
-            _windowRect = new Rect(x, y, WINDOW_WIDTH, WINDOW_HEIGHT);
+            float y = (Screen.height - initialHeight) / 2f;
+            _windowRect = new Rect(x, y, WINDOW_WIDTH, initialHeight);
 
             Plugin.Log?.LogInfo("VaultUI initialized");
         }
@@ -283,6 +306,8 @@ namespace TheVault.UI
             _withdrawHover = MakeRoundedTex(32, 32, _withdrawHoverColor, 4);
             _tabNormal = MakeRoundedTex(32, 32, new Color(0.2f, 0.2f, 0.28f, 0.9f), 6);
             _tabSelected = MakeGradientTex(32, 32, _accentColor, new Color(0.3f, 0.5f, 0.7f));
+            _headerBarBg = MakeTex(2, 2, new Color(0.14f, 0.18f, 0.26f, 0.98f));
+            _headerBarStyle = new GUIStyle { normal = { background = _headerBarBg }, padding = new RectOffset(12, 12, 10, 10) };
 
             _windowStyle = new GUIStyle(GUI.skin.window)
             {
@@ -293,7 +318,7 @@ namespace TheVault.UI
 
             _titleStyle = new GUIStyle(GUI.skin.label)
             {
-                fontSize = 22,
+                fontSize = 24,
                 fontStyle = FontStyle.Bold,
                 alignment = TextAnchor.MiddleCenter,
                 normal = { textColor = _goldColor }
@@ -461,6 +486,16 @@ namespace TheVault.UI
 
             InitializeStyles();
 
+            // Compute content-reactive height
+            float contentHeight = GetContentHeight();
+            float totalHeight = Mathf.Clamp(HEADER_HEIGHT + contentHeight + FOOTER_HEIGHT, 320f, Screen.height - 60f);
+            _windowRect.height = totalHeight;
+            // Keep window on screen when resizing
+            if (_windowRect.yMax > Screen.height - 20f) _windowRect.y = Screen.height - totalHeight - 20f;
+            if (_windowRect.y < 10f) _windowRect.y = 10f;
+            if (_windowRect.xMax > Screen.width - 10f) _windowRect.x = Screen.width - WINDOW_WIDTH - 10f;
+            if (_windowRect.x < 10f) _windowRect.x = 10f;
+
             // Draw shadow/backdrop
             GUI.color = new Color(0, 0, 0, 0.3f);
             GUI.DrawTexture(new Rect(_windowRect.x + 4, _windowRect.y + 4, _windowRect.width, _windowRect.height), Texture2D.whiteTexture);
@@ -477,39 +512,46 @@ namespace TheVault.UI
 
         private void DrawWindow(int windowId)
         {
-            // Title with decorative elements
-            GUILayout.Space(5);
-            GUILayout.BeginHorizontal();
-            GUILayout.FlexibleSpace();
-            GUILayout.Label("\u2727 The Vault \u2727", _titleStyle);
-            GUILayout.FlexibleSpace();
-            GUILayout.EndHorizontal();
+            // --- Main UI header: always visible (including when Settings is open) ---
+            GUILayout.BeginVertical(_headerBarStyle, GUILayout.MinHeight(100));
+            {
+                GUILayout.Space(4);
+                GUILayout.BeginHorizontal();
+                GUILayout.FlexibleSpace();
+                GUILayout.Label("\u2727  The Vault  \u2727", _titleStyle);
+                GUILayout.FlexibleSpace();
+                GUILayout.EndHorizontal();
+                GUILayout.Space(2);
+                GUILayout.Label("Currency Storage System", _subtitleStyle);
+                GUILayout.Space(10);
+                DrawCategoryTabs();
+                GUILayout.Space(4);
+            }
+            GUILayout.EndVertical();
 
-            // Subtitle (using cached style)
-            GUILayout.Label("Currency Storage System", _subtitleStyle);
-            GUILayout.Space(12);
-
-            // Category tabs with better spacing
-            DrawCategoryTabs();
-            GUILayout.Space(8);
-
-            // Divider line
             DrawHorizontalLine(_accentColor, 1);
-            GUILayout.Space(8);
+            GUILayout.Space(6);
 
-            // Main content area with scroll
-            _scrollPosition = GUILayout.BeginScrollView(_scrollPosition, false, false, GUIStyle.none, GUI.skin.verticalScrollbar, GUILayout.Height(260));
-            DrawCurrencyList();
-            GUILayout.EndScrollView();
+            if (_showSettings)
+            {
+                DrawSettingsPanel();
+            }
+            else
+            {
+                float scrollHeight = GetContentHeight();
+                _scrollPosition = GUILayout.BeginScrollView(_scrollPosition, false, false, GUIStyle.none, GUI.skin.verticalScrollbar, GUILayout.Height(scrollHeight));
+                DrawCurrencyList();
+                GUILayout.EndScrollView();
 
-            GUILayout.Space(8);
-            DrawHorizontalLine(_accentColor, 1);
-            GUILayout.Space(8);
+                GUILayout.Space(8);
+                DrawHorizontalLine(_accentColor, 1);
+                GUILayout.Space(8);
 
-            // Deposit/Withdraw controls
-            DrawControls();
+                // Deposit/Withdraw controls
+                DrawControls();
+            }
 
-            // Close button centered
+            // Bottom: Close button only (Settings is in the tab bar)
             GUILayout.Space(10);
             GUILayout.BeginHorizontal();
             GUILayout.FlexibleSpace();
@@ -520,8 +562,21 @@ namespace TheVault.UI
             GUILayout.FlexibleSpace();
             GUILayout.EndHorizontal();
 
-            // Make window draggable from header area
-            GUI.DragWindow(new Rect(0, 0, WINDOW_WIDTH, 50));
+            // Make window draggable from header area (covers title + tabs)
+            GUI.DragWindow(new Rect(0, 0, WINDOW_WIDTH, 108));
+        }
+
+        /// <summary>
+        /// Returns content area height based on current mode (settings vs currency list) and item count.
+        /// </summary>
+        private float GetContentHeight()
+        {
+            if (_showSettings) return SETTINGS_CONTENT_HEIGHT;
+            var currencies = GetCurrenciesForCategory(_selectedCategory);
+            int count = currencies.Count;
+            if (count == 0) return MIN_CONTENT_HEIGHT;
+            float desired = count * ROW_HEIGHT + 8f; // +padding
+            return Mathf.Clamp(desired, MIN_CONTENT_HEIGHT, MAX_CONTENT_HEIGHT);
         }
 
         private void DrawHorizontalLine(Color color, float height)
@@ -547,15 +602,23 @@ namespace TheVault.UI
 
             foreach (CurrencyCategory category in _enabledCategories)
             {
-                var style = _selectedCategory == category ? _selectedCategoryStyle : _categoryButtonStyle;
+                var style = !_showSettings && _selectedCategory == category ? _selectedCategoryStyle : _categoryButtonStyle;
                 string icon = GetCategoryIcon(category);
                 string label = $"{icon} {GetCategoryDisplayName(category)}";
 
                 if (GUILayout.Button(label, style, GUILayout.MinWidth(100)))
                 {
+                    _showSettings = false;
                     _selectedCategory = category;
                     _selectedCurrencyId = "";
                 }
+            }
+
+            // Settings tab - always visible as part of the Vault UI
+            var settingsStyle = _showSettings ? _selectedCategoryStyle : _categoryButtonStyle;
+            if (GUILayout.Button("\u2699 Settings", settingsStyle, GUILayout.MinWidth(100)))
+            {
+                _showSettings = true;
             }
 
             GUILayout.FlexibleSpace();
@@ -902,37 +965,105 @@ namespace TheVault.UI
             };
         }
 
+        private void DrawSettingsPanel()
+        {
+            GUILayout.Space(4);
+            GUILayout.Label("\u2699  Settings (saved to config file)", _subtitleStyle);
+            GUILayout.Space(6);
+            float settingsScrollHeight = Mathf.Min(SETTINGS_CONTENT_HEIGHT, MAX_CONTENT_HEIGHT);
+            _settingsScroll = GUILayout.BeginScrollView(_settingsScroll, false, false, GUIStyle.none, GUI.skin.verticalScrollbar, GUILayout.Height(settingsScrollHeight));
+
+            // HUD
+            GUILayout.Label("HUD", _labelStyle);
+            bool hudOn = Plugin.GetConfigHUDEnabled();
+            bool newHudOn = GUILayout.Toggle(hudOn, " Show vault currency bar", _labelStyle);
+            if (newHudOn != hudOn) Plugin.SetConfigHUDEnabled(newHudOn);
+
+            GUILayout.BeginHorizontal();
+            GUILayout.Label("HUD scale:", _labelStyle, GUILayout.Width(80));
+            float scale = Plugin.GetConfigHUDScale();
+            float newScale = GUILayout.HorizontalSlider(scale, 0.5f, 3f, GUILayout.Width(120));
+            if (Math.Abs(newScale - scale) > 0.01f) Plugin.SetConfigHUDScale(newScale);
+            GUILayout.Label($"{newScale:F1}", _labelStyle, GUILayout.Width(28));
+            GUILayout.EndHorizontal();
+            GUILayout.Space(6);
+
+            // Open vault keys
+            GUILayout.Label("Open Vault", _labelStyle);
+            GUILayout.BeginHorizontal();
+            GUILayout.Label("Key:", _labelStyle, GUILayout.Width(50));
+            int toggleIdx = IndexOfKey(Plugin.GetConfigToggleKey());
+            int newToggleIdx = GUILayout.SelectionGrid(toggleIdx, SettingsKeyNames, 6, _buttonStyle);
+            if (newToggleIdx != toggleIdx && newToggleIdx >= 0) Plugin.SetConfigToggleKey(SettingsKeyOptions[newToggleIdx]);
+            GUILayout.EndHorizontal();
+
+            bool reqCtrl = Plugin.GetConfigRequireCtrl();
+            bool newReqCtrl = GUILayout.Toggle(reqCtrl, " Require Ctrl (e.g. Ctrl+V)", _labelStyle);
+            if (newReqCtrl != reqCtrl) Plugin.SetConfigRequireCtrl(newReqCtrl);
+
+            GUILayout.BeginHorizontal();
+            GUILayout.Label("Alt key:", _labelStyle, GUILayout.Width(50));
+            int altIdx = IndexOfKey(Plugin.GetConfigAltToggleKey());
+            int newAltIdx = GUILayout.SelectionGrid(altIdx, SettingsKeyNames, 6, _buttonStyle);
+            if (newAltIdx != altIdx && newAltIdx >= 0) Plugin.SetConfigAltToggleKey(SettingsKeyOptions[newAltIdx]);
+            GUILayout.EndHorizontal();
+
+            GUILayout.Space(8);
+            GUILayout.Label("Changes save automatically.", _hintStyle);
+            GUILayout.EndScrollView();
+        }
+
+        private static int IndexOfKey(KeyCode k)
+        {
+            for (int i = 0; i < SettingsKeyOptions.Length; i++)
+                if (SettingsKeyOptions[i] == k) return i;
+            return 0;
+        }
+
         private void DrawControls()
         {
             if (string.IsNullOrEmpty(_selectedCurrencyId))
             {
                 GUILayout.Label("Click a row to select, or use quick withdraw buttons", _hintStyle);
-                return;
+            }
+            else
+            {
+                // Selected item info box
+                GUILayout.BeginHorizontal();
+                GUILayout.FlexibleSpace();
+
+                // Selection indicator (using cached style)
+                GUILayout.Label($"\u25b6 {GetDisplayName(_selectedCurrencyId)}", _selectedNameStyle);
+
+                GUILayout.Space(15);
+
+                GUILayout.Label("Qty:", _amountLabelStyle, GUILayout.Width(30));
+                _depositAmount = GUILayout.TextField(_depositAmount, 6, _textFieldStyle, GUILayout.Width(55));
+
+                GUILayout.Space(8);
+
+                // Withdraw button
+                if (GUILayout.Button("Withdraw", _buttonStyle, GUILayout.Width(90)))
+                {
+                    if (int.TryParse(_depositAmount, out int amount) && amount > 0)
+                    {
+                        WithdrawToInventory(_selectedCurrencyId, amount);
+                    }
+                }
+
+                GUILayout.FlexibleSpace();
+                GUILayout.EndHorizontal();
             }
 
-            // Selected item info box
+            // Global sweep button to force auto-deposit from inventory
+            GUILayout.Space(6);
             GUILayout.BeginHorizontal();
             GUILayout.FlexibleSpace();
-
-            // Selection indicator (using cached style)
-            GUILayout.Label($"\u25b6 {GetDisplayName(_selectedCurrencyId)}", _selectedNameStyle);
-
-            GUILayout.Space(15);
-
-            GUILayout.Label("Qty:", _amountLabelStyle, GUILayout.Width(30));
-            _depositAmount = GUILayout.TextField(_depositAmount, 6, _textFieldStyle, GUILayout.Width(55));
-
-            GUILayout.Space(8);
-
-            // Withdraw button
-            if (GUILayout.Button("Withdraw", _buttonStyle, GUILayout.Width(90)))
+            if (GUILayout.Button("Sweep Inventory (Auto-Deposit Now)", _buttonStyle, GUILayout.Width(260), GUILayout.Height(32)))
             {
-                if (int.TryParse(_depositAmount, out int amount) && amount > 0)
-                {
-                    WithdrawToInventory(_selectedCurrencyId, amount);
-                }
+                Plugin.Log?.LogInfo("[Vault UI] Sweep button clicked");
+                ItemPatches.ForceAutoDepositAll();
             }
-
             GUILayout.FlexibleSpace();
             GUILayout.EndHorizontal();
         }
