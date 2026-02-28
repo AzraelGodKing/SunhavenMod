@@ -1,6 +1,6 @@
 # Haven's Birthright
 
-**Version 1.2.3** — Unique racial bonuses, active abilities, drawbacks, and conditional synergies for all 12 playable races in Sun Haven.
+**Version 1.3.0** — Unique racial bonuses, active abilities, drawbacks, and conditional synergies for all 12 playable races in Sun Haven. Celestial Bloodlines: Font of Light (Angel) and Soul Harvest (Demon).
 
 ## Features
 
