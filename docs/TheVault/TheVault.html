@@ -35,7 +35,7 @@
                 </div>
             </div>
             <div style="display:flex; gap:16px; justify-content:center; align-items:center; margin-top:12px; flex-wrap:wrap;">
-                <span class="version-badge">v2.0.5</span>
+                <span class="version-badge">v2.0.6</span>
                 <span style="font-size:0.8em; opacity:0.6;">Account Status: <span style="color:#3fb950;">ACTIVE</span></span>
                 <span style="font-size:0.8em; opacity:0.6;">Encryption: <span style="color:#3fb950;">AES-256</span></span>
             </div>
@@ -74,7 +74,7 @@
                 <div class="feature-card">
                     <div class="feature-icon">&#x1F4E5;</div>
                     <h3>Auto-Deposit</h3>
-                    <p>Tokens and keys automatically go to your vault when picked up from the ground or received as rewards - no manual action needed. Toggle auto-deposit on/off per currency type.</p>
+                    <p>Tokens and keys automatically go to your vault when picked up from the ground or received as rewards - no manual action needed. Use the Sweep Inventory button to move all vault currencies from inventory at once. Toggle auto-deposit on/off per currency type.</p>
                 </div>
                 <div class="feature-card">
                     <div class="feature-icon">&#x1F4CA;</div>
@@ -88,8 +88,8 @@
                 </div>
                 <div class="feature-card">
                     <div class="feature-icon">&#x1F6D2;</div>
-                    <h3>Seamless Shopping</h3>
-                    <p>Shops and vendors automatically see your vault balance. Purchase items that cost seasonal tokens, community tokens, or keys without withdrawing first - the vault handles everything.</p>
+                    <h3>Seamless Shopping &amp; Crafting</h3>
+                    <p>Shops, vendors, and crafting tables automatically see your vault balance. Purchase items or craft recipes that require seasonal tokens, community tokens, or keys without withdrawing first - the vault handles everything.</p>
                 </div>
                 <div class="feature-card">
                     <div class="feature-icon">&#x1F5DD;</div>
@@ -100,6 +100,11 @@
                     <div class="feature-icon">&#x1F464;</div>
                     <h3>Per-Character Vaults</h3>
                     <p>Each character has their own separate vault tied to their save file. Your currencies stay organized between different playthroughs and characters.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">&#x2699;</div>
+                    <h3>In-Game Settings</h3>
+                    <p>Change keybinds, HUD scale, and options directly from the vault UI via the ⚙ Settings tab. Changes save automatically to the config file — no restart needed.</p>
                 </div>
                 <div class="feature-card">
                     <div class="feature-icon">&#x1F504;</div>
@@ -188,7 +193,7 @@
                     <div class="step-number" style="background:linear-gradient(135deg, #2d6cdf, #1a4fad);">3</div>
                     <div class="step-content">
                         <h4>Review Holdings</h4>
-                        <p>Switch between tabs (Seasonal, Keys, Special) to see stored amounts. Each currency shows a toggle button to enable/disable auto-deposit for that specific item.</p>
+                        <p>Switch between tabs (Seasonal, Keys, Special, ⚙ Settings) to see stored amounts or edit config. Each currency shows a toggle button to enable/disable auto-deposit. Use Sweep Inventory to move all vault currencies from your bag into the vault.</p>
                     </div>
                 </div>
                 <div class="step">
@@ -225,7 +230,7 @@
                 </div>
                 <div class="integration-item" style="border-left:3px solid #2d6cdf; padding-left:16px;">
                     <h4>&#x1F6D2; Payment Gateway</h4>
-                    <p>The Vault patches the game's inventory check system. When a shop checks if you have enough tokens or keys to make a purchase, it automatically includes your vault balance. When you buy, the vault is deducted first before your inventory.</p>
+                    <p>The Vault patches the game's inventory check system. When a shop or crafting table checks if you have enough tokens or keys, it automatically includes your vault balance. When you buy or craft, the vault is deducted first before your inventory. Crafting tables with "use nearby chests" correctly show your total (player + vault + chests).</p>
                 </div>
                 <div class="integration-item" style="border-left:3px solid #ff9800; padding-left:16px;">
                     <h4>&#x1F5DD; Access Control</h4>
@@ -310,6 +315,11 @@
                             <td>HUDPosition</td>
                             <td>TopLeft</td>
                             <td>HUD position (TopLeft, TopCenter, TopRight, BottomLeft, BottomCenter, BottomRight)</td>
+                        </tr>
+                        <tr>
+                            <td>HUD Scale</td>
+                            <td>1.0</td>
+                            <td>Scale factor for HUD bar (0.5–3.0, configurable in ⚙ Settings tab)</td>
                         </tr>
                         <tr>
                             <td>EnableAutoSave</td>

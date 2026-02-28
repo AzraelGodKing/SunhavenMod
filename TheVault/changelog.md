@@ -1,5 +1,13 @@
 # The Vault - Changelog
 
+## Version 2.0.6
+- **Settings Tab**: In-game config editing via ⚙ Settings tab in the vault UI — change keybinds, HUD scale, and options; changes save automatically
+- **Sweep Inventory**: One-click button to move all vault currencies from inventory into the vault
+- **Reactive UI**: Window height adapts to content (currency count, settings panel); fewer items = shorter window
+- **Crafting Fix**: Corrected double-counting when using crafting tables with "use nearby chests" enabled (was adding vault amount per inventory instead of once for player only)
+- **Removed Reload Key**: Config updates automatically when changed in Settings panel or BepInEx ConfigurationManager
+- UI polish: main header always visible when Settings panel is open; gear symbol on Settings tab
+
 ## Version 2.0.0
 - Added item icons from the game to Vault UI and HUD
 - Icons are loaded from the game's database and cached for performance
