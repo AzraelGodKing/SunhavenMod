@@ -224,10 +224,10 @@ namespace SenpaisChest.UI
         /// <summary>Closes the config window only. Chest stays open and note remains visible.</summary>
         public void HideConfig()
         {
+            SaveIfDirty(); // Ensure rules are saved before closing
             _isVisible = false;
             _groupsWindowVisible = false;
             BlockGameInput(false);
-            SaveIfDirty();
         }
 
         /// <summary>Block/unblock game input so only Senpai's Chest UI receives it (e.g. Backspace won't close chest).</summary>
