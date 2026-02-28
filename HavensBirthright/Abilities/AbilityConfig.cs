@@ -39,11 +39,23 @@ namespace HavensBirthright.Abilities
         public static ConfigEntry<float> DivineWardManaCostPercent;
         public static ConfigEntry<float> DivineWardCooldown;
 
+        // Angel - Font of Light (Celestial)
+        public static ConfigEntry<bool> EnableFontOfLight;
+        public static ConfigEntry<float> FontOfLightInterval;
+        public static ConfigEntry<float> FontOfLightManaPercent;
+        public static ConfigEntry<float> FontOfLightManaThreshold;
+        public static ConfigEntry<int> FontOfLightGoldCost;
+
         // Demon - Blood Rage
         public static ConfigEntry<bool> EnableBloodRage;
         public static ConfigEntry<float> BloodRageHPThreshold;
         public static ConfigEntry<float> BloodRageMeleeBonus;
         public static ConfigEntry<float> BloodRageAttackSpeedBonus;
+
+        // Demon - Soul Harvest (Celestial)
+        public static ConfigEntry<bool> EnableSoulHarvest;
+        public static ConfigEntry<int> SoulHarvestGoldPerKill;
+        public static ConfigEntry<float> SoulHarvestHPCostPercent;
 
         // Elf - Nature's Bounty
         public static ConfigEntry<bool> EnableNaturesBounty;
@@ -291,6 +303,43 @@ namespace HavensBirthright.Abilities
                 "Cooldown in seconds"
             );
 
+            // ===================== ANGEL - FONT OF LIGHT (Celestial) =====================
+
+            EnableFontOfLight = config.Bind(
+                "Active Abilities - Angel",
+                "EnableFontOfLight",
+                true,
+                "Periodic mana restore at the cost of gold (Celestial ability). Only affects Angels."
+            );
+
+            FontOfLightInterval = config.Bind(
+                "Active Abilities - Angel",
+                "FontOfLightInterval",
+                45f,
+                "Seconds between Font of Light triggers"
+            );
+
+            FontOfLightManaPercent = config.Bind(
+                "Active Abilities - Angel",
+                "FontOfLightManaPercent",
+                5f,
+                "Percentage of max mana restored each trigger"
+            );
+
+            FontOfLightManaThreshold = config.Bind(
+                "Active Abilities - Angel",
+                "FontOfLightManaThreshold",
+                80f,
+                "Only trigger when current mana is below this percentage"
+            );
+
+            FontOfLightGoldCost = config.Bind(
+                "Active Abilities - Angel",
+                "FontOfLightGoldCost",
+                10,
+                "Gold deducted from the player each time Font of Light triggers"
+            );
+
             // ===================== DEMON - BLOOD RAGE =====================
 
             EnableBloodRage = config.Bind(
@@ -319,6 +368,29 @@ namespace HavensBirthright.Abilities
                 "AttackSpeedBonus",
                 15f,
                 "Percentage bonus to attack speed while active"
+            );
+
+            // ===================== DEMON - SOUL HARVEST (Celestial) =====================
+
+            EnableSoulHarvest = config.Bind(
+                "Active Abilities - Demon",
+                "EnableSoulHarvest",
+                true,
+                "Bonus gold when defeating enemies, at the cost of HP per kill (Celestial ability). Only affects Demons."
+            );
+
+            SoulHarvestGoldPerKill = config.Bind(
+                "Active Abilities - Demon",
+                "SoulHarvestGoldPerKill",
+                15,
+                "Bonus gold granted when you defeat an enemy"
+            );
+
+            SoulHarvestHPCostPercent = config.Bind(
+                "Active Abilities - Demon",
+                "SoulHarvestHPCostPercent",
+                1f,
+                "Percentage of max HP lost per enemy kill (cost)"
             );
 
             // ===================== ELF - NATURE'S BOUNTY =====================

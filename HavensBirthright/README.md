@@ -86,6 +86,21 @@ Periodically scans your inventory and automatically smelts raw ore into bars, co
 - Won't activate below a mana safety threshold (default 10%)
 - **Blocks all mana regeneration** while active
 
+#### Angel — Font of Light (Celestial Bloodlines)
+Periodically restores mana at the cost of gold. **Only affects characters who chose the Angel race.**
+
+- Triggers on a configurable interval (default 45 seconds)
+- Restores a percentage of max mana (default 5%) when your mana is below threshold (default 80%)
+- Costs gold each time (default 10 gold); does not trigger if you cannot afford it
+- Press **F9** to toggle on or off; you will see a notification when the ability is activated or deactivated
+
+#### Demon — Soul Harvest (Celestial Bloodlines)
+When you defeat an enemy, gain bonus gold and lose a small amount of HP. **Only affects characters who chose the Demon race.**
+
+- Grants bonus gold per kill (default 15)
+- Costs a percentage of max HP per kill (default 1%)
+- Press **F9** to toggle on or off; you will see a notification when the ability is activated or deactivated
+
 ---
 
 ### Drawbacks (Optional)

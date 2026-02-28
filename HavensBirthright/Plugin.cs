@@ -19,10 +19,12 @@ namespace HavensBirthright
 
         // Static config value for BirthrightRunner hotkey detection
         internal static UnityEngine.KeyCode StaticAbilityToggleKey = UnityEngine.KeyCode.F9;
+        internal static UnityEngine.KeyCode StaticReloadConfigKey = UnityEngine.KeyCode.F12;
 
         private Harmony _harmony;
         private RacialBonusManager _racialBonusManager;
         private ConfigEntry<bool> _checkForUpdates;
+        private ConfigEntry<UnityEngine.KeyCode> _reloadConfigKey;
         private BirthrightRunner _runner;
 
         private void Awake()
@@ -48,6 +50,19 @@ namespace HavensBirthright
                     true,
                     "Check for mod updates on startup"
                 );
+
+                _reloadConfigKey = Config.Bind(
+                    "General",
+                    "ReloadConfigKey",
+                    UnityEngine.KeyCode.F12,
+                    "Key to reload config from file (edit the .cfg file, then press this key in-game to apply)"
+                );
+
+                // Cache static keybinds for BirthrightRunner to access
+                StaticAbilityToggleKey = AbilityConfig.ActiveAbilityToggleKey.Value;
+                StaticReloadConfigKey = _reloadConfigKey.Value;
+
+                SubscribeConfigChanged();
 
                 // Initialize the racial bonus manager
                 _racialBonusManager = new RacialBonusManager();
@@ -118,6 +133,22 @@ namespace HavensBirthright
                     // It now uses a periodic inventory scan in BirthrightRunner.UpdateInfernalForge()
                     // because ore is picked up 1 at a time, making per-pickup smelting impossible.
 
+                    // Demon-only: Soul Harvest — bonus gold and HP cost on enemy kill
+                    var enemyAIType = AccessTools.TypeByName("Wish.EnemyAI");
+                    if (enemyAIType != null)
+                    {
+                        var dieMethod = AccessTools.Method(enemyAIType, "Die", new[] { typeof(bool) });
+                        if (dieMethod != null)
+                        {
+                            var soulHarvestPostfix = AccessTools.Method(typeof(Patches.SoulHarvestPatches), "OnEnemyDiePostfix");
+                            if (soulHarvestPostfix != null)
+                            {
+                                _harmony.Patch(dieMethod, postfix: new HarmonyMethod(soulHarvestPostfix));
+                                Log.LogInfo("Successfully patched EnemyAI.Die (Soul Harvest)");
+                            }
+                        }
+                    }
+
                     // Log results
                     var patchedMethods = _harmony.GetPatchedMethods();
                     int count = 0;
@@ -145,10 +176,47 @@ namespace HavensBirthright
                 Log.LogInfo($"Racial drawbacks: {(AbilityConfig.EnableRacialDrawbacks.Value ? "ENABLED" : "DISABLED")}");
                 Log.LogInfo($"Conditional synergies: {(AbilityConfig.EnableConditionalSynergies.Value ? "ENABLED" : "DISABLED")}");
                 Log.LogInfo($"Ability toggle key: {StaticAbilityToggleKey}");
+                Log.LogInfo($"Config reload key: {StaticReloadConfigKey} (edit .cfg then press in-game to apply)");
             }
             catch (Exception ex)
             {
                 Log.LogError($"Failed to load {PluginInfo.PLUGIN_NAME}: {ex}");
+            }
+        }
+
+        /// <summary>
+        /// Subscribe to config changes so in-game editors (e.g. BepInEx ConfigurationManager) update our caches immediately.
+        /// </summary>
+        private void SubscribeConfigChanged()
+        {
+            void UpdateKeybinds(object s, EventArgs e)
+            {
+                StaticAbilityToggleKey = AbilityConfig.ActiveAbilityToggleKey.Value;
+                StaticReloadConfigKey = _reloadConfigKey.Value;
+            }
+            AbilityConfig.ActiveAbilityToggleKey.SettingChanged += UpdateKeybinds;
+            _reloadConfigKey.SettingChanged += UpdateKeybinds;
+        }
+
+        /// <summary>
+        /// Reload config from disk and re-apply (racial bonuses, ability toggles, keybinds).
+        /// Call after the player edits the config file, or from the reload keybind.
+        /// </summary>
+        public void ReloadConfig()
+        {
+            try
+            {
+                Config.Reload();
+                RacialConfig.Initialize(Config);
+                AbilityConfig.Initialize(Config);
+                StaticAbilityToggleKey = AbilityConfig.ActiveAbilityToggleKey.Value;
+                StaticReloadConfigKey = _reloadConfigKey.Value;
+                _racialBonusManager = new RacialBonusManager();
+                Log?.LogInfo("[Haven's Birthright] Config reloaded from file");
+            }
+            catch (Exception ex)
+            {
+                Log?.LogError($"[Haven's Birthright] Config reload failed: {ex.Message}");
             }
         }
 
@@ -289,6 +357,6 @@ namespace HavensBirthright
     {
         public const string PLUGIN_GUID = "com.azraelgodking.havensbirthright";
         public const string PLUGIN_NAME = "Haven's Birthright";
-        public const string PLUGIN_VERSION = "1.2.3";
+        public const string PLUGIN_VERSION = "1.3.0";
     }
 }

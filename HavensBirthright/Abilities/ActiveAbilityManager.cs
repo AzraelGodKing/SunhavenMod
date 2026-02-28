@@ -41,6 +41,9 @@ namespace HavensBirthright.Abilities
         public const string SerpentGrace = "SerpentGrace";
         public const string ElementalResonance = "ElementalResonance";
         public const string LoyaltyAura = "LoyaltyAura";
+        // Celestial Bloodlines
+        public const string FontOfLight = "FontOfLight";
+        public const string SoulHarvest = "SoulHarvest";
 
         /// <summary>
         /// Gets or creates an ability state entry
