@@ -1,3 +1,4 @@
+using HarmonyLib;
 using HavensBirthright.Abilities;
 using HavensBirthright.Patches;
 using SunhavenMods.Shared;
@@ -22,6 +23,7 @@ namespace HavensBirthright
         private float _outdoorTime = 0f;
         private float _lastTidalBlessingCheck = 0f;
         private float _lastInfernalForgeCheck = 0f;
+        private float _lastFontOfLightCheck = 0f;
 
         // Cached reflection references for game APIs (initialized once)
         private bool _apiCacheInitialized = false;
@@ -72,6 +74,12 @@ namespace HavensBirthright
             // Check ability toggle hotkey (runs before config/race checks so user
             // can pre-toggle even when abilities haven't activated yet)
             CheckAbilityToggleHotkey();
+
+            // Reload config from file (e.g. after editing the .cfg)
+            if (Plugin.StaticReloadConfigKey != KeyCode.None && UnityEngine.Input.GetKeyDown(Plugin.StaticReloadConfigKey))
+            {
+                Plugin.Instance?.ReloadConfig();
+            }
 
             if (!RacialConfig.EnableRacialBonuses.Value)
                 return;
@@ -124,6 +132,12 @@ namespace HavensBirthright
             {
                 UpdateInfernalForge();
             }
+
+            // Angel only - Font of Light: periodic mana restore at gold cost (Celestial)
+            if (race.Value == Race.Angel && AbilityConfig.EnableFontOfLight.Value)
+            {
+                UpdateFontOfLight();
+            }
         }
 
         protected override void OnMenuTransition()
@@ -132,6 +146,7 @@ namespace HavensBirthright
             ActiveAbilityManager.ResetAll();
             _outdoorTime = 0f;
             _lastInfernalForgeCheck = 0f;
+            _lastFontOfLightCheck = 0f;
             _apiCacheInitialized = false;
             _inventoryMethodsCached = false;
             _cachedGetAmountMethod = null;
@@ -966,6 +981,67 @@ namespace HavensBirthright
         }
 
         /// <summary>
+        /// Angel-only: Font of Light — periodic mana restore at the cost of gold.
+        /// Only runs when player race is Angel; has no effect for any other race.
+        /// </summary>
+        private void UpdateFontOfLight()
+        {
+            if (!ActiveAbilityManager.IsRuntimeEnabled(ActiveAbilityManager.FontOfLight))
+                return;
+
+            float interval = AbilityConfig.FontOfLightInterval?.Value ?? 45f;
+            if (Time.time - _lastFontOfLightCheck < interval)
+                return;
+            _lastFontOfLightCheck = Time.time;
+
+            try
+            {
+                var player = Wish.Player.Instance;
+                if (player == null) return;
+
+                float maxMana = player.MaxMana;
+                float currentMana = ReflectionHelper.TryGetValue<float>(player, "Mana", 0f);
+                float manaPercent = maxMana > 0 ? (currentMana / maxMana) * 100f : 0f;
+                if (manaPercent >= (AbilityConfig.FontOfLightManaThreshold?.Value ?? 80f))
+                    return;
+
+                int goldCost = AbilityConfig.FontOfLightGoldCost?.Value ?? 10;
+                if (goldCost > 0)
+                {
+                    var gameSaveType = AccessTools.TypeByName("Wish.GameSave");
+                    if (gameSaveType != null)
+                    {
+                        var coinsObj = ReflectionHelper.GetStaticValue(gameSaveType, "Coins");
+                        int coins = coinsObj is int c ? c : 0;
+                        if (coins < goldCost)
+                            return;
+                    }
+                }
+
+                float restorePercent = AbilityConfig.FontOfLightManaPercent?.Value ?? 5f;
+                float restoreAmount = maxMana * (restorePercent / 100f);
+                if (restoreAmount <= 0f) return;
+
+                ReflectionHelper.InvokeMethod(player, "AddMana", restoreAmount, 1f);
+
+                if (goldCost > 0)
+                {
+                    var addMoneyMethod = AccessTools.Method(player.GetType(), "AddMoney",
+                        new[] { typeof(int), typeof(bool), typeof(bool), typeof(bool) });
+                    if (addMoneyMethod != null)
+                        addMoneyMethod.Invoke(player, new object[] { -goldCost, false, false, false });
+                }
+
+                AbilityPatches.SendGameNotification(
+                    $"Font of Light: +{restorePercent:F0}% mana" + (goldCost > 0 ? $" (-{goldCost} gold)" : ""));
+            }
+            catch (Exception ex)
+            {
+                Plugin.Log?.LogWarning($"[FontOfLight] Error: {ex.Message}");
+            }
+        }
+
+        /// <summary>
         /// Caches inventory GetAmount and RemoveItem methods for repeated use.
         /// </summary>
         private void CacheInventoryMethods(object inventory)
@@ -1262,6 +1338,10 @@ namespace HavensBirthright
                     return ActiveAbilityManager.InfernalForge;
                 case Race.WaterElemental:
                     return ActiveAbilityManager.TidalBlessing;
+                case Race.Angel:
+                    return ActiveAbilityManager.FontOfLight;
+                case Race.Demon:
+                    return ActiveAbilityManager.SoulHarvest;
                 default:
                     return null;
             }
@@ -1278,6 +1358,10 @@ namespace HavensBirthright
                     return "Infernal Forge";
                 case ActiveAbilityManager.TidalBlessing:
                     return "Tidal Blessing";
+                case ActiveAbilityManager.FontOfLight:
+                    return "Font of Light";
+                case ActiveAbilityManager.SoulHarvest:
+                    return "Soul Harvest";
                 default:
                     return abilityKey;
             }
