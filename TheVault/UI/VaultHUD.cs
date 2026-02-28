@@ -33,11 +33,11 @@ namespace TheVault.UI
         private readonly Color _goldColor = new Color(0.95f, 0.8f, 0.3f);
         private readonly Color _accentColor = new Color(0.4f, 0.7f, 0.95f);
 
-        // HUD dimensions - matches game's top bar height
-        private const float HUD_HEIGHT = 28f;
-        private const float PADDING = 8f;
-        private const float ITEM_SPACING = 12f;
-        private const float GROUP_SPACING = 16f;
+        // HUD dimensions - base values, scaled by _scale
+        private const float BASE_HUD_HEIGHT = 28f;
+        private const float BASE_PADDING = 8f;
+        private const float BASE_ITEM_SPACING = 12f;
+        private const float BASE_GROUP_SPACING = 16f;
         private const float MIN_HUD_WIDTH = 100f;
 
         // Separator styling
@@ -53,6 +53,9 @@ namespace TheVault.UI
         private readonly Dictionary<string, int> _cachedSeasonal = new Dictionary<string, int>();
         private readonly Dictionary<string, int> _cachedKeys = new Dictionary<string, int>();
         private readonly Dictionary<string, int> _cachedSpecial = new Dictionary<string, int>();
+
+        // Global scale factor for HUD (for high resolutions / accessibility)
+        private float _scale = 1f;
 
         public enum HUDPosition
         {
@@ -87,6 +90,12 @@ namespace TheVault.UI
             _stylesInitialized = false; // Force style refresh
         }
 
+        public void SetScale(float scale)
+        {
+            _scale = Mathf.Clamp(scale, 0.5f, 3f);
+            _stylesInitialized = false; // fonts / paddings depend on scale
+        }
+
         public bool IsEnabled => _isEnabled;
 
         public void Toggle()
@@ -102,15 +111,19 @@ namespace TheVault.UI
             _hudBackground = MakeTex(2, 2, new Color(_bgColor.r, _bgColor.g, _bgColor.b, _opacity));
             _separatorTexture = MakeTex(1, 1, _separatorColor);
 
+            float padding = BASE_PADDING * _scale;
+            int fontSmall = Mathf.Max(8, Mathf.RoundToInt(11 * _scale));
+            int fontMedium = Mathf.Max(9, Mathf.RoundToInt(12 * _scale));
+
             _hudBackgroundStyle = new GUIStyle()
             {
                 normal = { background = _hudBackground },
-                padding = new RectOffset((int)PADDING, (int)PADDING, 4, 4)
+                padding = new RectOffset((int)padding, (int)padding, 4, 4)
             };
 
             _currencyLabelStyle = new GUIStyle(GUI.skin.label)
             {
-                fontSize = 11,
+                fontSize = fontSmall,
                 fontStyle = FontStyle.Normal,
                 alignment = TextAnchor.MiddleLeft,
                 normal = { textColor = _textColor },
@@ -119,7 +132,7 @@ namespace TheVault.UI
 
             _currencyValueStyle = new GUIStyle(GUI.skin.label)
             {
-                fontSize = 12,
+                fontSize = fontMedium,
                 fontStyle = FontStyle.Bold,
                 alignment = TextAnchor.MiddleLeft,
                 normal = { textColor = _goldColor },
@@ -128,7 +141,7 @@ namespace TheVault.UI
 
             _categoryLabelStyle = new GUIStyle(GUI.skin.label)
             {
-                fontSize = 10,
+                fontSize = Mathf.Max(8, Mathf.RoundToInt(10 * _scale)),
                 fontStyle = FontStyle.Bold,
                 alignment = TextAnchor.MiddleLeft,
                 normal = { textColor = _accentColor },
@@ -210,7 +223,8 @@ namespace TheVault.UI
             GUI.Box(hudRect, "", _hudBackgroundStyle);
 
             // Draw content - vertically centered
-            GUILayout.BeginArea(new Rect(hudRect.x + PADDING, hudRect.y + 3, hudRect.width - PADDING * 2, hudRect.height - 6));
+            float padding = BASE_PADDING * _scale;
+            GUILayout.BeginArea(new Rect(hudRect.x + padding, hudRect.y + 3, hudRect.width - padding * 2, hudRect.height - 6));
             GUILayout.BeginHorizontal();
 
             // All groups are always shown (use cached dicts to avoid per-frame allocations)
@@ -226,17 +240,23 @@ namespace TheVault.UI
 
         private void DrawSeparator()
         {
-            GUILayout.Space(GROUP_SPACING / 2 - 1);
-            GUILayout.Box("", GUIStyle.none, GUILayout.Width(1), GUILayout.Height(HUD_ICON_SIZE));
+            float groupSpacing = BASE_GROUP_SPACING * _scale;
+            float iconSize = BASE_HUD_ICON_SIZE * _scale;
+
+            GUILayout.Space(groupSpacing / 2 - 1);
+            GUILayout.Box("", GUIStyle.none, GUILayout.Width(1), GUILayout.Height(iconSize));
             // Draw a vertical line
             Rect lastRect = GUILayoutUtility.GetLastRect();
-            GUI.DrawTexture(new Rect(lastRect.x, lastRect.y + 2, 1, HUD_ICON_SIZE - 4), _separatorTexture);
-            GUILayout.Space(GROUP_SPACING / 2 - 1);
+            GUI.DrawTexture(new Rect(lastRect.x, lastRect.y + 2, 1, iconSize - 4), _separatorTexture);
+            GUILayout.Space(groupSpacing / 2 - 1);
         }
 
         private float CalculateHUDWidth()
         {
-            float width = PADDING * 2;
+            float padding = BASE_PADDING * _scale;
+            float groupSpacing = BASE_GROUP_SPACING * _scale;
+
+            float width = padding * 2;
 
             // Use cached dicts to avoid allocations
             width += CalculateGroupWidth(_cachedSeasonal);
@@ -244,7 +264,7 @@ namespace TheVault.UI
             width += CalculateGroupWidth(_cachedSpecial);
 
             // Add separator spacing between all 3 groups
-            width += 2 * GROUP_SPACING;
+            width += 2 * groupSpacing;
 
             // Add extra padding to prevent cutoff on the right side
             width += 24;
@@ -252,31 +272,36 @@ namespace TheVault.UI
             return width;
         }
 
-        // Icon size for HUD display
-        private const float HUD_ICON_SIZE = 18f;
+        // Icon size for HUD display (scaled by _scale)
+        private const float BASE_HUD_ICON_SIZE = 18f;
 
         private float CalculateGroupWidth(Dictionary<string, int> items)
         {
             if (items.Count == 0) return 0;
+
+            float itemSpacing = BASE_ITEM_SPACING * _scale;
+            float iconSize = BASE_HUD_ICON_SIZE * _scale;
 
             float width = 0;
             foreach (var kvp in items)
             {
                 string value = FormatNumber(kvp.Value);
                 // Icon + small gap + value text + item spacing
-                // Use 9px per character for smaller font
-                width += HUD_ICON_SIZE + 3 + value.Length * 9 + ITEM_SPACING;
+                // Use ~9px per character at scale 1, scaled with _scale
+                width += iconSize + 3 * _scale + value.Length * 9 * _scale + itemSpacing;
             }
 
             // Remove trailing item spacing
             if (items.Count > 0)
-                width -= ITEM_SPACING;
+                width -= itemSpacing;
 
             return width;
         }
 
         private Rect GetHUDRect(float width)
         {
+            float hudHeight = BASE_HUD_HEIGHT * _scale;
+
             float x = 0, y = 0;
 
             switch (_position)
@@ -295,30 +320,33 @@ namespace TheVault.UI
                     break;
                 case HUDPosition.BottomLeft:
                     x = 0;
-                    y = Screen.height - HUD_HEIGHT;
+                    y = Screen.height - hudHeight;
                     break;
                 case HUDPosition.BottomCenter:
                     x = (Screen.width - width) / 2;
-                    y = Screen.height - HUD_HEIGHT;
+                    y = Screen.height - hudHeight;
                     break;
                 case HUDPosition.BottomRight:
                     x = Screen.width - width;
-                    y = Screen.height - HUD_HEIGHT;
+                    y = Screen.height - hudHeight;
                     break;
             }
 
-            return new Rect(x, y, width, HUD_HEIGHT);
+            return new Rect(x, y, width, hudHeight);
         }
 
         private void DrawCurrencyItems(Dictionary<string, int> items)
         {
             if (items.Count == 0) return;
 
+            float itemSpacing = BASE_ITEM_SPACING * _scale;
+            float iconSize = BASE_HUD_ICON_SIZE * _scale;
+
             bool first = true;
             foreach (var kvp in items)
             {
                 if (!first)
-                    GUILayout.Space(ITEM_SPACING);
+                    GUILayout.Space(itemSpacing);
                 first = false;
 
                 // Draw icon if available
@@ -326,7 +354,7 @@ namespace TheVault.UI
                 if (iconTexture != null && IconCache.IsIconLoaded(kvp.Key))
                 {
                     // Draw the actual game icon
-                    GUILayout.Box(iconTexture, GUIStyle.none, GUILayout.Width(HUD_ICON_SIZE), GUILayout.Height(HUD_ICON_SIZE));
+                    GUILayout.Box(iconTexture, GUIStyle.none, GUILayout.Width(iconSize), GUILayout.Height(iconSize));
                 }
                 else
                 {

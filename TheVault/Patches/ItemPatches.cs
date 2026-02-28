@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Reflection;
 using SunhavenMods.Shared;
 using TheVault.Vault;
+using Wish;
 
 namespace TheVault.Patches
 {
@@ -49,6 +50,8 @@ namespace TheVault.Patches
         private static FieldInfo _cachedItemIdField;
         private static PropertyInfo _cachedItemIdProperty;
         private static MethodInfo _cachedItemIdMethod;
+        /// <summary>Delegate for ID() method - avoids MethodInfo.Invoke overhead on every pickup.</summary>
+        private static Func<object, int> _cachedGetItemIdDelegate;
 
         /// <summary>
         /// Check if auto-deposit is enabled for a currency.
@@ -106,6 +109,94 @@ namespace TheVault.Patches
             _itemToCurrency[gameItemId] = (currencyId, autoDeposit);
             _currencyToItem[currencyId] = gameItemId;
             Plugin.Log?.LogInfo($"Registered item-currency mapping: Item {gameItemId} <-> {currencyId}");
+        }
+
+        /// <summary>
+        /// Manually sweep the player's inventory and auto-deposit all matching items into the vault.
+        /// Respects per-currency auto-deposit toggles.
+        /// </summary>
+        public static void ForceAutoDepositAll()
+        {
+            try
+            {
+                Plugin.Log?.LogInfo("[Sweep] Sweep Inventory button pressed");
+
+                if (!AutoDepositEnabled)
+                {
+                    Plugin.Log?.LogInfo("[Sweep] Auto-deposit is disabled; sweep skipped");
+                    return;
+                }
+
+                // Use same player/inventory as VaultUI (Player.Instance.PlayerInventory = real bag, not PrimaryInventory)
+                if (Player.Instance == null)
+                {
+                    Plugin.Log?.LogWarning("[Sweep] Player.Instance is null");
+                    return;
+                }
+
+                var inventory = Player.Instance.PlayerInventory;
+                if (inventory == null)
+                {
+                    Plugin.Log?.LogWarning("[Sweep] PlayerInventory is null");
+                    return;
+                }
+
+                var invType = inventory.GetType();
+                var getAmountMethod = AccessTools.Method(invType, "GetAmount", new[] { typeof(int) });
+                if (getAmountMethod == null)
+                {
+                    Plugin.Log?.LogWarning($"[Sweep] GetAmount(int) not found on {invType.FullName}");
+                    return;
+                }
+
+                int totalDeposited = 0;
+
+                // Iterate over all registered mappings and deposit anything currently in inventory.
+                // Use raw inventory count (exclude vault) so we don't try to remove more than is in the bag.
+                foreach (var kvp in _itemToCurrency)
+                {
+                    int itemId = kvp.Key;
+                    var mapping = kvp.Value;
+
+                    // Respect per-currency auto-deposit toggle
+                    if (!mapping.autoDeposit)
+                        continue;
+
+                    int amount;
+                    try
+                    {
+                        _skipVaultInGetAmount = true;
+                        try
+                        {
+                            amount = (int)(getAmountMethod.Invoke(inventory, new object[] { itemId }) ?? 0);
+                        }
+                        finally
+                        {
+                            _skipVaultInGetAmount = false;
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        _skipVaultInGetAmount = false;
+                        Plugin.Log?.LogDebug($"[Sweep] GetAmount({itemId}) failed: {ex.Message}");
+                        continue;
+                    }
+
+                    if (amount <= 0)
+                        continue;
+
+                    if (DepositItemToVault(itemId, amount))
+                    {
+                        totalDeposited += amount;
+                    }
+                }
+
+                Plugin.Log?.LogInfo($"[Sweep] Auto-deposited a total of {totalDeposited} items from inventory into the vault");
+            }
+            catch (Exception ex)
+            {
+                Plugin.Log?.LogError($"[Sweep] Error during ForceAutoDepositAll: {ex.Message}");
+            }
         }
 
         /// <summary>
@@ -235,7 +326,7 @@ namespace TheVault.Patches
                     Plugin.Log?.LogInfo($"Auto-deposited {amount} of item {itemId} as {currencyId}");
 
                     // Show notification
-                    ShowAutoDepositNotification(currencyId, amount);
+                    EnqueueAutoDepositNotification(currencyId, amount);
                 }
             }
             catch (Exception ex)
@@ -265,12 +356,12 @@ namespace TheVault.Patches
         }
 
         /// <summary>
-        /// Postfix patch for Inventory.AddItem(int, int).
-        /// Catches items added to inventory for auto-deposit.
-        /// The notification is already shown by the original method.
+        /// Postfix patch for Inventory.AddItem(int item, int amount, bool sendNotification).
+        /// Parameter names must match the game method exactly for Harmony binding.
         /// </summary>
-        public static void OnInventoryAddItem(object __instance, int itemId, int amount)
+        public static void OnInventoryAddItem(object __instance, int item, int amount, bool sendNotification)
         {
+            int itemId = item;
             try
             {
                 if (_isProcessingAutoDeposit || IsWithdrawing || _withdrawingItemIds.Contains(itemId)) return;
@@ -317,12 +408,12 @@ namespace TheVault.Patches
         }
 
         /// <summary>
-        /// Postfix patch for Inventory.AddItem(int, int, bool).
-        /// Catches items added to inventory for auto-deposit.
-        /// The notification is already shown by the original method if notify=true.
+        /// Postfix patch for Inventory.AddItem(int item, int amount, bool sendNotification).
+        /// Parameter names must match the game method exactly for Harmony binding.
         /// </summary>
-        public static void OnInventoryAddItemWithNotify(object __instance, int itemId, int amount, bool notify)
+        public static void OnInventoryAddItemWithNotify(object __instance, int item, int amount, bool sendNotification)
         {
+            int itemId = item;
             try
             {
                 if (_isProcessingAutoDeposit || IsWithdrawing || _withdrawingItemIds.Contains(itemId)) return;
@@ -402,7 +493,7 @@ namespace TheVault.Patches
                 {
                     AddCurrencyToVault(vaultManager, currencyId, amount);
                     if (sendNotification)
-                        ShowAutoDepositNotification(currencyId, amount);
+                        EnqueueAutoDepositNotification(currencyId, amount);
                     return false; // Skip original - item does NOT go to inventory
                 }
                 finally
@@ -468,6 +559,14 @@ namespace TheVault.Patches
         }
 
         /// <summary>
+        /// Call from plugin startup to build the GetItemId cache before any pickup (avoids lag on first pickup).
+        /// </summary>
+        public static void InitializePickupCache()
+        {
+            EnsureItemIdCache();
+        }
+
+        /// <summary>
         /// Initialize cached reflection for GetItemId. Runs once per game session.
         /// </summary>
         private static void EnsureItemIdCache()
@@ -478,7 +577,8 @@ namespace TheVault.Patches
                 if (_itemIdReflectionCached) return;
                 try
                 {
-                    var itemType = ReflectionHelper.FindWishType("Item") ?? typeof(object);
+                    // Use full name so we never get System.Xml.XmlWellFormedWriter+AttributeValueCache+Item
+                    var itemType = AccessTools.TypeByName("Wish.Item") ?? ReflectionHelper.FindWishType("Item") ?? typeof(object);
                     _cachedItemIdField = AccessTools.Field(itemType, "id")
                         ?? AccessTools.Field(itemType, "_id");
                     if (_cachedItemIdField == null)
@@ -488,7 +588,20 @@ namespace TheVault.Patches
                             ?? AccessTools.Property(itemType, "ItemID");
                     }
                     if (_cachedItemIdField == null && _cachedItemIdProperty == null)
+                    {
                         _cachedItemIdMethod = AccessTools.Method(itemType, "ID");
+                        if (_cachedItemIdMethod != null)
+                        {
+                            try
+                            {
+                                _cachedGetItemIdDelegate = (Func<object, int>)_cachedItemIdMethod.CreateDelegate(typeof(Func<object, int>));
+                            }
+                            catch
+                            {
+                                _cachedGetItemIdDelegate = null;
+                            }
+                        }
+                    }
                     _itemIdReflectionCached = true;
                 }
                 catch (Exception ex)
@@ -508,6 +621,9 @@ namespace TheVault.Patches
             EnsureItemIdCache();
             try
             {
+                // Fast path: delegate call (no reflection invoke)
+                if (_cachedGetItemIdDelegate != null)
+                    return _cachedGetItemIdDelegate(item);
                 if (_cachedItemIdField != null)
                 {
                     var r = _cachedItemIdField.GetValue(item);
@@ -601,21 +717,22 @@ namespace TheVault.Patches
         {
             try
             {
-                // Try to find and use the player's inventory
-                var playerType = typeof(Wish.Player);
-                var localPlayerProperty = AccessTools.Property(playerType, "LocalPlayer");
-                if (localPlayerProperty == null)
+                // Use same player as VaultUI: LocalPlayer when in world, Instance when UI is open
+                object player = Player.Instance;
+                if (player == null)
                 {
-                    Plugin.Log?.LogWarning("Could not find LocalPlayer property");
+                    var pType = typeof(Wish.Player);
+                    var localPlayerProperty = AccessTools.Property(pType, "LocalPlayer");
+                    if (localPlayerProperty != null)
+                        player = localPlayerProperty.GetValue(null);
+                }
+                if (player == null)
+                {
+                    Plugin.Log?.LogWarning("Player (Instance and LocalPlayer) is null");
                     return false;
                 }
 
-                var player = localPlayerProperty.GetValue(null);
-                if (player == null)
-                {
-                    Plugin.Log?.LogWarning("LocalPlayer is null");
-                    return false;
-                }
+                var playerType = player.GetType();
 
                 // Try to find RemoveItem method on Player
                 var removeMethod = AccessTools.Method(playerType, "RemoveItem", new[] { typeof(int), typeof(int) });
@@ -650,8 +767,17 @@ namespace TheVault.Patches
                     var invType = inventory.GetType();
                     Plugin.Log?.LogInfo($"Found inventory of type: {invType.FullName}");
 
+                    // Game uses RemoveItem(int id, int amount, int slot) -> List; slot 0 = start from first slot
+                    var invRemoveMethod = AccessTools.Method(invType, "RemoveItem", new[] { typeof(int), typeof(int), typeof(int) });
+                    if (invRemoveMethod != null)
+                    {
+                        var result = invRemoveMethod.Invoke(inventory, new object[] { itemId, amount, 0 });
+                        Plugin.Log?.LogInfo($"RemoveItem(int,int,int) returned: {result}");
+                        return result != null;
+                    }
+
                     // Try RemoveItem(int, int)
-                    var invRemoveMethod = AccessTools.Method(invType, "RemoveItem", new[] { typeof(int), typeof(int) });
+                    invRemoveMethod = AccessTools.Method(invType, "RemoveItem", new[] { typeof(int), typeof(int) });
                     if (invRemoveMethod != null)
                     {
                         var result = invRemoveMethod.Invoke(inventory, new object[] { itemId, amount });
@@ -890,8 +1016,11 @@ namespace TheVault.Patches
         /// <summary>
         /// POSTFIX for Inventory.GetAmount(int id) -> int
         /// Adds vault amount to inventory amount for registered currencies.
+        /// Only adds vault when __instance is the player's inventory (not chests).
+        /// Crafting table iterates over player + nearby chests; adding vault to every
+        /// inventory would double-count (60 * N inventories = wrong total).
         /// </summary>
-        public static void OnInventoryGetAmount(int id, ref int __result)
+        public static void OnInventoryGetAmount(object __instance, int id, ref int __result)
         {
             try
             {
@@ -899,6 +1028,10 @@ namespace TheVault.Patches
                 if (_skipVaultInGetAmount) return;
 
                 if (!IsVaultCurrency(id)) return;
+
+                // Only add vault when this is the player's inventory, not chests/other inventories
+                var playerInv = Player.Instance?.PlayerInventory;
+                if (playerInv == null || !ReferenceEquals(__instance, playerInv)) return;
 
                 int vaultAmount = GetVaultAmount(id);
                 if (vaultAmount > 0)
@@ -944,6 +1077,7 @@ namespace TheVault.Patches
         /// <summary>
         /// PREFIX for Inventory.RemoveItem(int id, int amount, int slot) -> List
         /// Stores the inventory amount before removal so postfix knows how much to take from vault.
+        /// Only runs for player's inventory (not chests) since vault is player-stored.
         /// </summary>
         public static void OnInventoryRemoveItemPrefix(object __instance, int id, int amount, int slot, ref int __state)
         {
@@ -951,6 +1085,7 @@ namespace TheVault.Patches
             try
             {
                 if (!IsVaultCurrency(id)) return;
+                if (!ReferenceEquals(__instance, Player.Instance?.PlayerInventory)) return;
 
                 // Get current inventory count before removal (RAW, without vault)
                 var invType = __instance.GetType();
@@ -979,13 +1114,15 @@ namespace TheVault.Patches
 
         /// <summary>
         /// POSTFIX for Inventory.RemoveItem(int id, int amount, int slot) -> List
-        /// If inventory didn't have enough, deduct the remainder from vault.
+        /// If player inventory didn't have enough, deduct the remainder from vault.
+        /// Only runs for player's inventory (not chests).
         /// </summary>
         public static void OnInventoryRemoveItemPostfix(object __instance, int id, int amount, int slot, int __state)
         {
             try
             {
                 if (!IsVaultCurrency(id)) return;
+                if (!ReferenceEquals(__instance, Player.Instance?.PlayerInventory)) return;
 
                 int inventoryHadBefore = __state;
 
@@ -1026,30 +1163,76 @@ namespace TheVault.Patches
         #endregion
 
         /// <summary>
+        /// Deferred notification queue so we don't run the game's heavy notification UI on the pickup path.
+        /// Drained once per frame from PersistentRunner.
+        /// </summary>
+        private static readonly List<(int itemId, int amount)> _autoDepositNotifyQueue = new List<(int, int)>();
+        private static readonly object _notifyQueueLock = new object();
+
+        /// <summary>Enqueue a notification to show later (keeps pickup path fast).</summary>
+        public static void EnqueueAutoDepositNotification(string currencyId, int amount)
+        {
+            int itemId = GetItemForCurrency(currencyId);
+            if (itemId < 0) return;
+            lock (_notifyQueueLock)
+            {
+                _autoDepositNotifyQueue.Add((itemId, amount));
+            }
+        }
+
+        /// <summary>Call once per frame from PersistentRunner. Shows at most one batched notification per frame to avoid lag.</summary>
+        public static void DrainAutoDepositNotifications()
+        {
+            lock (_notifyQueueLock)
+            {
+                if (_autoDepositNotifyQueue.Count == 0) return;
+
+                // Merge by itemId
+                var merged = new Dictionary<int, int>();
+                foreach (var t in _autoDepositNotifyQueue)
+                {
+                    if (!merged.TryGetValue(t.itemId, out int a)) a = 0;
+                    merged[t.itemId] = a + t.amount;
+                }
+                _autoDepositNotifyQueue.Clear();
+
+                // Show only the first one this frame; re-queue the rest for next frame
+                bool first = true;
+                foreach (var kvp in merged)
+                {
+                    if (first)
+                    {
+                        ShowAutoDepositNotificationImmediate(kvp.Key, kvp.Value);
+                        first = false;
+                    }
+                    else
+                        _autoDepositNotifyQueue.Add((kvp.Key, kvp.Value));
+                }
+            }
+        }
+
+        /// <summary>
         /// Shows the native game pickup notification for auto-deposited items.
-        /// This triggers the same popup players see when picking up any item.
+        /// Called off the hot path (from DrainAutoDepositNotifications).
         /// </summary>
         private static object _cachedNotifyInstance;
         private static MethodInfo _cachedNotifyMethod;
+        private const string AutoDepositNotifyText = "Vault";
 
-        private static void ShowAutoDepositNotification(string currencyId, int amount)
+        private static void ShowAutoDepositNotificationImmediate(int itemId, int amount)
         {
             try
             {
-                int itemId = GetItemForCurrency(currencyId);
-                if (itemId < 0) return;
-
                 if (_cachedNotifyInstance != null && _cachedNotifyMethod != null)
                 {
-                    _cachedNotifyMethod.Invoke(_cachedNotifyInstance, new object[] { itemId, amount });
+                    _cachedNotifyMethod.Invoke(_cachedNotifyInstance, new object[] { AutoDepositNotifyText, itemId, amount, false, false });
                     return;
                 }
-
                 TryCacheAndSendNotification(itemId, amount);
             }
             catch (Exception ex)
             {
-                Plugin.Log?.LogDebug($"[ItemPatches] ShowAutoDepositNotification: {ex.Message}");
+                Plugin.Log?.LogDebug($"[ItemPatches] ShowAutoDepositNotificationImmediate: {ex.Message}");
             }
         }
 
@@ -1061,12 +1244,12 @@ namespace TheVault.Patches
                 if (stackType != null)
                 {
                     var inst = ReflectionHelper.GetSingletonInstance(stackType);
-                    var sendMethod = AccessTools.Method(stackType, "SendNotification", new[] { typeof(int), typeof(int) });
+                    var sendMethod = AccessTools.Method(stackType, "SendNotification", new[] { typeof(string), typeof(int), typeof(int), typeof(bool), typeof(bool) });
                     if (inst != null && sendMethod != null)
                     {
                         _cachedNotifyInstance = inst;
                         _cachedNotifyMethod = sendMethod;
-                        sendMethod.Invoke(inst, new object[] { itemId, amount });
+                        sendMethod.Invoke(inst, new object[] { AutoDepositNotifyText, itemId, amount, false, false });
                         return;
                     }
                 }
@@ -1074,12 +1257,12 @@ namespace TheVault.Patches
                 if (notifType != null)
                 {
                     var inst = ReflectionHelper.GetSingletonInstance(notifType);
-                    var sendMethod = AccessTools.Method(notifType, "SendNotification", new[] { typeof(int), typeof(int) });
+                    var sendMethod = AccessTools.Method(notifType, "SendNotification", new[] { typeof(string), typeof(int), typeof(int), typeof(bool), typeof(bool) });
                     if (inst != null && sendMethod != null)
                     {
                         _cachedNotifyInstance = inst;
                         _cachedNotifyMethod = sendMethod;
-                        sendMethod.Invoke(inst, new object[] { itemId, amount });
+                        sendMethod.Invoke(inst, new object[] { AutoDepositNotifyText, itemId, amount, false, false });
                     }
                 }
             }
