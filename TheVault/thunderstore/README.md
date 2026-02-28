@@ -1,13 +1,15 @@
 # The Vault
 
-**Version 2.0.5** — Secure storage for seasonal tokens, community tokens, and keys in Sun Haven. Auto-deposit, persistent HUD, shop and door integration, per-character vaults.
+**Version 2.0.6** — Secure storage for seasonal tokens, community tokens, and keys in Sun Haven. Auto-deposit, persistent HUD, shop and crafting integration, per-character vaults.
 
 ## Features
 
 - **Auto-Deposit** - Automatically stores tokens and keys when picked up
+- **Sweep Inventory** - One-click button to move all vault currencies from inventory into the vault
+- **In-Game Settings** - ⚙ Settings tab in vault UI for keybinds, HUD scale (saved automatically)
 - **Per-Character Saves** - Separate vaults for each save file
 - **Encrypted Storage** - Your currencies are securely stored
-- **Shop Integration** - Seamlessly spend from the vault at shops
+- **Shop & Crafting Integration** - Spend from the vault at shops and crafting tables
 - **Door Integration** - Use keys directly from the vault
 
 ## Supported Currencies
