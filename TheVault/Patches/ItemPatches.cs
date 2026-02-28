@@ -192,10 +192,51 @@ namespace TheVault.Patches
                 }
 
                 Plugin.Log?.LogInfo($"[Sweep] Auto-deposited a total of {totalDeposited} items from inventory into the vault");
+
+                // Show in-game notification feedback
+                ShowSweepNotification(totalDeposited);
             }
             catch (Exception ex)
             {
                 Plugin.Log?.LogError($"[Sweep] Error during ForceAutoDepositAll: {ex.Message}");
+            }
+        }
+
+        /// <summary>
+        /// Shows the game's notification when the Sweep button is used.
+        /// </summary>
+        private static void ShowSweepNotification(int totalDeposited)
+        {
+            try
+            {
+                string text = totalDeposited > 0
+                    ? $"Swept {totalDeposited} item{(totalDeposited == 1 ? "" : "s")} to the vault"
+                    : "No vault currencies in inventory";
+                SendTextNotification(text);
+            }
+            catch (Exception ex)
+            {
+                Plugin.Log?.LogDebug($"[Sweep] ShowSweepNotification: {ex.Message}");
+            }
+        }
+
+        /// <summary>
+        /// Sends a text-only notification via the game's NotificationStack.
+        /// </summary>
+        private static void SendTextNotification(string text)
+        {
+            try
+            {
+                var stackType = ReflectionHelper.FindWishType("NotificationStack");
+                if (stackType == null) return;
+                var inst = ReflectionHelper.GetSingletonInstance(stackType);
+                var sendMethod = AccessTools.Method(stackType, "SendNotification", new[] { typeof(string), typeof(int), typeof(int), typeof(bool), typeof(bool) });
+                if (inst != null && sendMethod != null)
+                    sendMethod.Invoke(inst, new object[] { text, 0, 0, false, false });
+            }
+            catch (Exception ex)
+            {
+                Plugin.Log?.LogDebug($"[ItemPatches] SendTextNotification: {ex.Message}");
             }
         }
 
