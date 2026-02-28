@@ -6,10 +6,12 @@ A Sun Haven mod that provides secure, automatic currency storage with a persiste
 
 ### Core Features
 - **Auto-Deposit**: Tokens and keys automatically go to your vault when picked up
+- **Sweep Inventory**: One-click button to move all vault currencies from inventory into the vault
+- **In-Game Settings**: ⚙ Settings tab in the vault UI for keybinds, HUD scale, and options (saved automatically)
 - **Persistent HUD Bar**: Always-visible display showing all your vault currencies with actual game icons
 - **Native Game Icons**: Loads real item sprites directly from the game's database
 - **Compact Number Format**: Large values display as K/M format (1K, 50K, 1.5M)
-- **Seamless Shopping**: Shops automatically use your vault balance - no withdrawing needed
+- **Seamless Shopping**: Shops and crafting tables automatically use your vault balance - no withdrawing needed
 - **Door & Chest Integration**: Keys work directly from your vault for locked doors and chests
 - **Per-Character Vaults**: Each character has their own separate vault
 - **Steam Deck Ready**: F8 alternate key with no modifier required
@@ -53,6 +55,7 @@ After first launch, edit the config file at:
 | AltToggleKey | F8 | Alternative key (no modifier) |
 | EnableHUD | true | Show persistent HUD bar |
 | HUDPosition | TopLeft | HUD screen position |
+| HUD Scale | 1.0 | Scale factor for HUD bar (0.5–3.0) |
 | EnableAutoSave | true | Auto-save vault data |
 | AutoSaveInterval | 300 | Auto-save interval (seconds) |
 
@@ -64,6 +67,14 @@ After first launch, edit the config file at:
 - **Save System**: Vault data auto-saves every 5 minutes and on game save
 
 ## Changelog
+
+### v2.0.6
+- **Settings Tab**: In-game config editing via ⚙ Settings tab (keybinds, HUD scale, etc.) — changes save automatically
+- **Sweep Inventory**: Button to move all vault currencies from inventory into the vault
+- **Reactive UI**: Window height adapts to content (fewer items = shorter window)
+- **Crafting Fix**: Corrected double-counting when using crafting tables with "use nearby chests" enabled
+- **Removed Reload Key**: Config updates automatically when changed in Settings or BepInEx ConfigurationManager
+- UI polish: main header always visible in Settings, gear symbol on Settings tab
 
 ### v2.0.5
 - Changelog and README updates.
