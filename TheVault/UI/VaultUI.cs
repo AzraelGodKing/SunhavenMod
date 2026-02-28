@@ -82,7 +82,7 @@ namespace TheVault.UI
         private const float WINDOW_WIDTH = 460f;
         private const float ROW_HEIGHT = 40f;
         private const float HEADER_HEIGHT = 118f;
-        private const float FOOTER_HEIGHT = 150f; // includes DrawControls (Sweep, hint) + dividers + buttons
+        private const float FOOTER_HEIGHT = 160f; // includes DrawControls (Sweep, hint) + dividers + buttons + padding
         private const float MIN_CONTENT_HEIGHT = 120f;
         private const float MAX_CONTENT_HEIGHT = 420f;
         private const float SETTINGS_CONTENT_HEIGHT = 340f;
