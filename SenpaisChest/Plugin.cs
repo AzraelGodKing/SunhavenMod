@@ -268,17 +268,13 @@ namespace SenpaisChest
                     Log.LogWarning("Could not find Wish.PlayerInput type for UICancel blocking");
                 }
 
-                // ChestManager.RemoveInventory → cleanup our data when a chest is removed from the world
-                var chestManagerType = typeof(ChestManager);
-                var inventoryType = AccessTools.TypeByName("Wish.Inventory");
-                if (chestManagerType != null && inventoryType != null)
+                // Chest.OnDisable → cleanup our data only when the chest is actually removed from the world
+                // (ChestManager.RemoveInventory is also called when the player opens a chest, so we must not use that)
+                var chestOnDisable = AccessTools.Method(typeof(Chest), "OnDisable");
+                if (chestOnDisable != null)
                 {
-                    var removeInvMethod = AccessTools.Method(chestManagerType, "RemoveInventory", new[] { inventoryType, typeof(Chest) });
-                    if (removeInvMethod != null)
-                    {
-                        _harmony.Patch(removeInvMethod, postfix: new HarmonyMethod(AccessTools.Method(typeof(Plugin), nameof(OnChestManagerRemoveInventory_Postfix))));
-                        Log.LogInfo("Patched ChestManager.RemoveInventory (cleanup on chest remove)");
-                    }
+                    _harmony.Patch(chestOnDisable, postfix: new HarmonyMethod(AccessTools.Method(typeof(Plugin), nameof(OnChestOnDisable_Postfix))));
+                    Log.LogInfo("Patched Chest.OnDisable (cleanup when chest removed from world)");
                 }
 
                 // Chest Labels (labels above chests - enabled via config)
@@ -405,15 +401,24 @@ namespace SenpaisChest
         }
 
         /// <summary>
-        /// Called after the game removes a chest from ChestManager (e.g. chest picked up/destroyed).
-        /// Removes our smart chest data so we don't keep orphaned entries.
+        /// Called when a Chest GameObject is disabled (picked up/destroyed, or scene unload).
+        /// Only clear smart chest data when the chest is actually removed (same scene still active).
+        /// When returning to menu or changing scene, all chests get OnDisable — we must not clear then.
         /// </summary>
-        private static void OnChestManagerRemoveInventory_Postfix(object __0, Chest __1)
+        private static void OnChestOnDisable_Postfix(Chest __instance)
         {
-            if (__1 == null) return;
+            if (__instance == null || __instance.gameObject == null) return;
             try
             {
-                var chestId = SmartChestManager.GetChestId(__1);
+                // If the chest's scene is no longer active, we're unloading (e.g. return to menu) — don't clear
+                var chestScene = __instance.gameObject.scene;
+                if (!chestScene.IsValid() || !chestScene.isLoaded)
+                    return;
+                var activeScene = SceneManager.GetActiveScene();
+                if (chestScene.name != activeScene.name)
+                    return;
+
+                var chestId = SmartChestManager.GetChestId(__instance);
                 if (string.IsNullOrEmpty(chestId)) return;
                 var manager = GetManager();
                 if (manager == null) return;
@@ -425,7 +430,7 @@ namespace SenpaisChest
             }
             catch (Exception ex)
             {
-                Log?.LogWarning($"[SenpaisChest] Cleanup on chest remove: {ex.Message}");
+                Log?.LogWarning($"[SenpaisChest] Cleanup on chest OnDisable: {ex.Message}");
             }
         }
 
@@ -667,6 +672,19 @@ namespace SenpaisChest
                 Log.LogInfo("Returned to menu, saving data...");
                 _staticSaveSystem?.Save();
             }
+            else if (!isMenuScene)
+            {
+                // Reload smart chest data when entering a game scene (e.g. after "Load game")
+                // so the chest reads back the saved state even if OnPlayerInitialized ran too early.
+                var characterName = GetCurrentCharacterName();
+                if (!string.IsNullOrEmpty(characterName))
+                {
+                    _staticManager?.SetCharacterName(characterName);
+                    var data = _staticSaveSystem?.Load(characterName);
+                    _staticManager?.LoadData(data);
+                    Log?.LogDebug($"[SenpaisChest] Reloaded smart chest data for '{characterName}' on scene load");
+                }
+            }
 
             _wasInMenuScene = isMenuScene;
         }
@@ -694,6 +712,22 @@ namespace SenpaisChest
 
         internal static SmartChestManager GetManager() => _staticManager;
         internal static SmartChestSaveSystem GetSaveSystem() => _staticSaveSystem;
+
+        /// <summary>Returns the current in-game character name so saves always write to the correct file.</summary>
+        internal static string GetCurrentCharacterName()
+        {
+            try
+            {
+                var currentChar = GameSave.CurrentCharacter;
+                return currentChar?.characterName;
+            }
+            catch (Exception ex)
+            {
+                Log?.LogDebug($"[SenpaisChest] GetCurrentCharacterName: {ex.Message}");
+                return null;
+            }
+        }
+
         internal static SmartChestUI GetUI() => _staticUI;
         internal static SmartChestConfig GetConfig() => _staticConfig;
         internal static MuseumTodoIntegration GetMuseumTodoIntegration() => _museumTodoIntegration;

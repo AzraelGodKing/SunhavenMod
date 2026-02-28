@@ -43,6 +43,11 @@ namespace SenpaisChest.Data
 
         public void Save()
         {
+            // Sync character name from game so we always write to the current character's file
+            var currentName = Plugin.GetCurrentCharacterName();
+            if (!string.IsNullOrEmpty(currentName))
+                _manager.SetCharacterName(currentName);
+
             var data = _manager.GetSaveData();
             if (data == null)
             {
@@ -60,14 +65,13 @@ namespace SenpaisChest.Data
             foreach (var chest in data.Chests)
                 totalRules += chest.Rules.Count;
 
-            Plugin.Log?.LogInfo($"[Save] Saving {data.Chests.Count} chest(s) with {totalRules} total rule(s) for '{data.CharacterName}'");
+            var filePath = GetSaveFilePath(data.CharacterName);
+            Plugin.Log?.LogInfo($"[Save] Saving {data.Chests.Count} chest(s) with {totalRules} total rule(s) for '{data.CharacterName}' -> {filePath}");
 
             try
             {
                 var json = SerializeToJson(data);
-                var filePath = GetSaveFilePath(data.CharacterName);
 
-                Plugin.Log?.LogDebug($"[Save] Writing to: {filePath}");
                 Plugin.Log?.LogDebug($"[Save] JSON length: {json.Length} chars");
 
                 var tempFilePath = filePath + ".tmp";

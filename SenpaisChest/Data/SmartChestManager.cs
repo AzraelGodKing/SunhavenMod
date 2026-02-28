@@ -340,8 +340,8 @@ namespace SenpaisChest.Data
 
             Plugin.Log?.LogDebug($"[Scan] Built chest lookup: {chestLookup.Count} unique chests");
 
-            // Remove smart chest entries for chests that no longer exist in the world (e.g. picked up, destroyed)
-            RemoveOrphanedSmartChests(chestLookup);
+            // Orphan cleanup is done only when a chest is actually removed (Plugin.OnChestManagerRemoveInventory_Postfix).
+            // We do not remove smart chest data here based on lookup; an incomplete lookup would wrongly delete config.
 
             foreach (var smartChestEntry in _smartChests)
             {
