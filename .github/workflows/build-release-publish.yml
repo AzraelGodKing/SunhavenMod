@@ -50,6 +50,13 @@ on:
         required: true
         type: boolean
         default: true
+      test_discord:
+        description: 'Test Discord notification only (fake mod, no GitHub/Thunderstore release)'
+        required: false
+        type: boolean
+        default: false
+  release:
+    types: [published]
 
 env:
   THUNDERSTORE_NAMESPACE: "AzraelGodKing"
@@ -62,6 +69,7 @@ jobs:
   # SETUP — Determine which mod(s) to release
   # --------------------------------------------------------------------
   setup:
+    if: github.event_name == 'workflow_dispatch'
     runs-on: ubuntu-latest
     outputs:
       matrix: ${{ steps.set-matrix.outputs.matrix }}
@@ -69,17 +77,22 @@ jobs:
       - name: Set mod matrix
         id: set-matrix
         run: |
-          MOD_KEY="${{ github.event.inputs.mod }}"
-          if [ "$MOD_KEY" == "all" ]; then
-            echo 'matrix=["havensbirthright","sunhavenmuseumutilitytracker","squirrelsbirthdayreminder","sunhaventodo","thevault","havendevtools","senpaischest","havensalmanac"]' >> "$GITHUB_OUTPUT"
+          if [ "${{ github.event.inputs.test_discord }}" == "true" ]; then
+            echo 'matrix=["test_discord"]' >> "$GITHUB_OUTPUT"
           else
-            echo "matrix=[\"$MOD_KEY\"]" >> "$GITHUB_OUTPUT"
+            MOD_KEY="${{ github.event.inputs.mod }}"
+            if [ "$MOD_KEY" == "all" ]; then
+              echo 'matrix=["havensbirthright","sunhavenmuseumutilitytracker","squirrelsbirthdayreminder","sunhaventodo","thevault","havendevtools","senpaischest","havensalmanac"]' >> "$GITHUB_OUTPUT"
+            else
+              echo "matrix=[\"$MOD_KEY\"]" >> "$GITHUB_OUTPUT"
+            fi
           fi
 
   # --------------------------------------------------------------------
   # RELEASE — Package, release, and optionally publish each mod
   # --------------------------------------------------------------------
   release:
+    if: github.event_name == 'workflow_dispatch'
     needs: setup
     runs-on: ubuntu-latest
     permissions:
@@ -103,6 +116,19 @@ jobs:
         id: config
         run: |
           MOD_KEY="${{ matrix.mod }}"
+
+          if [ "$MOD_KEY" == "test_discord" ]; then
+            echo "json_key=test_discord" >> "$GITHUB_OUTPUT"
+            echo "mod_dir=TestDiscord" >> "$GITHUB_OUTPUT"
+            echo "dll_name=TestDiscord" >> "$GITHUB_OUTPUT"
+            echo "thunderstore_name=TestDiscord" >> "$GITHUB_OUTPUT"
+            echo "version=0.0.0-test" >> "$GITHUB_OUTPUT"
+            echo "display_name=Test Discord Notification" >> "$GITHUB_OUTPUT"
+            echo "description=Test run" >> "$GITHUB_OUTPUT"
+            echo "changelog=Workflow test. No GitHub Release or Thunderstore publish." >> "$GITHUB_OUTPUT"
+            echo "Test mode: fake mod data set"
+            exit 0
+          fi
 
           # Map input to versions.json key and project details
           case "$MOD_KEY" in
@@ -189,6 +215,12 @@ jobs:
           CURRENT_VERSION="${{ steps.config.outputs.version }}"
           MOD_DISPLAY_NAME="${{ steps.config.outputs.display_name }}"
 
+          if [ "$THUNDERSTORE_NAME" == "TestDiscord" ]; then
+            echo "Test mode: skipping version check, proceeding"
+            echo "version_unchanged=false" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+
           # Fetch releases, filter by mod prefix, get latest by published_at, parse version from tag
           LAST_RELEASE_JSON=$(curl -sSf -H "Accept: application/vnd.github+json" \
             -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" \
@@ -224,6 +256,14 @@ jobs:
         if: steps.version_check.outputs.version_unchanged != 'true'
         run: |
           mkdir -p dist/package
+
+          if [ "${{ matrix.mod }}" == "test_discord" ]; then
+            echo "Test run - no real package" > dist/package/readme.txt
+            cd dist/package
+            zip -r "../TestDiscord-0.0.0-test.zip" .
+            echo "Minimal test package created: TestDiscord-0.0.0-test.zip"
+            exit 0
+          fi
 
           # Look for pre-built DLL in builds folder
           DLL_PATH="builds/${{ steps.config.outputs.mod_dir }}/${{ steps.config.outputs.dll_name }}.dll"
@@ -293,7 +333,7 @@ jobs:
       # 5. GITHUB RELEASE (Optional)
       # ------------------------------------------------------------------
       - name: Create GitHub Release
-        if: github.event.inputs.create_github_release == 'true' && steps.version_check.outputs.version_unchanged != 'true'
+        if: github.event.inputs.create_github_release == 'true' && github.event.inputs.test_discord != 'true' && steps.version_check.outputs.version_unchanged != 'true'
         uses: softprops/action-gh-release@v2
         with:
           tag_name: "${{ steps.config.outputs.thunderstore_name }}-v${{ steps.config.outputs.version }}"
@@ -317,7 +357,7 @@ jobs:
       # 6. THUNDERSTORE PUBLISH (Manual opt-in)
       # ------------------------------------------------------------------
       - name: Publish to Thunderstore
-        if: github.event.inputs.publish_thunderstore == 'true' && steps.version_check.outputs.version_unchanged != 'true'
+        if: github.event.inputs.publish_thunderstore == 'true' && github.event.inputs.test_discord != 'true' && steps.version_check.outputs.version_unchanged != 'true'
         uses: GreenTF/upload-thunderstore-package@v4.3
         with:
           token: ${{ secrets.THUNDERSTORE_TOKEN }}
@@ -331,3 +371,30 @@ jobs:
             ${{ env.THUNDERSTORE_CATEGORIES }}
           deps: ${{ env.THUNDERSTORE_DEPS }}
           file: dist/${{ steps.config.outputs.thunderstore_name }}-${{ steps.config.outputs.version }}.zip
+
+      # ------------------------------------------------------------------
+      # 7. TEST MODE — Post to Discord only (no GitHub Release / Thunderstore)
+      # ------------------------------------------------------------------
+      - name: Post test notification to Discord
+        if: github.event.inputs.test_discord == 'true'
+        uses: AzraelGodKing/DiscordBot@main
+        with:
+          webhook_url: ${{ secrets.DISCORD_WEBHOOK_URL }}
+          title: "Test – Discord notification"
+          body: "Fake release run. No GitHub Release or Thunderstore publish. Webhook OK."
+          username: "Sun Haven Mods"
+
+  # --------------------------------------------------------------------
+  # NOTIFY DISCORD — When a release is published (triggered by release event)
+  # --------------------------------------------------------------------
+  notify_discord:
+    if: github.event_name == 'release'
+    runs-on: ubuntu-latest
+    steps:
+      - name: GitHub Release to Discord
+        uses: AzraelGodKing/DiscordBot@main
+        with:
+          webhook_url: ${{ secrets.DISCORD_WEBHOOK_URL }}
+          color: "2105893"
+          username: "Sun Haven Mods"
+          reduce_headings: true
