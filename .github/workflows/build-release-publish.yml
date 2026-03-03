@@ -377,7 +377,7 @@ jobs:
       # ------------------------------------------------------------------
       - name: Post test notification to Discord
         if: github.event.inputs.test_discord == 'true'
-        uses: AzraelGodKing/DiscordBot@main
+        uses: AzraelGodKing/Discord_Release@main
         with:
           webhook_url: ${{ secrets.DISCORD_WEBHOOK_URL }}
           title: "Test – Discord notification"
@@ -386,15 +386,37 @@ jobs:
 
   # --------------------------------------------------------------------
   # NOTIFY DISCORD — When a release is published (triggered by release event)
+  # Uses mod icon from thunderstore folder (raw GitHub URL)
   # --------------------------------------------------------------------
   notify_discord:
     if: github.event_name == 'release'
     runs-on: ubuntu-latest
     steps:
+      - name: Set mod icon URL
+        id: icon
+        run: |
+          TAG="${{ github.event.release.tag_name }}"
+          PREFIX="${TAG%-v*}"
+          case "$PREFIX" in
+            HavensBirthright)           DIR="HavensBirthright" ;;
+            SMUT)                       DIR="SunHavenMuseumUtilityTracker" ;;
+            SquirrelsBirthdayReminder)  DIR="BirthdayReminder" ;;
+            SunHavenTodo)               DIR="SunhavenTodo" ;;
+            TheVault)                   DIR="TheVault" ;;
+            HavenDevTools)              DIR="HavenDevTools" ;;
+            SenpaisChest)               DIR="SenpaisChest" ;;
+            HavensAlmanac)              DIR="HavensAlmanac" ;;
+            *)                          DIR="" ;;
+          esac
+          if [ -n "$DIR" ]; then
+            echo "url=https://raw.githubusercontent.com/${{ github.repository }}/main/$DIR/thunderstore/icon.png" >> "$GITHUB_OUTPUT"
+          fi
+
       - name: GitHub Release to Discord
-        uses: AzraelGodKing/DiscordBot@main
+        uses: AzraelGodKing/Discord_Release@main
         with:
           webhook_url: ${{ secrets.DISCORD_WEBHOOK_URL }}
           color: "2105893"
           username: "Sun Haven Mods"
           reduce_headings: true
+          thumbnail_url: ${{ steps.icon.outputs.url }}
