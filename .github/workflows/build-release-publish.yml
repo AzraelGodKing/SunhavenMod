@@ -374,14 +374,48 @@ jobs:
 
       # ------------------------------------------------------------------
       # 7. TEST MODE — Post to Discord only (no GitHub Release / Thunderstore)
+      # Randomly picks a mod to simulate so the test looks realistic
       # ------------------------------------------------------------------
+      - name: Pick random mod for test
+        if: github.event.inputs.test_discord == 'true'
+        id: test_mod
+        run: |
+          MODS=(
+            "com.azraelgodking.havensbirthright:HavensBirthright"
+            "com.azraelgodking.sunhavenmuseumutilitytracker:SunHavenMuseumUtilityTracker"
+            "com.azraelgodking.squirrelsbirthdayreminder:BirthdayReminder"
+            "com.azraelgodking.sunhaventodo:SunhavenTodo"
+            "com.azraelgodking.thevault:TheVault"
+            "com.azraelgodking.havendevtools:HavenDevTools"
+            "com.azraelgodking.senpaischest:SenpaisChest"
+            "com.azraelgodking.havensalmanac:HavensAlmanac"
+          )
+          IDX=$((RANDOM % ${#MODS[@]}))
+          ENTRY="${MODS[$IDX]}"
+          JSON_KEY="${ENTRY%%:*}"
+          MOD_DIR="${ENTRY##*:}"
+          NAME=$(jq -r ".[\"$JSON_KEY\"].name" docs/versions.json)
+          VERSION=$(jq -r ".[\"$JSON_KEY\"].version" docs/versions.json)
+          CHANGELOG=$(jq -r ".[\"$JSON_KEY\"].changelog" docs/versions.json)
+          echo "title=Test – $NAME v$VERSION" >> "$GITHUB_OUTPUT"
+          {
+            echo "body<<EOF"
+            echo "### Changes"
+            echo "$CHANGELOG"
+            echo ""
+            echo "— *Test run. No real release.*"
+            echo "EOF"
+          } >> "$GITHUB_OUTPUT"
+          echo "icon_url=https://raw.githubusercontent.com/${{ github.repository }}/main/$MOD_DIR/thunderstore/icon.png" >> "$GITHUB_OUTPUT"
+
       - name: Post test notification to Discord
         if: github.event.inputs.test_discord == 'true'
         uses: AzraelGodKing/Discord_Release@main
         with:
           webhook_url: ${{ secrets.DISCORD_WEBHOOK_URL }}
-          title: "Test – Discord notification"
-          body: "Fake release run. No GitHub Release or Thunderstore publish. Webhook OK."
+          title: ${{ steps.test_mod.outputs.title }}
+          body: ${{ steps.test_mod.outputs.body }}
+          thumbnail_url: ${{ steps.test_mod.outputs.icon_url }}
           username: "Sun Haven Mods"
 
   # --------------------------------------------------------------------
