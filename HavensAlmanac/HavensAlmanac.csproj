@@ -6,6 +6,8 @@
     <RootNamespace>HavensAlmanac</RootNamespace>
     <LangVersion>latest</LangVersion>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <!-- CS0436: We compile SharedUtilities and reference other mods (BirthdayReminder, etc.); those DLLs also embed VersionChecker/ReflectionHelper. We use our copy. -->
+    <NoWarn>$(NoWarn);CS0436</NoWarn>
   </PropertyGroup>
 
   <!-- BepInEx References -->

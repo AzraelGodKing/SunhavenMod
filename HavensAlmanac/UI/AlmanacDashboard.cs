@@ -13,14 +13,21 @@ namespace HavensAlmanac.UI
     public class AlmanacDashboard : MonoBehaviour
     {
         private const int WINDOW_ID = 98781;
-        private const float WIDTH = 500f;
-        private const float HEIGHT = 550f;
+        private const float BASE_WIDTH = 500f;
+        private const float BASE_HEIGHT = 550f;
 
+        private float _scale = 1f;
         private AlmanacDataAggregator _aggregator;
         private Rect _windowRect;
         private bool _isVisible;
         private Vector2 _scrollPosition;
         private Dictionary<string, bool> _sectionExpanded = new Dictionary<string, bool>();
+
+        private float Width => BASE_WIDTH * _scale;
+        private float Height => BASE_HEIGHT * _scale;
+        private float Scaled(float value) => value * _scale;
+        private int ScaledFont(int baseSize) => Mathf.Max(8, Mathf.RoundToInt(baseSize * _scale));
+        private int ScaledInt(float value) => Mathf.RoundToInt(value * _scale);
 
         // Styles
         private bool _stylesInitialized;
@@ -41,9 +48,15 @@ namespace HavensAlmanac.UI
         {
             _aggregator = aggregator;
             _windowRect = new Rect(
-                (Screen.width - WIDTH) / 2f,
-                (Screen.height - HEIGHT) / 2f,
-                WIDTH, HEIGHT);
+                (Screen.width - Width) / 2f,
+                (Screen.height - Height) / 2f,
+                Width, Height);
+        }
+
+        public void SetScale(float scale)
+        {
+            _scale = Mathf.Clamp(scale, 0.5f, 2.5f);
+            _stylesInitialized = false;
         }
 
         public void Show()
@@ -78,20 +91,19 @@ namespace HavensAlmanac.UI
 
         private void DrawWindow(int id)
         {
-            // Header bar
             GUILayout.BeginHorizontal();
             GUILayout.Label("Haven's Almanac - Dashboard", _titleStyle);
             GUILayout.FlexibleSpace();
-            if (GUILayout.Button("X", _closeButtonStyle, GUILayout.Width(24), GUILayout.Height(24)))
+            if (GUILayout.Button("X", _closeButtonStyle, GUILayout.Width(Scaled(24)), GUILayout.Height(Scaled(24))))
                 Hide();
             GUILayout.EndHorizontal();
 
-            GUILayout.Space(6);
+            GUILayout.Space(Scaled(6));
 
             if (_aggregator.InstalledModCount == 0)
             {
                 GUILayout.Label("No mods detected. Install at least one supported mod to see data here.", _noModsStyle);
-                GUI.DragWindow(new Rect(0, 0, _windowRect.width, 30));
+                GUI.DragWindow(new Rect(0, 0, _windowRect.width, Scaled(30)));
                 return;
             }
 
@@ -126,13 +138,12 @@ namespace HavensAlmanac.UI
                     GUILayout.EndVertical();
                 }
 
-                GUILayout.Space(4);
+                GUILayout.Space(Scaled(4));
             }
 
             GUILayout.EndScrollView();
 
-            // Drag header area only
-            GUI.DragWindow(new Rect(0, 0, _windowRect.width, 30));
+            GUI.DragWindow(new Rect(0, 0, _windowRect.width, Scaled(30)));
         }
 
         private void InitializeStyles()
@@ -151,8 +162,8 @@ namespace HavensAlmanac.UI
 
             _windowStyle = new GUIStyle(GUI.skin.window)
             {
-                padding = new RectOffset(12, 12, 10, 10),
-                border = new RectOffset(2, 2, 2, 2)
+                padding = new RectOffset(ScaledInt(12), ScaledInt(12), ScaledInt(10), ScaledInt(10)),
+                border = new RectOffset(ScaledInt(2), ScaledInt(2), ScaledInt(2), ScaledInt(2))
             };
             _windowStyle.normal.background = _bgTexture;
             _windowStyle.onNormal.background = _bgTexture;
@@ -160,7 +171,7 @@ namespace HavensAlmanac.UI
             _titleStyle = new GUIStyle(GUI.skin.label)
             {
                 fontStyle = FontStyle.Bold,
-                fontSize = 16,
+                fontSize = ScaledFont(16),
                 alignment = TextAnchor.MiddleLeft
             };
             _titleStyle.normal.textColor = goldText;
@@ -168,9 +179,9 @@ namespace HavensAlmanac.UI
             _sectionHeaderStyle = new GUIStyle(GUI.skin.button)
             {
                 fontStyle = FontStyle.Bold,
-                fontSize = 13,
+                fontSize = ScaledFont(13),
                 alignment = TextAnchor.MiddleLeft,
-                padding = new RectOffset(8, 8, 6, 6)
+                padding = new RectOffset(ScaledInt(8), ScaledInt(8), ScaledInt(6), ScaledInt(6))
             };
             _sectionHeaderStyle.normal.background = _sectionBgTexture;
             _sectionHeaderStyle.normal.textColor = lightText;
@@ -183,20 +194,20 @@ namespace HavensAlmanac.UI
 
             _contentStyle = new GUIStyle(GUI.skin.box)
             {
-                padding = new RectOffset(12, 12, 8, 8)
+                padding = new RectOffset(ScaledInt(12), ScaledInt(12), ScaledInt(8), ScaledInt(8))
             };
             _contentStyle.normal.textColor = lightText;
 
             _closeButtonStyle = new GUIStyle(GUI.skin.button)
             {
                 fontStyle = FontStyle.Bold,
-                fontSize = 14,
+                fontSize = ScaledFont(14),
                 alignment = TextAnchor.MiddleCenter
             };
 
             _noModsStyle = new GUIStyle(GUI.skin.label)
             {
-                fontSize = 13,
+                fontSize = ScaledFont(13),
                 fontStyle = FontStyle.Italic,
                 alignment = TextAnchor.MiddleCenter,
                 wordWrap = true

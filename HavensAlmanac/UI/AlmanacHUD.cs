@@ -12,14 +12,21 @@ namespace HavensAlmanac.UI
     public class AlmanacHUD : MonoBehaviour
     {
         private const int WINDOW_ID = 98780;
-        private const float WIDTH = 260f;
-        private const float MIN_HEIGHT = 60f;
+        private const float BASE_WIDTH = 260f;
+        private const float BASE_MIN_HEIGHT = 60f;
         private const float REFRESH_INTERVAL = 5f;
 
+        private float _scale = 1f;
         private AlmanacDataAggregator _aggregator;
         private Rect _windowRect;
         private bool _isVisible = true;
         private float _refreshTimer;
+
+        private float Width => BASE_WIDTH * _scale;
+        private float MinHeight => BASE_MIN_HEIGHT * _scale;
+        private float Scaled(float value) => value * _scale;
+        private int ScaledFont(int baseSize) => Mathf.Max(8, Mathf.RoundToInt(baseSize * _scale));
+        private int ScaledInt(float value) => Mathf.RoundToInt(value * _scale);
 
         // Styles
         private bool _stylesInitialized;
@@ -45,11 +52,17 @@ namespace HavensAlmanac.UI
 
             if (x < 0 || y < 0)
             {
-                x = Screen.width - WIDTH - 20;
-                y = 80;
+                x = Screen.width - Width - Scaled(20);
+                y = Scaled(80);
             }
 
-            _windowRect = new Rect(x, y, WIDTH, MIN_HEIGHT);
+            _windowRect = new Rect(x, y, Width, MinHeight);
+        }
+
+        public void SetScale(float scale)
+        {
+            _scale = Mathf.Clamp(scale, 0.5f, 2.5f);
+            _stylesInitialized = false;
         }
 
         public void Show() => _isVisible = true;
@@ -94,15 +107,14 @@ namespace HavensAlmanac.UI
 
         private void DrawWindow(int id)
         {
-            // Header
             GUILayout.BeginHorizontal();
             GUILayout.Label("Haven's Almanac", _titleStyle);
             GUILayout.FlexibleSpace();
-            if (GUILayout.Button("x", GUILayout.Width(18), GUILayout.Height(18)))
+            if (GUILayout.Button("x", GUILayout.Width(Scaled(18)), GUILayout.Height(Scaled(18))))
                 Hide();
             GUILayout.EndHorizontal();
 
-            GUILayout.Space(2);
+            GUILayout.Space(Scaled(2));
 
             if (_aggregator.InstalledModCount == 0)
             {
@@ -113,7 +125,7 @@ namespace HavensAlmanac.UI
                 foreach (var provider in _aggregator.Providers)
                 {
                     GUILayout.BeginHorizontal();
-                    GUILayout.Label(provider.ModIcon, _iconStyle, GUILayout.Width(22));
+                    GUILayout.Label(provider.ModIcon, _iconStyle, GUILayout.Width(Scaled(22)));
                     GUILayout.Label($"{provider.ModName}: {provider.HudSummary}", _summaryStyle);
                     GUILayout.EndHorizontal();
                 }
@@ -150,8 +162,8 @@ namespace HavensAlmanac.UI
 
             _windowStyle = new GUIStyle(GUI.skin.window)
             {
-                padding = new RectOffset(8, 8, 6, 6),
-                border = new RectOffset(2, 2, 2, 2)
+                padding = new RectOffset(ScaledInt(8), ScaledInt(8), ScaledInt(6), ScaledInt(6)),
+                border = new RectOffset(ScaledInt(2), ScaledInt(2), ScaledInt(2), ScaledInt(2))
             };
             _windowStyle.normal.background = _bgTexture;
             _windowStyle.onNormal.background = _bgTexture;
@@ -159,27 +171,27 @@ namespace HavensAlmanac.UI
             _titleStyle = new GUIStyle(GUI.skin.label)
             {
                 fontStyle = FontStyle.Bold,
-                fontSize = 13,
+                fontSize = ScaledFont(13),
                 alignment = TextAnchor.MiddleLeft
             };
             _titleStyle.normal.textColor = goldText;
 
             _iconStyle = new GUIStyle(GUI.skin.label)
             {
-                fontSize = 14,
+                fontSize = ScaledFont(14),
                 alignment = TextAnchor.MiddleCenter
             };
 
             _summaryStyle = new GUIStyle(GUI.skin.label)
             {
-                fontSize = 12,
+                fontSize = ScaledFont(12),
                 alignment = TextAnchor.MiddleLeft
             };
             _summaryStyle.normal.textColor = lightText;
 
             _noModsStyle = new GUIStyle(GUI.skin.label)
             {
-                fontSize = 11,
+                fontSize = ScaledFont(11),
                 fontStyle = FontStyle.Italic,
                 alignment = TextAnchor.MiddleCenter
             };

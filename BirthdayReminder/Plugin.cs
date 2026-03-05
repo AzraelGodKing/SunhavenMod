@@ -40,6 +40,10 @@ namespace BirthdayReminder
         private ConfigEntry<bool> _useNativeNotifications;
         private ConfigEntry<bool> _debugMode;
         private ConfigEntry<bool> _checkForUpdates;
+        private ConfigEntry<float> _uiScale;
+
+        // Static config for UI scale (used when recreating HUD)
+        private static float _staticUIScale = 1f;
 
         // Character tracking for save switching
         private static string _currentCharacterName;
@@ -160,6 +164,22 @@ namespace BirthdayReminder
                 true,
                 "Check for mod updates on startup"
             );
+
+            _uiScale = Config.Bind(
+                "Display",
+                "UIScale",
+                1f,
+                new BepInEx.Configuration.ConfigDescription(
+                    "Scale factor for the birthday HUD (1.0 = default, 1.5 = 50% larger)",
+                    new BepInEx.Configuration.AcceptableValueRange<float>(0.5f, 2.5f)
+                )
+            );
+            _staticUIScale = Mathf.Clamp(_uiScale.Value, 0.5f, 2.5f);
+            _uiScale.SettingChanged += (_, _) =>
+            {
+                _staticUIScale = Mathf.Clamp(_uiScale.Value, 0.5f, 2.5f);
+                _staticHUD?.SetScale(_staticUIScale);
+            };
         }
 
         private void CreatePersistentRunner()
@@ -402,6 +422,7 @@ namespace BirthdayReminder
 
                     _staticHUD = _hudObject.AddComponent<BirthdayHUD>();
                     _staticHUD.Initialize(_staticManager);
+                    _staticHUD.SetScale(_staticUIScale);
 
                     // Restore saved position if valid
                     if (_staticHUDPositionX >= 0 && _staticHUDPositionY >= 0)

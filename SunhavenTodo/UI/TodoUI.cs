@@ -10,12 +10,21 @@ namespace SunhavenTodo.UI
 {
     public class TodoUI : MonoBehaviour
     {
-        // Window settings
+        // Window settings (base values, scaled by _scale)
         private const int WINDOW_ID = 98765;
-        private const float WINDOW_WIDTH = 520f;
-        private const float WINDOW_HEIGHT = 600f;
-        private const float HEADER_HEIGHT = 50f;
-        private const float ITEM_HEIGHT = 36f;
+        private const float BASE_WINDOW_WIDTH = 520f;
+        private const float BASE_WINDOW_HEIGHT = 600f;
+        private const float BASE_HEADER_HEIGHT = 50f;
+        private const float BASE_ITEM_HEIGHT = 36f;
+
+        private float _scale = 1f;
+        private float WindowWidth => BASE_WINDOW_WIDTH * _scale;
+        private float WindowHeight => BASE_WINDOW_HEIGHT * _scale;
+        private float HeaderHeight => BASE_HEADER_HEIGHT * _scale;
+        private float ItemHeight => BASE_ITEM_HEIGHT * _scale;
+        private int ScaledFont(int baseSize) => Mathf.Max(8, Mathf.RoundToInt(baseSize * _scale));
+        private float Scaled(float value) => value * _scale;
+        private int ScaledInt(float value) => Mathf.RoundToInt(value * _scale);
 
         // Input blocking identifier
         private const string PAUSE_ID = "SunhavenTodo_UI";
@@ -133,12 +142,9 @@ namespace SunhavenTodo.UI
         public void Initialize(TodoManager manager)
         {
             _manager = manager;
-            _windowRect = new Rect(
-                (Screen.width - WINDOW_WIDTH) / 2f,
-                (Screen.height - WINDOW_HEIGHT) / 2f,
-                WINDOW_WIDTH,
-                WINDOW_HEIGHT
-            );
+            float w = WindowWidth;
+            float h = WindowHeight;
+            _windowRect = new Rect((Screen.width - w) / 2f, (Screen.height - h) / 2f, w, h);
         }
 
         public void Show()
@@ -194,6 +200,13 @@ namespace SunhavenTodo.UI
 
         public bool IsVisible => _isVisible;
 
+        public void SetScale(float scale)
+        {
+            _scale = Mathf.Clamp(scale, 0.5f, 2.5f);
+            _stylesInitialized = false;
+            _windowRect = new Rect((Screen.width - WindowWidth) / 2f, (Screen.height - WindowHeight) / 2f, WindowWidth, WindowHeight);
+        }
+
         private void Update()
         {
             if (_isVisible && Input.GetKeyDown(KeyCode.Escape))
@@ -220,6 +233,9 @@ namespace SunhavenTodo.UI
             if (!_isVisible || _manager == null) return;
 
             InitializeStyles();
+
+            _windowRect.width = WindowWidth;
+            _windowRect.height = WindowHeight;
 
             GUI.color = new Color(1, 1, 1, _openAnimation);
             GUI.depth = -1000;
@@ -254,7 +270,7 @@ namespace SunhavenTodo.UI
 
             GUILayout.EndVertical();
 
-            GUI.DragWindow(new Rect(0, 0, WINDOW_WIDTH, HEADER_HEIGHT));
+            GUI.DragWindow(new Rect(0, 0, WindowWidth, HeaderHeight));
         }
 
         private void DrawHeader()
@@ -290,7 +306,7 @@ namespace SunhavenTodo.UI
         private void DrawGoldDivider()
         {
             GUILayout.Space(4);
-            var rect = GUILayoutUtility.GetRect(WINDOW_WIDTH - 40, 3);
+            var rect = GUILayoutUtility.GetRect(WindowWidth - Scaled(40), Scaled(3));
             if (Event.current.type == UnityEngine.EventType.Repaint && _goldLine != null)
             {
                 GUI.DrawTexture(rect, _goldLine);
@@ -317,7 +333,7 @@ namespace SunhavenTodo.UI
 
             // Progress bar
             GUILayout.Space(4);
-            var progressRect = GUILayoutUtility.GetRect(WINDOW_WIDTH - 60, 12);
+            var progressRect = GUILayoutUtility.GetRect(WindowWidth - Scaled(60), Scaled(12));
             progressRect.x += 10;
             progressRect.width -= 20;
 
@@ -458,7 +474,7 @@ namespace SunhavenTodo.UI
                 padding = new RectOffset(8, 8, 4, 4)
             };
 
-            GUILayout.BeginHorizontal(rowStyle, GUILayout.Height(ITEM_HEIGHT));
+            GUILayout.BeginHorizontal(rowStyle, GUILayout.Height(ItemHeight));
             // Checkbox
             var isCompleted = GUILayout.Toggle(item.IsCompleted, "", GUILayout.Width(20));
             if (isCompleted != item.IsCompleted)
@@ -730,34 +746,34 @@ namespace SunhavenTodo.UI
             _windowStyle = new GUIStyle
             {
                 normal = { background = _windowBackground, textColor = _textDark },
-                padding = new RectOffset(15, 15, 15, 15),
-                border = new RectOffset(8, 8, 8, 8)
+                padding = new RectOffset(ScaledInt(15), ScaledInt(15), ScaledInt(15), ScaledInt(15)),
+                border = new RectOffset(ScaledInt(8), ScaledInt(8), ScaledInt(8), ScaledInt(8))
             };
 
             _titleStyle = new GUIStyle
             {
-                fontSize = 22,
+                fontSize = ScaledFont(22),
                 fontStyle = FontStyle.Bold,
                 normal = { textColor = _woodDark },
                 alignment = TextAnchor.MiddleLeft,
-                padding = new RectOffset(5, 5, 5, 5)
+                padding = new RectOffset(ScaledInt(5), ScaledInt(5), ScaledInt(5), ScaledInt(5))
             };
 
             _headerStyle = new GUIStyle
             {
-                fontSize = 16,
+                fontSize = ScaledFont(16),
                 fontStyle = FontStyle.Bold,
                 normal = { textColor = _woodDark },
                 alignment = TextAnchor.MiddleCenter,
-                padding = new RectOffset(5, 5, 5, 5)
+                padding = new RectOffset(ScaledInt(5), ScaledInt(5), ScaledInt(5), ScaledInt(5))
             };
 
             _labelStyle = new GUIStyle
             {
-                fontSize = 12,
+                fontSize = ScaledFont(12),
                 normal = { textColor = _textDark },
                 alignment = TextAnchor.MiddleLeft,
-                padding = new RectOffset(2, 2, 2, 2)
+                padding = new RectOffset(ScaledInt(2), ScaledInt(2), ScaledInt(2), ScaledInt(2))
             };
 
             _labelBoldStyle = new GUIStyle(_labelStyle)
@@ -767,30 +783,30 @@ namespace SunhavenTodo.UI
 
             _statsStyle = new GUIStyle(_labelStyle)
             {
-                fontSize = 11,
+                fontSize = ScaledFont(11),
                 alignment = TextAnchor.MiddleCenter,
                 normal = { textColor = _woodMedium }
             };
 
             _buttonStyle = new GUIStyle
             {
-                fontSize = 11,
+                fontSize = ScaledFont(11),
                 fontStyle = FontStyle.Bold,
                 normal = { background = _buttonNormal, textColor = _textDark },
                 hover = { background = _buttonHover, textColor = _textDark },
                 active = { background = _buttonActive, textColor = _woodDark },
                 alignment = TextAnchor.MiddleCenter,
-                padding = new RectOffset(8, 8, 4, 4),
-                border = new RectOffset(4, 4, 4, 4)
+                padding = new RectOffset(ScaledInt(8), ScaledInt(8), ScaledInt(4), ScaledInt(4)),
+                border = new RectOffset(ScaledInt(4), ScaledInt(4), ScaledInt(4), ScaledInt(4))
             };
 
             _textFieldStyle = new GUIStyle
             {
-                fontSize = 12,
+                fontSize = ScaledFont(12),
                 normal = { background = _textFieldBg, textColor = _textDark },
                 focused = { background = _textFieldBg, textColor = _textDark },
-                padding = new RectOffset(6, 6, 4, 4),
-                border = new RectOffset(2, 2, 2, 2)
+                padding = new RectOffset(ScaledInt(6), ScaledInt(6), ScaledInt(4), ScaledInt(4)),
+                border = new RectOffset(ScaledInt(2), ScaledInt(2), ScaledInt(2), ScaledInt(2))
             };
 
             _textAreaStyle = new GUIStyle(_textFieldStyle)
@@ -800,9 +816,9 @@ namespace SunhavenTodo.UI
 
             _itemStyle = new GUIStyle
             {
-                fontSize = 12,
+                fontSize = ScaledFont(12),
                 normal = { textColor = _textDark },
-                padding = new RectOffset(8, 8, 4, 4)
+                padding = new RectOffset(ScaledInt(8), ScaledInt(8), ScaledInt(4), ScaledInt(4))
             };
 
             _itemCompletedStyle = new GUIStyle(_itemStyle)
@@ -812,14 +828,14 @@ namespace SunhavenTodo.UI
 
             _tabStyle = new GUIStyle
             {
-                fontSize = 10,
+                fontSize = ScaledFont(10),
                 normal = { background = _tabNormal, textColor = _textDark },
                 hover = { background = _buttonHover, textColor = _textDark },
                 active = { background = _tabActive, textColor = _woodDark },
                 alignment = TextAnchor.MiddleCenter,
-                padding = new RectOffset(6, 6, 3, 3),
-                margin = new RectOffset(2, 2, 0, 0),
-                border = new RectOffset(4, 4, 4, 4)
+                padding = new RectOffset(ScaledInt(6), ScaledInt(6), ScaledInt(3), ScaledInt(3)),
+                margin = new RectOffset(ScaledInt(2), ScaledInt(2), 0, 0),
+                border = new RectOffset(ScaledInt(4), ScaledInt(4), ScaledInt(4), ScaledInt(4))
             };
 
             _tabActiveStyle = new GUIStyle(_tabStyle)
@@ -830,13 +846,13 @@ namespace SunhavenTodo.UI
 
             _categoryLabelStyle = new GUIStyle(_labelStyle)
             {
-                fontSize = 9,
+                fontSize = ScaledFont(9),
                 fontStyle = FontStyle.Bold
             };
 
             _priorityLabelStyle = new GUIStyle(_labelStyle)
             {
-                fontSize = 12,
+                fontSize = ScaledFont(12),
                 fontStyle = FontStyle.Bold,
                 alignment = TextAnchor.MiddleCenter
             };
@@ -844,7 +860,7 @@ namespace SunhavenTodo.UI
             // Cached footer style
             _footerStyle = new GUIStyle(_labelStyle)
             {
-                fontSize = 10,
+                fontSize = ScaledFont(10),
                 fontStyle = FontStyle.Italic,
                 normal = { textColor = new Color(_textDark.r, _textDark.g, _textDark.b, 0.6f) }
             };

@@ -6,6 +6,8 @@
     <RootNamespace>BirthdayReminder</RootNamespace>
     <LangVersion>latest</LangVersion>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <!-- CS0436: We compile SharedUtilities and optionally reference SunhavenTodo; both define VersionChecker/ReflectionHelper. We use our copy. -->
+    <NoWarn>$(NoWarn);CS0436</NoWarn>
   </PropertyGroup>
 
   <!-- BepInEx References -->

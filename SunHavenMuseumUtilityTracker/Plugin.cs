@@ -37,11 +37,13 @@ namespace SunHavenMuseumUtilityTracker
         private ConfigEntry<bool> _requireCtrl;
         private ConfigEntry<KeyCode> _altToggleKey;
         private ConfigEntry<bool> _checkForUpdates;
+        private ConfigEntry<float> _uiScale;
 
         // Static config for PersistentRunner
         public static KeyCode StaticToggleKey { get; private set; }
         public static bool StaticRequireCtrl { get; private set; }
         public static KeyCode StaticAltToggleKey { get; private set; }
+        public static float StaticUIScale { get; private set; } = 1f;
 
         private string _lastScene = "";
 
@@ -117,10 +119,21 @@ namespace SunHavenMuseumUtilityTracker
                 "Check for mod updates on startup"
             );
 
+            _uiScale = Config.Bind(
+                "Display",
+                "UIScale",
+                1f,
+                new BepInEx.Configuration.ConfigDescription(
+                    "Scale factor for the tracker window (1.0 = default, 1.5 = 50% larger)",
+                    new BepInEx.Configuration.AcceptableValueRange<float>(0.5f, 2.5f)
+                )
+            );
+
             // Set static values for PersistentRunner
             StaticToggleKey = _toggleKey.Value;
             StaticRequireCtrl = _requireCtrl.Value;
             StaticAltToggleKey = _altToggleKey.Value;
+            StaticUIScale = Mathf.Clamp(_uiScale.Value, 0.5f, 2.5f);
 
             // Listen for config changes
             _toggleKey.SettingChanged += (_, _) =>
@@ -136,6 +149,11 @@ namespace SunHavenMuseumUtilityTracker
             _altToggleKey.SettingChanged += (_, _) =>
             {
                 StaticAltToggleKey = _altToggleKey.Value;
+            };
+            _uiScale.SettingChanged += (_, _) =>
+            {
+                StaticUIScale = Mathf.Clamp(_uiScale.Value, 0.5f, 2.5f);
+                _trackerUI?.SetScale(StaticUIScale);
             };
         }
 
@@ -157,6 +175,7 @@ namespace SunHavenMuseumUtilityTracker
 
             _trackerUI = uiObject.AddComponent<MuseumTrackerUI>();
             _trackerUI.Initialize(_donationManager);
+            _trackerUI.SetScale(StaticUIScale);
             _trackerUI.SetToggleKey(_toggleKey.Value, _requireCtrl.Value);
             _staticTrackerUI = _trackerUI;
 
@@ -197,6 +216,7 @@ namespace SunHavenMuseumUtilityTracker
 
                     _staticTrackerUI = uiObject.AddComponent<MuseumTrackerUI>();
                     _staticTrackerUI.Initialize(_staticDonationManager);
+                    _staticTrackerUI.SetScale(StaticUIScale);
                     _staticTrackerUI.SetToggleKey(StaticToggleKey, StaticRequireCtrl);
 
                     Log?.LogInfo("[EnsureUI] TrackerUI recreated");
@@ -381,6 +401,6 @@ namespace SunHavenMuseumUtilityTracker
     {
         public const string PLUGIN_GUID = "com.azraelgodking.sunhavenmuseumutilitytracker";
         public const string PLUGIN_NAME = "Sun Haven Museum Utility Tracker";
-        public const string PLUGIN_VERSION = "2.2.1";
+        public const string PLUGIN_VERSION = "2.2.2";
     }
 }

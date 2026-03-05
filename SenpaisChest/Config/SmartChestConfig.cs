@@ -16,6 +16,7 @@ namespace SenpaisChest.Config
         public ConfigEntry<bool> EnableChestLabels { get; private set; }
         public ConfigEntry<ChestLabelVisibility> LabelVisibility { get; private set; }
         public ConfigEntry<ChestLabelVisibility> IconVisibility { get; private set; }
+        public ConfigEntry<float> UIScale { get; private set; }
 
         // Static copies for PersistentRunner access
         internal static KeyCode StaticToggleKey = KeyCode.F9;
@@ -59,6 +60,15 @@ namespace SenpaisChest.Config
                 false,
                 "Require Ctrl key to be held when pressing the toggle key"
             );
+
+            UIScale = config.Bind(
+                "UI",
+                "UIScale",
+                1f,
+                new BepInEx.Configuration.ConfigDescription(
+                    "Scale factor for Smart Chest config window (1.0 = default)",
+                    new BepInEx.Configuration.AcceptableValueRange<float>(0.5f, 2.5f)
+                ));
 
             CheckForUpdates = config.Bind(
                 "Updates",

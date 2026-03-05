@@ -13,13 +13,20 @@ namespace HavensAlmanac.UI
     public class DailyBriefing : MonoBehaviour
     {
         private const int WINDOW_ID = 98782;
-        private const float WIDTH = 500f;
-        private const float MIN_HEIGHT = 250f;
+        private const float BASE_WIDTH = 500f;
+        private const float BASE_MIN_HEIGHT = 250f;
 
+        private float _scale = 1f;
         private AlmanacDataAggregator _aggregator;
         private Rect _windowRect;
         private bool _isVisible;
-        private float _contentHeight = MIN_HEIGHT;
+        private float _contentHeight = BASE_MIN_HEIGHT;
+
+        private float Width => BASE_WIDTH * _scale;
+        private float MinHeight => BASE_MIN_HEIGHT * _scale;
+        private float Scaled(float value) => value * _scale;
+        private int ScaledFont(int baseSize) => Mathf.Max(8, Mathf.RoundToInt(baseSize * _scale));
+        private int ScaledInt(float value) => Mathf.RoundToInt(value * _scale);
 
         // Styles
         private bool _stylesInitialized;
@@ -64,12 +71,18 @@ namespace HavensAlmanac.UI
 
         public void Hide() => _isVisible = false;
 
+        public void SetScale(float scale)
+        {
+            _scale = Mathf.Clamp(scale, 0.5f, 2.5f);
+            _stylesInitialized = false;
+        }
+
         private void CenterWindow()
         {
             _windowRect = new Rect(
-                (Screen.width - WIDTH) / 2f,
-                (Screen.height - MIN_HEIGHT) / 2f - 50f,
-                WIDTH, MIN_HEIGHT);
+                (Screen.width - Width) / 2f,
+                (Screen.height - MinHeight) / 2f - Scaled(50f),
+                Width, MinHeight);
         }
 
         private void Update()
@@ -88,13 +101,11 @@ namespace HavensAlmanac.UI
             if (!_stylesInitialized)
                 InitializeStyles();
 
-            // Dynamic height — clamp to screen bounds
-            float maxHeight = Screen.height - 60f;
-            _windowRect.height = Mathf.Clamp(_contentHeight, MIN_HEIGHT, maxHeight);
+            float maxHeight = Screen.height - Scaled(60f);
+            _windowRect.height = Mathf.Clamp(_contentHeight, MinHeight, maxHeight);
 
-            // Re-center horizontally, keep vertically on screen
             _windowRect.x = (Screen.width - _windowRect.width) / 2f;
-            _windowRect.y = Mathf.Clamp(_windowRect.y, 20f, Screen.height - _windowRect.height - 20f);
+            _windowRect.y = Mathf.Clamp(_windowRect.y, Scaled(20f), Screen.height - _windowRect.height - Scaled(20f));
 
             _windowRect = GUI.Window(WINDOW_ID, _windowRect, DrawWindow, "", _windowStyle);
         }
@@ -103,7 +114,7 @@ namespace HavensAlmanac.UI
         {
             // Header
             GUILayout.Label("Good Morning!", _titleStyle);
-            GUILayout.Space(6);
+            GUILayout.Space(Scaled(6));
 
             bool anyContent = false;
 
@@ -123,7 +134,7 @@ namespace HavensAlmanac.UI
                     if (drew)
                     {
                         anyContent = true;
-                        GUILayout.Space(6);
+                        GUILayout.Space(Scaled(6));
                     }
                 }
                 catch
@@ -137,25 +148,22 @@ namespace HavensAlmanac.UI
                 GUILayout.Label("Nothing noteworthy today. Have a great day!", _contentStyle);
             }
 
-            GUILayout.Space(10);
+            GUILayout.Space(Scaled(10));
 
-            // Dismiss button — centered
             GUILayout.BeginHorizontal();
             GUILayout.FlexibleSpace();
-            if (GUILayout.Button("Dismiss", _dismissButtonStyle, GUILayout.Width(120), GUILayout.Height(30)))
+            if (GUILayout.Button("Dismiss", _dismissButtonStyle, GUILayout.Width(Scaled(120)), GUILayout.Height(Scaled(30))))
                 Hide();
             GUILayout.FlexibleSpace();
             GUILayout.EndHorizontal();
 
-            // Track actual content height for dynamic window sizing
             if (Event.current.type == UnityEngine.EventType.Repaint)
             {
                 var lastRect = GUILayoutUtility.GetLastRect();
-                _contentHeight = lastRect.yMax + 28f;
+                _contentHeight = lastRect.yMax + Scaled(28f);
             }
 
-            // Drag header only
-            GUI.DragWindow(new Rect(0, 0, _windowRect.width, 30));
+            GUI.DragWindow(new Rect(0, 0, _windowRect.width, Scaled(30)));
         }
 
         private void InitializeStyles()
@@ -171,8 +179,8 @@ namespace HavensAlmanac.UI
 
             _windowStyle = new GUIStyle(GUI.skin.window)
             {
-                padding = new RectOffset(16, 16, 12, 12),
-                border = new RectOffset(2, 2, 2, 2)
+                padding = new RectOffset(ScaledInt(16), ScaledInt(16), ScaledInt(12), ScaledInt(12)),
+                border = new RectOffset(ScaledInt(2), ScaledInt(2), ScaledInt(2), ScaledInt(2))
             };
             _windowStyle.normal.background = _bgTexture;
             _windowStyle.onNormal.background = _bgTexture;
@@ -180,7 +188,7 @@ namespace HavensAlmanac.UI
             _titleStyle = new GUIStyle(GUI.skin.label)
             {
                 fontStyle = FontStyle.Bold,
-                fontSize = 18,
+                fontSize = ScaledFont(18),
                 alignment = TextAnchor.MiddleCenter
             };
             _titleStyle.normal.textColor = goldText;
@@ -188,13 +196,13 @@ namespace HavensAlmanac.UI
             _sectionTitleStyle = new GUIStyle(GUI.skin.label)
             {
                 fontStyle = FontStyle.Bold,
-                fontSize = 13
+                fontSize = ScaledFont(13)
             };
             _sectionTitleStyle.normal.textColor = goldText;
 
             _contentStyle = new GUIStyle(GUI.skin.label)
             {
-                fontSize = 12,
+                fontSize = ScaledFont(12),
                 fontStyle = FontStyle.Italic,
                 alignment = TextAnchor.MiddleCenter,
                 wordWrap = true
@@ -203,7 +211,7 @@ namespace HavensAlmanac.UI
 
             _dismissButtonStyle = new GUIStyle(GUI.skin.button)
             {
-                fontSize = 13,
+                fontSize = ScaledFont(13),
                 fontStyle = FontStyle.Bold
             };
         }
