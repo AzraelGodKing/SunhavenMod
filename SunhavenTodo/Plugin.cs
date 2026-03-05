@@ -32,6 +32,7 @@ namespace SunhavenTodo
         private static float _staticHUDPositionX = -1f;
         private static float _staticHUDPositionY = -1f;
         private static KeyCode _staticHUDToggleKey = KeyCode.H;
+        private static float _staticUIScale = 1f;
 
         // Configuration
         private ConfigEntry<KeyCode> _toggleKey;
@@ -43,6 +44,7 @@ namespace SunhavenTodo
         private ConfigEntry<float> _hudPositionY;
         private ConfigEntry<KeyCode> _hudToggleKey;
         private ConfigEntry<bool> _checkForUpdates;
+        private ConfigEntry<float> _uiScale;
 
         // Instance references
         private TodoManager _todoManager;
@@ -176,6 +178,23 @@ namespace SunhavenTodo
                 true,
                 "Check for mod updates on startup"
             );
+
+            _uiScale = Config.Bind(
+                "Display",
+                "UIScale",
+                1f,
+                new BepInEx.Configuration.ConfigDescription(
+                    "Scale factor for the Todo list and HUD (1.0 = default, 1.5 = 50% larger)",
+                    new BepInEx.Configuration.AcceptableValueRange<float>(0.5f, 2.5f)
+                )
+            );
+            _staticUIScale = Mathf.Clamp(_uiScale.Value, 0.5f, 2.5f);
+            _uiScale.SettingChanged += (_, _) =>
+            {
+                _staticUIScale = Mathf.Clamp(_uiScale.Value, 0.5f, 2.5f);
+                _staticTodoUI?.SetScale(_staticUIScale);
+                _staticTodoHUD?.SetScale(_staticUIScale);
+            };
         }
 
         private void CreatePersistentRunner()
@@ -257,6 +276,7 @@ namespace SunhavenTodo
 
                     _staticTodoUI = uiObject.AddComponent<TodoUI>();
                     _staticTodoUI.Initialize(_staticTodoManager);
+                    _staticTodoUI.SetScale(_staticUIScale);
                     Log?.LogInfo("[EnsureUI] TodoUI recreated");
                 }
 
@@ -269,6 +289,7 @@ namespace SunhavenTodo
 
                     _staticTodoHUD = hudObject.AddComponent<TodoHUD>();
                     _staticTodoHUD.Initialize(_staticTodoManager);
+                    _staticTodoHUD.SetScale(_staticUIScale);
                     _staticTodoHUD.SetEnabled(_staticHUDEnabled);
 
                     // Restore saved position if valid

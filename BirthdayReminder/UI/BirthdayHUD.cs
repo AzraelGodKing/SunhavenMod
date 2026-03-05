@@ -11,21 +11,34 @@ namespace BirthdayReminder.UI
     /// </summary>
     public class BirthdayHUD : MonoBehaviour
     {
-        // Window settings
+        // Window settings (base values, scaled by _scale)
         private const int WINDOW_ID = 98770;
         private const int GIFT_WINDOW_ID = 98771;
-        private const float WINDOW_WIDTH = 320f;
-        private const float MIN_HEIGHT = 100f;
-        private const float MAX_HEIGHT = 500f;
-        private const float HEADER_HEIGHT = 28f;
-        private const float ITEM_HEIGHT = 65f;
+        private const float BASE_WINDOW_WIDTH = 320f;
+        private const float BASE_MIN_HEIGHT = 100f;
+        private const float BASE_MAX_HEIGHT = 500f;
+        private const float BASE_HEADER_HEIGHT = 28f;
+        private const float BASE_ITEM_HEIGHT = 65f;
+        private const float BASE_GIFT_WINDOW_WIDTH = 300f;
+        private const float BASE_GIFT_WINDOW_HEIGHT = 400f;
 
-        // Gift popup window settings
-        private const float GIFT_WINDOW_WIDTH = 300f;
-        private const float GIFT_WINDOW_HEIGHT = 400f;
+        // UI scale (from config, 0.5-2.5)
+        private float _scale = 1f;
 
         // Manager reference
         private BirthdayManager _manager;
+
+        private float WindowWidth => BASE_WINDOW_WIDTH * _scale;
+        private float MinHeight => BASE_MIN_HEIGHT * _scale;
+        private float MaxHeight => BASE_MAX_HEIGHT * _scale;
+        private float HeaderHeight => BASE_HEADER_HEIGHT * _scale;
+        private float ItemHeight => BASE_ITEM_HEIGHT * _scale;
+        private float GiftWindowWidth => BASE_GIFT_WINDOW_WIDTH * _scale;
+        private float GiftWindowHeight => BASE_GIFT_WINDOW_HEIGHT * _scale;
+
+        private int ScaledFont(int baseSize) => Mathf.Max(8, Mathf.RoundToInt(baseSize * _scale));
+        private float Scaled(float value) => value * _scale;
+        private int ScaledInt(float value) => Mathf.RoundToInt(value * _scale);
 
         // Display state
         private bool _isVisible;
@@ -90,7 +103,7 @@ namespace BirthdayReminder.UI
 
         private void Awake()
         {
-            _windowRect = new Rect(100, 100, WINDOW_WIDTH, MIN_HEIGHT);
+            _windowRect = new Rect(100, 100, WindowWidth, MinHeight);
             _isVisible = false;  // Don't show by default - only show when player is in-game with birthdays
             Plugin.Log?.LogInfo("[BirthdayHUD] Awake called - isVisible set to false (waiting for player init)");
         }
@@ -104,17 +117,17 @@ namespace BirthdayReminder.UI
             if (Screen.width > 0 && Screen.height > 0)
             {
                 _windowRect = new Rect(
-                    Screen.width - WINDOW_WIDTH - 20,
-                    80,
-                    WINDOW_WIDTH,
-                    MIN_HEIGHT
+                    Screen.width - WindowWidth - Scaled(20),
+                    Scaled(80),
+                    WindowWidth,
+                    MinHeight
                 );
                 Plugin.Log?.LogInfo($"[BirthdayHUD] Default position set to ({_windowRect.x}, {_windowRect.y})");
             }
             else
             {
                 // Fallback position if screen isn't ready
-                _windowRect = new Rect(100, 100, WINDOW_WIDTH, MIN_HEIGHT);
+                _windowRect = new Rect(100, 100, WindowWidth, MinHeight);
                 Plugin.Log?.LogInfo($"[BirthdayHUD] Using fallback position (100, 100) - screen not ready");
             }
 
@@ -141,6 +154,13 @@ namespace BirthdayReminder.UI
         public (float x, float y) GetPosition()
         {
             return (_windowRect.x, _windowRect.y);
+        }
+
+        public void SetScale(float scale)
+        {
+            _scale = Mathf.Clamp(scale, 0.5f, 2.5f);
+            _stylesInitialized = false;
+            EnsureOnScreen();
         }
 
         public bool IsVisible => _isVisible;
@@ -172,8 +192,8 @@ namespace BirthdayReminder.UI
             if (needsReset)
             {
                 Plugin.Log?.LogInfo($"[BirthdayHUD] Resetting position - was ({_windowRect.x}, {_windowRect.y})");
-                _windowRect.x = Screen.width - WINDOW_WIDTH - 20;
-                _windowRect.y = 80;
+                _windowRect.x = Screen.width - WindowWidth - Scaled(20);
+                _windowRect.y = Scaled(80);
             }
 
             // Clamp to screen bounds
@@ -242,17 +262,18 @@ namespace BirthdayReminder.UI
             int birthdayCount = (_manager != null && _manager.TodaysBirthdays != null) ? _manager.TodaysBirthdays.Count : 0;
 
             // Calculate height: header + padding + items + bottom padding
-            float contentHeight = HEADER_HEIGHT + 12;  // Header + top padding
+            float contentHeight = HeaderHeight + Scaled(12);
             if (birthdayCount == 0)
             {
-                contentHeight += 40;  // Empty message
+                contentHeight += Scaled(40);
             }
             else
             {
-                contentHeight += birthdayCount * ITEM_HEIGHT;
+                contentHeight += birthdayCount * ItemHeight;
             }
-            contentHeight += 16;  // Bottom padding + margins
-            _windowRect.height = Mathf.Clamp(contentHeight, MIN_HEIGHT, MAX_HEIGHT);
+            contentHeight += Scaled(16);
+            _windowRect.width = WindowWidth;
+            _windowRect.height = Mathf.Clamp(contentHeight, MinHeight, MaxHeight);
 
             var prevRect = _windowRect;
 
@@ -294,16 +315,16 @@ namespace BirthdayReminder.UI
         private void DrawWindow(int windowId)
         {
             // Draw border
-            DrawBorder(_windowRect.width, _windowRect.height, 2);
+            DrawBorder(_windowRect.width, _windowRect.height, Mathf.Max(1, ScaledInt(2)));
 
             GUILayout.BeginVertical();
             string dateStr = _manager?.CurrentDateFormatted ?? "";
             string headerTitle = string.IsNullOrEmpty(dateStr) ? "Birthday Today!" : $"Birthday Today! - {dateStr}";
-            DrawHeader(headerTitle, WINDOW_WIDTH);
+            DrawHeader(headerTitle, _windowRect.width);
             DrawBirthdays();
             GUILayout.EndVertical();
 
-            GUI.DragWindow(new Rect(0, 0, WINDOW_WIDTH - 24, HEADER_HEIGHT));
+            GUI.DragWindow(new Rect(0, 0, _windowRect.width - Scaled(24), HeaderHeight));
         }
 
         private void DrawBorder(float width, float height, int borderSize)
@@ -322,22 +343,22 @@ namespace BirthdayReminder.UI
 
         private void DrawHeader(string title, float width)
         {
-            var headerRect = new Rect(0, 0, width, HEADER_HEIGHT);
+            var headerRect = new Rect(0, 0, width, HeaderHeight);
             if (_headerBackground != null)
             {
                 GUI.DrawTexture(headerRect, _headerBackground);
             }
 
             GUILayout.BeginHorizontal();
-            GUILayout.Space(10);
+            GUILayout.Space(Scaled(10));
 
             // Cake icon using text
-            GUILayout.Label("[*]", _headerStyle, GUILayout.Width(24), GUILayout.Height(HEADER_HEIGHT));
-            GUILayout.Label(title, _headerStyle, GUILayout.Height(HEADER_HEIGHT));
+            GUILayout.Label("[*]", _headerStyle, GUILayout.Width(Scaled(24)), GUILayout.Height(HeaderHeight));
+            GUILayout.Label(title, _headerStyle, GUILayout.Height(HeaderHeight));
 
             GUILayout.FlexibleSpace();
 
-            if (GUILayout.Button("X", _closeButtonStyle, GUILayout.Width(24), GUILayout.Height(24)))
+            if (GUILayout.Button("X", _closeButtonStyle, GUILayout.Width(Scaled(24)), GUILayout.Height(Scaled(24))))
             {
                 if (title.Contains("Gifts"))
                 {
@@ -350,13 +371,13 @@ namespace BirthdayReminder.UI
                 }
             }
 
-            GUILayout.Space(6);
+            GUILayout.Space(Scaled(6));
             GUILayout.EndHorizontal();
         }
 
         private void DrawBirthdays()
         {
-            GUILayout.Space(6);
+            GUILayout.Space(Scaled(6));
 
             // Show status message if any (e.g., "Refreshed!") - using cached style
             if (_manager != null && _manager.HasStatusMessage)
@@ -366,7 +387,7 @@ namespace BirthdayReminder.UI
                 GUILayout.Label(_manager.StatusMessage, _statusMessageStyle);
                 GUILayout.FlexibleSpace();
                 GUILayout.EndHorizontal();
-                GUILayout.Space(4);
+                GUILayout.Space(Scaled(4));
             }
 
             if (_manager == null || _manager.TodaysBirthdays == null || _manager.TodaysBirthdays.Count == 0)
@@ -385,7 +406,7 @@ namespace BirthdayReminder.UI
                 }
             }
 
-            GUILayout.Space(6);
+            GUILayout.Space(Scaled(6));
         }
 
         private void DrawBirthdayItem(BirthdayDisplayInfo birthday)
@@ -397,7 +418,7 @@ namespace BirthdayReminder.UI
 
             // Status indicator (using cached styles)
             var statusStyle = birthday.HasBeenGifted ? _statusGiftedStyle : _statusUngiftedStyle;
-            GUILayout.Label(birthday.HasBeenGifted ? "[OK]" : "[!!]", statusStyle, GUILayout.Width(40));
+            GUILayout.Label(birthday.HasBeenGifted ? "[OK]" : "[!!]", statusStyle, GUILayout.Width(Scaled(40)));
 
             GUILayout.BeginVertical();
 
@@ -410,7 +431,7 @@ namespace BirthdayReminder.UI
 
             if (birthday.AllLovedGifts.Count > 0 || birthday.AllLikedGifts.Count > 0)
             {
-                if (GUILayout.Button("Gifts", _moreButtonStyle, GUILayout.Width(50), GUILayout.Height(20)))
+                if (GUILayout.Button("Gifts", _moreButtonStyle, GUILayout.Width(Scaled(50)), GUILayout.Height(Scaled(20))))
                 {
                     OpenGiftPopup(birthday);
                 }
@@ -420,7 +441,7 @@ namespace BirthdayReminder.UI
             // Gift hint
             if (!birthday.HasBeenGifted && !string.IsNullOrEmpty(birthday.GiftHint))
             {
-                GUILayout.Space(2);
+                GUILayout.Space(Scaled(2));
                 GUILayout.Label(birthday.GiftHint, _hintStyle);
             }
 
@@ -438,51 +459,51 @@ namespace BirthdayReminder.UI
             _giftScrollPosition = Vector2.zero;
 
             _giftPopupRect = new Rect(
-                _windowRect.x + _windowRect.width + 10,
+                _windowRect.x + _windowRect.width + Scaled(10),
                 _windowRect.y,
-                GIFT_WINDOW_WIDTH,
-                GIFT_WINDOW_HEIGHT
+                GiftWindowWidth,
+                GiftWindowHeight
             );
 
-            if (_giftPopupRect.x + GIFT_WINDOW_WIDTH > Screen.width)
+            if (_giftPopupRect.x + GiftWindowWidth > Screen.width)
             {
-                _giftPopupRect.x = _windowRect.x - GIFT_WINDOW_WIDTH - 10;
+                _giftPopupRect.x = _windowRect.x - GiftWindowWidth - Scaled(10);
             }
         }
 
         private void DrawGiftPopup(int windowId)
         {
             // Draw border
-            DrawBorder(GIFT_WINDOW_WIDTH, GIFT_WINDOW_HEIGHT, 2);
+            DrawBorder(GiftWindowWidth, GiftWindowHeight, ScaledInt(2));
 
             GUILayout.BeginVertical();
 
             // Header
-            var headerRect = new Rect(0, 0, GIFT_WINDOW_WIDTH, HEADER_HEIGHT);
+            var headerRect = new Rect(0, 0, GiftWindowWidth, HeaderHeight);
             if (_headerBackground != null)
             {
                 GUI.DrawTexture(headerRect, _headerBackground);
             }
 
             GUILayout.BeginHorizontal();
-            GUILayout.Space(10);
-            GUILayout.Label($"{_selectedNPC.NPCName}'s Gifts", _headerStyle, GUILayout.Height(HEADER_HEIGHT));
+            GUILayout.Space(Scaled(10));
+            GUILayout.Label($"{_selectedNPC.NPCName}'s Gifts", _headerStyle, GUILayout.Height(HeaderHeight));
             GUILayout.FlexibleSpace();
-            if (GUILayout.Button("X", _closeButtonStyle, GUILayout.Width(24), GUILayout.Height(24)))
+            if (GUILayout.Button("X", _closeButtonStyle, GUILayout.Width(Scaled(24)), GUILayout.Height(Scaled(24))))
             {
                 _showGiftPopup = false;
                 _selectedNPC = null;
             }
-            GUILayout.Space(6);
+            GUILayout.Space(Scaled(6));
             GUILayout.EndHorizontal();
 
             // Scrollable gift list
-            _giftScrollPosition = GUILayout.BeginScrollView(_giftScrollPosition, GUILayout.Height(GIFT_WINDOW_HEIGHT - HEADER_HEIGHT - 10));
+            _giftScrollPosition = GUILayout.BeginScrollView(_giftScrollPosition, GUILayout.Height(GiftWindowHeight - HeaderHeight - Scaled(10)));
 
             // === LOVED GIFTS (NPC-specific + Universal) ===
-            GUILayout.Space(6);
+            GUILayout.Space(Scaled(6));
             DrawSectionHeader("LOVED GIFTS", _lovedColor);
-            GUILayout.Space(4);
+            GUILayout.Space(Scaled(4));
 
             // NPC's loved gifts
             foreach (var gift in _selectedNPC.AllLovedGifts)
@@ -493,7 +514,7 @@ namespace BirthdayReminder.UI
             // Universal loved gifts
             if (BirthdayCache.UniversalLoved.Count > 0)
             {
-                GUILayout.Space(4);
+                GUILayout.Space(Scaled(4));
                 DrawSubHeader("Universal Loved:", _universalColor);
                 foreach (var gift in BirthdayCache.UniversalLoved)
                 {
@@ -502,13 +523,13 @@ namespace BirthdayReminder.UI
             }
 
             // Separator
-            GUILayout.Space(8);
+            GUILayout.Space(Scaled(8));
             DrawSeparator();
 
             // === LIKED GIFTS (NPC-specific + Universal) ===
-            GUILayout.Space(8);
+            GUILayout.Space(Scaled(8));
             DrawSectionHeader("LIKED GIFTS", _likedColor);
-            GUILayout.Space(4);
+            GUILayout.Space(Scaled(4));
 
             // NPC's liked gifts
             foreach (var gift in _selectedNPC.AllLikedGifts)
@@ -519,7 +540,7 @@ namespace BirthdayReminder.UI
             // Universal liked gifts
             if (BirthdayCache.UniversalLiked.Count > 0)
             {
-                GUILayout.Space(4);
+                GUILayout.Space(Scaled(4));
                 DrawSubHeader("Universal Liked:", _universalColor);
                 foreach (var gift in BirthdayCache.UniversalLiked)
                 {
@@ -527,18 +548,18 @@ namespace BirthdayReminder.UI
                 }
             }
 
-            GUILayout.Space(10);
+            GUILayout.Space(Scaled(10));
 
             GUILayout.EndScrollView();
             GUILayout.EndVertical();
 
-            GUI.DragWindow(new Rect(0, 0, GIFT_WINDOW_WIDTH - 24, HEADER_HEIGHT));
+            GUI.DragWindow(new Rect(0, 0, GiftWindowWidth - Scaled(24), HeaderHeight));
         }
 
         private void DrawSectionHeader(string text, Color color)
         {
             GUILayout.BeginHorizontal();
-            GUILayout.Space(8);
+            GUILayout.Space(Scaled(8));
             // Use cached style based on color
             GUIStyle style;
             if (color == _lovedColor)
@@ -554,7 +575,7 @@ namespace BirthdayReminder.UI
         private void DrawSubHeader(string text, Color color)
         {
             GUILayout.BeginHorizontal();
-            GUILayout.Space(12);
+            GUILayout.Space(Scaled(12));
             // Use cached universal sub-header style
             GUILayout.Label(text, _universalSubHeaderStyle);
             GUILayout.EndHorizontal();
@@ -563,7 +584,7 @@ namespace BirthdayReminder.UI
         private void DrawGiftItem(string gift, Color bulletColor)
         {
             GUILayout.BeginHorizontal();
-            GUILayout.Space(16);
+            GUILayout.Space(Scaled(16));
 
             // Colored bullet (using cached styles)
             GUIStyle bulletStyle;
@@ -573,7 +594,7 @@ namespace BirthdayReminder.UI
                 bulletStyle = _likedBulletStyle;
             else
                 bulletStyle = _universalBulletStyle;
-            GUILayout.Label("\u2022", bulletStyle, GUILayout.Width(12));
+            GUILayout.Label("\u2022", bulletStyle, GUILayout.Width(Scaled(12)));
 
             // Gift name
             GUILayout.Label(gift, _giftItemStyle);
@@ -583,10 +604,11 @@ namespace BirthdayReminder.UI
         private void DrawSeparator()
         {
             GUILayout.BeginHorizontal();
-            GUILayout.Space(20);
-            var rect = GUILayoutUtility.GetRect(GIFT_WINDOW_WIDTH - 40, 1);
+            GUILayout.Space(Scaled(20));
+            float sepW = GiftWindowWidth - Scaled(40);
+            var rect = GUILayoutUtility.GetRect(sepW, 1);
             GUI.color = new Color(_borderColor.r, _borderColor.g, _borderColor.b, 0.4f);
-            GUI.DrawTexture(new Rect(rect.x, rect.y, GIFT_WINDOW_WIDTH - 40, 1), Texture2D.whiteTexture);
+            GUI.DrawTexture(new Rect(rect.x, rect.y, sepW, 1), Texture2D.whiteTexture);
             GUI.color = Color.white;
             GUILayout.EndHorizontal();
         }
@@ -622,25 +644,27 @@ namespace BirthdayReminder.UI
 
         private void CreateStyles()
         {
+            int pad = Mathf.Max(1, ScaledInt(4));
+            int border = Mathf.Max(1, ScaledInt(2));
             _windowStyle = new GUIStyle
             {
                 normal = { background = _windowBackground, textColor = _textLight },
-                padding = new RectOffset(4, 4, 4, 4),
-                border = new RectOffset(2, 2, 2, 2)
+                padding = new RectOffset(pad, pad, pad, pad),
+                border = new RectOffset(border, border, border, border)
             };
 
             _headerStyle = new GUIStyle
             {
-                fontSize = 13,
+                fontSize = ScaledFont(13),
                 fontStyle = FontStyle.Bold,
                 normal = { textColor = Color.white },
                 alignment = TextAnchor.MiddleLeft,
-                padding = new RectOffset(2, 2, 2, 2)
+                padding = new RectOffset(ScaledInt(2), ScaledInt(2), ScaledInt(2), ScaledInt(2))
             };
 
             _nameStyle = new GUIStyle
             {
-                fontSize = 12,
+                fontSize = ScaledFont(12),
                 fontStyle = FontStyle.Bold,
                 normal = { textColor = _textLight },
                 alignment = TextAnchor.MiddleLeft
@@ -654,7 +678,7 @@ namespace BirthdayReminder.UI
 
             _hintStyle = new GUIStyle
             {
-                fontSize = 10,
+                fontSize = ScaledFont(10),
                 fontStyle = FontStyle.Italic,
                 normal = { textColor = _hintColor },
                 alignment = TextAnchor.UpperLeft,
@@ -663,7 +687,7 @@ namespace BirthdayReminder.UI
 
             _closeButtonStyle = new GUIStyle
             {
-                fontSize = 14,
+                fontSize = ScaledFont(14),
                 fontStyle = FontStyle.Bold,
                 normal = { textColor = new Color(1f, 0.9f, 0.9f) },
                 hover = { textColor = Color.white },
@@ -672,18 +696,18 @@ namespace BirthdayReminder.UI
 
             _moreButtonStyle = new GUIStyle(GUI.skin.button)
             {
-                fontSize = 10,
+                fontSize = ScaledFont(10),
                 fontStyle = FontStyle.Bold,
                 normal = { textColor = _borderColor, background = MakeTex(1, 1, new Color(0.3f, 0.25f, 0.22f, 0.8f)) },
                 hover = { textColor = Color.white, background = MakeTex(1, 1, new Color(0.5f, 0.35f, 0.3f, 0.9f)) },
                 alignment = TextAnchor.MiddleCenter,
-                padding = new RectOffset(4, 4, 2, 2),
+                padding = new RectOffset(ScaledInt(4), ScaledInt(4), ScaledInt(2), ScaledInt(2)),
                 margin = new RectOffset(0, 0, 0, 0)
             };
 
             _giftItemStyle = new GUIStyle
             {
-                fontSize = 11,
+                fontSize = ScaledFont(11),
                 normal = { textColor = _textLight },
                 alignment = TextAnchor.MiddleLeft,
                 wordWrap = true,
@@ -692,7 +716,7 @@ namespace BirthdayReminder.UI
 
             _sectionHeaderStyle = new GUIStyle
             {
-                fontSize = 11,
+                fontSize = ScaledFont(11),
                 fontStyle = FontStyle.Bold,
                 normal = { textColor = _textLight },
                 alignment = TextAnchor.MiddleLeft
@@ -714,36 +738,36 @@ namespace BirthdayReminder.UI
             _itemBoxStyle = new GUIStyle
             {
                 normal = { background = _itemBackground },
-                padding = new RectOffset(8, 8, 6, 6),
-                margin = new RectOffset(6, 6, 2, 2)
+                padding = new RectOffset(ScaledInt(8), ScaledInt(8), ScaledInt(6), ScaledInt(6)),
+                margin = new RectOffset(ScaledInt(6), ScaledInt(6), ScaledInt(2), ScaledInt(2))
             };
 
             _statusGiftedStyle = new GUIStyle(_nameStyle)
             {
                 normal = { textColor = _giftedColor },
                 fontStyle = FontStyle.Bold,
-                fontSize = 13
+                fontSize = ScaledFont(13)
             };
 
             _statusUngiftedStyle = new GUIStyle(_nameStyle)
             {
                 normal = { textColor = _ungiftedColor },
                 fontStyle = FontStyle.Bold,
-                fontSize = 13
+                fontSize = ScaledFont(13)
             };
 
             _nameGiftedStyle = new GUIStyle(_nameStyle)
             {
                 normal = { textColor = new Color(_textLight.r, _textLight.g, _textLight.b, 0.5f) },
                 fontStyle = FontStyle.Italic,
-                fontSize = 13
+                fontSize = ScaledFont(13)
             };
 
             _nameUngiftedStyle = new GUIStyle(_nameStyle)
             {
                 normal = { textColor = _textLight },
                 fontStyle = FontStyle.Bold,
-                fontSize = 13
+                fontSize = ScaledFont(13)
             };
 
             _lovedSectionStyle = new GUIStyle(_sectionHeaderStyle)
@@ -760,7 +784,7 @@ namespace BirthdayReminder.UI
             {
                 normal = { textColor = _universalColor },
                 fontStyle = FontStyle.Bold,
-                fontSize = 9
+                fontSize = ScaledFont(9)
             };
 
             _lovedBulletStyle = new GUIStyle(_giftItemStyle)

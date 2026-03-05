@@ -64,6 +64,11 @@ namespace SenpaisChest
                 _config = new SmartChestConfig();
                 _config.Initialize(Config);
                 _staticConfig = _config;
+                _config.UIScale.SettingChanged += (_, _) =>
+                {
+                    float scale = Mathf.Clamp(_config.UIScale.Value, 0.5f, 2.5f);
+                    _staticUI?.SetScale(scale);
+                };
 
                 // Initialize manager and save system
                 _manager = new SmartChestManager();
@@ -76,6 +81,7 @@ namespace SenpaisChest
                 DontDestroyOnLoad(uiObject);
                 _ui = uiObject.AddComponent<SmartChestUI>();
                 _ui.Initialize(_manager);
+                _ui.SetScale(Mathf.Clamp(_config.UIScale.Value, 0.5f, 2.5f));
                 _staticUI = _ui;
 
                 // Apply Harmony patches
@@ -142,6 +148,7 @@ namespace SenpaisChest
                     UnityEngine.Object.DontDestroyOnLoad(uiObject);
                     _staticUI = uiObject.AddComponent<SmartChestUI>();
                     _staticUI.Initialize(_staticManager);
+                    _staticUI.SetScale(Mathf.Clamp(_staticConfig.UIScale.Value, 0.5f, 2.5f));
                 }
             }
             catch (Exception ex)
