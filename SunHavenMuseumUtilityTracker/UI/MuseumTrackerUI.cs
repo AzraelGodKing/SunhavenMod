@@ -14,11 +14,14 @@ namespace SunHavenMuseumUtilityTracker.UI
     /// </summary>
     public class MuseumTrackerUI : MonoBehaviour
     {
-        // Window dimensions
-        private const float WINDOW_WIDTH = 640f;
-        private const float WINDOW_HEIGHT = 700f;
-        private const float ICON_SIZE = 34f;
-        private const float HEADER_HEIGHT = 80f;
+        // Base window dimensions (scaled by _scale)
+        private const float BASE_WINDOW_WIDTH = 640f;
+        private const float BASE_WINDOW_HEIGHT = 700f;
+        private const float BASE_ICON_SIZE = 34f;
+        private const float BASE_HEADER_HEIGHT = 80f;
+
+        // UI scale (from config, 0.5-2.5)
+        private float _scale = 1f;
 
         // State
         private DonationManager _donationManager;
@@ -124,11 +127,11 @@ namespace SunHavenMuseumUtilityTracker.UI
         private readonly Color _skyBlue = new Color(0.45f, 0.65f, 0.85f);
         private readonly Color _coralWarm = new Color(0.85f, 0.50f, 0.40f);
 
-        // Text colors
-        private readonly Color _textDark = new Color(0.25f, 0.20f, 0.15f);
-        private readonly Color _textMedium = new Color(0.40f, 0.35f, 0.28f);
-        private readonly Color _textLight = new Color(0.55f, 0.48f, 0.38f);
-        private readonly Color _textMuted = new Color(0.65f, 0.58f, 0.48f);
+        // Text colors (stronger contrast for readability)
+        private readonly Color _textDark = new Color(0.18f, 0.14f, 0.10f);
+        private readonly Color _textMedium = new Color(0.32f, 0.28f, 0.22f);
+        private readonly Color _textLight = new Color(0.48f, 0.42f, 0.34f);
+        private readonly Color _textMuted = new Color(0.58f, 0.52f, 0.44f);
 
         // Status colors
         private readonly Color _successGreen = new Color(0.35f, 0.65f, 0.35f);
@@ -160,15 +163,35 @@ namespace SunHavenMuseumUtilityTracker.UI
 
         public bool IsVisible => _isVisible;
 
+        private float WindowWidth => BASE_WINDOW_WIDTH * _scale;
+        private float WindowHeight => BASE_WINDOW_HEIGHT * _scale;
+        private float HeaderHeight => BASE_HEADER_HEIGHT * _scale;
+        private float IconSize => BASE_ICON_SIZE * _scale;
+
+        private int ScaledFont(int baseSize) => Mathf.Max(8, Mathf.RoundToInt(baseSize * _scale));
+        private float Scaled(float value) => value * _scale;
+        private int ScaledInt(float value) => Mathf.RoundToInt(value * _scale);
+
+        public void SetScale(float scale)
+        {
+            _scale = Mathf.Clamp(scale, 0.5f, 2.5f);
+            _stylesInitialized = false;
+            float w = WindowWidth;
+            float h = WindowHeight;
+            _windowRect = new Rect((Screen.width - w) / 2f, (Screen.height - h) / 2f, w, h);
+        }
+
         public void Initialize(DonationManager donationManager)
         {
             _donationManager = donationManager;
             _isVisible = false;
             _windowId = GetHashCode();
 
-            float x = (Screen.width - WINDOW_WIDTH) / 2f;
-            float y = (Screen.height - WINDOW_HEIGHT) / 2f;
-            _windowRect = new Rect(x, y, WINDOW_WIDTH, WINDOW_HEIGHT);
+            float w = WindowWidth;
+            float h = WindowHeight;
+            float x = (Screen.width - w) / 2f;
+            float y = (Screen.height - h) / 2f;
+            _windowRect = new Rect(x, y, w, h);
 
             SunhavenMods.Shared.IconCache.Initialize(Plugin.Log);
             Plugin.Log?.LogInfo("MuseumTrackerUI initialized");
@@ -356,10 +379,10 @@ namespace SunHavenMuseumUtilityTracker.UI
                 new Color(_successGreenLight.r, _successGreenLight.g, _successGreenLight.b, 0.3f),
                 _successGreen, 2);
 
-            // Item row backgrounds
-            _itemEven = MakeTex(1, 1, new Color(_parchmentLight.r, _parchmentLight.g, _parchmentLight.b, 0.5f));
-            _itemOdd = MakeTex(1, 1, new Color(_parchment.r, _parchment.g, _parchment.b, 0.5f));
-            _itemDonated = MakeTex(1, 1, new Color(_successGreenLight.r, _successGreenLight.g, _successGreenLight.b, 0.25f));
+            // Item row backgrounds (clearer alternating + donated state)
+            _itemEven = MakeTex(1, 1, new Color(_parchmentLight.r, _parchmentLight.g, _parchmentLight.b, 0.72f));
+            _itemOdd = MakeTex(1, 1, new Color(_parchment.r, _parchment.g, _parchment.b, 0.68f));
+            _itemDonated = MakeTex(1, 1, new Color(_successGreenLight.r, _successGreenLight.g, _successGreenLight.b, 0.35f));
 
             // Buttons - warm wood style
             _buttonNormal = MakeRoundedRect(6, 6, _woodMedium, _woodDark, 2);
@@ -377,42 +400,45 @@ namespace SunHavenMuseumUtilityTracker.UI
 
         private void CreateStyles()
         {
+            int border = ScaledInt(16);
             // Window style
             _windowStyle = new GUIStyle(GUI.skin.window)
             {
                 normal = { background = _windowBackground, textColor = _textDark },
                 padding = new RectOffset(0, 0, 0, 0),
-                border = new RectOffset(16, 16, 16, 16)
+                border = new RectOffset(border, border, border, border)
             };
 
-            // Title style - rich gold
+            // Title style - bold and readable
             _titleStyle = new GUIStyle(GUI.skin.label)
             {
-                fontSize = 28,
+                fontSize = ScaledFont(26),
                 fontStyle = FontStyle.Bold,
                 alignment = TextAnchor.MiddleLeft,
-                normal = { textColor = _woodDark }
+                normal = { textColor = _woodDark },
+                padding = new RectOffset(0, 0, 0, 0)
             };
 
             // Subtitle style
             _subtitleStyle = new GUIStyle(GUI.skin.label)
             {
-                fontSize = 12,
-                fontStyle = FontStyle.Italic,
+                fontSize = ScaledFont(13),
+                fontStyle = FontStyle.Normal,
                 alignment = TextAnchor.MiddleLeft,
                 normal = { textColor = _textMedium }
             };
 
-            // Section tab styles
+            // Section tab styles (readable labels)
             _sectionTabStyle = new GUIStyle(GUI.skin.button)
             {
-                normal = { background = _tabNormal, textColor = _textMedium },
-                hover = { background = _tabHover, textColor = _textDark },
-                active = { background = _tabHover, textColor = _textDark },
-                fontSize = 12,
+                normal = { background = _tabNormal, textColor = _textDark },
+                hover = { background = _tabHover, textColor = _woodDark },
+                active = { background = _tabHover, textColor = _woodDark },
+                fontSize = ScaledFont(13),
                 fontStyle = FontStyle.Bold,
-                padding = new RectOffset(12, 12, 10, 10),
-                margin = new RectOffset(3, 3, 0, 0)
+                alignment = TextAnchor.MiddleCenter,
+                padding = new RectOffset(ScaledInt(14), ScaledInt(10), ScaledInt(12), ScaledInt(10)),
+                margin = new RectOffset(ScaledInt(4), ScaledInt(4), 0, 0)
             };
 
             _sectionTabActiveStyle = new GUIStyle(_sectionTabStyle)
@@ -421,16 +447,17 @@ namespace SunHavenMuseumUtilityTracker.UI
                 hover = { background = _tabActive, textColor = _woodDark }
             };
 
-            // Bundle header style
+            // Bundle header style (more padding, clearer text)
             _bundleHeaderStyle = new GUIStyle(GUI.skin.button)
             {
                 normal = { background = _bundleNormal, textColor = _textDark },
                 hover = { background = _bundleHover, textColor = _woodDark },
                 active = { background = _bundleHover, textColor = _woodDark },
-                fontSize = 14,
+                fontSize = ScaledFont(14),
                 fontStyle = FontStyle.Bold,
                 alignment = TextAnchor.MiddleLeft,
-                padding = new RectOffset(15, 15, 12, 12)
+                padding = new RectOffset(ScaledInt(18), ScaledInt(14), ScaledInt(14), ScaledInt(14)),
+                wordWrap = true
             };
 
             _bundleHeaderCompleteStyle = new GUIStyle(_bundleHeaderStyle)
@@ -439,17 +466,18 @@ namespace SunHavenMuseumUtilityTracker.UI
                 hover = { background = _bundleComplete, textColor = _forestGreen }
             };
 
-            // Item styles
+            // Item styles (more padding for easier scanning)
             _itemRowStyle = new GUIStyle
             {
-                padding = new RectOffset(20, 15, 6, 6),
-                margin = new RectOffset(0, 0, 1, 1)
+                padding = new RectOffset(ScaledInt(16), ScaledInt(10), ScaledInt(8), ScaledInt(8)),
+                margin = new RectOffset(0, 0, 2, 1)
             };
 
             _itemNameStyle = new GUIStyle(GUI.skin.label)
             {
-                fontSize = 13,
-                normal = { textColor = _textDark }
+                fontSize = ScaledFont(14),
+                normal = { textColor = _textDark },
+                wordWrap = true
             };
 
             // Button style
@@ -458,15 +486,15 @@ namespace SunHavenMuseumUtilityTracker.UI
                 normal = { background = _buttonNormal, textColor = _parchmentLight },
                 hover = { background = _buttonHover, textColor = Color.white },
                 active = { background = _buttonHover, textColor = Color.white },
-                fontSize = 12,
+                fontSize = ScaledFont(12),
                 fontStyle = FontStyle.Bold,
-                padding = new RectOffset(14, 14, 8, 8)
+                padding = new RectOffset(ScaledInt(14), ScaledInt(14), ScaledInt(8), ScaledInt(8))
             };
 
             // Close button style
             _closeButtonStyle = new GUIStyle(_buttonStyle)
             {
-                fontSize = 18,
+                fontSize = ScaledFont(18),
                 fontStyle = FontStyle.Bold,
                 normal = { background = MakeRoundedRect(6, 6, _coralWarm, new Color(0.7f, 0.35f, 0.25f), 2), textColor = Color.white },
                 hover = { background = MakeRoundedRect(6, 6, new Color(0.95f, 0.55f, 0.45f), _coralWarm, 2), textColor = Color.white }
@@ -475,14 +503,14 @@ namespace SunHavenMuseumUtilityTracker.UI
             // Label style
             _labelStyle = new GUIStyle(GUI.skin.label)
             {
-                fontSize = 12,
+                fontSize = ScaledFont(12),
                 normal = { textColor = _textDark }
             };
 
             // Checkmark style
             _checkmarkStyle = new GUIStyle(GUI.skin.label)
             {
-                fontSize = 16,
+                fontSize = ScaledFont(16),
                 fontStyle = FontStyle.Bold,
                 normal = { textColor = _successGreen },
                 alignment = TextAnchor.MiddleCenter
@@ -491,36 +519,36 @@ namespace SunHavenMuseumUtilityTracker.UI
             // Toggle style
             _toggleStyle = new GUIStyle(GUI.skin.toggle)
             {
-                fontSize = 12,
+                fontSize = ScaledFont(12),
                 normal = { textColor = _textMedium },
                 hover = { textColor = _textDark }
             };
 
-            // Search style
+            // Search style (clearer box, comfortable padding)
             _searchStyle = new GUIStyle(GUI.skin.textField)
             {
-                fontSize = 13,
+                fontSize = ScaledFont(14),
                 normal = { background = _searchBg, textColor = _textDark },
                 focused = { background = _searchBg, textColor = _textDark },
-                padding = new RectOffset(12, 12, 8, 8)
+                padding = new RectOffset(ScaledInt(14), ScaledInt(10), ScaledInt(10), ScaledInt(10))
             };
 
-            // Stats style
+            // Stats style (percentage in header)
             _statsStyle = new GUIStyle(GUI.skin.label)
             {
-                fontSize = 24,
+                fontSize = ScaledFont(22),
                 fontStyle = FontStyle.Bold,
                 alignment = TextAnchor.MiddleCenter,
-                normal = { textColor = _goldRich }
+                normal = { textColor = _woodDark }
             };
 
-            // Footer style
+            // Footer style (readable hint text)
             _footerStyle = new GUIStyle(GUI.skin.label)
             {
-                fontSize = 11,
-                fontStyle = FontStyle.Italic,
+                fontSize = ScaledFont(12),
+                fontStyle = FontStyle.Normal,
                 alignment = TextAnchor.MiddleCenter,
-                normal = { textColor = _textMuted }
+                normal = { textColor = _textLight }
             };
 
             // Sync button style - teal/green to indicate sync action
@@ -529,15 +557,15 @@ namespace SunHavenMuseumUtilityTracker.UI
                 normal = { background = MakeRoundedRect(6, 6, new Color(0.30f, 0.55f, 0.50f), new Color(0.20f, 0.40f, 0.35f), 2), textColor = _parchmentLight },
                 hover = { background = MakeRoundedRect(6, 6, new Color(0.40f, 0.65f, 0.60f), new Color(0.30f, 0.50f, 0.45f), 2), textColor = Color.white },
                 active = { background = MakeRoundedRect(6, 6, new Color(0.35f, 0.60f, 0.55f), new Color(0.25f, 0.45f, 0.40f), 2), textColor = Color.white },
-                fontSize = 11,
+                fontSize = ScaledFont(11),
                 fontStyle = FontStyle.Bold,
-                padding = new RectOffset(10, 10, 6, 6)
+                padding = new RectOffset(ScaledInt(10), ScaledInt(10), ScaledInt(6), ScaledInt(6))
             };
 
             // Sync status message style
             _syncStatusStyle = new GUIStyle(GUI.skin.label)
             {
-                fontSize = 11,
+                fontSize = ScaledFont(11),
                 fontStyle = FontStyle.Italic,
                 alignment = TextAnchor.MiddleRight,
                 normal = { textColor = _successGreen }
@@ -546,14 +574,16 @@ namespace SunHavenMuseumUtilityTracker.UI
             // Cached inline styles (created once, not every frame)
             _headerBoxStyle = new GUIStyle(GUI.skin.box)
             {
-                normal = { background = MakeRoundedRect(4, 4, new Color(_goldPale.r, _goldPale.g, _goldPale.b, 0.5f), _goldRich, 2) },
-                padding = new RectOffset(15, 15, 8, 8)
+                normal = { background = MakeRoundedRect(6, 6, new Color(_goldPale.r, _goldPale.g, _goldPale.b, 0.65f), _goldRich, 2) },
+                padding = new RectOffset(ScaledInt(18), ScaledInt(12), ScaledInt(10), ScaledInt(10))
             };
 
             _headerCountStyle = new GUIStyle(_labelStyle)
             {
                 alignment = TextAnchor.MiddleCenter,
-                fontSize = 11
+                fontSize = ScaledFont(12),
+                fontStyle = FontStyle.Bold,
+                normal = { textColor = _textDark }
             };
 
             _searchLabelStyle = new GUIStyle(_labelStyle)
@@ -566,41 +596,41 @@ namespace SunHavenMuseumUtilityTracker.UI
             _emptyStyle = new GUIStyle(_labelStyle)
             {
                 alignment = TextAnchor.MiddleCenter,
-                fontSize = 15,
-                fontStyle = FontStyle.Italic,
-                normal = { textColor = _textMuted }
+                fontSize = ScaledFont(15),
+                fontStyle = FontStyle.Normal,
+                normal = { textColor = _textMedium }
             };
 
             _progressLabelStyle = new GUIStyle(_labelStyle)
             {
                 alignment = TextAnchor.MiddleCenter,
-                fontSize = 13,
+                fontSize = ScaledFont(13),
                 fontStyle = FontStyle.Bold
             };
 
             _itemNameDonatedStyle = new GUIStyle(_itemNameStyle)
             {
-                fontSize = 13,
-                fontStyle = FontStyle.Italic,
-                normal = { textColor = _successGreen }
+                fontSize = ScaledFont(14),
+                fontStyle = FontStyle.Normal,
+                normal = { textColor = new Color(0.22f, 0.52f, 0.28f) } // darker green for readability
             };
 
             _rarityLabelStyleCached = new GUIStyle(_labelStyle)
             {
-                fontSize = 11,
+                fontSize = ScaledFont(12),
                 fontStyle = FontStyle.Bold,
                 alignment = TextAnchor.MiddleCenter
             };
 
             _checkStyleCached = new GUIStyle(_checkmarkStyle)
             {
-                fontSize = 14
+                fontSize = ScaledFont(14)
             };
 
             _neededStyleCached = new GUIStyle(_checkmarkStyle)
             {
                 normal = { textColor = _neededOrange },
-                fontSize = 12
+                fontSize = ScaledFont(12)
             };
         }
 
@@ -704,22 +734,22 @@ namespace SunHavenMuseumUtilityTracker.UI
             // Gold trim divider
             DrawGoldDivider();
 
-            GUILayout.Space(10);
+            GUILayout.Space(Scaled(14));
 
             // Search and filter bar
             DrawSearchBar();
 
-            GUILayout.Space(10);
+            GUILayout.Space(Scaled(14));
 
             // Section tabs
             DrawSectionTabs();
 
-            GUILayout.Space(12);
+            GUILayout.Space(Scaled(16));
 
             // Content area
             DrawContent();
 
-            GUILayout.Space(10);
+            GUILayout.Space(Scaled(10));
 
             // Footer
             DrawFooter();
@@ -727,20 +757,21 @@ namespace SunHavenMuseumUtilityTracker.UI
             GUILayout.EndVertical();
 
             // Make window draggable from header
-            GUI.DragWindow(new Rect(0, 0, WINDOW_WIDTH, HEADER_HEIGHT));
+            GUI.DragWindow(new Rect(0, 0, WindowWidth, HeaderHeight));
         }
 
         private void DrawHeader()
         {
-            var headerRect = GUILayoutUtility.GetRect(0, HEADER_HEIGHT, GUILayout.ExpandWidth(true));
+            var headerRect = GUILayoutUtility.GetRect(0, HeaderHeight, GUILayout.ExpandWidth(true));
             GUI.DrawTexture(headerRect, _headerBackground, ScaleMode.StretchToFill);
 
-            GUILayout.BeginArea(new Rect(headerRect.x + 25, headerRect.y, headerRect.width - 50, headerRect.height));
+            float pad = Scaled(25);
+            GUILayout.BeginArea(new Rect(headerRect.x + pad, headerRect.y, headerRect.width - pad * 2f, headerRect.height));
             GUILayout.BeginHorizontal();
 
             // Left side - Title and subtitle
             GUILayout.BeginVertical();
-            GUILayout.Space(12);
+            GUILayout.Space(Scaled(12));
             GUILayout.Label("S.M.U.T.", _titleStyle);
             GUILayout.Label("Sun Haven Museum Utility Tracker", _subtitleStyle);
             GUILayout.EndVertical();
@@ -755,19 +786,19 @@ namespace SunHavenMuseumUtilityTracker.UI
             float percent = _donationManager.GetOverallCompletionPercent();
 
             // Stats box (using cached style)
-            GUILayout.BeginVertical(_headerBoxStyle, GUILayout.Width(100));
+            GUILayout.BeginVertical(_headerBoxStyle, GUILayout.Width(Scaled(100)));
             GUILayout.Label($"{percent:F0}%", _statsStyle);
             GUILayout.Label($"{donated}/{total}", _headerCountStyle);
             GUILayout.EndVertical();
 
             GUILayout.EndVertical();
 
-            GUILayout.Space(10);
+            GUILayout.Space(Scaled(10));
 
             // Close button
             GUILayout.BeginVertical();
-            GUILayout.Space(20);
-            if (GUILayout.Button("X", _closeButtonStyle, GUILayout.Width(38), GUILayout.Height(38)))
+            GUILayout.Space(Scaled(20));
+            if (GUILayout.Button("X", _closeButtonStyle, GUILayout.Width(Scaled(38)), GUILayout.Height(Scaled(38))))
             {
                 Hide();
             }
@@ -779,60 +810,61 @@ namespace SunHavenMuseumUtilityTracker.UI
 
         private void DrawGoldDivider()
         {
-            var divRect = GUILayoutUtility.GetRect(0, 4, GUILayout.ExpandWidth(true));
-            divRect.x += 20;
-            divRect.width -= 40;
+            var divRect = GUILayoutUtility.GetRect(0, Scaled(5), GUILayout.ExpandWidth(true));
+            float margin = Scaled(24);
+            divRect.x += margin;
+            divRect.width -= margin * 2f;
 
-            // Draw decorative gold divider
+            // Decorative gold divider (clearer separation)
+            GUI.color = _borderDark;
+            GUI.DrawTexture(new Rect(divRect.x, divRect.y, divRect.width, 1), Texture2D.whiteTexture);
             GUI.color = _goldRich;
             GUI.DrawTexture(new Rect(divRect.x, divRect.y + 1, divRect.width, 2), Texture2D.whiteTexture);
             GUI.color = _goldPale;
-            GUI.DrawTexture(new Rect(divRect.x + 2, divRect.y, divRect.width - 4, 1), Texture2D.whiteTexture);
+            GUI.DrawTexture(new Rect(divRect.x, divRect.y + 3, divRect.width, 1), Texture2D.whiteTexture);
             GUI.color = Color.white;
         }
 
         private void DrawSearchBar()
         {
             GUILayout.BeginHorizontal();
-            GUILayout.Space(20);
+            GUILayout.Space(Scaled(20));
 
-            // Search label (using cached style)
-            GUILayout.Label("Search:", _searchLabelStyle, GUILayout.Width(55));
+            GUILayout.Label("Search", _searchLabelStyle, GUILayout.Width(Scaled(52)));
 
             // Search field
-            _searchQuery = GUILayout.TextField(_searchQuery, _searchStyle, GUILayout.Width(180), GUILayout.Height(28));
+            _searchQuery = GUILayout.TextField(_searchQuery, _searchStyle, GUILayout.Width(Scaled(180)), GUILayout.Height(Scaled(28)));
 
-            GUILayout.Space(15);
+            GUILayout.Space(Scaled(15));
 
-            // Filter toggle with custom style
-            _showOnlyNeeded = GUILayout.Toggle(_showOnlyNeeded, " Show needed only", _toggleStyle, GUILayout.Width(130));
+            _showOnlyNeeded = GUILayout.Toggle(_showOnlyNeeded, " Needed only", _toggleStyle, GUILayout.Width(Scaled(115)));
 
             GUILayout.FlexibleSpace();
 
             // Show sync status message if active
             if (!string.IsNullOrEmpty(_syncStatusMessage))
             {
-                GUILayout.Label(_syncStatusMessage, _syncStatusStyle, GUILayout.Width(150));
-                GUILayout.Space(8);
+                GUILayout.Label(_syncStatusMessage, _syncStatusStyle, GUILayout.Width(Scaled(150)));
+                GUILayout.Space(Scaled(8));
             }
 
             // Clear button
             if (!string.IsNullOrEmpty(_searchQuery))
             {
-                if (GUILayout.Button("Clear", _buttonStyle, GUILayout.Width(55), GUILayout.Height(28)))
+                if (GUILayout.Button("Clear", _buttonStyle, GUILayout.Width(Scaled(55)), GUILayout.Height(Scaled(28))))
                 {
                     _searchQuery = "";
                 }
-                GUILayout.Space(8);
+                GUILayout.Space(Scaled(8));
             }
 
             // Sync with Game button
-            if (GUILayout.Button("Sync with Game", _syncButtonStyle, GUILayout.Width(105), GUILayout.Height(28)))
+            if (GUILayout.Button("Sync with Game", _syncButtonStyle, GUILayout.Width(Scaled(105)), GUILayout.Height(Scaled(28))))
             {
                 PerformGameSync();
             }
 
-            GUILayout.Space(20);
+            GUILayout.Space(Scaled(20));
             GUILayout.EndHorizontal();
         }
 
@@ -874,7 +906,7 @@ namespace SunHavenMuseumUtilityTracker.UI
             var sections = MuseumContent.GetAllSections();
 
             GUILayout.BeginHorizontal();
-            GUILayout.Space(20);
+            GUILayout.Space(Scaled(20));
 
             for (int i = 0; i < sections.Count; i++)
             {
@@ -891,17 +923,17 @@ namespace SunHavenMuseumUtilityTracker.UI
                 string completeMark = isComplete ? " *" : "";
                 string label = $"{section.Name}{completeMark}\n{stats.donated}/{stats.total}";
 
-                if (GUILayout.Button(label, tabStyle, GUILayout.Width(185), GUILayout.Height(52)))
+                if (GUILayout.Button(label, tabStyle, GUILayout.Width(Scaled(185)), GUILayout.Height(Scaled(52))))
                 {
                     _selectedSectionIndex = i;
                     _scrollPosition = Vector2.zero;
                 }
 
                 if (i < sections.Count - 1)
-                    GUILayout.Space(8);
+                    GUILayout.Space(Scaled(8));
             }
 
-            GUILayout.Space(20);
+            GUILayout.Space(Scaled(20));
             GUILayout.EndHorizontal();
         }
 
@@ -915,14 +947,14 @@ namespace SunHavenMuseumUtilityTracker.UI
             var theme = _sectionThemes.TryGetValue(section.Id, out var t) ? t : (_woodMedium, _woodLight);
 
             GUILayout.BeginHorizontal();
-            GUILayout.Space(20);
+            GUILayout.Space(Scaled(20));
 
             GUILayout.BeginVertical();
 
             // Section progress bar
             DrawSectionProgress(section, theme.Item1);
 
-            GUILayout.Space(10);
+            GUILayout.Space(Scaled(10));
 
             // Scroll view (using cached style)
             _scrollPosition = GUILayout.BeginScrollView(_scrollPosition, _scrollStyle,
@@ -936,26 +968,25 @@ namespace SunHavenMuseumUtilityTracker.UI
                 if (bundleHasVisibleItems)
                 {
                     hasVisibleContent = true;
-                    GUILayout.Space(8);
+                    GUILayout.Space(Scaled(10));
                 }
             }
 
-            // Empty state message (using cached style)
+            // Empty state message
             if (!hasVisibleContent)
             {
-                GUILayout.Space(50);
-
+                GUILayout.Space(Scaled(60));
                 if (!string.IsNullOrEmpty(_searchQuery))
-                    GUILayout.Label($"No items found for \"{_searchQuery}\"", _emptyStyle);
+                    GUILayout.Label($"No items match \"{_searchQuery}\"", _emptyStyle);
                 else if (_showOnlyNeeded)
-                    GUILayout.Label("Wonderful! All items donated!", _emptyStyle);
+                    GUILayout.Label("All items in this section are donated!", _emptyStyle);
             }
 
             GUILayout.EndScrollView();
 
             GUILayout.EndVertical();
 
-            GUILayout.Space(20);
+            GUILayout.Space(Scaled(20));
             GUILayout.EndHorizontal();
         }
 
@@ -964,35 +995,36 @@ namespace SunHavenMuseumUtilityTracker.UI
             var stats = _donationManager.GetSectionStats(section);
             float percent = _donationManager.GetSectionCompletionPercent(section);
 
-            // Progress bar with wood frame look
-            var barRect = GUILayoutUtility.GetRect(0, 28, GUILayout.ExpandWidth(true));
+            var barRect = GUILayoutUtility.GetRect(0, Scaled(32), GUILayout.ExpandWidth(true));
+            float inset = Scaled(3);
 
             // Background
             GUI.DrawTexture(barRect, _progressBg);
 
-            // Fill
-            var fillRect = new Rect(barRect.x + 3, barRect.y + 3, (barRect.width - 6) * (percent / 100f), barRect.height - 6);
+            // Fill (with slight rounding effect via inset)
+            float fillW = Mathf.Max(0, (barRect.width - inset * 2) * (percent / 100f));
+            var fillRect = new Rect(barRect.x + inset, barRect.y + inset, fillW, barRect.height - inset * 2);
             GUI.color = sectionColor;
             GUI.DrawTexture(fillRect, Texture2D.whiteTexture);
             GUI.color = Color.white;
 
-            // Border overlay
+            // Border
             GUI.color = _borderDark;
-            GUI.DrawTexture(new Rect(barRect.x, barRect.y, barRect.width, 2), Texture2D.whiteTexture);
-            GUI.DrawTexture(new Rect(barRect.x, barRect.y + barRect.height - 2, barRect.width, 2), Texture2D.whiteTexture);
-            GUI.DrawTexture(new Rect(barRect.x, barRect.y, 2, barRect.height), Texture2D.whiteTexture);
-            GUI.DrawTexture(new Rect(barRect.x + barRect.width - 2, barRect.y, 2, barRect.height), Texture2D.whiteTexture);
+            GUI.DrawTexture(new Rect(barRect.x, barRect.y, barRect.width, 1), Texture2D.whiteTexture);
+            GUI.DrawTexture(new Rect(barRect.x, barRect.y + barRect.height - 1, barRect.width, 1), Texture2D.whiteTexture);
+            GUI.DrawTexture(new Rect(barRect.x, barRect.y, 1, barRect.height), Texture2D.whiteTexture);
+            GUI.DrawTexture(new Rect(barRect.x + barRect.width - 1, barRect.y, 1, barRect.height), Texture2D.whiteTexture);
             GUI.color = Color.white;
 
-            // Progress text
+            // Progress text (always dark for readability)
             var progressLabel = new GUIStyle(_labelStyle)
             {
                 alignment = TextAnchor.MiddleCenter,
-                fontSize = 13,
+                fontSize = ScaledFont(14),
                 fontStyle = FontStyle.Bold,
-                normal = { textColor = percent > 50 ? _parchmentLight : _textDark }
+                normal = { textColor = _textDark }
             };
-            GUI.Label(barRect, $"{section.Name}: {stats.donated}/{stats.total} ({percent:F0}%)", progressLabel);
+            GUI.Label(barRect, $"{section.Name}: {stats.donated} / {stats.total}  ({percent:F0}%)", progressLabel);
         }
 
         private bool DrawBundle(MuseumBundle bundle, Color sectionColor)
@@ -1029,7 +1061,7 @@ namespace SunHavenMuseumUtilityTracker.UI
                 label = $"{expandIcon}  {bundle.Name}{completeIcon}  ({stats.donated}/{stats.total})";
             }
 
-            if (GUILayout.Button(label, headerStyle, GUILayout.ExpandWidth(true), GUILayout.Height(42)))
+            if (GUILayout.Button(label, headerStyle, GUILayout.ExpandWidth(true), GUILayout.Height(Scaled(44))))
             {
                 if (isExpanded)
                     _expandedBundles.Remove(bundle.Id);
@@ -1088,7 +1120,7 @@ namespace SunHavenMuseumUtilityTracker.UI
 
             var bgTex = isDonated ? _itemDonated : (index % 2 == 0 ? _itemEven : _itemOdd);
 
-            GUILayout.BeginHorizontal(_itemRowStyle, GUILayout.Height(40));
+            GUILayout.BeginHorizontal(_itemRowStyle, GUILayout.Height(Scaled(44)));
 
             // Draw background
             var lastRect = GUILayoutUtility.GetLastRect();
@@ -1097,28 +1129,29 @@ namespace SunHavenMuseumUtilityTracker.UI
                 GUI.DrawTexture(lastRect, bgTex);
             }
 
-            GUILayout.Space(10);
+            GUILayout.Space(Scaled(10));
 
             // Checkbox
-            bool newDonated = GUILayout.Toggle(isDonated, "", GUILayout.Width(24));
+            bool newDonated = GUILayout.Toggle(isDonated, "", GUILayout.Width(Scaled(24)));
             if (newDonated != isDonated)
             {
                 _donationManager.ToggleDonated(item.Id);
             }
 
-            GUILayout.Space(8);
+            GUILayout.Space(Scaled(8));
 
             // Item icon
             var icon = IconCache.GetIcon(item.GameItemId);
             if (icon != null)
             {
-                var iconRect = GUILayoutUtility.GetRect(ICON_SIZE, ICON_SIZE, GUILayout.Width(ICON_SIZE), GUILayout.Height(ICON_SIZE));
+                float iconSz = IconSize;
+                var iconRect = GUILayoutUtility.GetRect(iconSz, iconSz, GUILayout.Width(iconSz), GUILayout.Height(iconSz));
                 GUI.DrawTexture(iconRect, icon, ScaleMode.ScaleToFit);
-                GUILayout.Space(10);
+                GUILayout.Space(Scaled(10));
             }
             else
             {
-                GUILayout.Space(ICON_SIZE + 10);
+                GUILayout.Space(IconSize + Scaled(10));
             }
 
             // Item name with rarity color (use GUI.contentColor to avoid creating styles)
@@ -1130,23 +1163,23 @@ namespace SunHavenMuseumUtilityTracker.UI
 
             // Rarity label (using cached style with content color)
             GUI.contentColor = rarityColor;
-            GUILayout.Label(item.Rarity.ToString(), _rarityLabelStyleCached, GUILayout.Width(80));
+            GUILayout.Label(item.Rarity.ToString(), _rarityLabelStyleCached, GUILayout.Width(Scaled(80)));
 
             // Status (using cached styles)
             if (isDonated)
             {
                 GUI.contentColor = _successGreen;
-                GUILayout.Label("Donated", _checkStyleCached, GUILayout.Width(60));
+                GUILayout.Label("Donated", _checkStyleCached, GUILayout.Width(Scaled(60)));
             }
             else
             {
                 GUI.contentColor = _neededOrange;
-                GUILayout.Label("Needed", _neededStyleCached, GUILayout.Width(60));
+                GUILayout.Label("Needed", _neededStyleCached, GUILayout.Width(Scaled(60)));
             }
 
             GUI.contentColor = savedColor;
 
-            GUILayout.Space(10);
+            GUILayout.Space(Scaled(10));
             GUILayout.EndHorizontal();
         }
 
@@ -1155,13 +1188,13 @@ namespace SunHavenMuseumUtilityTracker.UI
             GUILayout.BeginHorizontal();
             GUILayout.FlexibleSpace();
 
-            var footerText = $"Press {(_requireCtrl ? "Ctrl+" : "")}{_toggleKey} to toggle  |  ESC to close  |  Sync imports completed bundles";
+            var footerText = $"Press {(_requireCtrl ? "Ctrl+" : "")}{_toggleKey} to open/close  ·  ESC to close  ·  Sync copies completed bundles from game";
             GUILayout.Label(footerText, _footerStyle);
 
             GUILayout.FlexibleSpace();
             GUILayout.EndHorizontal();
 
-            GUILayout.Space(12);
+            GUILayout.Space(Scaled(12));
         }
     }
 }

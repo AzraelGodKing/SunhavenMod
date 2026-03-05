@@ -22,6 +22,21 @@ namespace SenpaisChest.UI
         private SmartChestData _currentData;
         private string _chestId;
 
+        // UI scale (0.5–2.5)
+        private float _scale = 1f;
+        private const float BASE_WINDOW_WIDTH = 420f;
+        private const float BASE_WINDOW_HEIGHT = 500f;
+        private const float BASE_GROUPS_WIDTH = 400f;
+        private const float BASE_GROUPS_HEIGHT = 450f;
+
+        private float WindowWidth => BASE_WINDOW_WIDTH * _scale;
+        private float WindowHeight => BASE_WINDOW_HEIGHT * _scale;
+        private float GroupsWindowWidth => BASE_GROUPS_WIDTH * _scale;
+        private float GroupsWindowHeight => BASE_GROUPS_HEIGHT * _scale;
+        private float Scaled(float value) => value * _scale;
+        private int ScaledFont(int baseSize) => Mathf.Max(8, Mathf.RoundToInt(baseSize * _scale));
+        private int ScaledInt(float value) => Mathf.RoundToInt(value * _scale);
+
         // Window
         private Rect _windowRect = new Rect(100, 100, 420, 500);
 
@@ -48,7 +63,7 @@ namespace SenpaisChest.UI
 
         // Groups management
         private bool _groupsWindowVisible;
-        private Rect _groupsWindowRect = new Rect(150, 150, 400, 450);
+        private Rect _groupsWindowRect;
         private ItemGroup _editingGroup;
         private string _newGroupName = "";
         private string _groupItemSearch = "";
@@ -193,6 +208,18 @@ namespace SenpaisChest.UI
         public void Initialize(SmartChestManager manager)
         {
             _manager = manager;
+            _windowRect = new Rect(100, 100, WindowWidth, WindowHeight);
+            _groupsWindowRect = new Rect(150, 150, GroupsWindowWidth, GroupsWindowHeight);
+        }
+
+        public void SetScale(float scale)
+        {
+            _scale = Mathf.Clamp(scale, 0.5f, 2.5f);
+            _stylesInitialized = false;
+            _windowRect.width = WindowWidth;
+            _windowRect.height = WindowHeight;
+            _groupsWindowRect.width = GroupsWindowWidth;
+            _groupsWindowRect.height = GroupsWindowHeight;
         }
 
         public void Show()
@@ -329,15 +356,12 @@ namespace SenpaisChest.UI
         {
             if (_currentChest == null) return;
 
-            // Place floating window at bottom of screen to match embedded panel position
-            const float bottomMargin = 8f;
-            const float windowHeight = 400f;
-            float y = bottomMargin;
-            float h = Mathf.Min(windowHeight, Screen.height - bottomMargin);
-            _windowRect.width = 420f;
+            float y = Scaled(8f);
+            float h = Mathf.Min(Scaled(400f), Screen.height - y);
+            _windowRect.width = WindowWidth;
             _windowRect.height = h;
             _windowRect.x = Mathf.Clamp((Screen.width - _windowRect.width) * 0.5f, 0, Screen.width - _windowRect.width);
-            _windowRect.y = y; // GUI coords: y=0 is bottom, so this is just above bottom margin
+            _windowRect.y = y;
         }
 
         /// <summary>
@@ -369,7 +393,7 @@ namespace SenpaisChest.UI
                 Rect drawRect = _noteRect;
                 if (drawRect.width <= 0 || drawRect.height <= 0)
                 {
-                    drawRect = new Rect((Screen.width - 340f) * 0.5f, 8f, 340f, 34f);
+                    drawRect = new Rect((Screen.width - Scaled(340f)) * 0.5f, Scaled(8f), Scaled(340f), Scaled(34f));
                 }
                 drawRect = ClampRectToScreen(drawRect);
 
@@ -382,9 +406,9 @@ namespace SenpaisChest.UI
             if (!_isVisible || _currentData == null)
                 return;
 
-            // Floating config window (opened via F9)
-            float maxHeight = Screen.height - 40f;
-            _windowRect.height = Mathf.Clamp(_contentHeight, 300f, maxHeight);
+            float maxHeight = Screen.height - Scaled(40f);
+            _windowRect.width = WindowWidth;
+            _windowRect.height = Mathf.Clamp(_contentHeight, Scaled(300f), maxHeight);
             _windowRect.x = Mathf.Clamp(_windowRect.x, 0, Screen.width - _windowRect.width);
             _windowRect.y = Mathf.Clamp(_windowRect.y, 0, Screen.height - _windowRect.height);
 
@@ -479,9 +503,9 @@ namespace SenpaisChest.UI
 
             if (withWindowChrome)
             {
-                const float titleBarHeight = 36f;
-                const float outerBorder = 5f;
-                const float innerBorderW = 1f;
+                float titleBarHeight = Scaled(36f);
+                float outerBorder = Scaled(5f);
+                float innerBorderW = Scaled(1f);
 
                 if (_configInnerBorderTex != null)
                 {
@@ -502,19 +526,19 @@ namespace SenpaisChest.UI
                 GUILayout.FlexibleSpace();
                 GUILayout.Label("Senpai's Chest Config", _configTitleStyle, GUILayout.ExpandWidth(true));
                 GUILayout.FlexibleSpace();
-                if (GUILayout.Button("X", _closeButtonStyle, GUILayout.Width(28), GUILayout.Height(24)))
+                if (GUILayout.Button("X", _closeButtonStyle, GUILayout.Width(Scaled(28)), GUILayout.Height(Scaled(24))))
                     HideConfig();
-                GUILayout.Space(4);
+                GUILayout.Space(Scaled(4));
                 GUILayout.EndHorizontal();
                 GUILayout.EndArea();
 
-                GUILayout.Space(titleBarHeight + 2);
+                GUILayout.Space(titleBarHeight + Scaled(2));
                 if (_configGoldSeparatorTex != null)
                 {
-                    var sepRect = GUILayoutUtility.GetRect(rect.width - 24, 2);
+                    var sepRect = GUILayoutUtility.GetRect(rect.width - Scaled(24), Scaled(2));
                     GUI.DrawTexture(sepRect, _configGoldSeparatorTex);
                 }
-                GUILayout.Space(8);
+                GUILayout.Space(Scaled(8));
             }
 
             if (withWindowChrome)
@@ -680,9 +704,9 @@ namespace SenpaisChest.UI
                 if (Event.current.type == UnityEngine.EventType.Repaint)
                 {
                     var lastRect = GUILayoutUtility.GetLastRect();
-                    _contentHeight = lastRect.yMax + 24f;
+                    _contentHeight = lastRect.yMax + Scaled(24f);
                 }
-                GUI.DragWindow(new Rect(0, 0, rect.width, 28));
+                GUI.DragWindow(new Rect(0, 0, rect.width, Scaled(28)));
             }
 
             if (Event.current.type == UnityEngine.EventType.KeyDown && Event.current.keyCode == KeyCode.Backspace)
@@ -842,7 +866,7 @@ namespace SenpaisChest.UI
                 _editingGroup = null;
                 _newGroupName = "";
             }
-            GUI.DragWindow(new Rect(0, 0, 400, 24));
+            GUI.DragWindow(new Rect(0, 0, GroupsWindowWidth, Scaled(24)));
         }
 
         private void DrawNoteContent(float width, float height)
@@ -1207,8 +1231,8 @@ namespace SenpaisChest.UI
         {
             _windowStyle = new GUIStyle(GUI.skin.window)
             {
-                padding = new RectOffset(14, 14, 12, 12),
-                border = new RectOffset(2, 2, 2, 2)
+                padding = new RectOffset(ScaledInt(14), ScaledInt(14), ScaledInt(12), ScaledInt(12)),
+                border = new RectOffset(ScaledInt(2), ScaledInt(2), ScaledInt(2), ScaledInt(2))
             };
             _windowStyle.normal.background = _windowBg;
             _windowStyle.normal.textColor = _whiteText;
@@ -1217,28 +1241,28 @@ namespace SenpaisChest.UI
 
             _titleStyle = new GUIStyle
             {
-                fontSize = 15,
+                fontSize = ScaledFont(15),
                 fontStyle = FontStyle.Bold,
                 normal = { textColor = _whiteText },
                 alignment = TextAnchor.MiddleLeft,
-                padding = new RectOffset(2, 2, 2, 2)
+                padding = new RectOffset(ScaledInt(2), ScaledInt(2), ScaledInt(2), ScaledInt(2))
             };
 
             _sectionHeaderStyle = new GUIStyle
             {
-                fontSize = 15,
+                fontSize = ScaledFont(15),
                 fontStyle = FontStyle.Bold,
                 normal = { textColor = _goldText },
                 alignment = TextAnchor.MiddleCenter,
-                padding = new RectOffset(4, 4, 2, 2)
+                padding = new RectOffset(ScaledInt(4), ScaledInt(4), ScaledInt(2), ScaledInt(2))
             };
 
             _labelStyle = new GUIStyle
             {
-                fontSize = 13,
+                fontSize = ScaledFont(13),
                 normal = { textColor = _whiteText },
                 alignment = TextAnchor.MiddleLeft,
-                padding = new RectOffset(2, 2, 2, 2),
+                padding = new RectOffset(ScaledInt(2), ScaledInt(2), ScaledInt(2), ScaledInt(2)),
                 wordWrap = true
             };
 
@@ -1246,7 +1270,7 @@ namespace SenpaisChest.UI
 
             _labelDimStyle = new GUIStyle(_labelStyle)
             {
-                fontSize = 12,
+                fontSize = ScaledFont(12),
                 fontStyle = FontStyle.Italic,
                 normal = { textColor = _dimText }
             };
@@ -1254,35 +1278,35 @@ namespace SenpaisChest.UI
             _ruleBoxStyle = new GUIStyle
             {
                 normal = { background = _ruleBg },
-                padding = new RectOffset(10, 8, 6, 6),
-                margin = new RectOffset(4, 4, 2, 2)
+                padding = new RectOffset(ScaledInt(10), ScaledInt(8), ScaledInt(6), ScaledInt(6)),
+                margin = new RectOffset(ScaledInt(4), ScaledInt(4), ScaledInt(2), ScaledInt(2))
             };
 
-            _ruleTextStyle = new GUIStyle(_labelStyle) { fontSize = 13 };
+            _ruleTextStyle = new GUIStyle(_labelStyle) { fontSize = ScaledFont(13) };
 
             _removeRuleBtnStyle = new GUIStyle
             {
-                fontSize = 13,
+                fontSize = ScaledFont(13),
                 fontStyle = FontStyle.Bold,
                 normal = { background = _redBtnTex, textColor = _whiteText },
                 hover = { background = _redBtnHoverTex, textColor = _whiteText },
                 active = { background = _redBtnHoverTex, textColor = _whiteText },
                 alignment = TextAnchor.MiddleCenter,
-                padding = new RectOffset(2, 2, 2, 2)
+                padding = new RectOffset(ScaledInt(2), ScaledInt(2), ScaledInt(2), ScaledInt(2))
             };
 
             _closeButtonStyle = new GUIStyle
             {
-                fontSize = 14,
+                fontSize = ScaledFont(14),
                 fontStyle = FontStyle.Bold,
                 normal = { background = _closeBtnTex, textColor = _whiteText },
                 hover = { background = _closeBtnHoverTex, textColor = _whiteText },
                 active = { background = _closeBtnHoverTex, textColor = _whiteText },
                 alignment = TextAnchor.MiddleCenter,
-                padding = new RectOffset(2, 2, 1, 1)
+                padding = new RectOffset(ScaledInt(2), ScaledInt(2), ScaledInt(1), ScaledInt(1))
             };
 
-            _toggleStyle = new GUIStyle(GUI.skin.toggle) { fontSize = 13 };
+            _toggleStyle = new GUIStyle(GUI.skin.toggle) { fontSize = ScaledFont(13) };
             _toggleStyle.normal.textColor = _whiteText;
             _toggleStyle.onNormal.textColor = _whiteText;
             _toggleStyle.hover.textColor = _whiteText;
@@ -1290,23 +1314,23 @@ namespace SenpaisChest.UI
 
             _textFieldStyle = new GUIStyle
             {
-                fontSize = 13,
+                fontSize = ScaledFont(13),
                 normal = { background = _fieldBgTex, textColor = _whiteText },
                 focused = { background = _fieldBgTex, textColor = _whiteText },
-                padding = new RectOffset(8, 8, 5, 5),
-                border = new RectOffset(2, 2, 2, 2)
+                padding = new RectOffset(ScaledInt(8), ScaledInt(8), ScaledInt(5), ScaledInt(5)),
+                border = new RectOffset(ScaledInt(2), ScaledInt(2), ScaledInt(2), ScaledInt(2))
             };
 
             _selectorStyle = new GUIStyle
             {
-                fontSize = 12,
+                fontSize = ScaledFont(12),
                 fontStyle = FontStyle.Bold,
                 normal = { background = _btnInactiveTex, textColor = _whiteText },
                 hover = { background = _btnHoverTex, textColor = _whiteText },
                 active = { background = _btnActiveTex, textColor = _whiteText },
                 alignment = TextAnchor.MiddleCenter,
-                padding = new RectOffset(8, 8, 5, 5),
-                margin = new RectOffset(2, 2, 1, 1)
+                padding = new RectOffset(ScaledInt(8), ScaledInt(8), ScaledInt(5), ScaledInt(5)),
+                margin = new RectOffset(ScaledInt(2), ScaledInt(2), ScaledInt(1), ScaledInt(1))
             };
 
             _selectorActiveStyle = new GUIStyle(_selectorStyle)
@@ -1317,7 +1341,7 @@ namespace SenpaisChest.UI
 
             _addButtonStyle = new GUIStyle
             {
-                fontSize = 14,
+                fontSize = ScaledFont(14),
                 fontStyle = FontStyle.Bold,
                 normal = { background = _greenBtnTex, textColor = _whiteText },
                 hover = { background = _greenBtnHoverTex, textColor = _whiteText },
@@ -1328,7 +1352,7 @@ namespace SenpaisChest.UI
 
             _dangerButtonStyle = new GUIStyle
             {
-                fontSize = 12,
+                fontSize = ScaledFont(12),
                 fontStyle = FontStyle.Bold,
                 normal = { background = _redBtnTex, textColor = _whiteText },
                 hover = { background = _redBtnHoverTex, textColor = _whiteText },
@@ -1339,7 +1363,7 @@ namespace SenpaisChest.UI
 
             _closeBottomButtonStyle = new GUIStyle
             {
-                fontSize = 12,
+                fontSize = ScaledFont(12),
                 fontStyle = FontStyle.Bold,
                 normal = { background = _btnInactiveTex, textColor = _whiteText },
                 hover = { background = _btnHoverTex, textColor = _whiteText },
@@ -1350,13 +1374,13 @@ namespace SenpaisChest.UI
 
             _searchResultStyle = new GUIStyle
             {
-                fontSize = 12,
+                fontSize = ScaledFont(12),
                 normal = { background = _ruleBg, textColor = _whiteText },
                 hover = { background = _btnHoverTex, textColor = _whiteText },
                 active = { background = _btnActiveTex, textColor = _whiteText },
                 alignment = TextAnchor.MiddleLeft,
-                padding = new RectOffset(8, 8, 3, 3),
-                margin = new RectOffset(0, 0, 1, 1)
+                padding = new RectOffset(ScaledInt(8), ScaledInt(8), ScaledInt(3), ScaledInt(3)),
+                margin = new RectOffset(0, 0, ScaledInt(1), ScaledInt(1))
             };
 
             _searchResultSelectedStyle = new GUIStyle(_searchResultStyle)
@@ -1366,7 +1390,7 @@ namespace SenpaisChest.UI
                 hover = { background = _btnActiveHoverTex, textColor = _whiteText }
             };
 
-            _chestToggleStyle = new GUIStyle(_toggleStyle) { fontSize = 14 };
+            _chestToggleStyle = new GUIStyle(_toggleStyle) { fontSize = ScaledFont(14) };
             _chestToggleStyle.normal.textColor = _chestTextDark;
             _chestToggleStyle.onNormal.textColor = _chestTextDark;
             _chestToggleStyle.hover.textColor = _chestTextDark;
@@ -1376,32 +1400,32 @@ namespace SenpaisChest.UI
             {
                 normal = { textColor = _woodDark }, hover = { textColor = _woodDark }, active = { textColor = _woodDark },
                 focused = { textColor = _woodDark }, onNormal = { textColor = _woodDark }, onHover = { textColor = _woodDark },
-                onActive = { textColor = _woodDark }, onFocused = { textColor = _woodDark }, fontSize = 17
+                onActive = { textColor = _woodDark }, onFocused = { textColor = _woodDark }, fontSize = ScaledFont(17)
             };
 
             _chestSectionHeaderStyle = new GUIStyle(_sectionHeaderStyle)
             {
                 normal = { textColor = _woodDark }, hover = { textColor = _woodDark }, active = { textColor = _woodDark },
                 focused = { textColor = _woodDark }, onNormal = { textColor = _woodDark }, onHover = { textColor = _woodDark },
-                onActive = { textColor = _woodDark }, onFocused = { textColor = _woodDark }, fontSize = 16
+                onActive = { textColor = _woodDark }, onFocused = { textColor = _woodDark }, fontSize = ScaledFont(16)
             };
 
-            _chestLabelStyle = new GUIStyle(_labelStyle) { normal = { textColor = _chestTextDark }, fontSize = 14 };
+            _chestLabelStyle = new GUIStyle(_labelStyle) { normal = { textColor = _chestTextDark }, fontSize = ScaledFont(14) };
             _chestLabelBoldStyle = new GUIStyle(_chestLabelStyle) { fontStyle = FontStyle.Bold };
             _chestLabelDimStyle = new GUIStyle(_chestLabelStyle)
             {
-                fontSize = 13, fontStyle = FontStyle.Italic, normal = { textColor = _chestTextDim }
+                fontSize = ScaledFont(13), fontStyle = FontStyle.Italic, normal = { textColor = _chestTextDim }
             };
 
-            _chestRuleBoxStyle = new GUIStyle { normal = { background = _chestRuleBoxTex }, padding = new RectOffset(10, 8, 6, 6), margin = new RectOffset(4, 4, 2, 2) };
-            _chestRuleTextStyle = new GUIStyle(_labelStyle) { fontSize = 13, normal = { textColor = _woodDark }, hover = { textColor = _woodDark }, active = { textColor = _woodDark } };
+            _chestRuleBoxStyle = new GUIStyle { normal = { background = _chestRuleBoxTex }, padding = new RectOffset(ScaledInt(10), ScaledInt(8), ScaledInt(6), ScaledInt(6)), margin = new RectOffset(ScaledInt(4), ScaledInt(4), ScaledInt(2), ScaledInt(2)) };
+            _chestRuleTextStyle = new GUIStyle(_labelStyle) { fontSize = ScaledFont(13), normal = { textColor = _woodDark }, hover = { textColor = _woodDark }, active = { textColor = _woodDark } };
             _chestSelectorStyle = new GUIStyle
             {
-                fontSize = 12, fontStyle = FontStyle.Bold,
+                fontSize = ScaledFont(12), fontStyle = FontStyle.Bold,
                 normal = { background = _chestSelectorTex, textColor = _woodDark },
                 hover = { background = _chestSelectorHoverTex, textColor = _woodDark },
                 active = { background = _chestSelectorActiveTex, textColor = _woodDark },
-                alignment = TextAnchor.MiddleCenter, padding = new RectOffset(8, 8, 5, 5), margin = new RectOffset(2, 2, 1, 1)
+                alignment = TextAnchor.MiddleCenter, padding = new RectOffset(ScaledInt(8), ScaledInt(8), ScaledInt(5), ScaledInt(5)), margin = new RectOffset(ScaledInt(2), ScaledInt(2), ScaledInt(1), ScaledInt(1))
             };
             _chestSelectorActiveStyle = new GUIStyle(_chestSelectorStyle)
             {
@@ -1410,7 +1434,7 @@ namespace SenpaisChest.UI
             };
             _chestAddButtonStyle = new GUIStyle
             {
-                fontSize = 14, fontStyle = FontStyle.Bold,
+                fontSize = ScaledFont(14), fontStyle = FontStyle.Bold,
                 normal = { background = _chestAddBtnTex, textColor = _parchmentLight },
                 hover = { background = _chestAddBtnHoverTex, textColor = _parchmentLight },
                 active = { background = _chestAddBtnHoverTex, textColor = _parchmentLight },
@@ -1418,7 +1442,7 @@ namespace SenpaisChest.UI
             };
             _chestDangerButtonStyle = new GUIStyle
             {
-                fontSize = 12, fontStyle = FontStyle.Bold,
+                fontSize = ScaledFont(12), fontStyle = FontStyle.Bold,
                 normal = { background = _chestDangerBtnTex, textColor = _whiteText },
                 hover = { background = _chestDangerBtnHoverTex, textColor = _whiteText },
                 active = { background = _chestDangerBtnHoverTex, textColor = _whiteText },
@@ -1426,7 +1450,7 @@ namespace SenpaisChest.UI
             };
             _chestCloseButtonStyle = new GUIStyle
             {
-                fontSize = 12, fontStyle = FontStyle.Bold,
+                fontSize = ScaledFont(12), fontStyle = FontStyle.Bold,
                 normal = { background = _chestWoodBtnTex, textColor = _parchmentLight },
                 hover = { background = _chestWoodBtnHoverTex, textColor = _parchmentLight },
                 active = { background = _chestWoodBtnHoverTex, textColor = _parchmentLight },
@@ -1434,15 +1458,15 @@ namespace SenpaisChest.UI
             };
             _chestSearchFieldStyle = new GUIStyle
             {
-                fontSize = 13,
+                fontSize = ScaledFont(13),
                 normal = { background = _chestFieldBgTex, textColor = _woodDark },
                 focused = { background = _chestFieldBgTex, textColor = _woodDark },
                 hover = { background = _chestFieldBgTex, textColor = _woodDark },
-                padding = new RectOffset(8, 8, 5, 5), border = new RectOffset(2, 2, 2, 2)
+                padding = new RectOffset(ScaledInt(8), ScaledInt(8), ScaledInt(5), ScaledInt(5)), border = new RectOffset(ScaledInt(2), ScaledInt(2), ScaledInt(2), ScaledInt(2))
             };
             _chestRemoveRuleBtnStyle = new GUIStyle
             {
-                fontSize = 13, fontStyle = FontStyle.Bold,
+                fontSize = ScaledFont(13), fontStyle = FontStyle.Bold,
                 normal = { background = _chestDangerBtnTex, textColor = _whiteText },
                 hover = { background = _chestDangerBtnHoverTex, textColor = _whiteText },
                 active = { background = _chestDangerBtnHoverTex, textColor = _whiteText },
@@ -1450,11 +1474,11 @@ namespace SenpaisChest.UI
             };
             _chestSearchResultStyle = new GUIStyle
             {
-                fontSize = 12,
+                fontSize = ScaledFont(12),
                 normal = { background = _chestRuleBoxTex, textColor = _woodDark },
                 hover = { background = _chestSelectorHoverTex, textColor = _woodDark },
                 active = { background = _chestSelectorActiveTex, textColor = _woodDark },
-                alignment = TextAnchor.MiddleLeft, padding = new RectOffset(8, 8, 3, 3), margin = new RectOffset(0, 0, 1, 1)
+                alignment = TextAnchor.MiddleLeft, padding = new RectOffset(ScaledInt(8), ScaledInt(8), ScaledInt(3), ScaledInt(3)), margin = new RectOffset(0, 0, ScaledInt(1), ScaledInt(1))
             };
             _chestSearchResultSelectedStyle = new GUIStyle(_chestSearchResultStyle)
             {
@@ -1465,41 +1489,41 @@ namespace SenpaisChest.UI
 
             _noteBannerStyle = new GUIStyle
             {
-                fontSize = 14, fontStyle = FontStyle.Bold,
+                fontSize = ScaledFont(14), fontStyle = FontStyle.Bold,
                 normal = { textColor = new Color(0.95f, 0.92f, 0.85f) },
                 alignment = TextAnchor.MiddleCenter,
-                padding = new RectOffset(8, 4, 8, 4)
+                padding = new RectOffset(ScaledInt(8), ScaledInt(4), ScaledInt(8), ScaledInt(4))
             };
 
             _configTitleStyle = new GUIStyle
             {
-                fontSize = 16, fontStyle = FontStyle.Bold,
+                fontSize = ScaledFont(16), fontStyle = FontStyle.Bold,
                 normal = { textColor = Color.white },
                 alignment = TextAnchor.MiddleCenter,
-                padding = new RectOffset(4, 4, 4, 4)
+                padding = new RectOffset(ScaledInt(4), ScaledInt(4), ScaledInt(4), ScaledInt(4))
             };
 
             _configSectionHeaderBoxStyle = new GUIStyle
             {
-                fontSize = 14, fontStyle = FontStyle.Bold,
+                fontSize = ScaledFont(14), fontStyle = FontStyle.Bold,
                 normal = { background = _configSectionHeaderTex, textColor = _chestTextDark },
                 alignment = TextAnchor.MiddleCenter,
-                padding = new RectOffset(12, 8, 6, 6),
+                padding = new RectOffset(ScaledInt(12), ScaledInt(8), ScaledInt(6), ScaledInt(6)),
                 margin = new RectOffset(0, 0, 0, 0)
             };
 
             _configSearchFieldStyle = new GUIStyle
             {
-                fontSize = 13,
+                fontSize = ScaledFont(13),
                 normal = { background = _configSearchFieldTex, textColor = _chestTextDark },
                 focused = { background = _configSearchFieldTex, textColor = _chestTextDark },
-                padding = new RectOffset(8, 8, 5, 5),
-                border = new RectOffset(2, 2, 2, 2)
+                padding = new RectOffset(ScaledInt(8), ScaledInt(8), ScaledInt(5), ScaledInt(5)),
+                border = new RectOffset(ScaledInt(2), ScaledInt(2), ScaledInt(2), ScaledInt(2))
             };
 
             _configRemoveButtonStyle = new GUIStyle
             {
-                fontSize = 12, fontStyle = FontStyle.Bold,
+                fontSize = ScaledFont(12), fontStyle = FontStyle.Bold,
                 normal = { background = _configRemoveBtnTex, textColor = Color.white },
                 hover = { background = _configRemoveBtnHoverTex, textColor = Color.white },
                 active = { background = _configRemoveBtnHoverTex, textColor = Color.white },
@@ -1509,7 +1533,7 @@ namespace SenpaisChest.UI
 
             _configCloseBottomStyle = new GUIStyle
             {
-                fontSize = 12, fontStyle = FontStyle.Bold,
+                fontSize = ScaledFont(12), fontStyle = FontStyle.Bold,
                 normal = { background = _configCloseBtnTex, textColor = Color.white },
                 hover = { background = _configCloseBtnHoverTex, textColor = Color.white },
                 active = { background = _configCloseBtnHoverTex, textColor = Color.white },
@@ -1519,8 +1543,8 @@ namespace SenpaisChest.UI
 
             _configWindowStyle = new GUIStyle(GUI.skin.window)
             {
-                padding = new RectOffset(5, 5, 5, 5),
-                border = new RectOffset(5, 5, 5, 5)
+                padding = new RectOffset(ScaledInt(5), ScaledInt(5), ScaledInt(5), ScaledInt(5)),
+                border = new RectOffset(ScaledInt(5), ScaledInt(5), ScaledInt(5), ScaledInt(5))
             };
             _configWindowStyle.normal.background = _configWindowBg;
             _configWindowStyle.onNormal.background = _configWindowBg;

@@ -12,14 +12,24 @@ namespace SunhavenTodo.UI
     /// </summary>
     public class TodoHUD : MonoBehaviour
     {
-        // Window settings
+        // Window settings (base values, scaled by _scale)
         private const int WINDOW_ID = 98766;
-        private const float WINDOW_WIDTH = 280f;
-        private const float MIN_HEIGHT = 100f;
-        private const float MAX_HEIGHT = 300f;
-        private const float HEADER_HEIGHT = 28f;
-        private const float ITEM_HEIGHT = 24f;
+        private const float BASE_WINDOW_WIDTH = 280f;
+        private const float BASE_MIN_HEIGHT = 100f;
+        private const float BASE_MAX_HEIGHT = 300f;
+        private const float BASE_HEADER_HEIGHT = 28f;
+        private const float BASE_ITEM_HEIGHT = 24f;
         private const int MAX_ITEMS = 5;
+
+        private float _scale = 1f;
+        private float WindowWidth => BASE_WINDOW_WIDTH * _scale;
+        private float MinHeight => BASE_MIN_HEIGHT * _scale;
+        private float MaxHeight => BASE_MAX_HEIGHT * _scale;
+        private float HeaderHeight => BASE_HEADER_HEIGHT * _scale;
+        private float ItemHeight => BASE_ITEM_HEIGHT * _scale;
+        private int ScaledFont(int baseSize) => Mathf.Max(8, Mathf.RoundToInt(baseSize * _scale));
+        private float Scaled(float value) => value * _scale;
+        private int ScaledInt(float value) => Mathf.RoundToInt(value * _scale);
 
         // Manager reference
         private TodoManager _manager;
@@ -92,10 +102,10 @@ namespace SunhavenTodo.UI
 
             // Default position: top-right corner with some padding
             _windowRect = new Rect(
-                Screen.width - WINDOW_WIDTH - 20,
-                100,
-                WINDOW_WIDTH,
-                MIN_HEIGHT
+                Screen.width - WindowWidth - Scaled(20),
+                Scaled(100),
+                WindowWidth,
+                MinHeight
             );
 
             if (_manager != null)
@@ -119,6 +129,12 @@ namespace SunhavenTodo.UI
         public void SetEnabled(bool enabled)
         {
             _isEnabled = enabled;
+        }
+
+        public void SetScale(float scale)
+        {
+            _scale = Mathf.Clamp(scale, 0.5f, 2.5f);
+            _stylesInitialized = false;
         }
 
         public bool IsEnabled => _isEnabled;
@@ -167,16 +183,17 @@ namespace SunhavenTodo.UI
             InitializeStyles();
 
             // Calculate dynamic height based on content
-            float contentHeight = HEADER_HEIGHT + 8; // Header + padding
+            float contentHeight = HeaderHeight + Scaled(8);
             if (_cachedItems.Count == 0)
             {
-                contentHeight += 40; // Empty message
+                contentHeight += Scaled(40);
             }
             else
             {
-                contentHeight += _cachedItems.Count * ITEM_HEIGHT + 4;
+                contentHeight += _cachedItems.Count * ItemHeight + Scaled(4);
             }
-            _windowRect.height = Mathf.Clamp(contentHeight, MIN_HEIGHT, MAX_HEIGHT);
+            _windowRect.width = WindowWidth;
+            _windowRect.height = Mathf.Clamp(contentHeight, MinHeight, MaxHeight);
 
             // Store position before drawing
             var prevRect = _windowRect;
@@ -206,49 +223,49 @@ namespace SunhavenTodo.UI
             GUILayout.EndVertical();
 
             // Make the entire header area draggable
-            GUI.DragWindow(new Rect(0, 0, WINDOW_WIDTH, HEADER_HEIGHT));
+            GUI.DragWindow(new Rect(0, 0, _windowRect.width, HeaderHeight));
         }
 
         private void DrawHeader()
         {
             // Header background
-            var headerRect = new Rect(0, 0, WINDOW_WIDTH, HEADER_HEIGHT);
+            var headerRect = new Rect(0, 0, _windowRect.width, HeaderHeight);
             if (_headerBackground != null)
             {
                 GUI.DrawTexture(headerRect, _headerBackground);
             }
 
             GUILayout.BeginHorizontal();
-            GUILayout.Space(8);
+            GUILayout.Space(Scaled(8));
 
             // Title with item count
             var activeCount = _manager?.GetActiveTodos().Count() ?? 0;
-            GUILayout.Label($"Todo ({activeCount})", _headerStyle, GUILayout.Height(HEADER_HEIGHT));
+            GUILayout.Label($"Todo ({activeCount})", _headerStyle, GUILayout.Height(HeaderHeight));
 
             GUILayout.FlexibleSpace();
 
             // Drag hint
             var hintStyle = new GUIStyle(_headerStyle)
             {
-                fontSize = 9,
+                fontSize = ScaledFont(9),
                 fontStyle = FontStyle.Italic,
                 normal = { textColor = new Color(_textDark.r, _textDark.g, _textDark.b, 0.5f) }
             };
             var shortcut = Plugin.GetOpenListShortcutDisplay();
-            GUILayout.Label($"{shortcut} to open", hintStyle, GUILayout.Height(HEADER_HEIGHT));
+            GUILayout.Label($"{shortcut} to open", hintStyle, GUILayout.Height(HeaderHeight));
 
             GUILayout.FlexibleSpace();
 
             // Drag hint
-            GUILayout.Label("drag to move", hintStyle, GUILayout.Height(HEADER_HEIGHT));
+            GUILayout.Label("drag to move", hintStyle, GUILayout.Height(HeaderHeight));
 
-            GUILayout.Space(8);
+            GUILayout.Space(Scaled(8));
             GUILayout.EndHorizontal();
         }
 
         private void DrawItems()
         {
-            GUILayout.Space(4);
+            GUILayout.Space(Scaled(4));
 
             if (_cachedItems.Count == 0)
             {
@@ -266,7 +283,7 @@ namespace SunhavenTodo.UI
                 }
             }
 
-            GUILayout.Space(4);
+            GUILayout.Space(Scaled(4));
         }
 
         private void DrawItem(TodoItem item, int index)
@@ -277,30 +294,30 @@ namespace SunhavenTodo.UI
             var rowStyle = new GUIStyle(_itemStyle)
             {
                 normal = { background = bgTex },
-                padding = new RectOffset(6, 6, 2, 2)
+                padding = new RectOffset(ScaledInt(6), ScaledInt(6), ScaledInt(2), ScaledInt(2))
             };
 
-            GUILayout.BeginHorizontal(rowStyle, GUILayout.Height(ITEM_HEIGHT));
-            GUILayout.Space(6);
+            GUILayout.BeginHorizontal(rowStyle, GUILayout.Height(ItemHeight));
+            GUILayout.Space(Scaled(6));
 
             // Priority indicator
             var priorityColor = _priorityColors.TryGetValue(item.Priority, out var pc) ? pc : _textDark;
             var priorityStyle = new GUIStyle(_priorityStyle) { normal = { textColor = priorityColor } };
-            GUILayout.Label(GetPriorityIcon(item.Priority), priorityStyle, GUILayout.Width(16));
+            GUILayout.Label(GetPriorityIcon(item.Priority), priorityStyle, GUILayout.Width(Scaled(16)));
 
             // Category indicator
             var categoryColor = _categoryColors.TryGetValue(item.Category, out var cc) ? cc : _textDark;
             var categoryStyle = new GUIStyle(_categoryStyle) { normal = { textColor = categoryColor } };
-            GUILayout.Label($"[{GetCategoryShort(item.Category)}]", categoryStyle, GUILayout.Width(36));
+            GUILayout.Label($"[{GetCategoryShort(item.Category)}]", categoryStyle, GUILayout.Width(Scaled(36)));
 
-            GUILayout.Space(4);
+            GUILayout.Space(Scaled(4));
 
             // Title (truncated if too long; guard against null/empty)
             var title = string.IsNullOrWhiteSpace(item.Title) ? "(No title)" : item.Title;
             var displayTitle = title.Length > 25 ? title.Substring(0, 22) + "..." : title;
             GUILayout.Label(displayTitle, _titleStyle, GUILayout.ExpandWidth(true));
 
-            GUILayout.Space(6);
+            GUILayout.Space(Scaled(6));
             GUILayout.EndHorizontal();
         }
 
@@ -348,7 +365,7 @@ namespace SunhavenTodo.UI
         private void CreateTextures()
         {
             _windowBackground = MakeParchmentTexture(16, 64, _parchment, _parchmentLight, _borderDark, 2);
-            _headerBackground = MakeGradientTex(8, (int)HEADER_HEIGHT, _parchmentDark, _parchment);
+            _headerBackground = MakeGradientTex(8, Mathf.Max(1, ScaledInt(HeaderHeight)), _parchmentDark, _parchment);
             _itemEven = MakeTex(1, 1, new Color(_parchmentLight.r, _parchmentLight.g, _parchmentLight.b, 0.3f));
             _itemOdd = MakeTex(1, 1, new Color(_parchment.r, _parchment.g, _parchment.b, 0.3f));
         }
@@ -358,29 +375,29 @@ namespace SunhavenTodo.UI
             _windowStyle = new GUIStyle
             {
                 normal = { background = _windowBackground, textColor = _textDark },
-                padding = new RectOffset(4, 4, 4, 4),
-                border = new RectOffset(4, 4, 4, 4)
+                padding = new RectOffset(ScaledInt(4), ScaledInt(4), ScaledInt(4), ScaledInt(4)),
+                border = new RectOffset(ScaledInt(4), ScaledInt(4), ScaledInt(4), ScaledInt(4))
             };
 
             _headerStyle = new GUIStyle
             {
-                fontSize = 13,
+                fontSize = ScaledFont(13),
                 fontStyle = FontStyle.Bold,
                 normal = { textColor = _woodDark },
                 alignment = TextAnchor.MiddleLeft,
-                padding = new RectOffset(2, 2, 2, 2)
+                padding = new RectOffset(ScaledInt(2), ScaledInt(2), ScaledInt(2), ScaledInt(2))
             };
 
             _itemStyle = new GUIStyle
             {
-                fontSize = 11,
+                fontSize = ScaledFont(11),
                 normal = { textColor = _textDark },
-                padding = new RectOffset(2, 2, 2, 2)
+                padding = new RectOffset(ScaledInt(2), ScaledInt(2), ScaledInt(2), ScaledInt(2))
             };
 
             _priorityStyle = new GUIStyle
             {
-                fontSize = 11,
+                fontSize = ScaledFont(11),
                 fontStyle = FontStyle.Bold,
                 alignment = TextAnchor.MiddleCenter,
                 normal = { textColor = _textDark }
@@ -388,7 +405,7 @@ namespace SunhavenTodo.UI
 
             _categoryStyle = new GUIStyle
             {
-                fontSize = 8,
+                fontSize = ScaledFont(8),
                 fontStyle = FontStyle.Bold,
                 alignment = TextAnchor.MiddleLeft,
                 normal = { textColor = _textDark }
@@ -396,7 +413,7 @@ namespace SunhavenTodo.UI
 
             _titleStyle = new GUIStyle
             {
-                fontSize = 11,
+                fontSize = ScaledFont(11),
                 normal = { textColor = _textDark },
                 alignment = TextAnchor.MiddleLeft,
                 clipping = TextClipping.Clip
@@ -404,11 +421,11 @@ namespace SunhavenTodo.UI
 
             _emptyStyle = new GUIStyle
             {
-                fontSize = 11,
+                fontSize = ScaledFont(11),
                 fontStyle = FontStyle.Italic,
                 normal = { textColor = new Color(_textDark.r, _textDark.g, _textDark.b, 0.6f) },
                 alignment = TextAnchor.MiddleCenter,
-                padding = new RectOffset(10, 10, 10, 10)
+                padding = new RectOffset(ScaledInt(10), ScaledInt(10), ScaledInt(10), ScaledInt(10))
             };
         }
 
