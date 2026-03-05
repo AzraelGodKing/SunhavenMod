@@ -15,6 +15,7 @@ namespace HavensAlmanac.Config
         public static ConfigEntry<bool> BriefingEnabled { get; private set; }
         public static ConfigEntry<float> BriefingAutoDismissSeconds { get; private set; }
         public static ConfigEntry<bool> CheckForUpdates { get; private set; }
+        public static ConfigEntry<float> UIScale { get; private set; }
 
         // Static values for PersistentRunner access
         internal static KeyCode StaticDashboardToggleKey = KeyCode.F5;
@@ -25,6 +26,7 @@ namespace HavensAlmanac.Config
         internal static float StaticHUDPositionY = -1f;
         internal static bool StaticBriefingEnabled = true;
         internal static float StaticBriefingAutoDismiss = 0f;
+        internal static float StaticUIScale = 1f;
 
         public static void Initialize(ConfigFile config)
         {
@@ -77,6 +79,19 @@ namespace HavensAlmanac.Config
             CheckForUpdates = config.Bind(
                 "Updates", "CheckForUpdates", true,
                 "Check for mod updates on startup");
+
+            UIScale = config.Bind(
+                "Display", "UIScale", 1f,
+                new BepInEx.Configuration.ConfigDescription(
+                    "Scale factor for Almanac HUD, Dashboard, and Daily Briefing (1.0 = default)",
+                    new BepInEx.Configuration.AcceptableValueRange<float>(0.5f, 2.5f)
+                ));
+            StaticUIScale = Mathf.Clamp(UIScale.Value, 0.5f, 2.5f);
+            UIScale.SettingChanged += (_, _) =>
+            {
+                StaticUIScale = Mathf.Clamp(UIScale.Value, 0.5f, 2.5f);
+                Plugin.Instance?.ApplyUIScaleToAllUI();
+            };
         }
     }
 }

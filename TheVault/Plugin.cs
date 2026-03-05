@@ -46,6 +46,7 @@ namespace TheVault
         private ConfigEntry<string> _hudPosition;
         private ConfigEntry<float> _hudScale;
         private ConfigEntry<KeyCode> _hudToggleKey;
+        private ConfigEntry<float> _windowScale;
         private ConfigEntry<bool> _enableAutoSave;
         private ConfigEntry<float> _autoSaveInterval;
         private ConfigEntry<bool> _checkForUpdates;
@@ -98,6 +99,7 @@ namespace TheVault
                 DontDestroyOnLoad(uiObject);
                 _vaultUI = uiObject.AddComponent<VaultUI>();
                 _vaultUI.Initialize(_vaultManager);
+                _vaultUI.SetScale(Mathf.Clamp(_windowScale.Value, 0.5f, 2.5f));
                 _vaultUI.SetToggleKey(_toggleKey.Value, _requireCtrlModifier.Value);
                 _vaultUI.SetAltToggleKey(_altToggleKey.Value);
                 _staticVaultUI = _vaultUI;
@@ -209,11 +211,19 @@ namespace TheVault
 
                     _staticVaultUI = uiObject.AddComponent<VaultUI>();
                     _staticVaultUI.Initialize(_staticVaultManager);
+                    float windowScale = Instance != null ? Mathf.Clamp(Instance._windowScale.Value, 0.5f, 2.5f) : 1f;
+                    _staticVaultUI.SetScale(windowScale);
                     _staticVaultUI.SetToggleKey(StaticToggleKey, StaticRequireCtrl);
                     _staticVaultUI.SetAltToggleKey(StaticAltToggleKey);
 
                     _staticVaultHUD = uiObject.AddComponent<VaultHUD>();
                     _staticVaultHUD.Initialize(_staticVaultManager);
+                    if (Instance != null)
+                    {
+                        _staticVaultHUD.SetEnabled(Instance._enableHUD.Value);
+                        _staticVaultHUD.SetPosition(ParseHUDPosition(Instance._hudPosition.Value));
+                        _staticVaultHUD.SetScale(Mathf.Clamp(Instance._hudScale.Value, 0.5f, 3f));
+                    }
 
                     Log?.LogInfo("[EnsureUI] VaultUI and VaultHUD recreated");
                 }
@@ -268,6 +278,16 @@ namespace TheVault
                 "Scale factor for the HUD bar (1.0 = default size, 0.5 = half size, 2.0 = double size)"
             );
 
+            _windowScale = Config.Bind(
+                "Display",
+                "WindowScale",
+                1.0f,
+                new BepInEx.Configuration.ConfigDescription(
+                    "Scale factor for the main Vault window (1.0 = default, 1.5 = 50% larger)",
+                    new BepInEx.Configuration.AcceptableValueRange<float>(0.5f, 2.5f)
+                )
+            );
+
             _hudToggleKey = Config.Bind(
                 "HUD",
                 "ToggleKey",
@@ -312,6 +332,7 @@ namespace TheVault
             _hudPosition.SettingChanged += OnConfigChanged;
             _hudScale.SettingChanged += OnConfigChanged;
             _hudToggleKey.SettingChanged += OnConfigChanged;
+            _windowScale.SettingChanged += OnConfigChanged;
         }
 
         /// <summary>
@@ -329,6 +350,7 @@ namespace TheVault
                 var vaultUI = GetVaultUI();
                 if (vaultUI != null)
                 {
+                    vaultUI.SetScale(Mathf.Clamp(_windowScale.Value, 0.5f, 2.5f));
                     vaultUI.SetToggleKey(StaticToggleKey, StaticRequireCtrl);
                     vaultUI.SetAltToggleKey(StaticAltToggleKey);
                 }
@@ -376,6 +398,8 @@ namespace TheVault
         public static void SetConfigHUDEnabled(bool v) { if (Instance?._enableHUD != null) Instance._enableHUD.Value = v; }
         public static float GetConfigHUDScale() => Instance?._hudScale?.Value ?? 1f;
         public static void SetConfigHUDScale(float v) { if (Instance?._hudScale != null) Instance._hudScale.Value = Mathf.Clamp(v, 0.5f, 3f); }
+        public static float GetConfigWindowScale() => Instance?._windowScale?.Value ?? 1f;
+        public static void SetConfigWindowScale(float v) { if (Instance?._windowScale != null) Instance._windowScale.Value = Mathf.Clamp(v, 0.5f, 2.5f); }
 
         /// <summary>
         /// Register currency-to-item mappings for IconCache (used by VaultUI/VaultHUD).
@@ -1195,7 +1219,7 @@ namespace TheVault
     {
         public const string PLUGIN_GUID = "com.azraelgodking.thevault";
         public const string PLUGIN_NAME = "The Vault";
-        public const string PLUGIN_VERSION = "2.0.6";
+        public const string PLUGIN_VERSION = "2.0.7";
     }
 
     /// <summary>

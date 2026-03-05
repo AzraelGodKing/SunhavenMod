@@ -135,6 +135,7 @@ namespace HavensAlmanac
                 DontDestroyOnLoad(hudObj);
                 _staticHUD = hudObj.AddComponent<AlmanacHUD>();
                 _staticHUD.Initialize(_staticAggregator);
+                _staticHUD.SetScale(AlmanacConfig.StaticUIScale);
 
                 // Wire position persistence
                 _staticHUD.OnPositionChanged = (x, y) =>
@@ -150,17 +151,28 @@ namespace HavensAlmanac
                 DontDestroyOnLoad(dashObj);
                 _staticDashboard = dashObj.AddComponent<AlmanacDashboard>();
                 _staticDashboard.Initialize(_staticAggregator);
+                _staticDashboard.SetScale(AlmanacConfig.StaticUIScale);
 
                 // Daily Briefing
                 var briefObj = new GameObject("HavensAlmanac_Briefing");
                 DontDestroyOnLoad(briefObj);
                 _staticBriefing = briefObj.AddComponent<DailyBriefing>();
                 _staticBriefing.Initialize(_staticAggregator);
+                _staticBriefing.SetScale(AlmanacConfig.StaticUIScale);
             }
             catch (Exception ex)
             {
                 Log.LogError($"[UI] Error creating UI components: {ex}");
             }
+        }
+
+        /// <summary>Called when Display/UIScale config changes; applies scale to all UI components.</summary>
+        public void ApplyUIScaleToAllUI()
+        {
+            float scale = AlmanacConfig.StaticUIScale;
+            _staticHUD?.SetScale(scale);
+            _staticDashboard?.SetScale(scale);
+            _staticBriefing?.SetScale(scale);
         }
 
         public static void EnsureUIComponentsExist()
@@ -183,6 +195,7 @@ namespace HavensAlmanac
                     UnityEngine.Object.DontDestroyOnLoad(hudObj);
                     _staticHUD = hudObj.AddComponent<AlmanacHUD>();
                     _staticHUD.Initialize(_staticAggregator);
+                    _staticHUD.SetScale(AlmanacConfig.StaticUIScale);
                 }
 
                 if (_staticDashboard == null)
@@ -192,6 +205,7 @@ namespace HavensAlmanac
                     UnityEngine.Object.DontDestroyOnLoad(dashObj);
                     _staticDashboard = dashObj.AddComponent<AlmanacDashboard>();
                     _staticDashboard.Initialize(_staticAggregator);
+                    _staticDashboard.SetScale(AlmanacConfig.StaticUIScale);
                 }
 
                 if (_staticBriefing == null)
@@ -201,6 +215,7 @@ namespace HavensAlmanac
                     UnityEngine.Object.DontDestroyOnLoad(briefObj);
                     _staticBriefing = briefObj.AddComponent<DailyBriefing>();
                     _staticBriefing.Initialize(_staticAggregator);
+                    _staticBriefing.SetScale(AlmanacConfig.StaticUIScale);
                 }
             }
             catch (Exception ex)
