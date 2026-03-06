@@ -263,6 +263,11 @@ h1 {
     color: #fff;
 }
 
+.mod-cta-button.faster-btn {
+    background: linear-gradient(135deg, #e67e22, #d35400);
+    color: #fff;
+}
+
 /* Quick install */
 .quick-install {
     max-width: 760px;
