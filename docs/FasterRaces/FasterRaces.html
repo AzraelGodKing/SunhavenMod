@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Faster Races - Configurable Movement Speed for Sun Haven</title>
+    <meta name="description" content="Add a configurable movement speed bonus for all races. Works with Haven's Birthright without doubling speed.">
+    <meta property="og:title" content="Faster Races">
+    <meta property="og:description" content="Configurable movement speed for Sun Haven. Disables Haven's Birthright speed buffs when both are installed.">
+    <meta property="og:type" content="website">
+    <meta name="theme-color" content="#d35400">
+    <link rel="icon" type="image/svg+xml" href="../favicon.svg">
+    <link rel="stylesheet" href="../shared-styles.css">
+    <link rel="stylesheet" href="faster-style.css">
+    <script src="../shared.js" defer></script>
+</head>
+<body>
+    <a href="#main-content" class="skip-to-content">Skip to content</a>
+    <nav class="top-nav" role="navigation" aria-label="Breadcrumb">
+        <a href="../index.html" class="nav-home">Mod Hub</a>
+        <span class="nav-divider">/</span>
+        <span class="nav-current">Faster Races</span>
+        <span class="breadcrumb-date">Updated Mar 2026</span>
+    </nav>
+
+    <div class="container" id="main-content" role="main">
+
+        <header class="hero">
+            <div class="hero-icon-wrap" aria-hidden="true">&#x1F3C3;</div>
+            <p class="hero-label">Quick Mod</p>
+            <h1>Faster Races<span class="full-name">Configurable Movement Speed</span></h1>
+            <p class="tagline">One speed bonus, no double-dipping</p>
+            <div class="speed-callout" aria-label="Default speed bonus">+25% default</div>
+            <span class="version-badge">v1.0.0</span>
+        </header>
+
+        <section class="intro-section">
+            <p>Faster Races adds a <strong>configurable movement speed bonus</strong> for your character. When used with <strong>Haven's Birthright</strong>, it automatically disables Haven's Birthright movement speed bonuses (e.g. Amari Cat, Amari Bird Tailwind) so you get a single, consistent speed boost from Faster Races instead of stacking both.</p>
+        </section>
+
+        <div class="callout-box">
+            <p>One speed bonus, no double-dipping — HB skips its speed buffs when Faster Races is loaded.</p>
+        </div>
+
+        <section class="features-section">
+            <h2 class="section-title">Features</h2>
+            <div class="features-grid">
+                <div class="feature-card">
+                    <div class="feature-icon">&#x1F4E2;</div>
+                    <h3>Configurable Speed</h3>
+                    <p>Set the bonus percentage in the config (default +25%). Enable or disable the mod without uninstalling.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">&#x2694;&#xFE0F;</div>
+                    <h3>Haven's Birthright Aware</h3>
+                    <p>When both mods are installed, HB skips its own movement speed buffs. Speed penalties (e.g. Amari Dog, Naga) still apply.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">&#x1F3AF;</div>
+                    <h3>All Races</h3>
+                    <p>Same bonus for every character. Works standalone or alongside racial mods.</p>
+                </div>
+            </div>
+        </section>
+
+        <section class="config-section">
+            <h2 class="section-title">Configuration</h2>
+            <div class="config-table">
+                <div class="table-bar">
+                    <span class="table-bar-title">BepInEx/config/com.azraelgodking.fasterraces.cfg</span>
+                </div>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Setting</th>
+                            <th>Default</th>
+                            <th>Description</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><code>Enabled</code></td>
+                            <td>true</td>
+                            <td>Turn the movement speed bonus on or off</td>
+                        </tr>
+                        <tr>
+                            <td><code>SpeedBonusPercent</code></td>
+                            <td>25</td>
+                            <td>Percentage added to movement speed (e.g. 25 = +25%)</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+            <p class="config-note">Edit the file above to change settings, then restart the game or use BepInEx config reload if supported.</p>
+        </section>
+
+        <section class="install-section">
+            <h2 class="section-title">Installation</h2>
+            <div class="install-steps">
+                <div class="install-step">
+                    <div class="step-icon">&#x1F4E6;</div>
+                    <div class="step-info">
+                        <h4>1. Install BepInEx</h4>
+                        <p>Install BepInEx 5.x for Sun Haven if you haven't already.</p>
+                    </div>
+                </div>
+                <div class="install-step">
+                    <div class="step-icon">&#x1F4E5;</div>
+                    <div class="step-info">
+                        <h4>2. Download Faster Races</h4>
+                        <p>Get <code>FasterRaces.dll</code> from the repo releases or Thunderstore.</p>
+                    </div>
+                </div>
+                <div class="install-step">
+                    <div class="step-icon">&#x1F4C1;</div>
+                    <div class="step-info">
+                        <h4>3. Install the mod</h4>
+                        <p>Place the DLL in <code>BepInEx/plugins/FasterRaces/</code> (or <code>BepInEx/plugins/</code>).</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section class="related-mods">
+            <h2 class="section-title">Works great with</h2>
+            <div class="related-grid">
+                <a href="../RacialBonuses/RacialBonuses.html" class="related-card">
+                    <span class="related-icon">&#x2694;&#xFE0F;</span>
+                    <div class="related-info">
+                        <h4>Haven's Birthright</h4>
+                        <p>Racial bonuses and abilities; speed buffs are automatically skipped when Faster Races is loaded</p>
+                    </div>
+                </a>
+            </div>
+        </section>
+
+        <div class="footer">
+            <p><a href="../index.html">Mod Hub</a> &bull; Faster Races by AzraelGodKing</p>
+        </div>
+    </div>
+</body>
+</html>

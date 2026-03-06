@@ -1,3 +1,4 @@
+using BepInEx.Bootstrap;
 using HavensBirthright.Abilities;
 using System;
 using System.Collections.Generic;
@@ -28,6 +29,12 @@ namespace HavensBirthright.Patches
         private static bool IsAttackSpeedStat(StatType stat)
         {
             return stat == StatType.AttackSpeed || stat == StatType.SpellAttackSpeed;
+        }
+
+        /// <summary>True when Faster Races mod is loaded; we skip our movement speed bonuses so we don't double speed.</summary>
+        private static bool IsFasterRacesLoaded()
+        {
+            return Chainloader.PluginInfos != null && Chainloader.PluginInfos.ContainsKey("com.azraelgodking.fasterraces");
         }
 
         /// <summary>
@@ -148,7 +155,8 @@ namespace HavensBirthright.Patches
                     break;
 
                 case StatType.Movespeed:
-                    if (manager.HasBonus(BonusType.MovementSpeed))
+                    // When Faster Races is loaded, skip our movement speed bonus so we don't double speed
+                    if (!IsFasterRacesLoaded() && manager.HasBonus(BonusType.MovementSpeed))
                         __result = manager.ApplyBonus(__result, BonusType.MovementSpeed);
                     break;
 
@@ -313,9 +321,9 @@ namespace HavensBirthright.Patches
                     }
                     break;
 
-                // Amari Bird - Tailwind: movement speed from outdoor time
+                // Amari Bird - Tailwind: movement speed from outdoor time (skipped when Faster Races is loaded)
                 case Race.AmariBird:
-                    if (AbilityConfig.EnableTailwind.Value && stat == StatType.Movespeed)
+                    if (!IsFasterRacesLoaded() && AbilityConfig.EnableTailwind.Value && stat == StatType.Movespeed)
                     {
                         float tailwindBonus = ActiveAbilityManager.GetBonusValue(ActiveAbilityManager.TailwindOutdoor);
                         if (tailwindBonus > 0)
