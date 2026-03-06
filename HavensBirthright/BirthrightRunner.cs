@@ -108,8 +108,10 @@ namespace HavensBirthright
                 _apiCacheInitialized = true;
             }
 
-            // Update per-frame cache for StatPatches (runs every frame, even without active abilities)
-            UpdateStatCache(race.Value);
+            // Update per-frame cache for StatPatches. Run every 4th frame to reduce reflection cost
+            // and stutter (e.g. Amari Cat + scythe); values are at most 3 frames stale.
+            if (!_cacheValid || (Time.frameCount & 3) == 0)
+                UpdateStatCache(race.Value);
 
             // Active abilities require their own config toggle
             if (!AbilityConfig.EnableActiveAbilities.Value)
@@ -167,6 +169,7 @@ namespace HavensBirthright
             var manager = Plugin.GetRacialBonusManager();
             manager?.ClearPlayerRace();
             PlayerPatches.ResetRaceDetection();
+            Patches.CombatPatches.ResetNineLives();
         }
 
         protected override void OnGameTransition()
@@ -186,6 +189,7 @@ namespace HavensBirthright
             // Reset notification/reflection caches — Unity objects from previous scene are destroyed
             AbilityPatches.ResetNotificationCache();
             AbilityPatches.ResetReflectionCache();
+            Patches.CombatPatches.ResetNineLives();
         }
 
         private static void ResetStatCache()
