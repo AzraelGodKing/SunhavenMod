@@ -40,6 +40,7 @@ on:
           - havendevtools
           - senpaischest
           - havensalmanac
+          - fasterraces
       publish_thunderstore:
         description: 'Publish to Thunderstore after release?'
         required: true
@@ -82,7 +83,7 @@ jobs:
           else
             MOD_KEY="${{ github.event.inputs.mod }}"
             if [ "$MOD_KEY" == "all" ]; then
-              echo 'matrix=["havensbirthright","sunhavenmuseumutilitytracker","squirrelsbirthdayreminder","sunhaventodo","thevault","havendevtools","senpaischest","havensalmanac"]' >> "$GITHUB_OUTPUT"
+              echo 'matrix=["havensbirthright","sunhavenmuseumutilitytracker","squirrelsbirthdayreminder","sunhaventodo","thevault","havendevtools","senpaischest","havensalmanac","fasterraces"]' >> "$GITHUB_OUTPUT"
             else
               echo "matrix=[\"$MOD_KEY\"]" >> "$GITHUB_OUTPUT"
             fi
@@ -179,6 +180,12 @@ jobs:
               MOD_DIR="HavensAlmanac"
               DLL_NAME="HavensAlmanac"
               THUNDERSTORE_NAME="HavensAlmanac"
+              ;;
+            "fasterraces")
+              JSON_KEY="com.azraelgodking.fasterraces"
+              MOD_DIR="FasterRaces"
+              DLL_NAME="FasterRaces"
+              THUNDERSTORE_NAME="FasterRaces"
               ;;
             *)
               echo "❌ Unknown mod: $MOD_KEY"
@@ -411,6 +418,7 @@ jobs:
             "com.azraelgodking.havendevtools:HavenDevTools"
             "com.azraelgodking.senpaischest:SenpaisChest"
             "com.azraelgodking.havensalmanac:HavensAlmanac"
+            "com.azraelgodking.fasterraces:FasterRaces"
           )
           IDX=$((RANDOM % ${#MODS[@]}))
           ENTRY="${MODS[$IDX]}"
@@ -462,6 +470,7 @@ jobs:
             HavenDevTools)              DIR="HavenDevTools" ;;
             SenpaisChest)               DIR="SenpaisChest" ;;
             HavensAlmanac)              DIR="HavensAlmanac" ;;
+            FasterRaces)                DIR="FasterRaces" ;;
             *)                          DIR="" ;;
           esac
           if [ -n "$DIR" ]; then
