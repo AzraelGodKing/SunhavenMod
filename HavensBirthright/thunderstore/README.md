@@ -24,7 +24,7 @@
 - **Water Elemental** - Flowing tide with defense and fishing bonuses + Tidal Blessing ability
 
 ### Amari Variants
-- **Amari Cat** - Feline predator with speed and attack bonuses
+- **Amari Cat** - Feline Grace (movement), Predator's Strike (crit), Keen Senses (foraging), and Nine Lives (passive: chance to survive lethal damage and heal)
 - **Amari Dog** - Loyal guardian with friendship bonuses
 - **Amari Bird** - Sky dancer with movement bonuses
 - **Amari Aquatic** - Water dweller with fishing bonuses

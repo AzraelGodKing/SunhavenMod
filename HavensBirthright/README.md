@@ -49,6 +49,12 @@ Each race receives thematic passive bonuses, and select races gain powerful acti
 - **Skilled Artisan**: +20% Crafting speed
 - **Forest Hunter**: +15% Woodcutting speed
 
+#### Amari Cat
+- **Feline Grace**: +20% Movement speed
+- **Predator's Strike**: +15% Critical hit chance
+- **Keen Senses**: +15% Foraging chance (find more foragables)
+- **Nine Lives** (passive): When taking lethal damage, a configurable percent chance (max 60%) to survive and heal to a percent of max HP instead of dying. Not an active ability—always on when enabled in config.
+
 #### Naga
 - **Aquatic Nature**: +25% Fishing speed
 - **Sea's Blessing**: +20% Fishing luck
@@ -161,8 +167,12 @@ You can:
 - Configure ability toggle keybind (default F9)
 - Set HP/mana cost percentages and safety thresholds
 - Adjust scan intervals and cooldowns
+- **Amari Cat**: Under the `[Amari Cat]` section, configure Nine Lives (EnableNineLives, NineLivesChance, NineLivesHealPercent). Under `[Performance]`, AmariCatReduceCombatStutter can disable attack-speed application for Amari Cat if needed (e.g. stutter with fast weapons).
 
 ## Changelog
+
+### v1.3.x (Amari Cat rework)
+- **Amari Cat** passives reworked: **Feline Grace** (movement), **Predator's Strike** (crit), **Keen Senses** (foraging). **Nine Lives** is a passive cheat death (chance to survive lethal damage and heal to % max HP; max 60% chance). Removed Predator's Reflex (no combat attack-speed buff). Optional performance setting to reduce stutter with fast weapons.
 
 ### v1.2.3
 - Documentation and comment updates.

@@ -67,10 +67,10 @@ namespace HavensBirthright.Abilities
         public static ConfigEntry<float> QuickLearnerBonusPerSkill;
         public static ConfigEntry<float> QuickLearnerMaxBonus;
 
-        // Amari Cat - Predator's Reflex
-        public static ConfigEntry<bool> EnablePredatorReflex;
-        public static ConfigEntry<float> PredatorReflexAttackSpeedBonus;
-        public static ConfigEntry<float> PredatorReflexDuration;
+        // Amari Cat - Nine Lives (passive: chance to survive lethal damage and heal to X% HP; not an innate power)
+        public static ConfigEntry<bool> EnableNineLives;
+        public static ConfigEntry<float> NineLivesChance;
+        public static ConfigEntry<float> NineLivesHealPercent;
 
         // Amari Dog - Loyalty Aura
         public static ConfigEntry<bool> EnableLoyaltyAura;
@@ -439,27 +439,25 @@ namespace HavensBirthright.Abilities
                 "Maximum XP bonus from Quick Learner"
             );
 
-            // ===================== AMARI CAT - PREDATOR'S REFLEX =====================
-
-            EnablePredatorReflex = config.Bind(
-                "Active Abilities - Amari Cat",
-                "EnablePredatorReflex",
+            EnableNineLives = config.Bind(
+                "Amari Cat",
+                "EnableNineLives",
                 true,
-                "Gain attack speed after dodging"
+                "Passive: When taking lethal damage, chance to survive and heal to a percentage of max HP instead of dying"
             );
 
-            PredatorReflexAttackSpeedBonus = config.Bind(
-                "Active Abilities - Amari Cat",
-                "AttackSpeedBonus",
-                30f,
-                "Percentage attack speed bonus after dodge"
+            NineLivesChance = config.Bind(
+                "Amari Cat",
+                "NineLivesChance",
+                10f,
+                "Passive: Percent chance to trigger Nine Lives on lethal damage (max 60%)"
             );
 
-            PredatorReflexDuration = config.Bind(
-                "Active Abilities - Amari Cat",
-                "Duration",
-                5f,
-                "Duration of the speed buff in seconds"
+            NineLivesHealPercent = config.Bind(
+                "Amari Cat",
+                "NineLivesHealPercent",
+                50f,
+                "Passive: When Nine Lives triggers, heal to this percentage of max HP"
             );
 
             // ===================== AMARI DOG - LOYALTY AURA =====================

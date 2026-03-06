@@ -11,7 +11,7 @@ namespace HavensBirthright.Patches
     /// Patches for combat-related mechanics.
     /// Handles defense, damage reduction, and combat-triggered abilities:
     /// - Angel's Divine Ward (auto-shield on low HP)
-    /// - Amari Cat's Predator's Reflex (dodge triggers attack speed buff)
+    /// - Amari Cat's Nine Lives (passive cheat death)
     /// - Amari Reptile's Hardened Scales (stacking defense on hit)
     /// </summary>
     public static class CombatPatches
@@ -40,7 +40,13 @@ namespace HavensBirthright.Patches
                 damageInfo.damage *= (1f - defenseBonus / 100f);
             }
 
-            // Active ability checks
+            // Amari Cat - Nine Lives (passive): chance to survive lethal damage and heal to X% HP (not an active/innate power)
+            if (race.Value == Race.AmariCat && AbilityConfig.EnableNineLives != null && AbilityConfig.EnableNineLives.Value)
+            {
+                TryNineLives(ref damageInfo);
+            }
+
+            // Active ability checks (innate powers)
             if (AbilityConfig.EnableActiveAbilities != null && AbilityConfig.EnableActiveAbilities.Value)
             {
                 // Angel - Divine Ward: damage reduction shield when HP drops low
@@ -58,26 +64,84 @@ namespace HavensBirthright.Patches
                         AbilityConfig.HardenedScalesDecayTime.Value
                     );
                 }
-
-                // Amari Cat - Predator's Reflex: check for dodge (damage == 0 after processing)
-                // Note: dodge detection happens AFTER this prefix, so we use a postfix approach
-                // We track the pre-damage state here and check in postfix
-                if (race.Value == Race.AmariCat && AbilityConfig.EnablePredatorReflex.Value)
-                {
-                    // Store the incoming damage for dodge detection in postfix
-                    _lastIncomingDamage = damageInfo.damage;
-                }
             }
         }
 
-        // Track incoming damage for dodge detection
-        private static float _lastIncomingDamage = 0f;
+        // Nine Lives: when we proc, postfix will set HP to this value
+        private static bool _nineLivesProcced = false;
+        private static float _nineLivesHealToHP = 0f;
+
+        /// <summary>Call on menu/game transition so state is not carried between saves.</summary>
+        public static void ResetNineLives()
+        {
+            _nineLivesProcced = false;
+            _nineLivesHealToHP = 0f;
+        }
+
+        private static void TryNineLives(ref DamageInfo damageInfo)
+        {
+            try
+            {
+                var player = Player.Instance;
+                if (player == null)
+                    return;
+
+                float maxHP = player.MaxHealth;
+                float currentHP = ReflectionHelper.TryGetValue<float>(player, "health", maxHP);
+                if (currentHP <= 0 || maxHP <= 0)
+                    return;
+
+                // Would this damage be lethal?
+                float hpAfter = currentHP - damageInfo.damage;
+                if (hpAfter > 0f)
+                    return;
+
+                float chanceRaw = AbilityConfig.NineLivesChance != null ? AbilityConfig.NineLivesChance.Value / 100f : 0.1f;
+                float chance = Mathf.Min(chanceRaw, 0.6f); // Max 60%
+                if (UnityEngine.Random.value >= chance)
+                    return;
+
+                // Proc: cancel lethal damage; postfix will set HP to heal percent
+                damageInfo.damage = 0f;
+                float healPercent = AbilityConfig.NineLivesHealPercent != null ? AbilityConfig.NineLivesHealPercent.Value / 100f : 0.5f;
+                _nineLivesHealToHP = maxHP * healPercent;
+                _nineLivesProcced = true;
+            }
+            catch (Exception ex)
+            {
+                Plugin.Log?.LogWarning($"[NineLives] Error: {ex.Message}");
+            }
+        }
 
         /// <summary>
-        /// Postfix patch for Player.ReceiveDamage - detects dodges for Predator's Reflex.
+        /// Postfix patch for Player.ReceiveDamage - Nine Lives heal.
         /// </summary>
         public static void OnDamageReceivedPostfix(Player __instance)
         {
+            // Nine Lives: set HP to saved value when we procced in prefix (survived lethal damage)
+            if (_nineLivesProcced)
+            {
+                try
+                {
+                    ReflectionHelper.SetInstanceValue(__instance, "health", _nineLivesHealToHP);
+                    ReflectionHelper.SetInstanceValue(__instance, "Health", _nineLivesHealToHP);
+                    int pct = AbilityConfig.NineLivesHealPercent != null ? (int)AbilityConfig.NineLivesHealPercent.Value : 50;
+                    var notifType = ReflectionHelper.FindWishType("NotificationStack");
+                    if (notifType != null)
+                    {
+                        var instance = ReflectionHelper.GetSingletonInstance(notifType);
+                        if (instance != null)
+                            ReflectionHelper.InvokeMethod(instance, "SendNotification", $"Nine Lives! Survived with {pct}% HP!");
+                    }
+                }
+                catch (Exception ex)
+                {
+                    Plugin.Log?.LogWarning($"[NineLives] Postfix error: {ex.Message}");
+                }
+                _nineLivesProcced = false;
+                _nineLivesHealToHP = 0f;
+            }
+
             if (!RacialConfig.EnableRacialBonuses.Value)
                 return;
 
@@ -91,37 +155,6 @@ namespace HavensBirthright.Patches
             var race = manager.GetPlayerRace();
             if (!race.HasValue)
                 return;
-
-            // Amari Cat - Predator's Reflex: trigger on dodge
-            if (race.Value == Race.AmariCat && AbilityConfig.EnablePredatorReflex.Value)
-            {
-                // If we had incoming damage but health didn't decrease, it was likely a dodge
-                if (_lastIncomingDamage > 0)
-                {
-                    // Activate the attack speed buff
-                    ActiveAbilityManager.ActivateAbility(
-                        ActiveAbilityManager.PredatorReflex,
-                        AbilityConfig.PredatorReflexDuration.Value,
-                        0f // No cooldown - triggers every dodge
-                    );
-
-                    try
-                    {
-                        var notifType = ReflectionHelper.FindWishType("NotificationStack");
-                        if (notifType != null)
-                        {
-                            var instance = ReflectionHelper.GetSingletonInstance(notifType);
-                            if (instance != null)
-                            {
-                                ReflectionHelper.InvokeMethod(instance, "SendNotification",
-                                    "Predator's Reflex! Attack speed increased!");
-                            }
-                        }
-                    }
-                    catch { /* notification failure is non-critical */ }
-                }
-                _lastIncomingDamage = 0f;
-            }
 
             // Angel - Divine Ward: check if HP dropped below threshold
             if (race.Value == Race.Angel && AbilityConfig.EnableDivineWard.Value)

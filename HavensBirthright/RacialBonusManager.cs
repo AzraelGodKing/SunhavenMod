@@ -139,17 +139,15 @@ namespace HavensBirthright
                     "Forest Hunter: Chop trees faster")
             };
 
-            // Amari Cat - Agile hunters with quick reflexes
+            // Amari Cat - Feline Grace (movement); Predator's Strike (crit); Keen Senses (foraging); Nine Lives is cheat-death (CombatPatches)
             _racialBonuses[Race.AmariCat] = new List<RacialBonus>
             {
                 new RacialBonus(BonusType.MovementSpeed, RacialConfig.AmariCatSpeedBonus.Value, true,
                     "Feline Grace: Move faster"),
-                new RacialBonus(BonusType.AttackSpeed, RacialConfig.AmariCatAttackSpeedBonus.Value, true,
-                    "Quick Pounce: Attack faster"),
                 new RacialBonus(BonusType.CriticalChance, RacialConfig.AmariCatCritBonus.Value, true,
                     "Predator's Strike: Higher critical hit chance"),
-                new RacialBonus(BonusType.DodgeChance, RacialConfig.AmariCatDodgeBonus.Value, true,
-                    "Nine Lives: Higher chance to dodge attacks")
+                new RacialBonus(BonusType.ForagingChance, RacialConfig.AmariCatForagingBonus.Value, true,
+                    "Keen Senses: Find more foragables")
             };
 
             // Amari Dog - Loyal companions, tough and social

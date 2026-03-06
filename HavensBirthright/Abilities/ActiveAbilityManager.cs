@@ -32,7 +32,6 @@ namespace HavensBirthright.Abilities
         // Ability keys
         public const string DivineWard = "DivineWard";
         public const string BloodRage = "BloodRage";
-        public const string PredatorReflex = "PredatorReflex";
         public const string HardenedScales = "HardenedScales";
         public const string TailwindOutdoor = "TailwindOutdoor";
         public const string TidalBlessing = "TidalBlessing";
