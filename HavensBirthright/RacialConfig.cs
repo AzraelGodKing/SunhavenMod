@@ -54,11 +54,10 @@ namespace HavensBirthright
         public static ConfigEntry<float> AmariCraftingBonus;
         public static ConfigEntry<float> AmariWoodcuttingBonus;
 
-        // Amari Cat bonuses
+        // Amari Cat bonuses (Nine Lives is passive cheat-death in AbilityConfig)
         public static ConfigEntry<float> AmariCatSpeedBonus;
-        public static ConfigEntry<float> AmariCatAttackSpeedBonus;
         public static ConfigEntry<float> AmariCatCritBonus;
-        public static ConfigEntry<float> AmariCatDodgeBonus;
+        public static ConfigEntry<float> AmariCatForagingBonus;
 
         // Amari Dog bonuses
         public static ConfigEntry<float> AmariDogHealthBonus;
@@ -105,6 +104,8 @@ namespace HavensBirthright
         // General settings
         public static ConfigEntry<bool> EnableRacialBonuses;
         public static ConfigEntry<bool> ShowBonusNotifications;
+        /// <summary>When true, Amari Cat gets no combat stat bonuses (attack speed, damage, crit, dodge) to reduce stutter with fast weapons (e.g. scythe).</summary>
+        public static ConfigEntry<bool> AmariCatReduceCombatStutter;
 
         public static void Initialize(ConfigFile config)
         {
@@ -121,6 +122,13 @@ namespace HavensBirthright
                 "ShowBonusNotifications",
                 true,
                 "Show notifications when racial bonuses are applied"
+            );
+
+            AmariCatReduceCombatStutter = config.Bind(
+                "Performance",
+                "AmariCatReduceCombatStutter",
+                false,
+                "If true, Amari Cat does not receive attack speed bonuses (melee and spell) to reduce stutter with fast weapons (e.g. scythe). Damage, crit, dodge, movement speed, and other bonuses still apply."
             );
 
             // Human bonuses (default: modest all-around bonuses)
@@ -348,19 +356,12 @@ namespace HavensBirthright
                 "Percentage bonus to woodcutting speed"
             );
 
-            // Amari Cat bonuses (agile hunters - speed and crits)
+            // Amari Cat bonuses (Feline Grace, Predator's Strike, Keen Senses)
             AmariCatSpeedBonus = config.Bind(
                 "Amari Cat",
                 "MovementSpeedBonus",
                 20f,
-                "Percentage bonus to movement speed"
-            );
-
-            AmariCatAttackSpeedBonus = config.Bind(
-                "Amari Cat",
-                "AttackSpeedBonus",
-                20f,
-                "Percentage bonus to attack speed"
+                "Feline Grace: Percentage bonus to movement speed"
             );
 
             AmariCatCritBonus = config.Bind(
@@ -370,11 +371,11 @@ namespace HavensBirthright
                 "Percentage bonus to critical hit chance"
             );
 
-            AmariCatDodgeBonus = config.Bind(
+            AmariCatForagingBonus = config.Bind(
                 "Amari Cat",
-                "DodgeChanceBonus",
-                10f,
-                "Percentage bonus to dodge chance"
+                "ForagingChanceBonus",
+                15f,
+                "Keen Senses: Percentage bonus to find foragables"
             );
 
             // Amari Dog bonuses (loyal companions - tanky and social)

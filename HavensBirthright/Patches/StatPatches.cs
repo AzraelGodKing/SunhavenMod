@@ -1,5 +1,7 @@
 using HavensBirthright.Abilities;
 using System;
+using System.Collections.Generic;
+using UnityEngine;
 using Wish;
 
 namespace HavensBirthright.Patches
@@ -17,6 +19,17 @@ namespace HavensBirthright.Patches
         // (like player.MaxHealth or FarmingSkillLevel) that internally call GetStat again.
         private static bool _isApplyingBonuses = false;
 
+        // Per-frame cache for all stats to avoid stutter when game polls GetStat
+        // repeatedly (e.g. Amari Cat + scythe). Only used when not reentrant.
+        private static int _cachedFrame = -1;
+        private static Dictionary<StatType, float> _perFrameStatCache;
+
+        /// <summary>Stats that are polled very frequently during attacks; skipping only these for Amari Cat removes stutter while keeping damage/crit/dodge.</summary>
+        private static bool IsAttackSpeedStat(StatType stat)
+        {
+            return stat == StatType.AttackSpeed || stat == StatType.SpellAttackSpeed;
+        }
+
         /// <summary>
         /// Postfix patch for Player.GetStat - modifies stat values based on racial bonuses,
         /// active abilities, drawbacks, and conditional synergies.
@@ -29,9 +42,22 @@ namespace HavensBirthright.Patches
                 return;
 
             // Don't apply bonuses until BirthrightRunner has initialized the per-frame cache.
-            // This prevents expensive reflection lookups during early game load.
             if (!BirthrightRunner.IsCacheValid)
                 return;
+
+            // Per-frame cache: check before any config/manager/race so cache hits are minimal cost.
+            int frame = Time.frameCount;
+            if (frame != _cachedFrame)
+            {
+                _cachedFrame = frame;
+                _perFrameStatCache = _perFrameStatCache ?? new Dictionary<StatType, float>();
+                _perFrameStatCache.Clear();
+            }
+            if (_perFrameStatCache.TryGetValue(stat, out float cached))
+            {
+                __result = cached;
+                return;
+            }
 
             if (!RacialConfig.EnableRacialBonuses.Value)
                 return;
@@ -43,6 +69,14 @@ namespace HavensBirthright.Patches
             var race = manager.GetPlayerRace();
             if (!race.HasValue)
                 return;
+
+            // Optional: skip only attack speed bonuses for Amari Cat to eliminate stutter (e.g. scythe); damage, crit, dodge still apply.
+            if (race.Value == Race.AmariCat && RacialConfig.AmariCatReduceCombatStutter != null &&
+                RacialConfig.AmariCatReduceCombatStutter.Value && IsAttackSpeedStat(stat))
+            {
+                _perFrameStatCache[stat] = __result;
+                return;
+            }
 
             _isApplyingBonuses = true;
             try
@@ -67,6 +101,8 @@ namespace HavensBirthright.Patches
                 {
                     ApplyConditionalSynergies(stat, ref __result, race.Value);
                 }
+
+                _perFrameStatCache[stat] = __result;
             }
             finally
             {
@@ -263,18 +299,6 @@ namespace HavensBirthright.Patches
                             float quickLearnerBonus = BirthrightRunner.CachedQuickLearnerBonus;
                             if (quickLearnerBonus > 0)
                                 __result += quickLearnerBonus / 100f;
-                        }
-                    }
-                    break;
-
-                // Amari Cat - Predator's Reflex: attack speed after dodge
-                case Race.AmariCat:
-                    if (AbilityConfig.EnablePredatorReflex.Value)
-                    {
-                        if (stat == StatType.AttackSpeed &&
-                            ActiveAbilityManager.IsAbilityActive(ActiveAbilityManager.PredatorReflex))
-                        {
-                            __result *= (1f + AbilityConfig.PredatorReflexAttackSpeedBonus.Value / 100f);
                         }
                     }
                     break;
