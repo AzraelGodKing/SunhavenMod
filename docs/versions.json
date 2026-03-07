@@ -59,7 +59,7 @@
     "version": "1.0.0",
     "name": "Faster Races",
     "description": "Configurable movement speed bonus for all races; disables Haven's Birthright speed buffs when both are installed",
-    "nexus": "",
+    "nexus": "https://www.nexusmods.com/sunhaven/mods/497",
     "changelog": "Initial release"
   }
 }
