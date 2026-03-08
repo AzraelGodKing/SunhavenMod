@@ -26,5 +26,5 @@ Edit `BepInEx/config/com.azraelgodking.squirrelsbirthdayreminder.cfg` to customi
 ## Links
 
 - [Nexus Mods](https://www.nexusmods.com/sunhaven/mods/493)
-- [Documentation](https://azraelgodking.github.io/SunhavenMod/BirthdayReminder.html)
+- [Documentation](https://azraelgodking.github.io/SunhavenMod/BirthdayReminder/BirthdayReminder.html)
 - [Report Bugs on Discord](https://discord.gg/Vwh2y7qMXv)

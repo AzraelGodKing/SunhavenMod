@@ -60,23 +60,44 @@ namespace HavenDevTools.Services
                                     Items = new List<MuseumItemInfo>()
                                 };
 
-                                var itemsProp = bundle.GetType().GetProperty("Items");
-                                if (itemsProp != null)
+                                var bundleId = bundle.GetType().GetProperty("Id")?.GetValue(bundle)?.ToString() ?? "";
+                                var sectionId = section.GetType().GetProperty("Id")?.GetValue(section)?.ToString() ?? "";
+
+                                // For aquarium bundles, try S.M.U.T. resolved fish IDs (from game ItemInfoDatabase + FishData)
+                                var resolvedItems = TryGetResolvedAquariumItems(smutAssembly, bundleId);
+                                if (resolvedItems != null && resolvedItems.Count > 0)
                                 {
-                                    var items = itemsProp.GetValue(bundle) as System.Collections.IList;
-                                    if (items != null)
+                                    foreach (var (gameItemId, name) in resolvedItems)
                                     {
-                                        foreach (var item in items)
+                                        bundleInfo.Items.Add(new MuseumItemInfo
                                         {
-                                            string itemName = item.GetType().GetProperty("Name")?.GetValue(item)?.ToString() ?? "Unknown";
-                                            var itemInfo = new MuseumItemInfo
+                                            Id = $"{bundleId}_fish_{gameItemId}",
+                                            Name = name ?? $"Item {gameItemId}",
+                                            GameItemId = gameItemId,
+                                            Quantity = 1
+                                        });
+                                    }
+                                }
+                                else
+                                {
+                                    var itemsProp = bundle.GetType().GetProperty("Items");
+                                    if (itemsProp != null)
+                                    {
+                                        var items = itemsProp.GetValue(bundle) as System.Collections.IList;
+                                        if (items != null)
+                                        {
+                                            foreach (var item in items)
                                             {
-                                                Id = item.GetType().GetProperty("Id")?.GetValue(item)?.ToString() ?? "",
-                                                Name = itemName,
-                                                GameItemId = Convert.ToInt32(item.GetType().GetProperty("GameItemId")?.GetValue(item) ?? 0),
-                                                Quantity = MuseumItemInfo.ParseQuantityFromName(itemName)
-                                            };
-                                            bundleInfo.Items.Add(itemInfo);
+                                                string itemName = item.GetType().GetProperty("Name")?.GetValue(item)?.ToString() ?? "Unknown";
+                                                var itemInfo = new MuseumItemInfo
+                                                {
+                                                    Id = item.GetType().GetProperty("Id")?.GetValue(item)?.ToString() ?? "",
+                                                    Name = itemName,
+                                                    GameItemId = Convert.ToInt32(item.GetType().GetProperty("GameItemId")?.GetValue(item) ?? 0),
+                                                    Quantity = MuseumItemInfo.ParseQuantityFromName(itemName)
+                                                };
+                                                bundleInfo.Items.Add(itemInfo);
+                                            }
                                         }
                                     }
                                 }
@@ -210,6 +231,41 @@ namespace HavenDevTools.Services
                 {
                     return assembly;
                 }
+            }
+            return null;
+        }
+
+        /// <summary>
+        /// Gets resolved aquarium fish IDs from S.M.U.T. (ItemInfoDatabase + FishData by season).
+        /// Returns null if S.M.U.T. doesn't have resolved data for this bundle.
+        /// </summary>
+        private static List<(int GameItemId, string Name)> TryGetResolvedAquariumItems(Assembly smutAssembly, string bundleId)
+        {
+            if (smutAssembly == null || string.IsNullOrEmpty(bundleId)) return null;
+
+            try
+            {
+                var museumContentType = smutAssembly.GetType("SunHavenMuseumUtilityTracker.Data.MuseumContent");
+                var method = museumContentType?.GetMethod("GetResolvedAquariumItems", BindingFlags.Public | BindingFlags.Static, null, new[] { typeof(string) }, null);
+                var result = method?.Invoke(null, new object[] { bundleId });
+                if (result is System.Collections.IList list && list.Count > 0)
+                {
+                    var typed = new List<(int, string)>();
+                    foreach (var entry in list)
+                    {
+                        var t = entry.GetType();
+                        var item1Field = t.GetField("Item1", BindingFlags.Public | BindingFlags.Instance);
+                        var item2Field = t.GetField("Item2", BindingFlags.Public | BindingFlags.Instance);
+                        int id = item1Field != null ? Convert.ToInt32(item1Field.GetValue(entry)) : 0;
+                        string name = item2Field != null ? item2Field.GetValue(entry)?.ToString() : null;
+                        typed.Add((id, name ?? $"Item {id}"));
+                    }
+                    return typed;
+                }
+            }
+            catch
+            {
+                // ignore
             }
             return null;
         }

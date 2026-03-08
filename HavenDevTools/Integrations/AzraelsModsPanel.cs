@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+using HavenDevTools.API;
 using HavenDevTools.Config;
 using HavenDevTools.Services;
 using SunhavenMods.Shared;
@@ -23,6 +24,16 @@ namespace HavenDevTools.Integrations
         private static int _selectedSectionIndex;
         private static int _selectedBundleIndex;
         private static int _selectedRaceIndex;
+
+        // Cached reflection to avoid per-frame lag (FindType/GetMethod scan assemblies)
+        private static Type _cachedSenpaisChestPlugin;
+        private static MethodInfo _cachedSenpaisChestGetManager;
+        private static Type _cachedBirthdayReminderPlugin;
+        private static MethodInfo _cachedBirthdayReminderGetManager;
+        private static Type _cachedSunhavenTodoPlugin;
+        private static MethodInfo _cachedSunhavenTodoGetManager;
+        private static Type _cachedHavensAlmanacPlugin;
+        private static MethodInfo _cachedHavensAlmanacGetAggregator;
 
         private static readonly string[] _subTabNames = new[]
         {
@@ -48,10 +59,12 @@ namespace HavenDevTools.Integrations
             if (Plugin.HasSunhavenTodo) { installedTabs.Add("Todo"); installedIndices.Add(idx); }
             idx++;
             if (Plugin.HasHavensAlmanac) { installedTabs.Add("Almanac"); installedIndices.Add(idx); }
+            idx++;
+            if (Plugin.HasTrinketFortune) { installedTabs.Add("Trinket Fortune"); installedIndices.Add(idx); }
 
             if (installedTabs.Count == 0)
             {
-                GUILayout.Label("No Azrael's mods detected. Install SenpaisChest, TheVault, S.M.U.T., Birthright, Birthday Reminder, Todo, or Haven's Almanac.", labelStyle);
+                GUILayout.Label("No Azrael's mods detected. Install SenpaisChest, TheVault, S.M.U.T., Birthright, Birthday Reminder, Todo, Almanac, or Trinket Fortune.", labelStyle);
                 return;
             }
 
@@ -74,6 +87,7 @@ namespace HavenDevTools.Integrations
                 case 4: DrawBirthdayReminder(boxStyle, buttonStyle, labelStyle, sectionHeaderStyle); break;
                 case 5: DrawTodo(boxStyle, buttonStyle, labelStyle, sectionHeaderStyle); break;
                 case 6: DrawAlmanac(boxStyle, buttonStyle, labelStyle, sectionHeaderStyle); break;
+                case 7: DrawTrinketFortune(boxStyle, buttonStyle, labelStyle, sectionHeaderStyle); break;
             }
 
             GUILayout.EndScrollView();
@@ -86,13 +100,15 @@ namespace HavenDevTools.Integrations
 
             try
             {
-                var pluginType = ReflectionHelper.FindType("Plugin", "SenpaisChest");
-                if (pluginType == null) { GUILayout.Label("SenpaisChest.Plugin not found", label); GUILayout.EndVertical(); return; }
+                if (_cachedSenpaisChestPlugin == null)
+                    _cachedSenpaisChestPlugin = ReflectionHelper.FindType("Plugin", "SenpaisChest") ?? ReflectionHelper.FindType("Plugin", "SenpaiChest");
+                if (_cachedSenpaisChestPlugin == null) { GUILayout.Label("SenpaisChest.Plugin not found", label); GUILayout.EndVertical(); return; }
 
-                var getManager = pluginType.GetMethod("GetManager", BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Static);
-                if (getManager == null) { GUILayout.Label("GetManager not found", label); GUILayout.EndVertical(); return; }
+                if (_cachedSenpaisChestGetManager == null)
+                    _cachedSenpaisChestGetManager = _cachedSenpaisChestPlugin.GetMethod("GetManager", BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Static);
+                if (_cachedSenpaisChestGetManager == null) { GUILayout.Label("GetManager not found", label); GUILayout.EndVertical(); return; }
 
-                var manager = getManager.Invoke(null, null);
+                var manager = _cachedSenpaisChestGetManager.Invoke(null, null);
                 if (manager == null) { GUILayout.Label("Manager not loaded", label); GUILayout.EndVertical(); return; }
 
                 // Smart chests
@@ -218,10 +234,16 @@ namespace HavenDevTools.Integrations
                     bool donated = inspector.HasDonated(item.Id);
                     string status = donated ? "[X]" : "[ ]";
                     string qty = item.Quantity > 1 ? $" x{item.Quantity}" : "";
+                    bool canSpawn = item.GameItemId > 0;
                     GUILayout.BeginHorizontal();
                     GUILayout.Label($"{status} {item.Name} (ID: {item.GameItemId})", label, GUILayout.Width(280));
-                    if (GUILayout.Button($"Spawn{qty}", button, GUILayout.Width(70)))
-                        Plugin.GetItemInspector()?.SpawnItem(item.GameItemId, item.Quantity);
+                    GUI.enabled = canSpawn;
+                    if (GUILayout.Button(canSpawn ? $"Spawn{qty}" : "—", button, GUILayout.Width(70)))
+                    {
+                        if (canSpawn) Plugin.GetItemInspector()?.SpawnItem(item.GameItemId, item.Quantity);
+                    }
+                    GUI.enabled = true;
+                    if (!canSpawn) GUILayout.Label("(Unity)", label, GUILayout.Width(50));
                     GUILayout.EndHorizontal();
                 }
                 GUILayout.EndScrollView();
@@ -273,13 +295,15 @@ namespace HavenDevTools.Integrations
 
             try
             {
-                var pluginType = ReflectionHelper.FindType("Plugin", "BirthdayReminder");
-                if (pluginType == null) { GUILayout.Label("BirthdayReminder.Plugin not found", label); GUILayout.EndVertical(); return; }
+                if (_cachedBirthdayReminderPlugin == null)
+                    _cachedBirthdayReminderPlugin = ReflectionHelper.FindType("Plugin", "BirthdayReminder");
+                if (_cachedBirthdayReminderPlugin == null) { GUILayout.Label("BirthdayReminder.Plugin not found", label); GUILayout.EndVertical(); return; }
 
-                var getManager = pluginType.GetMethod("GetManager", BindingFlags.Public | BindingFlags.Static);
-                if (getManager == null) { GUILayout.Label("GetManager not found", label); GUILayout.EndVertical(); return; }
+                if (_cachedBirthdayReminderGetManager == null)
+                    _cachedBirthdayReminderGetManager = _cachedBirthdayReminderPlugin.GetMethod("GetManager", BindingFlags.Public | BindingFlags.Static);
+                if (_cachedBirthdayReminderGetManager == null) { GUILayout.Label("GetManager not found", label); GUILayout.EndVertical(); return; }
 
-                var manager = getManager.Invoke(null, null);
+                var manager = _cachedBirthdayReminderGetManager.Invoke(null, null);
                 if (manager == null) { GUILayout.Label("Manager not loaded", label); GUILayout.EndVertical(); return; }
 
                 var hasBirthdays = manager.GetType().GetProperty("HasBirthdays")?.GetValue(manager);
@@ -305,7 +329,7 @@ namespace HavenDevTools.Integrations
                 GUILayout.BeginHorizontal();
                 if (GUILayout.Button("Check Birthdays", button))
                 {
-                    ReflectionHelper.InvokeStaticMethod(pluginType, "CheckBirthdays");
+                    ReflectionHelper.InvokeStaticMethod(_cachedBirthdayReminderPlugin, "CheckBirthdays");
                 }
                 if (GUILayout.Button("Manual Refresh", button))
                 {
@@ -313,7 +337,7 @@ namespace HavenDevTools.Integrations
                 }
                 if (GUILayout.Button("Send All Test Notifications", button))
                 {
-                    ReflectionHelper.InvokeStaticMethod(pluginType, "SendAllBirthdayNotifications");
+                    ReflectionHelper.InvokeStaticMethod(_cachedBirthdayReminderPlugin, "SendAllBirthdayNotifications");
                 }
                 GUILayout.EndHorizontal();
             }
@@ -332,13 +356,15 @@ namespace HavenDevTools.Integrations
 
             try
             {
-                var pluginType = ReflectionHelper.FindType("Plugin", "SunhavenTodo");
-                if (pluginType == null) { GUILayout.Label("SunhavenTodo.Plugin not found", label); GUILayout.EndVertical(); return; }
+                if (_cachedSunhavenTodoPlugin == null)
+                    _cachedSunhavenTodoPlugin = ReflectionHelper.FindType("Plugin", "SunhavenTodo");
+                if (_cachedSunhavenTodoPlugin == null) { GUILayout.Label("SunhavenTodo.Plugin not found", label); GUILayout.EndVertical(); return; }
 
-                var getManager = pluginType.GetMethod("GetTodoManager", BindingFlags.Public | BindingFlags.Static);
-                if (getManager == null) { GUILayout.Label("GetTodoManager not found", label); GUILayout.EndVertical(); return; }
+                if (_cachedSunhavenTodoGetManager == null)
+                    _cachedSunhavenTodoGetManager = _cachedSunhavenTodoPlugin.GetMethod("GetTodoManager", BindingFlags.Public | BindingFlags.Static);
+                if (_cachedSunhavenTodoGetManager == null) { GUILayout.Label("GetTodoManager not found", label); GUILayout.EndVertical(); return; }
 
-                var manager = getManager.Invoke(null, null);
+                var manager = _cachedSunhavenTodoGetManager.Invoke(null, null);
                 if (manager == null) { GUILayout.Label("Manager not loaded", label); GUILayout.EndVertical(); return; }
 
                 var getData = manager.GetType().GetMethod("GetData");
@@ -354,7 +380,7 @@ namespace HavenDevTools.Integrations
                 var currentChar = manager.GetType().GetProperty("CurrentCharacter")?.GetValue(manager);
                 charName = currentChar?.ToString() ?? "?";
 
-                var shortcutDisplay = pluginType.GetMethod("GetOpenListShortcutDisplay", BindingFlags.Public | BindingFlags.Static);
+                var shortcutDisplay = _cachedSunhavenTodoPlugin.GetMethod("GetOpenListShortcutDisplay", BindingFlags.Public | BindingFlags.Static);
                 string shortcut = shortcutDisplay?.Invoke(null, null)?.ToString() ?? "Ctrl+T";
 
                 GUILayout.Label($"Tasks: {count}", label);
@@ -364,11 +390,11 @@ namespace HavenDevTools.Integrations
                 GUILayout.Space(8);
                 GUILayout.BeginHorizontal();
                 if (GUILayout.Button("Toggle UI", button))
-                    ReflectionHelper.InvokeStaticMethod(pluginType, "ToggleUI");
+                    ReflectionHelper.InvokeStaticMethod(_cachedSunhavenTodoPlugin, "ToggleUI");
                 if (GUILayout.Button("Toggle HUD", button))
-                    ReflectionHelper.InvokeStaticMethod(pluginType, "ToggleHUD");
+                    ReflectionHelper.InvokeStaticMethod(_cachedSunhavenTodoPlugin, "ToggleHUD");
                 if (GUILayout.Button("Save Data", button))
-                    ReflectionHelper.InvokeStaticMethod(pluginType, "SaveData");
+                    ReflectionHelper.InvokeStaticMethod(_cachedSunhavenTodoPlugin, "SaveData");
                 GUILayout.EndHorizontal();
             }
             catch (Exception ex)
@@ -386,13 +412,15 @@ namespace HavenDevTools.Integrations
 
             try
             {
-                var pluginType = ReflectionHelper.FindType("Plugin", "HavensAlmanac");
-                if (pluginType == null) { GUILayout.Label("HavensAlmanac.Plugin not found", label); GUILayout.EndVertical(); return; }
+                if (_cachedHavensAlmanacPlugin == null)
+                    _cachedHavensAlmanacPlugin = ReflectionHelper.FindType("Plugin", "HavensAlmanac");
+                if (_cachedHavensAlmanacPlugin == null) { GUILayout.Label("HavensAlmanac.Plugin not found", label); GUILayout.EndVertical(); return; }
 
-                var getAggregator = pluginType.GetMethod("GetDataAggregator", BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Static);
-                if (getAggregator == null) { GUILayout.Label("GetDataAggregator not found (internal)", label); GUILayout.EndVertical(); return; }
+                if (_cachedHavensAlmanacGetAggregator == null)
+                    _cachedHavensAlmanacGetAggregator = _cachedHavensAlmanacPlugin.GetMethod("GetDataAggregator", BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Static);
+                if (_cachedHavensAlmanacGetAggregator == null) { GUILayout.Label("GetDataAggregator not found (internal)", label); GUILayout.EndVertical(); return; }
 
-                var aggregator = getAggregator.Invoke(null, null);
+                var aggregator = _cachedHavensAlmanacGetAggregator.Invoke(null, null);
                 if (aggregator == null) { GUILayout.Label("Aggregator not loaded", label); GUILayout.EndVertical(); return; }
 
                 var modCountProp = aggregator.GetType().GetProperty("InstalledModCount");
@@ -430,6 +458,53 @@ namespace HavenDevTools.Integrations
                 GUILayout.Label($"Error: {ex.Message}", label);
             }
 
+            GUILayout.EndVertical();
+        }
+
+        private static IDevToolsPanel _cachedTrinketFortunePanel;
+
+        private static void DrawTrinketFortune(GUIStyle box, GUIStyle button, GUIStyle label, GUIStyle sectionHeader)
+        {
+            var panel = DevToolsRegistry.Panels.FirstOrDefault(p => p.ModGuid == "com.azraelgodking.trinketfortune")
+                ?? _cachedTrinketFortunePanel;
+
+            if (panel == null)
+            {
+                try
+                {
+                    var panelType = Type.GetType("TrinketFortune.DevTools.TrinketFortunePanel, TrinketFortune");
+                    if (panelType != null)
+                    {
+                        panel = (IDevToolsPanel)Activator.CreateInstance(panelType);
+                        _cachedTrinketFortunePanel = panel;
+                    }
+                }
+                catch (Exception ex)
+                {
+                    Plugin.Log?.LogDebug($"[AzraelsMods] Trinket Fortune panel fallback: {ex.Message}");
+                }
+            }
+
+            if (panel == null)
+            {
+                GUILayout.BeginVertical(box);
+                GUILayout.Label("Trinket Fortune", sectionHeader);
+                GUILayout.Label("Trinket Fortune not loaded.", label);
+                GUILayout.EndVertical();
+                return;
+            }
+
+            GUILayout.BeginVertical(box);
+            GUILayout.Label(panel.DisplayName, sectionHeader);
+            GUILayout.Space(5);
+            try
+            {
+                panel.Draw(box, button, label);
+            }
+            catch (Exception ex)
+            {
+                GUILayout.Label($"Error: {ex.Message}", label);
+            }
             GUILayout.EndVertical();
         }
     }

@@ -141,7 +141,23 @@ namespace SunHavenMuseumUtilityTracker.Data
             // Bundle IDs and counts from game: Wish.MuseumCurator.aquaticMuseumProgress
             var aquarium = new MuseumSection("aquarium", "Aquarium", "Fish and aquatic life from all waters and seasons.");
 
-            AddPlaceholderBundle(aquarium, "FishingBundle", "Fishing (Relics)", 11);
+            // FishingBundle: item IDs from Wish.FishingRod.fishingMuseumItems (decompiled)
+            var fishingBundle = new MuseumBundle("FishingBundle", "Fishing (Relics)", "aquarium", "Rare fishing relics and treasures.");
+            fishingBundle.Items.AddRange(new[]
+            {
+                new MuseumItem("fishing_relic_20150", "Handmade Bobber", "FishingBundle", 20150, ItemRarity.Rare, "A handmade fishing bobber."),
+                new MuseumItem("fishing_relic_20151", "Ancient Magic Staff", "FishingBundle", 20151, ItemRarity.Rare, "An ancient magic staff."),
+                new MuseumItem("fishing_relic_20152", "Bronze Dragon Relic", "FishingBundle", 20152, ItemRarity.Rare, "A bronze dragon relic."),
+                new MuseumItem("fishing_relic_20153", "Old Sword Hilt", "FishingBundle", 20153, ItemRarity.Rare, "An old sword hilt."),
+                new MuseumItem("fishing_relic_20154", "Ancient Almari Totem", "FishingBundle", 20154, ItemRarity.Rare, "An ancient Almari totem."),
+                new MuseumItem("fishing_relic_20155", "Ancient Angel Quill", "FishingBundle", 20155, ItemRarity.Rare, "An ancient angel quill."),
+                new MuseumItem("fishing_relic_20156", "Ancient Elven Headdress", "FishingBundle", 20156, ItemRarity.Rare, "An ancient elven headdress."),
+                new MuseumItem("fishing_relic_20157", "Ancient Naga Crook", "FishingBundle", 20157, ItemRarity.Rare, "An ancient Naga crook."),
+                new MuseumItem("fishing_relic_20158", "Nel'Varian Runestone", "FishingBundle", 20158, ItemRarity.Rare, "A Nel'Varian runestone."),
+                new MuseumItem("fishing_relic_20159", "Old Mayoral Painting", "FishingBundle", 20159, ItemRarity.Rare, "An old mayoral painting."),
+                new MuseumItem("fishing_relic_20160", "Tentacle Monster Emblem", "FishingBundle", 20160, ItemRarity.Rare, "A tentacle monster emblem."),
+            });
+            aquarium.Bundles.Add(fishingBundle);
             AddPlaceholderBundle(aquarium, "MuseumAquariumBigTank", "Big Tank", 26);
             AddPlaceholderBundle(aquarium, "MuseumAquariumSpring", "Spring Tank", 9);
             AddPlaceholderBundle(aquarium, "MuseumAquariumSummer", "Summer Tank", 9);
@@ -151,6 +167,9 @@ namespace SunHavenMuseumUtilityTracker.Data
             AddPlaceholderBundle(aquarium, "MuseumAquariumWithergate", "Withergate Tank", 22);
 
             sections.Add(aquarium);
+
+            // Start async resolution of aquarium fish IDs from game (ItemInfoDatabase + FishData)
+            AquariumFishResolver.StartResolutionIfNeeded();
 
             return sections;
         }
@@ -257,6 +276,7 @@ namespace SunHavenMuseumUtilityTracker.Data
 
         /// <summary>
         /// Finds an item by its game item ID.
+        /// Also checks resolved aquarium fish (from AquariumFishResolver) for donation tracking.
         /// </summary>
         public static MuseumItem FindByGameItemId(int gameItemId)
         {
@@ -271,7 +291,29 @@ namespace SunHavenMuseumUtilityTracker.Data
                     }
                 }
             }
+            // Check resolved aquarium fish (for HungryMonsterPatches donation tracking)
+            foreach (var bundleId in new[] { "MuseumAquariumSpring", "MuseumAquariumSummer", "MuseumAquariumFall", "MuseumAquariumWinter" })
+            {
+                var resolved = AquariumFishResolver.GetResolvedItems(bundleId);
+                if (resolved != null)
+                {
+                    foreach (var (id, name) in resolved)
+                    {
+                        if (id == gameItemId)
+                            return new MuseumItem($"{bundleId}_fish_{id}", name ?? $"Item {id}", bundleId, id, ItemRarity.Common, "");
+                    }
+                }
+            }
             return null;
+        }
+
+        /// <summary>
+        /// Gets resolved fish items for an aquarium bundle from game data (ItemInfoDatabase + FishData by season).
+        /// Returns null if not resolved yet or bundle is not a season-based aquarium bundle.
+        /// </summary>
+        public static List<(int GameItemId, string Name)> GetResolvedAquariumItems(string bundleId)
+        {
+            return AquariumFishResolver.GetResolvedItems(bundleId);
         }
 
         /// <summary>

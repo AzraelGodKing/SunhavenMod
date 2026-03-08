@@ -284,8 +284,11 @@ namespace HavenDevTools.UI
                 return;
             }
 
+            // Azrael's mods shown in Azrael's Mods tab - exclude from Extensions
+            var azraelsModGuids = new HashSet<string> { "com.azraelgodking.trinketfortune" };
             foreach (var panel in panels)
             {
+                if (azraelsModGuids.Contains(panel.ModGuid)) continue;
                 GUILayout.BeginVertical(_boxStyle);
                 GUILayout.Label(panel.DisplayName, _sectionHeaderStyle);
                 GUILayout.Space(5);
@@ -623,12 +626,17 @@ namespace HavenDevTools.UI
                     bool donated = inspector.HasDonated(item.Id);
                     string status = donated ? "[X]" : "[ ]";
                     string qtyLabel = item.Quantity > 1 ? $" x{item.Quantity}" : "";
+                    bool canSpawn = item.GameItemId > 0;
                     GUILayout.BeginHorizontal();
                     GUILayout.Label($"{status} {item.Name} (ID: {item.GameItemId})", _labelStyle, GUILayout.Width(320));
-                    if (GUILayout.Button($"Spawn{qtyLabel}", _buttonStyle, GUILayout.Width(90)))
+                    var prevEnabled = GUI.enabled;
+                    GUI.enabled = canSpawn;
+                    if (GUILayout.Button(canSpawn ? $"Spawn{qtyLabel}" : "—", _buttonStyle, GUILayout.Width(90)))
                     {
-                        Plugin.GetItemInspector()?.SpawnItem(item.GameItemId, item.Quantity);
+                        if (canSpawn) Plugin.GetItemInspector()?.SpawnItem(item.GameItemId, item.Quantity);
                     }
+                    GUI.enabled = prevEnabled;
+                    if (!canSpawn) GUILayout.Label("(ID in Unity assets)", _labelStyle, GUILayout.Width(100));
                     GUILayout.EndHorizontal();
                 }
                 GUILayout.EndScrollView();

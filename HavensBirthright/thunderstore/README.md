@@ -46,5 +46,5 @@ Edit `BepInEx/config/com.azraelgodking.havensbirthright.cfg` to customize bonuse
 ## Links
 
 - [Nexus Mods](https://www.nexusmods.com/sunhaven/mods/487)
-- [Documentation](https://azraelgodking.github.io/SunhavenMod/RacialBonuses.html)
+- [Documentation](https://azraelgodking.github.io/SunhavenMod/RacialBonuses/RacialBonuses.html)
 - [Report Bugs on Discord](https://discord.gg/Vwh2y7qMXv)
