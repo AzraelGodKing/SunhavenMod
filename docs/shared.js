@@ -149,12 +149,14 @@ document.addEventListener('DOMContentLoaded', function() {
         var nameToKey = {
             'The Vault': 'com.azraelgodking.thevault',
             "Haven's Birthright": 'com.azraelgodking.havensbirthright',
+            'Faster Races': 'com.azraelgodking.fasterraces',
+            'Trinket Fortune': 'com.azraelgodking.trinketfortune',
             'S.M.U.T.': 'com.azraelgodking.sunhavenmuseumutilitytracker',
             'Sun Haven Todo': 'com.azraelgodking.sunhaventodo',
             "A Squirrel's Birthday Reminder": 'com.azraelgodking.squirrelsbirthdayreminder',
             "Senpai's Chest": 'com.azraelgodking.senpaischest',
-            'HavenDevTools': 'com.azraelgodking.havendevtools',
-            "Haven's Almanac": 'com.azraelgodking.havensalmanac'
+            "Haven's Almanac": 'com.azraelgodking.havensalmanac',
+            'HavenDevTools': 'com.azraelgodking.havendevtools'
         };
 
         // Determine base path for versions.json
@@ -193,14 +195,17 @@ document.addEventListener('DOMContentLoaded', function() {
                     var pageName = navCurrent ? navCurrent.textContent.trim() : '';
                     // Map nav names to keys
                     var navToKey = {
-                        'S.M.U.T.': 'com.azraelgodking.sunhavenmuseumutilitytracker',
-                        "Haven's Birthright": 'com.azraelgodking.havensbirthright',
                         'The Vault': 'com.azraelgodking.thevault',
+                        "Haven's Birthright": 'com.azraelgodking.havensbirthright',
+                        'Faster Races': 'com.azraelgodking.fasterraces',
+                        'Trinket Fortune': 'com.azraelgodking.trinketfortune',
+                        'S.M.U.T.': 'com.azraelgodking.sunhavenmuseumutilitytracker',
                         'Todo List': 'com.azraelgodking.sunhaventodo',
+                        'Sun Haven Todo': 'com.azraelgodking.sunhaventodo',
                         'Birthday Reminder': 'com.azraelgodking.squirrelsbirthdayreminder',
                         "Senpai's Chest": 'com.azraelgodking.senpaischest',
-                        'HavenDevTools': 'com.azraelgodking.havendevtools',
-                        "Haven's Almanac": 'com.azraelgodking.havensalmanac'
+                        "Haven's Almanac": 'com.azraelgodking.havensalmanac',
+                        'HavenDevTools': 'com.azraelgodking.havendevtools'
                     };
                     var pageKey = navToKey[pageName];
                     if (pageKey && data[pageKey]) {

@@ -22,3 +22,7 @@ Edit `BepInEx/config/com.azraelgodking.fasterraces.cfg`:
 ## Optional
 
 - **Haven's Birthright** – Works best together; HB will skip its speed buffs when Faster Races is loaded.
+
+## Links
+
+- [Documentation](https://azraelgodking.github.io/SunhavenMod/FasterRaces/FasterRaces.html)
