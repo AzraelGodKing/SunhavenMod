@@ -191,7 +191,7 @@
 
             <div class="dialogue-choices">
                 <div class="dialogue-prompt">Choose your next action:</div>
-                <a href="index.html" class="choice">
+                <a href="index.html" class="choice" id="hubLink">
                     <span class="choice-key">A</span>
                     <span class="choice-text">Follow the whispering voice back to the <strong>Mod Hub</strong>.</span>
                     <span class="choice-tag safe">Safe</span>
@@ -219,6 +219,17 @@
         <span>SUN HAVEN MOD HUB</span> &middot; <span>SECTOR: NULL</span> &middot; <span>ERROR CODE 404</span>
     </footer>
 
-    <script>(function(){ var el=document.getElementById('failedPath'); if(el) el.textContent=window.location.pathname||'/unknown'; })();</script>
+    <script>
+        (function(){
+            var el=document.getElementById('failedPath');
+            if(el) el.textContent=window.location.pathname||'/unknown';
+            var hub=document.getElementById('hubLink');
+            if(hub){
+                var segs=window.location.pathname.split('/').filter(Boolean);
+                var base=segs.length?'/'+segs[0]+'/':'/';
+                hub.href=base+'index.html';
+            }
+        })();
+    </script>
 </body>
 </html>
