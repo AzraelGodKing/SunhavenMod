@@ -23,6 +23,7 @@ namespace HavenDevTools
     [BepInDependency("com.azraelgodking.senpaischest", BepInDependency.DependencyFlags.SoftDependency)]
     [BepInDependency("com.azraelgodking.squirrelsbirthdayreminder", BepInDependency.DependencyFlags.SoftDependency)]
     [BepInDependency("com.azraelgodking.sunhaventodo", BepInDependency.DependencyFlags.SoftDependency)]
+    [BepInDependency("com.azraelgodking.trinketfortune", BepInDependency.DependencyFlags.SoftDependency)]
     // NOTE: Do NOT add BepInDependency on HavensAlmanac - it creates a cyclic dep (Almanac already depends on HavenDevTools).
     public class Plugin : BaseUnityPlugin
     {
@@ -66,6 +67,7 @@ namespace HavenDevTools
         public static bool HasBirthdayReminder { get; private set; }
         public static bool HasSunhavenTodo { get; private set; }
         public static bool HasHavensAlmanac { get; private set; }
+        public static bool HasTrinketFortune { get; private set; }
 
         private Harmony _harmony;
 
@@ -210,6 +212,7 @@ namespace HavenDevTools
                 if (name == "BirthdayReminder") HasBirthdayReminder = true;
                 if (name == "SunhavenTodo") HasSunhavenTodo = true;
                 if (name == "HavensAlmanac") HasHavensAlmanac = true;
+                if (name == "TrinketFortune") HasTrinketFortune = true;
             }
 
             Log.LogInfo($"Mod detection complete - TheVault: {HasTheVault}, SMUT: {HasSMUT}, Birthright: {HasHavensBirthright}, SenpaisChest: {HasSenpaisChest}, Birthday: {HasBirthdayReminder}, Todo: {HasSunhavenTodo}, Almanac: {HasHavensAlmanac}");
@@ -499,6 +502,6 @@ namespace HavenDevTools
     {
         public const string PLUGIN_GUID = "com.azraelgodking.havendevtools";
         public const string PLUGIN_NAME = "Haven Dev Tools";
-        public const string PLUGIN_VERSION = "1.0.4";
+        public const string PLUGIN_VERSION = "1.0.5";
     }
 }

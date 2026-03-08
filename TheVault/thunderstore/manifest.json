@@ -1,6 +1,6 @@
 {
   "name": "TheVault",
-  "version_number": "2.0.7",
+  "version_number": "2.0.8",
   "website_url": "https://www.nexusmods.com/sunhaven/mods/488",
   "description": "Secure storage for seasonal tokens, community tokens, and keys. Auto-deposit, Sweep Inventory, in-game Settings, shop and crafting integration.",
   "dependencies": ["BepInEx-BepInExPack-5.4.2100"]
