@@ -27,5 +27,5 @@ Edit `BepInEx/config/com.azraelgodking.sunhavenmuseumutilitytracker.cfg` to cust
 ## Links
 
 - [Nexus Mods](https://www.nexusmods.com/sunhaven/mods/490)
-- [Documentation](https://azraelgodking.github.io/SunhavenMod/SMUT.html)
+- [Documentation](https://azraelgodking.github.io/SunhavenMod/SMUT/SMUT.html)
 - [Report Bugs on Discord](https://discord.gg/Vwh2y7qMXv)
