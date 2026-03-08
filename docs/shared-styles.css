@@ -42,6 +42,134 @@ html {
 }
 
 /* -----------------------------------------------------------------
+   MOD DOWNLOAD NAV (Thunderstore, Nexus, Direct Download, Hub)
+   ----------------------------------------------------------------- */
+.download-nav {
+    --download-accent: #2f8f5b;
+    --download-accent-hover: #3fb87a;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: center;
+    gap: 12px 24px;
+    padding: 20px 24px;
+    margin: 28px 0 0;
+    border-radius: 12px;
+    background: rgba(47, 143, 91, 0.08);
+    border: 1px solid rgba(47, 143, 91, 0.2);
+}
+
+@supports (background: color-mix(in srgb, red, blue)) {
+    .download-nav {
+        background: color-mix(in srgb, var(--download-accent) 8%, transparent);
+        border-color: color-mix(in srgb, var(--download-accent) 25%, transparent);
+    }
+}
+
+.download-nav-label {
+    font-size: 0.85em;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: rgba(31, 26, 18, 0.6);
+    margin-right: 8px;
+}
+
+.download-nav-links {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 12px 20px;
+}
+
+.download-nav a {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 18px;
+    border-radius: 8px;
+    font-weight: 600;
+    font-size: 0.95em;
+    text-decoration: none;
+    transition: background 0.2s, transform 0.15s, box-shadow 0.2s;
+}
+
+.download-nav a:hover {
+    transform: translateY(-1px);
+}
+
+.download-nav a.download-thunderstore {
+    background: linear-gradient(135deg, #7c3aed, #5b21b6);
+    color: #fff;
+    box-shadow: 0 2px 12px rgba(124, 58, 237, 0.35);
+}
+
+.download-nav a.download-thunderstore:hover {
+    background: linear-gradient(135deg, #8b5cf6, #6d28d9);
+    box-shadow: 0 4px 18px rgba(124, 58, 237, 0.45);
+}
+
+.download-nav a.download-nexus {
+    background: linear-gradient(135deg, #da3737, #a62b2b);
+    color: #fff;
+    box-shadow: 0 2px 12px rgba(218, 55, 55, 0.35);
+}
+
+.download-nav a.download-nexus:hover {
+    background: linear-gradient(135deg, #ea4a4a, #c52e2e);
+    box-shadow: 0 4px 18px rgba(218, 55, 55, 0.45);
+}
+
+.download-nav a.download-direct {
+    background: linear-gradient(135deg, var(--download-accent), #1f6b3f);
+    color: #fff;
+    box-shadow: 0 2px 12px rgba(47, 143, 91, 0.35);
+}
+
+.download-nav a.download-direct:hover {
+    background: linear-gradient(135deg, var(--download-accent-hover), var(--download-accent));
+    box-shadow: 0 4px 18px rgba(47, 143, 91, 0.45);
+}
+
+.download-nav a.download-hub {
+    background: rgba(31, 26, 18, 0.06);
+    color: #2a251f;
+    border: 1px solid rgba(47, 143, 91, 0.25);
+}
+
+.download-nav a.download-hub:hover {
+    background: rgba(47, 143, 91, 0.12);
+    border-color: rgba(47, 143, 91, 0.4);
+}
+
+[data-theme="dark"] .download-nav {
+    background: rgba(63, 185, 80, 0.06);
+    border-color: rgba(63, 185, 80, 0.2);
+}
+
+@supports (background: color-mix(in srgb, red, blue)) {
+    [data-theme="dark"] .download-nav {
+        background: color-mix(in srgb, var(--download-accent) 10%, transparent);
+        border-color: color-mix(in srgb, var(--download-accent) 25%, transparent);
+    }
+}
+
+[data-theme="dark"] .download-nav-label {
+    color: rgba(232, 223, 210, 0.5);
+}
+
+[data-theme="dark"] .download-nav a.download-hub {
+    background: rgba(63, 185, 80, 0.08);
+    color: #6fcf97;
+    border-color: rgba(63, 185, 80, 0.25);
+}
+
+[data-theme="dark"] .download-nav a.download-hub:hover {
+    background: rgba(63, 185, 80, 0.18);
+    border-color: rgba(63, 185, 80, 0.45);
+}
+
+/* -----------------------------------------------------------------
    DARK MODE TOGGLE
    ----------------------------------------------------------------- */
 .theme-toggle {

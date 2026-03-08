@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Trinket Fortune - Fishing Trinket Bias for Sun Haven</title>
+    <meta name="description" content="Increases odds of unowned fishing trinkets dropping as you complete the museum aquarium. The sea rewards the patient.">
+    <meta property="og:title" content="Trinket Fortune">
+    <meta property="og:description" content="Museum-aware fishing luck. As you donate aquarium trinkets, the tides favor you—that last trinket drifts closer with each cast.">
+    <meta property="og:type" content="website">
+    <meta name="theme-color" content="#0d9488">
+    <link rel="icon" type="image/svg+xml" href="../favicon.svg">
+    <link rel="stylesheet" href="../shared-styles.css">
+    <link rel="stylesheet" href="trinket-style.css">
+    <script src="../shared.js" defer></script>
+</head>
+<body>
+    <a href="#main-content" class="skip-to-content">Skip to content</a>
+    <nav class="top-nav" role="navigation" aria-label="Breadcrumb">
+        <a href="../index.html" class="nav-home">Mod Hub</a>
+        <span class="nav-divider">/</span>
+        <span class="nav-current">Trinket Fortune</span>
+        <span class="breadcrumb-date">Updated Mar 2026</span>
+    </nav>
+
+    <div class="container" id="main-content" role="main">
+
+        <header class="hero">
+            <div class="hero-icon-wrap" aria-hidden="true">&#x1F3A3;&#x2728;</div>
+            <p class="hero-label">Fishing Mod</p>
+            <h1>Trinket Fortune<span class="full-name">Fishing Trinket Bias</span></h1>
+            <p class="tagline">The sea rewards the patient</p>
+            <div class="trinket-callout" aria-label="Core mechanic">+5% per 10% aquarium (default)</div>
+            <span class="version-badge">v1.0.0</span>
+        </header>
+
+        <section class="intro-section">
+            <p><strong>Trinket Fortune</strong> increases the odds of <strong>unowned fishing trinkets</strong> dropping as you complete the museum aquarium. The more you donate to the aquarium, the kinder the waters—that last relic you seek drifts closer with each cast. Fishing for that final trinket becomes less frustrating.</p>
+        </section>
+
+        <div class="callout-box">
+            <p>Fill the aquarium; the ocean favors you.</p>
+        </div>
+
+        <section class="features-section">
+            <h2 class="section-title">Features</h2>
+            <div class="features-grid">
+                <div class="feature-card">
+                    <div class="feature-icon">&#x1F3DB;</div>
+                    <h3>Museum-Aware</h3>
+                    <p>As you donate more aquarium trinkets, the drop odds for trinkets you don't own yet increase. Your progress is rewarded.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">&#x2696;&#xFE0F;</div>
+                    <h3>Configurable</h3>
+                    <p>Adjust the bonus strength and minimum museum progress threshold. Enable or disable without uninstalling.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">&#x1F4CA;</div>
+                    <h3>S.M.U.T. Integration</h3>
+                    <p>Works with S.M.U.T. for donation data. With HavenDevTools, see your missing trinkets in Azrael's Mods.</p>
+                </div>
+            </div>
+        </section>
+
+        <section class="config-section">
+            <h2 class="section-title">Configuration</h2>
+            <div class="config-table">
+                <div class="table-bar">
+                    <span class="table-bar-title">BepInEx/config/com.azraelgodking.trinketfortune.cfg</span>
+                </div>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Setting</th>
+                            <th>Default</th>
+                            <th>Description</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><code>Enabled</code></td>
+                            <td>true</td>
+                            <td>Turn Trinket Fortune on or off</td>
+                        </tr>
+                        <tr>
+                            <td><code>MuseumProgressBonusPercent</code></td>
+                            <td>5</td>
+                            <td>Bonus to unowned trinket odds per 10% aquarium completion (e.g. 5 = +5% per 10%)</td>
+                        </tr>
+                        <tr>
+                            <td><code>MinimumMuseumProgress</code></td>
+                            <td>0.2</td>
+                            <td>No bonus below this aquarium progress (0.2 = 20%). Prevents bonus at very low completion.</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+            <p class="config-note">Edit the file above to change settings, then restart the game.</p>
+        </section>
+
+        <section class="install-section">
+            <h2 class="section-title">Installation</h2>
+            <div class="install-steps">
+                <div class="install-step">
+                    <div class="step-icon">&#x1F4E6;</div>
+                    <div class="step-info">
+                        <h4>1. Install BepInEx</h4>
+                        <p>Install BepInEx 5.x for Sun Haven if you haven't already.</p>
+                    </div>
+                </div>
+                <div class="install-step">
+                    <div class="step-icon">&#x1F4E5;</div>
+                    <div class="step-info">
+                        <h4>2. Download Trinket Fortune</h4>
+                        <p>Get <code>TrinketFortune.dll</code> from <a href="https://thunderstore.io/c/sun-haven/p/AzraelGodKing/TrinketFortune/" target="_blank">Thunderstore</a> or the Mod Hub.</p>
+                    </div>
+                </div>
+                <div class="install-step">
+                    <div class="step-icon">&#x1F4C1;</div>
+                    <div class="step-info">
+                        <h4>3. Install the mod</h4>
+                        <p>Place the DLL in <code>BepInEx/plugins/TrinketFortune/</code> (or <code>BepInEx/plugins/</code>).</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section class="related-mods">
+            <h2 class="section-title">Works great with</h2>
+            <div class="related-grid">
+                <a href="../SMUT/SMUT.html" class="related-card">
+                    <span class="related-icon">&#x1F3DB;</span>
+                    <div class="related-info">
+                        <h4>S.M.U.T.</h4>
+                        <p>Provides aquarium donation data for missing trinket tracking</p>
+                    </div>
+                </a>
+                <a href="../HavenDevTools/HavenDevTools.html" class="related-card">
+                    <span class="related-icon">&#x1F6E0;&#xFE0F;</span>
+                    <div class="related-info">
+                        <h4>HavenDevTools</h4>
+                        <p>Shows Trinket Fortune panel with missing aquarium trinkets in Azrael's Mods</p>
+                    </div>
+                </a>
+            </div>
+        </section>
+
+        <nav class="download-nav" data-mod-key="com.azraelgodking.trinketfortune" aria-label="Download links"></nav>
+        <footer class="footer">
+            <p>Trinket Fortune - A Sun Haven Mod by AzraelGodKing</p>
+            <div class="footer-links">
+                <a href="../index.html">Back to Mod Hub</a>
+            </div>
+        </footer>
+    </div>
+</body>
+</html>
