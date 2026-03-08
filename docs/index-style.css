@@ -268,6 +268,20 @@ h1 {
     color: #fff;
 }
 
+.mod-card.trinket-theme {
+    border-color: rgba(13, 148, 136, 0.4);
+    background: linear-gradient(135deg, rgba(13, 148, 136, 0.1) 0%, rgba(20, 184, 166, 0.03) 100%);
+}
+
+.mod-card.trinket-theme:hover {
+    border-color: rgba(13, 148, 136, 0.7);
+}
+
+.mod-cta-button.trinket-btn {
+    background: linear-gradient(135deg, #14b8a6, #0d9488);
+    color: #fff;
+}
+
 /* Quick install */
 .quick-install {
     max-width: 760px;

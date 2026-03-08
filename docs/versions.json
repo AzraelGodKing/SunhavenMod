@@ -4,6 +4,8 @@
     "name": "A Squirrel's Birthday Reminder",
     "description": "Never miss an NPC birthday - get reminders and gift suggestions",
     "nexus": "https://www.nexusmods.com/sunhaven/mods/493",
+    "thunderstore": "https://thunderstore.io/c/sun-haven/p/AzraelGodKing/SquirrelsBirthdayReminder/",
+    "thunderstoreName": "SquirrelsBirthdayReminder",
     "changelog": "Added cross-mod Todo integration for birthday gift reminders"
   },
   "com.azraelgodking.havensbirthright": {
@@ -11,6 +13,8 @@
     "name": "Haven's Birthright",
     "description": "Unique racial bonuses and abilities for all 12 playable races",
     "nexus": "https://www.nexusmods.com/sunhaven/mods/487",
+    "thunderstore": "https://thunderstore.io/c/sun-haven/p/AzraelGodKing/HavensBirthright/",
+    "thunderstoreName": "HavensBirthright",
     "changelog": "Celestial Bloodlines: Font of Light (Angel) and Soul Harvest (Demon) active abilities"
   },
   "com.azraelgodking.sunhavenmuseumutilitytracker": {
@@ -18,6 +22,8 @@
     "name": "Sunhaven Museum Utility Tracker",
     "description": "Track museum donation progress across all three halls",
     "nexus": "https://www.nexusmods.com/sunhaven/mods/490",
+    "thunderstore": "https://thunderstore.io/c/sun-haven/p/AzraelGodKing/SMUT/",
+    "thunderstoreName": "SMUT",
     "changelog": "Added Senpai's Chest and Todo cross-mod integrations"
   },
   "com.azraelgodking.sunhaventodo": {
@@ -25,6 +31,8 @@
     "name": "Sun Haven Todo",
     "description": "In-game task tracker for farming goals, quests, and daily tasks",
     "nexus": "https://www.nexusmods.com/sunhaven/mods/491",
+    "thunderstore": "https://thunderstore.io/c/sun-haven/p/AzraelGodKing/SunHavenTodo/",
+    "thunderstoreName": "SunHavenTodo",
     "changelog": "Added cross-mod integration for Birthday, S.M.U.T., and Senpai's Chest"
   },
   "com.azraelgodking.thevault": {
@@ -32,6 +40,8 @@
     "name": "The Vault",
     "description": "Secure storage for seasonal tokens, community tokens, and keys",
     "nexus": "https://www.nexusmods.com/sunhaven/mods/488",
+    "thunderstore": "https://thunderstore.io/c/sun-haven/p/AzraelGodKing/TheVault/",
+    "thunderstoreName": "TheVault",
     "changelog": "Bug fixes and improvements"
   },
   "com.azraelgodking.havendevtools": {
@@ -39,6 +49,8 @@
     "name": "HavenDevTools",
     "description": "Developer utilities for mod debugging and game state inspection",
     "nexus": "https://www.nexusmods.com/sunhaven/mods/495",
+    "thunderstore": "https://thunderstore.io/c/sun-haven/p/AzraelGodKing/HavenDevTools/",
+    "thunderstoreName": "HavenDevTools",
     "changelog": "Initial release"
   },
   "com.azraelgodking.senpaischest": {
@@ -46,6 +58,8 @@
     "name": "Senpai's Chest",
     "description": "Smart chest auto-sorting with custom rules by item, type, category, property, or player groups. Manage Groups tab for custom subcategories.",
     "nexus": "https://www.nexusmods.com/sunhaven/mods/496",
+    "thunderstore": "https://thunderstore.io/c/sun-haven/p/AzraelGodKing/SenpaisChest/",
+    "thunderstoreName": "SenpaisChest",
     "changelog": "Added S.M.U.T. and Todo cross-mod integrations"
   },
   "com.azraelgodking.havensalmanac": {
@@ -53,6 +67,8 @@
     "name": "Haven's Almanac",
     "description": "Unified mod dashboard - HUD, full dashboard, and daily morning briefing aggregating data from all installed mods",
     "nexus": "",
+    "thunderstore": "https://thunderstore.io/c/sun-haven/p/AzraelGodKing/HavensAlmanac/",
+    "thunderstoreName": "HavensAlmanac",
     "changelog": "Initial release"
   },
   "com.azraelgodking.fasterraces": {
@@ -60,6 +76,17 @@
     "name": "Faster Races",
     "description": "Configurable movement speed bonus for all races; disables Haven's Birthright speed buffs when both are installed",
     "nexus": "https://www.nexusmods.com/sunhaven/mods/497",
+    "thunderstore": "https://thunderstore.io/c/sun-haven/p/AzraelGodKing/FasterRaces/",
+    "thunderstoreName": "FasterRaces",
     "changelog": "Initial release"
+  },
+  "com.azraelgodking.trinketfortune": {
+    "version": "1.0.0",
+    "name": "Trinket Fortune",
+    "description": "Increases odds of unowned fishing trinkets dropping as you complete the aquarium",
+    "nexus": "",
+    "thunderstore": "https://thunderstore.io/c/sun-haven/p/AzraelGodKing/TrinketFortune/",
+    "thunderstoreName": "TrinketFortune",
+    "changelog": "Initial release - stub implementation"
   }
 }

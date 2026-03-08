@@ -212,6 +212,79 @@ document.addEventListener('DOMContentLoaded', function() {
     })();
 
     // -----------------------------------------------------------------
+    // 5b. MOD DOWNLOAD NAV (Thunderstore, Nexus, Direct Download)
+    // -----------------------------------------------------------------
+    (function() {
+        var nav = document.querySelector('.download-nav[data-mod-key]');
+        if (!nav) return;
+
+        var modKey = nav.getAttribute('data-mod-key');
+        var baseUrl = '';
+        var scriptEl = document.querySelector('script[src*="shared.js"]');
+        if (scriptEl) {
+            var src = scriptEl.getAttribute('src');
+            baseUrl = new URL(src, document.baseURI).href.replace(/[^/]+$/, '');
+        }
+
+        fetch(baseUrl + 'versions.json')
+            .then(function(r) { return r.json(); })
+            .then(function(data) {
+                var m = data[modKey];
+                if (!m) return;
+
+                var links = [];
+                var ghBase = 'https://github.com/AzraelGodKing/SunhavenMod/releases';
+
+                if (m.thunderstore) {
+                    links.push({
+                        href: m.thunderstore,
+                        cls: 'download-thunderstore',
+                        text: 'Thunderstore',
+                        icon: '\u26A1',
+                        external: true
+                    });
+                }
+                if (m.nexus) {
+                    links.push({
+                        href: m.nexus,
+                        cls: 'download-nexus',
+                        text: 'Nexus Mods',
+                        icon: '\u{1F4E6}',
+                        external: true
+                    });
+                }
+                if (m.thunderstoreName && m.version) {
+                    var tag = m.thunderstoreName + '-v' + m.version;
+                    var zip = m.thunderstoreName + '-' + m.version + '.zip';
+                    links.push({
+                        href: ghBase + '/download/' + tag + '/' + zip,
+                        cls: 'download-direct',
+                        text: 'Download Latest',
+                        icon: '\u2B07',
+                        external: true
+                    });
+                }
+
+                if (links.length === 0) {
+                    nav.style.display = 'none';
+                    return;
+                }
+
+                var html = '<span class="download-nav-label">Get this mod</span><div class="download-nav-links">';
+                links.forEach(function(l) {
+                    html += '<a href="' + l.href + '" class="' + l.cls + '"' +
+                        (l.external ? ' target="_blank" rel="noopener noreferrer"' : '') + '>' +
+                        '<span aria-hidden="true">' + l.icon + '</span>' + l.text + '</a>';
+                });
+                html += '</div>';
+                nav.innerHTML = html;
+            })
+            .catch(function() {
+                nav.style.display = 'none';
+            });
+    })();
+
+    // -----------------------------------------------------------------
     // 6. AUTO-GENERATED TABLE OF CONTENTS (long pages)
     // -----------------------------------------------------------------
     (function() {
