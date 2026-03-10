@@ -194,7 +194,11 @@ namespace SenpaisChest.Data
                 return null;
 
             var pos = decoration.Position;
-            return $"{pos.x}_{pos.y}_{pos.z}";
+            // Round to integers so IDs are stable across save/load (float precision can differ)
+            int x = (int)Math.Round((double)pos.x);
+            int y = (int)Math.Round((double)pos.y);
+            int z = (int)Math.Round((double)pos.z);
+            return $"{x}_{y}_{z}";
         }
 
         #region Reflection Helpers
@@ -340,8 +344,10 @@ namespace SenpaisChest.Data
 
             Plugin.Log?.LogDebug($"[Scan] Built chest lookup: {chestLookup.Count} unique chests");
 
-            // Orphan cleanup is done only when a chest is actually removed (Plugin.OnChestManagerRemoveInventory_Postfix).
-            // We do not remove smart chest data here based on lookup; an incomplete lookup would wrongly delete config.
+            // Remove smart chest entries for chests that no longer exist (picked up/destroyed).
+            // We do this here, not in Chest.OnDisable, because OnDisable runs for every chest on exit
+            // and would wipe config before Save() ran.
+            RemoveOrphanedSmartChests(chestLookup);
 
             foreach (var smartChestEntry in _smartChests)
             {
