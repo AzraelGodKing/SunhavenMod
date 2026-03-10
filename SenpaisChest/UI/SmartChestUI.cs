@@ -79,7 +79,9 @@ namespace SenpaisChest.UI
         private static readonly string[] ItemTypeNames = { "Normal", "Armor", "Food", "Fish", "Crop", "WateringCan", "Animal", "Pet", "Tool" };
         private static readonly string[] PropertyNames = { "isGem", "isForageable", "isAnimalProduct", "isMeal", "isFruit", "isArtisanryItem", "isPotion", "isNotDonated" };
         private static readonly string[] PropertyDisplayNames = { "Gems", "Forageables", "Animal Products", "Meals", "Fruits", "Artisanry Items", "Potions", "Museum (Not Donated)" };
-        private const string SearchFieldControlName = "SmartChestItemSearch";
+        /// <summary>Control name for the item search field. Used so we only block game input (Backspace/UICancel) when the user is typing here, not when e.g. the cheat enabler chat is focused.</summary>
+        internal const string SearchFieldControlName = "SmartChestItemSearch";
+        internal const string GroupSearchFieldControlName = "SmartChestGroupItemSearch";
 
         // Color palette — dark navy theme with gold accents
         private readonly Color _bgDark = new Color(0.15f, 0.16f, 0.24f, 1f);
@@ -204,6 +206,14 @@ namespace SenpaisChest.UI
         public bool IsVisible => _isVisible;
         /// <summary>True when config is drawn inside the chest UI panel (we should not block closing the chest).</summary>
         public bool IsEmbedded => false;
+
+        /// <summary>True when we should block Backspace/UICancel from reaching the game (only when our search field has keyboard focus). When false, e.g. when the cheat enabler chat is focused, we do not block so that mod can receive input.</summary>
+        internal static bool ShouldBlockGameInput(SmartChestUI ui)
+        {
+            if (ui == null || !ui.IsVisible) return false;
+            var focused = GUI.GetNameOfFocusedControl();
+            return focused == SearchFieldControlName || focused == GroupSearchFieldControlName;
+        }
 
         public void Initialize(SmartChestManager manager)
         {
@@ -834,6 +844,7 @@ namespace SenpaisChest.UI
                         ? new List<KeyValuePair<int, string>>()
                         : ItemSearch.SearchItems(_groupItemSearchLast, 15);
                 }
+                GUI.SetNextControlName(GroupSearchFieldControlName);
                 _groupItemSearch = GUILayout.TextField(_groupItemSearch ?? "", _configSearchFieldStyle ?? _chestSearchFieldStyle);
                 if (_groupSearchResults.Count > 0)
                 {
