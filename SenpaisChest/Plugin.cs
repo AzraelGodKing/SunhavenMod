@@ -408,44 +408,24 @@ namespace SenpaisChest
         }
 
         /// <summary>
-        /// Called when a Chest GameObject is disabled (picked up/destroyed, or scene unload).
-        /// Only clear smart chest data when the chest is actually removed (same scene still active).
-        /// When returning to menu or changing scene, all chests get OnDisable — we must not clear then.
+        /// Called when a Chest GameObject is disabled (picked up/destroyed, or scene unload / quit).
+        /// We do NOT remove smart chest data here: when exiting the game or changing scene, every
+        /// chest gets OnDisable and the active scene check is unreliable. Removing here caused
+        /// all config to be cleared before Save() ran, so settings were lost on every restart.
+        /// Orphan cleanup is done in ExecuteScan via RemoveOrphanedSmartChests (chests actually
+        /// gone from ChestManager.associatedChests get removed then).
         /// </summary>
         private static void OnChestOnDisable_Postfix(Chest __instance)
         {
-            if (__instance == null || __instance.gameObject == null) return;
-            try
-            {
-                // If the chest's scene is no longer active, we're unloading (e.g. return to menu) — don't clear
-                var chestScene = __instance.gameObject.scene;
-                if (!chestScene.IsValid() || !chestScene.isLoaded)
-                    return;
-                var activeScene = SceneManager.GetActiveScene();
-                if (chestScene.name != activeScene.name)
-                    return;
-
-                var chestId = SmartChestManager.GetChestId(__instance);
-                if (string.IsNullOrEmpty(chestId)) return;
-                var manager = GetManager();
-                if (manager == null) return;
-                if (manager.GetSmartChest(chestId) != null)
-                {
-                    manager.RemoveSmartChest(chestId);
-                    Log?.LogInfo($"[SenpaisChest] Cleaned up smart chest data for removed chest: {chestId}");
-                }
-            }
-            catch (Exception ex)
-            {
-                Log?.LogWarning($"[SenpaisChest] Cleanup on chest OnDisable: {ex.Message}");
-            }
+            // Do not remove smart chest data in OnDisable — it runs for every chest on exit
+            // and was wiping the in-memory config before Save(), causing lost settings on restart.
         }
 
         private static bool OnInputGetKeyDown_Prefix(UnityEngine.KeyCode key, ref bool __result)
         {
             if (key != UnityEngine.KeyCode.Backspace)
                 return true;
-            if (_staticUI == null || !_staticUI.IsVisible)
+            if (!SmartChestUI.ShouldBlockGameInput(_staticUI))
                 return true;
             __result = false;
             return false;
@@ -455,7 +435,7 @@ namespace SenpaisChest
         {
             if (key != UnityEngine.KeyCode.Backspace)
                 return true;
-            if (_staticUI == null || !_staticUI.IsVisible)
+            if (!SmartChestUI.ShouldBlockGameInput(_staticUI))
                 return true;
             __result = false;
             return false;
@@ -467,21 +447,19 @@ namespace SenpaisChest
                 return true;
             if (!buttonName.Equals("Cancel", StringComparison.OrdinalIgnoreCase))
                 return true;
-            if (_staticUI == null || !_staticUI.IsVisible)
+            if (!SmartChestUI.ShouldBlockGameInput(_staticUI))
                 return true;
             __result = false;
             return false;
         }
 
         /// <summary>
-        /// Blocks Wish.PlayerInput.GetButtonDown(string) for "UICancel" when the config UI is open.
-        /// The game's OnUICancel component polls this every frame and closes the chest on Backspace.
-        /// The string overload bypasses PlayerInput's AllowInput/DisableInput system, so we must
-        /// intercept it here to prevent Backspace from closing the chest while typing in the search bar.
+        /// Blocks Wish.PlayerInput.GetButtonDown(string) for "UICancel" when the user is typing in our search field.
+        /// Only blocks when our UI has keyboard focus so the cheat enabler chat and other mods can receive input.
         /// </summary>
         private static bool OnPlayerInputGetButtonDown_Prefix(string button, ref bool __result)
         {
-            if (_staticUI == null || !_staticUI.IsVisible)
+            if (!SmartChestUI.ShouldBlockGameInput(_staticUI))
                 return true;
             if (button == "UICancel" || button == "Close")
             {
