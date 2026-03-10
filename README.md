@@ -14,6 +14,8 @@ A collection of BepInEx mods for [Sun Haven](https://store.steampowered.com/app/
 | [**Haven's Almanac**](HavensAlmanac/) | Mod compatibility registry and info hub | 1.0.3 |
 | [**A Squirrel's Birthday Reminder**](BirthdayReminder/) | Reminds you of villagers' birthdays | 1.1.3 |
 | [**Haven Dev Tools**](HavenDevTools/) | Developer utilities and debugging tools | 1.0.5 |
+| [**Trinket Fortune**](TrinketFortune/) | Increases odds of unowned fishing trinkets dropping as you complete the aquarium | 1.0.0 |
+| [**Faster Races**](FasterRaces/) | Configurable movement speed bonus; integrates with Haven's Birthright to avoid double speed | 1.0.0 |
 
 ---
 
@@ -54,6 +56,14 @@ Displays reminders for villagers' birthdays so you never miss a gift.
 
 Development and debugging utilities for mod authors. Not intended for typical players.
 
+### Trinket Fortune
+
+Increases the odds of unowned fishing trinkets dropping as you complete the aquarium, reducing the grind for the last trinket. Works with S.M.U.T.
+
+### Faster Races
+
+Configurable percentage bonus to movement speed for all races. When installed with Haven's Birthright, disables Birthright's speed buffs so speed is not doubled.
+
 ---
 
 ## Installation
@@ -85,6 +95,8 @@ SunhavenMod/
 ├── HavensAlmanac/         # Mod registry
 ├── BirthdayReminder/      # Birthday reminders
 ├── HavenDevTools/         # Dev tools
+├── TrinketFortune/        # Fishing trinket drop rates
+├── FasterRaces/           # Movement speed bonus
 ├── SharedUtilities/       # Shared code (VersionChecker, etc.)
 └── docs/                  # Shared documentation
 ```
