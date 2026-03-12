@@ -28,7 +28,8 @@ param(
     [ValidateSet(
         "senpaischest", "havensbirthright", "sunhavenmuseumutilitytracker",
         "squirrelsbirthdayreminder", "sunhaventodo", "thevault",
-        "havendevtools", "havensalmanac"
+        "havendevtools", "havensalmanac", "fasterraces", "trinketfortune",
+        "justiceforharold"
     )]
     [string]$Mod,
 
@@ -55,6 +56,9 @@ $ModMap = @{
     "thevault"                     = @("com.azraelgodking.thevault", "TheVault", $false)
     "havendevtools"                = @("com.azraelgodking.havendevtools", "HavenDevTools", $false)
     "havensalmanac"                = @("com.azraelgodking.havensalmanac", "HavensAlmanac", $true)
+    "fasterraces"                  = @("com.azraelgodking.fasterraces", "FasterRaces", $false)
+    "trinketfortune"               = @("com.azraelgodking.trinketfortune", "TrinketFortune", $false)
+    "justiceforharold"             = @("com.azraelgodking.justiceforharold", "JusticeForHarold", $true)
 }
 
 function Get-VersionParts {
