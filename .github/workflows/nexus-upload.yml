@@ -116,11 +116,15 @@ jobs:
           MOD_DESCRIPTION=$(jq -r ".[\"$JSON_KEY\"].description" docs/versions.json)
           CHANGELOG=$(jq -r ".[\"$JSON_KEY\"].changelog" docs/versions.json)
           NEXUS_URL=$(jq -r ".[\"$JSON_KEY\"].nexus" docs/versions.json)
+          NEXUS_FILE_GROUP_ID=$(jq -r ".[\"$JSON_KEY\"].nexus_file_group_id // empty" docs/versions.json)
 
-          # Extract Nexus mod ID from URL (e.g. https://www.nexusmods.com/sunhaven/mods/496 -> 496)
-          NEXUS_MOD_ID=""
-          if [ -n "$NEXUS_URL" ] && [ "$NEXUS_URL" != "null" ]; then
-            NEXUS_MOD_ID=$(echo "$NEXUS_URL" | sed -n 's|.*/mods/\([0-9]*\)$|\1|p')
+          # The API expects file_group_id (file update group), NOT the mod ID from the URL.
+          # 404 "File update group not found" means mod ID is wrong - use nexus_file_group_id.
+          if [ -z "$NEXUS_FILE_GROUP_ID" ] || [ "$NEXUS_FILE_GROUP_ID" == "null" ]; then
+            NEXUS_FILE_GROUP_ID=""
+            if [ -n "$NEXUS_URL" ] && [ "$NEXUS_URL" != "null" ]; then
+              NEXUS_FILE_GROUP_ID=$(echo "$NEXUS_URL" | sed -n 's|.*/mods/\([0-9]*\)$|\1|p')
+            fi
           fi
 
           echo "json_key=$JSON_KEY" >> "$GITHUB_OUTPUT"
@@ -131,12 +135,12 @@ jobs:
           echo "display_name=$MOD_DISPLAY_NAME" >> "$GITHUB_OUTPUT"
           echo "description=$MOD_DESCRIPTION" >> "$GITHUB_OUTPUT"
           echo "changelog=$CHANGELOG" >> "$GITHUB_OUTPUT"
-          echo "nexus_mod_id=$NEXUS_MOD_ID" >> "$GITHUB_OUTPUT"
+          echo "nexus_file_group_id=$NEXUS_FILE_GROUP_ID" >> "$GITHUB_OUTPUT"
 
-          if [ -z "$NEXUS_MOD_ID" ]; then
-            echo "⚠️ No Nexus URL in versions.json for $JSON_KEY - Nexus upload will be skipped"
+          if [ -z "$NEXUS_FILE_GROUP_ID" ]; then
+            echo "⚠️ No nexus URL or nexus_file_group_id for $JSON_KEY - Nexus upload will be skipped"
           else
-            echo "📦 Nexus mod ID: $NEXUS_MOD_ID"
+            echo "📦 Nexus file_group_id: $NEXUS_FILE_GROUP_ID"
           fi
           echo "📦 Packaging: $MOD_DISPLAY_NAME v$VERSION"
 
@@ -196,11 +200,11 @@ jobs:
           ls -lh "dist/$ZIP_NAME"
 
       - name: Upload to Nexus Mods
-        if: steps.config.outputs.nexus_mod_id != '' && github.event.inputs.dry_run != 'true'
+        if: steps.config.outputs.nexus_file_group_id != '' && github.event.inputs.dry_run != 'true'
         uses: Nexus-Mods/upload-action@v1.0.0-beta.2
         with:
           api_key: ${{ secrets.NEXUSMODS_API_KEY }}
-          file_group_id: ${{ steps.config.outputs.nexus_mod_id }}
+          file_group_id: ${{ steps.config.outputs.nexus_file_group_id }}
           filename: dist/${{ steps.config.outputs.thunderstore_name }}-${{ steps.config.outputs.version }}.zip
           version: ${{ steps.config.outputs.version }}
           display_name: ${{ steps.config.outputs.display_name }} v${{ steps.config.outputs.version }}
@@ -215,14 +219,14 @@ jobs:
           file_category: main
 
       - name: Dry run - skip Nexus upload
-        if: steps.config.outputs.nexus_mod_id != '' && github.event.inputs.dry_run == 'true'
+        if: steps.config.outputs.nexus_file_group_id != '' && github.event.inputs.dry_run == 'true'
         run: |
           echo "✅ Dry run: Package created, Nexus upload skipped"
           echo "   Would upload: dist/${{ steps.config.outputs.thunderstore_name }}-${{ steps.config.outputs.version }}.zip"
-          echo "   To Nexus mod ID: ${{ steps.config.outputs.nexus_mod_id }}"
+          echo "   To Nexus file_group_id: ${{ steps.config.outputs.nexus_file_group_id }}"
 
-      - name: Skip - no Nexus mod ID
-        if: steps.config.outputs.nexus_mod_id == ''
+      - name: Skip - no Nexus file group ID
+        if: steps.config.outputs.nexus_file_group_id == ''
         run: |
-          echo "⚠️ No Nexus mod ID for this mod - upload skipped"
-          echo "   Add a 'nexus' URL to docs/versions.json for this mod to enable Nexus uploads"
+          echo "⚠️ No nexus_file_group_id for this mod - upload skipped"
+          echo "   Add nexus_file_group_id to versions.json (Nexus API file update group ID, not mod ID)"

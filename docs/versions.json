@@ -76,6 +76,7 @@
     "name": "Faster Races",
     "description": "Configurable movement speed bonus for all races; disables Haven's Birthright speed buffs when both are installed",
     "nexus": "https://www.nexusmods.com/sunhaven/mods/497",
+    "nexus_file_group_id": "7154323",
     "thunderstore": "https://thunderstore.io/c/sun-haven/p/AzraelGodKing/FasterRaces/",
     "thunderstoreName": "FasterRaces",
     "changelog": "Initial release"
