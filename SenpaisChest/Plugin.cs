@@ -425,6 +425,8 @@ namespace SenpaisChest
         {
             if (key != UnityEngine.KeyCode.Backspace)
                 return true;
+            if (!SmartChestConfig.StaticBlockInputWhenTyping)
+                return true;
             if (!SmartChestUI.ShouldBlockGameInput(_staticUI))
                 return true;
             __result = false;
@@ -434,6 +436,8 @@ namespace SenpaisChest
         private static bool OnInputGetKey_Prefix(UnityEngine.KeyCode key, ref bool __result)
         {
             if (key != UnityEngine.KeyCode.Backspace)
+                return true;
+            if (!SmartChestConfig.StaticBlockInputWhenTyping)
                 return true;
             if (!SmartChestUI.ShouldBlockGameInput(_staticUI))
                 return true;
@@ -447,6 +451,8 @@ namespace SenpaisChest
                 return true;
             if (!buttonName.Equals("Cancel", StringComparison.OrdinalIgnoreCase))
                 return true;
+            if (!SmartChestConfig.StaticBlockInputWhenTyping)
+                return true;
             if (!SmartChestUI.ShouldBlockGameInput(_staticUI))
                 return true;
             __result = false;
@@ -459,6 +465,8 @@ namespace SenpaisChest
         /// </summary>
         private static bool OnPlayerInputGetButtonDown_Prefix(string button, ref bool __result)
         {
+            if (!SmartChestConfig.StaticBlockInputWhenTyping)
+                return true;
             if (!SmartChestUI.ShouldBlockGameInput(_staticUI))
                 return true;
             if (button == "UICancel" || button == "Close")
