@@ -17,10 +17,12 @@ namespace SenpaisChest.Config
         public ConfigEntry<ChestLabelVisibility> LabelVisibility { get; private set; }
         public ConfigEntry<ChestLabelVisibility> IconVisibility { get; private set; }
         public ConfigEntry<float> UIScale { get; private set; }
+        public ConfigEntry<bool> BlockInputWhenTypingInConfig { get; private set; }
 
         // Static copies for PersistentRunner access
         internal static KeyCode StaticToggleKey = KeyCode.F9;
         internal static bool StaticRequireCtrl = false;
+        internal static bool StaticBlockInputWhenTyping = true;
 
         public enum ChestLabelVisibility { Hidden, OnHover, Visible }
 
@@ -70,6 +72,12 @@ namespace SenpaisChest.Config
                     new BepInEx.Configuration.AcceptableValueRange<float>(0.5f, 2.5f)
                 ));
 
+            BlockInputWhenTypingInConfig = config.Bind(
+                "UI",
+                "BlockInputWhenTypingInConfig",
+                true,
+                "When true, Backspace/Cancel won't close the chest while typing in the config search. Set to FALSE if the in-game chat or cheat console cannot receive input (fixes conflict with some mods).");
+
             CheckForUpdates = config.Bind(
                 "Updates",
                 "CheckForUpdates",
@@ -101,10 +109,12 @@ namespace SenpaisChest.Config
             // Initialize static values
             StaticToggleKey = ToggleKey.Value;
             StaticRequireCtrl = RequireCtrlModifier.Value;
+            StaticBlockInputWhenTyping = BlockInputWhenTypingInConfig.Value;
 
             // Subscribe to config changes
             ToggleKey.SettingChanged += (_, _) => StaticToggleKey = ToggleKey.Value;
             RequireCtrlModifier.SettingChanged += (_, _) => StaticRequireCtrl = RequireCtrlModifier.Value;
+            BlockInputWhenTypingInConfig.SettingChanged += (_, _) => StaticBlockInputWhenTyping = BlockInputWhenTypingInConfig.Value;
         }
 
         public float GetScanInterval()

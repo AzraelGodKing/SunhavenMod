@@ -1,0 +1,228 @@
+# =============================================================================
+# Nexus Mods Upload (TESTING) - Separate workflow for automatic Nexus uploads
+# =============================================================================
+# TRIGGER: Manual workflow dispatch - select which mod to upload to Nexus
+#
+# WHAT IT DOES:
+#   1. Packages the mod (same as build-release-publish)
+#   2. Uploads the zip to Nexus Mods via their API
+#
+# SETUP REQUIRED:
+#   1. Nexus Mods API key:
+#      Nexus Mods → Account → API Key → Create API Key
+#      https://www.nexusmods.com/users/myaccount?tab=api
+#   2. Add it as a GitHub repo secret: NEXUSMODS_API_KEY
+#
+# NOTE: The Nexus Mods upload API is "for evaluation only" per their docs.
+#       Use this workflow to test before integrating into the main release flow.
+# =============================================================================
+
+name: Nexus Mods Upload (Testing)
+
+on:
+  workflow_dispatch:
+    inputs:
+      mod:
+        description: 'Which mod to upload to Nexus'
+        required: true
+        type: choice
+        options:
+          - havensbirthright
+          - sunhavenmuseumutilitytracker
+          - squirrelsbirthdayreminder
+          - sunhaventodo
+          - thevault
+          - havendevtools
+          - senpaischest
+          - fasterraces
+      dry_run:
+        description: 'Package only, skip actual Nexus upload (for testing)'
+        required: false
+        type: boolean
+        default: false
+
+jobs:
+  # --------------------------------------------------------------------
+  # PACKAGE & UPLOAD — Same packaging as main workflow, then Nexus API upload
+  # --------------------------------------------------------------------
+  upload:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set mod configuration
+        id: config
+        run: |
+          MOD_KEY="${{ github.event.inputs.mod }}"
+
+          case "$MOD_KEY" in
+            "havensbirthright")
+              JSON_KEY="com.azraelgodking.havensbirthright"
+              MOD_DIR="HavensBirthright"
+              DLL_NAME="HavensBirthright"
+              THUNDERSTORE_NAME="HavensBirthright"
+              ;;
+            "sunhavenmuseumutilitytracker")
+              JSON_KEY="com.azraelgodking.sunhavenmuseumutilitytracker"
+              MOD_DIR="SunHavenMuseumUtilityTracker"
+              DLL_NAME="SunHavenMuseumUtilityTracker"
+              THUNDERSTORE_NAME="SMUT"
+              ;;
+            "squirrelsbirthdayreminder")
+              JSON_KEY="com.azraelgodking.squirrelsbirthdayreminder"
+              MOD_DIR="BirthdayReminder"
+              DLL_NAME="BirthdayReminder"
+              THUNDERSTORE_NAME="SquirrelsBirthdayReminder"
+              ;;
+            "sunhaventodo")
+              JSON_KEY="com.azraelgodking.sunhaventodo"
+              MOD_DIR="SunhavenTodo"
+              DLL_NAME="SunhavenTodo"
+              THUNDERSTORE_NAME="SunHavenTodo"
+              ;;
+            "thevault")
+              JSON_KEY="com.azraelgodking.thevault"
+              MOD_DIR="TheVault"
+              DLL_NAME="TheVault"
+              THUNDERSTORE_NAME="TheVault"
+              ;;
+            "havendevtools")
+              JSON_KEY="com.azraelgodking.havendevtools"
+              MOD_DIR="HavenDevTools"
+              DLL_NAME="HavenDevTools"
+              THUNDERSTORE_NAME="HavenDevTools"
+              ;;
+            "senpaischest")
+              JSON_KEY="com.azraelgodking.senpaischest"
+              MOD_DIR="SenpaisChest"
+              DLL_NAME="SenpaisChest"
+              THUNDERSTORE_NAME="SenpaisChest"
+              ;;
+            "fasterraces")
+              JSON_KEY="com.azraelgodking.fasterraces"
+              MOD_DIR="FasterRaces"
+              DLL_NAME="FasterRaces"
+              THUNDERSTORE_NAME="FasterRaces"
+              ;;
+            *)
+              echo "❌ Unknown mod: $MOD_KEY"
+              exit 1
+              ;;
+          esac
+
+          VERSION=$(jq -r ".[\"$JSON_KEY\"].version" docs/versions.json)
+          MOD_DISPLAY_NAME=$(jq -r ".[\"$JSON_KEY\"].name" docs/versions.json)
+          MOD_DESCRIPTION=$(jq -r ".[\"$JSON_KEY\"].description" docs/versions.json)
+          CHANGELOG=$(jq -r ".[\"$JSON_KEY\"].changelog" docs/versions.json)
+          NEXUS_URL=$(jq -r ".[\"$JSON_KEY\"].nexus" docs/versions.json)
+
+          # Extract Nexus mod ID from URL (e.g. https://www.nexusmods.com/sunhaven/mods/496 -> 496)
+          NEXUS_MOD_ID=""
+          if [ -n "$NEXUS_URL" ] && [ "$NEXUS_URL" != "null" ]; then
+            NEXUS_MOD_ID=$(echo "$NEXUS_URL" | sed -n 's|.*/mods/\([0-9]*\)$|\1|p')
+          fi
+
+          echo "json_key=$JSON_KEY" >> "$GITHUB_OUTPUT"
+          echo "mod_dir=$MOD_DIR" >> "$GITHUB_OUTPUT"
+          echo "dll_name=$DLL_NAME" >> "$GITHUB_OUTPUT"
+          echo "thunderstore_name=$THUNDERSTORE_NAME" >> "$GITHUB_OUTPUT"
+          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+          echo "display_name=$MOD_DISPLAY_NAME" >> "$GITHUB_OUTPUT"
+          echo "description=$MOD_DESCRIPTION" >> "$GITHUB_OUTPUT"
+          echo "changelog=$CHANGELOG" >> "$GITHUB_OUTPUT"
+          echo "nexus_mod_id=$NEXUS_MOD_ID" >> "$GITHUB_OUTPUT"
+
+          if [ -z "$NEXUS_MOD_ID" ]; then
+            echo "⚠️ No Nexus URL in versions.json for $JSON_KEY - Nexus upload will be skipped"
+          else
+            echo "📦 Nexus mod ID: $NEXUS_MOD_ID"
+          fi
+          echo "📦 Packaging: $MOD_DISPLAY_NAME v$VERSION"
+
+      - name: Package mod for distribution
+        run: |
+          mkdir -p dist/package
+
+          DLL_PATH="builds/${{ steps.config.outputs.mod_dir }}/${{ steps.config.outputs.dll_name }}.dll"
+
+          if [ ! -f "$DLL_PATH" ]; then
+            echo "❌ DLL not found at: $DLL_PATH"
+            echo ""
+            echo "Please build your mod locally and commit the DLL:"
+            echo "  1. Build in Visual Studio/Rider"
+            echo "  2. Copy DLL to: builds/${{ steps.config.outputs.mod_dir }}/"
+            echo "  3. git add builds/ && git commit -m 'Update ${{ steps.config.outputs.dll_name }} build' && git push"
+            exit 1
+          fi
+
+          cp "$DLL_PATH" dist/package/
+
+          THUNDERSTORE_DIR="${{ steps.config.outputs.mod_dir }}/thunderstore"
+
+          if [ -f "$THUNDERSTORE_DIR/manifest.json" ]; then
+            cp "$THUNDERSTORE_DIR/manifest.json" dist/package/
+          else
+            cat > dist/package/manifest.json << EOF
+          {
+            "name": "${{ steps.config.outputs.thunderstore_name }}",
+            "version_number": "${{ steps.config.outputs.version }}",
+            "website_url": "",
+            "description": "${{ steps.config.outputs.description }}",
+            "dependencies": ["BepInEx-BepInExPack-5.4.2100"]
+          }
+          EOF
+          fi
+
+          if [ -f "$THUNDERSTORE_DIR/icon.png" ]; then
+            cp "$THUNDERSTORE_DIR/icon.png" dist/package/
+          else
+            echo "❌ icon.png is required!"
+            exit 1
+          fi
+
+          [ -f "$THUNDERSTORE_DIR/README.md" ] && cp "$THUNDERSTORE_DIR/README.md" dist/package/
+
+          cd dist/package
+          if [ -f manifest.json ]; then
+            sed -i "s/\"version_number\": \".*\"/\"version_number\": \"${{ steps.config.outputs.version }}\"/" manifest.json
+          fi
+
+          ZIP_NAME="${{ steps.config.outputs.thunderstore_name }}-${{ steps.config.outputs.version }}.zip"
+          zip -r "../$ZIP_NAME" .
+          cd ../..
+
+          echo "✅ Package created: dist/$ZIP_NAME"
+          ls -lh "dist/$ZIP_NAME"
+
+      - name: Upload to Nexus Mods
+        if: steps.config.outputs.nexus_mod_id != '' && github.event.inputs.dry_run != 'true'
+        uses: Nexus-Mods/upload-action@v1.0.0-beta.2
+        with:
+          api_key: ${{ secrets.NEXUSMODS_API_KEY }}
+          file_group_id: ${{ steps.config.outputs.nexus_mod_id }}
+          filename: dist/${{ steps.config.outputs.thunderstore_name }}-${{ steps.config.outputs.version }}.zip
+          version: ${{ steps.config.outputs.version }}
+          display_name: ${{ steps.config.outputs.display_name }} v${{ steps.config.outputs.version }}
+          description: |
+            ${{ steps.config.outputs.description }}
+
+            ### Changes
+            ${{ steps.config.outputs.changelog }}
+
+            ### Installation
+            Extract the contents to your Sun Haven BepInEx/plugins folder.
+          file_category: main
+
+      - name: Dry run - skip Nexus upload
+        if: steps.config.outputs.nexus_mod_id != '' && github.event.inputs.dry_run == 'true'
+        run: |
+          echo "✅ Dry run: Package created, Nexus upload skipped"
+          echo "   Would upload: dist/${{ steps.config.outputs.thunderstore_name }}-${{ steps.config.outputs.version }}.zip"
+          echo "   To Nexus mod ID: ${{ steps.config.outputs.nexus_mod_id }}"
+
+      - name: Skip - no Nexus mod ID
+        if: steps.config.outputs.nexus_mod_id == ''
+        run: |
+          echo "⚠️ No Nexus mod ID for this mod - upload skipped"
+          echo "   Add a 'nexus' URL to docs/versions.json for this mod to enable Nexus uploads"
