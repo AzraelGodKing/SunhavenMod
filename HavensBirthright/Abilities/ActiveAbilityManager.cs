@@ -24,9 +24,8 @@ namespace HavensBirthright.Abilities
 
         private static readonly Dictionary<string, AbilityState> _abilities = new Dictionary<string, AbilityState>();
 
-        // Runtime toggles: allows abilities to be toggled on/off during gameplay via keybind.
-        // Defaults to ON (enabled) for all abilities. Independent from config-based enable/disable.
-        // Cleared on menu transition so toggles reset when switching saves.
+        // Runtime toggles: F9-able abilities start OFF until the player presses the toggle key.
+        // Cleared on menu/save transition so each session starts with abilities off until F9.
         private static readonly Dictionary<string, bool> _runtimeToggles = new Dictionary<string, bool>();
 
         // Ability keys
@@ -151,13 +150,12 @@ namespace HavensBirthright.Abilities
         // ===================== RUNTIME TOGGLE METHODS =====================
 
         /// <summary>
-        /// Checks if an ability is runtime-enabled. Defaults to true (enabled) if never toggled.
-        /// This is independent from config-based enable/disable — config OFF = fully disabled,
-        /// runtime toggle = temporarily disabled during gameplay.
+        /// Checks if an ability is runtime-enabled for this session. Defaults to false (off) until
+        /// the player presses the toggle key (default F9). Config must still allow active abilities.
         /// </summary>
         public static bool IsRuntimeEnabled(string abilityKey)
         {
-            return !_runtimeToggles.TryGetValue(abilityKey, out bool enabled) || enabled;
+            return _runtimeToggles.TryGetValue(abilityKey, out bool enabled) && enabled;
         }
 
         /// <summary>
