@@ -1,5 +1,5 @@
 # =============================================================================
-# Mod CI/CD Pipeline: Package → GitHub Release → Thunderstore Publish (Manual)
+# Mod CI/CD Pipeline: Package → GitHub Release → Thunderstore + Nexus (Manual)
 # =============================================================================
 # TRIGGER: Manual workflow dispatch - select which mod to release/publish
 #
@@ -11,14 +11,15 @@
 #
 # WHAT IT DOES:
 #   1. Packages the Thunderstore-ready zip (manifest.json, README, icon, DLL)
-#   2. Creates a GitHub Release with the zip attached (for Nexus manual upload)
+#   2. Creates a GitHub Release with the zip attached (optional)
 #   3. Optionally publishes to Thunderstore (manual checkbox)
+#   4. Optionally uploads to Nexus Mods (manual checkbox; needs NEXUSMODS_API_KEY)
+#      Haven's Almanac: Nexus is always skipped; workflow logs a positive note; no Discord pings.
 #
 # SETUP REQUIRED:
-#   1. Create a Thunderstore Service Account token:
-#      Thunderstore → Settings → Teams → [Your Team] → Service Accounts → Add
-#   2. Add it as a GitHub repo secret named THUNDERSTORE_TOKEN:
-#      GitHub → Repo → Settings → Secrets → Actions → New Repository Secret
+#   1. Thunderstore: THUNDERSTORE_TOKEN (Service Account token)
+#   2. Nexus Mods (optional): NEXUSMODS_API_KEY from https://www.nexusmods.com/users/myaccount?tab=api
+#      Add nexus_file_group_id to docs/versions.json for mods you want to upload to Nexus
 # =============================================================================
 
 name: Release & Publish
@@ -47,6 +48,11 @@ on:
         required: true
         type: boolean
         default: true
+      publish_nexus:
+        description: 'Upload to Nexus Mods? (requires NEXUSMODS_API_KEY + nexus_file_group_id in versions.json)'
+        required: false
+        type: boolean
+        default: false
       create_github_release:
         description: 'Create GitHub Release?'
         required: true
@@ -128,6 +134,7 @@ jobs:
             echo "display_name=Test Discord Notification" >> "$GITHUB_OUTPUT"
             echo "description=Test run" >> "$GITHUB_OUTPUT"
             echo "changelog=Workflow test. No GitHub Release or Thunderstore publish." >> "$GITHUB_OUTPUT"
+            echo "skip_discord_for_almanac=false" >> "$GITHUB_OUTPUT"
             echo "Test mode: fake mod data set"
             exit 0
           fi
@@ -206,7 +213,22 @@ jobs:
           MOD_DESCRIPTION=$(jq -r ".[\"$JSON_KEY\"].description" docs/versions.json)
           CHANGELOG=$(jq -r ".[\"$JSON_KEY\"].changelog" docs/versions.json)
           NEXUS_URL=$(jq -r ".[\"$JSON_KEY\"].nexus // \"\"" docs/versions.json)
+          NEXUS_FILE_GROUP_ID=$(jq -r ".[\"$JSON_KEY\"].nexus_file_group_id // empty" docs/versions.json)
           THUNDERSTORE_URL=$(jq -r ".[\"$JSON_KEY\"].thunderstore // \"\"" docs/versions.json)
+
+          if [ -z "$NEXUS_FILE_GROUP_ID" ] || [ "$NEXUS_FILE_GROUP_ID" == "null" ]; then
+            NEXUS_FILE_GROUP_ID=""
+            if [ -n "$NEXUS_URL" ] && [ "$NEXUS_URL" != "null" ]; then
+              NEXUS_FILE_GROUP_ID=$(echo "$NEXUS_URL" | sed -n 's|.*/mods/\([0-9]*\)$|\1|p')
+            fi
+          fi
+
+          # Haven's Almanac: no Nexus page — never upload; skip Discord (Thunderstore/GitHub only)
+          SKIP_DISCORD_FOR_ALMANAC=false
+          if [ "$JSON_KEY" == "com.azraelgodking.havensalmanac" ]; then
+            NEXUS_FILE_GROUP_ID=""
+            SKIP_DISCORD_FOR_ALMANAC=true
+          fi
 
           echo "json_key=$JSON_KEY" >> "$GITHUB_OUTPUT"
           echo "mod_dir=$MOD_DIR" >> "$GITHUB_OUTPUT"
@@ -217,7 +239,9 @@ jobs:
           echo "description=$MOD_DESCRIPTION" >> "$GITHUB_OUTPUT"
           echo "changelog=$CHANGELOG" >> "$GITHUB_OUTPUT"
           echo "nexus_url=$NEXUS_URL" >> "$GITHUB_OUTPUT"
+          echo "nexus_file_group_id=$NEXUS_FILE_GROUP_ID" >> "$GITHUB_OUTPUT"
           echo "thunderstore_url=$THUNDERSTORE_URL" >> "$GITHUB_OUTPUT"
+          echo "skip_discord_for_almanac=$SKIP_DISCORD_FOR_ALMANAC" >> "$GITHUB_OUTPUT"
 
           echo "📦 Packaging: $MOD_DISPLAY_NAME v$VERSION"
           echo "   Description: $MOD_DESCRIPTION"
@@ -372,10 +396,38 @@ jobs:
           prerelease: false
 
       # ------------------------------------------------------------------
-      # 5b. NOTIFY DISCORD (when we created a release in this workflow run)
+      # 5b. NEXUS MODS UPLOAD (optional)
+      # ------------------------------------------------------------------
+      - name: Haven's Almanac — Nexus skipped (Thunderstore & GitHub only)
+        if: matrix.mod == 'havensalmanac' && github.event.inputs.test_discord != 'true' && steps.version_check.outputs.version_unchanged != 'true'
+        run: |
+          echo "⭐ Haven's Almanac is not on Nexus Mods yet — Nexus upload is intentionally skipped."
+          echo "   Releases still go through GitHub and Thunderstore. Thanks for shipping the Almanac! 📚✨"
+
+      - name: Upload to Nexus Mods
+        if: github.event.inputs.publish_nexus == 'true' && github.event.inputs.test_discord != 'true' && steps.version_check.outputs.version_unchanged != 'true' && steps.config.outputs.nexus_file_group_id != ''
+        uses: Nexus-Mods/upload-action@v1.0.0-beta.2
+        with:
+          api_key: ${{ secrets.NEXUSMODS_API_KEY }}
+          file_group_id: ${{ steps.config.outputs.nexus_file_group_id }}
+          filename: dist/${{ steps.config.outputs.thunderstore_name }}-${{ steps.config.outputs.version }}.zip
+          version: ${{ steps.config.outputs.version }}
+          display_name: ${{ steps.config.outputs.display_name }} v${{ steps.config.outputs.version }}
+          description: |
+            ${{ steps.config.outputs.description }}
+
+            ### Changes
+            ${{ steps.config.outputs.changelog }}
+
+            ### Installation
+            Extract the contents to your Sun Haven BepInEx/plugins folder.
+          file_category: main
+
+      # ------------------------------------------------------------------
+      # 5c. NOTIFY DISCORD (when we created a release in this workflow run)
       # ------------------------------------------------------------------
       - name: Notify Discord (release created by workflow)
-        if: github.event.inputs.create_github_release == 'true' && github.event.inputs.test_discord != 'true' && steps.version_check.outputs.version_unchanged != 'true'
+        if: github.event.inputs.create_github_release == 'true' && github.event.inputs.test_discord != 'true' && steps.version_check.outputs.version_unchanged != 'true' && steps.config.outputs.skip_discord_for_almanac != 'true'
         uses: AzraelGodKing/Discord_Release@main
         with:
           webhook_url: ${{ secrets.DISCORD_WEBHOOK_URL }}
@@ -466,7 +518,7 @@ jobs:
   # Uses mod icon from thunderstore folder (raw GitHub URL)
   # --------------------------------------------------------------------
   notify_discord:
-    if: github.event_name == 'release'
+    if: ${{ github.event_name == 'release' && !startsWith(github.event.release.tag_name, 'HavensAlmanac-') }}
     runs-on: ubuntu-latest
     steps:
       - name: Set mod icon URL
