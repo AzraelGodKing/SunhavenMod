@@ -337,6 +337,14 @@ namespace HavensBirthright
         }
 
         /// <summary>
+        /// Gets the BirthrightRunner instance (for save-load reset).
+        /// </summary>
+        internal static BirthrightRunner GetRunner()
+        {
+            return Instance?._runner;
+        }
+
+        /// <summary>
         /// Ensures BirthrightRunner exists. Recreates it if destroyed (e.g. by UIHandler.UnloadGame).
         /// Called from PlayerPatches.OnPlayerInitialized() on every game load.
         /// </summary>
@@ -357,6 +365,6 @@ namespace HavensBirthright
     {
         public const string PLUGIN_GUID = "com.azraelgodking.havensbirthright";
         public const string PLUGIN_NAME = "Haven's Birthright";
-        public const string PLUGIN_VERSION = "1.3.3";
+        public const string PLUGIN_VERSION = "1.4.0";
     }
 }

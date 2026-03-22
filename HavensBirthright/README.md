@@ -168,8 +168,13 @@ You can:
 - Set HP/mana cost percentages and safety thresholds
 - Adjust scan intervals and cooldowns
 - **Amari Cat**: Under the `[Amari Cat]` section, configure Nine Lives (EnableNineLives, NineLivesChance, NineLivesHealPercent). Under `[Performance]`, AmariCatReduceCombatStutter can disable attack-speed application for Amari Cat if needed (e.g. stutter with fast weapons).
+- **Reload config**: Press F12 (configurable) in-game to reload the config file without restarting the game.
 
 ## Changelog
+
+### v1.4.0 — Save-Load Fix
+- **Fixed**: Mod now correctly resets when switching to a different save without returning to the main menu. Race detection, ability states, and all caches are cleared on every save load, so racial bonuses and abilities always match the loaded character.
+- Config reload key (default F12) can reload config from disk without restarting the game.
 
 ### v1.3.x (Amari Cat rework)
 - **Amari Cat** passives reworked: **Feline Grace** (movement), **Predator's Strike** (crit), **Keen Senses** (foraging). **Nine Lives** is a passive cheat death (chance to survive lethal damage and heal to % max HP; max 60% chance). Removed Predator's Reflex (no combat attack-speed buff). Optional performance setting to reduce stutter with fast weapons.

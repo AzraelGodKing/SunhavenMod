@@ -42,7 +42,10 @@ namespace HavensBirthright.Patches
             // when returning to main menu. Must recreate before race detection.
             Plugin.EnsureRunner();
 
-            // Reset race detection flag - allows re-detection when switching saves
+            // Reset all mod state for the new save. Required when switching saves without
+            // going through main menu (e.g. load flows that skip OnMenuTransition).
+            BirthrightRunner.ResetAllStateForNewSave();
+
             _raceDetected = false;
             DetectAndSetRace();
         }

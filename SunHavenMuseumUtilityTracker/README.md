@@ -116,5 +116,5 @@ Feel free to use, modify, and distribute this mod.
 
 ## Credits
 
-- Created by Myleek
+- Created by AzraelGodKing
 - Built with [BepInEx](https://github.com/BepInEx/BepInEx) and [Harmony](https://github.com/pardeike/Harmony)
