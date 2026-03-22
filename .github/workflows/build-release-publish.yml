@@ -200,11 +200,13 @@ jobs:
               ;;
           esac
 
-          # Read version, name, description, and changelog from versions.json
+          # Read version, name, description, changelog, and links from versions.json
           VERSION=$(jq -r ".[\"$JSON_KEY\"].version" docs/versions.json)
           MOD_DISPLAY_NAME=$(jq -r ".[\"$JSON_KEY\"].name" docs/versions.json)
           MOD_DESCRIPTION=$(jq -r ".[\"$JSON_KEY\"].description" docs/versions.json)
           CHANGELOG=$(jq -r ".[\"$JSON_KEY\"].changelog" docs/versions.json)
+          NEXUS_URL=$(jq -r ".[\"$JSON_KEY\"].nexus // \"\"" docs/versions.json)
+          THUNDERSTORE_URL=$(jq -r ".[\"$JSON_KEY\"].thunderstore // \"\"" docs/versions.json)
 
           echo "json_key=$JSON_KEY" >> "$GITHUB_OUTPUT"
           echo "mod_dir=$MOD_DIR" >> "$GITHUB_OUTPUT"
@@ -214,6 +216,8 @@ jobs:
           echo "display_name=$MOD_DISPLAY_NAME" >> "$GITHUB_OUTPUT"
           echo "description=$MOD_DESCRIPTION" >> "$GITHUB_OUTPUT"
           echo "changelog=$CHANGELOG" >> "$GITHUB_OUTPUT"
+          echo "nexus_url=$NEXUS_URL" >> "$GITHUB_OUTPUT"
+          echo "thunderstore_url=$THUNDERSTORE_URL" >> "$GITHUB_OUTPUT"
 
           echo "📦 Packaging: $MOD_DISPLAY_NAME v$VERSION"
           echo "   Description: $MOD_DESCRIPTION"
@@ -383,9 +387,10 @@ jobs:
             ### Changes
             ${{ steps.config.outputs.changelog }}
 
-            ### Installation
-            - **Thunderstore**: Install via r2modman or Thunderstore app
-            - **Nexus**: Download the zip from the GitHub Release and extract to BepInEx/plugins
+            ### Download
+            - **Nexus Mods**: ${{ steps.config.outputs.nexus_url }}
+            - **Thunderstore**: ${{ steps.config.outputs.thunderstore_url }}
+            - **GitHub Release**: Download the zip below and extract to BepInEx/plugins
             - **Manual**: Extract the DLL to `Sun Haven/BepInEx/plugins/`
           thumbnail_url: "https://raw.githubusercontent.com/${{ github.repository }}/main/${{ steps.config.outputs.mod_dir }}/thunderstore/icon.png"
 

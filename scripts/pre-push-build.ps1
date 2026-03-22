@@ -40,7 +40,7 @@ param(
     [Parameter(Mandatory = $false)]
     [switch]$All
 )
-
+  
 $ErrorActionPreference = "Stop"
 $ScriptRoot = Split-Path -Parent $MyInvocation.MyCommand.Path
 $RepoRoot = Split-Path -Parent $ScriptRoot
