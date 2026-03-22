@@ -65,7 +65,7 @@ Each race receives thematic passive bonuses, and select races gain powerful acti
 
 ### Active Abilities
 
-Active abilities are powerful race-specific skills that run automatically when toggled on. Press **F9** (configurable) to toggle your race's active ability on or off during gameplay.
+Active abilities are powerful race-specific skills. **Infernal Forge, Tidal Blessing, Font of Light, and Soul Harvest** use the in-game toggle: they **start OFF** each session until you press **F9** (configurable) once to turn yours on. Press again to turn off. Other abilities (e.g. Divine Ward, Tailwind) are controlled only by config, not F9.
 
 #### Water Elemental — Tidal Blessing
 Automatically waters hoed crop tiles at the cost of HP. Stand on or next to a tilled plot and it will be watered for you.

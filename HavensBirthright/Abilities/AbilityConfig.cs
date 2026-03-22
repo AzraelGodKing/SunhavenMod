@@ -185,8 +185,8 @@ namespace HavensBirthright.Abilities
                 "Active Abilities",
                 "ToggleKey",
                 KeyCode.F9,
-                "Key to toggle your race's active ability on/off during gameplay. " +
-                "Press to temporarily disable/enable abilities like Infernal Forge or Tidal Blessing."
+                "Key to turn your race's F9-toggleable ability ON or OFF. " +
+                "Those abilities start OFF each session until you press this key once to enable them."
             );
 
             InfernalForgeVerboseLogging = config.Bind(
