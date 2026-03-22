@@ -4,6 +4,7 @@
     "name": "A Squirrel's Birthday Reminder",
     "description": "Never miss an NPC birthday - get reminders and gift suggestions",
     "nexus": "https://www.nexusmods.com/sunhaven/mods/493",
+    "nexus_file_group_id": "1311370",
     "thunderstore": "https://thunderstore.io/c/sun-haven/p/AzraelGodKing/SquirrelsBirthdayReminder/",
     "thunderstoreName": "SquirrelsBirthdayReminder",
     "changelog": "Added cross-mod Todo integration for birthday gift reminders"
@@ -23,6 +24,7 @@
     "name": "Sunhaven Museum Utility Tracker",
     "description": "Track museum donation progress across all three halls",
     "nexus": "https://www.nexusmods.com/sunhaven/mods/490",
+    "nexus_file_group_id": "1309168",
     "thunderstore": "https://thunderstore.io/c/sun-haven/p/AzraelGodKing/SMUT/",
     "thunderstoreName": "SMUT",
     "changelog": "Added Senpai's Chest and Todo cross-mod integrations"
@@ -32,6 +34,7 @@
     "name": "Sun Haven Todo",
     "description": "In-game task tracker for farming goals, quests, and daily tasks",
     "nexus": "https://www.nexusmods.com/sunhaven/mods/491",
+    "nexus_file_group_id": "1310599",
     "thunderstore": "https://thunderstore.io/c/sun-haven/p/AzraelGodKing/SunHavenTodo/",
     "thunderstoreName": "SunHavenTodo",
     "changelog": "Added cross-mod integration for Birthday, S.M.U.T., and Senpai's Chest"
@@ -41,6 +44,7 @@
     "name": "The Vault",
     "description": "Secure storage for seasonal tokens, community tokens, and keys",
     "nexus": "https://www.nexusmods.com/sunhaven/mods/488",
+    "nexus_file_group_id": "1305781",
     "thunderstore": "https://thunderstore.io/c/sun-haven/p/AzraelGodKing/TheVault/",
     "thunderstoreName": "TheVault",
     "changelog": "Bug fixes and improvements"
@@ -50,6 +54,7 @@
     "name": "HavenDevTools",
     "description": "Developer utilities for mod debugging and game state inspection",
     "nexus": "https://www.nexusmods.com/sunhaven/mods/495",
+    "nexus_file_group_id": "1316842",
     "thunderstore": "https://thunderstore.io/c/sun-haven/p/AzraelGodKing/HavenDevTools/",
     "thunderstoreName": "HavenDevTools",
     "changelog": "Initial release"
@@ -59,6 +64,7 @@
     "name": "Senpai's Chest",
     "description": "Smart chest auto-sorting with custom rules by item, type, category, property, or player groups. Manage Groups tab for custom subcategories.",
     "nexus": "https://www.nexusmods.com/sunhaven/mods/496",
+    "nexus_file_group_id": "1317103",
     "thunderstore": "https://thunderstore.io/c/sun-haven/p/AzraelGodKing/SenpaisChest/",
     "thunderstoreName": "SenpaisChest",
     "changelog": "Added S.M.U.T. and Todo cross-mod integrations"
@@ -86,7 +92,8 @@
     "version": "1.0.0",
     "name": "Trinket Fortune",
     "description": "Increases odds of unowned fishing trinkets dropping as you complete the aquarium",
-    "nexus": "",
+    "nexus": "https://www.nexusmods.com/sunhaven/mods/498",
+    "nexus_file_group_id": "7159384",
     "thunderstore": "https://thunderstore.io/c/sun-haven/p/AzraelGodKing/TrinketFortune/",
     "thunderstoreName": "TrinketFortune",
     "changelog": "Initial release - stub implementation"
