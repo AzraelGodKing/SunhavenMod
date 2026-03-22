@@ -144,9 +144,40 @@ namespace HavensBirthright
 
         protected override void OnMenuTransition()
         {
-            // Reset all ability states when returning to menu
+            ResetAllStateForNewSave();
+        }
+
+        protected override void OnGameTransition()
+        {
+            ResetInstanceState();
+        }
+
+        /// <summary>
+        /// Resets all mod state when a new save is loaded. Call from PlayerPatches.OnPlayerInitialized
+        /// so the mod works correctly when switching saves without going through the main menu
+        /// (e.g. load-screen flows that skip OnMenuTransition).
+        /// </summary>
+        public static void ResetAllStateForNewSave()
+        {
             ActiveAbilityManager.ResetAll();
+            var manager = Plugin.GetRacialBonusManager();
+            manager?.ClearPlayerRace();
+            PlayerPatches.ResetRaceDetection();
+            Patches.CombatPatches.ResetNineLives();
+            AbilityPatches.ResetNotificationCache();
+            AbilityPatches.ResetReflectionCache();
+
+            var runner = Plugin.GetRunner();
+            runner?.ResetInstanceState();
+        }
+
+        /// <summary>
+        /// Resets instance-level caches and state. Called on menu transition and when loading a new save.
+        /// </summary>
+        public void ResetInstanceState()
+        {
             _outdoorTime = 0f;
+            _lastTidalBlessingCheck = 0f;
             _lastInfernalForgeCheck = 0f;
             _lastFontOfLightCheck = 0f;
             _apiCacheInitialized = false;
@@ -157,39 +188,8 @@ namespace HavensBirthright
             _worldToCellMethod = null;
             _gridInstance = null;
             _gridCellToWorldMethod = null;
+            _tidalBlessingDiagLogged = false;
             ResetStatCache();
-
-            // Reset notification/reflection caches to prevent stale Unity object references.
-            // _notificationStackInstance is typed as C# object, so destroyed Unity objects
-            // bypass Unity's == null override → MissingReferenceException on invoke.
-            AbilityPatches.ResetNotificationCache();
-            AbilityPatches.ResetReflectionCache();
-
-            // Clear race data so it re-detects on next save load
-            var manager = Plugin.GetRacialBonusManager();
-            manager?.ClearPlayerRace();
-            PlayerPatches.ResetRaceDetection();
-            Patches.CombatPatches.ResetNineLives();
-        }
-
-        protected override void OnGameTransition()
-        {
-            _outdoorTime = 0f;
-            _lastInfernalForgeCheck = 0f;
-            _apiCacheInitialized = false;
-            _inventoryMethodsCached = false;
-            _cachedGetAmountMethod = null;
-            _cachedRemoveItemMethod = null;
-            _tileManagerInstance = null;
-            _worldToCellMethod = null;
-            _gridInstance = null;
-            _gridCellToWorldMethod = null;
-            ResetStatCache();
-
-            // Reset notification/reflection caches — Unity objects from previous scene are destroyed
-            AbilityPatches.ResetNotificationCache();
-            AbilityPatches.ResetReflectionCache();
-            Patches.CombatPatches.ResetNineLives();
         }
 
         private static void ResetStatCache()
