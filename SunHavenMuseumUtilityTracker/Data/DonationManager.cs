@@ -58,9 +58,14 @@ namespace SunHavenMuseumUtilityTracker.Data
         /// </summary>
         public bool HasDonatedByGameId(int gameItemId)
         {
-            var item = MuseumContent.FindByGameItemId(gameItemId);
-            if (item == null) return false;
-            return HasDonated(item.Id);
+            bool found = false;
+            foreach (var item in MuseumContent.GetAllItems())
+            {
+                if (item.GameItemId != gameItemId) continue;
+                found = true;
+                if (!HasDonated(item.Id)) return false;
+            }
+            return found;
         }
 
         /// <summary>
@@ -84,10 +89,10 @@ namespace SunHavenMuseumUtilityTracker.Data
         /// </summary>
         public void MarkDonatedByGameId(int gameItemId)
         {
-            var item = MuseumContent.FindByGameItemId(gameItemId);
-            if (item != null)
+            foreach (var item in MuseumContent.GetAllItems())
             {
-                MarkDonated(item.Id);
+                if (item.GameItemId == gameItemId)
+                    MarkDonated(item.Id);
             }
         }
 

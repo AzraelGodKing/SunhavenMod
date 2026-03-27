@@ -52,6 +52,12 @@ Character names are sanitized to avoid invalid filename characters.
 - The window is draggable by the header
 - The UI pauses player input while the todo list is open
 
+## Links
+
+- [Nexus Mods](https://www.nexusmods.com/sunhaven/mods/491)
+- [Documentation](https://azraelgodking.github.io/SunhavenMod/Todo/todo.html)
+- [Discord — bugs & discussion](https://discord.gg/Vwh2y7qMXv)
+
 ## License
 
 Feel free to use, modify, and distribute this mod.

@@ -20,7 +20,7 @@
         <a href="../index.html" class="nav-home">Mod Hub</a>
         <span class="nav-divider">/</span>
         <span class="nav-current">S.M.U.T.</span>
-        <span class="breadcrumb-date">Updated Feb 2026</span>
+        <span class="breadcrumb-date">Updated Mar 2026</span>
     </nav>
 
     <aside class="toc-sidebar" aria-label="Table of Contents">
@@ -36,7 +36,7 @@
             <div class="hero-icon">&#x1F3DB;</div>
             <h1>S.M.U.T.<span class="full-name">Sun Haven Museum Utility Tracker</span></h1>
             <p class="tagline" style="font-style:italic;">Your Personal Curator's Guide to Museum Completion</p>
-            <span class="version-badge">v2.2.1</span>
+            <span class="version-badge">v2.2.5</span>
         </header>
 
         <!-- Exhibit placard intro -->
@@ -70,12 +70,25 @@
                 <div class="timeline-node current">
                     <div class="timeline-marker"></div>
                     <div class="timeline-content">
-                        <span class="timeline-version">v2.2.1</span>
+                        <span class="timeline-version">v2.2.5</span>
+                        <div class="timeline-entry">
+                            <span class="changelog-icon">&#x1F3AF;</span>
+                            <div class="changelog-content">
+                                <h4>Hall of Culture &amp; Aquarium catalogs</h4>
+                                <p>Full static lists with real <code>Wish.ItemID</code> values and wiki bundle order; integrations use bundle-scoped lookup. <code>HasDonatedByGameId</code> is true only when every museum row for that ID is checked (e.g. Pepper in Spring and Summer). All aquarium tanks use static fish data; runtime resolver removed. Re-sync or re-check if older saves used placeholder row IDs.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="timeline-node">
+                    <div class="timeline-marker"></div>
+                    <div class="timeline-content">
+                        <span class="timeline-version">v2.2.4</span>
                         <div class="timeline-entry">
                             <span class="changelog-icon">&#x2699;</span>
                             <div class="changelog-content">
-                                <h4>Restoration Update</h4>
-                                <p>Documentation and version alignment.</p>
+                                <h4>Sync &amp; progress</h4>
+                                <p>Reliable world progress from GameSave; bundle completion matches MuseumCurator; season fish icons from game data; save after sync.</p>
                             </div>
                         </div>
                     </div>

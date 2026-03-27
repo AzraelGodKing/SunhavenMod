@@ -106,6 +106,7 @@ namespace SunHavenMuseumUtilityTracker.UI
         private Texture2D _progressBg;
         private Texture2D _searchBg;
         private Texture2D _dividerTex;
+        private Texture2D _itemPlaceholderIcon;
 
         // Sun Haven warm parchment color palette
         private readonly Color _parchmentLight = new Color(0.96f, 0.93f, 0.86f, 0.98f);
@@ -194,6 +195,7 @@ namespace SunHavenMuseumUtilityTracker.UI
             _windowRect = new Rect(x, y, w, h);
 
             SunhavenMods.Shared.IconCache.Initialize(Plugin.Log);
+            MuseumContent.ApplyResolvedAquariumFishIfNeeded();
             Plugin.Log?.LogInfo("MuseumTrackerUI initialized");
         }
 
@@ -219,6 +221,8 @@ namespace SunHavenMuseumUtilityTracker.UI
         {
             _isVisible = true;
             _openAnimation = 0f;
+
+            MuseumContent.ApplyResolvedAquariumFishIfNeeded();
 
             // Refresh game progress cache in background (spread over multiple frames)
             StartCacheRefresh();
@@ -396,6 +400,9 @@ namespace SunHavenMuseumUtilityTracker.UI
 
             // Divider
             _dividerTex = MakeTex(1, 1, _borderDark);
+
+            // Culture / undecorated aquarium slots have no game item ID — show a clear list tile
+            _itemPlaceholderIcon = MakeRoundedRect(32, 32, new Color(0.88f, 0.82f, 0.72f, 1f), _borderDark, 2);
         }
 
         private void CreateStyles()
@@ -884,6 +891,7 @@ namespace SunHavenMuseumUtilityTracker.UI
 
                 if (newlyMarked > 0)
                 {
+                    Plugin.SaveData();
                     _syncStatusMessage = $"Synced {newlyMarked} items!";
                     Plugin.Log?.LogInfo($"[UI] Synced {newlyMarked} items from game progress");
                 }
@@ -1140,8 +1148,8 @@ namespace SunHavenMuseumUtilityTracker.UI
 
             GUILayout.Space(Scaled(8));
 
-            // Item icon
-            var icon = IconCache.GetIcon(item.GameItemId);
+            // Item icon (placeholders use GameItemId <= 0 — no IconCache entry)
+            var icon = item.GameItemId > 0 ? IconCache.GetIcon(item.GameItemId) : _itemPlaceholderIcon;
             if (icon != null)
             {
                 float iconSz = IconSize;

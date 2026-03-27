@@ -107,6 +107,9 @@ namespace SunhavenMods.Shared
         /// </summary>
         public static Texture2D GetIcon(int itemId)
         {
+            if (itemId <= 0)
+                return GetFallbackTexture();
+
             if (_iconCache.TryGetValue(itemId, out Texture2D cached))
             {
                 return cached;
@@ -254,6 +257,8 @@ namespace SunhavenMods.Shared
 
         private static void LoadIcon(int itemId)
         {
+            if (itemId <= 0)
+                return;
             if (_loadingItems.Contains(itemId) || _iconCache.ContainsKey(itemId))
             {
                 return;

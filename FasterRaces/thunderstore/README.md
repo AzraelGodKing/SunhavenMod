@@ -26,3 +26,4 @@ Edit `BepInEx/config/com.azraelgodking.fasterraces.cfg`:
 ## Links
 
 - [Documentation](https://azraelgodking.github.io/SunhavenMod/FasterRaces/FasterRaces.html)
+- [Report Bugs on Discord](https://discord.gg/Vwh2y7qMXv)

@@ -20,14 +20,14 @@
     "changelog": "Celestial Bloodlines: Font of Light (Angel) and Soul Harvest (Demon) active abilities"
   },
   "com.azraelgodking.sunhavenmuseumutilitytracker": {
-    "version": "2.2.3",
+    "version": "2.2.5",
     "name": "Sunhaven Museum Utility Tracker",
     "description": "Track museum donation progress across all three halls",
     "nexus": "https://www.nexusmods.com/sunhaven/mods/490",
     "nexus_file_group_id": "1309168",
     "thunderstore": "https://thunderstore.io/c/sun-haven/p/AzraelGodKing/SMUT/",
     "thunderstoreName": "SMUT",
-    "changelog": "Added Senpai's Chest and Todo cross-mod integrations"
+    "changelog": "2.2.5: Hall of Culture and Aquarium — full static item/fish lists (Wish.ItemID + wiki), bundle-scoped lookup, HasDonatedByGameId across duplicate rows; 2.2.4: GameSave sync and bundle completion aligned with MuseumCurator; aquarium icons; save after sync."
   },
   "com.azraelgodking.sunhaventodo": {
     "version": "1.1.5",

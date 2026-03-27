@@ -63,6 +63,11 @@ The vault UI includes a **Custom** tab for currencies registered at runtime. Fro
 - `dotnet build TheVault/TheVault.csproj` → `TheVault.dll` and **`TheVault.Abstractions.dll`** copied next to each other under `BepInEx/plugins/TheVault` (see the csproj `CopyToPlugins` targets). **Distribute both** to players; dependent mods may reference only the abstractions assembly.
 - Optional unit tests (no Unity): `dotnet test TheVault/Tests/TheVault.Tests.csproj -c Release`
 
+## Links
+
+- [Nexus Mods](https://www.nexusmods.com/sunhaven/mods/488)
+- [Discord — bugs & discussion](https://discord.gg/Vwh2y7qMXv)
+
 ## Version
 
 **Released version is `3.0.0`** (BepInEx, Thunderstore, Nexus) **until it is explicitly bumped** — not every internal change warrants a version bump.

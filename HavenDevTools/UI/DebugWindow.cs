@@ -69,7 +69,7 @@ namespace HavenDevTools.UI
             ("com.azraelgodking.senpaischest", "Senpai's Chest", "2.2.0"),
             ("com.azraelgodking.squirrelsbirthdayreminder", "Birthday Reminder", "1.0.2"),
             ("com.azraelgodking.havensbirthright", "Haven's Birthright", "1.0.2"),
-            ("com.azraelgodking.sunhavenmuseumutilitytracker", "S.M.U.T.", "2.0.1"),
+                ("com.azraelgodking.sunhavenmuseumutilitytracker", "S.M.U.T.", "2.2.5"),
             ("com.azraelgodking.sunhaventodo", "Sunhaven Todo", "1.0.0"),
             ("com.azraelgodking.thevault", "The Vault", "3.0.0"),
             ("com.azraelgodking.havensalmanac", "Haven's Almanac", "1.0.0"),
