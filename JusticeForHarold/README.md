@@ -24,6 +24,10 @@ A small Sun Haven mod that adds a simple quest for the NPC **Harold**, who has l
 
 Open the solution or project in the repo, set `SUNHAVEN_PATH` (or use the default path in `Directory.Build.props`) to your Sun Haven install, then build. The build target copies the DLL to `BepInEx/plugins/JusticeForHarold/` and to `builds/JusticeForHarold/`.
 
+## Links
+
+- [Discord — bugs & discussion](https://discord.gg/Vwh2y7qMXv)
+
 ## Technical notes
 
 - Progress is stored under the character flag **JusticeForHaroldComplete**.

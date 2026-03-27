@@ -1,6 +1,6 @@
 # S.M.U.T. - Sun Haven Museum Utility Tracker
 
-**Version 2.2.1** — Track your museum donation progress across all three halls (Hall of Gems, Hall of Culture, Aquarium) in Sun Haven. Manual tracking, per-character saves, item icons, search and filter.
+**Version 2.2.5** — Track your museum donation progress across all three halls (Hall of Gems, Hall of Culture, Aquarium) in Sun Haven. Manual tracking, per-character saves, item icons, search and filter.
 
 ## Features
 

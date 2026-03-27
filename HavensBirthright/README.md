@@ -170,6 +170,11 @@ You can:
 - **Amari Cat**: Under the `[Amari Cat]` section, configure Nine Lives (EnableNineLives, NineLivesChance, NineLivesHealPercent). Under `[Performance]`, AmariCatReduceCombatStutter can disable attack-speed application for Amari Cat if needed (e.g. stutter with fast weapons).
 - **Reload config**: Press F12 (configurable) in-game to reload the config file without restarting the game.
 
+## Links
+
+- [Nexus Mods](https://www.nexusmods.com/sunhaven/mods/487)
+- [Discord — bugs & discussion](https://discord.gg/Vwh2y7qMXv)
+
 ## Changelog
 
 ### v1.4.0 — Save-Load Fix

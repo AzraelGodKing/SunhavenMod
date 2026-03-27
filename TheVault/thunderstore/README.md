@@ -25,3 +25,4 @@ Reference **`TheVault.Abstractions.dll`** and use `TheVault.Modding.VaultModApiB
 ## Links
 
 - [Nexus Mods](https://www.nexusmods.com/sunhaven/mods/488)
+- [Report Bugs on Discord](https://discord.gg/Vwh2y7qMXv)
