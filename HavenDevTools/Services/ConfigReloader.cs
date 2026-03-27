@@ -19,6 +19,7 @@ namespace HavenDevTools.Services
                 ModConfig.Initialize(Plugin.ConfigFile);
                 Plugin.StaticToggleKey = ModConfig.ToggleKey.Value;
                 Plugin.StaticOverlayToggleKey = ModConfig.OverlayToggleKey.Value;
+                ModConfig.SyncTheVaultFullVaultInspectorToPlugin();
                 Plugin.Log?.LogInfo("[ConfigReloader] HavenDevTools config reloaded");
             }
             catch (Exception ex)

@@ -93,6 +93,7 @@ namespace HavenDevTools
 
                 // Detect installed mods
                 DetectInstalledMods();
+                ModConfig.SyncTheVaultFullVaultInspectorToPlugin();
 
                 // Initialize services
                 _staticItemInspector = new ItemInspector();
@@ -449,6 +450,7 @@ namespace HavenDevTools
         private float _heartbeatTimer = 0f;
         private int _heartbeatCount = 0;
         private const float HEARTBEAT_INTERVAL = 30f;
+        private bool _syncedTheVaultInspectorOnce;
 
         private void Awake()
         {
@@ -458,6 +460,13 @@ namespace HavenDevTools
 
         private void Update()
         {
+            // HavenDevTools may load before TheVault; push inspector flag once all assemblies are in.
+            if (!_syncedTheVaultInspectorOnce)
+            {
+                _syncedTheVaultInspectorOnce = true;
+                ModConfig.SyncTheVaultFullVaultInspectorToPlugin();
+            }
+
             CheckHotkeys();
 
             // Heartbeat - prove the runner is still alive
@@ -502,6 +511,6 @@ namespace HavenDevTools
     {
         public const string PLUGIN_GUID = "com.azraelgodking.havendevtools";
         public const string PLUGIN_NAME = "Haven Dev Tools";
-        public const string PLUGIN_VERSION = "1.0.5";
+        public const string PLUGIN_VERSION = "1.0.6";
     }
 }

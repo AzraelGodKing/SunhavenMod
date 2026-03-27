@@ -40,24 +40,24 @@
     "changelog": "Added cross-mod integration for Birthday, S.M.U.T., and Senpai's Chest"
   },
   "com.azraelgodking.thevault": {
-    "version": "2.0.8",
+    "version": "3.0.0",
     "name": "The Vault",
-    "description": "Secure storage for seasonal tokens, community tokens, and keys",
+    "description": "Full rework of The Vault system: classic vault core in TheVault/, encrypted saves, UI/HUD, auto-deposit, shop/door hooks.",
     "nexus": "https://www.nexusmods.com/sunhaven/mods/488",
     "nexus_file_group_id": "1305781",
     "thunderstore": "https://thunderstore.io/c/sun-haven/p/AzraelGodKing/TheVault/",
     "thunderstoreName": "TheVault",
-    "changelog": "Bug fixes and improvements"
+    "changelog": "3.0.0 full rework: updated VaultManager/VaultSaveSystem + single TheVault/ tree; Harmony rebased on Wish.* types; change the HUD to an expanding bar, so if item = 0 it doesn't show"
   },
   "com.azraelgodking.havendevtools": {
-    "version": "1.0.5",
+    "version": "1.0.6",
     "name": "HavenDevTools",
     "description": "Developer utilities for mod debugging and game state inspection",
     "nexus": "https://www.nexusmods.com/sunhaven/mods/495",
     "nexus_file_group_id": "1316842",
     "thunderstore": "https://thunderstore.io/c/sun-haven/p/AzraelGodKing/HavenDevTools/",
     "thunderstoreName": "HavenDevTools",
-    "changelog": "Initial release"
+    "changelog": "added debug more for TheVault, which allows for full inspection of the game state"
   },
   "com.azraelgodking.senpaischest": {
     "version": "2.1.0",
