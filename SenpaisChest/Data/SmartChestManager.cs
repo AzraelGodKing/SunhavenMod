@@ -167,6 +167,38 @@ namespace SenpaisChest.Data
         /// Removes smart chest entries whose chest no longer exists in the world (e.g. picked up or destroyed).
         /// Call this when you have a current chest lookup from ChestManager.associatedChests.
         /// </summary>
+        /// <summary>
+        /// Orphan cleanup is unsafe while a chest is open or when ChestManager has zero chests — the
+        /// lookup can be wrong and every saved id looks "orphaned", wiping rules on the next save.
+        /// </summary>
+        private bool ShouldRunOrphanChestCleanup(Dictionary<string, KeyValuePair<Inventory, Chest>> chestLookup)
+        {
+            if (chestLookup == null)
+                return false;
+            if (Plugin.CurrentInteractingChest != null)
+            {
+                Plugin.Log?.LogDebug("[Scan] Skipping orphan cleanup — player has a chest open");
+                return false;
+            }
+            if (chestLookup.Count == 0)
+            {
+                Plugin.Log?.LogDebug("[Scan] Skipping orphan cleanup — no chests in ChestManager (likely transition)");
+                return false;
+            }
+
+            foreach (var kvp in chestLookup)
+            {
+                var chest = kvp.Value.Value;
+                if (chest != null && IsChestInUse(chest))
+                {
+                    Plugin.Log?.LogDebug("[Scan] Skipping orphan cleanup — at least one chest is in use");
+                    return false;
+                }
+            }
+
+            return true;
+        }
+
         public void RemoveOrphanedSmartChests(Dictionary<string, KeyValuePair<Inventory, Chest>> chestLookup)
         {
             if (chestLookup == null) return;
@@ -347,7 +379,11 @@ namespace SenpaisChest.Data
             // Remove smart chest entries for chests that no longer exist (picked up/destroyed).
             // We do this here, not in Chest.OnDisable, because OnDisable runs for every chest on exit
             // and would wipe config before Save() ran.
-            RemoveOrphanedSmartChests(chestLookup);
+            // Never run while a chest UI is open or when the manager has zero associated chests:
+            // ChestManager can be incomplete during transitions, which mis-classifies every saved id as
+            // "orphan" and deletes all rules; the next Save() then persists the empty config.
+            if (ShouldRunOrphanChestCleanup(chestLookup))
+                RemoveOrphanedSmartChests(chestLookup);
 
             foreach (var smartChestEntry in _smartChests)
             {

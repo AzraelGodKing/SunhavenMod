@@ -62,14 +62,14 @@
     "changelog": "added debug more for TheVault, which allows for full inspection of the game state"
   },
   "com.azraelgodking.senpaischest": {
-    "version": "2.1.0",
+    "version": "2.2.0",
     "name": "Senpai's Chest",
     "description": "Smart chest auto-sorting with custom rules by item, type, category, property, or player groups. Manage Groups tab for custom subcategories.",
     "nexus": "https://www.nexusmods.com/sunhaven/mods/496",
     "nexus_file_group_id": "1317103",
     "thunderstore": "https://thunderstore.io/c/sun-haven/p/AzraelGodKing/SenpaisChest/",
     "thunderstoreName": "SenpaisChest",
-    "changelog": "Added S.M.U.T. and Todo cross-mod integrations"
+    "changelog": "2.2.0: Fix smart chest rules vanishing — skip orphan cleanup while any chest is open or ChestManager has no chests; do not reload save file on every map/scene change (was overwriting unsaved config before auto-save). Stable sorts with an open chest and when changing areas."
   },
   "com.azraelgodking.havensalmanac": {
     "version": "1.0.3",
