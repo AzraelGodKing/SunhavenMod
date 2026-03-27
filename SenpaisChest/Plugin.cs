@@ -36,6 +36,12 @@ namespace SenpaisChest
         // Track the chest the player is currently interacting with
         internal static Chest CurrentInteractingChest;
 
+        /// <summary>
+        /// Character we've already loaded from disk this play session. Scene changes (farm → town) must not
+        /// call LoadData again or we overwrite unsaved UI edits (auto-save is only every 5 minutes).
+        /// </summary>
+        private static string _gameplaySessionCharacter;
+
         private Harmony _harmony;
         private SmartChestManager _manager;
         private SmartChestSaveSystem _saveSystem;
@@ -374,6 +380,7 @@ namespace SenpaisChest
 
                 var data = _staticSaveSystem?.Load(characterName);
                 _staticManager?.LoadData(data);
+                _gameplaySessionCharacter = characterName;
             }
             catch (Exception ex)
             {
@@ -664,18 +671,27 @@ namespace SenpaisChest
             {
                 Log.LogInfo("Returned to menu, saving data...");
                 _staticSaveSystem?.Save();
+                _gameplaySessionCharacter = null;
             }
             else if (!isMenuScene)
             {
-                // Reload smart chest data when entering a game scene (e.g. after "Load game")
-                // so the chest reads back the saved state even if OnPlayerInitialized ran too early.
+                // Only load from disk when the session character changes (e.g. picked "Load" from menu).
+                // Reloading on every map transition wiped in-memory rules before the next auto-save.
                 var characterName = GetCurrentCharacterName();
                 if (!string.IsNullOrEmpty(characterName))
                 {
-                    _staticManager?.SetCharacterName(characterName);
-                    var data = _staticSaveSystem?.Load(characterName);
-                    _staticManager?.LoadData(data);
-                    Log?.LogDebug($"[SenpaisChest] Reloaded smart chest data for '{characterName}' on scene load");
+                    if (string.Equals(_gameplaySessionCharacter, characterName, StringComparison.Ordinal))
+                    {
+                        Log?.LogDebug($"[SenpaisChest] Skip disk reload on scene '{scene.name}' — '{characterName}' already active");
+                    }
+                    else
+                    {
+                        _staticManager?.SetCharacterName(characterName);
+                        var data = _staticSaveSystem?.Load(characterName);
+                        _staticManager?.LoadData(data);
+                        _gameplaySessionCharacter = characterName;
+                        Log?.LogDebug($"[SenpaisChest] Loaded smart chest data from disk for '{characterName}' on scene load");
+                    }
                 }
             }
 
