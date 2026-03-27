@@ -28,3 +28,4 @@ Edit `BepInEx/config/com.azraelgodking.trinketfortune.cfg`:
 ## Links
 
 - [Documentation](https://azraelgodking.github.io/SunhavenMod/TrinketFortune/TrinketFortune.html)
+- [Report Bugs on Discord](https://discord.gg/Vwh2y7qMXv)
