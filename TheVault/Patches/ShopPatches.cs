@@ -2,6 +2,7 @@ using HarmonyLib;
 using System;
 using System.Collections.Generic;
 using TheVault.Vault;
+using Wish;
 
 namespace TheVault.Patches
 {
@@ -132,6 +133,10 @@ namespace TheVault.Patches
             if (itemInfo == null) return -1;
             try
             {
+                if (itemInfo is ShopItemInfo2 si)
+                    return si.id;
+                if (itemInfo is ShopLoot2 sl)
+                    return sl.id;
                 var idField = AccessTools.Field(itemInfo.GetType(), "id");
                 if (idField != null)
                     return (int)idField.GetValue(itemInfo);
@@ -185,26 +190,14 @@ namespace TheVault.Patches
         {
             try
             {
-                // Try to use Sun Haven's notification system
-                var notificationType = AccessTools.TypeByName("Wish.NotificationStack");
-                if (notificationType != null)
+                string currencyName = GetCurrencyDisplayName(currencyId);
+                string msg = $"Need {required} {currencyName}";
+                if (NotificationStack.Instance != null)
                 {
-                    var instanceProperty = AccessTools.Property(notificationType, "Instance");
-                    if (instanceProperty != null)
-                    {
-                        var instance = instanceProperty.GetValue(null);
-                        var sendMethod = AccessTools.Method(notificationType, "SendNotification", new[] { typeof(string) });
-                        if (sendMethod != null && instance != null)
-                        {
-                            string currencyName = GetCurrencyDisplayName(currencyId);
-                            sendMethod.Invoke(instance, new object[] { $"Need {required} {currencyName}" });
-                            return;
-                        }
-                    }
+                    NotificationStack.Instance.SendNotification(msg);
+                    return;
                 }
-
-                // Fallback to log
-                Plugin.Log?.LogInfo($"Insufficient funds: need {required} {currencyId}");
+                Plugin.Log?.LogInfo($"Insufficient funds: {msg} ({currencyId})");
             }
             catch (Exception ex)
             {

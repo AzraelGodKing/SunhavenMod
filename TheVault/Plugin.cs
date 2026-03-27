@@ -1,6 +1,8 @@
 using BepInEx;
 using BepInEx.Configuration;
 using BepInEx.Logging;
+using TheVault.Integration;
+using TheVault.Modding;
 using TheVault.Patches;
 using TheVault.UI;
 using TheVault.Vault;
@@ -9,6 +11,7 @@ using SunhavenMods.Shared;
 using System;
 using UnityEngine;
 using UnityEngine.SceneManagement;
+using Wish;
 
 namespace TheVault
 {
@@ -24,6 +27,8 @@ namespace TheVault
         private static VaultManager _staticVaultManager;
         private static VaultSaveSystem _staticSaveSystem;
         private static VaultUI _staticVaultUI;
+        // uGUI panel disabled (legacy-only).
+        // private static VaultUguiPanel _staticVaultUgui;
         private static VaultHUD _staticVaultHUD;
 
         // Static config values for PersistentRunner to use for hotkey detection
@@ -36,6 +41,7 @@ namespace TheVault
         private VaultManager _vaultManager;
         private VaultSaveSystem _saveSystem;
         private VaultUI _vaultUI;
+        // private VaultUguiPanel _vaultUgui;
         private VaultHUD _vaultHUD;
 
         // Configuration
@@ -45,11 +51,19 @@ namespace TheVault
         private ConfigEntry<bool> _enableHUD;
         private ConfigEntry<string> _hudPosition;
         private ConfigEntry<float> _hudScale;
+        private ConfigEntry<bool> _hudCompactMode;
+        private ConfigEntry<string> _hudDensity;
         private ConfigEntry<KeyCode> _hudToggleKey;
         private ConfigEntry<float> _windowScale;
         private ConfigEntry<bool> _enableAutoSave;
         private ConfigEntry<float> _autoSaveInterval;
         private ConfigEntry<bool> _checkForUpdates;
+        private ConfigEntry<bool> _useLegacyImguiVault;
+
+        /// <summary>
+        /// Full vault inspector (zeros, Debug tab, full HUD). Controlled by Haven Dev Tools config / UI, not TheVault.cfg.
+        /// </summary>
+        private static bool _debugFullVaultInspector;
 
         // Backup menu detection via polling (in case SceneManager.sceneLoaded stops working)
         private string _lastKnownScene = "";
@@ -94,8 +108,8 @@ namespace TheVault
                 _staticVaultManager = _vaultManager;
                 _staticSaveSystem = _saveSystem;
 
-                // Create UI GameObject
-                var uiObject = new GameObject("TheVault_UI");
+                // Create UI GameObject (RectTransform stretched to full screen for uGUI Canvas)
+                var uiObject = CreateTheVaultUiHost();
                 DontDestroyOnLoad(uiObject);
                 _vaultUI = uiObject.AddComponent<VaultUI>();
                 _vaultUI.Initialize(_vaultManager);
@@ -103,6 +117,10 @@ namespace TheVault
                 _vaultUI.SetToggleKey(_toggleKey.Value, _requireCtrlModifier.Value);
                 _vaultUI.SetAltToggleKey(_altToggleKey.Value);
                 _staticVaultUI = _vaultUI;
+
+                // Legacy-only: uGUI panel is no longer created by default.
+                // Keep the old IMGUI window + HUD path (player preference).
+                ApplyLegacyVaultUiMode();
 
                 // Store config values for PersistentRunner hotkey detection
                 StaticToggleKey = _toggleKey.Value;
@@ -114,9 +132,12 @@ namespace TheVault
                 _vaultHUD = uiObject.AddComponent<VaultHUD>();
                 _vaultHUD.Initialize(_vaultManager);
                 _vaultHUD.SetEnabled(_enableHUD.Value);
-            _vaultHUD.SetPosition(ParseHUDPosition(_hudPosition.Value));
-            _vaultHUD.SetScale(Mathf.Clamp(_hudScale.Value, 0.5f, 3f));
+                _vaultHUD.SetPosition(ParseHUDPosition(_hudPosition.Value));
+                _vaultHUD.SetScale(Mathf.Clamp(_hudScale.Value, 0.5f, 3f));
+                _vaultHUD.SetHudDensity(GetResolvedHudDensity());
                 _staticVaultHUD = _vaultHUD;
+
+                VaultModApiBridge.Instance = new VaultModApiAdapter();
 
                 // Initialize icon cache for UI icons
                 SunhavenMods.Shared.IconCache.Initialize(Log);
@@ -181,6 +202,23 @@ namespace TheVault
         }
 
         /// <summary>
+        /// uGUI needs a <see cref="RectTransform"/> that spans the overlay; a plain Transform clips to a tiny default rect.
+        /// </summary>
+        private static GameObject CreateTheVaultUiHost()
+        {
+            var go = new GameObject("TheVault_UI", typeof(RectTransform));
+            var rt = go.GetComponent<RectTransform>();
+            rt.anchorMin = Vector2.zero;
+            rt.anchorMax = Vector2.one;
+            rt.pivot = new Vector2(0.5f, 0.5f);
+            rt.offsetMin = Vector2.zero;
+            rt.offsetMax = Vector2.zero;
+            rt.anchoredPosition = Vector2.zero;
+            rt.localScale = Vector3.one;
+            return go;
+        }
+
+        /// <summary>
         /// Ensures UI components exist and recreates them if they were destroyed by the game's cleanup.
         /// Called from PlayerPatches when a character loads.
         /// </summary>
@@ -203,7 +241,7 @@ namespace TheVault
                 if (_staticVaultUI == null)
                 {
                     Log?.LogInfo("[EnsureUI] Recreating VaultUI...");
-                    var uiObject = new GameObject("TheVault_UI");
+                    var uiObject = CreateTheVaultUiHost();
                     UnityEngine.Object.DontDestroyOnLoad(uiObject);
                     // NOTE: Do NOT use HideFlags.HideAndDontSave on VaultUI!
                     // That flag prevents Unity's OnGUI from being called, which breaks the UI rendering.
@@ -216,13 +254,21 @@ namespace TheVault
                     _staticVaultUI.SetToggleKey(StaticToggleKey, StaticRequireCtrl);
                     _staticVaultUI.SetAltToggleKey(StaticAltToggleKey);
 
+                    // Legacy-only: do not recreate uGUI panel.
+                    if (Instance != null)
+                        Instance.ApplyLegacyVaultUiMode();
+
                     _staticVaultHUD = uiObject.AddComponent<VaultHUD>();
                     _staticVaultHUD.Initialize(_staticVaultManager);
                     if (Instance != null)
                     {
+                        Instance._vaultUI = _staticVaultUI;
+                        // uGUI disabled
+                        Instance._vaultHUD = _staticVaultHUD;
                         _staticVaultHUD.SetEnabled(Instance._enableHUD.Value);
                         _staticVaultHUD.SetPosition(ParseHUDPosition(Instance._hudPosition.Value));
                         _staticVaultHUD.SetScale(Mathf.Clamp(Instance._hudScale.Value, 0.5f, 3f));
+                        _staticVaultHUD.SetHudDensity(GetResolvedHudDensity());
                     }
 
                     Log?.LogInfo("[EnsureUI] VaultUI and VaultHUD recreated");
@@ -257,6 +303,13 @@ namespace TheVault
                 "Alternative key to toggle vault UI (no modifier required). Useful for Steam Deck."
             );
 
+            _useLegacyImguiVault = Config.Bind(
+                "UI",
+                "UseLegacyImguiVault",
+                true,
+                "Legacy-only build: keep using the classic OnGUI/IMGUI vault window. (uGUI panel has been disabled.)"
+            );
+
             _enableHUD = Config.Bind(
                 "HUD",
                 "EnableHUD",
@@ -274,8 +327,24 @@ namespace TheVault
             _hudScale = Config.Bind(
                 "HUD",
                 "Scale",
-                1.0f,
-                "Scale factor for the HUD bar (1.0 = default size, 0.5 = half size, 2.0 = double size)"
+                1.25f,
+                "Scale factor for the HUD bar (1.0 = smaller, 1.25 = new default, 2.0 = very large). Use a dot as decimal separator in the config file (e.g. 1.25)."
+            );
+
+            _hudCompactMode = Config.Bind(
+                "HUD",
+                "CompactMode",
+                false,
+                "Legacy: when Density is Normal and this is true, HUD uses Compact spacing. Prefer [HUD] Density."
+            );
+
+            _hudDensity = Config.Bind(
+                "HUD",
+                "Density",
+                "Normal",
+                new ConfigDescription(
+                    "HUD bar density: Normal, Compact, or Minimal.",
+                    new AcceptableValueList<string>(new[] { "Normal", "Compact", "Minimal" }))
             );
 
             _windowScale = Config.Bind(
@@ -331,8 +400,11 @@ namespace TheVault
             _enableHUD.SettingChanged += OnConfigChanged;
             _hudPosition.SettingChanged += OnConfigChanged;
             _hudScale.SettingChanged += OnConfigChanged;
+            _hudCompactMode.SettingChanged += OnConfigChanged;
+            _hudDensity.SettingChanged += OnConfigChanged;
             _hudToggleKey.SettingChanged += OnConfigChanged;
             _windowScale.SettingChanged += OnConfigChanged;
+            _useLegacyImguiVault.SettingChanged += OnConfigChanged;
         }
 
         /// <summary>
@@ -355,18 +427,37 @@ namespace TheVault
                     vaultUI.SetAltToggleKey(StaticAltToggleKey);
                 }
 
+                ApplyLegacyVaultUiMode();
+
                 var vaultHUD = GetVaultHUD();
                 if (vaultHUD != null)
                 {
                     vaultHUD.SetEnabled(_enableHUD.Value);
                     vaultHUD.SetPosition(ParseHUDPosition(_hudPosition.Value));
                     vaultHUD.SetScale(Mathf.Clamp(_hudScale.Value, 0.5f, 3f));
+                    vaultHUD.SetHudDensity(GetResolvedHudDensity());
                 }
             }
             catch (Exception ex)
             {
                 Log?.LogError($"[The Vault] ApplyConfigToState failed: {ex.Message}");
             }
+        }
+
+        /// <summary>Sync which vault window is active (IMGUI vs uGUI).</summary>
+        private void ApplyLegacyVaultUiMode()
+        {
+            if (_staticVaultUI == null) return;
+            // Legacy-only mode: always enable the IMGUI window.
+            _staticVaultUI.SetLegacyImguiEnabled(true);
+            // uGUI disabled: nothing to hide.
+        }
+
+        /// <summary>Apply window scale to both vault UIs (IMGUI + uGUI).</summary>
+        public void ApplyVaultWindowScaleToUi()
+        {
+            float s = Mathf.Clamp(_windowScale?.Value ?? 1f, 0.5f, 2.5f);
+            _staticVaultUI?.SetScale(s);
         }
 
         /// <summary>
@@ -398,31 +489,64 @@ namespace TheVault
         public static void SetConfigHUDEnabled(bool v) { if (Instance?._enableHUD != null) Instance._enableHUD.Value = v; }
         public static float GetConfigHUDScale() => Instance?._hudScale?.Value ?? 1f;
         public static void SetConfigHUDScale(float v) { if (Instance?._hudScale != null) Instance._hudScale.Value = Mathf.Clamp(v, 0.5f, 3f); }
+        public static bool GetConfigHUDCompactMode() => Instance?._hudCompactMode?.Value ?? false;
+        public static void SetConfigHUDCompactMode(bool v) { if (Instance?._hudCompactMode != null) Instance._hudCompactMode.Value = v; }
+
+        public static string GetConfigHudDensity() => Instance?._hudDensity?.Value ?? "Normal";
+        public static void SetConfigHudDensity(string v)
+        {
+            if (Instance?._hudDensity == null) return;
+            if (string.IsNullOrWhiteSpace(v)) v = "Normal";
+            Instance._hudDensity.Value = v;
+        }
+
+        /// <summary>
+        /// Effective HUD density: <see cref="_hudDensity"/>, with legacy <see cref="_hudCompactMode"/> when density is Normal.
+        /// </summary>
+        public static VaultHudDensity GetResolvedHudDensity()
+        {
+            if (Instance == null) return VaultHudDensity.Normal;
+            string raw = Instance._hudDensity?.Value?.Trim() ?? "Normal";
+            if (string.Equals(raw, "Minimal", StringComparison.OrdinalIgnoreCase))
+                return VaultHudDensity.Minimal;
+            if (string.Equals(raw, "Compact", StringComparison.OrdinalIgnoreCase))
+                return VaultHudDensity.Compact;
+            if (Instance._hudCompactMode != null && Instance._hudCompactMode.Value)
+                return VaultHudDensity.Compact;
+            return VaultHudDensity.Normal;
+        }
         public static float GetConfigWindowScale() => Instance?._windowScale?.Value ?? 1f;
         public static void SetConfigWindowScale(float v) { if (Instance?._windowScale != null) Instance._windowScale.Value = Mathf.Clamp(v, 0.5f, 2.5f); }
+
+        public static bool GetConfigDebugFullVaultInspector() => _debugFullVaultInspector;
+
+        /// <summary>
+        /// Sets full vault inspector mode (intended for Haven Dev Tools; runtime only, no longer written to TheVault.cfg).
+        /// </summary>
+        public static void SetConfigDebugFullVaultInspector(bool v) => _debugFullVaultInspector = v;
 
         /// <summary>
         /// Register currency-to-item mappings for IconCache (used by VaultUI/VaultHUD).
         /// </summary>
         private void RegisterIconCacheCurrencies()
         {
-            SunhavenMods.Shared.IconCache.RegisterCurrency("seasonal_Spring", ItemIds.SpringToken);
-            SunhavenMods.Shared.IconCache.RegisterCurrency("seasonal_Summer", ItemIds.SummerToken);
-            SunhavenMods.Shared.IconCache.RegisterCurrency("seasonal_Fall", ItemIds.FallToken);
-            SunhavenMods.Shared.IconCache.RegisterCurrency("seasonal_Winter", ItemIds.WinterToken);
-            SunhavenMods.Shared.IconCache.RegisterCurrency("key_copper", ItemIds.CopperKey);
-            SunhavenMods.Shared.IconCache.RegisterCurrency("key_iron", ItemIds.IronKey);
-            SunhavenMods.Shared.IconCache.RegisterCurrency("key_adamant", ItemIds.AdamantKey);
-            SunhavenMods.Shared.IconCache.RegisterCurrency("key_mithril", ItemIds.MithrilKey);
-            SunhavenMods.Shared.IconCache.RegisterCurrency("key_sunite", ItemIds.SuniteKey);
-            SunhavenMods.Shared.IconCache.RegisterCurrency("key_glorite", ItemIds.GloriteKey);
-            SunhavenMods.Shared.IconCache.RegisterCurrency("key_kingslostmine", ItemIds.KingsLostMineKey);
-            SunhavenMods.Shared.IconCache.RegisterCurrency("special_communitytoken", ItemIds.CommunityToken);
-            SunhavenMods.Shared.IconCache.RegisterCurrency("special_doubloon", ItemIds.Doubloon);
-            SunhavenMods.Shared.IconCache.RegisterCurrency("special_blackbottlecap", ItemIds.BlackBottleCap);
-            SunhavenMods.Shared.IconCache.RegisterCurrency("special_redcarnivalticket", ItemIds.RedCarnivalTicket);
-            SunhavenMods.Shared.IconCache.RegisterCurrency("special_candycornpieces", ItemIds.CandyCornPieces);
-            SunhavenMods.Shared.IconCache.RegisterCurrency("special_manashard", ItemIds.ManaShard);
+            SunhavenMods.Shared.IconCache.RegisterCurrency(VaultCurrencyIds.SeasonalSpring, ItemIds.SpringToken);
+            SunhavenMods.Shared.IconCache.RegisterCurrency(VaultCurrencyIds.SeasonalSummer, ItemIds.SummerToken);
+            SunhavenMods.Shared.IconCache.RegisterCurrency(VaultCurrencyIds.SeasonalFall, ItemIds.FallToken);
+            SunhavenMods.Shared.IconCache.RegisterCurrency(VaultCurrencyIds.SeasonalWinter, ItemIds.WinterToken);
+            SunhavenMods.Shared.IconCache.RegisterCurrency(VaultCurrencyIds.KeyCopper, ItemIds.CopperKey);
+            SunhavenMods.Shared.IconCache.RegisterCurrency(VaultCurrencyIds.KeyIron, ItemIds.IronKey);
+            SunhavenMods.Shared.IconCache.RegisterCurrency(VaultCurrencyIds.KeyAdamant, ItemIds.AdamantKey);
+            SunhavenMods.Shared.IconCache.RegisterCurrency(VaultCurrencyIds.KeyMithril, ItemIds.MithrilKey);
+            SunhavenMods.Shared.IconCache.RegisterCurrency(VaultCurrencyIds.KeySunite, ItemIds.SuniteKey);
+            SunhavenMods.Shared.IconCache.RegisterCurrency(VaultCurrencyIds.KeyGlorite, ItemIds.GloriteKey);
+            SunhavenMods.Shared.IconCache.RegisterCurrency(VaultCurrencyIds.KeyKingsLostMine, ItemIds.KingsLostMineKey);
+            SunhavenMods.Shared.IconCache.RegisterCurrency(VaultCurrencyIds.SpecialCommunityToken, ItemIds.CommunityToken);
+            SunhavenMods.Shared.IconCache.RegisterCurrency(VaultCurrencyIds.SpecialDoubloon, ItemIds.Doubloon);
+            SunhavenMods.Shared.IconCache.RegisterCurrency(VaultCurrencyIds.SpecialBlackBottleCap, ItemIds.BlackBottleCap);
+            SunhavenMods.Shared.IconCache.RegisterCurrency(VaultCurrencyIds.SpecialRedCarnivalTicket, ItemIds.RedCarnivalTicket);
+            SunhavenMods.Shared.IconCache.RegisterCurrency(VaultCurrencyIds.SpecialCandyCornPieces, ItemIds.CandyCornPieces);
+            SunhavenMods.Shared.IconCache.RegisterCurrency(VaultCurrencyIds.SpecialManaShard, ItemIds.ManaShard);
         }
 
         /// <summary>
@@ -469,7 +593,7 @@ namespace TheVault
             try
             {
                 // Patch player initialization for loading vault data
-                var playerType = typeof(Wish.Player);
+                var playerType = typeof(Player);
 
                 PatchMethod(playerType, "InitializeAsOwner",
                     typeof(PlayerPatches), "OnPlayerInitialized");
@@ -481,12 +605,8 @@ namespace TheVault
                 PatchGameSaveSaveLoad();
 
                 // Patch return to menu for state reset (MainMenuController.HomeMenu when entering main menu)
-                var mainMenuType = AccessTools.TypeByName("Wish.MainMenuController");
-                if (mainMenuType != null)
-                {
-                    PatchMethod(mainMenuType, "HomeMenu",
-                        typeof(SaveLoadPatches), "OnReturnToMenu");
-                }
+                PatchMethod(typeof(MainMenuController), "HomeMenu",
+                    typeof(SaveLoadPatches), "OnReturnToMenu");
 
                 var titleType = AccessTools.TypeByName("Wish.TitleScreen");
                 if (titleType != null)
@@ -581,13 +701,7 @@ namespace TheVault
         {
             try
             {
-                var gameSaveType = AccessTools.TypeByName("Wish.GameSave");
-                if (gameSaveType == null)
-                {
-                    Log.LogWarning("Could not find Wish.GameSave type");
-                    return;
-                }
-
+                var gameSaveType = typeof(GameSave);
                 var loadCharMethod = AccessTools.Method(gameSaveType, "LoadCharacter", new[] { typeof(int) });
                 if (loadCharMethod != null)
                 {
@@ -612,9 +726,7 @@ namespace TheVault
         {
             try
             {
-                var gameSaveType = AccessTools.TypeByName("Wish.GameSave");
-                if (gameSaveType == null) return;
-
+                var gameSaveType = typeof(GameSave);
                 var saveGameMethod = AccessTools.Method(gameSaveType, "SaveGame");
                 if (saveGameMethod != null)
                 {
@@ -650,14 +762,9 @@ namespace TheVault
         {
             try
             {
-                var shopType = AccessTools.TypeByName("Wish.Shop");
-                if (shopType == null)
-                {
-                    Log.LogWarning("Could not find Wish.Shop type - shop vault integration unavailable");
-                    return;
-                }
-                var shopItemInfo2Type = AccessTools.TypeByName("Wish.ShopItemInfo2");
-                var shopLoot2Type = AccessTools.TypeByName("Wish.ShopLoot2");
+                var shopType = typeof(Shop);
+                var shopItemInfo2Type = typeof(ShopItemInfo2);
+                var shopLoot2Type = typeof(ShopLoot2);
                 if (shopItemInfo2Type != null)
                 {
                     var buyItemMethod = AccessTools.Method(shopType, "BuyItem", new[] { shopItemInfo2Type, typeof(int) });
@@ -703,59 +810,9 @@ namespace TheVault
 
         private void PatchItemPickup(Type playerType)
         {
-            // Log all methods on Player that might be related to item pickup
-            Log.LogInfo("Searching for item pickup methods on Player...");
-            var allMethods = playerType.GetMethods(System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
-            foreach (var m in allMethods)
-            {
-                string nameLower = m.Name.ToLowerInvariant();
-                if (nameLower.Contains("pickup") || nameLower.Contains("additem") || nameLower.Contains("collect") || nameLower.Contains("gain"))
-                {
-                    var parameters = m.GetParameters();
-                    string paramStr = string.Join(", ", System.Linq.Enumerable.Select(parameters, p => $"{p.ParameterType.Name} {p.Name}"));
-                    Log.LogInfo($"  Found: {m.Name}({paramStr}) in {m.DeclaringType.Name}");
-                }
-            }
-
-            // Search for ItemPickup, DroppedItem, Collectible classes that might handle ground pickups
-            string[] potentialClasses = new[]
-            {
-                "Wish.ItemPickup", "Wish.DroppedItem", "Wish.Collectible", "Wish.GroundItem",
-                "Wish.ItemEntity", "Wish.PickupItem", "Wish.WorldItem", "Wish.ItemDrop",
-                "ItemPickup", "DroppedItem", "Collectible", "GroundItem"
-            };
-
-            foreach (var className in potentialClasses)
-            {
-                var itemType = AccessTools.TypeByName(className);
-                if (itemType != null)
-                {
-                    Log.LogInfo($"Found potential pickup class: {itemType.FullName}");
-                    var methods = itemType.GetMethods(System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
-                    foreach (var m in methods)
-                    {
-                        string nameLower = m.Name.ToLowerInvariant();
-                        if (nameLower.Contains("pickup") || nameLower.Contains("collect") || nameLower.Contains("interact") || nameLower.Contains("onpick") || nameLower.Contains("trigger"))
-                        {
-                            var parameters = m.GetParameters();
-                            string paramStr = string.Join(", ", System.Linq.Enumerable.Select(parameters, p => $"{p.ParameterType.Name} {p.Name}"));
-                            Log.LogInfo($"  {itemType.Name}.{m.Name}({paramStr})");
-                        }
-                    }
-                }
-            }
-
-            // The actual method in Sun Haven is Player.Pickup(int item, int amount = 1, bool rollForExtra = false)
-            // Try to patch the Pickup method first
             var pickupMethod = AccessTools.Method(playerType, "Pickup");
             if (pickupMethod != null)
             {
-                Log.LogInfo($"Found Pickup method: {pickupMethod.DeclaringType.FullName}.{pickupMethod.Name}");
-                var parameters = pickupMethod.GetParameters();
-                string paramStr = string.Join(", ", System.Linq.Enumerable.Select(parameters, p => $"{p.ParameterType.Name} {p.Name}"));
-                Log.LogInfo($"  Parameters: ({paramStr})");
-
-                // Use PREFIX to intercept BEFORE item is added to inventory
                 var prefix = AccessTools.Method(typeof(ItemPatches), "OnPlayerPickupPrefix");
                 var postfix = AccessTools.Method(typeof(ItemPatches), "OnPlayerPickup");
                 if (prefix != null)
@@ -763,8 +820,7 @@ namespace TheVault
                     _harmony.Patch(pickupMethod,
                         prefix: new HarmonyMethod(prefix),
                         postfix: postfix != null ? new HarmonyMethod(postfix) : null);
-                    Log.LogInfo($"Successfully patched {playerType.Name}.Pickup with PREFIX for auto-deposit");
-                    // Don't return here - we also need to patch Inventory.AddItem below
+                    Log.LogInfo($"Patched {playerType.Name}.Pickup for auto-deposit");
                 }
             }
             else
@@ -772,219 +828,122 @@ namespace TheVault
                 Log.LogWarning("Could not find Pickup method on Player");
             }
 
-            // Patch Inventory.AddItem - this is the main method called by Wish.Pickup for ground pickups
-            var inventoryType = AccessTools.TypeByName("Wish.Inventory");
-            if (inventoryType == null)
-                inventoryType = AccessTools.TypeByName("Wish.PlayerInventory");
+            var inventoryType = typeof(Inventory);
+            var invMethods = inventoryType.GetMethods(System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
+            var itemType = typeof(Item);
 
-            if (inventoryType != null)
+            var addItemMethod = AccessTools.Method(inventoryType, "AddItem",
+                new[] { itemType, typeof(int), typeof(int), typeof(bool), typeof(bool), typeof(bool) });
+
+            if (addItemMethod != null)
             {
-                Log.LogInfo($"Searching Inventory class: {inventoryType.FullName}");
-                var invMethods = inventoryType.GetMethods(System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
-
-                // Log methods related to getting item counts (for shop/door integration)
-                Log.LogInfo("=== Inventory methods for checking item amounts ===");
-                foreach (var m in invMethods)
+                var prefix = AccessTools.Method(typeof(ItemPatches), "OnInventoryAddItemObjectPrefix");
+                var postfix = AccessTools.Method(typeof(ItemPatches), "OnInventoryAddItemObjectPostfix");
+                if (prefix != null)
                 {
-                    string nameLower = m.Name.ToLowerInvariant();
-                    if (nameLower.Contains("get") || nameLower.Contains("has") || nameLower.Contains("count") ||
-                        nameLower.Contains("amount") || nameLower.Contains("total") || nameLower.Contains("contain"))
-                    {
-                        var parameters = m.GetParameters();
-                        string paramStr = string.Join(", ", System.Linq.Enumerable.Select(parameters, p => $"{p.ParameterType.Name} {p.Name}"));
-                        Log.LogInfo($"  {m.Name}({paramStr}) -> {m.ReturnType.Name}");
-                    }
+                    _harmony.Patch(addItemMethod,
+                        prefix: new HarmonyMethod(prefix),
+                        postfix: postfix != null ? new HarmonyMethod(postfix) : null);
+                    Log.LogInfo($"Patched {inventoryType.Name}.AddItem(Item,...) for auto-deposit");
                 }
-
-                // Log AddItem methods
-                Log.LogInfo("=== Inventory AddItem methods ===");
-                foreach (var m in invMethods)
+                else if (postfix != null)
                 {
-                    string nameLower = m.Name.ToLowerInvariant();
-                    if (nameLower.Contains("add") && nameLower.Contains("item"))
-                    {
-                        var parameters = m.GetParameters();
-                        string paramStr = string.Join(", ", System.Linq.Enumerable.Select(parameters, p => $"{p.ParameterType.Name} {p.Name}"));
-                        Log.LogInfo($"  {m.Name}({paramStr}) in {m.DeclaringType.Name}");
-                    }
-                }
-
-                // Log RemoveItem methods
-                Log.LogInfo("=== Inventory RemoveItem methods ===");
-                foreach (var m in invMethods)
-                {
-                    string nameLower = m.Name.ToLowerInvariant();
-                    if (nameLower.Contains("remove"))
-                    {
-                        var parameters = m.GetParameters();
-                        string paramStr = string.Join(", ", System.Linq.Enumerable.Select(parameters, p => $"{p.ParameterType.Name} {p.Name}"));
-                        Log.LogInfo($"  {m.Name}({paramStr}) -> {m.ReturnType.Name}");
-                    }
-                }
-
-                // Search for shop/store/purchase related types in the assembly
-                Log.LogInfo("=== Searching for Shop/Store/Purchase types ===");
-                var assembly = inventoryType.Assembly;
-                foreach (var type in assembly.GetTypes())
-                {
-                    string typeName = type.Name.ToLowerInvariant();
-                    if (typeName.Contains("shop") || typeName.Contains("store") || typeName.Contains("purchase") ||
-                        typeName.Contains("buy") || typeName.Contains("vendor") || typeName.Contains("merchant"))
-                    {
-                        Log.LogInfo($"  Found type: {type.FullName}");
-                    }
-                }
-
-                // Search for door/chest/lock related types
-                Log.LogInfo("=== Searching for Door/Chest/Lock types ===");
-                foreach (var type in assembly.GetTypes())
-                {
-                    string typeName = type.Name.ToLowerInvariant();
-                    if (typeName.Contains("door") || typeName.Contains("chest") || typeName.Contains("lock") ||
-                        typeName.Contains("treasure") || typeName.Contains("gate"))
-                    {
-                        Log.LogInfo($"  Found type: {type.FullName}");
-                    }
-                }
-
-                // Find the Item type for the signature
-                var itemType = AccessTools.TypeByName("Wish.Item");
-                if (itemType != null)
-                {
-                    Log.LogInfo($"Found Wish.Item type: {itemType.FullName}");
-
-                    // Try AddItem(Item, int, int, bool, bool, bool) - the main pickup method
-                    // We use POSTFIX so the notification happens first, then we move to vault
-                    var addItemMethod = AccessTools.Method(inventoryType, "AddItem",
-                        new[] { itemType, typeof(int), typeof(int), typeof(bool), typeof(bool), typeof(bool) });
-
-                    if (addItemMethod != null)
-                    {
-                        // Use PREFIX to intercept before item enters inventory - this is the main fix
-                        var prefix = AccessTools.Method(typeof(ItemPatches), "OnInventoryAddItemObjectPrefix");
-                        var postfix = AccessTools.Method(typeof(ItemPatches), "OnInventoryAddItemObjectPostfix");
-                        if (prefix != null)
-                        {
-                            _harmony.Patch(addItemMethod,
-                                prefix: new HarmonyMethod(prefix),
-                                postfix: postfix != null ? new HarmonyMethod(postfix) : null);
-                            Log.LogInfo($"Successfully patched {inventoryType.Name}.AddItem(Item,int,int,bool,bool,bool) with PREFIX+POSTFIX for auto-deposit");
-                        }
-                        else if (postfix != null)
-                        {
-                            _harmony.Patch(addItemMethod, postfix: new HarmonyMethod(postfix));
-                            Log.LogInfo($"Successfully patched {inventoryType.Name}.AddItem(Item,int,int,bool,bool,bool) with POSTFIX only for auto-deposit");
-                        }
-                    }
-                    else
-                    {
-                        Log.LogWarning("Could not find AddItem(Item,int,int,bool,bool,bool) method");
-
-                        // Try to find any AddItem method that takes Item as first parameter
-                        foreach (var m in invMethods)
-                        {
-                            if (m.Name == "AddItem")
-                            {
-                                var parameters = m.GetParameters();
-                                if (parameters.Length > 0 && parameters[0].ParameterType == itemType)
-                                {
-                                    string paramStr = string.Join(", ", System.Linq.Enumerable.Select(parameters, p => $"{p.ParameterType.Name} {p.Name}"));
-                                    Log.LogInfo($"Found alternative AddItem: {m.Name}({paramStr})");
-
-                                    var prefix = AccessTools.Method(typeof(ItemPatches), "OnInventoryAddItemObjectPrefix");
-                                    var postfix = AccessTools.Method(typeof(ItemPatches), "OnInventoryAddItemObjectPostfix");
-                                    if (prefix != null)
-                                    {
-                                        _harmony.Patch(m,
-                                            prefix: new HarmonyMethod(prefix),
-                                            postfix: postfix != null ? new HarmonyMethod(postfix) : null);
-                                        Log.LogInfo($"Successfully patched {inventoryType.Name}.{m.Name} with PREFIX+POSTFIX for auto-deposit");
-                                        break;
-                                    }
-                                    else if (postfix != null)
-                                    {
-                                        _harmony.Patch(m, postfix: new HarmonyMethod(postfix));
-                                        Log.LogInfo($"Successfully patched {inventoryType.Name}.{m.Name} with POSTFIX for auto-deposit");
-                                        break;
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
-                else
-                {
-                    Log.LogWarning("Could not find Wish.Item type");
-                }
-
-                // Fallback: game has AddItem(int, int, bool) not AddItem(int, int)
-                var addItemIntMethod = AccessTools.Method(inventoryType, "AddItem", new[] { typeof(int), typeof(int) });
-                if (addItemIntMethod == null)
-                    addItemIntMethod = AccessTools.Method(inventoryType, "AddItem", new[] { typeof(int), typeof(int), typeof(bool) });
-                if (addItemIntMethod != null)
-                {
-                    var postfix = AccessTools.Method(typeof(ItemPatches), "OnInventoryAddItem");
-                    if (postfix != null)
-                    {
-                        _harmony.Patch(addItemIntMethod, postfix: new HarmonyMethod(postfix));
-                        Log.LogInfo($"Successfully patched {inventoryType.Name}.AddItem for auto-deposit");
-                    }
-                }
-
-                // Patch GetAmount to include vault amounts - makes shops see vault currency
-                var getAmountMethod = AccessTools.Method(inventoryType, "GetAmount", new[] { typeof(int) });
-                if (getAmountMethod != null)
-                {
-                    var postfix = AccessTools.Method(typeof(ItemPatches), "OnInventoryGetAmount");
-                    if (postfix != null)
-                    {
-                        _harmony.Patch(getAmountMethod, postfix: new HarmonyMethod(postfix));
-                        Log.LogInfo($"Successfully patched {inventoryType.Name}.GetAmount for vault integration");
-                    }
-                }
-                else
-                {
-                    Log.LogWarning("Could not find Inventory.GetAmount method");
-                }
-
-                // Patch HasEnough to check vault - makes shops/doors allow purchases with vault currency
-                var hasEnoughMethod = AccessTools.Method(inventoryType, "HasEnough", new[] { typeof(int), typeof(int) });
-                if (hasEnoughMethod != null)
-                {
-                    var postfix = AccessTools.Method(typeof(ItemPatches), "OnInventoryHasEnough");
-                    if (postfix != null)
-                    {
-                        _harmony.Patch(hasEnoughMethod, postfix: new HarmonyMethod(postfix));
-                        Log.LogInfo($"Successfully patched {inventoryType.Name}.HasEnough for vault integration");
-                    }
-                }
-                else
-                {
-                    Log.LogWarning("Could not find Inventory.HasEnough method");
-                }
-
-                // Patch RemoveItem to deduct from vault when inventory is insufficient
-                var removeItemMethod = AccessTools.Method(inventoryType, "RemoveItem", new[] { typeof(int), typeof(int), typeof(int) });
-                if (removeItemMethod != null)
-                {
-                    var prefix = AccessTools.Method(typeof(ItemPatches), "OnInventoryRemoveItemPrefix");
-                    var postfix = AccessTools.Method(typeof(ItemPatches), "OnInventoryRemoveItemPostfix");
-                    if (prefix != null && postfix != null)
-                    {
-                        _harmony.Patch(removeItemMethod,
-                            prefix: new HarmonyMethod(prefix),
-                            postfix: new HarmonyMethod(postfix));
-                        Log.LogInfo($"Successfully patched {inventoryType.Name}.RemoveItem for vault integration");
-                    }
-                }
-                else
-                {
-                    Log.LogWarning("Could not find Inventory.RemoveItem method");
+                    _harmony.Patch(addItemMethod, postfix: new HarmonyMethod(postfix));
+                    Log.LogInfo($"Patched {inventoryType.Name}.AddItem(Item,...) postfix only");
                 }
             }
             else
             {
-                Log.LogWarning("Could not find Inventory type");
+                Log.LogWarning("Could not find AddItem(Item,int,int,bool,bool,bool)");
+                foreach (var m in invMethods)
+                {
+                    if (m.Name != "AddItem") continue;
+                    var parameters = m.GetParameters();
+                    if (parameters.Length > 0 && parameters[0].ParameterType == itemType)
+                    {
+                        var prefix = AccessTools.Method(typeof(ItemPatches), "OnInventoryAddItemObjectPrefix");
+                        var postfix = AccessTools.Method(typeof(ItemPatches), "OnInventoryAddItemObjectPostfix");
+                        if (prefix != null)
+                        {
+                            _harmony.Patch(m,
+                                prefix: new HarmonyMethod(prefix),
+                                postfix: postfix != null ? new HarmonyMethod(postfix) : null);
+                            Log.LogInfo($"Patched {inventoryType.Name}.{m.Name} for auto-deposit");
+                            break;
+                        }
+                        if (postfix != null)
+                        {
+                            _harmony.Patch(m, postfix: new HarmonyMethod(postfix));
+                            Log.LogInfo($"Patched {inventoryType.Name}.{m.Name} postfix only");
+                            break;
+                        }
+                    }
+                }
+            }
+
+            // Fallback: game has AddItem(int, int, bool) not AddItem(int, int)
+            var addItemIntMethod = AccessTools.Method(inventoryType, "AddItem", new[] { typeof(int), typeof(int) });
+            if (addItemIntMethod == null)
+                addItemIntMethod = AccessTools.Method(inventoryType, "AddItem", new[] { typeof(int), typeof(int), typeof(bool) });
+            if (addItemIntMethod != null)
+            {
+                var postfix = AccessTools.Method(typeof(ItemPatches), "OnInventoryAddItem");
+                if (postfix != null)
+                {
+                    _harmony.Patch(addItemIntMethod, postfix: new HarmonyMethod(postfix));
+                    Log.LogInfo($"Successfully patched {inventoryType.Name}.AddItem for auto-deposit");
+                }
+            }
+
+            // Patch GetAmount to include vault amounts - makes shops see vault currency
+            var getAmountMethod = AccessTools.Method(inventoryType, "GetAmount", new[] { typeof(int) });
+            if (getAmountMethod != null)
+            {
+                var postfix = AccessTools.Method(typeof(ItemPatches), "OnInventoryGetAmount");
+                if (postfix != null)
+                {
+                    _harmony.Patch(getAmountMethod, postfix: new HarmonyMethod(postfix));
+                    Log.LogInfo($"Successfully patched {inventoryType.Name}.GetAmount for vault integration");
+                }
+            }
+            else
+            {
+                Log.LogWarning("Could not find Inventory.GetAmount method");
+            }
+
+            // Patch HasEnough to check vault - makes shops/doors allow purchases with vault currency
+            var hasEnoughMethod = AccessTools.Method(inventoryType, "HasEnough", new[] { typeof(int), typeof(int) });
+            if (hasEnoughMethod != null)
+            {
+                var postfix = AccessTools.Method(typeof(ItemPatches), "OnInventoryHasEnough");
+                if (postfix != null)
+                {
+                    _harmony.Patch(hasEnoughMethod, postfix: new HarmonyMethod(postfix));
+                    Log.LogInfo($"Successfully patched {inventoryType.Name}.HasEnough for vault integration");
+                }
+            }
+            else
+            {
+                Log.LogWarning("Could not find Inventory.HasEnough method");
+            }
+
+            // Patch RemoveItem to deduct from vault when inventory is insufficient
+            var removeItemMethod = AccessTools.Method(inventoryType, "RemoveItem", new[] { typeof(int), typeof(int), typeof(int) });
+            if (removeItemMethod != null)
+            {
+                var prefix = AccessTools.Method(typeof(ItemPatches), "OnInventoryRemoveItemPrefix");
+                var postfix = AccessTools.Method(typeof(ItemPatches), "OnInventoryRemoveItemPostfix");
+                if (prefix != null && postfix != null)
+                {
+                    _harmony.Patch(removeItemMethod,
+                        prefix: new HarmonyMethod(prefix),
+                        postfix: new HarmonyMethod(postfix));
+                    Log.LogInfo($"Successfully patched {inventoryType.Name}.RemoveItem for vault integration");
+                }
+            }
+            else
+            {
+                Log.LogWarning("Could not find Inventory.RemoveItem method");
             }
         }
 
@@ -1087,6 +1046,8 @@ namespace TheVault
 
         private void OnDestroy()
         {
+            VaultModApiBridge.Instance = null;
+
             Log.LogWarning("[CRITICAL] Plugin OnDestroy called! Plugin is being destroyed.");
             Log.LogWarning($"[CRITICAL] Last known scene: {_lastKnownScene}");
             Log.LogWarning($"[CRITICAL] Stack trace: {Environment.StackTrace}");
@@ -1158,12 +1119,29 @@ namespace TheVault
             return _staticVaultUI;
         }
 
+        /// <summary>Legacy-only build: uGUI panel is disabled and always null.</summary>
+        public static VaultUguiPanel GetVaultUgui() => null;
+
+        /// <summary>Legacy-only build: always true (IMGUI path).</summary>
+        public static bool LegacyImguiVaultEnabled() => true;
+
+        /// <summary>Whether the active main vault window (IMGUI or uGUI) is open.</summary>
+        public static bool IsMainVaultPanelVisible()
+        {
+            return _staticVaultUI != null && _staticVaultUI.IsVisible;
+        }
+
+        /// <summary>Open or close the vault using whichever UI mode config selected.</summary>
+        public static void ToggleMainVaultWindow()
+        {
+            _staticVaultUI?.Toggle();
+        }
+
         /// <summary>
         /// Open the vault UI
         /// </summary>
         public static void OpenVault()
         {
-            // Use static field which survives Plugin destruction
             _staticVaultUI?.Show();
         }
 
@@ -1172,7 +1150,6 @@ namespace TheVault
         /// </summary>
         public static void CloseVault()
         {
-            // Use static field which survives Plugin destruction
             _staticVaultUI?.Hide();
         }
 
@@ -1219,7 +1196,7 @@ namespace TheVault
     {
         public const string PLUGIN_GUID = "com.azraelgodking.thevault";
         public const string PLUGIN_NAME = "The Vault";
-        public const string PLUGIN_VERSION = "2.0.8";
+        public const string PLUGIN_VERSION = "3.0.0";
     }
 
     /// <summary>
@@ -1278,8 +1255,7 @@ namespace TheVault
         {
             try
             {
-                var vaultUI = Plugin.GetVaultUI();
-                if (vaultUI == null) return;
+                if (Plugin.GetVaultUI() == null) return;
 
                 // Check for vault toggle key (with modifier)
                 bool modifierHeld = !Plugin.StaticRequireCtrl ||
@@ -1287,13 +1263,13 @@ namespace TheVault
 
                 if (modifierHeld && Input.GetKeyDown(Plugin.StaticToggleKey))
                 {
-                    vaultUI.Toggle();
+                    Plugin.ToggleMainVaultWindow();
                 }
 
                 // Check for alternative toggle key (no modifier - for Steam Deck)
                 if (Plugin.StaticAltToggleKey != KeyCode.None && Input.GetKeyDown(Plugin.StaticAltToggleKey))
                 {
-                    vaultUI.Toggle();
+                    Plugin.ToggleMainVaultWindow();
                 }
 
                 // Check for HUD toggle key

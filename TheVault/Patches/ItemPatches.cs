@@ -53,6 +53,19 @@ namespace TheVault.Patches
         /// <summary>Delegate for ID() method - avoids MethodInfo.Invoke overhead on every pickup.</summary>
         private static Func<object, int> _cachedGetItemIdDelegate;
 
+        private enum InventoryRemoveKind { None, IntIntInt, IntInt, IntIntBool, RemoveAmount }
+
+        private struct InventoryRemovePlan
+        {
+            public InventoryRemoveKind Kind;
+            public MethodInfo Method;
+        }
+
+        private static readonly Dictionary<Type, InventoryRemovePlan> _inventoryRemoveByType = new Dictionary<Type, InventoryRemovePlan>();
+        private const BindingFlags InstanceMemberFlags = BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic;
+        private static object _itemInfoDatabaseInstance;
+        private static FieldInfo _allItemSellInfosField;
+
         /// <summary>
         /// Check if auto-deposit is enabled for a currency.
         /// </summary>
@@ -141,14 +154,6 @@ namespace TheVault.Patches
                     return;
                 }
 
-                var invType = inventory.GetType();
-                var getAmountMethod = AccessTools.Method(invType, "GetAmount", new[] { typeof(int) });
-                if (getAmountMethod == null)
-                {
-                    Plugin.Log?.LogWarning($"[Sweep] GetAmount(int) not found on {invType.FullName}");
-                    return;
-                }
-
                 int totalDeposited = 0;
 
                 // Iterate over all registered mappings and deposit anything currently in inventory.
@@ -168,7 +173,15 @@ namespace TheVault.Patches
                         _skipVaultInGetAmount = true;
                         try
                         {
-                            amount = (int)(getAmountMethod.Invoke(inventory, new object[] { itemId }) ?? 0);
+                            if (inventory is Inventory invBag)
+                                amount = invBag.GetAmount(itemId);
+                            else
+                            {
+                                var getAmountMethod = AccessTools.Method(inventory.GetType(), "GetAmount", new[] { typeof(int) });
+                                if (getAmountMethod == null)
+                                    continue;
+                                amount = (int)(getAmountMethod.Invoke(inventory, new object[] { itemId }) ?? 0);
+                            }
                         }
                         finally
                         {
@@ -257,6 +270,38 @@ namespace TheVault.Patches
         }
 
         /// <summary>
+        /// Stack count in the player bag only (temporarily skips vault merging in GetAmount patches).
+        /// </summary>
+        public static int GetRawInventoryCount(int itemId)
+        {
+            if (Player.Instance?.PlayerInventory == null) return 0;
+            object inventory = Player.Instance.PlayerInventory;
+            try
+            {
+                _skipVaultInGetAmount = true;
+                try
+                {
+                    if (inventory is Inventory invBag)
+                        return invBag.GetAmount(itemId);
+
+                    var getAmountMethod = AccessTools.Method(inventory.GetType(), "GetAmount", new[] { typeof(int) });
+                    if (getAmountMethod == null) return 0;
+                    object r = getAmountMethod.Invoke(inventory, new object[] { itemId });
+                    return r != null ? (int)r : 0;
+                }
+                finally
+                {
+                    _skipVaultInGetAmount = false;
+                }
+            }
+            catch
+            {
+                _skipVaultInGetAmount = false;
+                return 0;
+            }
+        }
+
+        /// <summary>
         /// Check if an item should be auto-deposited
         /// </summary>
         public static bool ShouldAutoDeposit(int gameItemId)
@@ -285,11 +330,19 @@ namespace TheVault.Patches
             var vaultManager = Plugin.GetVaultManager();
             if (vaultManager == null) return false;
 
-            // Remove from inventory
-            if (!RemoveItemFromInventory(gameItemId, amount))
+            // Remove from inventory; suppress vault remove hook to avoid accidental vault deductions.
+            BeginSuppressVaultRemoveHook();
+            try
             {
-                Plugin.Log?.LogWarning($"Failed to remove {amount} of item {gameItemId} from inventory");
-                return false;
+                if (!RemoveItemFromInventory(gameItemId, amount))
+                {
+                    Plugin.Log?.LogWarning($"Failed to remove {amount} of item {gameItemId} from inventory");
+                    return false;
+                }
+            }
+            finally
+            {
+                EndSuppressVaultRemoveHook();
             }
 
             // Add to vault
@@ -427,7 +480,16 @@ namespace TheVault.Patches
                 try
                 {
                     // Remove from inventory - try inventory instance first, then Player fallback
-                    bool removed = TryRemoveFromInventory(__instance, itemId, amount) || RemoveItemFromInventory(itemId, amount);
+                    BeginSuppressVaultRemoveHook();
+                    bool removed;
+                    try
+                    {
+                        removed = TryRemoveFromInventory(__instance, itemId, amount) || RemoveItemFromInventory(itemId, amount);
+                    }
+                    finally
+                    {
+                        EndSuppressVaultRemoveHook();
+                    }
                     if (!removed)
                     {
                         Plugin.Log?.LogWarning($"Failed to remove {amount} of item {itemId} from inventory for auto-deposit");
@@ -479,7 +541,16 @@ namespace TheVault.Patches
                 try
                 {
                     // Remove from inventory - try inventory instance first, then Player fallback
-                    bool removed = TryRemoveFromInventory(__instance, itemId, amount) || RemoveItemFromInventory(itemId, amount);
+                    BeginSuppressVaultRemoveHook();
+                    bool removed;
+                    try
+                    {
+                        removed = TryRemoveFromInventory(__instance, itemId, amount) || RemoveItemFromInventory(itemId, amount);
+                    }
+                    finally
+                    {
+                        EndSuppressVaultRemoveHook();
+                    }
                     if (!removed)
                     {
                         Plugin.Log?.LogWarning($"Failed to remove {amount} of item {itemId} from inventory for auto-deposit");
@@ -504,6 +575,16 @@ namespace TheVault.Patches
         /// Flag to prevent recursive auto-deposit when we're adding items back to inventory during withdraw
         /// </summary>
         private static bool _isProcessingAutoDeposit = false;
+        /// <summary>
+        /// Guard flag: when object AddItem PREFIX handles auto-deposit and skips original,
+        /// ignore the matching POSTFIX to avoid double-deposit.
+        /// </summary>
+        private static bool _skipObjectAddItemPostfixOnce = false;
+        private static int _suppressVaultRemoveHookDepth = 0;
+
+        private static void BeginSuppressVaultRemoveHook() => _suppressVaultRemoveHookDepth++;
+        private static void EndSuppressVaultRemoveHook() => _suppressVaultRemoveHookDepth = Math.Max(0, _suppressVaultRemoveHookDepth - 1);
+        private static bool IsVaultRemoveHookSuppressed() => _suppressVaultRemoveHookDepth > 0;
 
         /// <summary>
         /// PREFIX patch for Inventory.AddItem(Item, int, int, bool, bool, bool).
@@ -535,6 +616,7 @@ namespace TheVault.Patches
                     AddCurrencyToVault(vaultManager, currencyId, amount);
                     if (sendNotification)
                         EnqueueAutoDepositNotification(currencyId, amount);
+                    _skipObjectAddItemPostfixOnce = true;
                     return false; // Skip original - item does NOT go to inventory
                 }
                 finally
@@ -558,6 +640,12 @@ namespace TheVault.Patches
         {
             try
             {
+                if (_skipObjectAddItemPostfixOnce)
+                {
+                    _skipObjectAddItemPostfixOnce = false;
+                    return;
+                }
+
                 // Prevent recursive calls when we're doing withdrawals or other operations
                 if (_isProcessingAutoDeposit) return;
 
@@ -582,7 +670,16 @@ namespace TheVault.Patches
                     // Now remove it from inventory and add to vault
 
                     // Remove from inventory - try inventory instance first, then Player fallback
-                    bool removed = TryRemoveFromInventory(__instance, itemId, amount) || RemoveItemFromInventory(itemId, amount);
+                    BeginSuppressVaultRemoveHook();
+                    bool removed;
+                    try
+                    {
+                        removed = TryRemoveFromInventory(__instance, itemId, amount) || RemoveItemFromInventory(itemId, amount);
+                    }
+                    finally
+                    {
+                        EndSuppressVaultRemoveHook();
+                    }
                     if (!removed) return;
                     // Add to vault
                     AddCurrencyToVault(vaultManager, currencyId, amount);
@@ -619,7 +716,7 @@ namespace TheVault.Patches
                 try
                 {
                     // Use full name so we never get System.Xml.XmlWellFormedWriter+AttributeValueCache+Item
-                    var itemType = AccessTools.TypeByName("Wish.Item") ?? ReflectionHelper.FindWishType("Item") ?? typeof(object);
+                    var itemType = typeof(Item);
                     _cachedItemIdField = AccessTools.Field(itemType, "id")
                         ?? AccessTools.Field(itemType, "_id");
                     if (_cachedItemIdField == null)
@@ -659,6 +756,8 @@ namespace TheVault.Patches
         private static int GetItemId(object item)
         {
             if (item == null) return -1;
+            if (item is Item wishItem)
+                return wishItem.ID();
             EnsureItemIdCache();
             try
             {
@@ -690,64 +789,95 @@ namespace TheVault.Patches
 
         #region Inventory Operations
 
+        private static InventoryRemovePlan ResolveInventoryRemovePlan(Type invType)
+        {
+            if (_inventoryRemoveByType.TryGetValue(invType, out var cached))
+                return cached;
+
+            var plan = new InventoryRemovePlan { Kind = InventoryRemoveKind.None, Method = null };
+
+            var m = invType.GetMethod("RemoveItem", InstanceMemberFlags, null, new[] { typeof(int), typeof(int), typeof(int) }, null);
+            if (m != null)
+            {
+                plan.Kind = InventoryRemoveKind.IntIntInt;
+                plan.Method = m;
+            }
+            else
+            {
+                m = invType.GetMethod("RemoveItem", InstanceMemberFlags, null, new[] { typeof(int), typeof(int) }, null);
+                if (m != null)
+                {
+                    plan.Kind = InventoryRemoveKind.IntInt;
+                    plan.Method = m;
+                }
+                else
+                {
+                    m = invType.GetMethod("RemoveItem", InstanceMemberFlags, null, new[] { typeof(int), typeof(int), typeof(bool) }, null);
+                    if (m != null)
+                    {
+                        plan.Kind = InventoryRemoveKind.IntIntBool;
+                        plan.Method = m;
+                    }
+                    else
+                    {
+                        m = invType.GetMethod("RemoveItemAmount", InstanceMemberFlags, null, new[] { typeof(int), typeof(int) }, null);
+                        if (m != null)
+                        {
+                            plan.Kind = InventoryRemoveKind.RemoveAmount;
+                            plan.Method = m;
+                        }
+                    }
+                }
+            }
+
+            _inventoryRemoveByType[invType] = plan;
+            return plan;
+        }
+
+        private static bool InvokeInventoryRemove(in InventoryRemovePlan plan, object inventory, int itemId, int amount)
+        {
+            if (plan.Method == null) return false;
+            try
+            {
+                object result;
+                switch (plan.Kind)
+                {
+                    case InventoryRemoveKind.IntIntInt:
+                        result = plan.Method.Invoke(inventory, new object[] { itemId, amount, 0 });
+                        break;
+                    case InventoryRemoveKind.IntInt:
+                        result = plan.Method.Invoke(inventory, new object[] { itemId, amount });
+                        break;
+                    case InventoryRemoveKind.IntIntBool:
+                        result = plan.Method.Invoke(inventory, new object[] { itemId, amount, false });
+                        break;
+                    case InventoryRemoveKind.RemoveAmount:
+                        result = plan.Method.Invoke(inventory, new object[] { itemId, amount });
+                        break;
+                    default:
+                        return false;
+                }
+
+                if (result is bool b) return b;
+                if (result is System.Collections.ICollection coll) return coll.Count > 0;
+                return plan.Kind == InventoryRemoveKind.IntIntInt && result != null;
+            }
+            catch (Exception ex)
+            {
+                Plugin.Log?.LogDebug($"[ItemPatches] Inventory remove invoke failed: {ex.Message}");
+                return false;
+            }
+        }
+
         /// <summary>
         /// Try to remove an item from a specific inventory instance.
-        /// Tries multiple RemoveItem signatures since Sun Haven's API may vary.
+        /// Tries multiple RemoveItem signatures since Sun Haven's API may vary (resolved once per inventory type).
         /// </summary>
         private static bool TryRemoveFromInventory(object inventory, int itemId, int amount)
         {
             if (inventory == null) return false;
-            var invType = inventory.GetType();
-
-            // Try RemoveItem(int id, int amount, int slot)
-            var m = AccessTools.Method(invType, "RemoveItem", new[] { typeof(int), typeof(int), typeof(int) });
-            if (m != null)
-            {
-                try
-                {
-                    var result = m.Invoke(inventory, new object[] { itemId, amount, -1 });
-                    if (result is bool b) return b;
-                    return true; // void or other return - assume success
-                }
-                catch (Exception ex)
-                {
-                    Plugin.Log?.LogDebug($"[ItemPatches] RemoveItem(int,int,int) failed: {ex.Message}");
-                }
-            }
-
-            // Try RemoveItem(int id, int amount)
-            m = AccessTools.Method(invType, "RemoveItem", new[] { typeof(int), typeof(int) });
-            if (m != null)
-            {
-                try
-                {
-                    var result = m.Invoke(inventory, new object[] { itemId, amount });
-                    if (result is bool b) return b;
-                    return true;
-                }
-                catch (Exception ex)
-                {
-                    Plugin.Log?.LogDebug($"[ItemPatches] RemoveItem(int,int) failed: {ex.Message}");
-                }
-            }
-
-            // Try RemoveItemAmount(int id, int amount)
-            m = AccessTools.Method(invType, "RemoveItemAmount", new[] { typeof(int), typeof(int) });
-            if (m != null)
-            {
-                try
-                {
-                    var result = m.Invoke(inventory, new object[] { itemId, amount });
-                    if (result is bool b) return b;
-                    return true;
-                }
-                catch (Exception ex)
-                {
-                    Plugin.Log?.LogDebug($"[ItemPatches] RemoveItemAmount failed: {ex.Message}");
-                }
-            }
-
-            return false;
+            var plan = ResolveInventoryRemovePlan(inventory.GetType());
+            return InvokeInventoryRemove(plan, inventory, itemId, amount);
         }
 
         /// <summary>
@@ -758,12 +888,10 @@ namespace TheVault.Patches
         {
             try
             {
-                // Use same player as VaultUI: LocalPlayer when in world, Instance when UI is open
                 object player = Player.Instance;
                 if (player == null)
                 {
-                    var pType = typeof(Wish.Player);
-                    var localPlayerProperty = AccessTools.Property(pType, "LocalPlayer");
+                    var localPlayerProperty = typeof(Player).GetProperty("LocalPlayer", BindingFlags.Public | BindingFlags.Static);
                     if (localPlayerProperty != null)
                         player = localPlayerProperty.GetValue(null);
                 }
@@ -773,85 +901,28 @@ namespace TheVault.Patches
                     return false;
                 }
 
+                if (player is Player wishPlayer && wishPlayer.Inventory != null)
+                    return TryRemoveFromInventory(wishPlayer.Inventory, itemId, amount);
+
+                // Fallback: resolve inventory field once (avoids HarmonyX spam from failed Player.RemoveItem probes)
                 var playerType = player.GetType();
+                var inventoryField =
+                    playerType.GetField("playerInventory", InstanceMemberFlags)
+                    ?? playerType.GetField("_playerInventory", InstanceMemberFlags)
+                    ?? playerType.GetField("inventory", InstanceMemberFlags)
+                    ?? playerType.GetField("_inventory", InstanceMemberFlags);
+                var inventoryProperty =
+                    playerType.GetProperty("PlayerInventory", InstanceMemberFlags)
+                    ?? playerType.GetProperty("Inventory", InstanceMemberFlags);
 
-                // Try to find RemoveItem method on Player
-                var removeMethod = AccessTools.Method(playerType, "RemoveItem", new[] { typeof(int), typeof(int) });
-                if (removeMethod != null)
-                {
-                    var result = removeMethod.Invoke(player, new object[] { itemId, amount });
-                    Plugin.Log?.LogInfo($"RemoveItem via Player returned: {result}");
-                    return result is bool b && b;
-                }
-
-                // Try getting the PlayerInventory and calling RemoveItem on it
-                var inventoryField = AccessTools.Field(playerType, "playerInventory");
-                if (inventoryField == null)
-                    inventoryField = AccessTools.Field(playerType, "_playerInventory");
-                if (inventoryField == null)
-                    inventoryField = AccessTools.Field(playerType, "inventory");
-                if (inventoryField == null)
-                    inventoryField = AccessTools.Field(playerType, "_inventory");
-
-                var inventoryProperty = AccessTools.Property(playerType, "PlayerInventory");
-                if (inventoryProperty == null)
-                    inventoryProperty = AccessTools.Property(playerType, "Inventory");
-
-                object inventory = null;
-                if (inventoryField != null)
-                    inventory = inventoryField.GetValue(player);
-                else if (inventoryProperty != null)
+                object inventory = inventoryField != null ? inventoryField.GetValue(player) : null;
+                if (inventory == null && inventoryProperty != null)
                     inventory = inventoryProperty.GetValue(player);
 
                 if (inventory != null)
-                {
-                    var invType = inventory.GetType();
-                    Plugin.Log?.LogInfo($"Found inventory of type: {invType.FullName}");
+                    return TryRemoveFromInventory(inventory, itemId, amount);
 
-                    // Game uses RemoveItem(int id, int amount, int slot) -> List; slot 0 = start from first slot
-                    var invRemoveMethod = AccessTools.Method(invType, "RemoveItem", new[] { typeof(int), typeof(int), typeof(int) });
-                    if (invRemoveMethod != null)
-                    {
-                        var result = invRemoveMethod.Invoke(inventory, new object[] { itemId, amount, 0 });
-                        Plugin.Log?.LogInfo($"RemoveItem(int,int,int) returned: {result}");
-                        return result != null;
-                    }
-
-                    // Try RemoveItem(int, int)
-                    invRemoveMethod = AccessTools.Method(invType, "RemoveItem", new[] { typeof(int), typeof(int) });
-                    if (invRemoveMethod != null)
-                    {
-                        var result = invRemoveMethod.Invoke(inventory, new object[] { itemId, amount });
-                        Plugin.Log?.LogInfo($"RemoveItem(int,int) returned: {result}");
-                        return result is bool b ? b : true;
-                    }
-
-                    // Try RemoveItem(int, int, bool) - some versions have a sendNotification param
-                    invRemoveMethod = AccessTools.Method(invType, "RemoveItem", new[] { typeof(int), typeof(int), typeof(bool) });
-                    if (invRemoveMethod != null)
-                    {
-                        var result = invRemoveMethod.Invoke(inventory, new object[] { itemId, amount, false });
-                        Plugin.Log?.LogInfo($"RemoveItem(int,int,bool) returned: {result}");
-                        return result is bool b ? b : true;
-                    }
-
-                    // Try RemoveItemAmount
-                    invRemoveMethod = AccessTools.Method(invType, "RemoveItemAmount", new[] { typeof(int), typeof(int) });
-                    if (invRemoveMethod != null)
-                    {
-                        var result = invRemoveMethod.Invoke(inventory, new object[] { itemId, amount });
-                        Plugin.Log?.LogInfo($"RemoveItemAmount returned: {result}");
-                        return result is bool b ? b : true;
-                    }
-
-                    Plugin.Log?.LogWarning($"Could not find RemoveItem method on inventory type {invType.Name}");
-                }
-                else
-                {
-                    Plugin.Log?.LogWarning("Could not find player inventory");
-                }
-
-                Plugin.Log?.LogWarning("Could not find a method to remove items from inventory");
+                Plugin.Log?.LogWarning("Could not find player inventory");
                 return false;
             }
             catch (Exception ex)
@@ -869,36 +940,32 @@ namespace TheVault.Patches
         {
             try
             {
-                var playerType = typeof(Wish.Player);
-                var localPlayerProperty = AccessTools.Property(playerType, "LocalPlayer");
-                if (localPlayerProperty == null) return false;
-
-                var player = localPlayerProperty.GetValue(null);
+                var player = Player.Instance;
                 if (player == null) return false;
 
-                var inventoryProperty = AccessTools.Property(playerType, "Inventory");
-                if (inventoryProperty != null)
+                var inventory = player.Inventory;
+                if (inventory != null)
                 {
-                    var inventory = inventoryProperty.GetValue(player);
-                    if (inventory != null)
+                    if (inventory is Inventory inv)
                     {
-                        // Game has AddItem(int, int, bool) and AddItem(int, int, int, bool, bool)
-                        var invAddMethod = AccessTools.Method(inventory.GetType(), "AddItem", new[] { typeof(int), typeof(int), typeof(bool) });
-                        if (invAddMethod != null)
-                        {
-                            invAddMethod.Invoke(inventory, new object[] { itemId, amount, true });
-                            return true;
-                        }
-                        var invAddMethod5 = AccessTools.Method(inventory.GetType(), "AddItem", new[] { typeof(int), typeof(int), typeof(int), typeof(bool), typeof(bool) });
-                        if (invAddMethod5 != null)
-                        {
-                            invAddMethod5.Invoke(inventory, new object[] { itemId, amount, 0, true, true });
-                            return true;
-                        }
+                        inv.AddItem(itemId, amount, true);
+                        return true;
+                    }
+                    var invAddMethod = AccessTools.Method(inventory.GetType(), "AddItem", new[] { typeof(int), typeof(int), typeof(bool) });
+                    if (invAddMethod != null)
+                    {
+                        invAddMethod.Invoke(inventory, new object[] { itemId, amount, true });
+                        return true;
+                    }
+                    var invAddMethod5 = AccessTools.Method(inventory.GetType(), "AddItem", new[] { typeof(int), typeof(int), typeof(int), typeof(bool), typeof(bool) });
+                    if (invAddMethod5 != null)
+                    {
+                        invAddMethod5.Invoke(inventory, new object[] { itemId, amount, 0, true, true });
+                        return true;
                     }
                 }
 
-                var addMethod = AccessTools.Method(playerType, "AddItemToInventory", new[] { typeof(int), typeof(int) });
+                var addMethod = AccessTools.Method(typeof(Player), "AddItemToInventory", new[] { typeof(int), typeof(int) });
                 if (addMethod != null)
                 {
                     var result = addMethod.Invoke(player, new object[] { itemId, amount });
@@ -921,73 +988,73 @@ namespace TheVault.Patches
 
         private static void AddCurrencyToVault(VaultManager vaultManager, string currencyId, int amount)
         {
-            if (currencyId.StartsWith("seasonal_"))
+            if (currencyId.StartsWith(VaultCurrencyIds.PrefixSeasonal))
             {
-                string typeName = currencyId.Substring("seasonal_".Length);
+                string typeName = currencyId.Substring(VaultCurrencyIds.PrefixSeasonal.Length);
                 if (Enum.TryParse<SeasonalTokenType>(typeName, out var tokenType))
                 {
                     vaultManager.AddSeasonalTokens(tokenType, amount);
                 }
             }
-            else if (currencyId.StartsWith("community_"))
+            else if (currencyId.StartsWith(VaultCurrencyIds.PrefixCommunity))
             {
-                vaultManager.AddCommunityTokens(currencyId.Substring("community_".Length), amount);
+                vaultManager.AddCommunityTokens(currencyId.Substring(VaultCurrencyIds.PrefixCommunity.Length), amount);
             }
-            else if (currencyId.StartsWith("special_"))
+            else if (currencyId.StartsWith(VaultCurrencyIds.PrefixSpecial))
             {
-                vaultManager.AddSpecial(currencyId.Substring("special_".Length), amount);
+                vaultManager.AddSpecial(currencyId.Substring(VaultCurrencyIds.PrefixSpecial.Length), amount);
             }
-            else if (currencyId.StartsWith("key_"))
+            else if (currencyId.StartsWith(VaultCurrencyIds.PrefixKey))
             {
-                vaultManager.AddKeys(currencyId.Substring("key_".Length), amount);
+                vaultManager.AddKeys(currencyId.Substring(VaultCurrencyIds.PrefixKey.Length), amount);
             }
-            else if (currencyId.StartsWith("ticket_"))
+            else if (currencyId.StartsWith(VaultCurrencyIds.PrefixTicket))
             {
-                vaultManager.AddTickets(currencyId.Substring("ticket_".Length), amount);
+                vaultManager.AddTickets(currencyId.Substring(VaultCurrencyIds.PrefixTicket.Length), amount);
             }
-            else if (currencyId.StartsWith("orb_"))
+            else if (currencyId.StartsWith(VaultCurrencyIds.PrefixOrb))
             {
-                vaultManager.AddOrbs(currencyId.Substring("orb_".Length), amount);
+                vaultManager.AddOrbs(currencyId.Substring(VaultCurrencyIds.PrefixOrb.Length), amount);
             }
-            else if (currencyId.StartsWith("custom_"))
+            else if (currencyId.StartsWith(VaultCurrencyIds.PrefixCustom))
             {
-                vaultManager.AddCustomCurrency(currencyId.Substring("custom_".Length), amount);
+                vaultManager.AddCustomCurrency(currencyId.Substring(VaultCurrencyIds.PrefixCustom.Length), amount);
             }
         }
 
         private static bool RemoveCurrencyFromVault(VaultManager vaultManager, string currencyId, int amount)
         {
-            if (currencyId.StartsWith("seasonal_"))
+            if (currencyId.StartsWith(VaultCurrencyIds.PrefixSeasonal))
             {
-                string typeName = currencyId.Substring("seasonal_".Length);
+                string typeName = currencyId.Substring(VaultCurrencyIds.PrefixSeasonal.Length);
                 if (Enum.TryParse<SeasonalTokenType>(typeName, out var tokenType))
                 {
                     return vaultManager.RemoveSeasonalTokens(tokenType, amount);
                 }
             }
-            else if (currencyId.StartsWith("community_"))
+            else if (currencyId.StartsWith(VaultCurrencyIds.PrefixCommunity))
             {
-                return vaultManager.RemoveCommunityTokens(currencyId.Substring("community_".Length), amount);
+                return vaultManager.RemoveCommunityTokens(currencyId.Substring(VaultCurrencyIds.PrefixCommunity.Length), amount);
             }
-            else if (currencyId.StartsWith("special_"))
+            else if (currencyId.StartsWith(VaultCurrencyIds.PrefixSpecial))
             {
-                return vaultManager.RemoveSpecial(currencyId.Substring("special_".Length), amount);
+                return vaultManager.RemoveSpecial(currencyId.Substring(VaultCurrencyIds.PrefixSpecial.Length), amount);
             }
-            else if (currencyId.StartsWith("key_"))
+            else if (currencyId.StartsWith(VaultCurrencyIds.PrefixKey))
             {
-                return vaultManager.RemoveKeys(currencyId.Substring("key_".Length), amount);
+                return vaultManager.RemoveKeys(currencyId.Substring(VaultCurrencyIds.PrefixKey.Length), amount);
             }
-            else if (currencyId.StartsWith("ticket_"))
+            else if (currencyId.StartsWith(VaultCurrencyIds.PrefixTicket))
             {
-                return vaultManager.RemoveTickets(currencyId.Substring("ticket_".Length), amount);
+                return vaultManager.RemoveTickets(currencyId.Substring(VaultCurrencyIds.PrefixTicket.Length), amount);
             }
-            else if (currencyId.StartsWith("orb_"))
+            else if (currencyId.StartsWith(VaultCurrencyIds.PrefixOrb))
             {
-                return vaultManager.RemoveOrbs(currencyId.Substring("orb_".Length), amount);
+                return vaultManager.RemoveOrbs(currencyId.Substring(VaultCurrencyIds.PrefixOrb.Length), amount);
             }
-            else if (currencyId.StartsWith("custom_"))
+            else if (currencyId.StartsWith(VaultCurrencyIds.PrefixCustom))
             {
-                return vaultManager.RemoveCustomCurrency(currencyId.Substring("custom_".Length), amount);
+                return vaultManager.RemoveCustomCurrency(currencyId.Substring(VaultCurrencyIds.PrefixCustom.Length), amount);
             }
 
             return false;
@@ -1009,33 +1076,33 @@ namespace TheVault.Patches
             var vaultManager = Plugin.GetVaultManager();
             if (vaultManager == null) return 0;
 
-            if (currencyId.StartsWith("seasonal_"))
+            if (currencyId.StartsWith(VaultCurrencyIds.PrefixSeasonal))
             {
-                string typeName = currencyId.Substring("seasonal_".Length);
+                string typeName = currencyId.Substring(VaultCurrencyIds.PrefixSeasonal.Length);
                 if (Enum.TryParse<SeasonalTokenType>(typeName, out var tokenType))
                 {
                     return vaultManager.GetSeasonalTokens(tokenType);
                 }
             }
-            else if (currencyId.StartsWith("community_"))
+            else if (currencyId.StartsWith(VaultCurrencyIds.PrefixCommunity))
             {
-                return vaultManager.GetCommunityTokens(currencyId.Substring("community_".Length));
+                return vaultManager.GetCommunityTokens(currencyId.Substring(VaultCurrencyIds.PrefixCommunity.Length));
             }
-            else if (currencyId.StartsWith("special_"))
+            else if (currencyId.StartsWith(VaultCurrencyIds.PrefixSpecial))
             {
-                return vaultManager.GetSpecial(currencyId.Substring("special_".Length));
+                return vaultManager.GetSpecial(currencyId.Substring(VaultCurrencyIds.PrefixSpecial.Length));
             }
-            else if (currencyId.StartsWith("key_"))
+            else if (currencyId.StartsWith(VaultCurrencyIds.PrefixKey))
             {
-                return vaultManager.GetKeys(currencyId.Substring("key_".Length));
+                return vaultManager.GetKeys(currencyId.Substring(VaultCurrencyIds.PrefixKey.Length));
             }
-            else if (currencyId.StartsWith("ticket_"))
+            else if (currencyId.StartsWith(VaultCurrencyIds.PrefixTicket))
             {
-                return vaultManager.GetTickets(currencyId.Substring("ticket_".Length));
+                return vaultManager.GetTickets(currencyId.Substring(VaultCurrencyIds.PrefixTicket.Length));
             }
-            else if (currencyId.StartsWith("orb_"))
+            else if (currencyId.StartsWith(VaultCurrencyIds.PrefixOrb))
             {
-                return vaultManager.GetOrbs(currencyId.Substring("orb_".Length));
+                return vaultManager.GetOrbs(currencyId.Substring(VaultCurrencyIds.PrefixOrb.Length));
             }
 
             return 0;
@@ -1122,29 +1189,39 @@ namespace TheVault.Patches
         /// </summary>
         public static void OnInventoryRemoveItemPrefix(object __instance, int id, int amount, int slot, ref int __state)
         {
-            __state = 0;
+            __state = -1;
             try
             {
+                if (IsVaultRemoveHookSuppressed() || _isProcessingAutoDeposit || IsWithdrawing) return;
                 if (!IsVaultCurrency(id)) return;
                 if (!ReferenceEquals(__instance, Player.Instance?.PlayerInventory)) return;
 
                 // Get current inventory count before removal (RAW, without vault)
-                var invType = __instance.GetType();
-                var getAmountMethod = AccessTools.Method(invType, "GetAmount", new[] { typeof(int) });
-                if (getAmountMethod != null)
+                if (__instance is Inventory inv)
                 {
-                    // Temporarily disable vault addition so we get raw inventory count
-                    _skipVaultInGetAmount = true;
-                    try
-                    {
-                        __state = (int)getAmountMethod.Invoke(__instance, new object[] { id });
-                    }
-                    finally
-                    {
-                        _skipVaultInGetAmount = false;
-                    }
-                    Plugin.Log?.LogInfo($"RemoveItem prefix: item {id}, rawInventory={__state}, requestedAmount={amount}");
+                    __state = inv.GetAmount(id);
                 }
+                else
+                {
+                    var invType = __instance.GetType();
+                    var getAmountMethod = AccessTools.Method(invType, "GetAmount", new[] { typeof(int) });
+                    if (getAmountMethod != null)
+                    {
+                        // Temporarily disable vault addition so we get raw inventory count
+                        _skipVaultInGetAmount = true;
+                        try
+                        {
+                            __state = (int)(getAmountMethod.Invoke(__instance, new object[] { id }) ?? 0);
+                        }
+                        finally
+                        {
+                            _skipVaultInGetAmount = false;
+                        }
+                    }
+                }
+
+                if (__state >= 0)
+                    Plugin.Log?.LogInfo($"RemoveItem prefix: item {id}, rawInventory={__state}, requestedAmount={amount}");
             }
             catch (Exception ex)
             {
@@ -1162,8 +1239,10 @@ namespace TheVault.Patches
         {
             try
             {
+                if (IsVaultRemoveHookSuppressed() || _isProcessingAutoDeposit || IsWithdrawing) return;
                 if (!IsVaultCurrency(id)) return;
                 if (!ReferenceEquals(__instance, Player.Instance?.PlayerInventory)) return;
+                if (__state < 0) return;
 
                 int inventoryHadBefore = __state;
 
@@ -1256,20 +1335,14 @@ namespace TheVault.Patches
         /// Shows the native game pickup notification for auto-deposited items.
         /// Called off the hot path (from DrainAutoDepositNotifications).
         /// </summary>
-        private static object _cachedNotifyInstance;
-        private static MethodInfo _cachedNotifyMethod;
-        private const string AutoDepositNotifyText = "Vault";
-
         private static void ShowAutoDepositNotificationImmediate(int itemId, int amount)
         {
             try
             {
-                if (_cachedNotifyInstance != null && _cachedNotifyMethod != null)
-                {
-                    _cachedNotifyMethod.Invoke(_cachedNotifyInstance, new object[] { AutoDepositNotifyText, itemId, amount, false, false });
-                    return;
-                }
-                TryCacheAndSendNotification(itemId, amount);
+                string itemName = TryGetItemName(itemId);
+                if (string.IsNullOrWhiteSpace(itemName))
+                    itemName = "Vault";
+                NotificationStack.Instance?.SendNotification(itemName, itemId, amount, false, false);
             }
             catch (Exception ex)
             {
@@ -1277,40 +1350,41 @@ namespace TheVault.Patches
             }
         }
 
-        private static void TryCacheAndSendNotification(int itemId, int amount)
+        private static string TryGetItemName(int itemId)
         {
             try
             {
-                var stackType = ReflectionHelper.FindWishType("NotificationStack");
-                if (stackType != null)
+                if (_itemInfoDatabaseInstance == null || (_itemInfoDatabaseInstance is UnityEngine.Object uo && uo == null))
                 {
-                    var inst = ReflectionHelper.GetSingletonInstance(stackType);
-                    var sendMethod = AccessTools.Method(stackType, "SendNotification", new[] { typeof(string), typeof(int), typeof(int), typeof(bool), typeof(bool) });
-                    if (inst != null && sendMethod != null)
-                    {
-                        _cachedNotifyInstance = inst;
-                        _cachedNotifyMethod = sendMethod;
-                        sendMethod.Invoke(inst, new object[] { AutoDepositNotifyText, itemId, amount, false, false });
-                        return;
-                    }
+                    var itemDbType = ReflectionHelper.FindWishType("ItemInfoDatabase");
+                    _itemInfoDatabaseInstance = ReflectionHelper.GetSingletonInstance(itemDbType);
+                    _allItemSellInfosField = _itemInfoDatabaseInstance?.GetType().GetField("allItemSellInfos", BindingFlags.Public | BindingFlags.Instance);
                 }
-                var notifType = ReflectionHelper.FindWishType("Notifications");
-                if (notifType != null)
-                {
-                    var inst = ReflectionHelper.GetSingletonInstance(notifType);
-                    var sendMethod = AccessTools.Method(notifType, "SendNotification", new[] { typeof(string), typeof(int), typeof(int), typeof(bool), typeof(bool) });
-                    if (inst != null && sendMethod != null)
-                    {
-                        _cachedNotifyInstance = inst;
-                        _cachedNotifyMethod = sendMethod;
-                        sendMethod.Invoke(inst, new object[] { AutoDepositNotifyText, itemId, amount, false, false });
-                    }
-                }
+
+                if (_itemInfoDatabaseInstance == null || _allItemSellInfosField == null)
+                    return null;
+
+                var dict = _allItemSellInfosField.GetValue(_itemInfoDatabaseInstance) as System.Collections.IDictionary;
+                if (dict == null || !dict.Contains(itemId))
+                    return null;
+
+                object itemSellInfo = dict[itemId];
+                if (itemSellInfo == null)
+                    return null;
+
+                var nameProp = itemSellInfo.GetType().GetProperty("name", InstanceMemberFlags);
+                if (nameProp != null)
+                    return nameProp.GetValue(itemSellInfo) as string;
+
+                var nameField = itemSellInfo.GetType().GetField("name", InstanceMemberFlags);
+                if (nameField != null)
+                    return nameField.GetValue(itemSellInfo) as string;
             }
             catch (Exception ex)
             {
-                Plugin.Log?.LogDebug($"[ItemPatches] TryCacheAndSendNotification: {ex.Message}");
+                Plugin.Log?.LogDebug($"[ItemPatches] TryGetItemName({itemId}): {ex.Message}");
             }
+            return null;
         }
 
     }

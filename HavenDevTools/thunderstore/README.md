@@ -23,6 +23,8 @@ This mod is intended for mod developers. Press the configured hotkey to open the
 
 Edit `BepInEx/config/com.azraelgodking.havendevtools.cfg` to customize settings.
 
+**The Vault (when installed):** `[The Vault]` → **FullVaultInspector** — same as the old “full vault debug” mode (zeros in tabs, Debug dump tab, full HUD). You can also toggle it in the dev window under **Azrael's Mods → The Vault**.
+
 ## Note
 
 This is a developer tool and may impact performance. Not recommended for normal gameplay.

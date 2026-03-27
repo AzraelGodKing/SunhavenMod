@@ -1,7 +1,7 @@
 using System;
 using System.Collections.Generic;
-using HarmonyLib;
 using SunhavenMods.Shared;
+using TheVault;
 using TheVault.Patches;
 using TheVault.Vault;
 using UnityEngine;
@@ -19,11 +19,13 @@ namespace TheVault.UI
         private bool _isVisible;
         private Rect _windowRect;
         private Vector2 _scrollPosition;
+        private Vector2 _debugVaultScroll;
 
         // UI State
         private CurrencyCategory _selectedCategory = CurrencyCategory.SeasonalToken;
         private string _depositAmount = "1";
         private string _selectedCurrencyId = "";
+        private bool _showDebugVaultDump;
 
         // Styling
         private GUIStyle _windowStyle;
@@ -73,16 +75,21 @@ namespace TheVault.UI
         private GUIStyle _hintStyle;
         private GUIStyle _selectedNameStyle;
         private GUIStyle _amountLabelStyle;
+        private GUIStyle _statusOkStyle;
+        private GUIStyle _statusErrorStyle;
+        private string _vaultStatusMessage;
+        private bool _vaultStatusIsError;
+        private float _vaultStatusUntil;
         private Texture2D _toggleOnBg;
         private Texture2D _toggleOnHover;
         private Texture2D _toggleOffBg;
         private Texture2D _toggleOffHover;
 
         // Window dimensions (base values, scaled by _scale)
-        private const float BASE_WINDOW_WIDTH = 460f;
+        private const float BASE_WINDOW_WIDTH = 520f;
         private const float BASE_ROW_HEIGHT = 40f;
         private const float BASE_HEADER_HEIGHT = 118f;
-        private const float BASE_FOOTER_HEIGHT = 160f;
+        private const float BASE_FOOTER_HEIGHT = 200f;
         private const float BASE_MIN_CONTENT_HEIGHT = 120f;
         private const float BASE_MAX_CONTENT_HEIGHT = 420f;
         private const float BASE_SETTINGS_CONTENT_HEIGHT = 340f;
@@ -121,6 +128,12 @@ namespace TheVault.UI
             "None", "F1", "F2", "F3", "F4", "F5", "F6", "F7", "F8", "F9", "F10", "F11", "F12",
             "V", "B", "G", "K", "U", "H"
         };
+
+        /// <summary>When false (default), IMGUI draw and toggles are disabled; use uGUI via config <c>[UI] UseLegacyImguiVault</c>.</summary>
+        private bool _legacyImguiEnabled;
+
+        /// <summary>Enable or disable the legacy IMGUI window. When disabled, <see cref="IsVisible"/> stays false for HUD checks.</summary>
+        public void SetLegacyImguiEnabled(bool enabled) => _legacyImguiEnabled = enabled;
 
         public void Initialize(VaultManager vaultManager)
         {
@@ -164,6 +177,7 @@ namespace TheVault.UI
 
         public void Show()
         {
+            if (!_legacyImguiEnabled) return;
             _isVisible = true;
 
             // Block game input while vault is open
@@ -174,15 +188,7 @@ namespace TheVault.UI
                     Player.Instance.AddPauseObject(PAUSE_ID);
                 }
 
-                // Also try to disable input through PlayerInput if available
-                var playerInputType = Type.GetType("PlayerInput, Assembly-CSharp");
-                if (playerInputType != null)
-                {
-                    var disableMethod = playerInputType.GetMethod("DisableInput",
-                        System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.Static,
-                        null, new[] { typeof(string) }, null);
-                    disableMethod?.Invoke(null, new object[] { PAUSE_ID });
-                }
+                PlayerInput.DisableInput(PAUSE_ID);
             }
             catch (Exception ex)
             {
@@ -200,25 +206,16 @@ namespace TheVault.UI
 
         public void Hide()
         {
+            // Always clear pause/input if we were open (e.g. switching UI mode).
+            if (!_isVisible) return;
             _isVisible = false;
 
-            // Re-enable game input
             try
             {
                 if (Player.Instance != null)
-                {
                     Player.Instance.RemovePauseObject(PAUSE_ID);
-                }
 
-                // Re-enable PlayerInput
-                var playerInputType = Type.GetType("PlayerInput, Assembly-CSharp");
-                if (playerInputType != null)
-                {
-                    var enableMethod = playerInputType.GetMethod("EnableInput",
-                        System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.Static,
-                        null, new[] { typeof(string) }, null);
-                    enableMethod?.Invoke(null, new object[] { PAUSE_ID });
-                }
+                PlayerInput.EnableInput(PAUSE_ID);
             }
             catch (Exception ex)
             {
@@ -230,6 +227,7 @@ namespace TheVault.UI
 
         public void Toggle()
         {
+            if (!_legacyImguiEnabled) return;
             // Don't allow toggle until vault is loaded
             if (!PlayerPatches.IsVaultLoaded)
             {
@@ -254,6 +252,9 @@ namespace TheVault.UI
 
         private void Update()
         {
+            if (!string.IsNullOrEmpty(_vaultStatusMessage) && Time.unscaledTime > _vaultStatusUntil)
+                _vaultStatusMessage = null;
+
             // NOTE: Hotkey detection is now handled by PersistentRunner to avoid double-toggle.
             // PersistentRunner survives game cleanup and calls our Toggle() method directly.
             // We only handle Escape here since it's specific to closing this UI when visible.
@@ -263,6 +264,13 @@ namespace TheVault.UI
             {
                 Hide();
             }
+        }
+
+        private void SetVaultStatus(string message, bool isError)
+        {
+            _vaultStatusMessage = message;
+            _vaultStatusIsError = isError;
+            _vaultStatusUntil = Time.unscaledTime + 8f;
         }
 
         private Texture2D MakeTex(int width, int height, Color color)
@@ -501,11 +509,26 @@ namespace TheVault.UI
             _amountLabelStyle = new GUIStyle(_labelStyle);
             _amountLabelStyle.normal.textColor = _textDimColor;
 
+            _statusErrorStyle = new GUIStyle(_hintStyle)
+            {
+                fontStyle = FontStyle.Normal,
+                alignment = TextAnchor.MiddleCenter
+            };
+            _statusErrorStyle.normal.textColor = new Color(1f, 0.42f, 0.42f);
+
+            _statusOkStyle = new GUIStyle(_hintStyle)
+            {
+                fontStyle = FontStyle.Normal,
+                alignment = TextAnchor.MiddleCenter
+            };
+            _statusOkStyle.normal.textColor = new Color(0.5f, 0.95f, 0.65f);
+
             _stylesInitialized = true;
         }
 
         private void OnGUI()
         {
+            if (!_legacyImguiEnabled) return;
             // Don't show UI until vault is loaded for the current character
             if (!_isVisible || _vaultManager == null || !PlayerPatches.IsVaultLoaded) return;
 
@@ -539,6 +562,9 @@ namespace TheVault.UI
 
         private void DrawWindow(int windowId)
         {
+            if (!Plugin.GetConfigDebugFullVaultInspector())
+                _showDebugVaultDump = false;
+
             // --- Main UI header: always visible (including when Settings is open) ---
             GUILayout.BeginVertical(_headerBarStyle, GUILayout.MinHeight(Scaled(100)));
             {
@@ -562,6 +588,18 @@ namespace TheVault.UI
             if (_showSettings)
             {
                 DrawSettingsPanel();
+            }
+            else if (_showDebugVaultDump)
+            {
+                float scrollHeight = GetContentHeight();
+                _debugVaultScroll = GUILayout.BeginScrollView(_debugVaultScroll, false, false, GUIStyle.none, GUI.skin.verticalScrollbar, GUILayout.Height(scrollHeight));
+                DrawDebugVaultDumpContent();
+                GUILayout.EndScrollView();
+
+                GUILayout.Space(Scaled(8));
+                DrawHorizontalLine(_accentColor, 1);
+                GUILayout.Space(Scaled(8));
+                GUILayout.Label("Withdraw / sweep are disabled in Debug view. Turn off Debug in Settings to use them.", _hintStyle);
             }
             else
             {
@@ -599,6 +637,7 @@ namespace TheVault.UI
         private float GetContentHeight()
         {
             if (_showSettings) return SettingsContentHeight;
+            if (_showDebugVaultDump) return MaxContentHeight;
             var currencies = GetCurrenciesForCategory(_selectedCategory);
             int count = currencies.Count;
             if (count == 0) return MinContentHeight;
@@ -619,7 +658,8 @@ namespace TheVault.UI
         {
             CurrencyCategory.SeasonalToken,
             CurrencyCategory.Key,
-            CurrencyCategory.Special
+            CurrencyCategory.Special,
+            CurrencyCategory.Custom
         };
 
         private void DrawCategoryTabs()
@@ -629,23 +669,36 @@ namespace TheVault.UI
 
             foreach (CurrencyCategory category in _enabledCategories)
             {
-                var style = !_showSettings && _selectedCategory == category ? _selectedCategoryStyle : _categoryButtonStyle;
+                var style = !_showSettings && !_showDebugVaultDump && _selectedCategory == category ? _selectedCategoryStyle : _categoryButtonStyle;
                 string icon = GetCategoryIcon(category);
                 string label = $"{icon} {GetCategoryDisplayName(category)}";
 
-                if (GUILayout.Button(label, style, GUILayout.MinWidth(100)))
+                if (GUILayout.Button(label, style, GUILayout.MinWidth(88)))
                 {
                     _showSettings = false;
+                    _showDebugVaultDump = false;
                     _selectedCategory = category;
                     _selectedCurrencyId = "";
                 }
             }
 
+            if (Plugin.GetConfigDebugFullVaultInspector())
+            {
+                var dbgStyle = _showDebugVaultDump ? _selectedCategoryStyle : _categoryButtonStyle;
+                if (GUILayout.Button("\u205C Debug", dbgStyle, GUILayout.MinWidth(72)))
+                {
+                    _showSettings = false;
+                    _showDebugVaultDump = true;
+                    _selectedCurrencyId = "";
+                }
+            }
+
             // Settings tab - always visible as part of the Vault UI
-            var settingsStyle = _showSettings ? _selectedCategoryStyle : _categoryButtonStyle;
-            if (GUILayout.Button("\u2699 Settings", settingsStyle, GUILayout.MinWidth(100)))
+            var settingsStyle = _showSettings && !_showDebugVaultDump ? _selectedCategoryStyle : _categoryButtonStyle;
+            if (GUILayout.Button("\u2699 Settings", settingsStyle, GUILayout.MinWidth(88)))
             {
                 _showSettings = true;
+                _showDebugVaultDump = false;
             }
 
             GUILayout.FlexibleSpace();
@@ -660,6 +713,7 @@ namespace TheVault.UI
                 CurrencyCategory.CommunityToken => "\u2665", // Heart
                 CurrencyCategory.Key => "\u26bf", // Key-like symbol
                 CurrencyCategory.Special => "\u2605", // Star symbol
+                CurrencyCategory.Custom => "\u2606", // Open star (distinct from Special \u2605)
                 _ => "\u2022"
             };
         }
@@ -672,11 +726,28 @@ namespace TheVault.UI
                 CurrencyCategory.CommunityToken => "Community",
                 CurrencyCategory.Key => "Keys",
                 CurrencyCategory.Special => "Special",
+                CurrencyCategory.Custom => "Custom",
                 _ => category.ToString()
             };
         }
 
         private int _rowIndex = 0;
+
+        private void DrawDebugVaultDumpContent()
+        {
+            if (_vaultManager == null)
+            {
+                GUILayout.Label("(Vault not initialized)", _emptyStyle);
+                return;
+            }
+
+            GUILayout.Label("Raw snapshot of all vault dictionaries (Seasonal, Community, Keys, Tickets, Orbs, Custom).", _hintStyle);
+            GUILayout.Space(Scaled(6));
+
+            List<string> lines = _vaultManager.BuildDebugVaultReport();
+            foreach (string line in lines)
+                GUILayout.Label(line, _labelStyle);
+        }
 
         private void DrawCurrencyList()
         {
@@ -685,7 +756,36 @@ namespace TheVault.UI
             if (currencies.Count == 0)
             {
                 GUILayout.Space(20);
-                GUILayout.Label("No items in this category", _emptyStyle);
+                if (_selectedCategory == CurrencyCategory.Custom)
+                {
+                    GUILayout.Label("No custom currencies yet.", _emptyStyle);
+                    GUILayout.Space(6);
+                    GUILayout.Label("Other mods register entries with TheVault.Api.VaultIntegration.RegisterCustomCurrency (after The Vault loads).", _hintStyle);
+                    GUILayout.Space(4);
+                    GUILayout.Label("Use a short id (a-z, 0-9, underscore) and optional Sun Haven item id for withdraw / auto-deposit.", _hintStyle);
+                }
+                else if (_selectedCategory == CurrencyCategory.SeasonalToken)
+                {
+                    GUILayout.Label("No seasonal tokens in the vault.", _emptyStyle);
+                    GUILayout.Space(6);
+                    GUILayout.Label("Deposit festival tokens from your inventory, or enable auto-deposit for those items.", _hintStyle);
+                }
+                else if (_selectedCategory == CurrencyCategory.Key)
+                {
+                    GUILayout.Label("No keys stored in the vault.", _emptyStyle);
+                    GUILayout.Space(6);
+                    GUILayout.Label("Keys you move into the vault appear here. Use Sweep or per-item auto-deposit to add them.", _hintStyle);
+                }
+                else if (_selectedCategory == CurrencyCategory.Special)
+                {
+                    GUILayout.Label("No special currencies in the vault.", _emptyStyle);
+                    GUILayout.Space(6);
+                    GUILayout.Label("Doubloons, tickets, shards, and similar currencies show here once deposited.", _hintStyle);
+                }
+                else
+                {
+                    GUILayout.Label("No items in this category", _emptyStyle);
+                }
                 return;
             }
 
@@ -697,64 +797,8 @@ namespace TheVault.UI
             }
         }
 
-        private Dictionary<string, int> GetCurrenciesForCategory(CurrencyCategory category)
-        {
-            var result = new Dictionary<string, int>();
-
-            // Get all currency definitions for this category
-            foreach (var currency in _vaultManager.GetCurrenciesByCategory(category))
-            {
-                string keyId = currency.Id;
-                int amount = 0;
-
-                switch (category)
-                {
-                    case CurrencyCategory.SeasonalToken:
-                        // Map token_spring -> Spring enum
-                        string tokenName = keyId.Replace("token_", "");
-                        tokenName = char.ToUpper(tokenName[0]) + tokenName.Substring(1);
-                        if (Enum.TryParse<SeasonalTokenType>(tokenName, out var tokenType))
-                        {
-                            amount = _vaultManager.GetSeasonalTokens(tokenType);
-                        }
-                        result[$"seasonal_{tokenName}"] = amount;
-                        break;
-
-                    case CurrencyCategory.CommunityToken:
-                        // key_id is like "token_community", we store as "token" in dictionary
-                        string communityId = keyId.Replace("token_", "");
-                        amount = _vaultManager.GetCommunityTokens(communityId);
-                        result[$"community_{communityId}"] = amount;
-                        break;
-
-                    case CurrencyCategory.Key:
-                        // key_id is like "key_copper", strip the "key_" prefix for storage lookup
-                        string keyName = keyId.Replace("key_", "");
-                        amount = _vaultManager.GetKeys(keyName);
-                        result[$"key_{keyName}"] = amount;
-                        break;
-
-                    case CurrencyCategory.Special:
-                        string specialId = keyId.Replace("special_", "");
-                        amount = _vaultManager.GetSpecial(specialId);
-                        result[$"special_{specialId}"] = amount;
-                        break;
-
-                    case CurrencyCategory.Orb:
-                        string orbId = keyId.Replace("orb_", "");
-                        amount = _vaultManager.GetOrbs(orbId);
-                        result[$"orb_{orbId}"] = amount;
-                        break;
-
-                    case CurrencyCategory.Custom:
-                        amount = _vaultManager.GetCustomCurrency(keyId);
-                        result[$"custom_{keyId}"] = amount;
-                        break;
-                }
-            }
-
-            return result;
-        }
+        private Dictionary<string, int> GetCurrenciesForCategory(CurrencyCategory category) =>
+            VaultUiShared.GetCurrenciesForCategory(_vaultManager, category);
 
         private void DrawCurrencyRow(string currencyId, int amount, bool isEvenRow)
         {
@@ -797,19 +841,19 @@ namespace TheVault.UI
             else
             {
                 // Fallback to text icon while loading or if icon unavailable (using cached style)
-                string icon = GetCurrencyIcon(currencyId);
+                string icon = VaultUiShared.GetCurrencyIcon(currencyId);
                 GUI.Label(new Rect(xPos, yCenter, iconSize, Scaled(26)), icon, _iconFallbackStyle);
             }
             xPos += 32;
 
             // Currency name (wider column for long names like "King's Lost Mine Key")
-            string displayName = GetDisplayName(currencyId);
+            string displayName = VaultUiShared.GetDisplayName(_vaultManager, currencyId);
             GUI.Label(new Rect(xPos, yCenter, 140, 26), displayName, _labelStyle);
             xPos += 144;
 
             // Amount with gold color - make it prominent with "x" prefix
             // Use K/M formatting for large numbers
-            string amountText = "x" + FormatNumber(amount);
+            string amountText = "x" + VaultUiShared.FormatNumber(amount);
             var amountStyle = new GUIStyle(_valueStyle) { fontSize = ScaledFont(16), alignment = TextAnchor.MiddleLeft };
             GUI.Label(new Rect(xPos, yCenter, 70, 26), amountText, amountStyle);
             xPos += 74;
@@ -858,140 +902,6 @@ namespace TheVault.UI
             }
         }
 
-        private string GetCurrencyIcon(string currencyId)
-        {
-            // Use simple text icons that render reliably in Unity's default font
-            if (currencyId.StartsWith("seasonal_"))
-            {
-                string season = currencyId.Substring("seasonal_".Length).ToLower();
-                return season switch
-                {
-                    "spring" => "[Sp]",
-                    "summer" => "[Su]",
-                    "fall" => "[Fa]",
-                    "winter" => "[Wi]",
-                    _ => "[T]"
-                };
-            }
-            else if (currencyId.StartsWith("community_"))
-            {
-                return "[C]";
-            }
-            else if (currencyId.StartsWith("key_"))
-            {
-                return "[K]";
-            }
-            else if (currencyId.StartsWith("special_"))
-            {
-                string specialName = currencyId.Substring("special_".Length).ToLower();
-                return specialName switch
-                {
-                    "communitytoken" => "[C]",
-                    "doubloon" => "[D]",
-                    "blackbottlecap" => "[B]",
-                    "redcarnivalticket" => "[R]",
-                    "candycornpieces" => "[CC]",
-                    "manashard" => "[M]",
-                    _ => "[S]"
-                };
-            }
-            else if (currencyId.StartsWith("orb_"))
-            {
-                return "[O]";
-            }
-            return "[?]";
-        }
-
-        private string GetDisplayName(string currencyId)
-        {
-            // Convert currency ID to display name
-            if (currencyId.StartsWith("seasonal_"))
-            {
-                return currencyId.Substring("seasonal_".Length) + " Token";
-            }
-            else if (currencyId.StartsWith("community_"))
-            {
-                string id = currencyId.Substring("community_".Length);
-                return id == "community" ? "Community Token" : "Community " + CapitalizeFirst(id);
-            }
-            else if (currencyId.StartsWith("key_"))
-            {
-                string keyName = currencyId.Substring("key_".Length);
-                return FormatKeyName(keyName);
-            }
-            else if (currencyId.StartsWith("special_"))
-            {
-                string specialName = currencyId.Substring("special_".Length);
-                return FormatSpecialName(specialName);
-            }
-            else if (currencyId.StartsWith("orb_"))
-            {
-                return CapitalizeFirst(currencyId.Substring("orb_".Length)) + " Orb";
-            }
-
-            return currencyId;
-        }
-
-        private string CapitalizeFirst(string s)
-        {
-            if (string.IsNullOrEmpty(s)) return s;
-            return char.ToUpper(s[0]) + s.Substring(1);
-        }
-
-        /// <summary>
-        /// Format a number with K/M suffixes for compact display.
-        /// 1000 -> 1K, 1500 -> 1.5K, 1000000 -> 1M
-        /// </summary>
-        private string FormatNumber(int value)
-        {
-            if (value >= 1000000)
-            {
-                float millions = value / 1000000f;
-                if (millions >= 10f || millions == (int)millions)
-                    return $"{(int)millions}M";
-                return $"{millions:0.#}M";
-            }
-            else if (value >= 1000)
-            {
-                float thousands = value / 1000f;
-                if (thousands >= 10f || thousands == (int)thousands)
-                    return $"{(int)thousands}K";
-                return $"{thousands:0.#}K";
-            }
-            return value.ToString();
-        }
-
-        private string FormatKeyName(string keyName)
-        {
-            // Special handling for key names
-            return keyName switch
-            {
-                "copper" => "Copper Key",
-                "iron" => "Iron Key",
-                "adamant" => "Adamant Key",
-                "mithril" => "Mithril Key",
-                "sunite" => "Sunite Key",
-                "glorite" => "Glorite Key",
-                "kingslostmine" => "King's Lost Mine Key",
-                _ => CapitalizeFirst(keyName) + " Key"
-            };
-        }
-
-        private string FormatSpecialName(string specialName)
-        {
-            // Special handling for special currencies
-            return specialName switch
-            {
-                "communitytoken" => "Community Token",
-                "doubloon" => "Doubloon",
-                "blackbottlecap" => "Black Bottle Cap",
-                "redcarnivalticket" => "Red Carnival Ticket",
-                "candycornpieces" => "Candy Corn Pieces",
-                "manashard" => "Mana Shard",
-                _ => CapitalizeFirst(specialName)
-            };
-        }
-
         private void DrawSettingsPanel()
         {
             GUILayout.Space(Scaled(4));
@@ -1024,6 +934,28 @@ namespace TheVault.UI
             if (Math.Abs(newScale - scale) > 0.01f) Plugin.SetConfigHUDScale(newScale);
             GUILayout.Label($"{newScale:F1}", _labelStyle, GUILayout.Width(Scaled(28)));
             GUILayout.EndHorizontal();
+
+            GUILayout.Label("HUD density:", _labelStyle);
+            string density = Plugin.GetConfigHudDensity();
+            string[] densityOpts = { "Normal", "Compact", "Minimal" };
+            int dIdx = Array.IndexOf(densityOpts, density);
+            if (dIdx < 0) dIdx = 0;
+            int newDIdx = GUILayout.SelectionGrid(dIdx, densityOpts, 3, _buttonStyle);
+            if (newDIdx != dIdx) Plugin.SetConfigHudDensity(densityOpts[newDIdx]);
+
+            bool hudCompactLegacy = Plugin.GetConfigHUDCompactMode();
+            bool newHudCompactLegacy = GUILayout.Toggle(hudCompactLegacy, " Legacy: Compact when density is Normal ([HUD] CompactMode)", _labelStyle);
+            if (newHudCompactLegacy != hudCompactLegacy) Plugin.SetConfigHUDCompactMode(newHudCompactLegacy);
+
+            GUILayout.Space(Scaled(6));
+
+            GUILayout.Label("Debug (full vault inspector)", _labelStyle);
+            bool dbgOn = Plugin.GetConfigDebugFullVaultInspector();
+            GUILayout.Label(
+                dbgOn
+                    ? "ON — zeros visible in tabs, Debug tab available, HUD shows all slots."
+                    : "OFF — enable in Haven Dev Tools (F11) → Azrael's Mods → The Vault, or set [The Vault] FullVaultInspector in HavenDevTools config.",
+                _hintStyle);
             GUILayout.Space(Scaled(6));
 
             // Open vault keys
@@ -1060,18 +992,23 @@ namespace TheVault.UI
 
         private void DrawControls()
         {
+            if (!string.IsNullOrEmpty(_vaultStatusMessage))
+            {
+                var st = _vaultStatusIsError ? _statusErrorStyle : _statusOkStyle;
+                GUILayout.Label(_vaultStatusMessage, st);
+                GUILayout.Space(Scaled(4));
+            }
+
             if (string.IsNullOrEmpty(_selectedCurrencyId))
             {
-                GUILayout.Label("Click a row to select, or use quick withdraw buttons", _hintStyle);
+                GUILayout.Label("Click a row to select, or use quick withdraw / deposit buttons", _hintStyle);
             }
             else
             {
-                // Selected item info box
                 GUILayout.BeginHorizontal();
                 GUILayout.FlexibleSpace();
 
-                // Selection indicator (using cached style)
-                GUILayout.Label($"\u25b6 {GetDisplayName(_selectedCurrencyId)}", _selectedNameStyle);
+                GUILayout.Label($"\u25b6 {VaultUiShared.GetDisplayName(_vaultManager, _selectedCurrencyId)}", _selectedNameStyle);
 
                 GUILayout.Space(Scaled(15));
 
@@ -1080,17 +1017,35 @@ namespace TheVault.UI
 
                 GUILayout.Space(Scaled(8));
 
-                // Withdraw button
-                if (GUILayout.Button("Withdraw", _buttonStyle, GUILayout.Width(Scaled(90))))
+                if (GUILayout.Button("Withdraw", _buttonStyle, GUILayout.Width(Scaled(86))))
                 {
-                    if (int.TryParse(_depositAmount, out int amount) && amount > 0)
-                    {
-                        WithdrawToInventory(_selectedCurrencyId, amount);
-                    }
+                    if (!int.TryParse(_depositAmount, out int wAmt) || wAmt <= 0)
+                        SetVaultStatus("Enter a positive number for quantity.", true);
+                    else
+                        WithdrawToInventory(_selectedCurrencyId, wAmt);
+                }
+
+                if (GUILayout.Button("Deposit", _buttonStyle, GUILayout.Width(Scaled(86))))
+                {
+                    if (!int.TryParse(_depositAmount, out int dAmt) || dAmt <= 0)
+                        SetVaultStatus("Enter a positive number for quantity.", true);
+                    else
+                        DepositFromInventory(_selectedCurrencyId, dAmt);
                 }
 
                 GUILayout.FlexibleSpace();
                 GUILayout.EndHorizontal();
+
+                int mapId = ItemPatches.GetItemForCurrency(_selectedCurrencyId);
+                if (mapId > 0)
+                {
+                    int inBag = ItemPatches.GetRawInventoryCount(mapId);
+                    GUILayout.Label($"In inventory (bag): {inBag}", _hintStyle);
+                }
+                else
+                {
+                    GUILayout.Label("No matching inventory item for this row — deposit is unavailable.", _hintStyle);
+                }
             }
 
             // Global sweep button to force auto-deposit from inventory
@@ -1106,167 +1061,10 @@ namespace TheVault.UI
             GUILayout.EndHorizontal();
         }
 
-        private void RemoveCurrency(string currencyId, int amount)
-        {
-            if (currencyId.StartsWith("seasonal_"))
-            {
-                string typeName = currencyId.Substring("seasonal_".Length);
-                if (Enum.TryParse<SeasonalTokenType>(typeName, out var tokenType))
-                {
-                    _vaultManager.RemoveSeasonalTokens(tokenType, amount);
-                }
-            }
-            else if (currencyId.StartsWith("community_"))
-            {
-                _vaultManager.RemoveCommunityTokens(currencyId.Substring("community_".Length), amount);
-            }
-            else if (currencyId.StartsWith("key_"))
-            {
-                _vaultManager.RemoveKeys(currencyId.Substring("key_".Length), amount);
-            }
-            else if (currencyId.StartsWith("special_"))
-            {
-                _vaultManager.RemoveSpecial(currencyId.Substring("special_".Length), amount);
-            }
-            else if (currencyId.StartsWith("orb_"))
-            {
-                _vaultManager.RemoveOrbs(currencyId.Substring("orb_".Length), amount);
-            }
-            else if (currencyId.StartsWith("custom_"))
-            {
-                _vaultManager.RemoveCustomCurrency(currencyId.Substring("custom_".Length), amount);
-            }
-        }
+        private void WithdrawToInventory(string currencyId, int amount) =>
+            VaultInventoryOperations.WithdrawToInventory(_vaultManager, currencyId, amount, SetVaultStatus);
 
-        /// <summary>
-        /// Withdraw currency from vault and spawn as items in inventory.
-        /// </summary>
-        private void WithdrawToInventory(string currencyId, int amount)
-        {
-            // Check vault has enough
-            int current = _vaultManager.GetCurrency(currencyId);
-            if (current < amount)
-            {
-                Plugin.Log?.LogWarning($"Not enough {currencyId} in vault (have {current}, need {amount})");
-                return;
-            }
-
-            // Get the item ID for this currency
-            int itemId = ItemPatches.GetItemForCurrency(currencyId);
-            if (itemId < 0)
-            {
-                Plugin.Log?.LogWarning($"No item mapping found for currency {currencyId}");
-                return;
-            }
-
-            // Get player inventory
-            if (Player.Instance == null)
-            {
-                Plugin.Log?.LogWarning("Player instance not found");
-                return;
-            }
-
-            var inventory = Player.Instance.Inventory;
-            if (inventory == null)
-            {
-                Plugin.Log?.LogWarning("Player inventory not found");
-                return;
-            }
-
-            try
-            {
-                // Set both global and item-specific withdrawal flags to bypass ALL auto-deposit logic
-                // The item-specific flag persists even if there's async processing
-                ItemPatches.IsWithdrawing = true;
-                ItemPatches.StartWithdrawing(itemId);
-
-                try
-                {
-                    // Remove from vault first
-                    RemoveCurrency(currencyId, amount);
-
-                    // Add to player inventory using AddItem(int id, int amount, bool sendNotification)
-                    // This calls the overload that just takes item ID and amount
-                    var addItemMethod = AccessTools.Method(inventory.GetType(), "AddItem",
-                        new[] { typeof(int), typeof(int), typeof(bool) });
-
-                    if (addItemMethod != null)
-                    {
-                        addItemMethod.Invoke(inventory, new object[] { itemId, amount, true });
-                        Plugin.Log?.LogInfo($"Withdrew {amount} of {currencyId} (itemId={itemId}) to inventory");
-                    }
-                    else
-                    {
-                        // Fallback: try simple AddItem(int id)
-                        var simpleAddMethod = AccessTools.Method(inventory.GetType(), "AddItem", new[] { typeof(int) });
-                        if (simpleAddMethod != null)
-                        {
-                            for (int i = 0; i < amount; i++)
-                            {
-                                simpleAddMethod.Invoke(inventory, new object[] { itemId });
-                            }
-                            Plugin.Log?.LogInfo($"Withdrew {amount} of {currencyId} (itemId={itemId}) to inventory (simple method)");
-                        }
-                        else
-                        {
-                            Plugin.Log?.LogError("Could not find AddItem method on inventory");
-                            // Re-add to vault since we couldn't add to inventory
-                            AddCurrencyBack(currencyId, amount);
-                        }
-                    }
-                }
-                finally
-                {
-                    // Clear global withdrawal flag immediately
-                    ItemPatches.IsWithdrawing = false;
-                    // Keep item-specific flag set briefly to catch any delayed postfix calls
-                    // We'll clear it after a short delay using a coroutine or just leave it
-                    // For safety, clear it after inventory operation completes
-                    ItemPatches.StopWithdrawing(itemId);
-                }
-            }
-            catch (Exception ex)
-            {
-                Plugin.Log?.LogError($"Error withdrawing to inventory: {ex.Message}");
-                ItemPatches.StopWithdrawing(itemId);
-                // Try to re-add to vault on error
-                AddCurrencyBack(currencyId, amount);
-            }
-        }
-
-        /// <summary>
-        /// Re-add currency to vault (used if inventory add fails)
-        /// </summary>
-        private void AddCurrencyBack(string currencyId, int amount)
-        {
-            if (currencyId.StartsWith("seasonal_"))
-            {
-                string typeName = currencyId.Substring("seasonal_".Length);
-                if (Enum.TryParse<SeasonalTokenType>(typeName, out var tokenType))
-                {
-                    _vaultManager.AddSeasonalTokens(tokenType, amount);
-                }
-            }
-            else if (currencyId.StartsWith("community_"))
-            {
-                _vaultManager.AddCommunityTokens(currencyId.Substring("community_".Length), amount);
-            }
-            else if (currencyId.StartsWith("key_"))
-            {
-                _vaultManager.AddKeys(currencyId.Substring("key_".Length), amount);
-            }
-            else if (currencyId.StartsWith("special_"))
-            {
-                _vaultManager.AddSpecial(currencyId.Substring("special_".Length), amount);
-            }
-            else if (currencyId.StartsWith("orb_"))
-            {
-                _vaultManager.AddOrbs(currencyId.Substring("orb_".Length), amount);
-            }
-            else if (currencyId.StartsWith("custom_"))
-            {
-                _vaultManager.AddCustomCurrency(currencyId.Substring("custom_".Length), amount);
-            }
-        }
+        private void DepositFromInventory(string currencyId, int amount) =>
+            VaultInventoryOperations.DepositFromInventory(_vaultManager, currencyId, amount, SetVaultStatus);
     }
 }

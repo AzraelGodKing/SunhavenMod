@@ -381,8 +381,11 @@ namespace TheVault.Vault
                 Plugin.Log?.LogInfo("Migrated vault data to version 1");
             }
 
-            // Add future migrations here
-            // if (data.Version < 2) { ... }
+            if (data.Version < 2)
+            {
+                data.Version = 2;
+                Plugin.Log?.LogInfo("Migrated vault data to version 2 (no transform; reserves the version for future field changes)");
+            }
 
             return data;
         }

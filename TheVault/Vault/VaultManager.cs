@@ -43,21 +43,21 @@ namespace TheVault.Vault
             RegisterCurrency(new CurrencyDefinition("token_winter", "Winter Token", CurrencyCategory.SeasonalToken, 18022));
 
             // Keys - Actual Sun Haven item IDs
-            RegisterCurrency(new CurrencyDefinition("key_copper", "Copper Key", CurrencyCategory.Key, 1251));
-            RegisterCurrency(new CurrencyDefinition("key_iron", "Iron Key", CurrencyCategory.Key, 1252));
-            RegisterCurrency(new CurrencyDefinition("key_adamant", "Adamant Key", CurrencyCategory.Key, 1253));
-            RegisterCurrency(new CurrencyDefinition("key_mithril", "Mithril Key", CurrencyCategory.Key, 1254));
-            RegisterCurrency(new CurrencyDefinition("key_sunite", "Sunite Key", CurrencyCategory.Key, 1255));
-            RegisterCurrency(new CurrencyDefinition("key_glorite", "Glorite Key", CurrencyCategory.Key, 1256));
-            RegisterCurrency(new CurrencyDefinition("key_kingslostmine", "King's Lost Mine Key", CurrencyCategory.Key, 1257));
+            RegisterCurrency(new CurrencyDefinition(VaultCurrencyIds.KeyCopper, "Copper Key", CurrencyCategory.Key, 1251));
+            RegisterCurrency(new CurrencyDefinition(VaultCurrencyIds.KeyIron, "Iron Key", CurrencyCategory.Key, 1252));
+            RegisterCurrency(new CurrencyDefinition(VaultCurrencyIds.KeyAdamant, "Adamant Key", CurrencyCategory.Key, 1253));
+            RegisterCurrency(new CurrencyDefinition(VaultCurrencyIds.KeyMithril, "Mithril Key", CurrencyCategory.Key, 1254));
+            RegisterCurrency(new CurrencyDefinition(VaultCurrencyIds.KeySunite, "Sunite Key", CurrencyCategory.Key, 1255));
+            RegisterCurrency(new CurrencyDefinition(VaultCurrencyIds.KeyGlorite, "Glorite Key", CurrencyCategory.Key, 1256));
+            RegisterCurrency(new CurrencyDefinition(VaultCurrencyIds.KeyKingsLostMine, "King's Lost Mine Key", CurrencyCategory.Key, 1257));
 
             // Special currencies (includes Community Token)
-            RegisterCurrency(new CurrencyDefinition("special_communitytoken", "Community Token", CurrencyCategory.Special, 18013));
-            RegisterCurrency(new CurrencyDefinition("special_doubloon", "Doubloon", CurrencyCategory.Special, 60014));
-            RegisterCurrency(new CurrencyDefinition("special_blackbottlecap", "Black Bottle Cap", CurrencyCategory.Special, 60013));
-            RegisterCurrency(new CurrencyDefinition("special_redcarnivalticket", "Red Carnival Ticket", CurrencyCategory.Special, 18012));
-            RegisterCurrency(new CurrencyDefinition("special_candycornpieces", "Candy Corn Pieces", CurrencyCategory.Special, 18016));
-            RegisterCurrency(new CurrencyDefinition("special_manashard", "Mana Shard", CurrencyCategory.Special, 18015));
+            RegisterCurrency(new CurrencyDefinition(VaultCurrencyIds.SpecialCommunityToken, "Community Token", CurrencyCategory.Special, 18013));
+            RegisterCurrency(new CurrencyDefinition(VaultCurrencyIds.SpecialDoubloon, "Doubloon", CurrencyCategory.Special, 60014));
+            RegisterCurrency(new CurrencyDefinition(VaultCurrencyIds.SpecialBlackBottleCap, "Black Bottle Cap", CurrencyCategory.Special, 60013));
+            RegisterCurrency(new CurrencyDefinition(VaultCurrencyIds.SpecialRedCarnivalTicket, "Red Carnival Ticket", CurrencyCategory.Special, 18012));
+            RegisterCurrency(new CurrencyDefinition(VaultCurrencyIds.SpecialCandyCornPieces, "Candy Corn Pieces", CurrencyCategory.Special, 18016));
+            RegisterCurrency(new CurrencyDefinition(VaultCurrencyIds.SpecialManaShard, "Mana Shard", CurrencyCategory.Special, 18015));
 
             Plugin.Log?.LogInfo($"Initialized {_currencyDefinitions.Count} currency definitions");
         }
@@ -117,6 +117,9 @@ namespace TheVault.Vault
         public void LoadVaultData(VaultData data)
         {
             _vaultData = data ?? new VaultData();
+            int fixes = VaultDataSanitizer.Sanitize(_vaultData);
+            if (fixes > 0)
+                Plugin.Log?.LogWarning($"[Vault] Sanitized vault data ({fixes} correction(s)); negative or missing fields were normalized.");
             _isDirty = false;
             Plugin.Log?.LogInfo($"Vault data loaded for player: {_vaultData.PlayerName}");
             OnVaultLoaded?.Invoke();
@@ -168,7 +171,7 @@ namespace TheVault.Vault
             _vaultData.SeasonalTokens[type] = oldValue + amount;
             _isDirty = true;
 
-            OnCurrencyChanged?.Invoke($"seasonal_{type}", oldValue, oldValue + amount);
+            OnCurrencyChanged?.Invoke(VaultCurrencyIds.FullSeasonalFromTokenName(type.ToString()), oldValue, oldValue + amount);
             Plugin.Log?.LogInfo($"Added {amount} {type} tokens. New total: {_vaultData.SeasonalTokens[type]}");
             return true;
         }
@@ -184,7 +187,7 @@ namespace TheVault.Vault
             _vaultData.SeasonalTokens[type] = current - amount;
             _isDirty = true;
 
-            OnCurrencyChanged?.Invoke($"seasonal_{type}", oldValue, current - amount);
+            OnCurrencyChanged?.Invoke(VaultCurrencyIds.FullSeasonalFromTokenName(type.ToString()), oldValue, current - amount);
             Plugin.Log?.LogInfo($"Removed {amount} {type} tokens. New total: {_vaultData.SeasonalTokens[type]}");
             return true;
         }
@@ -211,7 +214,7 @@ namespace TheVault.Vault
             _vaultData.CommunityTokens[tokenId] = oldValue + amount;
             _isDirty = true;
 
-            OnCurrencyChanged?.Invoke($"community_{tokenId}", oldValue, oldValue + amount);
+            OnCurrencyChanged?.Invoke(VaultCurrencyIds.PrefixCommunity + tokenId, oldValue, oldValue + amount);
             return true;
         }
 
@@ -252,7 +255,7 @@ namespace TheVault.Vault
             _vaultData.Keys[keyId] = oldValue + amount;
             _isDirty = true;
 
-            OnCurrencyChanged?.Invoke($"key_{keyId}", oldValue, oldValue + amount);
+            OnCurrencyChanged?.Invoke(VaultCurrencyIds.PrefixKey + keyId, oldValue, oldValue + amount);
             Plugin.Log?.LogInfo($"Added {amount} {keyId} keys. New total: {_vaultData.Keys[keyId]}");
             return true;
         }
@@ -268,7 +271,7 @@ namespace TheVault.Vault
             _vaultData.Keys[keyId] = current - amount;
             _isDirty = true;
 
-            OnCurrencyChanged?.Invoke($"key_{keyId}", oldValue, current - amount);
+            OnCurrencyChanged?.Invoke(VaultCurrencyIds.PrefixKey + keyId, oldValue, current - amount);
             return true;
         }
 
@@ -294,7 +297,7 @@ namespace TheVault.Vault
             _vaultData.Tickets[specialId] = oldValue + amount;
             _isDirty = true;
 
-            OnCurrencyChanged?.Invoke($"special_{specialId}", oldValue, oldValue + amount);
+            OnCurrencyChanged?.Invoke(VaultCurrencyIds.PrefixSpecial + specialId, oldValue, oldValue + amount);
             return true;
         }
 
@@ -309,7 +312,7 @@ namespace TheVault.Vault
             _vaultData.Tickets[specialId] = current - amount;
             _isDirty = true;
 
-            OnCurrencyChanged?.Invoke($"special_{specialId}", oldValue, current - amount);
+            OnCurrencyChanged?.Invoke(VaultCurrencyIds.PrefixSpecial + specialId, oldValue, current - amount);
             return true;
         }
 
@@ -356,7 +359,7 @@ namespace TheVault.Vault
             _vaultData.Orbs[orbId] = current - amount;
             _isDirty = true;
 
-            OnCurrencyChanged?.Invoke($"orb_{orbId}", oldValue, current - amount);
+            OnCurrencyChanged?.Invoke(VaultCurrencyIds.PrefixOrb + orbId, oldValue, current - amount);
             return true;
         }
 
@@ -382,7 +385,7 @@ namespace TheVault.Vault
             _vaultData.CustomCurrencies[currencyId] = oldValue + amount;
             _isDirty = true;
 
-            OnCurrencyChanged?.Invoke($"custom_{currencyId}", oldValue, oldValue + amount);
+            OnCurrencyChanged?.Invoke(VaultCurrencyIds.FullCustom(currencyId), oldValue, oldValue + amount);
             return true;
         }
 
@@ -397,7 +400,7 @@ namespace TheVault.Vault
             _vaultData.CustomCurrencies[currencyId] = current - amount;
             _isDirty = true;
 
-            OnCurrencyChanged?.Invoke($"custom_{currencyId}", oldValue, current - amount);
+            OnCurrencyChanged?.Invoke(VaultCurrencyIds.FullCustom(currencyId), oldValue, current - amount);
             return true;
         }
 
@@ -418,31 +421,31 @@ namespace TheVault.Vault
             if (string.IsNullOrEmpty(fullCurrencyId)) return 0;
 
             // Parse the currency ID to determine type
-            if (fullCurrencyId.StartsWith("seasonal_"))
+            if (fullCurrencyId.StartsWith(VaultCurrencyIds.PrefixSeasonal))
             {
-                string typeName = fullCurrencyId.Substring("seasonal_".Length);
+                string typeName = fullCurrencyId.Substring(VaultCurrencyIds.PrefixSeasonal.Length);
                 if (Enum.TryParse<SeasonalTokenType>(typeName, out var tokenType))
                     return GetSeasonalTokens(tokenType);
             }
-            else if (fullCurrencyId.StartsWith("community_"))
+            else if (fullCurrencyId.StartsWith(VaultCurrencyIds.PrefixCommunity))
             {
-                return GetCommunityTokens(fullCurrencyId.Substring("community_".Length));
+                return GetCommunityTokens(fullCurrencyId.Substring(VaultCurrencyIds.PrefixCommunity.Length));
             }
-            else if (fullCurrencyId.StartsWith("key_"))
+            else if (fullCurrencyId.StartsWith(VaultCurrencyIds.PrefixKey))
             {
-                return GetKeys(fullCurrencyId.Substring("key_".Length));
+                return GetKeys(fullCurrencyId.Substring(VaultCurrencyIds.PrefixKey.Length));
             }
-            else if (fullCurrencyId.StartsWith("special_"))
+            else if (fullCurrencyId.StartsWith(VaultCurrencyIds.PrefixSpecial))
             {
-                return GetSpecial(fullCurrencyId.Substring("special_".Length));
+                return GetSpecial(fullCurrencyId.Substring(VaultCurrencyIds.PrefixSpecial.Length));
             }
-            else if (fullCurrencyId.StartsWith("orb_"))
+            else if (fullCurrencyId.StartsWith(VaultCurrencyIds.PrefixOrb))
             {
-                return GetOrbs(fullCurrencyId.Substring("orb_".Length));
+                return GetOrbs(fullCurrencyId.Substring(VaultCurrencyIds.PrefixOrb.Length));
             }
-            else if (fullCurrencyId.StartsWith("custom_"))
+            else if (fullCurrencyId.StartsWith(VaultCurrencyIds.PrefixCustom))
             {
-                return GetCustomCurrency(fullCurrencyId.Substring("custom_".Length));
+                return GetCustomCurrency(fullCurrencyId.Substring(VaultCurrencyIds.PrefixCustom.Length));
             }
 
             return 0;
@@ -466,40 +469,150 @@ namespace TheVault.Vault
             foreach (var kvp in _vaultData.SeasonalTokens)
             {
                 if (kvp.Value > 0)
-                    result[$"seasonal_{kvp.Key}"] = kvp.Value;
+                    result[VaultCurrencyIds.FullSeasonalFromTokenName(kvp.Key.ToString())] = kvp.Value;
             }
 
             foreach (var kvp in _vaultData.CommunityTokens)
             {
                 if (kvp.Value > 0)
-                    result[$"community_{kvp.Key}"] = kvp.Value;
+                    result[VaultCurrencyIds.PrefixCommunity + kvp.Key] = kvp.Value;
             }
 
             foreach (var kvp in _vaultData.Keys)
             {
                 if (kvp.Value > 0)
-                    result[$"key_{kvp.Key}"] = kvp.Value;
+                    result[VaultCurrencyIds.PrefixKey + kvp.Key] = kvp.Value;
             }
 
             foreach (var kvp in _vaultData.Tickets)
             {
                 if (kvp.Value > 0)
-                    result[$"special_{kvp.Key}"] = kvp.Value;
+                    result[VaultCurrencyIds.PrefixSpecial + kvp.Key] = kvp.Value;
             }
 
             foreach (var kvp in _vaultData.Orbs)
             {
                 if (kvp.Value > 0)
-                    result[$"orb_{kvp.Key}"] = kvp.Value;
+                    result[VaultCurrencyIds.PrefixOrb + kvp.Key] = kvp.Value;
             }
 
             foreach (var kvp in _vaultData.CustomCurrencies)
             {
                 if (kvp.Value > 0)
-                    result[$"custom_{kvp.Key}"] = kvp.Value;
+                    result[VaultCurrencyIds.FullCustom(kvp.Key)] = kvp.Value;
             }
 
             return result;
+        }
+
+        /// <summary>
+        /// Merge <see cref="VaultData.CustomCurrencies"/> keys that have no <see cref="CurrencyDefinition"/> (debug / orphan detection).
+        /// Keys in <paramref name="keyedByFullCurrencyId"/> use the <c>custom_</c> prefix.
+        /// </summary>
+        public void MergeOrphanCustomBalances(Dictionary<string, int> keyedByFullCurrencyId)
+        {
+            if (keyedByFullCurrencyId == null || _vaultData?.CustomCurrencies == null) return;
+
+            foreach (var kvp in _vaultData.CustomCurrencies)
+            {
+                string full = VaultCurrencyIds.FullCustom(kvp.Key);
+                if (!keyedByFullCurrencyId.ContainsKey(full))
+                    keyedByFullCurrencyId[full] = kvp.Value;
+            }
+        }
+
+        /// <summary>
+        /// HUD debug: every registered custom id plus any save-only custom keys, with balances (including 0).
+        /// </summary>
+        public void FillDebugCustomHud(Dictionary<string, int> dest)
+        {
+            if (dest == null) return;
+            dest.Clear();
+            if (_vaultData == null) return;
+
+            var temp = new Dictionary<string, int>();
+
+            foreach (var def in GetCurrenciesByCategory(CurrencyCategory.Custom))
+            {
+                string full = VaultCurrencyIds.FullCustom(def.Id);
+                temp[full] = GetCustomCurrency(def.Id);
+            }
+
+            if (_vaultData.CustomCurrencies != null)
+            {
+                foreach (var kvp in _vaultData.CustomCurrencies)
+                {
+                    string full = VaultCurrencyIds.FullCustom(kvp.Key);
+                    if (!temp.ContainsKey(full))
+                        temp[full] = kvp.Value;
+                }
+            }
+
+            var keys = new List<string>(temp.Keys);
+            keys.Sort(StringComparer.Ordinal);
+            foreach (string k in keys)
+                dest[k] = temp[k];
+        }
+
+        /// <summary>
+        /// Human-readable dump of every vault store (for the in-game Debug tab).
+        /// </summary>
+        public List<string> BuildDebugVaultReport()
+        {
+            var lines = new List<string>();
+            if (_vaultData == null)
+            {
+                lines.Add("(no vault data)");
+                return lines;
+            }
+
+            lines.Add($"PlayerName={_vaultData.PlayerName ?? ""}");
+            lines.Add($"LastSaved={_vaultData.LastSaved:yyyy-MM-dd HH:mm:ss}");
+            lines.Add($"Version={_vaultData.Version}");
+            lines.Add("");
+
+            lines.Add("[SeasonalTokens]");
+            foreach (SeasonalTokenType t in Enum.GetValues(typeof(SeasonalTokenType)))
+            {
+                int v = _vaultData.SeasonalTokens != null && _vaultData.SeasonalTokens.TryGetValue(t, out int c) ? c : 0;
+                lines.Add($"  {t} = {v}");
+            }
+
+            lines.Add("");
+            lines.Add("[CommunityTokens]");
+            AppendSortedStringDict(lines, _vaultData.CommunityTokens);
+
+            lines.Add("");
+            lines.Add("[Keys]");
+            AppendSortedStringDict(lines, _vaultData.Keys);
+
+            lines.Add("");
+            lines.Add("[Tickets / special_* backing store]");
+            AppendSortedStringDict(lines, _vaultData.Tickets);
+
+            lines.Add("");
+            lines.Add("[Orbs]");
+            AppendSortedStringDict(lines, _vaultData.Orbs);
+
+            lines.Add("");
+            lines.Add("[CustomCurrencies]");
+            AppendSortedStringDict(lines, _vaultData.CustomCurrencies);
+
+            return lines;
+        }
+
+        private static void AppendSortedStringDict(List<string> lines, Dictionary<string, int> dict)
+        {
+            if (dict == null || dict.Count == 0)
+            {
+                lines.Add("  (empty)");
+                return;
+            }
+
+            var keys = new List<string>(dict.Keys);
+            keys.Sort(StringComparer.Ordinal);
+            foreach (string k in keys)
+                lines.Add($"  {k} = {dict[k]}");
         }
 
         #endregion
