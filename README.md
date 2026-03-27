@@ -6,7 +6,7 @@ A collection of BepInEx mods for [Sun Haven](https://store.steampowered.com/app/
 
 | Mod | Description | Version |
 |-----|-------------|---------|
-| [**Senpai's Chest**](SenpaisChest/) | Smart chests with configurable item rules for automatic storage sorting | 2.1.0 |
+| [**Senpai's Chest**](SenpaisChest/) | Smart chests with configurable item rules for automatic storage sorting | 2.2.0 |
 | [**Sunhaven Todo**](SunhavenTodo/) | In-game todo list and journal with per-character saves | 1.1.5 |
 | [**Sun Haven Museum Utility Tracker**](SunHavenMuseumUtilityTracker/) | Track museum donations across all sections | 2.2.3 |
 | [**The Vault**](TheVault/) | Full rework of the vault system; classic core, single project, typed game hooks | 3.0.0 |
