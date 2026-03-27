@@ -71,7 +71,7 @@ namespace HavenDevTools.UI
             ("com.azraelgodking.havensbirthright", "Haven's Birthright", "1.0.2"),
             ("com.azraelgodking.sunhavenmuseumutilitytracker", "S.M.U.T.", "2.0.1"),
             ("com.azraelgodking.sunhaventodo", "Sunhaven Todo", "1.0.0"),
-            ("com.azraelgodking.thevault", "The Vault", "2.0.3"),
+            ("com.azraelgodking.thevault", "The Vault", "3.0.0"),
             ("com.azraelgodking.havensalmanac", "Haven's Almanac", "1.0.0"),
         };
 
