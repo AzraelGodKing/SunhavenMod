@@ -14,7 +14,7 @@ namespace TheVault.Vault
         /// <summary>
         /// Version number for save compatibility
         /// </summary>
-        public int Version { get; set; } = 1;
+        public int Version { get; set; } = 2;
 
         /// <summary>
         /// Seasonal tokens (Spring, Summer, Fall, Winter festival tokens)

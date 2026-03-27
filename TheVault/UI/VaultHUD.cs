@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using SunhavenMods.Shared;
 using TheVault.Patches;
@@ -6,56 +7,74 @@ using UnityEngine;
 
 namespace TheVault.UI
 {
+    /// <summary>HUD bar density (font/padding multiplier).</summary>
+    public enum VaultHudDensity
+    {
+        Normal = 0,
+        Compact = 1,
+        Minimal = 2
+    }
+
     /// <summary>
-    /// Persistent HUD display showing vault currency totals.
-    /// Displays as a horizontal bar that can be toggled on/off.
+    /// Rewritten HUD: simple, always-on-screen, multi-row wrap with autoscale-to-fit.
     /// </summary>
     public class VaultHUD : MonoBehaviour
     {
         private VaultManager _vaultManager;
         private bool _isEnabled = true;
-        private bool _stylesInitialized;
-
-        // Position settings
         private HUDPosition _position = HUDPosition.TopLeft;
         private float _opacity = 0.95f;
-
-        // Styling
-        private GUIStyle _hudBackgroundStyle;
-        private GUIStyle _currencyLabelStyle;
-        private GUIStyle _currencyValueStyle;
-        private GUIStyle _categoryLabelStyle;
-        private Texture2D _hudBackground;
-
-        // Colors matching the main vault UI
-        private Color _bgColor = new Color(0.08f, 0.08f, 0.12f, 0.95f);
-        private readonly Color _textColor = new Color(0.9f, 0.9f, 0.95f);
-        private readonly Color _goldColor = new Color(0.95f, 0.8f, 0.3f);
-        private readonly Color _accentColor = new Color(0.4f, 0.7f, 0.95f);
-
-        // HUD dimensions - base values, scaled by _scale
-        private const float BASE_HUD_HEIGHT = 28f;
-        private const float BASE_PADDING = 8f;
-        private const float BASE_ITEM_SPACING = 12f;
-        private const float BASE_GROUP_SPACING = 16f;
-        private const float MIN_HUD_WIDTH = 100f;
-
-        // Separator styling
-        private Texture2D _separatorTexture;
-        private readonly Color _separatorColor = new Color(0.4f, 0.4f, 0.5f, 0.5f);
-
-        // Cache for currency display
-        private Dictionary<string, int> _cachedCurrencies = new Dictionary<string, int>();
-        private float _lastUpdateTime;
-        private const float UPDATE_INTERVAL = 0.5f; // Update every 0.5 seconds
-
-        // Cached grouped dictionaries (refreshed in Update to avoid per-frame allocations)
-        private readonly Dictionary<string, int> _cachedSeasonal = new Dictionary<string, int>();
-        private readonly Dictionary<string, int> _cachedKeys = new Dictionary<string, int>();
-        private readonly Dictionary<string, int> _cachedSpecial = new Dictionary<string, int>();
-
-        // Global scale factor for HUD (for high resolutions / accessibility)
         private float _scale = 1f;
+        private VaultHudDensity _hudDensity = VaultHudDensity.Normal;
+
+        private float _stylesForMul = -1f;
+        private float _texturesForOpacity = -1f;
+        private GUIStyle _bgStyle;
+        private GUIStyle _borderStyle;
+        private GUIStyle _valueStyle;
+        private GUIStyle _shortStyle;
+        private Texture2D _bgTex;
+        private Texture2D _borderTex;
+        private Texture2D _shadowTex;
+        private Texture2D _sepTex;
+
+        private readonly Color _bgTop = new Color(0.11f, 0.13f, 0.18f, 1f);
+        private readonly Color _bgBot = new Color(0.06f, 0.07f, 0.10f, 1f);
+        private readonly Color _border = new Color(0.30f, 0.36f, 0.46f, 0.62f);
+        private readonly Color _shadow = new Color(0f, 0f, 0f, 0.30f);
+        private readonly Color _accent = new Color(0.45f, 0.72f, 0.98f, 1f);
+        private readonly Color _value = new Color(0.96f, 0.86f, 0.48f, 1f);
+        private readonly Color _short = new Color(0.88f, 0.9f, 0.96f, 1f);
+
+        private const float ScreenInset = 12f;
+        private const float MaxHeightFrac = 0.58f;
+        private const float MaxWidthFrac = 0.90f;
+        private const float MaxWidthPx = 1200f;
+
+        private const float BasePad = 10f;
+        private const float BaseGap = 12f;
+        private const float BaseRowGap = 5f;
+        private const float BaseIcon = 22f;
+        private const float BaseGroupGap = 16f;
+
+        private float _lastUpdateTime;
+        private const float UpdateInterval = 0.5f;
+
+        private readonly Dictionary<string, int> _seasonal = new Dictionary<string, int>();
+        private readonly Dictionary<string, int> _keys = new Dictionary<string, int>();
+        private readonly Dictionary<string, int> _special = new Dictionary<string, int>();
+        private readonly Dictionary<string, int> _custom = new Dictionary<string, int>();
+
+        private struct Cell
+        {
+            public bool Sep;
+            public string Id;
+            public int Amount;
+        }
+
+        private readonly List<Cell> _cells = new List<Cell>(64);
+        private readonly List<List<Cell>> _rows = new List<List<Cell>>(10);
+        private readonly Stack<List<Cell>> _rowListPool = new Stack<List<Cell>>();
 
         public enum HUDPosition
         {
@@ -73,400 +92,422 @@ namespace TheVault.UI
             Plugin.Log?.LogInfo("VaultHUD initialized");
         }
 
-        public void SetEnabled(bool enabled)
-        {
-            _isEnabled = enabled;
-        }
-
-        public void SetPosition(HUDPosition position)
-        {
-            _position = position;
-        }
-
+        public void SetEnabled(bool enabled) => _isEnabled = enabled;
+        public void SetPosition(HUDPosition position) => _position = position;
+        public void SetScale(float scale) { _scale = Mathf.Clamp(scale, 0.5f, 3f); _stylesForMul = -1f; }
+        public void SetHudDensity(VaultHudDensity density) { _hudDensity = density; _stylesForMul = -1f; }
         public void SetOpacity(float opacity)
         {
             _opacity = Mathf.Clamp01(opacity);
-            _bgColor.a = _opacity;
-            _stylesInitialized = false; // Force style refresh
-        }
-
-        public void SetScale(float scale)
-        {
-            _scale = Mathf.Clamp(scale, 0.5f, 3f);
-            _stylesInitialized = false; // fonts / paddings depend on scale
+            _stylesForMul = -1f;
+            _texturesForOpacity = -1f;
         }
 
         public bool IsEnabled => _isEnabled;
-
-        public void Toggle()
-        {
-            _isEnabled = !_isEnabled;
-            Plugin.Log?.LogInfo($"VaultHUD toggled: {(_isEnabled ? "ON" : "OFF")}");
-        }
-
-        private void InitializeStyles()
-        {
-            if (_stylesInitialized) return;
-
-            _hudBackground = MakeTex(2, 2, new Color(_bgColor.r, _bgColor.g, _bgColor.b, _opacity));
-            _separatorTexture = MakeTex(1, 1, _separatorColor);
-
-            float padding = BASE_PADDING * _scale;
-            int fontSmall = Mathf.Max(8, Mathf.RoundToInt(11 * _scale));
-            int fontMedium = Mathf.Max(9, Mathf.RoundToInt(12 * _scale));
-
-            _hudBackgroundStyle = new GUIStyle()
-            {
-                normal = { background = _hudBackground },
-                padding = new RectOffset((int)padding, (int)padding, 4, 4)
-            };
-
-            _currencyLabelStyle = new GUIStyle(GUI.skin.label)
-            {
-                fontSize = fontSmall,
-                fontStyle = FontStyle.Normal,
-                alignment = TextAnchor.MiddleLeft,
-                normal = { textColor = _textColor },
-                padding = new RectOffset(0, 3, 0, 0)
-            };
-
-            _currencyValueStyle = new GUIStyle(GUI.skin.label)
-            {
-                fontSize = fontMedium,
-                fontStyle = FontStyle.Bold,
-                alignment = TextAnchor.MiddleLeft,
-                normal = { textColor = _goldColor },
-                padding = new RectOffset(1, 0, 0, 0)
-            };
-
-            _categoryLabelStyle = new GUIStyle(GUI.skin.label)
-            {
-                fontSize = Mathf.Max(8, Mathf.RoundToInt(10 * _scale)),
-                fontStyle = FontStyle.Bold,
-                alignment = TextAnchor.MiddleLeft,
-                normal = { textColor = _accentColor },
-                padding = new RectOffset(0, 4, 0, 0)
-            };
-
-            _stylesInitialized = true;
-        }
-
-        private Texture2D MakeTex(int width, int height, Color color)
-        {
-            var pixels = new Color[width * height];
-            for (int i = 0; i < pixels.Length; i++)
-                pixels[i] = color;
-            var tex = new Texture2D(width, height);
-            tex.SetPixels(pixels);
-            tex.Apply();
-            return tex;
-        }
+        public void Toggle() { _isEnabled = !_isEnabled; Plugin.Log?.LogInfo($"VaultHUD toggled: {(_isEnabled ? "ON" : "OFF")}"); }
 
         private void Update()
         {
-            // Periodically update cached currencies and grouped caches
-            if (_isEnabled && _vaultManager != null && Time.time - _lastUpdateTime > UPDATE_INTERVAL)
+            if (!_isEnabled || _vaultManager == null) return;
+            if (Time.time - _lastUpdateTime < UpdateInterval) return;
+            RefreshCaches();
+            _lastUpdateTime = Time.time;
+        }
+
+        private void RefreshCaches()
+        {
+            bool debugAll = Plugin.GetConfigDebugFullVaultInspector();
+
+            _seasonal.Clear();
+            foreach (var id in VaultCurrencyIds.AllSeasonalFullIds)
             {
-                _cachedCurrencies = _vaultManager.GetAllNonZeroCurrencies();
-                RefreshGroupedCaches();
-                _lastUpdateTime = Time.time;
+                int v = _vaultManager.GetCurrency(id);
+                if (debugAll || v != 0) _seasonal[id] = v;
+            }
+
+            _keys.Clear();
+            foreach (var id in VaultCurrencyIds.AllKeyFullIds)
+            {
+                int v = _vaultManager.GetCurrency(id);
+                if (debugAll || v != 0) _keys[id] = v;
+            }
+
+            _special.Clear();
+            foreach (var id in VaultCurrencyIds.AllSpecialFullIds)
+            {
+                int v = _vaultManager.GetCurrency(id);
+                if (debugAll || v != 0) _special[id] = v;
+            }
+
+            _custom.Clear();
+            if (debugAll)
+                _vaultManager.FillDebugCustomHud(_custom);
+            else
+            {
+                foreach (var def in _vaultManager.GetCurrenciesByCategory(CurrencyCategory.Custom))
+                {
+                    string full = VaultCurrencyIds.FullCustom(def.Id);
+                    int v = _vaultManager.GetCurrency(full);
+                    if (v != 0) _custom[full] = v;
+                }
             }
         }
 
-        private void RefreshGroupedCaches()
+        private float DensityMul() => _hudDensity switch
         {
-            _cachedSeasonal.Clear();
-            foreach (var currencyId in _allSeasonalTokens)
+            VaultHudDensity.Minimal => 0.68f,
+            VaultHudDensity.Compact => 0.82f,
+            _ => 1f
+        };
+
+        private void EnsureStyles(float mul)
+        {
+            mul = Mathf.Max(0.01f, mul);
+
+            bool needTextures = _bgTex == null || Mathf.Abs(_opacity - _texturesForOpacity) > 0.0001f;
+            if (needTextures)
             {
-                _cachedCurrencies.TryGetValue(currencyId, out int value);
-                _cachedSeasonal[currencyId] = value;
+                if (_bgTex != null) UnityEngine.Object.Destroy(_bgTex);
+                if (_borderTex != null) UnityEngine.Object.Destroy(_borderTex);
+                if (_shadowTex != null) UnityEngine.Object.Destroy(_shadowTex);
+                if (_sepTex != null) UnityEngine.Object.Destroy(_sepTex);
+
+                _bgTex = MakeVerticalGradientTex(8, 48, WithA(_bgTop, _opacity), WithA(_bgBot, _opacity));
+                _borderTex = MakeTex(2, 2, WithA(_border, _opacity));
+                _shadowTex = MakeTex(2, 2, WithA(_shadow, _opacity));
+                _sepTex = MakeTex(1, 1, new Color(1f, 1f, 1f, 0.35f * _opacity));
+                _texturesForOpacity = _opacity;
             }
-            _cachedKeys.Clear();
-            foreach (var currencyId in _allKeys)
+
+            if (!needTextures && Mathf.Abs(mul - _stylesForMul) < 0.001f && _bgStyle != null)
+                return;
+
+            _stylesForMul = mul;
+
+            int pad = Mathf.Max(2, Mathf.RoundToInt(BasePad * mul));
+            int fontV = Mathf.Max(9, Mathf.RoundToInt(14 * mul));
+            int fontS = Mathf.Max(8, Mathf.RoundToInt(13 * mul));
+
+            if (_bgStyle == null) _bgStyle = new GUIStyle();
+            _bgStyle.normal.background = _bgTex;
+            _bgStyle.padding = new RectOffset(pad, pad, pad / 2, pad / 2);
+
+            if (_borderStyle == null) _borderStyle = new GUIStyle();
+            _borderStyle.normal.background = _borderTex;
+
+            if (_valueStyle == null) _valueStyle = new GUIStyle(GUI.skin.label);
+            _valueStyle.fontSize = fontV;
+            _valueStyle.fontStyle = FontStyle.Bold;
+            _valueStyle.alignment = TextAnchor.MiddleLeft;
+            _valueStyle.normal.textColor = _value;
+
+            if (_shortStyle == null) _shortStyle = new GUIStyle(GUI.skin.label);
+            _shortStyle.fontSize = fontS;
+            _shortStyle.fontStyle = FontStyle.Normal;
+            _shortStyle.alignment = TextAnchor.MiddleLeft;
+            _shortStyle.normal.textColor = _short;
+        }
+
+        private static Color WithA(Color c, float a) => new Color(c.r, c.g, c.b, a);
+
+        private static Texture2D MakeTex(int w, int h, Color c)
+        {
+            var t = new Texture2D(w, h);
+            var px = new Color[w * h];
+            for (int i = 0; i < px.Length; i++) px[i] = c;
+            t.SetPixels(px);
+            t.Apply();
+            return t;
+        }
+
+        private static Texture2D MakeVerticalGradientTex(int w, int h, Color top, Color bot)
+        {
+            var t = new Texture2D(w, h);
+            for (int y = 0; y < h; y++)
             {
-                _cachedCurrencies.TryGetValue(currencyId, out int value);
-                _cachedKeys[currencyId] = value;
+                float k = h <= 1 ? 0f : y / (float)(h - 1);
+                Color c = Color.Lerp(top, bot, k);
+                for (int x = 0; x < w; x++) t.SetPixel(x, y, c);
             }
-            _cachedSpecial.Clear();
-            foreach (var currencyId in _allSpecialCurrencies)
+            t.Apply();
+            return t;
+        }
+
+        private void BuildCells()
+        {
+            _cells.Clear();
+            bool needSep = false;
+
+            void AppendOrdered(string[] ordered, Dictionary<string, int> values)
             {
-                _cachedCurrencies.TryGetValue(currencyId, out int value);
-                _cachedSpecial[currencyId] = value;
+                bool any = false;
+                foreach (var id in ordered)
+                {
+                    if (!values.TryGetValue(id, out int v)) continue;
+                    if (needSep) { _cells.Add(new Cell { Sep = true }); needSep = false; }
+                    _cells.Add(new Cell { Id = id, Amount = v });
+                    any = true;
+                }
+                if (any) needSep = true;
             }
+
+            AppendOrdered(VaultCurrencyIds.AllSeasonalFullIds, _seasonal);
+            AppendOrdered(VaultCurrencyIds.AllKeyFullIds, _keys);
+            AppendOrdered(VaultCurrencyIds.AllSpecialFullIds, _special);
+
+            if (_custom.Count > 0)
+            {
+                var keys = new List<string>(_custom.Keys);
+                keys.Sort(StringComparer.Ordinal);
+                foreach (var id in keys)
+                {
+                    if (needSep) { _cells.Add(new Cell { Sep = true }); needSep = false; }
+                    _cells.Add(new Cell { Id = id, Amount = _custom[id] });
+                }
+            }
+
+            if (_cells.Count > 0 && _cells[_cells.Count - 1].Sep)
+                _cells.RemoveAt(_cells.Count - 1);
+        }
+
+        private float CellWidth(Cell c, float mul)
+        {
+            if (c.Sep) return Mathf.Max(6f, BaseGroupGap * mul);
+            float icon = BaseIcon * mul;
+            float valueW = _valueStyle.CalcSize(new GUIContent(FormatNumber(c.Amount))).x;
+            float iconW = IconCache.IsIconLoaded(c.Id) ? icon : Mathf.Max(icon, _shortStyle.CalcSize(new GUIContent(GetShortName(c.Id))).x);
+            return iconW + 3f * mul + valueW + 2f;
+        }
+
+        private List<Cell> RentRowList() => _rowListPool.Count > 0 ? _rowListPool.Pop() : new List<Cell>(16);
+
+        private void ReleaseAllRowsToPool()
+        {
+            for (int i = 0; i < _rows.Count; i++)
+            {
+                _rows[i].Clear();
+                _rowListPool.Push(_rows[i]);
+            }
+            _rows.Clear();
+        }
+
+        private void WrapRows(float innerW, float mul)
+        {
+            ReleaseAllRowsToPool();
+            if (_cells.Count == 0) return;
+
+            float gap = BaseGap * mul;
+            List<Cell> row = RentRowList();
+            float w = 0f;
+
+            void Flush()
+            {
+                if (row.Count == 0) return;
+                _rows.Add(row);
+                row = RentRowList();
+                w = 0f;
+            }
+
+            for (int i = 0; i < _cells.Count; i++)
+            {
+                Cell c = _cells[i];
+                float cw = CellWidth(c, mul);
+                float add = (row.Count > 0 ? gap : 0f) + cw;
+                if (row.Count > 0 && w + add > innerW + 0.5f)
+                    Flush();
+                if (row.Count > 0) w += gap;
+                row.Add(c);
+                w += cw;
+            }
+            Flush();
+            if (row.Count == 0)
+                _rowListPool.Push(row);
+        }
+
+        private float RowHeight(float mul)
+        {
+            float icon = BaseIcon * mul;
+            float txt = _valueStyle.CalcSize(new GUIContent("0")).y;
+            return Mathf.Max(icon + 2f, txt + 4f);
+        }
+
+        private Rect PlaceRect(float w, float h)
+        {
+            w = Mathf.Min(w, Screen.width - 2f * ScreenInset);
+            float x = ScreenInset, y = ScreenInset;
+            switch (_position)
+            {
+                case HUDPosition.TopLeft: x = ScreenInset; y = ScreenInset; break;
+                case HUDPosition.TopCenter: x = (Screen.width - w) / 2f; y = ScreenInset; break;
+                case HUDPosition.TopRight: x = Screen.width - w - ScreenInset; y = ScreenInset; break;
+                case HUDPosition.BottomLeft: x = ScreenInset; y = Screen.height - h - ScreenInset; break;
+                case HUDPosition.BottomCenter: x = (Screen.width - w) / 2f; y = Screen.height - h - ScreenInset; break;
+                case HUDPosition.BottomRight: x = Screen.width - w - ScreenInset; y = Screen.height - h - ScreenInset; break;
+            }
+            return new Rect(x, y, w, h);
         }
 
         private void OnGUI()
         {
-            // Don't show HUD until vault is loaded for the current character
             if (!_isEnabled || _vaultManager == null || !PlayerPatches.IsVaultLoaded) return;
+            if (Plugin.IsMainVaultPanelVisible()) return;
 
-            // Don't show HUD if main vault window is open
-            var vaultUI = Plugin.GetVaultUI();
-            if (vaultUI != null && vaultUI.IsVisible) return;
-
-            InitializeStyles();
-
-            // Ensure grouped caches are populated on first show (before first Update interval)
-            if (_cachedSeasonal.Count == 0 && _cachedCurrencies.Count > 0)
-                RefreshGroupedCaches();
-
-            // Calculate HUD width based on content
-            float hudWidth = CalculateHUDWidth();
-
-            // Ensure minimum width so HUD always shows
-            hudWidth = Mathf.Max(hudWidth, MIN_HUD_WIDTH);
-
-            // Get position
-            Rect hudRect = GetHUDRect(hudWidth);
-
-            // Draw background
-            GUI.Box(hudRect, "", _hudBackgroundStyle);
-
-            // Draw content - vertically centered
-            float padding = BASE_PADDING * _scale;
-            GUILayout.BeginArea(new Rect(hudRect.x + padding, hudRect.y + 3, hudRect.width - padding * 2, hudRect.height - 6));
-            GUILayout.BeginHorizontal();
-
-            // All groups are always shown (use cached dicts to avoid per-frame allocations)
-            DrawCurrencyItems(_cachedSeasonal);
-            DrawSeparator();
-            DrawCurrencyItems(_cachedKeys);
-            DrawSeparator();
-            DrawCurrencyItems(_cachedSpecial);
-
-            GUILayout.EndHorizontal();
-            GUILayout.EndArea();
-        }
-
-        private void DrawSeparator()
-        {
-            float groupSpacing = BASE_GROUP_SPACING * _scale;
-            float iconSize = BASE_HUD_ICON_SIZE * _scale;
-
-            GUILayout.Space(groupSpacing / 2 - 1);
-            GUILayout.Box("", GUIStyle.none, GUILayout.Width(1), GUILayout.Height(iconSize));
-            // Draw a vertical line
-            Rect lastRect = GUILayoutUtility.GetLastRect();
-            GUI.DrawTexture(new Rect(lastRect.x, lastRect.y + 2, 1, iconSize - 4), _separatorTexture);
-            GUILayout.Space(groupSpacing / 2 - 1);
-        }
-
-        private float CalculateHUDWidth()
-        {
-            float padding = BASE_PADDING * _scale;
-            float groupSpacing = BASE_GROUP_SPACING * _scale;
-
-            float width = padding * 2;
-
-            // Use cached dicts to avoid allocations
-            width += CalculateGroupWidth(_cachedSeasonal);
-            width += CalculateGroupWidth(_cachedKeys);
-            width += CalculateGroupWidth(_cachedSpecial);
-
-            // Add separator spacing between all 3 groups
-            width += 2 * groupSpacing;
-
-            // Add extra padding to prevent cutoff on the right side
-            width += 24;
-
-            return width;
-        }
-
-        // Icon size for HUD display (scaled by _scale)
-        private const float BASE_HUD_ICON_SIZE = 18f;
-
-        private float CalculateGroupWidth(Dictionary<string, int> items)
-        {
-            if (items.Count == 0) return 0;
-
-            float itemSpacing = BASE_ITEM_SPACING * _scale;
-            float iconSize = BASE_HUD_ICON_SIZE * _scale;
-
-            float width = 0;
-            foreach (var kvp in items)
+            if (Time.time - _lastUpdateTime > UpdateInterval)
             {
-                string value = FormatNumber(kvp.Value);
-                // Icon + small gap + value text + item spacing
-                // Use ~9px per character at scale 1, scaled with _scale
-                width += iconSize + 3 * _scale + value.Length * 9 * _scale + itemSpacing;
+                RefreshCaches();
+                _lastUpdateTime = Time.time;
             }
 
-            // Remove trailing item spacing
-            if (items.Count > 0)
-                width -= itemSpacing;
+            BuildCells();
+            if (_cells.Count == 0) return;
 
-            return width;
-        }
+            float density = DensityMul();
+            float baseMul = _scale * density;
 
-        private Rect GetHUDRect(float width)
-        {
-            float hudHeight = BASE_HUD_HEIGHT * _scale;
+            float maxOuterW = Mathf.Min(Screen.width - 2f * ScreenInset, Screen.width * MaxWidthFrac, MaxWidthPx);
+            float maxOuterH = Mathf.Max(80f, Screen.height * MaxHeightFrac - 2f * ScreenInset);
 
-            float x = 0, y = 0;
+            float auto = 1f;
+            float pad = BasePad * baseMul;
+            float rowGap = BaseRowGap * baseMul;
+            float outerW = 220f;
+            float outerH = 40f;
+            float innerW = 200f;
+            float rh = 18f;
 
-            switch (_position)
+            for (int i = 0; i < 6; i++)
             {
-                case HUDPosition.TopLeft:
-                    x = 0;
-                    y = 0;
-                    break;
-                case HUDPosition.TopCenter:
-                    x = (Screen.width - width) / 2;
-                    y = 0;
-                    break;
-                case HUDPosition.TopRight:
-                    x = Screen.width - width;
-                    y = 0;
-                    break;
-                case HUDPosition.BottomLeft:
-                    x = 0;
-                    y = Screen.height - hudHeight;
-                    break;
-                case HUDPosition.BottomCenter:
-                    x = (Screen.width - width) / 2;
-                    y = Screen.height - hudHeight;
-                    break;
-                case HUDPosition.BottomRight:
-                    x = Screen.width - width;
-                    y = Screen.height - hudHeight;
-                    break;
-            }
+                float mul = baseMul * auto;
+                EnsureStyles(mul);
+                pad = BasePad * mul;
+                innerW = Mathf.Max(80f, maxOuterW - 2f * pad);
+                WrapRows(innerW, mul);
+                rh = RowHeight(mul);
+                float contentH = _rows.Count * rh + Mathf.Max(0, _rows.Count - 1) * rowGap;
+                outerH = Mathf.Max(28f * mul, contentH + 2f * pad + 4f);
 
-            return new Rect(x, y, width, hudHeight);
-        }
-
-        private void DrawCurrencyItems(Dictionary<string, int> items)
-        {
-            if (items.Count == 0) return;
-
-            float itemSpacing = BASE_ITEM_SPACING * _scale;
-            float iconSize = BASE_HUD_ICON_SIZE * _scale;
-
-            bool first = true;
-            foreach (var kvp in items)
-            {
-                if (!first)
-                    GUILayout.Space(itemSpacing);
-                first = false;
-
-                // Draw icon if available
-                Texture2D iconTexture = IconCache.GetIconForCurrency(kvp.Key);
-                if (iconTexture != null && IconCache.IsIconLoaded(kvp.Key))
+                float widest = 0f;
+                float gap = BaseGap * mul;
+                foreach (var r in _rows)
                 {
-                    // Draw the actual game icon
-                    GUILayout.Box(iconTexture, GUIStyle.none, GUILayout.Width(iconSize), GUILayout.Height(iconSize));
+                    float w = 0f;
+                    for (int ci = 0; ci < r.Count; ci++)
+                    {
+                        if (ci > 0) w += gap;
+                        w += CellWidth(r[ci], mul);
+                    }
+                    widest = Mathf.Max(widest, w);
                 }
-                else
-                {
-                    // Fallback to short text name while loading
-                    string shortName = GetShortName(kvp.Key);
-                    GUILayout.Label(shortName, _currencyLabelStyle);
-                }
+                outerW = Mathf.Clamp(widest + 2f * pad, 100f, maxOuterW);
 
-                // Draw the value right next to the icon (formatted with K/M)
-                GUILayout.Label(FormatNumber(kvp.Value), _currencyValueStyle);
+                float next = Mathf.Min(1f, (maxOuterH / Mathf.Max(1f, outerH)) * 0.99f, (maxOuterW / Mathf.Max(1f, outerW)) * 0.99f);
+                if (Mathf.Abs(next - auto) < 0.01f) break;
+                auto = next;
             }
+
+            Rect rOuter = PlaceRect(outerW, outerH);
+
+            // Shadow
+            GUI.DrawTexture(new Rect(rOuter.x + 3f, rOuter.y + 3f, rOuter.width, rOuter.height), _shadowTex, ScaleMode.StretchToFill);
+
+            // Border + background
+            GUI.DrawTexture(new Rect(rOuter.x - 1f, rOuter.y - 1f, rOuter.width + 2f, rOuter.height + 2f), _borderTex, ScaleMode.StretchToFill);
+            GUI.Box(rOuter, GUIContent.none, _bgStyle);
+
+            // Accent bar
+            float accentH = Mathf.Max(2f, 2.5f * _stylesForMul);
+            GUI.DrawTexture(new Rect(rOuter.x + 1f, rOuter.y + 1f, rOuter.width - 2f, accentH), Texture2D.whiteTexture, ScaleMode.StretchToFill, false, 0, WithA(_accent, _opacity * 0.85f), 0, 0);
+
+            GUI.BeginGroup(rOuter);
+            float x0 = pad;
+            float y = pad + accentH + 2f;
+            float gapX = BaseGap * _stylesForMul;
+            float icon = BaseIcon * _stylesForMul;
+
+            for (int ri = 0; ri < _rows.Count; ri++)
+            {
+                if (ri > 0) y += BaseRowGap * _stylesForMul;
+                float x = x0;
+                var row = _rows[ri];
+                for (int ci = 0; ci < row.Count; ci++)
+                {
+                    if (ci > 0) x += gapX;
+                    Cell c = row[ci];
+                    if (c.Sep)
+                    {
+                        float w = Mathf.Max(6f, BaseGroupGap * _stylesForMul);
+                        float cx = x + w * 0.5f;
+                        GUI.DrawTexture(new Rect(cx, y + 2f, 1f, icon - 4f), _sepTex);
+                        x += w;
+                        continue;
+                    }
+
+                    Texture2D tex = IconCache.GetIconForCurrency(c.Id);
+                    if (tex != null && IconCache.IsIconLoaded(c.Id))
+                    {
+                        GUI.DrawTexture(new Rect(x, y + 1f, icon, icon), tex, ScaleMode.ScaleToFit);
+                        x += icon;
+                    }
+                    else
+                    {
+                        string sn = GetShortName(c.Id);
+                        float sw = _shortStyle.CalcSize(new GUIContent(sn)).x;
+                        GUI.Label(new Rect(x, y, Mathf.Max(icon, sw), rh), sn, _shortStyle);
+                        x += Mathf.Max(icon, sw);
+                    }
+
+                    x += 3f * _stylesForMul;
+                    string vt = FormatNumber(c.Amount);
+                    float vw = _valueStyle.CalcSize(new GUIContent(vt)).x + 2f;
+                    GUI.Label(new Rect(x, y, vw, rh), vt, _valueStyle);
+                    x += vw;
+                }
+                y += rh;
+            }
+
+            GUI.EndGroup();
         }
 
-        // All seasonal token IDs that should always be shown
-        private static readonly string[] _allSeasonalTokens = new[]
+        private static string FormatNumber(int value)
         {
-            "seasonal_Spring",
-            "seasonal_Summer",
-            "seasonal_Fall",
-            "seasonal_Winter"
-        };
-
-        // All key IDs that should always be shown
-        private static readonly string[] _allKeys = new[]
-        {
-            "key_copper",
-            "key_iron",
-            "key_adamant",
-            "key_mithril",
-            "key_sunite",
-            "key_glorite",
-            "key_kingslostmine"
-        };
-
-        // All special currency IDs that should always be shown
-        private static readonly string[] _allSpecialCurrencies = new[]
-        {
-            "special_communitytoken",
-            "special_doubloon",
-            "special_blackbottlecap",
-            "special_redcarnivalticket",
-            "special_candycornpieces",
-            "special_manashard"
-        };
-
-        /// <summary>
-        /// Format a number with K/M suffixes for compact display.
-        /// 1000 -> 1K, 1500 -> 1.5K, 1000000 -> 1M
-        /// </summary>
-        private string FormatNumber(int value)
-        {
-            if (value >= 1000000)
+            if (value >= 1_000_000)
             {
-                float millions = value / 1000000f;
-                if (millions >= 10f || millions == (int)millions)
-                    return $"{(int)millions}M";
-                return $"{millions:0.#}M";
+                float m = value / 1_000_000f;
+                if (m >= 10f || m == (int)m) return $"{(int)m}M";
+                return $"{m:0.#}M";
             }
-            else if (value >= 1000)
+            if (value >= 1_000)
             {
-                float thousands = value / 1000f;
-                if (thousands >= 10f || thousands == (int)thousands)
-                    return $"{(int)thousands}K";
-                return $"{thousands:0.#}K";
+                float k = value / 1_000f;
+                if (k >= 10f || k == (int)k) return $"{(int)k}K";
+                return $"{k:0.#}K";
             }
             return value.ToString();
         }
 
-        private string GetShortName(string currencyId)
+        private static string GetShortName(string currencyId)
         {
-            if (currencyId.StartsWith("seasonal_"))
+            if (currencyId.StartsWith(VaultCurrencyIds.PrefixSeasonal))
             {
-                string season = currencyId.Substring("seasonal_".Length);
-                return season switch
-                {
-                    "Spring" => "Sp",
-                    "Summer" => "Su",
-                    "Fall" => "Fa",
-                    "Winter" => "Wi",
-                    _ => season.Substring(0, 2)
-                };
+                string season = currencyId.Substring(VaultCurrencyIds.PrefixSeasonal.Length);
+                return season switch { "Spring" => "Sp", "Summer" => "Su", "Fall" => "Fa", "Winter" => "Wi", _ => season.Substring(0, 2) };
             }
-            else if (currencyId.StartsWith("key_"))
+            if (currencyId.StartsWith(VaultCurrencyIds.PrefixKey))
             {
-                string key = currencyId.Substring("key_".Length);
-                return key switch
-                {
-                    "copper" => "Cu",
-                    "iron" => "Fe",
-                    "adamant" => "Ad",
-                    "mithril" => "Mi",
-                    "sunite" => "Su",
-                    "glorite" => "Gl",
-                    "kingslostmine" => "KL",
-                    _ => key.Substring(0, 2)
-                };
+                string key = currencyId.Substring(VaultCurrencyIds.PrefixKey.Length);
+                return key switch { "copper" => "Cu", "iron" => "Fe", "adamant" => "Ad", "mithril" => "Mi", "sunite" => "Su", "glorite" => "Gl", "kingslostmine" => "KL", _ => key.Substring(0, 2) };
             }
-            else if (currencyId.StartsWith("special_"))
+            if (currencyId.StartsWith(VaultCurrencyIds.PrefixSpecial))
             {
-                string special = currencyId.Substring("special_".Length);
-                return special switch
-                {
-                    "communitytoken" => "CT",
-                    "doubloon" => "Db",
-                    "blackbottlecap" => "BB",
-                    "redcarnivalticket" => "RC",
-                    "candycornpieces" => "CC",
-                    "manashard" => "MS",
-                    _ => special.Substring(0, 2).ToUpper()
-                };
+                string s = currencyId.Substring(VaultCurrencyIds.PrefixSpecial.Length);
+                return s switch { "communitytoken" => "CT", "doubloon" => "Db", "blackbottlecap" => "BB", "redcarnivalticket" => "RC", "candycornpieces" => "CC", "manashard" => "MS", _ => s.Substring(0, 2).ToUpperInvariant() };
             }
-
+            if (currencyId.StartsWith(VaultCurrencyIds.PrefixCustom))
+            {
+                string id = currencyId.Substring(VaultCurrencyIds.PrefixCustom.Length);
+                if (id.Length <= 2) return id.ToUpperInvariant();
+                return char.ToUpperInvariant(id[0]).ToString() + char.ToUpperInvariant(id[id.Length - 1]);
+            }
             return "??";
         }
     }

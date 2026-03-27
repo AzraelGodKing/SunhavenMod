@@ -9,7 +9,7 @@ A collection of BepInEx mods for [Sun Haven](https://store.steampowered.com/app/
 | [**Senpai's Chest**](SenpaisChest/) | Smart chests with configurable item rules for automatic storage sorting | 2.1.0 |
 | [**Sunhaven Todo**](SunhavenTodo/) | In-game todo list and journal with per-character saves | 1.1.5 |
 | [**Sun Haven Museum Utility Tracker**](SunHavenMuseumUtilityTracker/) | Track museum donations across all sections | 2.2.3 |
-| [**The Vault**](TheVault/) | Secure vault for tokens and keys with HUD and shop/door integration | 2.0.8 |
+| [**The Vault**](TheVault/) | Full rework of the vault system; classic core, single project, typed game hooks | 3.0.0 |
 | [**Haven's Birthright**](HavensBirthright/) | Unique racial bonuses and traits for each playable race | 1.3.3 |
 | [**Haven's Almanac**](HavensAlmanac/) | Mod compatibility registry and info hub | 1.0.3 |
 | [**A Squirrel's Birthday Reminder**](BirthdayReminder/) | Reminds you of villagers' birthdays | 1.1.3 |
@@ -38,7 +38,7 @@ Per-character saves, item icons, and bundle progress. Hotkey: **Ctrl+C**.
 
 ### The Vault
 
-Secure storage for seasonal tokens, keys, and special currencies. Auto-deposit on pickup, persistent HUD, and seamless shop/door integration. Per-character vaults; open with **Ctrl+V** or **F8** (Steam Deck).
+**Full rework of The Vault system** (released as **3.0.0**): classic `VaultManager` / `VaultSaveSystem` stack, one codebase under `TheVault/`, Harmony integration rebased on `Wish.*` types, single build (`TheVault/TheVault.csproj`). Secure storage for seasonal tokens, keys, and special currencies; auto-deposit, HUD, shop/door hooks; **Ctrl+V** or **F8** (Steam Deck). Details: [`TheVault/README.md`](TheVault/README.md). `TheVault-legacy/` is archive/reference only.
 
 ### Haven's Birthright
 
@@ -90,7 +90,8 @@ SunhavenMod/
 ├── SenpaisChest/          # Smart chests
 ├── SunhavenTodo/          # Todo list & journal
 ├── SunHavenMuseumUtilityTracker/  # Museum tracker
-├── TheVault/              # Vault currency
+├── TheVault/              # Vault (current; TheVault.dll)
+├── TheVault-legacy/       # Archive notes / optional Decomplied reference (not built)
 ├── HavensBirthright/      # Racial bonuses
 ├── HavensAlmanac/         # Mod registry
 ├── BirthdayReminder/      # Birthday reminders

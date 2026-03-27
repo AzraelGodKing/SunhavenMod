@@ -6,9 +6,20 @@
     <RootNamespace>TheVault</RootNamespace>
     <LangVersion>latest</LangVersion>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <EnableDefaultCompileItems>false</EnableDefaultCompileItems>
   </PropertyGroup>
 
-  <!-- BepInEx References -->
+  <ItemGroup>
+    <ProjectReference Include="..\TheVault.Abstractions\TheVault.Abstractions.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Compile Include="$(MSBuildProjectDirectory)\**\*.cs" Exclude="$(MSBuildProjectDirectory)\Decomplied\**;$(MSBuildProjectDirectory)\obj\**;$(MSBuildProjectDirectory)\bin\**;$(MSBuildProjectDirectory)\Tests\**" />
+    <Compile Include="..\SharedUtilities\VersionChecker.cs" Link="Shared\VersionChecker.cs" />
+    <Compile Include="..\SharedUtilities\ReflectionHelper.cs" Link="Shared\ReflectionHelper.cs" />
+    <Compile Include="..\SharedUtilities\IconCache.cs" Link="Shared\IconCache.cs" />
+  </ItemGroup>
+
   <ItemGroup>
     <Reference Include="BepInEx">
       <HintPath>$(BepInExPath)\core\BepInEx.dll</HintPath>
@@ -20,7 +31,6 @@
     </Reference>
   </ItemGroup>
 
-  <!-- Unity References -->
   <ItemGroup>
     <Reference Include="UnityEngine">
       <HintPath>$(ManagedPath)\UnityEngine.dll</HintPath>
@@ -56,7 +66,6 @@
     </Reference>
   </ItemGroup>
 
-  <!-- Game References -->
   <ItemGroup>
     <Reference Include="Assembly-CSharp">
       <HintPath>$(ManagedPath)\Assembly-CSharp.dll</HintPath>
@@ -66,23 +75,21 @@
       <HintPath>$(ManagedPath)\SunHaven.Core.dll</HintPath>
       <Private>false</Private>
     </Reference>
+    <Reference Include="Sirenix.Serialization">
+      <HintPath>$(ManagedPath)\Sirenix.Serialization.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
     <Reference Include="UnityEngine.UnityWebRequestModule">
       <HintPath>$(ManagedPath)\UnityEngine.UnityWebRequestModule.dll</HintPath>
       <Private>false</Private>
     </Reference>
   </ItemGroup>
 
-  <!-- Shared Utilities (linked files) -->
-  <ItemGroup>
-    <Compile Include="..\SharedUtilities\VersionChecker.cs" Link="Shared\VersionChecker.cs" />
-    <Compile Include="..\SharedUtilities\ReflectionHelper.cs" Link="Shared\ReflectionHelper.cs" />
-    <Compile Include="..\SharedUtilities\IconCache.cs" Link="Shared\IconCache.cs" />
-  </ItemGroup>
-
-  <!-- Copy to BepInEx plugins folder and builds folder after build -->
   <Target Name="CopyToPlugins" AfterTargets="Build">
     <Copy SourceFiles="$(TargetPath)" DestinationFolder="$(BepInExPath)\plugins\TheVault" />
     <Copy SourceFiles="$(TargetPath)" DestinationFolder="$(MSBuildProjectDirectory)\..\builds\TheVault" />
+    <Copy SourceFiles="$(TargetDir)TheVault.Abstractions.dll" DestinationFolder="$(BepInExPath)\plugins\TheVault" Condition="Exists('$(TargetDir)TheVault.Abstractions.dll')" />
+    <Copy SourceFiles="$(TargetDir)TheVault.Abstractions.dll" DestinationFolder="$(MSBuildProjectDirectory)\..\builds\TheVault" Condition="Exists('$(TargetDir)TheVault.Abstractions.dll')" />
     <Message Text="Copied $(TargetFileName) to BepInEx plugins and builds folder" Importance="High" />
   </Target>
 

@@ -192,6 +192,16 @@ namespace HavenDevTools.Integrations
                     GUILayout.Label($"  {kvp.Key}: {kvp.Value}", label);
             }
 
+            GUILayout.Space(8);
+            if (ModConfig.TheVaultFullVaultInspector != null)
+            {
+                bool inspector = ModConfig.TheVaultFullVaultInspector.Value;
+                bool newInspector = GUILayout.Toggle(inspector, " Full vault inspector (zeros + Debug tab + full HUD)", label);
+                if (newInspector != inspector)
+                    ModConfig.TheVaultFullVaultInspector.Value = newInspector;
+                GUILayout.Label("Moved from The Vault settings; persists in com.azraelgodking.havendevtools.cfg ([The Vault] section).", label);
+            }
+
             GUILayout.EndVertical();
         }
 
