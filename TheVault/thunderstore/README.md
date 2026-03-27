@@ -16,7 +16,7 @@ Sun Haven vault mod (per-character encrypted vault, IMGUI vault + HUD, auto-depo
 
 ## Vault save data
 
-Updates are intended **not** to wipe your vault. If a release ever required a breaking save change, that will be called out clearly in the description and changelog first.
+Routine updates aim **not** to wipe your vault. If a build **cannot** keep compatibility, maintainers publish a clear warning at the **top of the GitHub README**, in **Thunderstore/Nexus** text, the **changelog** (what to back up), and an **in-game / log** notice when needed — see **`TheVault/SAVE_COMPATIBILITY.md`** in the repo.
 
 ## For mod authors
 

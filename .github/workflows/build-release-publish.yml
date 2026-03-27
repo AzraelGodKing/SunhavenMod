@@ -21,6 +21,8 @@
 #   2. Nexus Mods (optional): NEXUSMODS_API_KEY from https://www.nexusmods.com/users/myaccount?tab=api
 #      Add nexus_file_group_id to docs/versions.json for mods you want to upload to Nexus
 #      Use Nexus-Mods/upload-action v1.0.0-beta.3+ (Nexus API wraps JSON in { data }; beta.2 throws on .length)
+#   3. The Vault breaking vault saves: TheVault/SAVE_COMPATIBILITY.md — set vault_save_breaking + banner in versions.json,
+#      README callout, VaultSaveCompatibility.cs, thunderstore README; CI prepends banner to published description/changelog.
 # =============================================================================
 
 name: Release & Publish
@@ -213,6 +215,8 @@ jobs:
           MOD_DISPLAY_NAME=$(jq -r ".[\"$JSON_KEY\"].name" docs/versions.json)
           MOD_DESCRIPTION=$(jq -r ".[\"$JSON_KEY\"].description" docs/versions.json)
           CHANGELOG=$(jq -r ".[\"$JSON_KEY\"].changelog" docs/versions.json)
+          VAULT_SAVE_BREAKING=$(jq -r ".[\"$JSON_KEY\"].vault_save_breaking // false" docs/versions.json)
+          VAULT_BREAKING_BANNER=$(jq -r ".[\"$JSON_KEY\"].vault_breaking_banner // \"\"" docs/versions.json)
           NEXUS_URL=$(jq -r ".[\"$JSON_KEY\"].nexus // \"\"" docs/versions.json)
           NEXUS_FILE_GROUP_ID=$(jq -r ".[\"$JSON_KEY\"].nexus_file_group_id // empty" docs/versions.json)
           THUNDERSTORE_URL=$(jq -r ".[\"$JSON_KEY\"].thunderstore // \"\"" docs/versions.json)
@@ -297,6 +301,8 @@ jobs:
       # ------------------------------------------------------------------
       - name: Package mod for distribution
         if: steps.version_check.outputs.version_unchanged != 'true'
+        env:
+          PACKAGE_MANIFEST_DESCRIPTION: ${{ steps.config.outputs.description }}
         run: |
           mkdir -p dist/package
 
@@ -379,6 +385,13 @@ jobs:
           elif [ -f "${{ steps.config.outputs.mod_dir }}/README.md" ]; then
             cp "${{ steps.config.outputs.mod_dir }}/README.md" dist/package/README.md
             echo "📄 Using ${{ steps.config.outputs.mod_dir }}/README.md as package readme"
+          fi
+
+          # Thunderstore manifest description matches publish text (incl. vault breaking banner from versions.json)
+          if [ -f dist/package/manifest.json ] && command -v jq >/dev/null 2>&1; then
+            jq --arg d "$PACKAGE_MANIFEST_DESCRIPTION" '.description = $d' dist/package/manifest.json > dist/package/manifest.json.__new__ \
+              && mv dist/package/manifest.json.__new__ dist/package/manifest.json
+            echo "📋 manifest description synced to CI publish string"
           fi
 
           # Update the version in manifest.json to match versions.json

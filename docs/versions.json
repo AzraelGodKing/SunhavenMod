@@ -42,7 +42,9 @@
   "com.azraelgodking.thevault": {
     "version": "3.0.0",
     "name": "The Vault",
-    "description": "Full rework of The Vault system: classic vault core in TheVault/, encrypted saves, UI/HUD, auto-deposit, shop/door hooks.",
+    "description": "The Vault 3 — per-character vault, encrypted saves, HUD, auto-deposit, shop/door hooks, Custom tab & mod API.",
+    "vault_save_breaking": false,
+    "vault_breaking_banner": "",
     "nexus": "https://www.nexusmods.com/sunhaven/mods/488",
     "nexus_file_group_id": "1305781",
     "thunderstore": "https://thunderstore.io/c/sun-haven/p/AzraelGodKing/TheVault/",
