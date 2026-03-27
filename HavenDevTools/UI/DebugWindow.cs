@@ -73,6 +73,7 @@ namespace HavenDevTools.UI
             ("com.azraelgodking.sunhaventodo", "Sunhaven Todo", "1.0.0"),
             ("com.azraelgodking.thevault", "The Vault", "3.0.0"),
             ("com.azraelgodking.havensalmanac", "Haven's Almanac", "1.0.0"),
+            ("com.azraelgodking.fasterraces", "Faster Races", "1.1.1"),
         };
 
         private const string PAUSE_ID = "HavenDevTools_Debug";
