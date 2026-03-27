@@ -20,6 +20,7 @@
 #   1. Thunderstore: THUNDERSTORE_TOKEN (Service Account token)
 #   2. Nexus Mods (optional): NEXUSMODS_API_KEY from https://www.nexusmods.com/users/myaccount?tab=api
 #      Add nexus_file_group_id to docs/versions.json for mods you want to upload to Nexus
+#      Use Nexus-Mods/upload-action v1.0.0-beta.3+ (Nexus API wraps JSON in { data }; beta.2 throws on .length)
 # =============================================================================
 
 name: Release & Publish
@@ -430,7 +431,7 @@ jobs:
 
       - name: Upload to Nexus Mods
         if: github.event.inputs.publish_nexus == 'true' && github.event.inputs.test_discord != 'true' && steps.version_check.outputs.version_unchanged != 'true' && steps.config.outputs.nexus_file_group_id != ''
-        uses: Nexus-Mods/upload-action@v1.0.0-beta.2
+        uses: Nexus-Mods/upload-action@v1.0.0-beta.3
         with:
           api_key: ${{ secrets.NEXUSMODS_API_KEY }}
           file_group_id: ${{ steps.config.outputs.nexus_file_group_id }}
