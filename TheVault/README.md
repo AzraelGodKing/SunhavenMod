@@ -63,6 +63,7 @@ The vault UI includes a **Custom** tab for currencies registered at runtime. Fro
 
 ### 3.0.0 (ongoing)
 
+- **Thunderstore / CI:** `TheVault/thunderstore/` now includes **`icon.png`** and **`README.md`** so the release workflow can package the mod (previously failed on missing icon). The GitHub Actions zip step also bundles **`TheVault.Abstractions.dll`** and accepts **`builds/{Mod}/icon.png`** as a fallback icon path.
 - **Version:** Shipping **3.0.0** everywhere (BepInEx `PluginInfo`, Thunderstore manifest, `docs/versions.json`, site mod cards, Haven Dev Tools version checker list, and assembly `Version` / `AssemblyVersion` in `TheVault.csproj` + `TheVault.Abstractions.csproj`).
 - **Main vault window:** Legacy **IMGUI** vault window is the default (uGUI panel disabled). Hotkeys and `Plugin.OpenVault` / `CloseVault` open the classic window; HUD hides while the vault window is open.
 - **HUD:** Larger default footprint — config **`[HUD] Scale`** default **1.25**, wider max width (**1200px**), slightly taller screen height budget, bigger icon/padding/font baselines. IMGUI styles no longer recreate gradient/border textures every frame when only the layout scale changes (less GPU/CPU churn). Row lists are pooled to cut per-frame allocations. (Earlier in 3.0.0: clipping/offset fix and palette refresh.)
