@@ -91,6 +91,7 @@ namespace TheVault
             // We use a separate hidden persistent runner instead.
 
             Log.LogInfo($"Loading {PluginInfo.PLUGIN_NAME} v{PluginInfo.PLUGIN_VERSION}");
+            VaultSaveCompatibility.WarnIfBreakingRelease(Log);
 
             // Create a hidden persistent runner that survives the game's cleanup
             CreatePersistentRunner();
