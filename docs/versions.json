@@ -40,7 +40,7 @@
     "changelog": "Added cross-mod integration for Birthday, S.M.U.T., and Senpai's Chest"
   },
   "com.azraelgodking.thevault": {
-    "version": "3.0.0",
+    "version": "3.0.1",
     "name": "The Vault",
     "description": "The Vault 3 — per-character vault, encrypted saves, HUD, auto-deposit, shop/door hooks, Custom tab & mod API.",
     "vault_save_breaking": false,
