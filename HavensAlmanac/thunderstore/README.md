@@ -1,12 +1,12 @@
 # Haven's Almanac
 
-**Version 1.0.1** — Unified mod dashboard for Sun Haven. Aggregates data from all your installed mods into one place: compact HUD, full dashboard (Ctrl+F5), daily briefing, draggable UI.
+**Version 1.0.3** — Unified mod dashboard for Sun Haven. Aggregates data from supported installed mods: compact HUD, full dashboard (Ctrl+F5 by default), daily briefing, draggable UI, optional UI scale and update check.
 
 ## Features
 
 - **Compact HUD** - Always-visible widget showing a one-line summary per installed mod
 - **Full Dashboard** - Expandable window with detailed sections from each mod (Ctrl+F5)
-- **Daily Briefing** - Morning summary popup when you wake up with key info for the day
+- **Daily Briefing** - Summary after load-in and when a new day starts (sleep); key info for the day
 - **Draggable** - Position the HUD anywhere on screen, position is saved
 
 ## Supported Mods
