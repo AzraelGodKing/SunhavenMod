@@ -108,6 +108,7 @@ document.addEventListener('DOMContentLoaded', function() {
         var activeTag = 'all';
         var emptyMsg = document.getElementById('modSearchEmpty');
         var resetBtn = emptyMsg ? emptyMsg.querySelector('.mod-search-reset') : null;
+        var boardCountEl = document.getElementById('modBoardCount');
 
         function syncHubURL() {
             if (!window.history || !window.history.replaceState) return;
@@ -149,6 +150,16 @@ document.addEventListener('DOMContentLoaded', function() {
                     emptyMsg.hidden = true;
                 }
             }
+            if (boardCountEl) {
+                var total = cards.length;
+                if (visibleCount === total) {
+                    boardCountEl.textContent = 'Showing all ' + total + ' postings.';
+                } else if (visibleCount === 0) {
+                    boardCountEl.textContent = 'No postings match — adjust search or filters.';
+                } else {
+                    boardCountEl.textContent = 'Showing ' + visibleCount + ' of ' + total + ' postings.';
+                }
+            }
             syncHubURL();
         }
 
@@ -172,6 +183,13 @@ document.addEventListener('DOMContentLoaded', function() {
         }
 
         searchInput.addEventListener('input', filterCards);
+
+        searchInput.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape') {
+                e.preventDefault();
+                searchInput.blur();
+            }
+        });
 
         tagButtons.forEach(function(btn) {
             btn.addEventListener('click', function() {
@@ -412,6 +430,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
         // Scroll-spy for TOC
         var tocLinks = tocContainer.querySelectorAll('.toc-link');
+        var lastTocActive = null;
         window.addEventListener('scroll', function() {
             var scrollPos = window.scrollY + 160;
             var activeLink = tocLinks[0];
@@ -420,6 +439,10 @@ document.addEventListener('DOMContentLoaded', function() {
             });
             tocLinks.forEach(function(l) { l.classList.remove('active'); });
             if (activeLink) activeLink.classList.add('active');
+            if (activeLink && activeLink !== lastTocActive) {
+                lastTocActive = activeLink;
+                activeLink.scrollIntoView({ block: 'nearest', behavior: 'auto' });
+            }
         });
     })();
 
@@ -521,6 +544,7 @@ document.addEventListener('DOMContentLoaded', function() {
             '<div class="site-search-dialog" role="dialog" aria-modal="true" aria-label="Search all pages">' +
             '<label class="visually-hidden" for="siteSearchInput">Search documentation</label>' +
             '<input type="search" id="siteSearchInput" class="site-search-input" autocomplete="off" spellcheck="false" placeholder="Search mods and hub sections…">' +
+            '<p id="siteSearchStatus" class="site-search-meta" aria-live="polite" aria-atomic="true"></p>' +
             '<ul class="site-search-results" role="listbox" aria-label="Results"></ul>' +
             '<p class="site-search-hint"><kbd>Esc</kbd> close · <kbd>↑</kbd><kbd>↓</kbd> move · <kbd>Enter</kbd> open · <kbd>Ctrl</kbd>+<kbd>K</kbd> anytime</p>' +
             '</div>';
@@ -530,11 +554,13 @@ document.addEventListener('DOMContentLoaded', function() {
         var dialog = root.querySelector('.site-search-dialog');
         var input = root.querySelector('#siteSearchInput');
         var listEl = root.querySelector('.site-search-results');
+        var statusEl = root.querySelector('#siteSearchStatus');
         var allRows = [];
         var filtered = [];
         var sel = -1;
         var debounceT = null;
         var lastFocus = null;
+        var indexFetchDone = false;
 
         function norm(s) {
             return (s || '').toLowerCase();
@@ -599,6 +625,20 @@ document.addEventListener('DOMContentLoaded', function() {
                 empty.textContent = 'No results — try Vault, museum, todo, or BepInEx.';
                 listEl.appendChild(empty);
             }
+
+            if (statusEl) {
+                if (!indexFetchDone) {
+                    statusEl.textContent = 'Loading search index…';
+                } else if (!allRows.length) {
+                    statusEl.textContent = 'Search index unavailable — use the Mod Hub and nav links.';
+                } else if (!q) {
+                    statusEl.textContent = 'Popular pages — type to filter ' + allRows.length + ' entries.';
+                } else if (!filtered.length) {
+                    statusEl.textContent = 'No matches.';
+                } else {
+                    statusEl.textContent = filtered.length + ' match' + (filtered.length === 1 ? '' : 'es') + '.';
+                }
+            }
         }
 
         function moveSel(delta) {
@@ -608,6 +648,10 @@ document.addEventListener('DOMContentLoaded', function() {
                 li.classList.toggle('active', i === sel);
                 li.setAttribute('aria-selected', i === sel ? 'true' : 'false');
             });
+            var activeLi = listEl.querySelector('.site-search-item.active');
+            if (activeLi) {
+                activeLi.scrollIntoView({ block: 'nearest', behavior: 'auto' });
+            }
         }
 
         function goSelected() {
@@ -638,9 +682,14 @@ document.addEventListener('DOMContentLoaded', function() {
             .then(function(r) { return r.json(); })
             .then(function(data) {
                 allRows = Array.isArray(data) ? data : [];
+                indexFetchDone = true;
                 if (!root.hasAttribute('hidden')) render();
             })
-            .catch(function() { allRows = []; });
+            .catch(function() {
+                allRows = [];
+                indexFetchDone = true;
+                if (!root.hasAttribute('hidden')) render();
+            });
 
         input.addEventListener('input', function() {
             if (debounceT) clearTimeout(debounceT);
@@ -654,6 +703,30 @@ document.addEventListener('DOMContentLoaded', function() {
         });
 
         backdrop.addEventListener('click', closeSearch);
+
+        listEl.addEventListener('click', function(e) {
+            if (e.button !== 0) return;
+            if (e.ctrlKey || e.metaKey || e.shiftKey || e.altKey) return;
+            var li = e.target.closest('.site-search-item');
+            if (!li) return;
+            var a = li.querySelector('a');
+            if (a) {
+                e.preventDefault();
+                window.location.href = a.href;
+            }
+        });
+
+        listEl.addEventListener('mouseover', function(e) {
+            var li = e.target.closest('.site-search-item');
+            if (!li || !listEl.contains(li)) return;
+            var idx = parseInt(li.dataset.idx, 10);
+            if (isNaN(idx) || idx === sel) return;
+            sel = idx;
+            Array.prototype.forEach.call(listEl.querySelectorAll('[role="option"]'), function(el, i) {
+                el.classList.toggle('active', i === sel);
+                el.setAttribute('aria-selected', i === sel ? 'true' : 'false');
+            });
+        });
 
         document.addEventListener('keydown', function(e) {
             if ((e.ctrlKey || e.metaKey) && String(e.key).toLowerCase() === 'k') {

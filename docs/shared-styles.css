@@ -1571,6 +1571,14 @@ body.site-search-open {
     border-color: rgba(111, 207, 151, 0.25);
 }
 
+.site-search-meta {
+    margin: 0 0 10px;
+    font-size: 0.78em;
+    opacity: 0.62;
+    line-height: 1.35;
+    min-height: 1.35em;
+}
+
 .site-search-input {
     width: 100%;
     padding: 14px 16px;
@@ -1601,6 +1609,7 @@ body.site-search-open {
 .site-search-item {
     margin-bottom: 4px;
     border-radius: 10px;
+    cursor: pointer;
 }
 
 .site-search-item.active {
@@ -1693,7 +1702,8 @@ body.site-search-open {
     .site-search-fab,
     .site-search,
     .announcement-banner,
-    .toc-sidebar {
+    .toc-sidebar,
+    .mod-board-count {
         display: none !important;
     }
 
