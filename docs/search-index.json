@@ -1,0 +1,17 @@
+[
+  {"t": "Mod Hub — Home", "u": "index.html", "d": "All mods: notice board, install steps, party loadouts, capability comparison.", "k": "guild hub home azrael"},
+  {"t": "Guild Initiation — Install BepInEx", "u": "index.html#guild-initiation", "d": "Install BepInEx 5.x, download DLLs, place in BepInEx/plugins.", "k": "bepinex install setup plugins nexus"},
+  {"t": "Guild Master's Wisdom — FAQ", "u": "index.html#guild-master-wisdom", "d": "Config files, upgrades, using several mods together.", "k": "faq cfg config log troubleshooting"},
+  {"t": "Party loadouts", "u": "index.html#party-loadouts", "d": "Recommended mod bundles: curator, diplomat, homesteader, full arsenal.", "k": "bundle pack starter kit"},
+  {"t": "Arsenal comparison table", "u": "index.html#arsenal-comparison", "d": "Compare per-character saves, UI, controller support, synergy across mods.", "k": "matrix features compare"},
+  {"t": "The Vault", "u": "TheVault/TheVault.html", "d": "Seasonal and special currency storage, auto-deposit, shop and door integration.", "k": "tokens keys money wallet vault","tags":["QoL","Storage"]},
+  {"t": "Haven's Birthright", "u": "RacialBonuses/RacialBonuses.html", "d": "Racial bonuses and abilities for all 12 races.", "k": "races traits amari naga build","tags":["QoL"]},
+  {"t": "Faster Races", "u": "FasterRaces/FasterRaces.html", "d": "Configurable movement speed; works with Birthright without double speed.", "k": "speed run movement walks fast","tags":["QoL"]},
+  {"t": "Trinket Fortune", "u": "TrinketFortune/TrinketFortune.html", "d": "Fishing trinket drops scale with aquarium museum completion.", "k": "fish aquarium luck relic","tags":["QoL","Tracking"]},
+  {"t": "S.M.U.T. — Museum tracker", "u": "SMUT/SMUT.html", "d": "Track museum donations: gems, culture, fish — per character.", "k": "museum donate hall aquarium smut","tags":["Tracking","UI"]},
+  {"t": "Sun Haven Todo", "u": "Todo/todo.html", "d": "In-game task list with categories; integrates with Birthday and museum todos.", "k": "tasks journal checklist quest","tags":["QoL","Tracking","UI"]},
+  {"t": "Birthday Reminder", "u": "BirthdayReminder/BirthdayReminder.html", "d": "NPC birthday reminders and gift suggestions; Todo integration.", "k": "gifts villagers romance social","tags":["Social","QoL"]},
+  {"t": "Senpai's Chest", "u": "SenpaisChest/SenpaisChest.html", "d": "Smart chest sorting rules, groups, museum-aware with S.M.U.T.", "k": "storage sort inventory chest","tags":["QoL","Storage"]},
+  {"t": "Haven's Almanac", "u": "HavensAlmanac/HavensAlmanac.html", "d": "Unified HUD, dashboard, and morning briefing across your mods.", "k": "dashboard hud briefing summary","tags":["QoL","UI","Tracking"]},
+  {"t": "HavenDevTools", "u": "HavenDevTools/HavenDevTools.html", "d": "Debug and inspection utilities for mod authors.", "k": "debug developer log inspector","tags":["Dev"]}
+]

@@ -106,7 +106,7 @@ SunhavenMod/
 
 ## Documentation site changelog
 
-- **2026-03-27** — Mod Hub UX: corrected contract and pack copy, full gameplay list in Guild Master’s Arsenal, comparison columns for Faster Races and Trinket Fortune, mobile table hint, empty search state with reset, section anchors and jump navigation, keyboard focus styles, safe-area offsets for floating controls, collapsible on-page TOC when the sidebar is hidden, 404 inherits Mod Hub theme from `localStorage` with a matching toggle.
+- **2026-03-27** — Docs UX: hub/table/packs/jump nav, sharable `?q=` / `?tag=`, empty search state, mobile TOC + comparison hint, related-mod strips, SEO (`og-card`, canonicals), game-compat callout, Almanac banner refresh, 404 theme, `prefers-reduced-motion`, **site-wide search** (`docs/search-index.json`, **Ctrl+K**, Search FAB, keyboard list), anchor `scroll-margin-top`, print stylesheet (hides chrome), hub **/** focuses board filter only. Pass 3: **sticky** jump nav + blur, live **board count**, search **preload**, site-search **status line** + whole-row click + hover sync + scroll active item; TOC spy scrolls active link into view; **Escape** blurs board filter.
 
 ## Links
 
