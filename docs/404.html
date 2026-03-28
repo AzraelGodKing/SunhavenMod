@@ -3,6 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script>(function(){ var s = localStorage.getItem('sh-mod-theme'); if (s) document.documentElement.setAttribute('data-theme', s); })();</script>
     <title>Page Not Found - Sun Haven Mod Hub</title>
     <link rel="icon" type="image/svg+xml" href="/SunhavenMod/favicon.svg">
     <meta name="theme-color" content="#2f8f5b">
@@ -142,8 +143,37 @@
         @media (max-width: 400px) {
             .quest-header { flex-direction: column; align-items: center; text-align: center; }
         }
+
+        .theme-toggle-404 {
+            margin-left: auto;
+            flex-shrink: 0;
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            border: 2px solid rgba(200, 190, 160, 0.35);
+            background: rgba(60, 48, 32, 0.85);
+            color: #d4c8a8;
+            cursor: pointer;
+            font-size: 1.05em;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: background 0.2s, border-color 0.2s, transform 0.15s;
+        }
+        .theme-toggle-404:hover {
+            transform: scale(1.06);
+            border-color: rgba(201, 168, 76, 0.55);
+        }
+        .theme-toggle-404:focus-visible {
+            outline: 3px solid rgba(201, 168, 76, 0.85);
+            outline-offset: 3px;
+        }
+        [data-theme="dark"] .theme-toggle-404 {
+            background: rgba(30, 24, 18, 0.95);
+            border-color: rgba(201, 168, 76, 0.25);
+            color: #c9a84c;
+        }
     </style>
-    <script>(function(){ var s=localStorage.getItem('sh-mod-theme'); if(s) document.documentElement.setAttribute('data-theme',s); })();</script>
 </head>
 <body>
     <div class="status-bar" role="banner">
@@ -151,6 +181,7 @@
         <div class="stat"><span class="stat-label">MP</span><div class="stat-bar-track"><div class="stat-bar-fill mp"></div></div><span class="stat-val blue">3/???</span></div>
         <div class="stat"><span class="stat-label">Location:</span><span class="stat-val gold blink">UNKNOWN REGION</span></div>
         <div class="stat"><span class="stat-label">Quest:</span><span class="stat-val blink">???</span></div>
+        <button type="button" class="theme-toggle-404" id="themeToggle404" aria-label="Toggle dark mode" title="Uses the same theme as the Mod Hub"></button>
     </div>
 
     <main class="quest-log">
@@ -228,6 +259,22 @@
                 var segs=window.location.pathname.split('/').filter(Boolean);
                 var base=segs.length?'/'+segs[0]+'/':'/';
                 hub.href=base+'index.html';
+            }
+            var themeBtn=document.getElementById('themeToggle404');
+            function syncThemeIcon(){
+                if(!themeBtn) return;
+                var dark=document.documentElement.getAttribute('data-theme')==='dark';
+                themeBtn.textContent=dark?'\u2600\uFE0F':'\uD83C\uDF19';
+            }
+            syncThemeIcon();
+            if(themeBtn){
+                themeBtn.addEventListener('click', function(){
+                    var cur=document.documentElement.getAttribute('data-theme');
+                    var next=cur==='dark'?'light':'dark';
+                    document.documentElement.setAttribute('data-theme', next);
+                    localStorage.setItem('sh-mod-theme', next);
+                    syncThemeIcon();
+                });
             }
         })();
     </script>

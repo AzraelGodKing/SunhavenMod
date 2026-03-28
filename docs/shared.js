@@ -105,6 +105,8 @@ document.addEventListener('DOMContentLoaded', function() {
         var cards = document.querySelectorAll('.mod-card');
         var tagButtons = document.querySelectorAll('.filter-tag');
         var activeTag = 'all';
+        var emptyMsg = document.getElementById('modSearchEmpty');
+        var resetBtn = emptyMsg ? emptyMsg.querySelector('.mod-search-reset') : null;
 
         function filterCards() {
             var query = searchInput.value.toLowerCase().trim();
@@ -127,6 +129,13 @@ document.addEventListener('DOMContentLoaded', function() {
                 card.style.display = show ? '' : 'none';
                 if (show) visibleCount++;
             });
+            if (emptyMsg) {
+                if (visibleCount === 0) {
+                    emptyMsg.hidden = false;
+                } else {
+                    emptyMsg.hidden = true;
+                }
+            }
         }
 
         searchInput.addEventListener('input', filterCards);
@@ -138,6 +147,31 @@ document.addEventListener('DOMContentLoaded', function() {
                 activeTag = btn.getAttribute('data-tag');
                 filterCards();
             });
+        });
+
+        if (resetBtn) {
+            resetBtn.addEventListener('click', function() {
+                searchInput.value = '';
+                activeTag = 'all';
+                tagButtons.forEach(function(b) { b.classList.remove('active'); });
+                var allBtn = document.querySelector('.filter-tag[data-tag="all"]');
+                if (allBtn) allBtn.classList.add('active');
+                filterCards();
+                searchInput.focus();
+            });
+        }
+    }
+
+    // -----------------------------------------------------------------
+    // Hub jump nav (index — select on narrow screens)
+    // -----------------------------------------------------------------
+    var hubJump = document.getElementById('hubJumpSelect');
+    if (hubJump) {
+        hubJump.addEventListener('change', function() {
+            var v = hubJump.value;
+            if (!v) return;
+            location.hash = v;
+            hubJump.selectedIndex = 0;
         });
     }
 
@@ -313,6 +347,20 @@ document.addEventListener('DOMContentLoaded', function() {
             tocList.appendChild(li);
         });
         tocContainer.appendChild(tocList);
+
+        // Collapsed TOC on narrow viewports (sidebar hidden via CSS)
+        var mainContainer = document.querySelector('.container');
+        if (mainContainer && tocList.querySelector('li')) {
+            var mobileToc = document.createElement('details');
+            mobileToc.className = 'toc-mobile';
+            mobileToc.open = false;
+            var sum = document.createElement('summary');
+            sum.className = 'toc-mobile-summary';
+            sum.textContent = 'On this page';
+            mobileToc.appendChild(sum);
+            mobileToc.appendChild(tocList.cloneNode(true));
+            mainContainer.insertBefore(mobileToc, mainContainer.firstChild);
+        }
 
         // Scroll-spy for TOC
         var tocLinks = tocContainer.querySelectorAll('.toc-link');

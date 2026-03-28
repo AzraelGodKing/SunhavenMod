@@ -104,6 +104,10 @@ SunhavenMod/
 
 ---
 
+## Documentation site changelog
+
+- **2026-03-27** — Mod Hub UX: corrected contract and pack copy, full gameplay list in Guild Master’s Arsenal, comparison columns for Faster Races and Trinket Fortune, mobile table hint, empty search state with reset, section anchors and jump navigation, keyboard focus styles, safe-area offsets for floating controls, collapsible on-page TOC when the sidebar is hidden, 404 inherits Mod Hub theme from `localStorage` with a matching toggle.
+
 ## Links
 
 - [Nexus Mods (Senpai's Chest)](https://www.nexusmods.com/sunhaven/mods/496)
