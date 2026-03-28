@@ -21,6 +21,14 @@
 #   2. Nexus Mods (optional): NEXUSMODS_API_KEY from https://www.nexusmods.com/users/myaccount?tab=api
 #      Add nexus_file_group_id to docs/versions.json for mods you want to upload to Nexus
 #      Use Nexus-Mods/upload-action v1.0.0-beta.3+ (Nexus API wraps JSON in { data }; beta.2 throws on .length)
+#
+#   NEXUS: "Failed to update Mod file: 500 - <!DOCTYPE html>"
+#      That is the final POST /v3/mod-file-update-groups/{id}/versions step (attach upload to the mod).
+#      Multipart upload already succeeded; the HTML body is Nexus’s generic error page — usually server-side.
+#      - Retry the workflow later (v3 API is unstable / “evaluation only” per Nexus).
+#      - Verify nexus_file_group_id matches the mod’s Files tab → API info → file group id (not guessed).
+#      - Use an API key with upload permission; avoid re-publishing the same version if the site rejects it.
+#      - Enable ACTIONS_STEP_DEBUG on the repo for verbose upload-action logs.
 #   3. The Vault breaking vault saves: TheVault/SAVE_COMPATIBILITY.md — set vault_save_breaking + banner in versions.json,
 #      README callout, VaultSaveCompatibility.cs, thunderstore README; CI prepends banner to published description/changelog.
 # =============================================================================
@@ -441,6 +449,16 @@ jobs:
         run: |
           echo "⭐ Haven's Almanac is not on Nexus Mods yet — Nexus upload is intentionally skipped."
           echo "   Releases still go through GitHub and Thunderstore. Thanks for shipping the Almanac! 📚✨"
+
+      - name: Nexus upload — verify zip and ids
+        if: github.event.inputs.publish_nexus == 'true' && github.event.inputs.test_discord != 'true' && steps.version_check.outputs.version_unchanged != 'true' && steps.config.outputs.nexus_file_group_id != ''
+        run: |
+          ZIP="dist/${{ steps.config.outputs.thunderstore_name }}-${{ steps.config.outputs.version }}.zip"
+          echo "file_group_id=${{ steps.config.outputs.nexus_file_group_id }}"
+          echo "version=${{ steps.config.outputs.version }}"
+          echo "zip=$ZIP"
+          test -f "$ZIP" || { echo "::error::Missing $ZIP"; exit 1; }
+          ls -lh "$ZIP"
 
       - name: Upload to Nexus Mods
         if: github.event.inputs.publish_nexus == 'true' && github.event.inputs.test_discord != 'true' && steps.version_check.outputs.version_unchanged != 'true' && steps.config.outputs.nexus_file_group_id != ''
