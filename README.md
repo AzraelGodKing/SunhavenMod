@@ -106,6 +106,7 @@ SunhavenMod/
 
 ## Documentation site changelog
 
+- **2026-03-27** — Haven's Almanac: [`docs/HavensAlmanac/HavensAlmanac.html`](docs/HavensAlmanac/HavensAlmanac.html) and [`HavensAlmanac/thunderstore/README.md`](HavensAlmanac/thunderstore/README.md) aligned with **v1.0.3** / [`AlmanacConfig.cs`](HavensAlmanac/Config/AlmanacConfig.cs) (BepInEx section names, HUD position, `DailyBriefing`, `Updates`, `Display.UIScale`); briefing timing (load-in + new day); main-menu UI hide; note that Faster Races / Trinket Fortune are not integrated; related link to Senpai's Chest.
 - **2026-03-27** — Docs UX: hub/table/packs/jump nav, sharable `?q=` / `?tag=`, empty search state, mobile TOC + comparison hint, related-mod strips, SEO (`og-card`, canonicals), game-compat callout, Almanac banner refresh, 404 theme, `prefers-reduced-motion`, **site-wide search** (`docs/search-index.json`, **Ctrl+K**, Search FAB, keyboard list), anchor `scroll-margin-top`, print stylesheet (hides chrome), hub **/** focuses board filter only. Pass 3: **sticky** jump nav + blur, live **board count**, search **preload**, site-search **status line** + whole-row click + hover sync + scroll active item; TOC spy scrolls active link into view; **Escape** blurs board filter.
 
 ## Links
