@@ -221,7 +221,7 @@ document.addEventListener('DOMContentLoaded', function() {
             if (tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT') return;
             if (e.target && e.target.isContentEditable) return;
             if (e.ctrlKey || e.metaKey || e.altKey) return;
-            if (e.key === '/') {
+            if (e.key === '/' || e.key === 's') {
                 e.preventDefault();
                 searchInput.focus();
             }

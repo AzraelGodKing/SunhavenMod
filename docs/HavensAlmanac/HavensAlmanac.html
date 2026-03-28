@@ -23,7 +23,7 @@
         <a href="../index.html" class="nav-home">Mod Hub</a>
         <span class="nav-divider">/</span>
         <span class="nav-current">Haven's Almanac</span>
-        <span class="breadcrumb-date">Updated Feb 2026</span>
+        <span class="breadcrumb-date">Updated Mar 2026</span>
     </nav>
 
     <div class="container" id="main-content" role="main">
@@ -33,6 +33,7 @@
             <a href="../TheVault/TheVault.html">The Vault</a>
             <a href="../SMUT/SMUT.html">S.M.U.T.</a>
             <a href="../Todo/todo.html">Sun Haven Todo</a>
+            <a href="../SenpaisChest/SenpaisChest.html">Senpai&rsquo;s Chest</a>
         </nav>
 
         <!-- Title Page -->
@@ -40,12 +41,13 @@
             <div class="hero-icon">&#x1F4D6;</div>
             <h1>Haven's Almanac</h1>
             <p class="tagline">Unified Mod Dashboard<span class="cursor">|</span></p>
-            <span class="version-badge">v1.0.1</span>
+            <span class="version-badge">v1.0.3</span>
         </header>
 
         <!-- Epigraph -->
         <section class="intro-section">
-            <p>Haven's Almanac brings all your Sun Haven mods together in one place. A compact HUD shows at-a-glance status, a full dashboard provides detailed views, and a daily morning briefing summarizes what matters most when you wake up. Soft-depends on all mods &mdash; only displays data from what you have installed.</p>
+            <p>Haven's Almanac brings supported Sun Haven mods together in one place: a compact HUD for at-a-glance lines, a full dashboard for detail, and a daily briefing for birthdays, tasks, museum progress, and more. It <strong>soft-depends</strong> on each integration &mdash; only installed mods appear.</p>
+            <p>On startup the mod can <strong>check for updates</strong> (toggle in config). <strong>HUD, dashboard, and briefing</strong> share a configurable <strong>UI scale</strong> (0.5&ndash;2.5&times;). On the <strong>main menu</strong> the Almanac hides its UI until you load into the world.</p>
         </section>
 
         <div class="ornamental-divider"></div>
@@ -56,7 +58,7 @@
             <div class="keybind-grid">
                 <div class="keybind-card">
                     <div class="keybind-keys"><kbd>Ctrl</kbd> + <kbd>F5</kbd></div>
-                    <div class="keybind-action">Toggle Dashboard</div>
+                    <div class="keybind-action">Toggle Dashboard <span class="keybind-note">(default: <kbd>F5</kbd> with Ctrl required)</span></div>
                 </div>
                 <div class="keybind-card">
                     <div class="keybind-keys"><kbd>F4</kbd></div>
@@ -87,7 +89,7 @@
             <div class="feature-card">
                 <div class="feature-icon">&#x2600;&#xFE0F;</div>
                 <h3>Daily Briefing</h3>
-                <p>A morning summary popup that appears when you wake up. Shows today's birthdays, active tasks, museum progress, and more. Dismiss when you're ready.</p>
+                <p>Summary popup after you load in as the player owner, and again when a <strong>new day</strong> starts (sleep / day roll). Shows birthdays, tasks, museum progress, and more. Dismiss with the button or <kbd>Esc</kbd>.</p>
             </div>
             <div class="feature-card">
                 <div class="feature-icon">&#x1F517;</div>
@@ -162,6 +164,7 @@
                 </div>
             </div>
         </div>
+        <p class="section-footnote"><strong>Not integrated yet:</strong> Faster Races and Trinket Fortune do not expose Almanac panels; other mods above register automatically when their plugins are present.</p>
 
         <div class="ornamental-divider"></div>
 
@@ -186,7 +189,7 @@
                 <div class="step-number">3</div>
                 <div class="step-content">
                     <h4>Check Your Briefing</h4>
-                    <p>When you wake up each morning, the Daily Briefing popup summarizes birthdays, tasks, museum progress, and more. Dismiss with the button or <kbd>Esc</kbd>.</p>
+                    <p>After load-in, the briefing can appear with a fresh summary. After you sleep and the game advances to a new day, it can show again. Dismiss with the button or <kbd>Esc</kbd> (or set an auto-dismiss timer in config).</p>
                 </div>
             </div>
             <div class="step">
@@ -213,34 +216,49 @@
                 </thead>
                 <tbody>
                     <tr>
-                        <td><code>DashboardToggleKey</code></td>
+                        <td><code>Hotkeys → DashboardToggleKey</code></td>
                         <td><kbd>F5</kbd></td>
-                        <td>Key to toggle the full dashboard</td>
+                        <td>Key to toggle the full dashboard (with Ctrl if required below)</td>
                     </tr>
                     <tr>
-                        <td><code>DashboardRequireCtrl</code></td>
+                        <td><code>Hotkeys → DashboardRequireCtrl</code></td>
                         <td>true</td>
-                        <td>Require Ctrl modifier for dashboard toggle</td>
+                        <td>When true, hold <kbd>Ctrl</kbd> while pressing the dashboard key (default <kbd>Ctrl</kbd>+<kbd>F5</kbd>)</td>
                     </tr>
                     <tr>
-                        <td><code>HUDToggleKey</code></td>
+                        <td><code>Hotkeys → HUDToggleKey</code></td>
                         <td><kbd>F4</kbd></td>
-                        <td>Key to toggle HUD visibility</td>
+                        <td>Toggle HUD visibility</td>
                     </tr>
                     <tr>
-                        <td><code>HUD Enabled</code></td>
+                        <td><code>HUD → Enabled</code></td>
                         <td>true</td>
-                        <td>Show the compact HUD widget</td>
+                        <td>Show the compact HUD</td>
                     </tr>
                     <tr>
-                        <td><code>BriefingEnabled</code></td>
+                        <td><code>HUD → PositionX</code> / <code>PositionY</code></td>
+                        <td>-1 / -1</td>
+                        <td>Saved HUD position (<code>-1</code> = use default until you drag)</td>
+                    </tr>
+                    <tr>
+                        <td><code>DailyBriefing → Enabled</code></td>
                         <td>true</td>
-                        <td>Show the daily briefing on wake-up</td>
+                        <td>Show the daily briefing</td>
                     </tr>
                     <tr>
-                        <td><code>AutoDismissSeconds</code></td>
+                        <td><code>DailyBriefing → AutoDismissSeconds</code></td>
                         <td>0</td>
-                        <td>Auto-dismiss briefing (0 = manual dismiss only)</td>
+                        <td>Auto-close briefing after N seconds (<code>0</code> = manual only)</td>
+                    </tr>
+                    <tr>
+                        <td><code>Updates → CheckForUpdates</code></td>
+                        <td>true</td>
+                        <td>Check for a newer Almanac release on startup</td>
+                    </tr>
+                    <tr>
+                        <td><code>Display → UIScale</code></td>
+                        <td>1.0</td>
+                        <td>Scale HUD, dashboard, and briefing (allowed range 0.5&ndash;2.5)</td>
                     </tr>
                 </tbody>
             </table>
