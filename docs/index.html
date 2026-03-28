@@ -9,10 +9,16 @@
     <meta property="og:description" content="Quality-of-life mods for Sun Haven by AzraelGodKing. Museum tracker, smart chests, currency vault, and more.">
     <meta property="og:type" content="website">
     <meta property="og:image" content="https://azraelgodking.github.io/SunhavenMod/favicon.svg">
-    <meta name="twitter:card" content="summary">
+    <meta name="twitter:card" content="summary_large_image">
     <meta name="twitter:title" content="Sun Haven Mod Hub">
     <meta name="twitter:description" content="Quality-of-life mods for Sun Haven by AzraelGodKing.">
     <meta name="theme-color" content="#2f8f5b">
+    <link rel="canonical" href="https://azraelgodking.github.io/SunhavenMod/">
+    <meta property="og:url" content="https://azraelgodking.github.io/SunhavenMod/">
+    <meta property="og:image" content="https://azraelgodking.github.io/SunhavenMod/og-card.png">
+    <meta property="og:image:width" content="1200">
+    <meta property="og:image:height" content="630">
+    <meta name="twitter:image" content="https://azraelgodking.github.io/SunhavenMod/og-card.png">
     <link rel="icon" type="image/svg+xml" href="favicon.svg">
     <link rel="stylesheet" href="index-style.css">
     <link rel="stylesheet" href="shared-styles.css">
@@ -22,9 +28,9 @@
     <a href="#main-content" class="skip-to-content">Skip to content</a>
 
     <!-- Town Crier's Notice -->
-    <div class="announcement-banner" id="announcementBanner" data-dismiss-key="announce-havensalmanac-v1">
+    <div class="announcement-banner" id="announcementBanner" data-dismiss-key="announce-almanac-v103">
         <span class="announcement-icon">&#x1F4D6;</span>
-        <span class="announcement-text"><strong>Hear ye!</strong> Haven's Almanac v1.0.1 has arrived &mdash; a unified dashboard aggregating data from all your mods!</span>
+        <span class="announcement-text"><strong>Hear ye!</strong> Haven's Almanac v1.0.3 &mdash; unified dashboard, HUD, and daily briefing for your installed mods.</span>
         <a href="HavensAlmanac/HavensAlmanac.html" class="announcement-link">Read the Proclamation &rarr;</a>
         <button class="announcement-dismiss" aria-label="Dismiss announcement">&times;</button>
     </div>
@@ -66,7 +72,7 @@
             <h2 class="section-title" id="guild-notice-board" style="letter-spacing:0.1em;">Guild Notice Board</h2>
 
             <div class="mod-filter" style="border-left:3px solid rgba(47,143,91,0.4); padding-left:16px;">
-                <input type="text" class="mod-search" placeholder="Search the board by name, skill, or description..." id="modSearch">
+                <input type="text" class="mod-search" placeholder="Search the board by name, skill, or description… (press / or s)" id="modSearch" autocomplete="off">
                 <div class="filter-tags">
                     <button class="filter-tag active" data-tag="all">All Postings</button>
                     <button class="filter-tag" data-tag="QoL">QoL</button>
@@ -295,6 +301,7 @@
         <!-- Guild Initiation -->
         <section class="quick-install" style="border-left:3px solid rgba(47,143,91,0.3); padding-left:20px;">
             <h2 class="section-title" id="guild-initiation" style="letter-spacing:0.1em;">Guild Initiation</h2>
+            <p class="game-compat-callout">Built for <strong>Sun Haven</strong> on PC with <strong>BepInEx 5.x</strong>. Exact game-build compatibility varies by mod release; check each mod&rsquo;s page and <code>BepInEx/LogOutput.log</code> if a plugin fails to load.</p>
             <div class="install-steps">
                 <div class="install-step">
                     <div class="step-number" style="background:linear-gradient(135deg, #2f8f5b, #1a5c3a);">I</div>

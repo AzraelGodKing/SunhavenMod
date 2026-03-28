@@ -31,7 +31,8 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 
     topBtn.addEventListener('click', function() {
-        window.scrollTo({ top: 0, behavior: 'smooth' });
+        var instant = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+        window.scrollTo({ top: 0, behavior: instant ? 'auto' : 'smooth' });
     });
 
     // -----------------------------------------------------------------
@@ -108,6 +109,18 @@ document.addEventListener('DOMContentLoaded', function() {
         var emptyMsg = document.getElementById('modSearchEmpty');
         var resetBtn = emptyMsg ? emptyMsg.querySelector('.mod-search-reset') : null;
 
+        function syncHubURL() {
+            if (!window.history || !window.history.replaceState) return;
+            var u = new URL(window.location.href);
+            var rawQ = searchInput.value.trim();
+            if (rawQ) u.searchParams.set('q', rawQ); else u.searchParams.delete('q');
+            if (activeTag && activeTag !== 'all') u.searchParams.set('tag', activeTag);
+            else u.searchParams.delete('tag');
+            var qs = u.searchParams.toString();
+            var search = qs ? '?' + qs : '';
+            history.replaceState(null, '', u.pathname + search + (window.location.hash || ''));
+        }
+
         function filterCards() {
             var query = searchInput.value.toLowerCase().trim();
             var visibleCount = 0;
@@ -136,6 +149,26 @@ document.addEventListener('DOMContentLoaded', function() {
                     emptyMsg.hidden = true;
                 }
             }
+            syncHubURL();
+        }
+
+        function applyHubParamsFromURL() {
+            var u = new URL(window.location.href);
+            var qParam = u.searchParams.get('q');
+            var tagParam = u.searchParams.get('tag');
+            if (qParam !== null) searchInput.value = qParam;
+            if (tagParam) {
+                var matchBtn = null;
+                tagButtons.forEach(function(b) {
+                    if (b.getAttribute('data-tag') === tagParam) matchBtn = b;
+                });
+                if (matchBtn) {
+                    tagButtons.forEach(function(b) { b.classList.remove('active'); });
+                    matchBtn.classList.add('active');
+                    activeTag = tagParam;
+                }
+            }
+            filterCards();
         }
 
         searchInput.addEventListener('input', filterCards);
@@ -160,6 +193,20 @@ document.addEventListener('DOMContentLoaded', function() {
                 searchInput.focus();
             });
         }
+
+        applyHubParamsFromURL();
+
+        document.addEventListener('keydown', function(e) {
+            if (e.defaultPrevented) return;
+            var tag = e.target && e.target.tagName;
+            if (tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT') return;
+            if (e.target && e.target.isContentEditable) return;
+            if (e.ctrlKey || e.metaKey || e.altKey) return;
+            if (e.key === '/' || e.key === 's') {
+                e.preventDefault();
+                searchInput.focus();
+            }
+        });
     }
 
     // -----------------------------------------------------------------
@@ -386,6 +433,14 @@ document.addEventListener('DOMContentLoaded', function() {
             '.mod-status-badge'
         );
         if (!animateEls.length) return;
+
+        var reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+        if (reduceMotion) {
+            animateEls.forEach(function(el) {
+                el.classList.add('animate-in', 'animated');
+            });
+            return;
+        }
 
         animateEls.forEach(function(el) { el.classList.add('animate-in'); });
 
