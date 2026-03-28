@@ -106,7 +106,7 @@ SunhavenMod/
 
 ## Documentation site changelog
 
-- **2026-03-27** — Mod Hub UX pass: contract/pack/table fixes, jump nav, empty search state, mobile TOC, FAB safe-areas, 404 theme from `localStorage` + toggle. Follow-up: sharable filters (`?q=` / `?tag=`), `/` and `s` focus search, `prefers-reduced-motion` (hub scroll, entrance animations, 404), game compatibility note, Almanac banner v1.0.3 + dismiss key `announce-almanac-v103`, `docs/og-card.png` with canonical / `og:url` / `og:image` on hub and mod pages, **Also see** strips, `twitter:image` on hub.
+- **2026-03-27** — Docs UX: hub/table/packs/jump nav, sharable `?q=` / `?tag=`, empty search state, mobile TOC + comparison hint, related-mod strips, SEO (`og-card`, canonicals), game-compat callout, Almanac banner refresh, 404 theme, `prefers-reduced-motion`, **site-wide search** (`docs/search-index.json`, **Ctrl+K**, Search FAB, keyboard list), anchor `scroll-margin-top`, print stylesheet (hides chrome), hub **/** focuses board filter only.
 
 ## Links
 
