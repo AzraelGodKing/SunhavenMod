@@ -1,0 +1,82 @@
+[b][size=5]The Vault[/size][/b] [i](v3.0.0)[/i]
+
+Sun Haven BepInEx mod: per-character vault, encrypted saves, HUD, auto-deposit—with shops and in-game costs (keys, etc.) reading and spending vault balances via your bag when the game uses inventory checks.
+
+[quote][b]Your vault save:[/b] Normal updates are not meant to erase your vault. Per-character balances live in this mod's encrypted vault data; when the save format changes, maintainers intend to [b]migrate[/b] old data forward. If a release cannot keep compatibility, it will be called out loudly in the README, store descriptions, and changelog — with backup steps. See [b]SAVE_COMPATIBILITY.md[/b] in the mod package for the maintainer policy.[/quote]
+
+[b]Ship both[/b] [b]TheVault.dll[/b] and [b]TheVault.Abstractions.dll[/b] together in [b]BepInEx/plugins/TheVault[/b] (or the same folder). Dependent mods may reference only the abstractions assembly.
+
+[line]
+
+[size=4][b]Features[/b][/size]
+[list]
+[*]Per-character encrypted vault ([b]VaultSaveSystem[/b], [b]VaultManager[/b])
+[*]Auto-deposit, shop hooks, inventory hooks for vault-backed keys/currency, on-screen HUD
+[*]Secret Gifts tracking in [b]SecretGifts.dat[/b]
+[*][b]Custom[/b] tab and runtime currency registration for other mods ([b]VaultIntegration[/b] / [b]TheVault.Abstractions[/b])
+[/list]
+
+[line]
+
+[size=4][b]Usage[/b][/size]
+[list]
+[*][b]Main window:[/b] IMGUI vault UI — [b]Ctrl+V[/b] or [b]F8[/b]. HUD hides while the window is open.
+[*][b]F7:[/b] Toggle HUD.
+[*]Select a row, enter a quantity, then [b]Withdraw[/b] (vault → bag) or [b]Deposit[/b] (bag → vault). Status text under the buttons reports success or errors.
+[*][b][HUD] Density:[/b] Normal, Compact, or Minimal. [b][HUD] CompactMode[/b] still narrows the bar when Density is Normal. In-game [b]Settings[/b] tab shows HUD density and compact toggle.
+[/list]
+
+[line]
+
+[size=4][b]Full vault inspector[/b][/size]
+Enable [b][The Vault] FullVaultInspector = true[/b] in [b]BepInEx/config/com.azraelgodking.havendevtools.cfg[/b], or in [b]Haven Dev Tools[/b] (F11) → [b]Azrael's Mods[/b] → [b]The Vault[/b]. The vault [b]Settings[/b] tab shows whether this mode is on (not stored in [b]thevault.cfg[/b]).
+
+When enabled:
+[list]
+[*]Tabs list [b]every[/b] defined currency, including [b]0[/b] balance.
+[*][b]Debug[/b] tab — text dump of all vault stores (seasonal, keys, specials, custom).
+[*][b]HUD[/b] lists all seasonal / key / special slots and all custom ids (including zeros).
+[/list]
+
+[line]
+
+[size=4][b]Custom currencies (other mods)[/b][/size]
+[list]
+[*]Dependency: [b][BepInDependency("com.azraelgodking.thevault")][/b] so your mod loads after The Vault.
+[*]After [b]TheVault.Api.VaultIntegration.IsVaultReady[/b], call [b]VaultIntegration.RegisterCustomCurrency(id, displayName, gameItemId, enableAutoDeposit)[/b].
+[*][b]id:[/b] short key, lowercase letters, digits, underscore only (max 64). Do [b]not[/b] include [b]custom_[/b] prefix; storage uses [b]custom_{id}[/b].
+[*][b]gameItemId:[/b] Sun Haven item id for withdraw / optional auto-deposit; [b]-1[/b] for balance with no inventory item.
+[*][b]Orphan balances:[/b] If a mod is removed, totals may remain under CustomCurrencies — enable full inspector → [b]Debug[/b] tab to see raw keys; re-register the same short id to restore the Custom tab.
+[*][b]Hooks:[/b] [b]VaultManager[/b] exposes [b]OnVaultLoaded[/b] and [b]OnCurrencyChanged[/b]. Subscribe via [b]Plugin.GetVaultManager()[/b] after the vault exists.
+[*][b]Thin API:[/b] Reference [b]TheVault.Abstractions.dll[/b]. At runtime use [b]TheVault.Modding.VaultModApiBridge.Instance[/b] ([b]IVaultModApi[/b]: [b]IsVaultReady[/b], [b]RegisterCustomCurrency[/b]).
+[/list]
+
+[line]
+
+[size=4][b]Requirements[/b][/size]
+[list]
+[*][url=https://github.com/BepInEx/BepInEx]BepInEx 5.x[/url] for Sun Haven
+[*]Sun Haven
+[/list]
+
+[size=4][b]Installation[/b][/size]
+[list]
+[*]Copy [b]TheVault.dll[/b] and [b]TheVault.Abstractions.dll[/b] into the same plugins folder (e.g. [b]plugins/TheVault/[/b]).
+[*]Launch the game
+[/list]
+
+[size=4][b]Build (source)[/b][/size]
+[code]dotnet build TheVault/TheVault.csproj[/code]
+Both DLLs should land next to each other under plugins. [b]Distribute both[/b] to players.
+
+[line]
+
+[size=4][b]Links[/b][/size]
+[list]
+[*][url=https://www.nexusmods.com/sunhaven/mods/488]Nexus Mods[/url]
+[*][url=https://discord.gg/Vwh2y7qMXv]Discord — bugs & discussion[/url]
+[/list]
+
+[spoiler][size=3][b]Changelog — 3.0.0 (highlights)[/b][/size]
+The Vault 3: one plugin assembly, tighter [b]Wish.*[/b] / game integration, HUD and vault UI polish, safer inventory/vault bookkeeping, pickup toasts [b]NN× ItemName[/b], [b]Custom[/b] tab + [b]TheVault.Abstractions[/b] for other mods. Full vault inspection from Haven Dev Tools, not [b]thevault.cfg[/b]. Harmony aligned with [b]GameSave[/b], [b]Shop[/b], [b]Inventory[/b], [b]Player[/b], etc. [b]VaultDataSanitizer[/b] after load; NUnit tests under [b]Tests/[/b]. See package [b]README.md[/b] for full notes.
+[/spoiler]

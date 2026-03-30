@@ -772,10 +772,16 @@ namespace TheVault
                     if (buyItemMethod != null)
                     {
                         var prefix = AccessTools.Method(typeof(ShopPatches), "OnBeforeBuyItem");
+                        var postfix = AccessTools.Method(typeof(ShopPatches), "OnAfterBuyItem");
                         if (prefix != null)
                         {
                             _harmony.Patch(buyItemMethod, prefix: new HarmonyMethod(prefix));
-                            Log.LogInfo("Patched Shop.BuyItem(ShopItemInfo2,int) for vault");
+                            Log.LogInfo("Patched Shop.BuyItem(ShopItemInfo2,int) for vault (prefix)");
+                        }
+                        if (postfix != null)
+                        {
+                            _harmony.Patch(buyItemMethod, postfix: new HarmonyMethod(postfix));
+                            Log.LogInfo("Patched Shop.BuyItem(ShopItemInfo2,int) for vault (postfix)");
                         }
                     }
                 }
@@ -785,20 +791,32 @@ namespace TheVault
                     if (buyItemMethod != null)
                     {
                         var prefix = AccessTools.Method(typeof(ShopPatches), "OnBeforeBuyItem");
+                        var postfix = AccessTools.Method(typeof(ShopPatches), "OnAfterBuyItem");
                         if (prefix != null)
                         {
                             _harmony.Patch(buyItemMethod, prefix: new HarmonyMethod(prefix));
-                            Log.LogInfo("Patched Shop.BuyItem(ShopLoot2,int) for vault");
+                            Log.LogInfo("Patched Shop.BuyItem(ShopLoot2,int) for vault (prefix)");
+                        }
+                        if (postfix != null)
+                        {
+                            _harmony.Patch(buyItemMethod, postfix: new HarmonyMethod(postfix));
+                            Log.LogInfo("Patched Shop.BuyItem(ShopLoot2,int) for vault (postfix)");
                         }
                     }
                     var buyItemSingle = AccessTools.Method(shopType, "BuyItem", new[] { shopLoot2Type });
                     if (buyItemSingle != null)
                     {
                         var prefix = AccessTools.Method(typeof(ShopPatches), "OnBeforeBuyItemSingle");
+                        var postfix = AccessTools.Method(typeof(ShopPatches), "OnAfterBuyItemSingle");
                         if (prefix != null)
                         {
                             _harmony.Patch(buyItemSingle, prefix: new HarmonyMethod(prefix));
-                            Log.LogInfo("Patched Shop.BuyItem(ShopLoot2) for vault");
+                            Log.LogInfo("Patched Shop.BuyItem(ShopLoot2) for vault (prefix)");
+                        }
+                        if (postfix != null)
+                        {
+                            _harmony.Patch(buyItemSingle, postfix: new HarmonyMethod(postfix));
+                            Log.LogInfo("Patched Shop.BuyItem(ShopLoot2) for vault (postfix)");
                         }
                     }
                 }
@@ -912,7 +930,7 @@ namespace TheVault
                 Log.LogWarning("Could not find Inventory.GetAmount method");
             }
 
-            // Patch HasEnough to check vault - makes shops/doors allow purchases with vault currency
+            // Patch HasEnough to check vault - shops and any bag-based cost that uses HasEnough see vault balance
             var hasEnoughMethod = AccessTools.Method(inventoryType, "HasEnough", new[] { typeof(int), typeof(int) });
             if (hasEnoughMethod != null)
             {
@@ -1197,7 +1215,7 @@ namespace TheVault
     {
         public const string PLUGIN_GUID = "com.azraelgodking.thevault";
         public const string PLUGIN_NAME = "The Vault";
-        public const string PLUGIN_VERSION = "3.0.1";
+        public const string PLUGIN_VERSION = "3.0.2";
     }
 
     /// <summary>

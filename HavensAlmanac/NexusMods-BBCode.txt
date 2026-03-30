@@ -1,0 +1,67 @@
+[b][size=5]Haven's Almanac[/size][/b] [i](v1.0.3)[/i]
+
+Unified mod dashboard for Sun Haven. Aggregates data from supported installed mods: compact HUD, full dashboard ([b]Ctrl+F5[/b] by default), daily briefing, draggable UI, optional UI scale and update check.
+
+[line]
+
+[size=4][b]Features[/b][/size]
+[list]
+[*][b]Compact HUD[/b] — Always-visible widget with a one-line summary per installed supported mod
+[*][b]Full Dashboard[/b] — Expandable window with detailed sections from each mod
+[*][b]Daily Briefing[/b] — Summary after load-in and when a new day starts (sleep)
+[*][b]Draggable[/b] — HUD position saved
+[/list]
+
+[line]
+
+[size=4][b]Supported mods[/b][/size]
+Haven's Almanac [b]soft-depends[/b] on these; it shows data from any that are installed:
+
+[list]
+[*][b]Sunhaven Todo[/b] — Active tasks and completion progress
+[*][b]A Squirrel's Birthday Reminder[/b] — Today's birthdays and ungifted NPCs
+[*][b]S.M.U.T. (Museum Tracker)[/b] — Museum donation progress
+[*][b]Senpai's Chest[/b] — Smart chest count
+[*][b]The Vault[/b] — Stored currencies
+[*][b]Haven's Birthright[/b] — Racial bonuses
+[*][b]Haven Dev Tools[/b] — Dev tools status
+[/list]
+
+At least [b]one[/b] supported mod must be installed for the Almanac to display content.
+
+[line]
+
+[size=4][b]Hotkeys[/b][/size]
+[list]
+[*][b]Ctrl+F5[/b] — Toggle full dashboard
+[*][b]F4[/b] — Toggle HUD
+[*][b]Escape[/b] — Dismiss daily briefing
+[/list]
+
+[line]
+
+[size=4][b]Requirements[/b][/size]
+[list]
+[*][url=https://github.com/BepInEx/BepInEx]BepInEx 5.x[/url]
+[*]Sun Haven
+[*]At least one supported mod (see above)
+[/list]
+
+[size=4][b]Installation[/b][/size]
+[list]
+[*]Place [b]HavensAlmanac.dll[/b] in [b]BepInEx/plugins/HavensAlmanac/[/b]
+[*]Launch the game
+[/list]
+
+[line]
+
+[size=4][b]Configuration[/b][/size]
+[b]BepInEx/config/com.azraelgodking.havensalmanac.cfg[/b] — hotkeys, HUD visibility, daily briefing, UI scale, etc.
+
+[line]
+
+[size=4][b]Links[/b][/size]
+[list]
+[*][url=https://azraelgodking.github.io/SunhavenMod/HavensAlmanac/HavensAlmanac.html]Documentation[/url]
+[*][url=https://discord.gg/Vwh2y7qMXv]Discord — report bugs[/url]
+[/list]

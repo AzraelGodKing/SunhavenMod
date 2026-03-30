@@ -9,7 +9,7 @@ A collection of BepInEx mods for [Sun Haven](https://store.steampowered.com/app/
 | [**Senpai's Chest**](SenpaisChest/) | Smart chests with configurable item rules for automatic storage sorting | 2.2.0 |
 | [**Sunhaven Todo**](SunhavenTodo/) | In-game todo list and journal with per-character saves | 1.1.5 |
 | [**Sun Haven Museum Utility Tracker**](SunHavenMuseumUtilityTracker/) | Track museum donations across all sections | 2.2.5 |
-| [**The Vault**](TheVault/) | Full rework of the vault system; classic core, single project, typed game hooks | 3.0.0 |
+| [**The Vault**](TheVault/) | Full rework of the vault system; classic core, single project; shop and inventory vault hooks | 3.0.2 |
 | [**Haven's Birthright**](HavensBirthright/) | Unique racial bonuses and traits for each playable race | 1.3.3 |
 | [**Haven's Almanac**](HavensAlmanac/) | Mod compatibility registry and info hub | 1.0.3 |
 | [**A Squirrel's Birthday Reminder**](BirthdayReminder/) | Reminds you of villagers' birthdays | 1.1.3 |
@@ -38,7 +38,7 @@ Per-character saves, item icons, and bundle progress. Hotkey: **Ctrl+C**.
 
 ### The Vault
 
-**Full rework of The Vault system** (released as **3.0.0**): classic `VaultManager` / `VaultSaveSystem` stack, one codebase under `TheVault/`, Harmony integration rebased on `Wish.*` types, single build (`TheVault/TheVault.csproj`). Secure storage for seasonal tokens, keys, and special currencies; auto-deposit, HUD, shop/door hooks; **Ctrl+V** or **F8** (Steam Deck). Details: [`TheVault/README.md`](TheVault/README.md). `TheVault-legacy/` is archive/reference only.
+**Full rework of The Vault system** (released as **3.0.0**): classic `VaultManager` / `VaultSaveSystem` stack, one codebase under `TheVault/`, Harmony integration rebased on `Wish.*` types, single build (`TheVault/TheVault.csproj`). Secure storage for seasonal tokens, keys, and special currencies; auto-deposit, HUD, shop and inventory vault hooks; **Ctrl+V** or **F8** (Steam Deck). Details: [`TheVault/README.md`](TheVault/README.md). `TheVault-legacy/` is archive/reference only.
 
 ### Haven's Birthright
 
@@ -106,6 +106,7 @@ SunhavenMod/
 
 ## Documentation site changelog
 
+- **2026-03-27** — Nexus detailed-description BBCode: each mod folder includes `NexusMods-BBCode.txt` (content aligned with that mod’s README). Paths listed in [`docs/NexusMods-BBCode-Index.txt`](docs/NexusMods-BBCode-Index.txt). Removed monolithic `docs/NexusMods-Collection-BBCode.txt`.
 - **2026-03-27** — Haven's Almanac: [`docs/HavensAlmanac/HavensAlmanac.html`](docs/HavensAlmanac/HavensAlmanac.html) and [`HavensAlmanac/thunderstore/README.md`](HavensAlmanac/thunderstore/README.md) aligned with **v1.0.3** / [`AlmanacConfig.cs`](HavensAlmanac/Config/AlmanacConfig.cs) (BepInEx section names, HUD position, `DailyBriefing`, `Updates`, `Display.UIScale`); briefing timing (load-in + new day); main-menu UI hide; note that Faster Races / Trinket Fortune are not integrated; related link to Senpai's Chest.
 - **2026-03-27** — Mod Hub & docs UX: contract/pack/table fixes, jump nav (**sticky** + blur on hub), sharable `?q=` / `?tag=`, empty search state, mobile TOC + comparison hint, FAB safe-areas, related-mod **Also see** strips, SEO (`docs/og-card.png`, canonical / `og:url` / `og:image` on hub and mod pages, `twitter:image` on hub), game-compat callout, Almanac banner v1.0.3 + dismiss key `announce-almanac-v103`, 404 theme from `localStorage` + toggle, `prefers-reduced-motion` (hub scroll, entrance animations, 404), **site-wide search** (`docs/search-index.json`, **Ctrl+K**, Search FAB, keyboard list), anchor `scroll-margin-top`, print stylesheet (hides chrome); **`/`** and **`s`** focus the notice-board filter when site search is closed; live **board count**, search-index **preload**, site-search **status line** + whole-row click + hover sync + scroll active item; TOC spy scrolls active link into view; **Escape** blurs board filter.
 

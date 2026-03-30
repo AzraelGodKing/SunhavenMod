@@ -99,6 +99,14 @@ namespace TheVault.Patches
         }
 
         /// <summary>
+        /// Postfix for Shop.BuyItem(ShopLoot2) single-quantity overload — same vault deduction as <see cref="OnAfterBuyItem"/>.
+        /// </summary>
+        public static void OnAfterBuyItemSingle(object __instance, object __0)
+        {
+            OnAfterBuyItem(__instance, __0, 1);
+        }
+
+        /// <summary>
         /// Prefix for Wish.Shop.BuyItem(ShopLoot2) - single arg is item info.
         /// </summary>
         public static bool OnBeforeBuyItemSingle(object __instance, object __0)

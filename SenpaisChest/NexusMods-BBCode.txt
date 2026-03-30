@@ -1,0 +1,81 @@
+[b][size=5]Senpai's Chest[/size][/b] [i](v2.2.0)[/i]
+
+Smart chests with configurable item rules for hands-free storage organization in Sun Haven. Chest labels, rules by item/category/type/property/group, per-character saves.
+
+[b]2.2.0:[/b] Fixes rules disappearing when sorts run with a chest open, or after changing areas — orphan cleanup and per-scene disk reload no longer wipe in-memory config.
+
+[line]
+
+[size=4][b]Features[/b][/size]
+[list]
+[*][b]Chest Labels[/b] — Labels above chests (Chest, Large Wooden Chest, BankChest). Configurable visibility. Excludes Hoppers and Animal Feeders.
+[*][b]Smart Chests[/b] — Mark any chest as a Smart Chest and define rules for which items it collects
+[*][b]Automatic Sorting[/b] — Smart Chests periodically scan nearby chests and pull matching items (scan interval configurable)
+[*][b]Flexible Rules[/b] — Filter by [b]Item[/b], [b]Category[/b] (Equip, Use, Craftable, Monster, Furniture, Quest), [b]Item Type[/b] (Normal, Armor, Food, Fish, Crop, etc.), [b]Property[/b] (Gems, Forageables, Museum Not Donated, etc.), or [b]Group[/b] (custom subcategories — create in Manage Groups, reuse across chests)
+[*][b]Per-Character Saves[/b] — Each character's Smart Chest settings are saved separately
+[*][b]Multiplayer Safe[/b] — Skips chests that other players are using
+[/list]
+
+[line]
+
+[size=4][b]Usage[/b][/size]
+[list]
+[*]Open any chest
+[*]Press [b]F9[/b] (or your configured key) to open the Smart Chest configuration
+[*]Enable [b]Smart Chest[/b] and add rules for items this chest should collect
+[*]Close the config and the chest
+[*]Matching items will be pulled from nearby chests automatically on each scan
+[/list]
+
+[line]
+
+[size=4][b]Configuration[/b][/size]
+Edit [b]BepInEx/config/com.azraelgodking.senpaischest.cfg[/b]
+
+[table]
+[tr][th]Setting[/th][th]Default[/th][th]Description[/th][/tr]
+[tr][td]EnableChestLabels[/td][td]true[/td][td]Show labels above chests[/td][/tr]
+[tr][td]LabelVisibility[/td][td]Visible[/td][td]Visible, OnHover, or Hidden[/td][/tr]
+[tr][td]IconVisibility[/td][td]Visible[/td][td]Item icons in labels[/td][/tr]
+[tr][td]ScanInterval[/td][td]60[/td][td]Seconds between scans (min: 10)[/td][/tr]
+[tr][td]EnableNotifications[/td][td]true[/td][td]Notifications when items are moved[/td][/tr]
+[tr][td]MaxItemsPerScan[/td][td]50[/td][td]Max stacks per scan (reduces lag)[/td][/tr]
+[tr][td]ToggleKey[/td][td]F9[/td][td]Open config UI while chest is open[/td][/tr]
+[tr][td]RequireCtrlModifier[/td][td]false[/td][td]Require Ctrl with toggle key[/td][/tr]
+[tr][td]CheckForUpdates[/td][td]true[/td][td]Check for updates on startup[/td][/tr]
+[/table]
+
+[line]
+
+[size=4][b]Notes[/b][/size]
+[list]
+[*]Smart Chests do not pull from other Smart Chests (prevents loops)
+[*]Chests in use by another player are skipped
+[*]Configuration is tied to chest position; moving a chest resets its config
+[/list]
+
+[size=4][b]Tips — fine-grained sorting[/b][/size]
+The game's ItemType [b]Crop[/b] includes flowers, vegetables, and all crop types. Use [b]By Group[/b]: open a chest → F9 → [b]Manage Groups[/b] → create a group (e.g. Flowers), search and add items → use [b]By Group[/b] on rules. Reuse one group across many chests.
+
+[line]
+
+[size=4][b]Requirements[/b][/size]
+[list]
+[*][url=https://github.com/BepInEx/BepInEx]BepInEx 5.x[/url] for Sun Haven
+[*]Sun Haven
+[/list]
+
+[size=4][b]Installation[/b][/size]
+[list]
+[*]Place [b]SenpaisChest.dll[/b] in [b]Sun Haven/BepInEx/plugins/[/b] (subfolder recommended)
+[*]Launch the game
+[/list]
+
+[line]
+
+[size=4][b]Links[/b][/size]
+[list]
+[*][url=https://www.nexusmods.com/sunhaven/mods/496]Nexus Mods[/url]
+[*][url=https://azraelgodking.github.io/SunhavenMod/SenpaisChest/SenpaisChest.html]Documentation[/url]
+[*][url=https://discord.gg/Vwh2y7qMXv]Discord — bugs & discussion[/url]
+[/list]

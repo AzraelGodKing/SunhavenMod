@@ -40,16 +40,16 @@
     "changelog": "Added cross-mod integration for Birthday, S.M.U.T., and Senpai's Chest"
   },
   "com.azraelgodking.thevault": {
-    "version": "3.0.1",
+    "version": "3.0.2",
     "name": "The Vault",
-    "description": "The Vault 3 — per-character vault, encrypted saves, HUD, auto-deposit, shop/door hooks, Custom tab & mod API.",
+    "description": "The Vault 3 — per-character vault, encrypted saves, HUD, auto-deposit, shop and inventory vault integration, Custom tab & mod API.",
     "vault_save_breaking": false,
     "vault_breaking_banner": "",
     "nexus": "https://www.nexusmods.com/sunhaven/mods/488",
     "nexus_file_group_id": "1305781",
     "thunderstore": "https://thunderstore.io/c/sun-haven/p/AzraelGodKing/TheVault/",
     "thunderstoreName": "TheVault",
-    "changelog": "3.0.0 full rework: updated VaultManager/VaultSaveSystem + single TheVault/ tree; Harmony rebased on Wish.* types; change the HUD to an expanding bar, so if item = 0 it doesn't show"
+    "changelog": "3.0.2: fix vault+bag duplication (auto-deposit only on player bag), consumption fixes (RemoveItem/HasEnough), shop BuyItem postfixes; removed unused DoorPatches.cs. 3.0.0 full rework: Wish.* Harmony, HUD bar, single TheVault/ tree."
   },
   "com.azraelgodking.havendevtools": {
     "version": "1.0.6",
