@@ -1,8 +1,10 @@
 # Senpai's Chest
 
-**Version 2.2.0** — Smart chests with configurable item rules for hands-free storage organization in Sun Haven. Chest labels, rules by item/category/type/property/group, per-character saves.
+**Version 2.2.1** — Smart chests with configurable item rules for hands-free storage organization in Sun Haven. Chest labels, rules by item/category/type/property/group, per-character saves.
 
-**2.2.0:** Fixes rules disappearing when sorts run with a chest open, or after changing areas — orphan cleanup and per-scene disk reload no longer wipe in-memory config.
+**2.2.1:** No per-scene disk reload that overwrote in-memory config. **Rule deletion** only when a chest **actually leaves the world** (picked up / destroyed): `Chest.OnDisable` plus guards for **application quit** and **scene teardown** (active scene replaced). Sorts never delete saved rules; no scan-time “orphan” wipe.
+
+**Disaster recovery:** Per-character saves live in `BepInEx/config/SenpaisChest/Saves/<CharacterName>_smartchests.json`. Each save renames the previous file to `.bak`. If your rules were overwritten with an empty file, exit the game and try restoring the `.bak` (copy it over the `.json`, or merge the `Chests` array from the backup).
 
 ## Features
 

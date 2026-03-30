@@ -72,7 +72,7 @@ The vault UI includes a **Custom** tab for currencies registered at runtime. Fro
 
 **Released version is `3.0.2`** (BepInEx, Thunderstore, Nexus).
 
-**Maintainer note:** Do not bump version numbers (`PluginInfo.PLUGIN_VERSION`, `.csproj` `Version` / assembly file versions, Thunderstore manifest, `docs/versions.json`, Nexus/BBCode header, etc.) unless the project owner explicitly asks for a release bump.
+**Maintainer note:** Same as the [repo root README](../../README.md): do not bump **any** mod’s published version unless the owner explicitly asks for a release.
 
 ## Changelog
 
