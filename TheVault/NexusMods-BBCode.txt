@@ -1,4 +1,4 @@
-[b][size=5]The Vault[/size][/b] [i](v3.0.0)[/i]
+[b][size=5]The Vault[/size][/b] [i](v3.0.2)[/i]
 
 Sun Haven BepInEx mod: per-character vault, encrypted saves, HUD, auto-deposit—with shops and in-game costs (keys, etc.) reading and spending vault balances via your bag when the game uses inventory checks.
 
@@ -77,6 +77,9 @@ Both DLLs should land next to each other under plugins. [b]Distribute both[/b] t
 [*][url=https://discord.gg/Vwh2y7qMXv]Discord — bugs & discussion[/url]
 [/list]
 
-[spoiler][size=3][b]Changelog — 3.0.0 (highlights)[/b][/size]
-The Vault 3: one plugin assembly, tighter [b]Wish.*[/b] / game integration, HUD and vault UI polish, safer inventory/vault bookkeeping, pickup toasts [b]NN× ItemName[/b], [b]Custom[/b] tab + [b]TheVault.Abstractions[/b] for other mods. Full vault inspection from Haven Dev Tools, not [b]thevault.cfg[/b]. Harmony aligned with [b]GameSave[/b], [b]Shop[/b], [b]Inventory[/b], [b]Player[/b], etc. [b]VaultDataSanitizer[/b] after load; NUnit tests under [b]Tests/[/b]. See package [b]README.md[/b] for full notes.
+[spoiler][size=3][b]Changelog — 3.0.2[/b][/size]
+Vault+bag duplication fix (auto-deposit only on player bag); currency/key spending via inventory hooks; shop [b]BuyItem[/b] postfixes; [b]HasEnough[/b] player-bag only; removed unused [b]DoorPatches[/b]. See package [b]README.md[/b] for full notes.
+
+[size=3][b]3.0.0 — major rework (highlights)[/b][/size]
+The Vault 3: one plugin assembly, tighter [b]Wish.*[/b] / game integration, HUD and vault UI polish, safer inventory/vault bookkeeping, pickup toasts [b]NN× ItemName[/b], [b]Custom[/b] tab + [b]TheVault.Abstractions[/b] for other mods. Full vault inspection from Haven Dev Tools, not [b]thevault.cfg[/b]. Harmony aligned with [b]GameSave[/b], [b]Shop[/b], [b]Inventory[/b], [b]Player[/b], etc. [b]VaultDataSanitizer[/b] after load; NUnit tests under [b]Tests/[/b].
 [/spoiler]

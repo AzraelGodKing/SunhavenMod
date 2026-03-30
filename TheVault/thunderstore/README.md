@@ -1,6 +1,6 @@
 # The Vault
 
-Sun Haven vault mod (per-character encrypted vault, IMGUI vault + HUD, auto-deposit, shop hooks). **Released version: 3.0.0.**
+Sun Haven vault mod (per-character encrypted vault, IMGUI vault + HUD, auto-deposit, shop hooks). **Released version: 3.0.2.**
 
 ## Installation
 

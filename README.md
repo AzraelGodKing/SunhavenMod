@@ -38,7 +38,7 @@ Per-character saves, item icons, and bundle progress. Hotkey: **Ctrl+C**.
 
 ### The Vault
 
-**Full rework of The Vault system** (released as **3.0.0**): classic `VaultManager` / `VaultSaveSystem` stack, one codebase under `TheVault/`, Harmony integration rebased on `Wish.*` types, single build (`TheVault/TheVault.csproj`). Secure storage for seasonal tokens, keys, and special currencies; auto-deposit, HUD, shop and inventory vault hooks; **Ctrl+V** or **F8** (Steam Deck). Details: [`TheVault/README.md`](TheVault/README.md). `TheVault-legacy/` is archive/reference only.
+**Full rework of The Vault system** (current release **3.0.2**): classic `VaultManager` / `VaultSaveSystem` stack, one codebase under `TheVault/`, Harmony integration rebased on `Wish.*` types, single build (`TheVault/TheVault.csproj`). Secure storage for seasonal tokens, keys, and special currencies; auto-deposit, HUD, shop and inventory vault hooks; **Ctrl+V** or **F8** (Steam Deck). Details: [`TheVault/README.md`](TheVault/README.md). `TheVault-legacy/` is archive/reference only.
 
 ### Haven's Birthright
 
