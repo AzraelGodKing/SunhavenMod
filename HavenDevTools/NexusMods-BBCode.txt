@@ -1,0 +1,55 @@
+[b][size=5]Haven Dev Tools[/size][/b] [i](v1.0.5)[/i]
+
+Developer utilities for mod debugging and game state inspection in Sun Haven. [b]Not intended for typical players[/b]; may impact performance.
+
+[line]
+
+[size=4][b]Features[/b][/size]
+[list]
+[*][b]State Inspector[/b] — Real-time game state inspection
+[*][b]Debug Console[/b] — Advanced logging and commands
+[*][b]Performance Monitor[/b] — Track performance metrics
+[*][b]Hot Reload[/b] — Reload mods without restarting (experimental)
+[/list]
+
+[line]
+
+[size=4][b]Usage[/b][/size]
+Press the configured hotkey to open the dev tools panel. Intended for [b]mod developers[/b].
+
+[line]
+
+[size=4][b]The Vault (when installed)[/b][/size]
+[b][The Vault][/b] → [b]FullVaultInspector[/b] — same as full vault debug mode (zeros in tabs, Debug dump tab, full HUD). Also: dev window [b]Azrael's Mods → The Vault[/b].
+
+[line]
+
+[size=4][b]Requirements[/b][/size]
+[list]
+[*][url=https://github.com/BepInEx/BepInEx]BepInEx 5.x[/url]
+[*]Sun Haven
+[/list]
+
+[size=4][b]Installation[/b][/size]
+[list]
+[*]Place [b]HavenDevTools.dll[/b] in [b]BepInEx/plugins/[/b]
+[*]Launch the game
+[/list]
+
+[line]
+
+[size=4][b]Configuration[/b][/size]
+[b]BepInEx/config/com.azraelgodking.havendevtools.cfg[/b]
+
+[line]
+
+[size=4][b]Note[/b][/size]
+Developer tool — may affect performance. Not recommended for normal gameplay.
+
+[line]
+
+[size=4][b]Links[/b][/size]
+[list]
+[*][url=https://azraelgodking.github.io/SunhavenMod/HavenDevTools/HavenDevTools.html]Documentation[/url]
+[*][url=https://discord.gg/Vwh2y7qMXv]Discord — report bugs[/url]
+[/list]

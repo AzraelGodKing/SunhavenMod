@@ -1,0 +1,113 @@
+[b][size=5]Haven's Birthright[/size][/b] [i](v1.3.3)[/i]
+
+A Sun Haven mod that adds unique racial bonuses, active abilities, drawbacks, and conditional synergies for each playable race.
+
+[line]
+
+[size=4][b]Features[/b][/size]
+[list]
+[*]Thematic [b]passive[/b] bonuses per race; select races get powerful [b]active[/b] abilities (toggle in-game where noted)
+[*][b]Drawbacks[/b] — optional thematic penalties ([b]disabled by default[/b])
+[*][b]Conditional synergies[/b] — time of day, season, HP threshold
+[*]Almost all values are [b]configurable[/b]
+[*][b]F12[/b] (default) — reload config from disk without restarting
+[/list]
+
+Active abilities [b]Infernal Forge[/b], [b]Tidal Blessing[/b], [b]Font of Light[/b], and [b]Soul Harvest[/b] use the in-game toggle: they [b]start OFF[/b] each session until you press [b]F9[/b] (configurable) once. Press again to turn off. Others may be config-only.
+
+[spoiler][size=3][b]Passive racial bonuses (summary)[/b][/size]
+[b]Human:[/b] Adaptable (+XP), Charismatic (+relationship), Silver Tongue (shop discount)
+
+[b]Elf:[/b] Nature's Touch (farming), Green Thumb (crop quality), Forest Walker (foraging), Arcane Heritage (mana regen)
+
+[b]Angel:[/b] Divine Reservoir (max mana), Holy Light (magic damage), Blessed Recovery (HP regen), Fortune's Favor (luck)
+
+[b]Demon:[/b] Infernal Might (melee), Ruthless (crit), Hellforged Vitality (max HP), Greed (gold drops)
+
+[b]Fire Elemental:[/b] Burning Fury, Inferno, Wildfire, Scorching Strike (melee/magic/attack speed/crit)
+
+[b]Water Elemental:[/b] Tidal Shield (defense), Healing Waters, Flowing Spirit, Aquatic Kinship (fishing)
+
+[b]Amari:[/b] Swift Paws (move speed), Predator's Reflexes (attack speed), Skilled Artisan (crafting), Forest Hunter (woodcutting)
+
+[b]Amari Cat:[/b] Feline Grace (move speed), Predator's Strike (crit), Keen Senses (foraging), [b]Nine Lives[/b] (passive cheat-death chance — configurable, max 60%)
+
+[b]Naga:[/b] Aquatic Nature (fishing speed), Sea's Blessing (fishing luck), Scaled Hide (defense), Tidal Magic (mana regen)
+[/spoiler]
+
+[spoiler][size=3][b]Active abilities (detail)[/b][/size]
+[b]Water Elemental — Tidal Blessing:[/b] Auto-waters hoed crop tiles near the player at HP cost. Configurable HP%, safety threshold, cooldown.
+
+[b]Fire Elemental — Infernal Forge:[/b] Periodically smelts ore → bars using mana; tiered mana costs by ore type; blocks all mana regen while active; safety threshold.
+
+[b]Angel — Font of Light (Celestial Bloodlines):[/b] Restores mana over time at gold cost. Angel race only. [b]F9[/b] toggle.
+
+[b]Demon — Soul Harvest (Celestial Bloodlines):[/b] Bonus gold on kill, small HP cost per kill. Demon race only. [b]F9[/b] toggle.
+[/spoiler]
+
+[spoiler][size=3][b]Drawbacks (optional — off by default)[/b][/size]
+[table]
+[tr][th]Race[/th][th]Drawback[/th][th]Effect[/th][/tr]
+[tr][td]Fire Elemental[/td][td]Hydrophobic[/td][td]-20% Fishing speed/luck[/td][/tr]
+[tr][td]Water Elemental[/td][td]Fragile Form[/td][td]-10% Max HP[/td][/tr]
+[tr][td]Angel[/td][td]Pacifist[/td][td]-10% Melee damage[/td][/tr]
+[tr][td]Demon[/td][td]Distrusted[/td][td]-15% Relationship gain[/td][/tr]
+[tr][td]Elf[/td][td]Fragile[/td][td]-10% Max HP, -5% Defense[/td][/tr]
+[tr][td]Amari Cat[/td][td]Glass Cannon[/td][td]-15% Max HP[/td][/tr]
+[tr][td]Amari Dog[/td][td]Slow Starter[/td][td]-10% Movement speed[/td][/tr]
+[tr][td]Amari Bird[/td][td]Hollow Bones[/td][td]-15% Max HP, -10% Defense[/td][/tr]
+[tr][td]Amari Aquatic[/td][td]Land Slug[/td][td]-10% Movement speed[/td][/tr]
+[tr][td]Amari Reptile[/td][td]Cold Blooded[/td][td]-10% Attack speed[/td][/tr]
+[tr][td]Naga[/td][td]Landlocked[/td][td]-10% Move, -10% Farming[/td][/tr]
+[/table]
+[/spoiler]
+
+[spoiler][size=3][b]Conditional synergies[/b][/size]
+[b]Time:[/b] Angel — Solar Power (day magic) · Demon — Night Stalker (night melee)
+
+[b]Season:[/b] Elf — Spring Awakening · Fire — Summer's Fury · Water — Winter's Embrace
+
+[b]HP threshold:[/b] Amari Reptile — Last Stand (defense when low HP) · Angel — Martyr's Light (regen when very low HP)
+[/spoiler]
+
+[line]
+
+[size=4][b]Requirements[/b][/size]
+[list]
+[*][url=https://github.com/BepInEx/BepInEx]BepInEx[/url] for Sun Haven
+[*]Sun Haven
+[/list]
+
+[size=4][b]Installation[/b][/size]
+[list]
+[*]Copy [b]HavensBirthright.dll[/b] to [b]Sun Haven/BepInEx/plugins/HavensBirthright/[/b]
+[*]Launch the game
+[/list]
+
+[line]
+
+[size=4][b]Configuration[/b][/size]
+[b]Sun Haven/BepInEx/config/com.azraelgodking.havensbirthright.cfg[/b]
+
+You can enable/disable bonuses globally; toggle actives, drawbacks, and synergies; adjust percentages; set [b]F9[/b] / [b]F12[/b]; tune HP/mana costs and thresholds; [b]Amari Cat[/b] — Nine Lives under [b][Amari Cat][/b]; [b]AmariCatReduceCombatStutter[/b] under [b][Performance][/b] if needed.
+
+[line]
+
+[size=4][b]Links[/b][/size]
+[list]
+[*][url=https://www.nexusmods.com/sunhaven/mods/487]Nexus Mods[/url]
+[*][url=https://discord.gg/Vwh2y7qMXv]Discord — bugs & discussion[/url]
+[/list]
+
+[spoiler][size=3][b]Changelog (recent)[/b][/size]
+[b]v1.4.0[/b] — Save-load fix: race detection and ability state reset correctly when switching saves without returning to main menu. F12 config reload.
+
+[b]v1.3.x[/b] — Amari Cat rework; Nine Lives passive; optional performance setting for stutter with fast weapons.
+
+[b]v1.2.0[/b] — Tidal Blessing, Infernal Forge, F9 toggle, drawbacks, conditional synergies.
+
+[b]v1.1.0[/b] — Initial passives for all races.
+[/spoiler]
+
+[size=4][b]License & credits[/b][/size]
+Feel free to use, modify, and distribute. AzraelGodKing. BepInEx and Harmony.

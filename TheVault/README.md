@@ -16,12 +16,12 @@
 > There is no way to restore old vault files at the moment.
 >
 
-**The Vault 3** is a Sun Haven BepInEx mod: per-character vault, encrypted saves, HUD, auto-deposit, and shop/door integration. Ship **`TheVault.dll`** and **`TheVault.Abstractions.dll`** in `BepInEx/plugins/TheVault`. Sources and the supported build live in this folder (**`TheVault.csproj`** only).
+**The Vault 3** is a Sun Haven BepInEx mod: per-character vault, encrypted saves, HUD, auto-deposit, and shop plus inventory integration (vault counts apply when the game checks or spends currency from your bag—shops, keys, and similar). Ship **`TheVault.dll`** and **`TheVault.Abstractions.dll`** in `BepInEx/plugins/TheVault`. Sources and the supported build live in this folder (**`TheVault.csproj`** only).
 
 ## Features
 
 - Per-character encrypted vault (`VaultSaveSystem`, `VaultManager`)
-- Auto-deposit, shop hooks, door/key checks, on-screen HUD
+- Auto-deposit, shop hooks, inventory hooks for vault-backed currency (e.g. keys), on-screen HUD
 - Secret Gifts tracking in `SecretGifts.dat`
 - **Custom** tab and runtime currency registration for other mods (`VaultIntegration` / `TheVault.Abstractions`)
 
@@ -70,9 +70,18 @@ The vault UI includes a **Custom** tab for currencies registered at runtime. Fro
 
 ## Version
 
-**Released version is `3.0.0`** (BepInEx, Thunderstore, Nexus) **until it is explicitly bumped** — not every internal change warrants a version bump.
+**Released version is `3.0.2`** (BepInEx, Thunderstore, Nexus) **until it is explicitly bumped** — not every internal change warrants a version bump.
 
 ## Changelog
+
+### 3.0.2
+
+- **Auto-deposit** only runs when items are added to the **player’s main bag** (`PlayerInventory` / `Inventory`), not chests or other inventories. Prevents vault + bag duplication when closing UI while holding an item, and the same class of bug for museum rewards and ground pickups that retried on the player bag.
+- **RemoveItem** integration: the prefix now reads **raw** bag counts (skips the vault `GetAmount` postfix). Previously the prefix treated vault + bag as “in bag,” so shops, keys, and gates never deducted vault currency when the bag was empty.
+- **RemoveItem / withdraw** helpers prefer **`PlayerInventory`** over `Inventory` so removals match the bag the UI uses.
+- **Shop** `BuyItem`: registers **postfixes** so items registered via `ShopPatches.RegisterVaultPurchase` actually **deduct** vault currency after purchase (prefix-only allowed the sale but never charged).
+- **HasEnough** postfix only augments **player** inventories so chests are not treated as having your vault balance.
+- Removed unused **`DoorPatches.cs`** (never wired to Harmony; gates and keys use the **`Inventory`** patches in **`ItemPatches`**).
 
 ### 3.0.0
 

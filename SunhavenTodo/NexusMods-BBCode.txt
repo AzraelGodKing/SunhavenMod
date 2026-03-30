@@ -1,0 +1,81 @@
+[b][size=5]Sunhaven Todo[/size][/b] [i](v1.1.5)[/i]
+
+An in-game to-do list for Sun Haven with per-character saves, categories, priorities, and a parchment-styled UI.
+
+[line]
+
+[size=4][b]Features[/b][/size]
+[list]
+[*][b]In-Game Todo List[/b] — Add, edit, complete, and delete tasks without leaving the game
+[*][b]Per-Character Lists[/b] — Each character has their own separate todo file
+[*][b]Categories & Priorities[/b] — Organize tasks by category and urgency
+[*][b]Search & Filters[/b] — Search titles/descriptions, filter by category, hide completed items
+[*][b]Progress Stats[/b] — Totals and completion percentage at a glance
+[*][b]Auto-Save[/b] — Saves on a timer and on game exit
+[/list]
+
+[line]
+
+[size=4][b]Controls[/b][/size]
+[table]
+[tr][th]Action[/th][th]Key[/th][/tr]
+[tr][td]Toggle Todo List[/td][td][b]Ctrl + T[/b] (default)[/td][/tr]
+[tr][td]Close Window[/td][td][b]Escape[/b][/td][/tr]
+[/table]
+
+[line]
+
+[size=4][b]Requirements[/b][/size]
+[list]
+[*][url=https://github.com/BepInEx/BepInEx]BepInEx 5.x[/url] for Sun Haven
+[*]Sun Haven
+[/list]
+
+[size=4][b]Installation[/b][/size]
+[list]
+[*]Install BepInEx 5.x for Sun Haven
+[*]Build or download [b]SunhavenTodo.dll[/b]
+[*]Copy to [b]Sun Haven/BepInEx/plugins/SunhavenTodo/[/b]
+[*]Launch the game
+[/list]
+
+[line]
+
+[size=4][b]Configuration[/b][/size]
+After first launch, edit:
+[b]Sun Haven/BepInEx/config/com.azraelgodking.sunhaventodo.cfg[/b]
+
+[table]
+[tr][th]Setting[/th][th]Default[/th][th]Description[/th][/tr]
+[tr][td]ToggleKey[/td][td]T[/td][td]Key to open/close the todo list[/td][/tr]
+[tr][td]RequireCtrl[/td][td]true[/td][td]Require Ctrl with ToggleKey[/td][/tr]
+[tr][td]AutoSave[/td][td]true[/td][td]Automatically save the todo list[/td][/tr]
+[tr][td]AutoSaveInterval[/td][td]60[/td][td]Auto-save interval (seconds)[/td][/tr]
+[/table]
+
+[line]
+
+[size=4][b]Data storage[/b][/size]
+Todo lists are saved per character under:
+[b]Sun Haven/BepInEx/config/com.azraelgodking.sunhaventodo/[/b]
+Files: [b]<CharacterName>_todos.json[/b] (sanitized names).
+
+[line]
+
+[size=4][b]Notes[/b][/size]
+[list]
+[*]The window is draggable by the header
+[*]The UI pauses player input while the todo list is open
+[/list]
+
+[line]
+
+[size=4][b]Links[/b][/size]
+[list]
+[*][url=https://www.nexusmods.com/sunhaven/mods/491]Nexus Mods[/url]
+[*][url=https://azraelgodking.github.io/SunhavenMod/Todo/todo.html]Documentation[/url]
+[*][url=https://discord.gg/Vwh2y7qMXv]Discord — bugs & discussion[/url]
+[/list]
+
+[size=4][b]License & credits[/b][/size]
+Feel free to use, modify, and distribute. Created by AzraelGodKing. Built with BepInEx and Harmony.
