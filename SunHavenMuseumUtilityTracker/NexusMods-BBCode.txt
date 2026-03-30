@@ -1,0 +1,122 @@
+[b][size=5]Sun Haven Museum Utility Tracker (S.M.U.T.)[/size][/b] [i](v2.2.5)[/i]
+
+Track museum donations across [b]Hall of Gems[/b], [b]Hall of Culture[/b], and the [b]Aquarium[/b] in [url=https://store.steampowered.com/app/1432860/Sun_Haven/]Sun Haven[/url]. Lists use the game's real item IDs (from [b]Wish.ItemID[/b] and official bundle layouts), so icons, search, and cross-mod features stay aligned with your save.
+
+[line]
+
+[size=4][b]Features[/b][/size]
+[list]
+[*][b]Three halls[/b] — Gems, Culture, and Aquarium bundles in one parchment-style tracker
+[*][b]Progress[/b] — Per-section and per-bundle counts; overall completion; optional in-game bundle stats next to headers
+[*][b]Icons[/b] — Item icons from game data when available
+[*][b]Search & filter[/b] — Find by name; toggle “needed only” to hide completed rows
+[*][b]Per-character saves[/b] — Progress stored separately for each character
+[*][b]Hotkeys[/b] — Default [b]Ctrl+C[/b] to open/close; [b]F7[/b] alternate toggle (no modifier, e.g. Steam Deck)
+[*][b]Display[/b] — Configurable UI scale (50%–250%)
+[*][b]Sync with Game[/b] — One-click import: marks every item in [b]completed[/b] bundles using world save progress
+[*][b]Live donations[/b] — Donating at the museum chest can auto-mark the matching tracker row (bundle-scoped when the same item appears in multiple bundles)
+[/list]
+
+Other mods can read donation state via [b]Plugin.GetDonationManager()[/b] when integrations exist (e.g. Senpai's Chest, Sunhaven Todo, Trinket Fortune, Haven's Almanac, Haven Dev Tools).
+
+[line]
+
+[size=4][b]How tracking works[/b][/size]
+[list]
+[*]The vanilla game records [b]bundle-level[/b] progress, not a full per-slot checklist for incomplete bundles.
+[*]S.M.U.T. keeps a [b]checklist[/b] in its own save; you can toggle rows manually.
+[*][b]Sync with Game[/b] reads world progress and, for each bundle the game treats as [b]done[/b], marks [b]all[/b] items in that bundle in the tracker. It does not reconstruct partial bundles item-by-item.
+[*]After major list updates, old saves may have placeholder row keys — use [b]Sync[/b] or re-check affected bundles if counts look wrong.
+[/list]
+
+[spoiler][size=3][b]Museum coverage (summary)[/b][/size]
+[b]Hall of Gems:[/b] Mana, Money, Golden, Bars, Gems, Nel'Vari Mines, Withergate Mines — quantities match in-game bundle requirements where applicable.
+
+[b]Hall of Culture:[/b] Spring/Summer/Fall/Winter crops, Nel'Vari & Withergate crops, Flowers, Foraging, Exploration, Combat, Alchemy, Nel'Vari Temple — static lists with real IDs.
+
+[b]Aquarium:[/b] Fishing treasures, seasonal fish tanks, Nel'Vari / Withergate / large fish tanks — static fish lists.
+[/spoiler]
+
+[line]
+
+[size=4][b]Controls[/b][/size]
+[table]
+[tr][th]Action[/th][th]Default[/th][/tr]
+[tr][td]Open / close tracker[/td][td][b]Ctrl+C[/b] (if Require Ctrl is on)[/td][/tr]
+[tr][td]Open / close (alternate)[/td][td][b]F7[/b] — no modifier[/td][/tr]
+[tr][td]Close while focused[/td][td][b]Escape[/b][/td][/tr]
+[tr][td]Mark donated / needed[/td][td]Click checkbox[/td][/tr]
+[tr][td]Expand / collapse bundle[/td][td]Click bundle header[/td][/tr]
+[tr][td][b]Sync with Game[/b][/td][td]Button in tracker window[/td][/tr]
+[/table]
+
+[b]Debug (optional):[/b] [b]F10[/b] — verbose discovery logging · [b]F11[/b] — with debug on, forces same sync as UI button.
+
+[line]
+
+[size=4][b]Requirements[/b][/size]
+[list]
+[*][url=https://github.com/BepInEx/BepInEx]BepInEx 5.x[/url] for Sun Haven
+[*]Sun Haven
+[/list]
+
+[size=4][b]Installation[/b][/size]
+[list]
+[*]Place [b]SunHavenMuseumUtilityTracker.dll[/b] in [b]Sun Haven/BepInEx/plugins/[/b] (subfolder OK)
+[*]Launch the game; configure hotkeys and scale in the generated config
+[/list]
+
+[b]BepInEx GUID (soft dependency):[/b] [b]com.azraelgodking.sunhavenmuseumutilitytracker[/b]
+
+[line]
+
+[size=4][b]Configuration[/b][/size]
+[b]Sun Haven/BepInEx/config/com.azraelgodking.sunhavenmuseumutilitytracker.cfg[/b]
+
+[table]
+[tr][th]Section[/th][th]Key[/th][th]Default[/th][th]Description[/th][/tr]
+[tr][td]Hotkeys[/td][td]ToggleKey[/td][td]C[/td][td]Key with Ctrl (if required)[/td][/tr]
+[tr][td]Hotkeys[/td][td]RequireCtrl[/td][td]true[/td][td]Require Ctrl with ToggleKey[/td][/tr]
+[tr][td]Hotkeys[/td][td]AltToggleKey[/td][td]F7[/td][td]Second toggle — no modifier[/td][/tr]
+[tr][td]Updates[/td][td]CheckForUpdates[/td][td]true[/td][td]Check for newer release on startup[/td][/tr]
+[tr][td]Display[/td][td]UIScale[/td][td]1.0[/td][td]Window scale (0.5–2.5)[/td][/tr]
+[/table]
+
+[line]
+
+[size=4][b]Save data[/b][/size]
+[b]Sun Haven/BepInEx/config/SunHavenMuseumUtilityTracker/Saves/<CharacterName>_donations.json[/b]
+Backups may appear beside the primary file after failed loads.
+
+[line]
+
+[size=4][b]UI reference[/b][/size]
+[list]
+[*][b]Section tabs[/b] — Gems / Culture / Aquarium
+[*][b]Bundle rows[/b] — Local progress; [b][Game: n][/b] when available
+[*][b]Rarity tint[/b] — Common → Legendary
+[*][b]Footer[/b] — Toggle keys; Sync applies to [b]completed[/b] bundles only
+[/list]
+
+[line]
+
+[size=4][b]Links[/b][/size]
+[list]
+[*][url=https://www.nexusmods.com/sunhaven/mods/490]Nexus Mods[/url]
+[*][url=https://thunderstore.io/c/sun-haven/p/AzraelGodKing/SMUT/]Thunderstore[/url]
+[*][url=https://azraelgodking.github.io/SunhavenMod/SMUT/SMUT.html]Documentation[/url]
+[*][url=https://discord.gg/Vwh2y7qMXv]Discord — bugs & discussion[/url]
+[/list]
+
+[spoiler][size=3][b]Version history (recent)[/b][/size]
+[b]2.2.5[/b] — Hall of Culture: full static lists + wiki ordering; bundle-scoped lookup for duplicate rows. Aquarium: static fish data. Older saves may need re-check or Sync.
+
+[b]2.2.4[/b] — Reliable GameSave world progress; bundle completion aligned with MuseumCurator; persist save after Sync.
+
+[b]2.2.1[/b] — Manual tracking, search, filter, polished UI, per-character saves.
+
+[b]1.0.0[/b] — Initial public release.
+[/spoiler]
+
+[size=4][b]License & credits[/b][/size]
+Feel free to use, modify, and distribute. Author: AzraelGodKing. Stack: BepInEx, Harmony.

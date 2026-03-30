@@ -1,0 +1,21 @@
+Nexus Mods detailed descriptions (BBCode)
+==========================================
+
+Each mod folder has a NexusMods-BBCode.txt file: copy its contents into that mod's Nexus "Detailed Description" field (BBCode mode).
+
+Paths (relative to repo root):
+
+  SenpaisChest/NexusMods-BBCode.txt
+  SunhavenTodo/NexusMods-BBCode.txt
+  SunHavenMuseumUtilityTracker/NexusMods-BBCode.txt
+  TheVault/NexusMods-BBCode.txt
+  HavensBirthright/NexusMods-BBCode.txt
+  HavensAlmanac/NexusMods-BBCode.txt
+  BirthdayReminder/NexusMods-BBCode.txt
+  HavenDevTools/NexusMods-BBCode.txt
+  TrinketFortune/NexusMods-BBCode.txt
+  FasterRaces/NexusMods-BBCode.txt
+
+Keep these in sync when you edit the matching README.md / thunderstore README.
+
+Those files use Nexus BBCode tags (b, i, url, list, table, spoiler, code, quote, size, line).

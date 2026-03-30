@@ -112,6 +112,28 @@ namespace TheVault.Patches
         }
 
         /// <summary>
+        /// True if <paramref name="inv"/> is the player's main bag (<see cref="Player.PlayerInventory"/> or <see cref="Player.Inventory"/>).
+        /// Auto-deposit and vault merges must not run on chests or other inventories — those flows often retry on the player bag and would double-credit the vault.
+        /// </summary>
+        public static bool IsPlayerMainInventory(object inv)
+        {
+            if (inv == null || Player.Instance == null) return false;
+            var p = Player.Instance;
+            if (ReferenceEquals(inv, p.PlayerInventory)) return true;
+            return p.Inventory != null && ReferenceEquals(inv, p.Inventory);
+        }
+
+        /// <summary>
+        /// Resolve the player's primary bag for remove/add helpers (UI and patches use PlayerInventory; some game paths use Inventory).
+        /// </summary>
+        private static object GetPlayerBagForMutation()
+        {
+            var p = Player.Instance;
+            if (p == null) return null;
+            return p.PlayerInventory ?? (object)p.Inventory;
+        }
+
+        /// <summary>
         /// Register a mapping between a game item and vault currency.
         /// </summary>
         /// <param name="gameItemId">The item's ID in Sun Haven's item database</param>
@@ -458,6 +480,7 @@ namespace TheVault.Patches
             int itemId = item;
             try
             {
+                if (!IsPlayerMainInventory(__instance)) return;
                 if (_isProcessingAutoDeposit || IsWithdrawing || _withdrawingItemIds.Contains(itemId)) return;
                 if (!ShouldAutoDeposit(itemId))
                 {
@@ -519,6 +542,7 @@ namespace TheVault.Patches
             int itemId = item;
             try
             {
+                if (!IsPlayerMainInventory(__instance)) return;
                 if (_isProcessingAutoDeposit || IsWithdrawing || _withdrawingItemIds.Contains(itemId)) return;
                 if (!ShouldAutoDeposit(itemId))
                 {
@@ -596,6 +620,7 @@ namespace TheVault.Patches
             try
             {
                 if (_isProcessingAutoDeposit) return true;
+                if (!IsPlayerMainInventory(__instance)) return true;
 
                 int itemId = GetItemId(item);
                 if (itemId < 0) return true;
@@ -648,6 +673,7 @@ namespace TheVault.Patches
 
                 // Prevent recursive calls when we're doing withdrawals or other operations
                 if (_isProcessingAutoDeposit) return;
+                if (!IsPlayerMainInventory(__instance)) return;
 
                 // Get the item ID from the Item object
                 int itemId = GetItemId(item);
@@ -901,8 +927,9 @@ namespace TheVault.Patches
                     return false;
                 }
 
-                if (player is Player wishPlayer && wishPlayer.Inventory != null)
-                    return TryRemoveFromInventory(wishPlayer.Inventory, itemId, amount);
+                var bag = GetPlayerBagForMutation();
+                if (bag != null)
+                    return TryRemoveFromInventory(bag, itemId, amount);
 
                 // Fallback: resolve inventory field once (avoids HarmonyX spam from failed Player.RemoveItem probes)
                 var playerType = player.GetType();
@@ -943,7 +970,7 @@ namespace TheVault.Patches
                 var player = Player.Instance;
                 if (player == null) return false;
 
-                var inventory = player.Inventory;
+                var inventory = GetPlayerBagForMutation();
                 if (inventory != null)
                 {
                     if (inventory is Inventory inv)
@@ -1137,9 +1164,7 @@ namespace TheVault.Patches
 
                 if (!IsVaultCurrency(id)) return;
 
-                // Only add vault when this is the player's inventory, not chests/other inventories
-                var playerInv = Player.Instance?.PlayerInventory;
-                if (playerInv == null || !ReferenceEquals(__instance, playerInv)) return;
+                if (!IsPlayerMainInventory(__instance)) return;
 
                 int vaultAmount = GetVaultAmount(id);
                 if (vaultAmount > 0)
@@ -1159,10 +1184,12 @@ namespace TheVault.Patches
         /// POSTFIX for Inventory.HasEnough(int id, int amount) -> bool
         /// Returns true if inventory + vault has enough for registered currencies.
         /// </summary>
-        public static void OnInventoryHasEnough(int id, int amount, ref bool __result)
+        public static void OnInventoryHasEnough(object __instance, int id, int amount, ref bool __result)
         {
             try
             {
+                if (!IsPlayerMainInventory(__instance)) return;
+
                 // If already has enough in inventory, no need to check vault
                 if (__result) return;
 
@@ -1194,30 +1221,29 @@ namespace TheVault.Patches
             {
                 if (IsVaultRemoveHookSuppressed() || _isProcessingAutoDeposit || IsWithdrawing) return;
                 if (!IsVaultCurrency(id)) return;
-                if (!ReferenceEquals(__instance, Player.Instance?.PlayerInventory)) return;
+                if (!IsPlayerMainInventory(__instance)) return;
 
-                // Get current inventory count before removal (RAW, without vault)
-                if (__instance is Inventory inv)
+                // Raw bag count only — GetAmount postfix adds vault; using it here made __state include vault so postfix never deducted.
+                _skipVaultInGetAmount = true;
+                try
                 {
-                    __state = inv.GetAmount(id);
-                }
-                else
-                {
-                    var invType = __instance.GetType();
-                    var getAmountMethod = AccessTools.Method(invType, "GetAmount", new[] { typeof(int) });
-                    if (getAmountMethod != null)
+                    if (__instance is Inventory inv)
                     {
-                        // Temporarily disable vault addition so we get raw inventory count
-                        _skipVaultInGetAmount = true;
-                        try
+                        __state = inv.GetAmount(id);
+                    }
+                    else
+                    {
+                        var invType = __instance.GetType();
+                        var getAmountMethod = AccessTools.Method(invType, "GetAmount", new[] { typeof(int) });
+                        if (getAmountMethod != null)
                         {
                             __state = (int)(getAmountMethod.Invoke(__instance, new object[] { id }) ?? 0);
                         }
-                        finally
-                        {
-                            _skipVaultInGetAmount = false;
-                        }
                     }
+                }
+                finally
+                {
+                    _skipVaultInGetAmount = false;
                 }
 
                 if (__state >= 0)
@@ -1241,7 +1267,7 @@ namespace TheVault.Patches
             {
                 if (IsVaultRemoveHookSuppressed() || _isProcessingAutoDeposit || IsWithdrawing) return;
                 if (!IsVaultCurrency(id)) return;
-                if (!ReferenceEquals(__instance, Player.Instance?.PlayerInventory)) return;
+                if (!IsPlayerMainInventory(__instance)) return;
                 if (__state < 0) return;
 
                 int inventoryHadBefore = __state;
