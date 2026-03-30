@@ -42,6 +42,14 @@ namespace SenpaisChest
         /// </summary>
         private static string _gameplaySessionCharacter;
 
+        /// <summary>True after <see cref="OnApplicationQuit"/> — skip treating <see cref="Chest.OnDisable"/> as removal.</summary>
+        private static bool _applicationQuitting;
+
+        /// <summary>During scene replacement, chests in the outgoing scene all get OnDisable — not pickup.</summary>
+        private static int _sceneBeingDiscardedHandle = -1;
+
+        private static float _sceneDiscardSuppressUntil;
+
         private Harmony _harmony;
         private SmartChestManager _manager;
         private SmartChestSaveSystem _saveSystem;
@@ -99,6 +107,9 @@ namespace SenpaisChest
 
                 // Subscribe to scene loading
                 SceneManager.sceneLoaded += OnSceneLoaded;
+                // When the active scene is replaced (Single load), `prev` is torn down after this callback;
+                // chests there will OnDisable — must not delete rules. Pickup/removal does not change active scene.
+                SceneManager.activeSceneChanged += OnActiveSceneChanged;
 
                 // Check for updates
                 if (_config.CheckForUpdates.Value)
@@ -415,17 +426,46 @@ namespace SenpaisChest
         }
 
         /// <summary>
-        /// Called when a Chest GameObject is disabled (picked up/destroyed, or scene unload / quit).
-        /// We do NOT remove smart chest data here: when exiting the game or changing scene, every
-        /// chest gets OnDisable and the active scene check is unreliable. Removing here caused
-        /// all config to be cleared before Save() ran, so settings were lost on every restart.
-        /// Orphan cleanup is done in ExecuteScan via RemoveOrphanedSmartChests (chests actually
-        /// gone from ChestManager.associatedChests get removed then).
+        /// Remove saved rules only when this chest actually leaves the world (picked up, destroyed).
+        /// Scene changes and quitting disable every chest in the outgoing scene — those are ignored via
+        /// <see cref="_applicationQuitting"/> and <see cref="_sceneBeingDiscardedHandle"/>.
         /// </summary>
         private static void OnChestOnDisable_Postfix(Chest __instance)
         {
-            // Do not remove smart chest data in OnDisable — it runs for every chest on exit
-            // and was wiping the in-memory config before Save(), causing lost settings on restart.
+            try
+            {
+                if (_applicationQuitting || !Application.isPlaying)
+                    return;
+                if (__instance == null)
+                    return;
+
+                var go = __instance.gameObject;
+                if (go == null)
+                    return;
+
+                var scene = go.scene;
+                if (!scene.IsValid())
+                    return;
+
+                if (Time.realtimeSinceStartup < _sceneDiscardSuppressUntil
+                    && _sceneBeingDiscardedHandle >= 0
+                    && scene.handle == _sceneBeingDiscardedHandle)
+                {
+                    Log?.LogDebug($"[SenpaisChest] OnDisable: skip rule removal (scene '{scene.name}' discarded)");
+                    return;
+                }
+
+                var id = SmartChestManager.GetChestId(__instance);
+                if (string.IsNullOrEmpty(id) || _staticManager == null)
+                    return;
+
+                if (_staticManager.RemoveSmartChest(id))
+                    Log?.LogInfo($"[SenpaisChest] Removed smart chest rules (chest left world): {id}");
+            }
+            catch (Exception ex)
+            {
+                Log?.LogError($"[SenpaisChest] OnChestOnDisable_Postfix: {ex.Message}");
+            }
         }
 
         private static bool OnInputGetKeyDown_Prefix(UnityEngine.KeyCode key, ref bool __result)
@@ -711,8 +751,20 @@ namespace SenpaisChest
 
         private void OnApplicationQuit()
         {
+            _applicationQuitting = true;
             Log?.LogInfo("Application quitting — saving data");
             _staticSaveSystem?.Save();
+        }
+
+        /// <summary>
+        /// Tracks the scene that was replaced so chest <see cref="Chest.OnDisable"/> during teardown does not remove rules.
+        /// </summary>
+        private static void OnActiveSceneChanged(Scene previous, Scene next)
+        {
+            if (!previous.IsValid())
+                return;
+            _sceneBeingDiscardedHandle = previous.handle;
+            _sceneDiscardSuppressUntil = Time.realtimeSinceStartup + 2f;
         }
 
         #endregion

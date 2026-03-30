@@ -155,65 +155,16 @@ namespace SenpaisChest.Data
                 && _smartChests[chestId].Rules.Count > 0;
         }
 
-        public void RemoveSmartChest(string chestId)
+        /// <returns>True if a saved entry existed and was removed.</returns>
+        public bool RemoveSmartChest(string chestId)
         {
             if (_smartChests.Remove(chestId))
             {
                 _isDirty = true;
-            }
-        }
-
-        /// <summary>
-        /// Removes smart chest entries whose chest no longer exists in the world (e.g. picked up or destroyed).
-        /// Call this when you have a current chest lookup from ChestManager.associatedChests.
-        /// </summary>
-        /// <summary>
-        /// Orphan cleanup is unsafe while a chest is open or when ChestManager has zero chests — the
-        /// lookup can be wrong and every saved id looks "orphaned", wiping rules on the next save.
-        /// </summary>
-        private bool ShouldRunOrphanChestCleanup(Dictionary<string, KeyValuePair<Inventory, Chest>> chestLookup)
-        {
-            if (chestLookup == null)
-                return false;
-            if (Plugin.CurrentInteractingChest != null)
-            {
-                Plugin.Log?.LogDebug("[Scan] Skipping orphan cleanup — player has a chest open");
-                return false;
-            }
-            if (chestLookup.Count == 0)
-            {
-                Plugin.Log?.LogDebug("[Scan] Skipping orphan cleanup — no chests in ChestManager (likely transition)");
-                return false;
+                return true;
             }
 
-            foreach (var kvp in chestLookup)
-            {
-                var chest = kvp.Value.Value;
-                if (chest != null && IsChestInUse(chest))
-                {
-                    Plugin.Log?.LogDebug("[Scan] Skipping orphan cleanup — at least one chest is in use");
-                    return false;
-                }
-            }
-
-            return true;
-        }
-
-        public void RemoveOrphanedSmartChests(Dictionary<string, KeyValuePair<Inventory, Chest>> chestLookup)
-        {
-            if (chestLookup == null) return;
-            var toRemove = new List<string>();
-            foreach (var kvp in _smartChests)
-            {
-                if (!chestLookup.ContainsKey(kvp.Key))
-                    toRemove.Add(kvp.Key);
-            }
-            foreach (var chestId in toRemove)
-            {
-                _smartChests.Remove(chestId);
-                _isDirty = true;
-                Plugin.Log?.LogInfo($"[SenpaisChest] Removed orphaned smart chest data: {chestId}");
-            }
+            return false;
         }
 
         public static string GetChestId(Chest chest)
@@ -376,14 +327,9 @@ namespace SenpaisChest.Data
 
             Plugin.Log?.LogDebug($"[Scan] Built chest lookup: {chestLookup.Count} unique chests");
 
-            // Remove smart chest entries for chests that no longer exist (picked up/destroyed).
-            // We do this here, not in Chest.OnDisable, because OnDisable runs for every chest on exit
-            // and would wipe config before Save() ran.
-            // Never run while a chest UI is open or when the manager has zero associated chests:
-            // ChestManager can be incomplete during transitions, which mis-classifies every saved id as
-            // "orphan" and deletes all rules; the next Save() then persists the empty config.
-            if (ShouldRunOrphanChestCleanup(chestLookup))
-                RemoveOrphanedSmartChests(chestLookup);
+            // Rule removal is only in Plugin.OnChestOnDisable_Postfix when a chest actually leaves the world
+            // (not scene change or quit). Scan-time "orphan" deletion used ChestManager snapshots and
+            // repeatedly wiped saves during area transitions.
 
             foreach (var smartChestEntry in _smartChests)
             {
