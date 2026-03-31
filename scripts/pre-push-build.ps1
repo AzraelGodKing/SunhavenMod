@@ -86,7 +86,7 @@ function Get-VersionParts {
     return @{ Major = $major; Minor = $minor; Patch = $patch }
 }
 
-function Bump-Version {
+function Update-Version {
     param([string]$Current, [string]$BumpType)
     $p = Get-VersionParts $Current
     switch ($BumpType) {
@@ -418,7 +418,7 @@ foreach ($modKey in $modsToProcess) {
 
     $currentVersion = [string]$prop.Value.version
     $targetVersion = if ($Bump) {
-        Bump-Version -Current $currentVersion -BumpType $Bump
+        Update-Version -Current $currentVersion -BumpType $Bump
     }
     else {
         $currentVersion
