@@ -11,6 +11,8 @@ using SunhavenMods.Shared;
 using UnityEngine;
 using UnityEngine.Events;
 using UnityEngine.SceneManagement;
+using UnityEngine.EventSystems;
+using UnityEngine.UI;
 
 namespace BirthdayReminder
 {
@@ -455,6 +457,9 @@ namespace BirthdayReminder
 
         private void Update()
         {
+            if (ShouldIgnoreHotkeysForTextInput())
+                return;
+
             // Hotkey handling
             bool ctrlPressed = Input.GetKey(KeyCode.LeftControl) || Input.GetKey(KeyCode.RightControl);
             bool shiftPressed = Input.GetKey(KeyCode.LeftShift) || Input.GetKey(KeyCode.RightShift);
@@ -521,6 +526,77 @@ namespace BirthdayReminder
         public static KeyCode StaticToggleKey => _staticToggleKey;
         public static bool StaticDebugMode => _staticDebugMode;
         public static bool StaticUseNativeNotifications => _staticUseNativeNotifications;
+
+        /// <summary>
+        /// Avoid handling BirthdayReminder hotkeys while the player is typing in chat/console/input fields.
+        /// This prevents cross-mod input conflicts (e.g., CheatEnabler console/chat entry).
+        /// </summary>
+        internal static bool ShouldIgnoreHotkeysForTextInput()
+        {
+            try
+            {
+                // IMGUI text controls (if any window has keyboard focus).
+                if (GUIUtility.keyboardControl != 0)
+                    return true;
+
+                var eventSystem = EventSystem.current;
+                var selectedGo = eventSystem?.currentSelectedGameObject;
+                if (selectedGo != null)
+                {
+                    if (selectedGo.GetComponent<InputField>() != null)
+                        return true;
+
+                    var components = selectedGo.GetComponents<Component>();
+                    foreach (var component in components)
+                    {
+                        if (component == null)
+                            continue;
+                        // Avoid hard TMP reference; detect by type name at runtime.
+                        if (component.GetType().Name == "TMP_InputField")
+                            return true;
+                    }
+                }
+
+                // Quantum Console active means player is entering commands/chat-like text.
+                if (IsQuantumConsoleActive())
+                    return true;
+            }
+            catch (Exception ex)
+            {
+                Log?.LogDebug($"[InputGuard] Failed to detect text input focus: {ex.Message}");
+            }
+
+            return false;
+        }
+
+        private static bool IsQuantumConsoleActive()
+        {
+            try
+            {
+                Type qcType = AccessTools.TypeByName("QFSW.QC.QuantumConsole");
+                if (qcType == null)
+                    return false;
+
+                var instanceProp = AccessTools.Property(qcType, "Instance");
+                var instance = instanceProp?.GetValue(null);
+                if (instance == null)
+                    return false;
+
+                var isActiveProp = AccessTools.Property(qcType, "IsActive");
+                if (isActiveProp != null && isActiveProp.PropertyType == typeof(bool))
+                    return (bool)isActiveProp.GetValue(instance);
+
+                var isActiveField = AccessTools.Field(qcType, "isActive") ?? AccessTools.Field(qcType, "_isActive");
+                if (isActiveField != null && isActiveField.FieldType == typeof(bool))
+                    return (bool)isActiveField.GetValue(instance);
+            }
+            catch
+            {
+                // Best-effort guard only; ignore reflection mismatches.
+            }
+
+            return false;
+        }
 
         /// <summary>
         /// Initialize the native notification system via reflection
@@ -920,6 +996,9 @@ namespace BirthdayReminder
 
         private void CheckHotkeys()
         {
+            if (Plugin.ShouldIgnoreHotkeysForTextInput())
+                return;
+
             bool ctrlPressed = Input.GetKey(KeyCode.LeftControl) || Input.GetKey(KeyCode.RightControl);
             bool shiftPressed = Input.GetKey(KeyCode.LeftShift) || Input.GetKey(KeyCode.RightShift);
             bool altPressed = Input.GetKey(KeyCode.LeftAlt) || Input.GetKey(KeyCode.RightAlt);
