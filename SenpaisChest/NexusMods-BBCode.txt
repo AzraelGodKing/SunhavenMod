@@ -1,8 +1,8 @@
-[b][size=5]Senpai's Chest[/size][/b] [i](v2.2.1)[/i]
+[b][size=5]Senpai's Chest[/size][/b] [i](v2.2.2)[/i]
 
 Smart chests with configurable item rules for hands-free storage organization in Sun Haven. Chest labels, rules by item/category/type/property/group, per-character saves.
 
-[b]2.2.1:[/b] Rules stay when changing areas or exiting — sorts do not delete saves. Rules are removed only when a chest is actually picked up or destroyed ([b]OnDisable[/b] with skip for quit and scene unload). No scan-time orphan wiping.
+[b]2.2.2:[/b] Rules stay when changing areas or exiting — sorts do not delete saves. Rules are removed only when a chest is actually picked up or destroyed ([b]OnDisable[/b] with skip for quit and scene unload). Scene-discard suppression tracks replaced scene handles long enough for slower transitions so area changes keep rules. No scan-time orphan wiping.
 
 [b]Backup:[/b] Saves are under [b]BepInEx/config/SenpaisChest/Saves/[/b]; each save keeps [b].bak[/b] — restore if the main JSON was emptied.
 
