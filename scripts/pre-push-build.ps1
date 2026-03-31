@@ -153,9 +153,14 @@ function Update-ThunderstoreManifest {
         return
     }
     $content = Get-Content $ManifestPath -Raw -Encoding utf8
-    $content = $content -replace '"version_number"\s*:\s*"[^"]*"', "`"version_number`": `"$Version`""
-    Set-Content $ManifestPath -Value $content -NoNewline -Encoding utf8
-    Write-Host "  Updated thunderstore/manifest.json -> $Version"
+    $updated = $content -replace '"version_number"\s*:\s*"[^"]*"', "`"version_number`": `"$Version`""
+    if ($updated -ne $content) {
+        Set-Content $ManifestPath -Value $updated -NoNewline -Encoding utf8
+        Write-Host "  Updated thunderstore/manifest.json -> $Version"
+    }
+    else {
+        Write-Host "  thunderstore/manifest.json already $Version"
+    }
 }
 
 function Update-RootReadmeTable {

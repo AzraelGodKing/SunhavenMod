@@ -2,7 +2,7 @@
 
 Never miss an NPC birthday in Sun Haven. Auto reminders, gift suggestions, gift tracking, draggable HUD.
 
-[b]Compatibility:[/b] BirthdayReminder hotkeys pause while text entry is focused (chat, console, or input fields), preventing chat/console typing conflicts with other mods.
+[b]Compatibility:[/b] BirthdayReminder hotkeys pause while text entry is focused (chat, console, or input fields), preventing chat/console typing conflicts with other mods. Hotkeys now run from one path only (persistent runner), and the [b]Enabled[/b] config toggle is respected at startup.
 
 [line]
 
