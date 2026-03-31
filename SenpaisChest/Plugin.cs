@@ -8,6 +8,7 @@ using SenpaisChest.UI;
 using SunhavenMods.Shared;
 using HarmonyLib;
 using System;
+using System.Collections.Generic;
 using System.Reflection;
 using UnityEngine;
 using UnityEngine.UI;
@@ -45,10 +46,12 @@ namespace SenpaisChest
         /// <summary>True after <see cref="OnApplicationQuit"/> — skip treating <see cref="Chest.OnDisable"/> as removal.</summary>
         private static bool _applicationQuitting;
 
-        /// <summary>During scene replacement, chests in the outgoing scene all get OnDisable — not pickup.</summary>
-        private static int _sceneBeingDiscardedHandle = -1;
-
-        private static float _sceneDiscardSuppressUntil;
+        /// <summary>
+        /// During scene replacement, chests in outgoing scenes all get OnDisable.
+        /// Track each discarded scene handle with an expiry so long transitions do not purge saved rules.
+        /// </summary>
+        private static readonly Dictionary<int, float> _sceneDiscardSuppressByHandle = new Dictionary<int, float>();
+        private const float SceneDiscardSuppressSeconds = 20f;
 
         private Harmony _harmony;
         private SmartChestManager _manager;
@@ -447,9 +450,7 @@ namespace SenpaisChest
                 if (!scene.IsValid())
                     return;
 
-                if (Time.realtimeSinceStartup < _sceneDiscardSuppressUntil
-                    && _sceneBeingDiscardedHandle >= 0
-                    && scene.handle == _sceneBeingDiscardedHandle)
+                if (IsDiscardedSceneSuppressed(scene))
                 {
                     Log?.LogDebug($"[SenpaisChest] OnDisable: skip rule removal (scene '{scene.name}' discarded)");
                     return;
@@ -756,6 +757,31 @@ namespace SenpaisChest
             _staticSaveSystem?.Save();
         }
 
+        /// <summary>Returns true while the given scene is inside discard suppression window.</summary>
+        private static bool IsDiscardedSceneSuppressed(Scene scene)
+        {
+            if (!scene.IsValid())
+                return false;
+
+            float now = Time.realtimeSinceStartup;
+            int[] expired = null;
+            int expiredCount = 0;
+
+            foreach (var kvp in _sceneDiscardSuppressByHandle)
+            {
+                if (kvp.Value > now)
+                    continue;
+                if (expired == null)
+                    expired = new int[_sceneDiscardSuppressByHandle.Count];
+                expired[expiredCount++] = kvp.Key;
+            }
+
+            for (int i = 0; i < expiredCount; i++)
+                _sceneDiscardSuppressByHandle.Remove(expired[i]);
+
+            return _sceneDiscardSuppressByHandle.TryGetValue(scene.handle, out var until) && now < until;
+        }
+
         /// <summary>
         /// Tracks the scene that was replaced so chest <see cref="Chest.OnDisable"/> during teardown does not remove rules.
         /// </summary>
@@ -763,8 +789,7 @@ namespace SenpaisChest
         {
             if (!previous.IsValid())
                 return;
-            _sceneBeingDiscardedHandle = previous.handle;
-            _sceneDiscardSuppressUntil = Time.realtimeSinceStartup + 2f;
+            _sceneDiscardSuppressByHandle[previous.handle] = Time.realtimeSinceStartup + SceneDiscardSuppressSeconds;
         }
 
         #endregion
