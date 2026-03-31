@@ -1,6 +1,6 @@
 # Sun Haven Todo
 
-**Version 1.1.2** — In-game task tracker for farming goals, quests, and daily tasks. Categories, priorities, per-character saves, parchment-style UI. Hotkey: **J** or **F9**.
+**Version 1.1.6** — In-game task tracker for farming goals, quests, and daily tasks. Categories, priorities, per-character saves, parchment-style UI. Hotkey: **J** or **F9**.
 
 ## Features
 

@@ -911,6 +911,9 @@ namespace SenpaisChest
 
         private void DetectHotkey(SmartChestConfig config)
         {
+            if (TextInputFocusGuard.ShouldDeferModHotkeys(Plugin.Log))
+                return;
+
             var toggleKey = SmartChestConfig.StaticToggleKey;
             var requireCtrl = SmartChestConfig.StaticRequireCtrl;
 

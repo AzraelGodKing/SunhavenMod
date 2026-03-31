@@ -16,15 +16,20 @@
     - Optional: TheVault + TheVault.Abstractions .csproj; FasterRaces .csproj; any <Mod>.csproj
       that already contains a <Version> element
     Then dotnet build for the mod's main .csproj.
+    Use -BuildOnly with -Mod or -All to run builds only (no version edits).
 
 .PARAMETER Mod
     Mod key (e.g. senpaischest, havensbirthright). Required unless -All is used.
 
 .PARAMETER Bump
-    Bump type: major, minor, or patch. Required for pre-push; omit only for post-merge sync.
+    Bump type: major, minor, or patch. Omit for sync-only (single mod or -All). Incompatible with -BuildOnly.
 
 .PARAMETER All
-    Process all mods. Use with -Bump.
+    Process all mods. With -Bump: bump semver then sync everywhere and build each.
+    Without -Bump: sync every mod from current docs/versions.json (no JSON change) and build each.
+
+.PARAMETER BuildOnly
+    Skip all version file updates; only dotnet build. Use with -Mod or -All.
 
 .EXAMPLE
     .\pre-push-build.ps1 -Mod senpaischest -Bump patch
@@ -32,6 +37,19 @@
 .EXAMPLE
     .\pre-push-build.ps1 -Mod senpaischest
     (sync from versions.json, no bump - use after pulling a version-bump merge)
+
+.EXAMPLE
+    .\pre-push-build.ps1 -All -Bump patch
+    (bump every mod in versions.json, sync all tracked files, build all)
+
+.EXAMPLE
+    .\pre-push-build.ps1 -All
+    (sync all mods from versions.json, no bump, build all)
+
+.EXAMPLE
+    .\pre-push-build.ps1 -Mod senpaischest -BuildOnly
+    .\pre-push-build.ps1 -All -BuildOnly
+    (build only; does not read or require versions.json)
 #>
 
 param(
@@ -49,7 +67,10 @@ param(
     [string]$Bump,
 
     [Parameter(Mandatory = $false)]
-    [switch]$All
+    [switch]$All,
+
+    [Parameter(Mandatory = $false)]
+    [switch]$BuildOnly
 )
 
 $ErrorActionPreference = "Stop"
@@ -376,8 +397,24 @@ function Sync-ModVersionEverywhere {
     if (-not (Test-Path $mainCsproj)) {
         throw "Project not found: $mainCsproj"
     }
+    Invoke-ModProjectBuild -Def $Def -ModPath $modPath -MainCsproj $mainCsproj
+}
+
+function Invoke-ModProjectBuild {
+    param(
+        [hashtable]$Def,
+        [string]$ModPath,
+        [string]$MainCsproj
+    )
+    $modDir = $Def.ModDir
+    if (-not $MainCsproj) {
+        $MainCsproj = Join-Path $ModPath "$modDir.csproj"
+    }
+    if (-not (Test-Path $MainCsproj)) {
+        throw "Project not found: $MainCsproj"
+    }
     Write-Host "  Building $modDir..."
-    $buildResult = & dotnet build $mainCsproj --verbosity minimal 2>&1
+    $buildResult = & dotnet build $MainCsproj --verbosity minimal 2>&1
     if ($LASTEXITCODE -ne 0) {
         Write-Host $buildResult
         throw "Build failed for $modDir"
@@ -391,9 +428,24 @@ if (-not $All -and -not $Mod) {
     Write-Error "Specify -Mod <modkey> or -All"
     exit 1
 }
-if ($All -and -not $Bump) {
-    Write-Error "-All requires -Bump (major, minor, or patch)"
+
+if ($BuildOnly -and $Bump) {
+    Write-Error "-BuildOnly cannot be used with -Bump"
     exit 1
+}
+
+$modsToProcess = if ($All) { @($ModDefs.Keys | Sort-Object) } else { @($Mod) }
+
+if ($BuildOnly) {
+    foreach ($modKey in $modsToProcess) {
+        $def = $ModDefs[$modKey]
+        if (-not $def) { throw "Unknown mod: $modKey" }
+        $modPath = Join-Path $RepoRoot $def.ModDir
+        Write-Host "Build-only: $($def.ModDir)"
+        Invoke-ModProjectBuild -Def $def -ModPath $modPath
+    }
+    Write-Host "Done. Build-only complete."
+    exit 0
 }
 
 if (-not (Test-Path $VersionsPath)) {
@@ -401,8 +453,6 @@ if (-not (Test-Path $VersionsPath)) {
     exit 1
 }
 $versions = Get-Content $VersionsPath -Raw -Encoding utf8 | ConvertFrom-Json
-
-$modsToProcess = if ($All) { @($ModDefs.Keys) } else { @($Mod) }
 
 foreach ($modKey in $modsToProcess) {
     $def = $ModDefs[$modKey]

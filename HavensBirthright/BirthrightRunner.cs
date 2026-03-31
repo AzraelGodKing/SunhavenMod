@@ -76,7 +76,8 @@ namespace HavensBirthright
             CheckAbilityToggleHotkey();
 
             // Reload config from file (e.g. after editing the .cfg)
-            if (Plugin.StaticReloadConfigKey != KeyCode.None && UnityEngine.Input.GetKeyDown(Plugin.StaticReloadConfigKey))
+            if (!TextInputFocusGuard.ShouldDeferModHotkeys(Plugin.Log) &&
+                Plugin.StaticReloadConfigKey != KeyCode.None && UnityEngine.Input.GetKeyDown(Plugin.StaticReloadConfigKey))
             {
                 Plugin.Instance?.ReloadConfig();
             }
@@ -1300,6 +1301,9 @@ namespace HavensBirthright
         {
             try
             {
+                if (TextInputFocusGuard.ShouldDeferModHotkeys(Plugin.Log))
+                    return;
+
                 if (!Input.GetKeyDown(Plugin.StaticAbilityToggleKey))
                     return;
 

@@ -483,6 +483,9 @@ namespace HavenDevTools
         {
             try
             {
+                if (TextInputFocusGuard.ShouldDeferModHotkeys(Plugin.Log))
+                    return;
+
                 // Check for debug window toggle key
                 if (Input.GetKeyDown(Plugin.StaticToggleKey))
                 {
@@ -511,6 +514,6 @@ namespace HavenDevTools
     {
         public const string PLUGIN_GUID = "com.azraelgodking.havendevtools";
         public const string PLUGIN_NAME = "Haven Dev Tools";
-        public const string PLUGIN_VERSION = "1.0.6";
+        public const string PLUGIN_VERSION = "1.0.7";
     }
 }

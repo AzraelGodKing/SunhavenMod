@@ -355,6 +355,9 @@ namespace SunHavenMuseumUtilityTracker
 
         private void CheckHotkeys()
         {
+            if (TextInputFocusGuard.ShouldDeferModHotkeys(Plugin.Log))
+                return;
+
             bool ctrlPressed = Input.GetKey(KeyCode.LeftControl) || Input.GetKey(KeyCode.RightControl);
             bool togglePressed = Input.GetKeyDown(Plugin.StaticToggleKey);
             bool altTogglePressed = Input.GetKeyDown(Plugin.StaticAltToggleKey);
@@ -401,6 +404,6 @@ namespace SunHavenMuseumUtilityTracker
     {
         public const string PLUGIN_GUID = "com.azraelgodking.sunhavenmuseumutilitytracker";
         public const string PLUGIN_NAME = "Sun Haven Museum Utility Tracker";
-        public const string PLUGIN_VERSION = "2.2.5";
+        public const string PLUGIN_VERSION = "2.2.6";
     }
 }

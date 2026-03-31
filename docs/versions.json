@@ -1,46 +1,46 @@
 ﻿{
   "com.azraelgodking.squirrelsbirthdayreminder": {
-    "version": "1.1.3",
+    "version": "1.1.4",
     "name": "A Squirrel's Birthday Reminder",
     "description": "Never miss an NPC birthday - get reminders and gift suggestions",
     "nexus": "https://www.nexusmods.com/sunhaven/mods/493",
     "nexus_file_group_id": "1311370",
     "thunderstore": "https://thunderstore.io/c/sun-haven/p/AzraelGodKing/SquirrelsBirthdayReminder/",
     "thunderstoreName": "SquirrelsBirthdayReminder",
-    "changelog": "Added cross-mod Todo integration for birthday gift reminders"
+    "changelog": "CheatEnabler compatibility: mod hotkeys defer while typing in chat, console, or UI text fields (shared TextInputFocusGuard)."
   },
   "com.azraelgodking.havensbirthright": {
-    "version": "1.4.1",
+    "version": "1.4.2",
     "name": "Haven's Birthright",
     "description": "Unique racial bonuses and abilities for all 12 playable races",
     "nexus": "https://www.nexusmods.com/sunhaven/mods/487",
     "nexus_file_group_id": "1297555",
     "thunderstore": "https://thunderstore.io/c/sun-haven/p/AzraelGodKing/HavensBirthright/",
     "thunderstoreName": "HavensBirthright",
-    "changelog": "Celestial Bloodlines: Font of Light (Angel) and Soul Harvest (Demon) active abilities"
+    "changelog": "CheatEnabler compatibility: mod hotkeys defer while typing in chat, console, or UI text fields (shared TextInputFocusGuard)."
   },
   "com.azraelgodking.sunhavenmuseumutilitytracker": {
-    "version": "2.2.5",
+    "version": "2.2.6",
     "name": "Sunhaven Museum Utility Tracker",
     "description": "Track museum donation progress across all three halls",
     "nexus": "https://www.nexusmods.com/sunhaven/mods/490",
     "nexus_file_group_id": "1309168",
     "thunderstore": "https://thunderstore.io/c/sun-haven/p/AzraelGodKing/SMUT/",
     "thunderstoreName": "SMUT",
-    "changelog": "2.2.5: Hall of Culture and Aquarium — full static item/fish lists (Wish.ItemID + wiki), bundle-scoped lookup, HasDonatedByGameId across duplicate rows; 2.2.4: GameSave sync and bundle completion aligned with MuseumCurator; aquarium icons; save after sync."
+    "changelog": "CheatEnabler compatibility: mod hotkeys defer while typing in chat, console, or UI text fields (shared TextInputFocusGuard)."
   },
   "com.azraelgodking.sunhaventodo": {
-    "version": "1.1.5",
+    "version": "1.1.6",
     "name": "Sun Haven Todo",
     "description": "In-game task tracker for farming goals, quests, and daily tasks",
     "nexus": "https://www.nexusmods.com/sunhaven/mods/491",
     "nexus_file_group_id": "1310599",
     "thunderstore": "https://thunderstore.io/c/sun-haven/p/AzraelGodKing/SunHavenTodo/",
     "thunderstoreName": "SunHavenTodo",
-    "changelog": "Added cross-mod integration for Birthday, S.M.U.T., and Senpai's Chest"
+    "changelog": "CheatEnabler compatibility: mod hotkeys defer while typing in chat, console, or UI text fields (shared TextInputFocusGuard)."
   },
   "com.azraelgodking.thevault": {
-    "version": "3.0.2",
+    "version": "3.0.3",
     "name": "The Vault",
     "description": "The Vault 3 — per-character vault, encrypted saves, HUD, auto-deposit, shop and inventory vault integration, Custom tab & mod API.",
     "vault_save_breaking": false,
@@ -49,39 +49,39 @@
     "nexus_file_group_id": "1305781",
     "thunderstore": "https://thunderstore.io/c/sun-haven/p/AzraelGodKing/TheVault/",
     "thunderstoreName": "TheVault",
-    "changelog": "3.0.2: fix vault+bag duplication (auto-deposit only on player bag), consumption fixes (RemoveItem/HasEnough), shop BuyItem postfixes; removed unused DoorPatches.cs. 3.0.0 full rework: Wish.* Harmony, HUD bar, single TheVault/ tree."
+    "changelog": "CheatEnabler compatibility: mod hotkeys defer while typing in chat, console, or UI text fields (shared TextInputFocusGuard)."
   },
   "com.azraelgodking.havendevtools": {
-    "version": "1.0.6",
+    "version": "1.0.7",
     "name": "HavenDevTools",
     "description": "Developer utilities for mod debugging and game state inspection",
     "nexus": "https://www.nexusmods.com/sunhaven/mods/495",
     "nexus_file_group_id": "1316842",
     "thunderstore": "https://thunderstore.io/c/sun-haven/p/AzraelGodKing/HavenDevTools/",
     "thunderstoreName": "HavenDevTools",
-    "changelog": "added debug more for TheVault, which allows for full inspection of the game state"
+    "changelog": "CheatEnabler compatibility: mod hotkeys defer while typing in chat, console, or UI text fields (shared TextInputFocusGuard)."
   },
   "com.azraelgodking.senpaischest": {
-    "version": "2.2.2",
+    "version": "2.2.3",
     "name": "Senpai's Chest",
     "description": "Smart chest auto-sorting with custom rules by item, type, category, property, or player groups. Manage Groups tab for custom subcategories.",
     "nexus": "https://www.nexusmods.com/sunhaven/mods/496",
     "nexus_file_group_id": "1317103",
     "thunderstore": "https://thunderstore.io/c/sun-haven/p/AzraelGodKing/SenpaisChest/",
     "thunderstoreName": "SenpaisChest",
-    "changelog": "2.2.1: Release alignment — rules persist across areas/quit; removal only on real chest pickup/destroy (OnDisable + quit/scene-teardown guards); no scan orphan delete; no per-scene disk reload wiping memory. Backup: Saves/*.json.bak."
+    "changelog": "CheatEnabler compatibility: mod hotkeys defer while typing in chat, console, or UI text fields (shared TextInputFocusGuard)."
   },
   "com.azraelgodking.havensalmanac": {
-    "version": "1.0.3",
+    "version": "1.0.4",
     "name": "Haven's Almanac",
     "description": "Unified mod dashboard - HUD, full dashboard, and daily morning briefing aggregating data from all installed mods",
     "nexus": "",
     "thunderstore": "https://thunderstore.io/c/sun-haven/p/AzraelGodKing/HavensAlmanac/",
     "thunderstoreName": "HavensAlmanac",
-    "changelog": "Initial release"
+    "changelog": "CheatEnabler compatibility: mod hotkeys defer while typing in chat, console, or UI text fields (shared TextInputFocusGuard)."
   },
   "com.azraelgodking.fasterraces": {
-    "version": "1.1.1",
+    "version": "1.1.2",
     "name": "Faster Races",
     "description": "Configurable movement speed bonus for all races; disables Haven's Birthright speed buffs when both are installed",
     "nexus": "https://www.nexusmods.com/sunhaven/mods/497",
@@ -91,7 +91,7 @@
     "changelog": "1.1.1: version alignment (docs, assembly metadata); configurable movement speed with Haven's Birthright integration"
   },
   "com.azraelgodking.trinketfortune": {
-    "version": "1.0.0",
+    "version": "1.0.1",
     "name": "Trinket Fortune",
     "description": "Increases odds of unowned fishing trinkets dropping as you complete the aquarium",
     "nexus": "https://www.nexusmods.com/sunhaven/mods/498",

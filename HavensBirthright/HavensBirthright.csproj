@@ -42,6 +42,10 @@
       <HintPath>$(ManagedPath)\UnityEngine.InputLegacyModule.dll</HintPath>
       <Private>false</Private>
     </Reference>
+    <Reference Include="UnityEngine.IMGUIModule">
+      <HintPath>$(ManagedPath)\UnityEngine.IMGUIModule.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
   </ItemGroup>
 
   <!-- Game References -->
@@ -74,6 +78,7 @@
     <Compile Include="..\SharedUtilities\ReflectionHelper.cs" Link="Shared\ReflectionHelper.cs" />
     <Compile Include="..\SharedUtilities\PersistentRunnerBase.cs" Link="Shared\PersistentRunnerBase.cs" />
     <Compile Include="..\SharedUtilities\SceneHelpers.cs" Link="Shared\SceneHelpers.cs" />
+    <Compile Include="..\SharedUtilities\TextInputFocusGuard.cs" Link="Shared\TextInputFocusGuard.cs" />
   </ItemGroup>
 
   <!-- Copy to BepInEx plugins folder and builds folder after build -->
