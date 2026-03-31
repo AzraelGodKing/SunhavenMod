@@ -430,6 +430,9 @@ namespace SunhavenTodo
                 return;
             }
 
+            if (TextInputFocusGuard.ShouldDeferModHotkeys(Plugin.Log))
+                return;
+
             bool ctrlPressed = Input.GetKey(KeyCode.LeftControl) || Input.GetKey(KeyCode.RightControl);
             bool togglePressed = Input.GetKeyDown(Plugin.StaticToggleKey);
             bool hudTogglePressed = Input.GetKeyDown(Plugin.StaticHUDToggleKey);

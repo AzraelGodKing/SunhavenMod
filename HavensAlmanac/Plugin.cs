@@ -410,6 +410,9 @@ namespace HavensAlmanac
 
         private void DetectHotkeys()
         {
+            if (TextInputFocusGuard.ShouldDeferModHotkeys(Plugin.Log))
+                return;
+
             bool ctrlPressed = Input.GetKey(KeyCode.LeftControl) || Input.GetKey(KeyCode.RightControl);
 
             // Dashboard toggle: Ctrl+F5 (or just F5 if ctrl not required)

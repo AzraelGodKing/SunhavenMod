@@ -1,6 +1,8 @@
 # A Squirrel's Birthday Reminder
 
-**Version 1.1.1** — Never miss an NPC birthday in Sun Haven. Auto reminders, gift suggestions, gift tracking, draggable HUD.
+**Version 1.1.4** — Never miss an NPC birthday in Sun Haven. Auto reminders, gift suggestions, gift tracking, draggable HUD.
+
+**Compatibility:** Hotkeys pause while text entry is focused (chat, console, or input fields), so mods like CheatEnabler can use those fields without BirthdayReminder stealing keys—via shared `SunhavenMods.Shared.TextInputFocusGuard` (same helper other Azrael mods use). Hotkeys run only from the persistent runner (no duplicate path), and the **Enabled** config is honored at startup.
 
 ## Features
 
