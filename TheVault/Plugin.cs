@@ -975,7 +975,7 @@ namespace TheVault
             }
 
             // Check for HUD toggle
-            if (Input.GetKeyDown(_hudToggleKey.Value))
+            if (!TextInputFocusGuard.ShouldDeferModHotkeys(Log) && Input.GetKeyDown(_hudToggleKey.Value))
             {
                 _vaultHUD?.Toggle();
             }
@@ -1215,7 +1215,7 @@ namespace TheVault
     {
         public const string PLUGIN_GUID = "com.azraelgodking.thevault";
         public const string PLUGIN_NAME = "The Vault";
-        public const string PLUGIN_VERSION = "3.0.2";
+        public const string PLUGIN_VERSION = "3.0.3";
     }
 
     /// <summary>
@@ -1274,6 +1274,9 @@ namespace TheVault
         {
             try
             {
+                if (TextInputFocusGuard.ShouldDeferModHotkeys(Plugin.Log))
+                    return;
+
                 if (Plugin.GetVaultUI() == null) return;
 
                 // Check for vault toggle key (with modifier)

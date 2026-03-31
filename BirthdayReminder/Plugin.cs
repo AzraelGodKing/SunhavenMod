@@ -66,6 +66,7 @@ namespace BirthdayReminder
         private static KeyCode _staticToggleKey = KeyCode.B;
         private static bool _staticDebugMode = false;
         private static bool _staticUseNativeNotifications = true;
+        private static bool _staticEnabled = true;
 
         // Cached reflection for native notifications
         private static Type _notificationStackType;
@@ -81,6 +82,11 @@ namespace BirthdayReminder
             Log.LogInfo($"Loading {PluginInfo.PLUGIN_NAME} v{PluginInfo.PLUGIN_VERSION}");
 
             BindConfiguration();
+            if (!_enabled.Value)
+            {
+                Log.LogInfo($"{PluginInfo.PLUGIN_NAME} is disabled in config. Skipping initialization.");
+                return;
+            }
             CreatePersistentRunner();
             InitializeManager();
             ApplyPatches();
@@ -106,6 +112,8 @@ namespace BirthdayReminder
                 true,
                 "Enable birthday reminders"
             );
+            _staticEnabled = _enabled.Value;
+            _enabled.SettingChanged += (_, _) => _staticEnabled = _enabled.Value;
 
             _hudPositionX = Config.Bind(
                 "HUD",
@@ -455,64 +463,7 @@ namespace BirthdayReminder
 
         private void Update()
         {
-            // Hotkey handling
-            bool ctrlPressed = Input.GetKey(KeyCode.LeftControl) || Input.GetKey(KeyCode.RightControl);
-            bool shiftPressed = Input.GetKey(KeyCode.LeftShift) || Input.GetKey(KeyCode.RightShift);
-            bool altPressed = Input.GetKey(KeyCode.LeftAlt) || Input.GetKey(KeyCode.RightAlt);
-
-            // Toggle HUD: Ctrl+B
-            if (ctrlPressed && !shiftPressed && !altPressed && Input.GetKeyDown(_toggleKey.Value))
-            {
-                Log.LogInfo("[Hotkey] Ctrl+B pressed - toggling HUD");
-                EnsureUIComponentsExist();
-                _staticHUD?.Toggle();
-                Log.LogInfo($"[Hotkey] HUD visible: {_staticHUD?.IsVisible ?? false}, Birthdays: {_staticManager?.TodaysBirthdays?.Count ?? 0}");
-            }
-
-            // Test Mode: Ctrl+Alt+B - Add test birthday (works without debug mode for easy testing)
-            if (ctrlPressed && altPressed && !shiftPressed && Input.GetKeyDown(_toggleKey.Value))
-            {
-                Log.LogInfo("[TEST] Ctrl+Alt+B pressed - adding test birthday");
-                DebugAddTestBirthday();
-            }
-
-            // Test Mode: Ctrl+Alt+A - Load ALL birthdays (works without debug mode)
-            if (ctrlPressed && altPressed && !shiftPressed && Input.GetKeyDown(KeyCode.A))
-            {
-                Log.LogInfo("[TEST] Ctrl+Alt+A pressed - loading all birthdays");
-                DebugLoadAllBirthdays();
-            }
-
-            // Debug: Ctrl+Shift+B - Add test birthday and show HUD
-            if (_debugMode.Value && ctrlPressed && shiftPressed && Input.GetKeyDown(_toggleKey.Value))
-            {
-                DebugAddTestBirthday();
-            }
-
-            // Debug: Ctrl+Shift+R - Refresh/recheck birthdays
-            if (_debugMode.Value && ctrlPressed && shiftPressed && Input.GetKeyDown(KeyCode.R))
-            {
-                DebugRefreshBirthdays();
-            }
-
-            // Debug: Ctrl+Shift+C - Clear all birthdays
-            if (_debugMode.Value && ctrlPressed && shiftPressed && Input.GetKeyDown(KeyCode.C))
-            {
-                DebugClearBirthdays();
-            }
-
-            // Debug: Ctrl+Shift+A - Load ALL birthdays (show all NPCs with birthdays)
-            if (_debugMode.Value && ctrlPressed && shiftPressed && Input.GetKeyDown(KeyCode.A))
-            {
-                DebugLoadAllBirthdays();
-            }
-
-            // Debug: Ctrl+Shift+L - Dump Lynn's NPC info
-            if (_debugMode.Value && ctrlPressed && shiftPressed && Input.GetKeyDown(KeyCode.L))
-            {
-                Log.LogInfo("[DEBUG] Ctrl+Shift+L pressed - dumping Lynn's NPC info...");
-                _staticManager?.DebugDumpNPCInfo("Lynn");
-            }
+            // Hotkeys are handled only in PersistentRunner to avoid duplicate key processing.
         }
 
         public static BirthdayManager GetManager() => _staticManager;
@@ -521,6 +472,7 @@ namespace BirthdayReminder
         public static KeyCode StaticToggleKey => _staticToggleKey;
         public static bool StaticDebugMode => _staticDebugMode;
         public static bool StaticUseNativeNotifications => _staticUseNativeNotifications;
+        public static bool StaticEnabled => _staticEnabled;
 
         /// <summary>
         /// Initialize the native notification system via reflection
@@ -920,6 +872,11 @@ namespace BirthdayReminder
 
         private void CheckHotkeys()
         {
+            if (!Plugin.StaticEnabled)
+                return;
+            if (TextInputFocusGuard.ShouldDeferModHotkeys(Plugin.Log))
+                return;
+
             bool ctrlPressed = Input.GetKey(KeyCode.LeftControl) || Input.GetKey(KeyCode.RightControl);
             bool shiftPressed = Input.GetKey(KeyCode.LeftShift) || Input.GetKey(KeyCode.RightShift);
             bool altPressed = Input.GetKey(KeyCode.LeftAlt) || Input.GetKey(KeyCode.RightAlt);
@@ -951,6 +908,21 @@ namespace BirthdayReminder
                 }
             }
 
+            // Test Mode: Ctrl+Alt+A - Load ALL birthdays (no debug flag)
+            if (ctrlPressed && altPressed && !shiftPressed && Input.GetKeyDown(KeyCode.A))
+            {
+                Plugin.Log?.LogInfo("[PersistentRunner] Ctrl+Alt+A pressed - loading all birthdays");
+                Plugin.EnsureUIComponentsExist();
+                Plugin.GetManager()?.DebugLoadAllBirthdays();
+            }
+
+            // Debug: Ctrl+Shift+B - Add test birthday
+            if (Plugin.StaticDebugMode && ctrlPressed && shiftPressed && !altPressed && Input.GetKeyDown(Plugin.StaticToggleKey))
+            {
+                Plugin.EnsureUIComponentsExist();
+                Plugin.GetManager()?.DebugAddTestBirthday("Test NPC", "Loves: Diamonds, Gold");
+            }
+
             // Debug: Ctrl+Shift+R - Refresh/recheck birthdays
             if (Plugin.StaticDebugMode && ctrlPressed && shiftPressed && Input.GetKeyDown(KeyCode.R))
             {
@@ -966,6 +938,22 @@ namespace BirthdayReminder
                 Plugin.Log?.LogInfo("[PersistentRunner] Ctrl+Shift+C pressed - Clearing birthdays");
                 Plugin.GetManager()?.DebugClearBirthdays();
                 Plugin.GetHUD()?.Hide();
+            }
+
+            // Debug: Ctrl+Shift+A - Load ALL birthdays
+            if (Plugin.StaticDebugMode && ctrlPressed && shiftPressed && Input.GetKeyDown(KeyCode.A))
+            {
+                Plugin.Log?.LogInfo("[PersistentRunner] Ctrl+Shift+A pressed - loading all birthdays");
+                Plugin.EnsureUIComponentsExist();
+                Plugin.GetManager()?.DebugLoadAllBirthdays();
+            }
+
+            // Debug: Ctrl+Shift+L - Dump Lynn's NPC info
+            if (Plugin.StaticDebugMode && ctrlPressed && shiftPressed && Input.GetKeyDown(KeyCode.L))
+            {
+                Plugin.Log?.LogInfo("[PersistentRunner] Ctrl+Shift+L pressed - dumping Lynn's NPC info...");
+                Plugin.EnsureUIComponentsExist();
+                Plugin.GetManager()?.DebugDumpNPCInfo("Lynn");
             }
         }
 

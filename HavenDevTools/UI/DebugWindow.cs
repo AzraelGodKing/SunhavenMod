@@ -65,15 +65,15 @@ namespace HavenDevTools.UI
         // Known mod GUIDs and versions
         private static readonly (string guid, string name, string version)[] _knownMods = new[]
         {
-            ("com.azraelgodking.havendevtools", "Haven Dev Tools", "1.0.2"),
-            ("com.azraelgodking.senpaischest", "Senpai's Chest", "2.2.2"),
-            ("com.azraelgodking.squirrelsbirthdayreminder", "Birthday Reminder", "1.0.2"),
-            ("com.azraelgodking.havensbirthright", "Haven's Birthright", "1.0.2"),
-                ("com.azraelgodking.sunhavenmuseumutilitytracker", "S.M.U.T.", "2.2.5"),
-            ("com.azraelgodking.sunhaventodo", "Sunhaven Todo", "1.0.0"),
-            ("com.azraelgodking.thevault", "The Vault", "3.0.0"),
-            ("com.azraelgodking.havensalmanac", "Haven's Almanac", "1.0.0"),
-            ("com.azraelgodking.fasterraces", "Faster Races", "1.1.1"),
+            ("com.azraelgodking.havendevtools", "Haven Dev Tools", "1.0.7"),
+            ("com.azraelgodking.senpaischest", "Senpai's Chest", "2.2.3"),
+            ("com.azraelgodking.squirrelsbirthdayreminder", "Birthday Reminder", "1.1.4"),
+            ("com.azraelgodking.havensbirthright", "Haven's Birthright", "1.4.2"),
+                ("com.azraelgodking.sunhavenmuseumutilitytracker", "S.M.U.T.", "2.2.6"),
+            ("com.azraelgodking.sunhaventodo", "Sunhaven Todo", "1.1.6"),
+            ("com.azraelgodking.thevault", "The Vault", "3.0.3"),
+            ("com.azraelgodking.havensalmanac", "Haven's Almanac", "1.0.4"),
+            ("com.azraelgodking.fasterraces", "Faster Races", "1.1.2"),
         };
 
         private const string PAUSE_ID = "HavenDevTools_Debug";

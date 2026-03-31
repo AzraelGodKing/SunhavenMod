@@ -1,6 +1,6 @@
 # Faster Races
 
-**Version 1.1.1** — Adds a **configurable movement speed bonus** for your character. When used with **Haven's Birthright**, this mod disables Haven's Birthright movement speed bonuses so you don't get double speed—you get one consistent bonus from Faster Races instead.
+**Version 1.1.2** — Adds a **configurable movement speed bonus** for your character. When used with **Haven's Birthright**, this mod disables Haven's Birthright movement speed bonuses so you don't get double speed—you get one consistent bonus from Faster Races instead.
 
 ## Features
 

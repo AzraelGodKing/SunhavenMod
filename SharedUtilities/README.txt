@@ -10,6 +10,7 @@ FILES
 - SceneHelpers.cs         : Scene detection utilities (menu vs game detection)
 - GUIStyleHelper.cs       : GUIStyle and Texture2D creation utilities
 - ReflectionHelper.cs     : Common reflection patterns with Harmony integration
+- TextInputFocusGuard.cs  : Shared “player is typing in chat/console/UI text field” detection so mod hotkeys can defer (CheatEnabler / Quantum Console friendly). Throttled (~0.25s shared cache), reflection cached after first lookup, no per-frame GetComponents. Link UnityEngine.UI and UnityEngine.IMGUIModule; uses 0Harmony for type resolution.
 
 NAMESPACE
 ---------
@@ -36,6 +37,7 @@ Add to your .csproj file:
     <Compile Include="..\SharedUtilities\SceneHelpers.cs" Link="Shared\SceneHelpers.cs" />
     <Compile Include="..\SharedUtilities\GUIStyleHelper.cs" Link="Shared\GUIStyleHelper.cs" />
     <Compile Include="..\SharedUtilities\ReflectionHelper.cs" Link="Shared\ReflectionHelper.cs" />
+    <Compile Include="..\SharedUtilities\TextInputFocusGuard.cs" Link="Shared\TextInputFocusGuard.cs" />
   </ItemGroup>
 
 USAGE EXAMPLES
