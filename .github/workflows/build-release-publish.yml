@@ -459,6 +459,7 @@ jobs:
           echo "zip=$ZIP"
           test -f "$ZIP" || { echo "::error::Missing $ZIP"; exit 1; }
           ls -lh "$ZIP"
+          echo "nexus_display_name=${{ steps.config.outputs.display_name }} v${{ steps.config.outputs.version }}.zip"
 
       - name: Upload to Nexus Mods
         if: github.event.inputs.publish_nexus == 'true' && github.event.inputs.test_discord != 'true' && steps.version_check.outputs.version_unchanged != 'true' && steps.config.outputs.nexus_file_group_id != ''
@@ -468,7 +469,7 @@ jobs:
           file_group_id: ${{ steps.config.outputs.nexus_file_group_id }}
           filename: dist/${{ steps.config.outputs.thunderstore_name }}-${{ steps.config.outputs.version }}.zip
           version: ${{ steps.config.outputs.version }}
-          display_name: ${{ steps.config.outputs.display_name }} v${{ steps.config.outputs.version }}
+          display_name: ${{ steps.config.outputs.display_name }} v${{ steps.config.outputs.version }}.zip
           description: |
             ${{ steps.config.outputs.description }}
 
@@ -476,7 +477,9 @@ jobs:
             ${{ steps.config.outputs.changelog }}
 
             ### Installation
-            Extract the contents to your Sun Haven BepInEx/plugins folder.
+            Download this ZIP and extract the contents to your Sun Haven BepInEx/plugins folder.
+
+            If Nexus displays an alphanumeric file label, the upload is still a ZIP package.
           file_category: main
 
       # ------------------------------------------------------------------
