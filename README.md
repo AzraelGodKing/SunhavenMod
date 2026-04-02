@@ -117,6 +117,6 @@ SunhavenMod/
 
 ## Links
 
-- [Nexus Mods (Senpai's Chest)](https://www.nexusmods.com/sunhaven/mods/496)
+- [Nexus Mods]([https://www.nexusmods.com/sunhaven/mods/496](https://www.nexusmods.com/profile/AzraelGodKing/mods))
 - [Documentation](https://azraelgodking.github.io/SunhavenMod/)
 - [Discord](https://discord.gg/Vwh2y7qMXv)
