@@ -2,8 +2,6 @@
 
 A collection of BepInEx mods for [Sun Haven](https://store.steampowered.com/app/1432860/Sun_Haven/).
 
-**Versioning (maintainers / AI):** Do not bump any mod’s published version (`PluginInfo`, `.csproj` assembly versions, Thunderstore/Nexus copy, `docs/versions.json`, etc.) unless the repo owner explicitly asks for a release.
-
 ## Mods
 
 | Mod | Description | Version |
@@ -40,7 +38,7 @@ Per-character saves, item icons, and bundle progress. Hotkey: **Ctrl+C**.
 
 ### The Vault
 
-**Full rework of The Vault system** (current release **3.0.2**): classic `VaultManager` / `VaultSaveSystem` stack, one codebase under `TheVault/`, Harmony integration rebased on `Wish.*` types, single build (`TheVault/TheVault.csproj`). Secure storage for seasonal tokens, keys, and special currencies; auto-deposit, HUD, shop and inventory vault hooks; **Ctrl+V** or **F8** (Steam Deck). Details: [`TheVault/README.md`](TheVault/README.md). `TheVault-legacy/` is archive/reference only.
+**Full rework of The Vault system** (current release **3.0.2**): classic `VaultManager` / `VaultSaveSystem` stack, one codebase under `TheVault/`, Harmony integration rebased on `Wish.*` types, single build (`TheVault/TheVault.csproj`). Secure storage for seasonal tokens, keys, and special currencies; auto-deposit, HUD, shop and inventory vault hooks; **Ctrl+V** or **F8** (Steam Deck). Details: [`TheVault/README.md`]
 
 ### Haven's Birthright
 
