@@ -1,4 +1,4 @@
-# Sun Haven Mods
+﻿# Sun Haven Mods
 
 A collection of BepInEx mods for [Sun Haven](https://store.steampowered.com/app/1432860/Sun_Haven/).
 
@@ -9,7 +9,7 @@ A collection of BepInEx mods for [Sun Haven](https://store.steampowered.com/app/
 | [**Senpai's Chest**](SenpaisChest/) | Smart chests with configurable item rules for automatic storage sorting | 2.2.3 |
 | [**Sunhaven Todo**](SunhavenTodo/) | In-game todo list and journal with per-character saves | 1.1.6 |
 | [**Sun Haven Museum Utility Tracker**](SunHavenMuseumUtilityTracker/) | Track museum donations across all sections | 2.2.6 |
-| [**The Vault**](TheVault/) | Full rework of the vault system; classic core, single project; shop and inventory vault hooks | 3.0.3 |
+| [**The Vault**](TheVault/) | Full rework of the vault system; classic core, single project; shop and inventory vault hooks | 3.0.4 |
 | [**Haven's Birthright**](HavensBirthright/) | Unique racial bonuses and traits for each playable race | 1.4.2 |
 | [**Haven's Almanac**](HavensAlmanac/) | Mod compatibility registry and info hub | 1.0.4 |
 | [**A Squirrel's Birthday Reminder**](BirthdayReminder/) | Reminds you of villagers' birthdays | 1.1.4 |
@@ -107,6 +107,7 @@ SunhavenMod/
 
 ## Documentation site changelog
 
+- **2026-03-31** — **The Vault:** HUD is draggable via the top accent strip; **`[HUD] PositionX`** / **`PositionY`** in `thevault.cfg` persist placement.
 - **2026-03-31** — **Thunderstore readmes:** [`TheVault/thunderstore/README.md`](TheVault/thunderstore/README.md) and [`TrinketFortune/thunderstore/README.md`](TrinketFortune/thunderstore/README.md) now include a `**Version X.Y.Z**` line so `pre-push-build.ps1` can keep them in sync with `docs/versions.json`.
 - **2026-03-31** — **Repo:** [`scripts/pre-push-build.ps1`](scripts/pre-push-build.ps1): `-All` without `-Bump` syncs every mod from `docs/versions.json` and builds all; `-BuildOnly` with `-Mod` or `-All` runs `dotnet build` only (no version file edits; does not require `versions.json`).
 - **2026-03-27** — Nexus detailed-description BBCode: each mod folder includes `NexusMods-BBCode.txt` (content aligned with that mod’s README). Paths listed in [`docs/NexusMods-BBCode-Index.txt`](docs/NexusMods-BBCode-Index.txt). Removed monolithic `docs/NexusMods-Collection-BBCode.txt`.

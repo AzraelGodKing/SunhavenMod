@@ -40,7 +40,7 @@
     "changelog": "CheatEnabler compatibility: mod hotkeys defer while typing in chat, console, or UI text fields (shared TextInputFocusGuard)."
   },
   "com.azraelgodking.thevault": {
-    "version": "3.0.3",
+    "version": "3.0.4",
     "name": "The Vault",
     "description": "The Vault 3 — per-character vault, encrypted saves, HUD, auto-deposit, shop and inventory vault integration, Custom tab & mod API.",
     "vault_save_breaking": false,
@@ -49,7 +49,7 @@
     "nexus_file_group_id": "1305781",
     "thunderstore": "https://thunderstore.io/c/sun-haven/p/AzraelGodKing/TheVault/",
     "thunderstoreName": "TheVault",
-    "changelog": "CheatEnabler compatibility: mod hotkeys defer while typing in chat, console, or UI text fields (shared TextInputFocusGuard)."
+    "changelog": "HUD is draggable via the top accent strip; **`[HUD] PositionX`** / **`PositionY`** in `thevault.cfg` persist placement."
   },
   "com.azraelgodking.havendevtools": {
     "version": "1.0.7",

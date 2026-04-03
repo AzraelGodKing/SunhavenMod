@@ -17,12 +17,27 @@ namespace TheVault.UI
 
     /// <summary>
     /// Rewritten HUD: simple, always-on-screen, multi-row wrap with autoscale-to-fit.
+    /// Draggable by the top band (like Sun Haven Todo HUD); pixel position persists to config when set from Plugin.
     /// </summary>
     public class VaultHUD : MonoBehaviour
     {
+        private const int HudWindowId = 88420;
+
         private VaultManager _vaultManager;
         private bool _isEnabled = true;
         private HUDPosition _position = HUDPosition.TopLeft;
+        /// <summary>When false, HUD xy follows <see cref="_position"/> each frame. When true, xy come from drag / saved pixels.</summary>
+        private bool _useCustomHudPlacement;
+        private Rect _windowRect;
+        private float _layoutOuterW;
+        private float _layoutOuterH;
+        private float _hudDragBandHeight;
+        private GUIStyle _hudWindowStyle;
+        private Texture2D _clearWindowTex;
+
+        /// <summary>Invoked when the player drags the HUD; Plugin persists X/Y to the config file.</summary>
+        public Action<float, float> OnPositionChanged;
+
         private float _opacity = 0.95f;
         private float _scale = 1f;
         private VaultHudDensity _hudDensity = VaultHudDensity.Normal;
@@ -93,7 +108,19 @@ namespace TheVault.UI
         }
 
         public void SetEnabled(bool enabled) => _isEnabled = enabled;
+
+        /// <summary>Updates anchor preset from config. Does not clear custom placement; use <see cref="ClearCustomHudPlacement"/> when the player changes [HUD] Position.</summary>
         public void SetPosition(HUDPosition position) => _position = position;
+
+        public void ClearCustomHudPlacement() => _useCustomHudPlacement = false;
+
+        /// <summary>Restore pixel position from config (both coordinates must be &gt;= 0).</summary>
+        public void RestoreHudPixelPosition(float x, float y)
+        {
+            _windowRect.x = x;
+            _windowRect.y = y;
+            _useCustomHudPlacement = true;
+        }
         public void SetScale(float scale) { _scale = Mathf.Clamp(scale, 0.5f, 3f); _stylesForMul = -1f; }
         public void SetHudDensity(VaultHudDensity density) { _hudDensity = density; _stylesForMul = -1f; }
         public void SetOpacity(float opacity)
@@ -347,6 +374,21 @@ namespace TheVault.UI
             return new Rect(x, y, w, h);
         }
 
+        private void EnsureHudWindowStyle()
+        {
+            if (_hudWindowStyle != null) return;
+            if (_clearWindowTex == null)
+                _clearWindowTex = MakeTex(2, 2, new Color(0f, 0f, 0f, 0f));
+            _hudWindowStyle = new GUIStyle(GUI.skin.window)
+            {
+                normal = { background = _clearWindowTex },
+                onNormal = { background = _clearWindowTex },
+                border = new RectOffset(0, 0, 0, 0),
+                padding = new RectOffset(0, 0, 0, 0),
+                margin = new RectOffset(0, 0, 0, 0)
+            };
+        }
+
         private void OnGUI()
         {
             if (!_isEnabled || _vaultManager == null || !PlayerPatches.IsVaultLoaded) return;
@@ -390,13 +432,13 @@ namespace TheVault.UI
                 float gap = BaseGap * mul;
                 foreach (var r in _rows)
                 {
-                    float w = 0f;
+                    float wrow = 0f;
                     for (int ci = 0; ci < r.Count; ci++)
                     {
-                        if (ci > 0) w += gap;
-                        w += CellWidth(r[ci], mul);
+                        if (ci > 0) wrow += gap;
+                        wrow += CellWidth(r[ci], mul);
                     }
-                    widest = Mathf.Max(widest, w);
+                    widest = Mathf.Max(widest, wrow);
                 }
                 outerW = Mathf.Clamp(widest + 2f * pad, 100f, maxOuterW);
 
@@ -405,20 +447,57 @@ namespace TheVault.UI
                 auto = next;
             }
 
-            Rect rOuter = PlaceRect(outerW, outerH);
+            outerW = Mathf.Min(outerW, Screen.width - 2f * ScreenInset);
+            _layoutOuterW = outerW;
+            _layoutOuterH = outerH;
 
-            // Shadow
-            GUI.DrawTexture(new Rect(rOuter.x + 3f, rOuter.y + 3f, rOuter.width, rOuter.height), _shadowTex, ScaleMode.StretchToFill);
-
-            // Border + background
-            GUI.DrawTexture(new Rect(rOuter.x - 1f, rOuter.y - 1f, rOuter.width + 2f, rOuter.height + 2f), _borderTex, ScaleMode.StretchToFill);
-            GUI.Box(rOuter, GUIContent.none, _bgStyle);
-
-            // Accent bar
             float accentH = Mathf.Max(2f, 2.5f * _stylesForMul);
-            GUI.DrawTexture(new Rect(rOuter.x + 1f, rOuter.y + 1f, rOuter.width - 2f, accentH), Texture2D.whiteTexture, ScaleMode.StretchToFill, false, 0, WithA(_accent, _opacity * 0.85f), 0, 0);
+            _hudDragBandHeight = Mathf.Max(22f, pad + accentH + 8f);
 
-            GUI.BeginGroup(rOuter);
+            _windowRect.width = outerW;
+            _windowRect.height = outerH;
+
+            if (!_useCustomHudPlacement)
+            {
+                Rect placed = PlaceRect(outerW, outerH);
+                _windowRect.x = placed.x;
+                _windowRect.y = placed.y;
+            }
+            else
+            {
+                _windowRect.x = Mathf.Clamp(_windowRect.x, 0f, Mathf.Max(0f, Screen.width - _windowRect.width));
+                _windowRect.y = Mathf.Clamp(_windowRect.y, 0f, Mathf.Max(0f, Screen.height - _windowRect.height));
+            }
+
+            EnsureHudWindowStyle();
+            GUI.depth = -400;
+
+            Rect prevRect = _windowRect;
+            _windowRect = GUI.Window(HudWindowId, _windowRect, DrawHudWindow, "", _hudWindowStyle);
+            _windowRect.x = Mathf.Clamp(_windowRect.x, 0f, Mathf.Max(0f, Screen.width - _windowRect.width));
+            _windowRect.y = Mathf.Clamp(_windowRect.y, 0f, Mathf.Max(0f, Screen.height - _windowRect.height));
+
+            if (Math.Abs(_windowRect.x - prevRect.x) > 0.1f || Math.Abs(_windowRect.y - prevRect.y) > 0.1f)
+            {
+                _useCustomHudPlacement = true;
+                OnPositionChanged?.Invoke(_windowRect.x, _windowRect.y);
+            }
+        }
+
+        private void DrawHudWindow(int windowId)
+        {
+            float w = _layoutOuterW;
+            float h = _layoutOuterH;
+            float pad = BasePad * _stylesForMul;
+            float accentH = Mathf.Max(2f, 2.5f * _stylesForMul);
+            float rh = RowHeight(_stylesForMul);
+
+            GUI.DrawTexture(new Rect(3f, 3f, w, h), _shadowTex, ScaleMode.StretchToFill);
+            GUI.DrawTexture(new Rect(-1f, -1f, w + 2f, h + 2f), _borderTex, ScaleMode.StretchToFill);
+            GUI.Box(new Rect(0f, 0f, w, h), GUIContent.none, _bgStyle);
+            GUI.DrawTexture(new Rect(1f, 1f, w - 2f, accentH), Texture2D.whiteTexture, ScaleMode.StretchToFill, false, 0, WithA(_accent, _opacity * 0.85f), 0, 0);
+
+            GUI.BeginGroup(new Rect(0f, 0f, w, h));
             float x0 = pad;
             float y = pad + accentH + 2f;
             float gapX = BaseGap * _stylesForMul;
@@ -435,10 +514,10 @@ namespace TheVault.UI
                     Cell c = row[ci];
                     if (c.Sep)
                     {
-                        float w = Mathf.Max(6f, BaseGroupGap * _stylesForMul);
-                        float cx = x + w * 0.5f;
+                        float sw = Mathf.Max(6f, BaseGroupGap * _stylesForMul);
+                        float cx = x + sw * 0.5f;
                         GUI.DrawTexture(new Rect(cx, y + 2f, 1f, icon - 4f), _sepTex);
-                        x += w;
+                        x += sw;
                         continue;
                     }
 
@@ -466,6 +545,17 @@ namespace TheVault.UI
             }
 
             GUI.EndGroup();
+
+            GUI.DragWindow(new Rect(0f, 0f, w, _hudDragBandHeight));
+        }
+
+        private void OnDestroy()
+        {
+            if (_clearWindowTex != null)
+            {
+                Destroy(_clearWindowTex);
+                _clearWindowTex = null;
+            }
         }
 
         private static string FormatNumber(int value)
