@@ -38,7 +38,7 @@ Per-character saves, item icons, and bundle progress. Hotkey: **Ctrl+C**.
 
 ### The Vault
 
-**Full rework of The Vault system** (current release **3.0.2**): classic `VaultManager` / `VaultSaveSystem` stack, one codebase under `TheVault/`, Harmony integration rebased on `Wish.*` types, single build (`TheVault/TheVault.csproj`). Secure storage for seasonal tokens, keys, and special currencies; auto-deposit, HUD, shop and inventory vault hooks; **Ctrl+V** or **F8** (Steam Deck). Details: [`TheVault/README.md`]
+**Full rework of The Vault system** (current release **3.0.4**): classic `VaultManager` / `VaultSaveSystem` stack, one codebase under `TheVault/`, Harmony integration rebased on `Wish.*` types, single build (`TheVault/TheVault.csproj`). Secure storage for seasonal tokens, keys, and special currencies; auto-deposit, HUD, shop and inventory vault hooks; **Ctrl+V** or **F8** (Steam Deck). Details: [`TheVault/README.md`]
 
 ### Haven's Birthright
 
@@ -107,6 +107,7 @@ SunhavenMod/
 
 ## Documentation site changelog
 
+- **2026-04-03** — **The Vault:** [`TheVault/README.md`](TheVault/README.md) aligned with **v3.0.4** (version + changelog **3.0.3** / **3.0.4**); removed erroneous in-repo breaking callout; HUD usage text matches cfg keys; intro links **`TheVault.Abstractions/`**.
 - **2026-03-31** — **The Vault:** HUD is draggable via the top accent strip; **`[HUD] PositionX`** / **`PositionY`** in `thevault.cfg` persist placement.
 - **2026-03-31** — **Thunderstore readmes:** [`TheVault/thunderstore/README.md`](TheVault/thunderstore/README.md) and [`TrinketFortune/thunderstore/README.md`](TrinketFortune/thunderstore/README.md) now include a `**Version X.Y.Z**` line so `pre-push-build.ps1` can keep them in sync with `docs/versions.json`.
 - **2026-03-31** — **Repo:** [`scripts/pre-push-build.ps1`](scripts/pre-push-build.ps1): `-All` without `-Bump` syncs every mod from `docs/versions.json` and builds all; `-BuildOnly` with `-Mod` or `-All` runs `dotnet build` only (no version file edits; does not require `versions.json`).
