@@ -7,16 +7,7 @@
 > **If a release ever cannot keep compatibility** (unexpected game update, unavoidable format break, etc.), maintainers follow **[SAVE_COMPATIBILITY.md](./SAVE_COMPATIBILITY.md)**: a **large warning at the top of this README**, the same message in **Thunderstore/Nexus** descriptions (via `docs/versions.json`), **changelog** backup steps, and an **in-game + BepInEx log** warning when needed. Until you see that warning, you should **not** need to delete saves or expect a wiped vault from a routine mod update.
 >
 
-> ## ⛔ BREAKING — VAULT SAVE MAY NOT CARRY FORWARD
->
-> **This version cannot preserve your existing vault automatically.** Before launching the game with this build:
->
-> Best to manually empty the vault before upgrading to the new version. 
->
-> There is no way to restore old vault files at the moment.
->
-
-**The Vault 3** is a Sun Haven BepInEx mod: per-character vault, encrypted saves, HUD, auto-deposit, and shop plus inventory integration (vault counts apply when the game checks or spends currency from your bag—shops, keys, and similar). Ship **`TheVault.dll`** and **`TheVault.Abstractions.dll`** in `BepInEx/plugins/TheVault`. Sources and the supported build live in this folder (**`TheVault.csproj`** only).
+**The Vault 3** is a Sun Haven BepInEx mod: per-character vault, encrypted saves, HUD, auto-deposit, and shop plus inventory integration (vault counts apply when the game checks or spends currency from your bag—shops, keys, and similar). Ship **`TheVault.dll`** and **`TheVault.Abstractions.dll`** in `BepInEx/plugins/TheVault`. Sources: plugin **`TheVault/TheVault.csproj`**, API shim **[`TheVault.Abstractions/`](../TheVault.Abstractions/)** (**`TheVault.Abstractions.csproj`**).
 
 ## Features
 
@@ -29,7 +20,7 @@
 
 - **Main window:** IMGUI vault UI (**Ctrl+V** or **F8**). The HUD hides while the window is open.
 - **F7:** Toggle HUD.
-- **HUD position:** drag the **top strip** (accent bar area) to move the bar; **PositionX** / **PositionY** in `thevault.cfg` persist like Sun Haven Todo. **`[HUD] Position`** is the anchor when those are `-1`; changing **Position** clears a custom drag placement.
+- **HUD position:** drag the **top accent strip** to move the bar; **`[HUD] PositionX`** / **`PositionY`** in `thevault.cfg` persist placement. **`[HUD] Position`** is the anchor when those are `-1`; changing **Position** clears a custom drag placement.
 - Select a row, enter a quantity, then **Withdraw** (vault → bag) or **Deposit** (bag → vault). Status text under the buttons reports success or errors (not only the BepInEx log).
 - **`[HUD] Density`:** **Normal**, **Compact**, or **Minimal**. **`[HUD] CompactMode`** still narrows the bar when Density is **Normal**. The in-game **Settings** tab shows HUD density and the compact toggle.
 
@@ -71,15 +62,19 @@ The vault UI includes a **Custom** tab for currencies registered at runtime. Fro
 
 ## Version
 
-**Released version is `3.0.2`** (BepInEx, Thunderstore, Nexus).
+**Released version is `3.0.4`** (BepInEx, Thunderstore, Nexus). Source of truth: **`TheVault.csproj`** / **`docs/versions.json`**.
 
 **Maintainer note:** Same as the [repo root README](../../README.md): do not bump **any** mod’s published version unless the owner explicitly asks for a release.
 
 ## Changelog
 
-### Unreleased
+### 3.0.4
 
 - **HUD:** Draggable via the top accent strip; **`[HUD] PositionX`** / **`PositionY`** in `thevault.cfg` persist placement.
+
+### 3.0.3
+
+- **Compatibility:** Mod hotkeys defer while typing in chat, the console, or UI text fields when **CheatEnabler** is present (shared `TextInputFocusGuard`).
 
 ### 3.0.2
 
