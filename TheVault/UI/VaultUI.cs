@@ -923,6 +923,7 @@ namespace TheVault.UI
 
             // HUD
             GUILayout.Label("HUD", _labelStyle);
+            GUILayout.Label("Drag the currency bar by its top strip to move it; position saves to config (like Sun Haven Todo). Changing [HUD] Position resets a custom placement.", _hintStyle);
             bool hudOn = Plugin.GetConfigHUDEnabled();
             bool newHudOn = GUILayout.Toggle(hudOn, " Show vault currency bar", _labelStyle);
             if (newHudOn != hudOn) Plugin.SetConfigHUDEnabled(newHudOn);
