@@ -29,6 +29,7 @@
 
 - **Main window:** IMGUI vault UI (**Ctrl+V** or **F8**). The HUD hides while the window is open.
 - **F7:** Toggle HUD.
+- **HUD position:** drag the **top strip** (accent bar area) to move the bar; **PositionX** / **PositionY** in `thevault.cfg` persist like Sun Haven Todo. **`[HUD] Position`** is the anchor when those are `-1`; changing **Position** clears a custom drag placement.
 - Select a row, enter a quantity, then **Withdraw** (vault → bag) or **Deposit** (bag → vault). Status text under the buttons reports success or errors (not only the BepInEx log).
 - **`[HUD] Density`:** **Normal**, **Compact**, or **Minimal**. **`[HUD] CompactMode`** still narrows the bar when Density is **Normal**. The in-game **Settings** tab shows HUD density and the compact toggle.
 
@@ -75,6 +76,10 @@ The vault UI includes a **Custom** tab for currencies registered at runtime. Fro
 **Maintainer note:** Same as the [repo root README](../../README.md): do not bump **any** mod’s published version unless the owner explicitly asks for a release.
 
 ## Changelog
+
+### Unreleased
+
+- **HUD:** Draggable via the top accent strip; **`[HUD] PositionX`** / **`PositionY`** in `thevault.cfg` persist placement.
 
 ### 3.0.2
 

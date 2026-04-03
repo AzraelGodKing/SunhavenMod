@@ -50,6 +50,8 @@ namespace TheVault
         private ConfigEntry<KeyCode> _altToggleKey;
         private ConfigEntry<bool> _enableHUD;
         private ConfigEntry<string> _hudPosition;
+        private ConfigEntry<float> _hudPositionX;
+        private ConfigEntry<float> _hudPositionY;
         private ConfigEntry<float> _hudScale;
         private ConfigEntry<bool> _hudCompactMode;
         private ConfigEntry<string> _hudDensity;
@@ -59,6 +61,9 @@ namespace TheVault
         private ConfigEntry<float> _autoSaveInterval;
         private ConfigEntry<bool> _checkForUpdates;
         private ConfigEntry<bool> _useLegacyImguiVault;
+
+        /// <summary>Last applied <see cref="_hudPosition"/>; when it changes, saved pixel HUD coords are cleared.</summary>
+        private string _hudPositionConfigBaseline;
 
         /// <summary>
         /// Full vault inspector (zeros, Debug tab, full HUD). Controlled by Haven Dev Tools config / UI, not TheVault.cfg.
@@ -133,7 +138,8 @@ namespace TheVault
                 _vaultHUD = uiObject.AddComponent<VaultHUD>();
                 _vaultHUD.Initialize(_vaultManager);
                 _vaultHUD.SetEnabled(_enableHUD.Value);
-                _vaultHUD.SetPosition(ParseHUDPosition(_hudPosition.Value));
+                ApplyVaultHudPlacementFromConfig(_vaultHUD);
+                WireVaultHudPositionPersistence(_vaultHUD);
                 _vaultHUD.SetScale(Mathf.Clamp(_hudScale.Value, 0.5f, 3f));
                 _vaultHUD.SetHudDensity(GetResolvedHudDensity());
                 _staticVaultHUD = _vaultHUD;
@@ -267,7 +273,8 @@ namespace TheVault
                         // uGUI disabled
                         Instance._vaultHUD = _staticVaultHUD;
                         _staticVaultHUD.SetEnabled(Instance._enableHUD.Value);
-                        _staticVaultHUD.SetPosition(ParseHUDPosition(Instance._hudPosition.Value));
+                        Instance.ApplyVaultHudPlacementFromConfig(_staticVaultHUD);
+                        Instance.WireVaultHudPositionPersistence(_staticVaultHUD);
                         _staticVaultHUD.SetScale(Mathf.Clamp(Instance._hudScale.Value, 0.5f, 3f));
                         _staticVaultHUD.SetHudDensity(GetResolvedHudDensity());
                     }
@@ -322,7 +329,21 @@ namespace TheVault
                 "HUD",
                 "Position",
                 "TopLeft",
-                "HUD position: TopLeft, TopCenter, TopRight, BottomLeft, BottomCenter, BottomRight"
+                "Anchor when not using a custom drag position. Changing this clears PositionX/PositionY. Drag the HUD top strip to save a custom position (like Sun Haven Todo)."
+            );
+
+            _hudPositionX = Config.Bind(
+                "HUD",
+                "PositionX",
+                -1f,
+                "HUD left edge in pixels after dragging (-1 = use Position anchor only)"
+            );
+
+            _hudPositionY = Config.Bind(
+                "HUD",
+                "PositionY",
+                -1f,
+                "HUD top edge in pixels after dragging (-1 = use Position anchor only)"
             );
 
             _hudScale = Config.Bind(
@@ -386,6 +407,7 @@ namespace TheVault
                 "Check for mod updates on startup"
             );
 
+            _hudPositionConfigBaseline = _hudPosition.Value;
         }
 
         /// <summary>
@@ -434,7 +456,19 @@ namespace TheVault
                 if (vaultHUD != null)
                 {
                     vaultHUD.SetEnabled(_enableHUD.Value);
-                    vaultHUD.SetPosition(ParseHUDPosition(_hudPosition.Value));
+                    var posVal = _hudPosition.Value;
+                    if (!string.Equals(posVal, _hudPositionConfigBaseline, StringComparison.OrdinalIgnoreCase))
+                    {
+                        _hudPositionX.SetSerializedValue("-1");
+                        _hudPositionY.SetSerializedValue("-1");
+                        vaultHUD.ClearCustomHudPlacement();
+                    }
+
+                    _hudPositionConfigBaseline = posVal;
+                    vaultHUD.SetPosition(ParseHUDPosition(posVal));
+                    if (_hudPositionX.Value >= 0f && _hudPositionY.Value >= 0f)
+                        vaultHUD.RestoreHudPixelPosition(_hudPositionX.Value, _hudPositionY.Value);
+
                     vaultHUD.SetScale(Mathf.Clamp(_hudScale.Value, 0.5f, 3f));
                     vaultHUD.SetHudDensity(GetResolvedHudDensity());
                 }
@@ -1035,6 +1069,22 @@ namespace TheVault
             }
         }
 
+        private void ApplyVaultHudPlacementFromConfig(VaultHUD hud)
+        {
+            hud.SetPosition(ParseHUDPosition(_hudPosition.Value));
+            if (_hudPositionX.Value >= 0f && _hudPositionY.Value >= 0f)
+                hud.RestoreHudPixelPosition(_hudPositionX.Value, _hudPositionY.Value);
+        }
+
+        private void WireVaultHudPositionPersistence(VaultHUD hud)
+        {
+            hud.OnPositionChanged = (x, y) =>
+            {
+                _hudPositionX.SetSerializedValue(x.ToString(System.Globalization.CultureInfo.InvariantCulture));
+                _hudPositionY.SetSerializedValue(y.ToString(System.Globalization.CultureInfo.InvariantCulture));
+            };
+        }
+
         private static VaultHUD.HUDPosition ParseHUDPosition(string position)
         {
             return position?.ToLower() switch
@@ -1215,7 +1265,7 @@ namespace TheVault
     {
         public const string PLUGIN_GUID = "com.azraelgodking.thevault";
         public const string PLUGIN_NAME = "The Vault";
-        public const string PLUGIN_VERSION = "3.0.3";
+        public const string PLUGIN_VERSION = "3.0.4";
     }
 
     /// <summary>
