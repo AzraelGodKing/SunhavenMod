@@ -5,7 +5,7 @@
   {"t": "Party loadouts", "u": "index.html#party-loadouts", "d": "Recommended mod bundles: curator, diplomat, homesteader, full arsenal.", "k": "bundle pack starter kit"},
   {"t": "Arsenal comparison table", "u": "index.html#arsenal-comparison", "d": "Compare per-character saves, UI, controller support, synergy across mods.", "k": "matrix features compare"},
   {"t": "The Vault", "u": "TheVault/TheVault.html", "d": "Seasonal and special currency storage, auto-deposit, shop and door integration.", "k": "tokens keys money wallet vault","tags":["QoL","Storage"]},
-  {"t": "Haven's Birthright", "u": "RacialBonuses/RacialBonuses.html", "d": "Racial bonuses and abilities for all 12 races.", "k": "races traits amari naga build","tags":["QoL"]},
+  {"t": "Haven's Birthright", "u": "RacialBonuses/RacialBonuses.html", "d": "Racial bonuses and abilities for all 12 races; optional [BonusTransfers] cross-race passive grants (off by default).", "k": "races traits amari naga build bonus transfer","tags":["QoL"]},
   {"t": "Faster Races", "u": "FasterRaces/FasterRaces.html", "d": "Configurable movement speed; works with Birthright without double speed.", "k": "speed run movement walks fast","tags":["QoL"]},
   {"t": "Trinket Fortune", "u": "TrinketFortune/TrinketFortune.html", "d": "Fishing trinket drops scale with aquarium museum completion.", "k": "fish aquarium luck relic","tags":["QoL","Tracking"]},
   {"t": "S.M.U.T. — Museum tracker", "u": "SMUT/SMUT.html", "d": "Track museum donations: gems, culture, fish — per character.", "k": "museum donate hall aquarium smut","tags":["Tracking","UI"]},

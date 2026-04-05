@@ -222,6 +222,8 @@ namespace HavensBirthright
             };
 
             Plugin.Log.LogInfo($"Initialized racial bonuses for {_racialBonuses.Count} races");
+            BonusTransferRules.RebuildFromConfig(
+                RacialConfig.CrossRaceBonusRules != null ? RacialConfig.CrossRaceBonusRules.Value : "");
         }
 
         /// <summary>
@@ -361,15 +363,19 @@ namespace HavensBirthright
             if (!_currentPlayerRace.HasValue)
                 return 0f;
 
+            float value = 0f;
             var bonuses = GetBonusesForRace(_currentPlayerRace.Value);
             foreach (var bonus in bonuses)
             {
                 if (bonus.Type == type)
                 {
-                    return bonus.Value;
+                    value = bonus.Value;
+                    break;
                 }
             }
-            return 0f;
+
+            value += BonusTransferRules.GetTransferredPercent(this, _currentPlayerRace.Value, type);
+            return value;
         }
 
         /// <summary>

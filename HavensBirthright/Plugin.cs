@@ -196,6 +196,15 @@ namespace HavensBirthright
             }
             AbilityConfig.ActiveAbilityToggleKey.SettingChanged += UpdateKeybinds;
             _reloadConfigKey.SettingChanged += UpdateKeybinds;
+
+            void RebuildCrossRaceRules(object sender, EventArgs e)
+            {
+                BonusTransferRules.RebuildFromConfig(
+                    RacialConfig.CrossRaceBonusRules != null ? RacialConfig.CrossRaceBonusRules.Value : "");
+            }
+
+            RacialConfig.CrossRaceBonusRules.SettingChanged += RebuildCrossRaceRules;
+            RacialConfig.EnableBonusTransfers.SettingChanged += RebuildCrossRaceRules;
         }
 
         /// <summary>

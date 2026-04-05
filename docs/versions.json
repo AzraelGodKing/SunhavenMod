@@ -17,7 +17,7 @@
     "nexus_file_group_id": "1297555",
     "thunderstore": "https://thunderstore.io/c/sun-haven/p/AzraelGodKing/HavensBirthright/",
     "thunderstoreName": "HavensBirthright",
-    "changelog": "CheatEnabler compatibility: mod hotkeys defer while typing in chat, console, or UI text fields (shared TextInputFocusGuard)."
+    "changelog": "CheatEnabler compatibility: mod hotkeys defer while typing in chat, console, or UI text fields. Optional [BonusTransfers] cross-race passive grants; EnableBonusTransfers defaults false."
   },
   "com.azraelgodking.sunhavenmuseumutilitytracker": {
     "version": "2.2.6",

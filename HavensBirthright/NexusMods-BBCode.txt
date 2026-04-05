@@ -91,6 +91,10 @@ Active abilities [b]Infernal Forge[/b], [b]Tidal Blessing[/b], [b]Font of Light[
 
 You can enable/disable bonuses globally; toggle actives, drawbacks, and synergies; adjust percentages; set [b]F9[/b] / [b]F12[/b]; tune HP/mana costs and thresholds; [b]Amari Cat[/b] — Nine Lives under [b][Amari Cat][/b]; [b]AmariCatReduceCombatStutter[/b] under [b][Performance][/b] if needed.
 
+[spoiler][size=3][b]Bonus transfers (optional)[/b][/size]
+Section [b][BonusTransfers][/b]: [b]EnableBonusTransfers[/b] defaults [b]false[/b]. When true, [b]Rules[/b] are semicolon-separated [b]TargetRace|SourceRace|BonusType[/b] — extra [b]passive[/b] percentages for the target, using the source race’s configured value for that bonus type. Does not copy actives, drawbacks, or synergies.
+[/spoiler]
+
 [line]
 
 [size=4][b]Links[/b][/size]
@@ -100,6 +104,8 @@ You can enable/disable bonuses globally; toggle actives, drawbacks, and synergie
 [/list]
 
 [spoiler][size=3][b]Changelog (recent)[/b][/size]
+[b]v1.4.2[/b] — CheatEnabler compatibility: mod hotkeys defer while typing in chat, console, or UI text fields. Optional [b][BonusTransfers][/b] cross-race passive grants ([b]EnableBonusTransfers[/b] off by default; [b]Rules[/b] [b]Target|Source|BonusType[/b]).
+
 [b]v1.4.0[/b] — Save-load fix: race detection and ability state reset correctly when switching saves without returning to main menu. F12 config reload.
 
 [b]v1.3.x[/b] — Amari Cat rework; Nine Lives passive; optional performance setting for stutter with fast weapons.

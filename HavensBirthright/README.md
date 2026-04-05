@@ -170,12 +170,30 @@ You can:
 - **Amari Cat**: Under the `[Amari Cat]` section, configure Nine Lives (EnableNineLives, NineLivesChance, NineLivesHealPercent). Under `[Performance]`, AmariCatReduceCombatStutter can disable attack-speed application for Amari Cat if needed (e.g. stutter with fast weapons).
 - **Reload config**: Press F12 (configurable) in-game to reload the config file without restarting the game.
 
+### Bonus transfers (optional)
+
+Under **`[BonusTransfers]`**, you can mirror **passive** table bonuses from one race onto another. **`EnableBonusTransfers`** defaults to **false**. **`Rules`** uses semicolon-separated **`TargetRace|SourceRace|BonusType`** entries (race and bonus names match the mod’s config / `BonusType` enum).
+
+Example:
+
+```ini
+[BonusTransfers]
+EnableBonusTransfers = true
+Rules = Human|WaterElemental|Defense; Elf|Human|ExperienceGain
+```
+
+This adds Water Elemental’s Defense % to Humans and Human’s experience % to Elves, using each source race’s values from their normal sections in the same file. It does **not** copy active abilities, drawbacks, or synergies.
+
 ## Links
 
 - [Nexus Mods](https://www.nexusmods.com/sunhaven/mods/487)
 - [Discord — bugs & discussion](https://discord.gg/Vwh2y7qMXv)
 
 ## Changelog
+
+### v1.4.2 — Input focus & bonus transfers
+- **CheatEnabler / UI typing**: mod hotkeys defer while focus is in chat, console, or UI text fields (shared `TextInputFocusGuard`).
+- Optional **`[BonusTransfers]`** in the main config: **`EnableBonusTransfers`** (default off) and **`Rules`** (`TargetRace|SourceRace|BonusType`, semicolon-separated). Passive table bonuses only.
 
 ### v1.4.0 — Save-Load Fix
 - **Fixed**: Mod now correctly resets when switching to a different save without returning to the main menu. Race detection, ability states, and all caches are cleared on every save load, so racial bonuses and abilities always match the loaded character.
