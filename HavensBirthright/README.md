@@ -191,7 +191,7 @@ This adds Water Elemental’s Defense % to Humans and Human’s experience % to 
 
 ## Changelog
 
-### v1.4.2 — Input focus & bonus transfers
+### v1.4.3 — Input focus & bonus transfers
 - **CheatEnabler / UI typing**: mod hotkeys defer while focus is in chat, console, or UI text fields (shared `TextInputFocusGuard`).
 - Optional **`[BonusTransfers]`** in the main config: **`EnableBonusTransfers`** (default off) and **`Rules`** (`TargetRace|SourceRace|BonusType`, semicolon-separated). Passive table bonuses only.
 

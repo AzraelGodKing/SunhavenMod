@@ -10,14 +10,14 @@
     "changelog": "CheatEnabler compatibility: mod hotkeys defer while typing in chat, console, or UI text fields (shared TextInputFocusGuard)."
   },
   "com.azraelgodking.havensbirthright": {
-    "version": "1.4.2",
+    "version": "1.4.3",
     "name": "Haven's Birthright",
     "description": "Unique racial bonuses and abilities for all 12 playable races",
     "nexus": "https://www.nexusmods.com/sunhaven/mods/487",
     "nexus_file_group_id": "1297555",
     "thunderstore": "https://thunderstore.io/c/sun-haven/p/AzraelGodKing/HavensBirthright/",
     "thunderstoreName": "HavensBirthright",
-    "changelog": "CheatEnabler compatibility: mod hotkeys defer while typing in chat, console, or UI text fields. Optional [BonusTransfers] cross-race passive grants; EnableBonusTransfers defaults false."
+    "changelog": "Optional [BonusTransfers] cross-race passive grants (TargetRace|SourceRace|BonusType); EnableBonusTransfers defaults false. CheatEnabler compatibility: hotkeys defer while typing in chat, console, or UI text fields."
   },
   "com.azraelgodking.sunhavenmuseumutilitytracker": {
     "version": "2.2.6",
