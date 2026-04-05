@@ -1,4 +1,4 @@
-[b][size=5]Haven's Birthright[/size][/b] [i](v1.4.2)[/i]
+[b][size=5]Haven's Birthright[/size][/b] [i](v1.4.3)[/i]
 
 A Sun Haven mod that adds unique racial bonuses, active abilities, drawbacks, and conditional synergies for each playable race.
 
@@ -104,7 +104,7 @@ Section [b][BonusTransfers][/b]: [b]EnableBonusTransfers[/b] defaults [b]false[/
 [/list]
 
 [spoiler][size=3][b]Changelog (recent)[/b][/size]
-[b]v1.4.2[/b] — CheatEnabler compatibility: mod hotkeys defer while typing in chat, console, or UI text fields. Optional [b][BonusTransfers][/b] cross-race passive grants ([b]EnableBonusTransfers[/b] off by default; [b]Rules[/b] [b]Target|Source|BonusType[/b]).
+[b]v1.4.3[/b] — Optional [b][BonusTransfers][/b] cross-race passive grants ([b]EnableBonusTransfers[/b] off by default; [b]Rules[/b] [b]Target|Source|BonusType[/b]). CheatEnabler compatibility: mod hotkeys defer while typing in chat, console, or UI text fields.
 
 [b]v1.4.0[/b] — Save-load fix: race detection and ability state reset correctly when switching saves without returning to main menu. F12 config reload.
 
