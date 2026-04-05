@@ -15,10 +15,6 @@ namespace TheVault.UI
         Minimal = 2
     }
 
-    /// <summary>
-    /// Rewritten HUD: simple, always-on-screen, multi-row wrap with autoscale-to-fit.
-    /// Draggable by the top band (like Sun Haven Todo HUD); pixel position persists to config when set from Plugin.
-    /// </summary>
     public class VaultHUD : MonoBehaviour
     {
         private const int HudWindowId = 88420;
