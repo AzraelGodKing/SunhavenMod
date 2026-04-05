@@ -1,0 +1,62 @@
+# =============================================================================
+# Remove GitHub Releases that are not the current version in docs/versions.json
+# =============================================================================
+# Tags must match the release workflow: {thunderstoreName}-v{version}
+# (see build-release-publish.yml). Keeps one release per mod; deletes older tags
+# for the same Thunderstore package name.
+#
+# SAFETY: Default run is dry-run only. To actually delete, turn OFF dry_run and
+# turn ON confirm_delete in the workflow dispatch form.
+# =============================================================================
+
+name: Remove stale GitHub releases
+
+on:
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: 'Dry run — list stale releases only (no API deletes)'
+        type: boolean
+        default: true
+      confirm_delete:
+        description: 'Perform deletion (ignored if dry_run is true)'
+        type: boolean
+        default: false
+
+permissions:
+  contents: write
+
+concurrency:
+  group: remove-stale-github-releases
+  cancel-in-progress: false
+
+jobs:
+  cleanup:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Preview stale releases (dry run)
+        if: inputs.dry_run
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          pwsh -NoProfile -File scripts/remove-stale-github-releases.ps1 -WhatIf \
+            -Owner "${{ github.repository_owner }}" \
+            -Repo "${{ github.event.repository.name }}"
+
+      - name: Delete stale releases
+        if: ${{ !inputs.dry_run && inputs.confirm_delete }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          pwsh -NoProfile -File scripts/remove-stale-github-releases.ps1 -Force \
+            -Owner "${{ github.repository_owner }}" \
+            -Repo "${{ github.event.repository.name }}"
+
+      - name: Block unsafe run
+        if: ${{ !inputs.dry_run && !inputs.confirm_delete }}
+        run: |
+          echo "::error::Unsafe options: you turned off dry_run but did not set confirm_delete. Enable confirm_delete to delete, or enable dry_run to only list."
+          exit 1
