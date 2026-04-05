@@ -107,6 +107,11 @@ namespace HavensBirthright
         /// <summary>When true, Amari Cat gets no combat stat bonuses (attack speed, damage, crit, dodge) to reduce stutter with fast weapons (e.g. scythe).</summary>
         public static ConfigEntry<bool> AmariCatReduceCombatStutter;
 
+        /// <summary>When true, apply cross-race bonus rules so target races gain extra passive bonuses copied from source races' tables.</summary>
+        public static ConfigEntry<bool> EnableBonusTransfers;
+        /// <summary>Semicolon-separated rules: TargetRace|SourceRace|BonusType (e.g. Human|WaterElemental|Defense).</summary>
+        public static ConfigEntry<string> CrossRaceBonusRules;
+
         public static void Initialize(ConfigFile config)
         {
             // General settings
@@ -129,6 +134,20 @@ namespace HavensBirthright
                 "AmariCatReduceCombatStutter",
                 false,
                 "If true, Amari Cat does not receive attack speed bonuses (melee and spell) to reduce stutter with fast weapons (e.g. scythe). Damage, crit, dodge, movement speed, and other bonuses still apply."
+            );
+
+            EnableBonusTransfers = config.Bind(
+                "BonusTransfers",
+                "EnableBonusTransfers",
+                false,
+                "When true, grant extra passive racial bonuses per Rules below. Values are read from the source race's bonus table (same as that race's config section). Does not copy active abilities, drawbacks, or conditional synergies."
+            );
+
+            CrossRaceBonusRules = config.Bind(
+                "BonusTransfers",
+                "Rules",
+                "",
+                "Semicolon-separated rules. Each: TargetRace|SourceRace|BonusType. Example: Human|WaterElemental|Defense — adds Water Elemental's Defense % to Humans. Races: Human, Elf, Angel, Demon, Elemental, FireElemental, WaterElemental, Amari, AmariCat, AmariDog, AmariBird, AmariAquatic, AmariReptile, Naga. BonusType: MeleeStrength, MagicPower, Defense, CriticalChance, AttackSpeed, FarmingSpeed, CropQuality, MiningSpeed, FishingLuck, MovementSpeed, MaxHealth, MaxMana, ManaRegen, HealthRegen, ExperienceGain, GoldFind, LuckBonus, DodgeChance, SpellAttackSpeed, AirSkipChance, CommunityTokenGain, TripleGoldChance, etc. (see BonusType in mod docs)."
             );
 
             // Human bonuses (default: modest all-around bonuses)

@@ -1,6 +1,6 @@
 # Haven's Birthright
 
-**Version 1.4.2** — Unique racial bonuses, active abilities, drawbacks, and conditional synergies for all 12 playable races in Sun Haven. Celestial Bloodlines: Font of Light (Angel) and Soul Harvest (Demon). Correctly resets when switching saves.
+**Version 1.4.2** — Unique racial bonuses, active abilities, drawbacks, and conditional synergies for all 12 playable races in Sun Haven. Celestial Bloodlines: Font of Light (Angel) and Soul Harvest (Demon). Correctly resets when switching saves. Optional **[BonusTransfers]** (off by default): copy **passive** table bonuses between races via `TargetRace|SourceRace|BonusType` rules in the main Birthright config.
 
 ## Features
 
@@ -42,6 +42,23 @@
 ## Configuration
 
 Edit `BepInEx/config/com.azraelgodking.havensbirthright.cfg` to customize bonuses.
+
+### Bonus transfers (optional)
+
+Section **`[BonusTransfers]`**:
+
+- **`EnableBonusTransfers`** — default **false**. When true, **`Rules`** apply.
+- **`Rules`** — semicolon-separated entries: **`TargetRace|SourceRace|BonusType`**. Each rule adds the **same passive percentage** the source race gets for that bonus type (from the usual Birthright tables in config). Does **not** copy active abilities, drawbacks, or conditional synergies.
+
+**Example** (`com.azraelgodking.havensbirthright.cfg`):
+
+```ini
+[BonusTransfers]
+EnableBonusTransfers = true
+Rules = Human|WaterElemental|Defense; Elf|Human|ExperienceGain
+```
+
+That gives **Humans** Water Elemental’s **Defense** passive (same % as `[Water Elemental]` → Defense in your cfg) and gives **Elves** the **ExperienceGain** bonus Humans get from `[Human]`. Add more grants by chaining with `;` (no line breaks inside the value).
 
 ## Links
 
