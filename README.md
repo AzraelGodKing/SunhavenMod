@@ -10,7 +10,7 @@ A collection of BepInEx mods for [Sun Haven](https://store.steampowered.com/app/
 | [**Sunhaven Todo**](SunhavenTodo/) | In-game todo list and journal with per-character saves | 1.1.6 |
 | [**Sun Haven Museum Utility Tracker**](SunHavenMuseumUtilityTracker/) | Track museum donations across all sections | 2.2.6 |
 | [**The Vault**](TheVault/) | Full rework of the vault system; classic core, single project; shop and inventory vault hooks | 3.0.4 |
-| [**Haven's Birthright**](HavensBirthright/) | Unique racial bonuses and traits for each playable race; optional `[BonusTransfers]` cross-race passive grants (off by default) | 1.4.2 |
+| [**Haven's Birthright**](HavensBirthright/) | Unique racial bonuses and traits for each playable race; optional `[BonusTransfers]` cross-race passive grants (off by default) | 1.4.3 |
 | [**Haven's Almanac**](HavensAlmanac/) | Mod compatibility registry and info hub | 1.0.4 |
 | [**A Squirrel's Birthday Reminder**](BirthdayReminder/) | Reminds you of villagers' birthdays | 1.1.4 |
 | [**Haven Dev Tools**](HavenDevTools/) | Developer utilities and debugging tools | 1.0.7 |
@@ -107,7 +107,7 @@ SunhavenMod/
 
 ## Documentation site changelog
 
-- **2026-04-05** — **Haven's Birthright v1.4.2:** optional `[BonusTransfers]` (`EnableBonusTransfers` default false; `Rules` as `TargetRace|SourceRace|BonusType`). Standalone Birthright Buff Tuner mod removed; feature lives in Birthright only.
+- **2026-04-05** — **Haven's Birthright v1.4.3:** optional `[BonusTransfers]` (`EnableBonusTransfers` default false; `Rules` as `TargetRace|SourceRace|BonusType`). CheatEnabler: hotkeys defer while typing in chat/UI. Standalone Birthright Buff Tuner removed; feature lives in Birthright only.
 - **2026-04-03** — **The Vault:** [`TheVault/README.md`](TheVault/README.md) aligned with **v3.0.4** (version + changelog **3.0.3** / **3.0.4**); removed erroneous in-repo breaking callout; HUD usage text matches cfg keys; intro links **`TheVault.Abstractions/`**.
 - **2026-03-31** — **The Vault:** HUD is draggable via the top accent strip; **`[HUD] PositionX`** / **`PositionY`** in `thevault.cfg` persist placement.
 - **2026-03-31** — **Thunderstore readmes:** [`TheVault/thunderstore/README.md`](TheVault/thunderstore/README.md) and [`TrinketFortune/thunderstore/README.md`](TrinketFortune/thunderstore/README.md) now include a `**Version X.Y.Z**` line so `pre-push-build.ps1` can keep them in sync with `docs/versions.json`.
