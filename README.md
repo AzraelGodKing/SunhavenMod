@@ -99,7 +99,7 @@ SunhavenMod/
 ├── TrinketFortune/        # Fishing trinket drop rates
 ├── FasterRaces/           # Movement speed bonus
 ├── SharedUtilities/       # Shared code (VersionChecker, etc.)
-├── scripts/               # Maintainer helpers (e.g. pre-push-build.ps1)
+├── scripts/               # Maintainer helpers (pre-push-build.ps1, remove-stale-github-releases.ps1)
 └── docs/                  # Shared documentation
 ```
 
@@ -108,6 +108,7 @@ SunhavenMod/
 ## Documentation site changelog
 
 - **2026-04-05** — **Haven's Birthright v1.4.3:** optional `[BonusTransfers]` (`EnableBonusTransfers` default false; `Rules` as `TargetRace|SourceRace|BonusType`). CheatEnabler: hotkeys defer while typing in chat/UI. Standalone Birthright Buff Tuner removed; feature lives in Birthright only.
+- **2026-04-05** — Maintainer script [`scripts/remove-stale-github-releases.ps1`](scripts/remove-stale-github-releases.ps1): removes GitHub releases whose tags are not the current `{thunderstoreName}-v{version}` from [`docs/versions.json`](docs/versions.json). **GitHub Actions:** workflow [`.github/workflows/remove-stale-github-releases.yml`](.github/workflows/remove-stale-github-releases.yml) (manual dispatch; **dry run** default; turn off dry run + enable **confirm_delete** to delete). **Local:** set **`GITHUB_TOKEN`** (classic PAT, **repo** scope) or **`-Token`**; **`-WhatIf`** first; **`YES`** or **`-Force`**.
 - **2026-04-03** — **The Vault:** [`TheVault/README.md`](TheVault/README.md) aligned with **v3.0.4** (version + changelog **3.0.3** / **3.0.4**); removed erroneous in-repo breaking callout; HUD usage text matches cfg keys; intro links **`TheVault.Abstractions/`**.
 - **2026-03-31** — **The Vault:** HUD is draggable via the top accent strip; **`[HUD] PositionX`** / **`PositionY`** in `thevault.cfg` persist placement.
 - **2026-03-31** — **Thunderstore readmes:** [`TheVault/thunderstore/README.md`](TheVault/thunderstore/README.md) and [`TrinketFortune/thunderstore/README.md`](TrinketFortune/thunderstore/README.md) now include a `**Version X.Y.Z**` line so `pre-push-build.ps1` can keep them in sync with `docs/versions.json`.
