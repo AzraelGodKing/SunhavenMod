@@ -20,6 +20,7 @@
   <ItemGroup>
     <Compile Include="$(MSBuildProjectDirectory)\**\*.cs" Exclude="$(MSBuildProjectDirectory)\Decomplied\**;$(MSBuildProjectDirectory)\obj\**;$(MSBuildProjectDirectory)\bin\**;$(MSBuildProjectDirectory)\Tests\**" />
     <Compile Include="..\SharedUtilities\VersionChecker.cs" Link="Shared\VersionChecker.cs" />
+    <Compile Include="..\SharedUtilities\SceneRootSurvivor.cs" Link="Shared\SceneRootSurvivor.cs" />
     <Compile Include="..\SharedUtilities\ReflectionHelper.cs" Link="Shared\ReflectionHelper.cs" />
     <Compile Include="..\SharedUtilities\IconCache.cs" Link="Shared\IconCache.cs" />
     <Compile Include="..\SharedUtilities\TextInputFocusGuard.cs" Link="Shared\TextInputFocusGuard.cs" />

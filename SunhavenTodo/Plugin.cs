@@ -204,6 +204,7 @@ namespace SunhavenTodo
             _persistentRunner = new GameObject("SunhavenTodo_PersistentRunner");
             DontDestroyOnLoad(_persistentRunner);
             _persistentRunner.hideFlags = HideFlags.HideAndDontSave;
+            SceneRootSurvivor.TryRegisterPersistentRunnerGameObject(_persistentRunner);
             _persistentRunnerComponent = _persistentRunner.AddComponent<PersistentRunner>();
             Log.LogInfo("[PersistentRunner] Created");
         }
@@ -260,6 +261,7 @@ namespace SunhavenTodo
                     _persistentRunner = new GameObject("SunhavenTodo_PersistentRunner");
                     UnityEngine.Object.DontDestroyOnLoad(_persistentRunner);
                     _persistentRunner.hideFlags = HideFlags.HideAndDontSave;
+                    SceneRootSurvivor.TryRegisterPersistentRunnerGameObject(_persistentRunner);
                     _persistentRunnerComponent = _persistentRunner.AddComponent<PersistentRunner>();
                     Log?.LogInfo("[EnsureUI] PersistentRunner recreated");
                 }

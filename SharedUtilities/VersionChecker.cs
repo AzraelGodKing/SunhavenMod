@@ -48,6 +48,7 @@ namespace SunhavenMods.Shared
             // Use a MonoBehaviour to run the coroutine
             var runner = new GameObject("VersionChecker").AddComponent<VersionCheckRunner>();
             UnityEngine.Object.DontDestroyOnLoad(runner.gameObject);
+            SceneRootSurvivor.TryRegisterPersistentRunnerGameObject(runner.gameObject);
             runner.StartCheck(pluginGuid, currentVersion, onComplete);
         }
 

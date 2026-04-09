@@ -138,6 +138,7 @@ namespace HavenDevTools
             _persistentRunner = new GameObject("HavenDevTools_PersistentRunner");
             DontDestroyOnLoad(_persistentRunner);
             _persistentRunner.hideFlags = HideFlags.HideAndDontSave;
+            SceneRootSurvivor.TryRegisterPersistentRunnerGameObject(_persistentRunner);
             _persistentRunnerComponent = _persistentRunner.AddComponent<PersistentRunner>();
             Log.LogInfo("[PersistentRunner] Created hidden persistent runner");
         }
@@ -170,6 +171,7 @@ namespace HavenDevTools
                     _persistentRunner = new GameObject("HavenDevTools_PersistentRunner");
                     UnityEngine.Object.DontDestroyOnLoad(_persistentRunner);
                     _persistentRunner.hideFlags = HideFlags.HideAndDontSave;
+                    SceneRootSurvivor.TryRegisterPersistentRunnerGameObject(_persistentRunner);
                     _persistentRunnerComponent = _persistentRunner.AddComponent<PersistentRunner>();
                     Log?.LogInfo("[EnsureUI] PersistentRunner recreated");
                 }

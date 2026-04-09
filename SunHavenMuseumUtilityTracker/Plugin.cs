@@ -164,6 +164,7 @@ namespace SunHavenMuseumUtilityTracker
             _persistentRunner = new GameObject("MuseumTracker_PersistentRunner");
             DontDestroyOnLoad(_persistentRunner);
             _persistentRunner.hideFlags = HideFlags.HideAndDontSave;
+            SceneRootSurvivor.TryRegisterPersistentRunnerGameObject(_persistentRunner);
             _persistentRunnerComponent = _persistentRunner.AddComponent<PersistentRunner>();
             Logger.LogInfo("[PersistentRunner] Created");
         }
@@ -200,6 +201,7 @@ namespace SunHavenMuseumUtilityTracker
                     _persistentRunner = new GameObject("MuseumTracker_PersistentRunner");
                     UnityEngine.Object.DontDestroyOnLoad(_persistentRunner);
                     _persistentRunner.hideFlags = HideFlags.HideAndDontSave;
+                    SceneRootSurvivor.TryRegisterPersistentRunnerGameObject(_persistentRunner);
                     _persistentRunnerComponent = _persistentRunner.AddComponent<PersistentRunner>();
                     Log?.LogInfo("[EnsureUI] PersistentRunner recreated");
                 }

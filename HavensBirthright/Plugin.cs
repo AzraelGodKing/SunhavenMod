@@ -88,6 +88,21 @@ namespace HavensBirthright
                         typeof(Patches.PlayerPatches), "OnPlayerInitialize",
                         Type.EmptyTypes);
 
+                    // LoadCharacter — reset cached race/actives when switching save/slot (name alone is not unique)
+                    var gameSaveType = AccessTools.TypeByName("Wish.GameSave");
+                    if (gameSaveType != null)
+                    {
+                        var loadCharMethod = AccessTools.Method(gameSaveType, "LoadCharacter", new[] { typeof(int) });
+                        if (loadCharMethod != null)
+                        {
+                            _harmony.Patch(loadCharMethod,
+                                postfix: new HarmonyMethod(typeof(Patches.PlayerPatches), nameof(Patches.PlayerPatches.OnGameSaveLoadCharacter)));
+                            Log.LogInfo("Patched GameSave.LoadCharacter (race/actives reset on character load)");
+                        }
+                        else
+                            Log.LogWarning("Could not find GameSave.LoadCharacter(int) — character-switch reset may be incomplete");
+                    }
+
                     // Patch GetStat for stat bonuses (combat, skills, regen, abilities, drawbacks, synergies)
                     PatchMethod(playerType, "GetStat",
                         typeof(Patches.StatPatches), "ModifyGetStat",
@@ -374,6 +389,6 @@ namespace HavensBirthright
     {
         public const string PLUGIN_GUID = "com.azraelgodking.havensbirthright";
         public const string PLUGIN_NAME = "Haven's Birthright";
-        public const string PLUGIN_VERSION = "1.4.3";
+        public const string PLUGIN_VERSION = "2.0.0";
     }
 }

@@ -143,6 +143,7 @@ namespace SenpaisChest
             _persistentRunner = new GameObject("SenpaisChest_PersistentRunner");
             DontDestroyOnLoad(_persistentRunner);
             _persistentRunner.hideFlags = HideFlags.HideAndDontSave;
+            SceneRootSurvivor.TryRegisterPersistentRunnerGameObject(_persistentRunner);
             _updateRunner = _persistentRunner.AddComponent<SmartChestPersistentRunner>();
 
             Log.LogInfo("Created hidden PersistentRunner");
@@ -158,6 +159,7 @@ namespace SenpaisChest
                     _persistentRunner = new GameObject("SenpaisChest_PersistentRunner");
                     UnityEngine.Object.DontDestroyOnLoad(_persistentRunner);
                     _persistentRunner.hideFlags = HideFlags.HideAndDontSave;
+                    SceneRootSurvivor.TryRegisterPersistentRunnerGameObject(_persistentRunner);
                     _updateRunner = _persistentRunner.AddComponent<SmartChestPersistentRunner>();
                 }
 
