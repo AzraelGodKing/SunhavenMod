@@ -24,8 +24,8 @@ namespace HavensBirthright.Abilities
 
         private static readonly Dictionary<string, AbilityState> _abilities = new Dictionary<string, AbilityState>();
 
-        // Runtime toggles: F9-able abilities start OFF until the player presses the toggle key.
-        // Cleared on menu/save transition so each session starts with abilities off until F9.
+        // Runtime toggles: F9-able abilities start OFF until the player enables them; each key press
+        // flips ON<->OFF (unlimited times per session). Dictionary cleared on menu/character reset.
         private static readonly Dictionary<string, bool> _runtimeToggles = new Dictionary<string, bool>();
 
         // Ability keys

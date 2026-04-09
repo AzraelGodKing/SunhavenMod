@@ -1,5 +1,6 @@
 using BepInEx.Bootstrap;
 using HavensBirthright.Abilities;
+using HavensBirthright;
 using System;
 using System.Collections.Generic;
 using UnityEngine;
@@ -48,8 +49,8 @@ namespace HavensBirthright.Patches
             if (_isApplyingBonuses)
                 return;
 
-            // Don't apply bonuses until BirthrightRunner has initialized the per-frame cache.
-            if (!BirthrightRunner.IsCacheValid)
+            // Don't apply bonuses until StatFrameCache has a valid frame (BirthrightRunner drives Update).
+            if (!StatFrameCache.IsCacheValid)
                 return;
 
             // Per-frame cache: check before any config/manager/race so cache hits are minimal cost.
@@ -284,7 +285,7 @@ namespace HavensBirthright.Patches
                 case Race.Demon:
                     if (AbilityConfig.EnableBloodRage.Value)
                     {
-                        float hpRatio = BirthrightRunner.CachedHPRatio;
+                        float hpRatio = StatFrameCache.CachedHPRatio;
                         float threshold = AbilityConfig.BloodRageHPThreshold.Value / 100f;
 
                         if (hpRatio <= threshold)
@@ -304,7 +305,7 @@ namespace HavensBirthright.Patches
                         if (stat == StatType.BonusExperience || stat == StatType.BonusFarmingEXP ||
                             stat == StatType.BonusWoodcuttingEXP)
                         {
-                            float quickLearnerBonus = BirthrightRunner.CachedQuickLearnerBonus;
+                            float quickLearnerBonus = StatFrameCache.CachedQuickLearnerBonus;
                             if (quickLearnerBonus > 0)
                                 __result += quickLearnerBonus / 100f;
                         }
@@ -353,7 +354,7 @@ namespace HavensBirthright.Patches
                     {
                         if (stat == StatType.FishingSkill)
                         {
-                            string season = BirthrightRunner.CachedSeason;
+                            string season = StatFrameCache.CachedSeason;
                             bool isWinter = season != null &&
                                             season.IndexOf("Winter", StringComparison.OrdinalIgnoreCase) >= 0;
                             if (isWinter)
@@ -382,11 +383,11 @@ namespace HavensBirthright.Patches
                     break;
 
                 // Generic Elemental - Elemental Resonance: mining bonuses in mines
-                // Also block mana regen for Infernal Forge (Elemental race also qualifies)
+                // Infernal Forge mana lock only when body resolves to Fire (or still ambiguous generic), not Water
                 case Race.Elemental:
                     if (AbilityConfig.EnableElementalResonance.Value)
                     {
-                        if (BirthrightRunner.CachedIsInMine)
+                        if (StatFrameCache.CachedIsInMine)
                         {
                             if (stat == StatType.MiningSkill)
                                 __result *= (1f + AbilityConfig.ElementalResonanceMiningSpeedBonus.Value / 100f);
@@ -394,11 +395,15 @@ namespace HavensBirthright.Patches
                                 __result *= (1f + AbilityConfig.ElementalResonanceMiningDamageBonus.Value / 100f);
                         }
                     }
-                    if (stat == StatType.ManaRegen &&
-                        AbilityConfig.EnableInfernalForge.Value &&
-                        ActiveAbilityManager.IsRuntimeEnabled(ActiveAbilityManager.InfernalForge))
                     {
-                        __result = 0f;
+                        Race eff = ElementalVariantResolver.ResolveElementalAbilityRace(race);
+                        if (eff != Race.WaterElemental &&
+                            stat == StatType.ManaRegen &&
+                            AbilityConfig.EnableInfernalForge.Value &&
+                            ActiveAbilityManager.IsRuntimeEnabled(ActiveAbilityManager.InfernalForge))
+                        {
+                            __result = 0f;
+                        }
                     }
                     break;
             }
@@ -518,7 +523,7 @@ namespace HavensBirthright.Patches
             // Angel - Solar Power: magic bonus during daytime
             if (race == Race.Angel && stat == StatType.SpellDamage)
             {
-                if (BirthrightRunner.CachedIsDaytime)
+                if (StatFrameCache.CachedIsDaytime)
                 {
                     __result *= (1f + AbilityConfig.AngelSolarPowerBonus.Value / 100f);
                 }
@@ -527,14 +532,14 @@ namespace HavensBirthright.Patches
             // Demon - Night Stalker: melee bonus during nighttime
             if (race == Race.Demon && stat == StatType.AttackDamage)
             {
-                if (!BirthrightRunner.CachedIsDaytime)
+                if (!StatFrameCache.CachedIsDaytime)
                 {
                     __result *= (1f + AbilityConfig.DemonNightStalkerBonus.Value / 100f);
                 }
             }
 
             // === SEASON SYNERGIES ===
-            string season = BirthrightRunner.CachedSeason;
+            string season = StatFrameCache.CachedSeason;
             if (season != null)
             {
                 // Elf - Spring Awakening: farming bonus in Spring
@@ -572,7 +577,7 @@ namespace HavensBirthright.Patches
             }
 
             // === HEALTH THRESHOLD SYNERGIES ===
-            float hpRatio = BirthrightRunner.CachedHPRatio;
+            float hpRatio = StatFrameCache.CachedHPRatio;
 
             // Amari Reptile - Last Stand: defense when low HP
             if (race == Race.AmariReptile && stat == StatType.Defense)

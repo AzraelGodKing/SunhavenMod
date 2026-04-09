@@ -1,6 +1,6 @@
 # Haven's Birthright
 
-**Version 1.4.3** — Unique racial bonuses, active abilities, drawbacks, and conditional synergies for all 12 playable races in Sun Haven. Celestial Bloodlines: Font of Light (Angel) and Soul Harvest (Demon). Correctly resets when switching saves. Optional **[BonusTransfers]** (off by default): copy **passive** table bonuses between races via `TargetRace|SourceRace|BonusType` rules in the main Birthright config.
+**Version 2.0.0** — Unique racial bonuses, active abilities, drawbacks, and conditional synergies for all 12 playable races in Sun Haven. Celestial Bloodlines: Font of Light (Angel) and Soul Harvest (Demon). Correctly resets when switching saves. Optional **[BonusTransfers]** (off by default): copy **passive** table bonuses between races via `TargetRace|SourceRace|BonusType` rules in the main Birthright config.
 
 ## Features
 
@@ -43,6 +43,8 @@
 
 Edit `BepInEx/config/com.azraelgodking.havensbirthright.cfg` to customize bonuses.
 
+**F9** (or **`ToggleKey`** under **Active Abilities**): Infernal Forge, Tidal Blessing, Font of Light, and Soul Harvest **start OFF** each session or after switching character. Press the key **any time** to turn them **ON** or **OFF** — as **often** as you like (not limited to a single press).
+
 ### Bonus transfers (optional)
 
 Section **`[BonusTransfers]`**:
@@ -59,6 +61,12 @@ Rules = Human|WaterElemental|Defense; Elf|Human|ExperienceGain
 ```
 
 That gives **Humans** Water Elemental’s **Defense** passive (same % as `[Water Elemental]` → Defense in your cfg) and gives **Elves** the **ExperienceGain** bonus Humans get from `[Human]`. Add more grants by chaining with `;` (no line breaks inside the value).
+
+## Changelog
+
+### v2.0.0
+
+Changing saves or characters—and Fire/Water Elemental behavior after loads and F9—is more reliable. The code was reorganized for upkeep, and the mod keeps its hidden runner alive with shared SceneRootSurvivor instead of a third-party Keep Alive mod.
 
 ## Links
 

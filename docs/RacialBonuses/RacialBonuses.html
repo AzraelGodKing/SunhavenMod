@@ -23,7 +23,7 @@
         <a href="../index.html" class="nav-home">Mod Hub</a>
         <span class="nav-divider">/</span>
         <span class="nav-current">Haven's Birthright</span>
-        <span class="breadcrumb-date">Updated Feb 2026</span>
+        <span class="breadcrumb-date">Updated Apr 2026</span>
     </nav>
 
     <aside class="toc-sidebar" aria-label="Table of Contents">
@@ -46,7 +46,7 @@
             <h1><span class="illuminated-initial">H</span>aven's Birthright</h1>
             <p class="subtitle" style="font-style:italic;">A Scholar's Guide to the Racial Heritages of Sun Haven</p>
             <hr class="hero-rule" aria-hidden="true">
-            <span class="version-badge">v1.4.3</span>
+            <span class="version-badge">v2.0.0</span>
             <div style="font-size:0.75em; opacity:0.35; margin-top:8px;">12 Races &bull; 5 Bloodlines &bull; All Values Configurable</div>
         </header>
 
@@ -57,12 +57,64 @@
                 <div class="timeline-node current">
                     <div class="timeline-marker"></div>
                     <div class="timeline-content">
+                        <span class="timeline-version">v2.0.0</span>
+                        <div class="timeline-entry">
+                            <span class="changelog-icon">&#x1F4DC;</span>
+                            <div class="changelog-content">
+                                <h4>v2.0.0</h4>
+                                <p>Changing saves or characters—and Fire/Water Elemental behavior after loads and F9—is more reliable. The code was reorganized for upkeep, and the mod keeps its hidden runner alive with shared SceneRootSurvivor instead of a third-party Keep Alive mod.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="timeline-node">
+                    <div class="timeline-marker"></div>
+                    <div class="timeline-content">
+                        <span class="timeline-version">v1.4.3</span>
+                        <div class="timeline-entry">
+                            <span class="changelog-icon">&#x1F527;</span>
+                            <div class="changelog-content">
+                                <h4>Input focus &amp; bonus transfers</h4>
+                                <p>Hotkeys defer while typing in chat, console, or UI fields (<strong>TextInputFocusGuard</strong>). Optional <strong>[BonusTransfers]</strong> mirrors passive table bonuses between races (<code>TargetRace|SourceRace|BonusType</code>), default off.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="timeline-node">
+                    <div class="timeline-marker"></div>
+                    <div class="timeline-content">
+                        <span class="timeline-version">v1.4.0</span>
+                        <div class="timeline-entry">
+                            <span class="changelog-icon">&#x1F504;</span>
+                            <div class="changelog-content">
+                                <h4>Save-load fix</h4>
+                                <p>Loading another save without the main menu fully resets race detection, abilities, and caches so they match the loaded character. F12 reloads config from disk.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="timeline-node">
+                    <div class="timeline-marker"></div>
+                    <div class="timeline-content">
+                        <span class="timeline-version">v1.3.x</span>
+                        <div class="timeline-entry">
+                            <span class="changelog-icon">&#x1F431;</span>
+                            <div class="changelog-content">
+                                <h4>Amari Cat rework</h4>
+                                <p>New passives: <strong>Feline Grace</strong>, <strong>Predator&rsquo;s Strike</strong>, <strong>Keen Senses</strong>. <strong>Nine Lives</strong> is a passive cheat-death (chance cap 60%); optional perf toggle if fast weapons stutter.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="timeline-node">
+                    <div class="timeline-marker"></div>
+                    <div class="timeline-content">
                         <span class="timeline-version">v1.3.0</span>
                         <div class="timeline-entry">
                             <span class="changelog-icon">&#x2728;</span>
                             <div class="changelog-content">
                                 <h4>Celestial Bloodlines</h4>
-                                <p>Angels and Demons now have unique active abilities: <strong>Font of Light</strong> (mana restore at gold cost) and <strong>Soul Harvest</strong> (bonus gold on kill at HP cost). Toggle with F9; only affects the race you chose.</p>
+                                <p>Angels and Demons get <strong>Font of Light</strong> (mana for gold) and <strong>Soul Harvest</strong> (gold on kill at HP cost). Press F9 anytime to toggle; only applies to the race you picked.</p>
                             </div>
                         </div>
                     </div>
@@ -88,7 +140,7 @@
                             <span class="changelog-icon">&#x1F30A;</span>
                             <div class="changelog-content">
                                 <h4>Elemental Awakening</h4>
-                                <p>Fire and Water Elementals now have unique active abilities that trigger automatically! Drawbacks and conditional synergies added.</p>
+                                <p>Fire and Water Elementals get unique actives that run automatically. Drawbacks and conditional synergies added; F9 toggles where applicable.</p>
                             </div>
                         </div>
                     </div>

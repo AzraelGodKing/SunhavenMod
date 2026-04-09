@@ -66,6 +66,7 @@ namespace SunhavenMods.Shared
             var go = new GameObject($"[{typeof(T).Name}]");
             go.hideFlags = HideFlags.HideAndDontSave;
             UnityEngine.Object.DontDestroyOnLoad(go);
+            SceneRootSurvivor.TryRegisterPersistentRunnerGameObject(go);
             return go.AddComponent<T>();
         }
 

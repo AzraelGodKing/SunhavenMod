@@ -7,6 +7,7 @@ Each mod remains independently buildable while sharing common patterns.
 FILES
 -----
 - PersistentRunnerBase.cs : Base class for MonoBehaviours that survive scene loads
+- SceneRootSurvivor.cs    : Optional Harmony postfix on Scene.GetRootGameObjects so registered DontDestroyOnLoad runners are omitted from unload lists (no third-party Keep Alive mod)
 - SceneHelpers.cs         : Scene detection utilities (menu vs game detection)
 - GUIStyleHelper.cs       : GUIStyle and Texture2D creation utilities
 - ReflectionHelper.cs     : Common reflection patterns with Harmony integration
@@ -37,6 +38,7 @@ Add to your .csproj file:
     <Compile Include="..\SharedUtilities\SceneHelpers.cs" Link="Shared\SceneHelpers.cs" />
     <Compile Include="..\SharedUtilities\GUIStyleHelper.cs" Link="Shared\GUIStyleHelper.cs" />
     <Compile Include="..\SharedUtilities\ReflectionHelper.cs" Link="Shared\ReflectionHelper.cs" />
+    <Compile Include="..\SharedUtilities\SceneRootSurvivor.cs" Link="Shared\SceneRootSurvivor.cs" />
     <Compile Include="..\SharedUtilities\TextInputFocusGuard.cs" Link="Shared\TextInputFocusGuard.cs" />
   </ItemGroup>
 

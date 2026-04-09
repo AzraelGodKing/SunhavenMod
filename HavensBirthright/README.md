@@ -65,7 +65,7 @@ Each race receives thematic passive bonuses, and select races gain powerful acti
 
 ### Active Abilities
 
-Active abilities are powerful race-specific skills. **Infernal Forge, Tidal Blessing, Font of Light, and Soul Harvest** use the in-game toggle: they **start OFF** each session until you press **F9** (configurable) once to turn yours on. Press again to turn off. Other abilities (e.g. Divine Ward, Tailwind) are controlled only by config, not F9.
+Active abilities are powerful race-specific skills. **Infernal Forge, Tidal Blessing, Font of Light, and Soul Harvest** use the in-game toggle: they **start OFF** each session (and after **switching character** with the mod) until you press **F9** (configurable). **Press F9 any time** to flip **ON** or **OFF** — as often as you want. Other abilities (e.g. Divine Ward, Tailwind) are controlled only by config, not F9.
 
 #### Water Elemental — Tidal Blessing
 Automatically waters hoed crop tiles at the cost of HP. Stand on or next to a tilled plot and it will be watered for you.
@@ -190,6 +190,10 @@ This adds Water Elemental’s Defense % to Humans and Human’s experience % to 
 - [Discord — bugs & discussion](https://discord.gg/Vwh2y7qMXv)
 
 ## Changelog
+
+### v2.0.0
+
+Changing saves or characters—and Fire/Water Elemental behavior after loads and F9—is more reliable. The code was reorganized for upkeep, and the mod keeps its hidden runner alive with shared SceneRootSurvivor instead of a third-party Keep Alive mod.
 
 ### v1.4.3 — Input focus & bonus transfers
 - **CheatEnabler / UI typing**: mod hotkeys defer while focus is in chat, console, or UI text fields (shared `TextInputFocusGuard`).

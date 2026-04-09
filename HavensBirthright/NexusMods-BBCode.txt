@@ -1,4 +1,4 @@
-[b][size=5]Haven's Birthright[/size][/b] [i](v1.4.3)[/i]
+[b][size=5]Haven's Birthright[/size][/b] [i](v2.0.0)[/i]
 
 A Sun Haven mod that adds unique racial bonuses, active abilities, drawbacks, and conditional synergies for each playable race.
 
@@ -13,7 +13,7 @@ A Sun Haven mod that adds unique racial bonuses, active abilities, drawbacks, an
 [*][b]F12[/b] (default) — reload config from disk without restarting
 [/list]
 
-Active abilities [b]Infernal Forge[/b], [b]Tidal Blessing[/b], [b]Font of Light[/b], and [b]Soul Harvest[/b] use the in-game toggle: they [b]start OFF[/b] each session until you press [b]F9[/b] (configurable) once. Press again to turn off. Others may be config-only.
+Active abilities [b]Infernal Forge[/b], [b]Tidal Blessing[/b], [b]Font of Light[/b], and [b]Soul Harvest[/b] use the in-game toggle: they [b]start OFF[/b] each session until you press [b]F9[/b] (configurable); you can press [b]F9[/b] whenever you like to turn them [b]ON[/b] or [b]OFF[/b] again. Others may be config-only.
 
 [spoiler][size=3][b]Passive racial bonuses (summary)[/b][/size]
 [b]Human:[/b] Adaptable (+XP), Charismatic (+relationship), Silver Tongue (shop discount)
@@ -104,6 +104,8 @@ Section [b][BonusTransfers][/b]: [b]EnableBonusTransfers[/b] defaults [b]false[/
 [/list]
 
 [spoiler][size=3][b]Changelog (recent)[/b][/size]
+[b]v2.0.0[/b] — Changing saves or characters—and Fire/Water Elemental behavior after loads and F9—is more reliable. The code was reorganized for upkeep, and the mod keeps its hidden runner alive with shared SceneRootSurvivor instead of a third-party Keep Alive mod.
+
 [b]v1.4.3[/b] — Optional [b][BonusTransfers][/b] cross-race passive grants ([b]EnableBonusTransfers[/b] off by default; [b]Rules[/b] [b]Target|Source|BonusType[/b]). CheatEnabler compatibility: mod hotkeys defer while typing in chat, console, or UI text fields.
 
 [b]v1.4.0[/b] — Save-load fix: race detection and ability state reset correctly when switching saves without returning to main menu. F12 config reload.

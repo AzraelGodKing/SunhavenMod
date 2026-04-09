@@ -1,6 +1,7 @@
 using HarmonyLib;
 using HavensBirthright.Abilities;
 using HavensBirthright.Patches;
+using HavensBirthright.Session;
 using SunhavenMods.Shared;
 using System;
 using System.Collections;
@@ -14,7 +15,7 @@ namespace HavensBirthright
     /// <summary>
     /// Persistent MonoBehaviour that powers auto-triggered abilities.
     /// Runs every frame to check conditions, manage cooldowns, and track environmental state.
-    /// Also caches expensive reflection lookups once per frame for StatPatches to read.
+    /// Uses <see cref="StatFrameCache"/> for per-frame values StatPatches reads; <see cref="GameApis"/> for TileManager/inventory/notifications.
     /// </summary>
     public class BirthrightRunner : PersistentRunnerBase
     {
@@ -25,51 +26,15 @@ namespace HavensBirthright
         private float _lastInfernalForgeCheck = 0f;
         private float _lastFontOfLightCheck = 0f;
 
-        // Cached reflection references for game APIs (initialized once)
-        private bool _apiCacheInitialized = false;
-        private Type _cropType;
-        private Type _dayCycleType;
-
-        // Cached TileManager references for Tidal Blessing (tile-based watering)
-        private Type _tileManagerType;
-        private object _tileManagerInstance;
-        private MethodInfo _isWateredMethod;     // TileManager.IsWatered(Vector2Int) → bool
-        private MethodInfo _waterTileMethod;     // TileManager.Water(Vector2Int, Int16) → bool
-        private MethodInfo _isHoedOrWateredMethod; // TileManager.IsHoedOrWatered(Vector2Int) → bool
-        private FieldInfo _farmingDataField;     // TileManager.farmingData (Dictionary<Vector2Int, FarmingTileInfo>)
-        private FieldInfo _farmingTileMapField;  // TileManager.farmingTileMap (Tilemap)
-        private MethodInfo _worldToCellMethod;   // Tilemap.WorldToCell(Vector3) → Vector3Int
-        private object _gridInstance;            // Parent Grid component (from tilemap.layoutGrid)
-        private MethodInfo _gridCellToWorldMethod; // Grid.CellToWorld(Vector3Int) → Vector3
-
         // One-time diagnostic flag (logs all gate checks on first call after toggle ON)
         private bool _tidalBlessingDiagLogged = false;
-
-        // Cached inventory methods for Infernal Forge periodic scan
-        private MethodInfo _cachedGetAmountMethod;
-        private MethodInfo _cachedRemoveItemMethod;
-        private bool _inventoryMethodsCached = false;
-
-        // === Per-frame cached values (updated once in OnUpdate, read by StatPatches) ===
-        private static float _cachedHPRatio = 1f;
-        private static string _cachedSeason = null;
-        private static bool _cachedIsDaytime = true;
-        private static bool _cachedIsInMine = false;
-        private static float _cachedQuickLearnerBonus = 0f;
-        private static bool _cacheValid = false;
-
-        // Public read-only access for StatPatches (zero-cost static field reads)
-        public static float CachedHPRatio => _cachedHPRatio;
-        public static string CachedSeason => _cachedSeason;
-        public static bool CachedIsDaytime => _cachedIsDaytime;
-        public static bool CachedIsInMine => _cachedIsInMine;
-        public static float CachedQuickLearnerBonus => _cachedQuickLearnerBonus;
-        public static bool IsCacheValid => _cacheValid;
 
         protected override void OnUpdate()
         {
             if (!SceneHelpers.IsInGame())
                 return;
+
+            CharacterSessionController.OnUpdateIdentityChecks();
 
             // Check ability toggle hotkey (runs before config/race checks so user
             // can pre-toggle even when abilities haven't activated yet)
@@ -94,29 +59,25 @@ namespace HavensBirthright
             {
                 // Race detection may have failed during Harmony patches (Player.Instance not ready yet).
                 // Retry here — once it succeeds, _raceDetected locks in and this stops retrying.
-                PlayerPatches.RetryRaceDetection();
+                RaceDetectionService.RetryRaceDetection();
                 race = manager.GetPlayerRace();
                 if (!race.HasValue)
                     return;
             }
 
-            // Initialize API caches on first in-game update
-            // NOTE: This runs BEFORE the active abilities check because
-            // stat caching needs _dayCycleType even when abilities are disabled
-            if (!_apiCacheInitialized)
-            {
-                InitializeApiCache();
-                _apiCacheInitialized = true;
-            }
+            GameApis.EnsureWishCachesInitialized();
 
             // Update per-frame cache for StatPatches. Run every 4th frame to reduce reflection cost
             // and stutter (e.g. Amari Cat + scythe); values are at most 3 frames stale.
-            if (!_cacheValid || (Time.frameCount & 3) == 0)
-                UpdateStatCache(race.Value);
+            if (!StatFrameCache.IsCacheValid || (Time.frameCount & 3) == 0)
+                StatFrameCache.Update(race.Value, GameApis.DayCycleType);
 
             // Active abilities require their own config toggle
             if (!AbilityConfig.EnableActiveAbilities.Value)
                 return;
+
+            // Re-resolve generic Elemental using live body style so F9 + per-frame updates match Infernal Forge / Tidal Blessing.
+            Race abilityRace = ElementalVariantResolver.ResolveElementalAbilityRace(race.Value);
 
             // Track outdoor time for Amari Bird Tailwind
             if (race.Value == Race.AmariBird && AbilityConfig.EnableTailwind.Value)
@@ -125,13 +86,13 @@ namespace HavensBirthright
             }
 
             // Water Elemental Tidal Blessing - auto-water nearby plots
-            if (race.Value == Race.WaterElemental && AbilityConfig.EnableTidalBlessing.Value)
+            if (abilityRace == Race.WaterElemental && AbilityConfig.EnableTidalBlessing.Value)
             {
                 UpdateTidalBlessing();
             }
 
             // Fire Elemental Infernal Forge - periodic inventory scan for ore → bars
-            if ((race.Value == Race.FireElemental || race.Value == Race.Elemental) && AbilityConfig.EnableInfernalForge.Value)
+            if ((abilityRace == Race.FireElemental || abilityRace == Race.Elemental) && AbilityConfig.EnableInfernalForge.Value)
             {
                 UpdateInfernalForge();
             }
@@ -145,6 +106,7 @@ namespace HavensBirthright
 
         protected override void OnMenuTransition()
         {
+            BirthrightGameSaveContext.Reset();
             ResetAllStateForNewSave();
         }
 
@@ -160,47 +122,40 @@ namespace HavensBirthright
         /// </summary>
         public static void ResetAllStateForNewSave()
         {
+            CharacterSessionController.ClearTrackedCharacterId();
+            StatFrameCache.Reset();
             ActiveAbilityManager.ResetAll();
             var manager = Plugin.GetRacialBonusManager();
             manager?.ClearPlayerRace();
             PlayerPatches.ResetRaceDetection();
             Patches.CombatPatches.ResetNineLives();
-            AbilityPatches.ResetNotificationCache();
+            GameApis.ResetAllApiCaches();
             AbilityPatches.ResetReflectionCache();
 
             var runner = Plugin.GetRunner();
-            runner?.ResetInstanceState();
+            runner?.ResetRunnerTimersOnly();
         }
 
         /// <summary>
-        /// Resets instance-level caches and state. Called on menu transition and when loading a new save.
+        /// Clears per-run timers/diagnostics after a full <see cref="ResetAllStateForNewSave"/> (API caches reset separately there).
         /// </summary>
-        public void ResetInstanceState()
+        private void ResetRunnerTimersOnly()
         {
             _outdoorTime = 0f;
             _lastTidalBlessingCheck = 0f;
             _lastInfernalForgeCheck = 0f;
             _lastFontOfLightCheck = 0f;
-            _apiCacheInitialized = false;
-            _inventoryMethodsCached = false;
-            _cachedGetAmountMethod = null;
-            _cachedRemoveItemMethod = null;
-            _tileManagerInstance = null;
-            _worldToCellMethod = null;
-            _gridInstance = null;
-            _gridCellToWorldMethod = null;
             _tidalBlessingDiagLogged = false;
-            ResetStatCache();
         }
 
-        private static void ResetStatCache()
+        /// <summary>
+        /// Resets instance-level caches and state. Called on game scene transitions (not always a full save reset).
+        /// </summary>
+        public void ResetInstanceState()
         {
-            _cacheValid = false;
-            _cachedHPRatio = 1f;
-            _cachedSeason = null;
-            _cachedIsDaytime = true;
-            _cachedIsInMine = false;
-            _cachedQuickLearnerBonus = 0f;
+            ResetRunnerTimersOnly();
+            StatFrameCache.Reset();
+            GameApis.ResetFarmingTileAndInventoryScanState();
         }
 
         protected override void Log(string message)
@@ -211,297 +166,6 @@ namespace HavensBirthright
         protected override void LogWarning(string message)
         {
             Plugin.Log?.LogWarning(message);
-        }
-
-        private void InitializeApiCache()
-        {
-            try
-            {
-                _cropType = ReflectionHelper.FindWishType("Crop");
-                _dayCycleType = ReflectionHelper.FindWishType("DayCycle");
-
-                if (_cropType != null)
-                    Plugin.Log.LogInfo("[BirthrightRunner] Found Crop type for Tidal Blessing");
-                if (_dayCycleType != null)
-                    Plugin.Log.LogInfo("[BirthrightRunner] Found DayCycle type for synergies");
-
-                // Cache TileManager type and methods for tile-based watering
-                CacheTileManager();
-            }
-            catch (Exception ex)
-            {
-                Plugin.Log.LogWarning($"[BirthrightRunner] API cache init failed: {ex.Message}");
-            }
-        }
-
-        /// <summary>
-        /// Caches TileManager type, instance, and watering methods.
-        /// TileManager is a SingletonBehaviour — its instance may not be ready at init time.
-        /// </summary>
-        private void CacheTileManager()
-        {
-            try
-            {
-                _tileManagerType = ReflectionHelper.FindWishType("TileManager");
-                if (_tileManagerType == null)
-                {
-                    Plugin.Log.LogWarning("[BirthrightRunner] TileManager type not found — Tidal Blessing will use fallback");
-                    return;
-                }
-
-                // Cache method references (these are stable across scene loads)
-                _isWateredMethod = _tileManagerType.GetMethod("IsWatered",
-                    new[] { typeof(Vector2Int) });
-                _waterTileMethod = _tileManagerType.GetMethod("Water",
-                    new[] { typeof(Vector2Int), typeof(short) });
-                _isHoedOrWateredMethod = _tileManagerType.GetMethod("IsHoedOrWatered",
-                    new[] { typeof(Vector2Int) });
-
-                // Cache farmingData field for direct dictionary access
-                _farmingDataField = _tileManagerType.GetField("farmingData",
-                    BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance);
-
-                // Cache farmingTileMap field for WorldToCell coordinate conversion
-                _farmingTileMapField = _tileManagerType.GetField("farmingTileMap",
-                    BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance);
-
-                Plugin.Log.LogInfo($"[BirthrightRunner] TileManager cached — " +
-                    $"IsWatered:{_isWateredMethod != null}, Water:{_waterTileMethod != null}, " +
-                    $"IsHoedOrWatered:{_isHoedOrWateredMethod != null}, " +
-                    $"farmingData:{_farmingDataField != null}, farmingTileMap:{_farmingTileMapField != null}");
-
-                // Try to get instance now (may need lazy retry later)
-                TryGetTileManagerInstance();
-            }
-            catch (Exception ex)
-            {
-                Plugin.Log.LogWarning($"[BirthrightRunner] TileManager cache failed: {ex.Message}");
-            }
-        }
-
-        /// <summary>
-        /// Attempts to get the TileManager singleton instance.
-        /// Called lazily — instance may not be available during init.
-        /// </summary>
-        private void TryGetTileManagerInstance()
-        {
-            // Check for stale Unity reference (destroyed object stored as C# object
-            // bypasses Unity's == null override → MissingReferenceException on invoke)
-            if (_tileManagerInstance != null)
-            {
-                if (_tileManagerInstance is UnityEngine.Object unityObj && unityObj == null)
-                {
-                    Plugin.Log?.LogInfo("[BirthrightRunner] TileManager instance was stale (destroyed Unity object) — clearing");
-                    _tileManagerInstance = null;
-                }
-                else
-                {
-                    return; // Instance is valid
-                }
-            }
-
-            if (_tileManagerType == null) return;
-
-            try
-            {
-                _tileManagerInstance = ReflectionHelper.GetSingletonInstance(_tileManagerType);
-                if (_tileManagerInstance != null)
-                {
-                    Plugin.Log?.LogInfo("[BirthrightRunner] TileManager instance acquired");
-
-                    // Cache WorldToCell method from the farmingTileMap Tilemap
-                    if (_worldToCellMethod == null && _farmingTileMapField != null)
-                    {
-                        try
-                        {
-                            var tilemap = _farmingTileMapField.GetValue(_tileManagerInstance);
-                            if (tilemap != null)
-                            {
-                                _worldToCellMethod = tilemap.GetType().GetMethod("WorldToCell",
-                                    new[] { typeof(Vector3) });
-                                Plugin.Log?.LogInfo($"[BirthrightRunner] WorldToCell method: {(_worldToCellMethod != null ? "found" : "NOT found")}");
-                            }
-                            else
-                            {
-                                Plugin.Log?.LogInfo("[BirthrightRunner] farmingTileMap is null on TileManager instance");
-                            }
-                        }
-                        catch (Exception ex)
-                        {
-                            Plugin.Log?.LogWarning($"[BirthrightRunner] Failed to cache WorldToCell: {ex.Message}");
-                        }
-                    }
-
-                    // Cache parent Grid component + CellToWorld for distance filtering
-                    // Grid.CellToWorld converts farmingData keys → world positions correctly
-                    // (unlike Tilemap.CellToWorld which has a transform offset)
-                    if (_gridInstance == null && _farmingTileMapField != null)
-                    {
-                        try
-                        {
-                            var tilemap = _farmingTileMapField.GetValue(_tileManagerInstance);
-                            if (tilemap != null)
-                            {
-                                var layoutGridProp = tilemap.GetType().GetProperty("layoutGrid");
-                                _gridInstance = layoutGridProp?.GetValue(tilemap);
-                                if (_gridInstance != null)
-                                {
-                                    _gridCellToWorldMethod = _gridInstance.GetType().GetMethod("CellToWorld",
-                                        new[] { typeof(Vector3Int) });
-                                    Plugin.Log?.LogInfo($"[BirthrightRunner] Grid cached — CellToWorld: {(_gridCellToWorldMethod != null ? "found" : "NOT found")}");
-                                }
-                                else
-                                {
-                                    Plugin.Log?.LogInfo("[BirthrightRunner] layoutGrid is null — distance filtering will be disabled");
-                                }
-                            }
-                        }
-                        catch (Exception ex)
-                        {
-                            Plugin.Log?.LogWarning($"[BirthrightRunner] Failed to cache Grid: {ex.Message}");
-                        }
-                    }
-                }
-                else
-                {
-                    Plugin.Log?.LogInfo("[BirthrightRunner] TileManager instance NOT available (singleton returned null)");
-                }
-            }
-            catch (Exception ex)
-            {
-                Plugin.Log?.LogWarning($"[BirthrightRunner] TileManager instance lookup failed: {ex.Message}");
-            }
-        }
-
-        /// <summary>
-        /// Updates all cached values once per frame. StatPatches reads these cached values
-        /// instead of doing expensive reflection on every GetStat call.
-        /// </summary>
-        private void UpdateStatCache(Race race)
-        {
-            try
-            {
-                // --- IsInMine (cheap - string ops only) ---
-                _cachedIsInMine = IsInMine();
-
-                // --- DayCycle lookups (hour, season) using cached _dayCycleType ---
-                if (_dayCycleType != null)
-                {
-                    var dayCycleInstance = ReflectionHelper.GetSingletonInstance(_dayCycleType);
-                    if (dayCycleInstance != null)
-                    {
-                        // Cache current hour → isDaytime
-                        float hour = ReflectionHelper.TryGetValue<float>(dayCycleInstance, "Hour", -1f);
-                        if (hour < 0)
-                            hour = ReflectionHelper.TryGetValue<float>(dayCycleInstance, "CurrentHour", -1f);
-                        if (hour < 0)
-                            hour = ReflectionHelper.TryGetValue<float>(dayCycleInstance, "currentHour", -1f);
-                        if (hour < 0)
-                        {
-                            int hourInt = ReflectionHelper.TryGetValue<int>(dayCycleInstance, "Hour", -1);
-                            if (hourInt >= 0) hour = hourInt;
-                        }
-
-                        _cachedIsDaytime = hour < 0 ? true : (hour >= 6f && hour < 18f);
-
-                        // Cache current season
-                        var season = ReflectionHelper.GetInstanceValue(dayCycleInstance, "Season");
-                        if (season == null)
-                            season = ReflectionHelper.GetInstanceValue(dayCycleInstance, "season");
-                        if (season == null)
-                            season = ReflectionHelper.GetInstanceValue(dayCycleInstance, "CurrentSeason");
-
-                        _cachedSeason = season?.ToString();
-                    }
-                }
-
-                // --- HP ratio ---
-                var player = Wish.Player.Instance;
-                if (player != null)
-                {
-                    float maxHP = player.MaxHealth;
-                    if (maxHP > 0)
-                    {
-                        float currentHP = ReflectionHelper.TryGetValue<float>(player, "health", maxHP);
-                        _cachedHPRatio = currentHP / maxHP;
-                    }
-                    else
-                    {
-                        _cachedHPRatio = 1f;
-                    }
-
-                    // --- Quick Learner bonus (only for Humans) ---
-                    if (race == Race.Human && AbilityConfig.EnableQuickLearner != null && AbilityConfig.EnableQuickLearner.Value)
-                    {
-                        _cachedQuickLearnerBonus = CalculateQuickLearnerBonus(player);
-                    }
-                    else
-                    {
-                        _cachedQuickLearnerBonus = 0f;
-                    }
-                }
-
-                _cacheValid = true;
-            }
-            catch (Exception ex)
-            {
-                Plugin.Log.LogWarning($"[BirthrightRunner] Cache update error: {ex.Message}");
-                // Keep cache valid with safe defaults rather than disabling bonuses
-                _cacheValid = true;
-            }
-        }
-
-        /// <summary>
-        /// Calculates the Quick Learner XP bonus based on leveled skills.
-        /// Called once per frame from UpdateStatCache, NOT from the GetStat hot path.
-        /// </summary>
-        private static float CalculateQuickLearnerBonus(Wish.Player player)
-        {
-            try
-            {
-                int threshold = AbilityConfig.QuickLearnerSkillThreshold.Value;
-                int qualifyingSkills = 0;
-
-                // Access skill levels via reflection (they are properties returning float)
-                float farmingLevel = ReflectionHelper.TryGetValue<float>(player, "FarmingSkillLevel", 0f);
-                float miningLevel = ReflectionHelper.TryGetValue<float>(player, "MiningSkillLevel", 0f);
-                float fishingLevel = ReflectionHelper.TryGetValue<float>(player, "FishingSkillLevel", 0f);
-                float explorationLevel = ReflectionHelper.TryGetValue<float>(player, "ExplorationSkillLevel", 0f);
-
-                if (farmingLevel >= threshold) qualifyingSkills++;
-                if (miningLevel >= threshold) qualifyingSkills++;
-                if (fishingLevel >= threshold) qualifyingSkills++;
-                if (explorationLevel >= threshold) qualifyingSkills++;
-
-                // Try to access crafting/smithing profession level
-                try
-                {
-                    var professions = ReflectionHelper.GetInstanceValue(player, "Professions");
-                    if (professions != null)
-                    {
-                        var craftingType = ReflectionHelper.FindWishType("ProfessionType");
-                        if (craftingType != null)
-                        {
-                            var craftingEnum = Enum.Parse(craftingType, "Crafting");
-                            var dict = professions as System.Collections.IDictionary;
-                            if (dict != null && dict.Contains(craftingEnum))
-                            {
-                                var profession = dict[craftingEnum];
-                                int level = ReflectionHelper.TryGetValue<int>(profession, "level", 0);
-                                if (level >= threshold) qualifyingSkills++;
-                            }
-                        }
-                    }
-                }
-                catch { /* Crafting level check failed - skip */ }
-
-                float bonus = qualifyingSkills * AbilityConfig.QuickLearnerBonusPerSkill.Value;
-                return Mathf.Min(bonus, AbilityConfig.QuickLearnerMaxBonus.Value);
-            }
-            catch
-            {
-                return 0f;
-            }
         }
 
         /// <summary>
@@ -581,16 +245,16 @@ namespace HavensBirthright
                     _tidalBlessingDiagLogged = true;
                     Plugin.Log?.LogInfo($"[TidalBlessing] === DIAGNOSTIC ===");
                     Plugin.Log?.LogInfo($"[TidalBlessing]   HP: {currentHP:F0}/{maxHP:F0} ({hpPercent:F0}%), threshold: {AbilityConfig.TidalBlessingHPThreshold.Value}%");
-                    Plugin.Log?.LogInfo($"[TidalBlessing]   TileManager: type={(_tileManagerType != null ? "ok" : "NULL")}, instance={(_tileManagerInstance != null ? "ok" : "NULL")}");
-                    Plugin.Log?.LogInfo($"[TidalBlessing]   Methods: Water={(_waterTileMethod != null ? "ok" : "NULL")}, farmingData field={(_farmingDataField != null ? "ok" : "NULL")}");
+                    Plugin.Log?.LogInfo($"[TidalBlessing]   TileManager: type={(GameApis.TileManagerType != null ? "ok" : "NULL")}, instance={(GameApis.TileManagerInstance != null ? "ok" : "NULL")}");
+                    Plugin.Log?.LogInfo($"[TidalBlessing]   Methods: Water={(GameApis.WaterTileMethod != null ? "ok" : "NULL")}, farmingData field={(GameApis.FarmingDataField != null ? "ok" : "NULL")}");
                     Plugin.Log?.LogInfo($"[TidalBlessing]   Cooldown: {AbilityConfig.TidalBlessingCooldown.Value}s, HP cost: {AbilityConfig.TidalBlessingHPCostPercent.Value}%");
 
                     // Log farmingData counts
-                    if (_farmingDataField != null && _tileManagerInstance != null)
+                    if (GameApis.FarmingDataField != null && GameApis.TileManagerInstance != null)
                     {
                         try
                         {
-                            var idict = _farmingDataField.GetValue(_tileManagerInstance) as IDictionary;
+                            var idict = GameApis.FarmingDataField.GetValue(GameApis.TileManagerInstance) as IDictionary;
                             if (idict != null)
                             {
                                 int hoedCount = 0;
@@ -609,7 +273,7 @@ namespace HavensBirthright
 
                     Plugin.Log?.LogInfo($"[TidalBlessing]   Scene: {SceneHelpers.GetCurrentSceneName()}");
                     Plugin.Log?.LogInfo($"[TidalBlessing]   Player world pos: ({player.transform.position.x:F1}, {player.transform.position.y:F1})");
-                    Plugin.Log?.LogInfo($"[TidalBlessing]   Grid distance filter: {(_gridCellToWorldMethod != null && _gridInstance != null ? "enabled (radius=1)" : "disabled (no Grid)")}");
+                    Plugin.Log?.LogInfo($"[TidalBlessing]   Grid distance filter: {(GameApis.GridCellToWorldMethod != null && GameApis.GridInstance != null ? "enabled (radius=1)" : "disabled (no Grid)")}");
                     Plugin.Log?.LogInfo($"[TidalBlessing] === END DIAGNOSTIC ===");
                 }
 
@@ -617,7 +281,7 @@ namespace HavensBirthright
                     return;
 
                 // Try TileManager approach first (primary), fall back to Crop approach
-                if (_tileManagerType != null && _isWateredMethod != null && _waterTileMethod != null)
+                if (GameApis.TileManagerType != null && GameApis.IsWateredMethod != null && GameApis.WaterTileMethod != null)
                 {
                     UpdateTidalBlessingViaTileManager(player, maxHP, currentHP);
                 }
@@ -644,24 +308,24 @@ namespace HavensBirthright
         private void UpdateTidalBlessingViaTileManager(Wish.Player player, float maxHP, float currentHP)
         {
             // Check for stale Unity reference before use
-            if (_tileManagerInstance is UnityEngine.Object unityObj && unityObj == null)
+            if (GameApis.TileManagerInstance is UnityEngine.Object unityObj && unityObj == null)
             {
                 Plugin.Log?.LogInfo("[TidalBlessing] TileManager instance was stale — re-acquiring");
-                _tileManagerInstance = null;
+                GameApis.TileManagerInstance = null;
             }
 
             // Lazy-acquire TileManager instance (may not be ready during init)
-            if (_tileManagerInstance == null)
-                TryGetTileManagerInstance();
-            if (_tileManagerInstance == null)
+            if (GameApis.TileManagerInstance == null)
+                GameApis.TryGetTileManagerInstance();
+            if (GameApis.TileManagerInstance == null)
             {
                 Plugin.Log?.LogInfo("[TidalBlessing] TileManager instance not available — skipping this cycle");
                 return;
             }
 
             // Read farmingData dictionary directly (bypasses coordinate conversion)
-            if (_farmingDataField == null) return;
-            var farmingDict = _farmingDataField.GetValue(_tileManagerInstance) as IDictionary;
+            if (GameApis.FarmingDataField == null) return;
+            var farmingDict = GameApis.FarmingDataField.GetValue(GameApis.TileManagerInstance) as IDictionary;
             if (farmingDict == null || farmingDict.Count == 0) return;
 
             float hpCostPerPlot = maxHP * (AbilityConfig.TidalBlessingHPCostPercent.Value / 100f);
@@ -675,7 +339,7 @@ namespace HavensBirthright
             var hoedTiles = new List<Vector2Int>();
             var playerPos2D = new Vector2(player.transform.position.x, player.transform.position.y);
             int radius = 1;
-            bool hasGridConversion = _gridCellToWorldMethod != null && _gridInstance != null;
+            bool hasGridConversion = GameApis.GridCellToWorldMethod != null && GameApis.GridInstance != null;
 
             foreach (DictionaryEntry entry in farmingDict)
             {
@@ -689,7 +353,7 @@ namespace HavensBirthright
                     {
                         try
                         {
-                            var worldPos = (Vector3)_gridCellToWorldMethod.Invoke(_gridInstance,
+                            var worldPos = (Vector3)GameApis.GridCellToWorldMethod.Invoke(GameApis.GridInstance,
                                 new object[] { new Vector3Int(tilePos.x, tilePos.y, 0) });
                             float dist = Vector2.Distance(playerPos2D, new Vector2(worldPos.x, worldPos.y));
                             if (dist <= radius)
@@ -721,7 +385,7 @@ namespace HavensBirthright
 
                 try
                 {
-                    var waterResult = _waterTileMethod.Invoke(_tileManagerInstance, new object[] { tilePos, sceneIndex });
+                    var waterResult = GameApis.WaterTileMethod.Invoke(GameApis.TileManagerInstance, new object[] { tilePos, sceneIndex });
                     if (waterResult is bool success && success)
                         plotsWatered++;
                 }
@@ -757,7 +421,7 @@ namespace HavensBirthright
         /// </summary>
         private void UpdateTidalBlessingViaCropObjects(Wish.Player player, float maxHP, float currentHP)
         {
-            if (_cropType == null)
+            if (GameApis.CropType == null)
             {
                 Plugin.Log?.LogWarning("[TidalBlessing] No Crop type and no TileManager — cannot water");
                 return;
@@ -767,7 +431,7 @@ namespace HavensBirthright
             int radius = 1;
             int plotsWatered = 0;
 
-            var crops = UnityEngine.Object.FindObjectsOfType(_cropType);
+            var crops = UnityEngine.Object.FindObjectsOfType(GameApis.CropType);
             Plugin.Log?.LogInfo($"[TidalBlessing] Fallback mode: FindObjectsOfType found {crops?.Length ?? 0} Crop objects");
 
             if (crops == null || crops.Length == 0)
@@ -869,12 +533,7 @@ namespace HavensBirthright
                     return;
                 }
 
-                // Cache inventory methods on first use
-                if (!_inventoryMethodsCached)
-                {
-                    CacheInventoryMethods(inventory);
-                    _inventoryMethodsCached = true;
-                }
+                GameApis.EnsureInventoryMethodsCached(inventory);
 
                 // Check mana threshold before scanning
                 float maxMana = player.MaxMana;
@@ -886,8 +545,7 @@ namespace HavensBirthright
                 int orePerBar = AbilityConfig.InfernalForgeOrePerBar.Value;
                 if (orePerBar < 1) orePerBar = 3;
 
-                // Get the AddItem method via AbilityPatches (already has caching logic)
-                var addMethod = AbilityPatches.GetAddItemIntMethod(inventory);
+                var addMethod = GameApis.GetAddItemIntMethod(inventory);
 
                 int totalBarsSmelted = 0;
                 float totalManaCost = 0f;
@@ -899,7 +557,7 @@ namespace HavensBirthright
                     int barId = kvp.Value;
 
                     // Get current ore count in inventory
-                    int oreCount = GetInventoryAmount(inventory, oreId);
+                    int oreCount = GameApis.GetInventoryAmount(inventory, oreId);
                     if (oreCount < orePerBar)
                         continue;
 
@@ -937,7 +595,7 @@ namespace HavensBirthright
                     }
 
                     // Remove ore from inventory
-                    bool removeSuccess = RemoveInventoryItem(inventory, oreId, oreUsed);
+                    bool removeSuccess = GameApis.RemoveInventoryItem(inventory, oreId, oreUsed);
                     if (!removeSuccess)
                     {
                         Plugin.Log?.LogWarning($"[InfernalForge] Failed to remove {oreUsed}x ore {oreId}");
@@ -948,14 +606,14 @@ namespace HavensBirthright
                     bool addSuccess = false;
                     if (addMethod != null)
                     {
-                        addSuccess = AbilityPatches.InvokeAddItem(addMethod, inventory, barId, barsProduced, true);
+                        addSuccess = GameApis.InvokeAddItem(addMethod, inventory, barId, barsProduced, true);
                     }
 
                     if (!addSuccess)
                     {
                         // Bar addition failed — try to return ore
                         Plugin.Log?.LogError($"[InfernalForge] Bar addition failed for {barsProduced}x bar {barId} — returning ore");
-                        AddInventoryItem(inventory, oreId, oreUsed);
+                        GameApis.AddInventoryItem(inventory, oreId, oreUsed);
                         continue;
                     }
 
@@ -972,7 +630,7 @@ namespace HavensBirthright
                     if (newMana < 0f) newMana = 0f;
                     ReflectionHelper.SetInstanceValue(player, "Mana", newMana);
 
-                    AbilityPatches.SendGameNotification(
+                    GameApis.SendGameNotification(
                         $"Infernal Forge: Smelted {totalBarsSmelted} bar(s) (-{totalManaCost:F1} Mana)");
 
                     Plugin.Log?.LogInfo($"[InfernalForge] Total: {totalBarsSmelted} bars, {totalManaCost:F1} mana used");
@@ -1037,138 +695,12 @@ namespace HavensBirthright
                         addMoneyMethod.Invoke(player, new object[] { -goldCost, false, false, false });
                 }
 
-                AbilityPatches.SendGameNotification(
+                GameApis.SendGameNotification(
                     $"Font of Light: +{restorePercent:F0}% mana" + (goldCost > 0 ? $" (-{goldCost} gold)" : ""));
             }
             catch (Exception ex)
             {
                 Plugin.Log?.LogWarning($"[FontOfLight] Error: {ex.Message}");
-            }
-        }
-
-        /// <summary>
-        /// Caches inventory GetAmount and RemoveItem methods for repeated use.
-        /// </summary>
-        private void CacheInventoryMethods(object inventory)
-        {
-            try
-            {
-                var invType = inventory.GetType();
-
-                // GetAmount(int itemId) → int
-                _cachedGetAmountMethod = invType.GetMethod("GetAmount",
-                    new[] { typeof(int) });
-                if (_cachedGetAmountMethod == null)
-                {
-                    // Try alternate names
-                    _cachedGetAmountMethod = invType.GetMethod("GetItemAmount",
-                        new[] { typeof(int) });
-                }
-
-                // RemoveAll(Int32 id) — removes all of an item by ID
-                // (RemoveItem requires a slot index we don't have, so we use
-                //  RemoveAll then AddItem back the leftovers)
-                _cachedRemoveItemMethod = invType.GetMethod("RemoveAll",
-                    new[] { typeof(int) });
-
-                Plugin.Log?.LogInfo($"[InfernalForge] Inventory methods cached - " +
-                    $"GetAmount:{_cachedGetAmountMethod?.Name ?? "null"}, " +
-                    $"RemoveItem:{_cachedRemoveItemMethod?.Name ?? "null"}");
-            }
-            catch (Exception ex)
-            {
-                Plugin.Log?.LogWarning($"[InfernalForge] Failed to cache inventory methods: {ex.Message}");
-            }
-        }
-
-        /// <summary>
-        /// Gets the amount of a specific item in the inventory.
-        /// </summary>
-        private int GetInventoryAmount(object inventory, int itemId)
-        {
-            try
-            {
-                if (_cachedGetAmountMethod != null)
-                {
-                    var result = _cachedGetAmountMethod.Invoke(inventory, new object[] { itemId });
-                    if (result is int count)
-                        return count;
-                }
-
-                // Fallback: try reflection helper
-                var amount = ReflectionHelper.InvokeMethod(inventory, "GetAmount", itemId);
-                if (amount is int amt)
-                    return amt;
-            }
-            catch (Exception ex)
-            {
-                Plugin.Log?.LogWarning($"[InfernalForge] GetAmount failed for item {itemId}: {ex.Message}");
-            }
-            return 0;
-        }
-
-        /// <summary>
-        /// Removes items from the inventory.
-        /// </summary>
-        /// <summary>
-        /// Removes a specific amount of an item from inventory.
-        /// Uses RemoveAll(id) then adds back leftovers, since RemoveItem requires a slot index.
-        /// </summary>
-        private bool RemoveInventoryItem(object inventory, int itemId, int amount)
-        {
-            try
-            {
-                if (_cachedRemoveItemMethod == null)
-                {
-                    Plugin.Log?.LogWarning($"[InfernalForge] No cached RemoveAll method — cannot remove {amount}x item {itemId}");
-                    return false;
-                }
-
-                // Get current count before removing
-                int currentCount = GetInventoryAmount(inventory, itemId);
-                if (currentCount < amount)
-                {
-                    Plugin.Log?.LogWarning($"[InfernalForge] Not enough items: have {currentCount}, need {amount} of item {itemId}");
-                    return false;
-                }
-
-                int leftover = currentCount - amount;
-
-                // RemoveAll(int id) — removes everything of this item
-                _cachedRemoveItemMethod.Invoke(inventory, new object[] { itemId });
-
-                // Add back leftovers if any
-                if (leftover > 0)
-                {
-                    AddInventoryItem(inventory, itemId, leftover);
-                }
-
-                return true;
-            }
-            catch (Exception ex)
-            {
-                var inner = ex.InnerException ?? ex;
-                Plugin.Log?.LogWarning($"[InfernalForge] RemoveItem failed for {amount}x item {itemId}: {inner.GetType().Name}: {inner.Message}");
-                return false;
-            }
-        }
-
-        /// <summary>
-        /// Adds items to the inventory (used for returning ore on failure).
-        /// </summary>
-        private void AddInventoryItem(object inventory, int itemId, int amount)
-        {
-            try
-            {
-                var addMethod = AbilityPatches.GetAddItemIntMethod(inventory);
-                if (addMethod != null)
-                {
-                    AbilityPatches.InvokeAddItem(addMethod, inventory, itemId, amount, false);
-                }
-            }
-            catch (Exception ex)
-            {
-                Plugin.Log?.LogError($"[InfernalForge] Failed to return {amount}x item {itemId}: {ex.Message}");
             }
         }
 
@@ -1180,7 +712,7 @@ namespace HavensBirthright
         {
             try
             {
-                var dayCycleType = ReflectionHelper.FindWishType("DayCycle");
+                var dayCycleType = GameApis.DayCycleType ?? ReflectionHelper.FindWishType("DayCycle");
                 if (dayCycleType == null)
                     return -1f;
 
@@ -1220,7 +752,7 @@ namespace HavensBirthright
         {
             try
             {
-                var dayCycleType = ReflectionHelper.FindWishType("DayCycle");
+                var dayCycleType = GameApis.DayCycleType ?? ReflectionHelper.FindWishType("DayCycle");
                 if (dayCycleType == null)
                     return null;
 
@@ -1311,12 +843,35 @@ namespace HavensBirthright
                 if (manager == null) return;
 
                 var race = manager.GetPlayerRace();
-                if (!race.HasValue) return;
+                if (!race.HasValue)
+                {
+                    RaceDetectionService.RetryRaceDetection();
+                    race = manager.GetPlayerRace();
+                }
+                if (!race.HasValue)
+                {
+                    Plugin.Log?.LogInfo("[AbilityToggle] F9 pressed but race is not detected yet; waiting for Player/GameSave (try again shortly).");
+                    return;
+                }
 
-                string abilityKey = GetActiveAbilityForRace(race.Value);
+                RaceDetectionService.RetryRaceDetection();
+                race = manager.GetPlayerRace();
+                if (!race.HasValue)
+                {
+                    Plugin.Log?.LogInfo("[AbilityToggle] F9 pressed but race is not detected yet after retry; try again shortly.");
+                    return;
+                }
+
+                Race stored = race.Value;
+                Race abilityRace = ElementalVariantResolver.ResolveRaceForActiveAbilityToggle(stored);
+                if (abilityRace != stored)
+                    Plugin.Log?.LogInfo($"[AbilityToggle] Body-resolved race for F9: {abilityRace} (cached was {stored}).");
+
+                abilityRace = ElementalVariantResolver.ResolveElementalAbilityRace(abilityRace);
+                string abilityKey = GetActiveAbilityForRace(abilityRace);
                 if (abilityKey == null)
                 {
-                    Plugin.Log?.LogDebug($"[BirthrightRunner] No toggleable active ability for race {race.Value}");
+                    Plugin.Log?.LogInfo($"[AbilityToggle] No toggleable active ability for cached={stored} resolved={abilityRace} (F9).");
                     return;
                 }
 
@@ -1324,9 +879,13 @@ namespace HavensBirthright
                 string displayName = GetAbilityDisplayName(abilityKey);
 
                 // Send in-game notification via cached 5-arg method
-                AbilityPatches.SendGameNotification($"{displayName}: {(newState ? "ON" : "OFF")}");
+                GameApis.SendGameNotification($"{displayName}: {(newState ? "ON" : "OFF")}");
 
-                Plugin.Log?.LogInfo($"[BirthrightRunner] Toggled {displayName}: {(newState ? "ON" : "OFF")}");
+                Plugin.Log?.LogInfo(
+                    $"[AbilityToggle] {(newState ? "ENABLED" : "DISABLED")} " +
+                    $"{displayName} (key={abilityKey}) | " +
+                    $"storedRace={stored} abilityRace={abilityRace} | " +
+                    $"ToggleKey={Plugin.StaticAbilityToggleKey}");
             }
             catch (Exception ex)
             {
@@ -1350,6 +909,9 @@ namespace HavensBirthright
                     return ActiveAbilityManager.FontOfLight;
                 case Race.Demon:
                     return ActiveAbilityManager.SoulHarvest;
+                case Race.Elemental:
+                    // Body still ambiguous (e.g. StyleData not ready); Infernal Forge is the toggle for generic Elemental
+                    return ActiveAbilityManager.InfernalForge;
                 default:
                     return null;
             }

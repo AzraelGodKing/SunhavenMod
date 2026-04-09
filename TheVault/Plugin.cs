@@ -202,6 +202,8 @@ namespace TheVault
             // Hide it from the game's cleanup routines and hierarchy
             _persistentRunner.hideFlags = HideFlags.HideAndDontSave;
 
+            SceneRootSurvivor.TryRegisterPersistentRunnerGameObject(_persistentRunner);
+
             // Add the update runner component
             _updateRunner = _persistentRunner.AddComponent<PersistentUpdateRunner>();
 
@@ -240,6 +242,7 @@ namespace TheVault
                     _persistentRunner = new GameObject("TheVault_PersistentRunner");
                     UnityEngine.Object.DontDestroyOnLoad(_persistentRunner);
                     _persistentRunner.hideFlags = HideFlags.HideAndDontSave;
+                    SceneRootSurvivor.TryRegisterPersistentRunnerGameObject(_persistentRunner);
                     _updateRunner = _persistentRunner.AddComponent<PersistentUpdateRunner>();
                     Log?.LogInfo("[EnsureUI] PersistentRunner recreated");
                 }

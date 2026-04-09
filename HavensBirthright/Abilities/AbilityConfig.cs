@@ -185,8 +185,8 @@ namespace HavensBirthright.Abilities
                 "Active Abilities",
                 "ToggleKey",
                 KeyCode.F9,
-                "Key to turn your race's F9-toggleable ability ON or OFF. " +
-                "Those abilities start OFF each session until you press this key once to enable them."
+                "Key to turn your race's F9-toggleable ability ON or OFF (press any time; flip as often as you like). " +
+                "Those abilities start OFF each new session/character until you press this key the first time."
             );
 
             InfernalForgeVerboseLogging = config.Bind(
