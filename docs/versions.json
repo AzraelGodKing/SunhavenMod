@@ -10,14 +10,14 @@
     "changelog": "CheatEnabler compatibility: mod hotkeys defer while typing in chat, console, or UI text fields (shared TextInputFocusGuard)."
   },
   "com.azraelgodking.havensbirthright": {
-    "version": "1.4.3",
+    "version": "2.0.0",
     "name": "Haven's Birthright",
     "description": "Unique racial bonuses and abilities for all 12 playable races",
     "nexus": "https://www.nexusmods.com/sunhaven/mods/487",
     "nexus_file_group_id": "1297555",
     "thunderstore": "https://thunderstore.io/c/sun-haven/p/AzraelGodKing/HavensBirthright/",
     "thunderstoreName": "HavensBirthright",
-    "changelog": "Optional [BonusTransfers] cross-race passive grants (TargetRace|SourceRace|BonusType); EnableBonusTransfers defaults false. CheatEnabler compatibility: hotkeys defer while typing in chat, console, or UI text fields."
+    "changelog": "Changing saves or characters—and Fire/Water Elemental behavior after loads and F9—is more reliable. The code was reorganized for upkeep, and the mod keeps its hidden runner alive with shared SceneRootSurvivor instead of a third-party Keep Alive mod."
   },
   "com.azraelgodking.sunhavenmuseumutilitytracker": {
     "version": "2.2.6",

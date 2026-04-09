@@ -10,7 +10,7 @@ A collection of BepInEx mods for [Sun Haven](https://store.steampowered.com/app/
 | [**Sunhaven Todo**](SunhavenTodo/) | In-game todo list and journal with per-character saves | 1.1.6 |
 | [**Sun Haven Museum Utility Tracker**](SunHavenMuseumUtilityTracker/) | Track museum donations across all sections | 2.2.6 |
 | [**The Vault**](TheVault/) | Full rework of the vault system; classic core, single project; shop and inventory vault hooks | 3.0.4 |
-| [**Haven's Birthright**](HavensBirthright/) | Unique racial bonuses and traits for each playable race; optional `[BonusTransfers]` cross-race passive grants (off by default) | 1.4.3 |
+| [**Haven's Birthright**](HavensBirthright/) | Unique racial bonuses and traits for each playable race; optional `[BonusTransfers]` cross-race passive grants (off by default) | 2.0.0 |
 | [**Haven's Almanac**](HavensAlmanac/) | Mod compatibility registry and info hub | 1.0.4 |
 | [**A Squirrel's Birthday Reminder**](BirthdayReminder/) | Reminds you of villagers' birthdays | 1.1.4 |
 | [**Haven Dev Tools**](HavenDevTools/) | Developer utilities and debugging tools | 1.0.7 |
@@ -107,7 +107,7 @@ SunhavenMod/
 
 ## Documentation site changelog
 
-- **2026-04-05** — **Haven's Birthright v1.4.3:** optional `[BonusTransfers]` (`EnableBonusTransfers` default false; `Rules` as `TargetRace|SourceRace|BonusType`). CheatEnabler: hotkeys defer while typing in chat/UI. Standalone Birthright Buff Tuner removed; feature lives in Birthright only.
+- **2026-04-09** — **Haven's Birthright v2.0.0:** Changing saves or characters—and Fire/Water Elemental behavior after loads and F9—is more reliable. The code was reorganized for upkeep, and the mod keeps its hidden runner alive with shared SceneRootSurvivor instead of a third-party Keep Alive mod. Docs: [`docs/RacialBonuses/RacialBonuses.html`](docs/RacialBonuses/RacialBonuses.html), [`docs/index.html`](docs/index.html); source changelog [`HavensBirthright/README.md`](HavensBirthright/README.md); [`docs/versions.json`](docs/versions.json) for live hub badges.
 - **2026-04-05** — Maintainer script [`scripts/remove-stale-github-releases.ps1`](scripts/remove-stale-github-releases.ps1): removes GitHub releases whose tags are not the current `{thunderstoreName}-v{version}` from [`docs/versions.json`](docs/versions.json). **GitHub Actions:** workflow [`.github/workflows/remove-stale-github-releases.yml`](.github/workflows/remove-stale-github-releases.yml) (manual dispatch; **dry run** default; turn off dry run + enable **confirm_delete** to delete). **Local:** set **`GITHUB_TOKEN`** (classic PAT, **repo** scope) or **`-Token`**; **`-WhatIf`** first; **`YES`** or **`-Force`**.
 - **2026-04-03** — **The Vault:** [`TheVault/README.md`](TheVault/README.md) aligned with **v3.0.4** (version + changelog **3.0.3** / **3.0.4**); removed erroneous in-repo breaking callout; HUD usage text matches cfg keys; intro links **`TheVault.Abstractions/`**.
 - **2026-03-31** — **The Vault:** HUD is draggable via the top accent strip; **`[HUD] PositionX`** / **`PositionY`** in `thevault.cfg` persist placement.

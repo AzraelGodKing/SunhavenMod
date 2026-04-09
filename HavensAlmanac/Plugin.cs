@@ -78,6 +78,7 @@ namespace HavensAlmanac
             _persistentRunner = new GameObject("HavensAlmanac_PersistentRunner");
             DontDestroyOnLoad(_persistentRunner);
             _persistentRunner.hideFlags = HideFlags.HideAndDontSave;
+            SceneRootSurvivor.TryRegisterPersistentRunnerGameObject(_persistentRunner);
             _persistentRunnerComponent = _persistentRunner.AddComponent<AlmanacPersistentRunner>();
             Log.LogInfo("[PersistentRunner] Created");
         }
@@ -185,6 +186,7 @@ namespace HavensAlmanac
                     _persistentRunner = new GameObject("HavensAlmanac_PersistentRunner");
                     UnityEngine.Object.DontDestroyOnLoad(_persistentRunner);
                     _persistentRunner.hideFlags = HideFlags.HideAndDontSave;
+                    SceneRootSurvivor.TryRegisterPersistentRunnerGameObject(_persistentRunner);
                     _persistentRunnerComponent = _persistentRunner.AddComponent<AlmanacPersistentRunner>();
                 }
 
