@@ -1,9 +1,8 @@
 # =============================================================================
-# Remove GitHub Releases that are not the current version in docs/versions.json
+# Remove GitHub Releases and keep only latest 3
 # =============================================================================
-# Tags must match the release workflow: {thunderstoreName}-v{version}
-# (see build-release-publish.yml). Keeps one release per mod; deletes older tags
-# for the same Thunderstore package name.
+# Scans all repository releases (not per-mod) and keeps only the 3 newest.
+# Deletes older releases and their corresponding git tags.
 #
 # SAFETY: Default run is dry-run only. To actually delete, turn OFF dry_run and
 # turn ON confirm_delete in the workflow dispatch form.
@@ -34,26 +33,72 @@ jobs:
   cleanup:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-
-      - name: Preview stale releases (dry run)
-        if: inputs.dry_run
+      - name: Preview releases to delete (dry run)
+        if: ${{ inputs.dry_run }}
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          pwsh -NoProfile -File scripts/remove-stale-github-releases.ps1 -WhatIf \
-            -Owner "${{ github.repository_owner }}" \
-            -Repo "${{ github.event.repository.name }}"
+          set -euo pipefail
 
-      - name: Delete stale releases
+          REPO="${{ github.repository }}"
+          KEEP_COUNT=3
+
+          gh api --paginate "repos/$REPO/releases?per_page=100" > all_releases.json
+          TOTAL="$(jq 'length' all_releases.json)"
+          echo "Found $TOTAL total release(s). Keeping newest $KEEP_COUNT."
+
+          jq -c 'sort_by(.published_at // .created_at) | reverse | .[3:][]' all_releases.json > to_delete.jsonl || true
+          DELETE_COUNT="$(wc -l < to_delete.jsonl | tr -d ' ')"
+
+          if [ "$DELETE_COUNT" = "0" ]; then
+            echo "Nothing to delete."
+            exit 0
+          fi
+
+          echo "Would delete $DELETE_COUNT release(s):"
+          while IFS= read -r rel; do
+            ID="$(echo "$rel" | jq -r '.id')"
+            TAG="$(echo "$rel" | jq -r '.tag_name')"
+            NAME="$(echo "$rel" | jq -r '.name // "<no name>"')"
+            PUB="$(echo "$rel" | jq -r '.published_at // .created_at // "<unknown>"')"
+            echo "- id=$ID tag=$TAG name=$NAME published=$PUB"
+          done < to_delete.jsonl
+
+      - name: Delete old releases (keep latest 3)
         if: ${{ !inputs.dry_run && inputs.confirm_delete }}
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          pwsh -NoProfile -File scripts/remove-stale-github-releases.ps1 -Force \
-            -Owner "${{ github.repository_owner }}" \
-            -Repo "${{ github.event.repository.name }}"
+          set -euo pipefail
+
+          REPO="${{ github.repository }}"
+          KEEP_COUNT=3
+
+          gh api --paginate "repos/$REPO/releases?per_page=100" > all_releases.json
+          TOTAL="$(jq 'length' all_releases.json)"
+          echo "Found $TOTAL total release(s). Keeping newest $KEEP_COUNT."
+
+          jq -c 'sort_by(.published_at // .created_at) | reverse | .[3:][]' all_releases.json > to_delete.jsonl || true
+          DELETE_COUNT="$(wc -l < to_delete.jsonl | tr -d ' ')"
+
+          if [ "$DELETE_COUNT" = "0" ]; then
+            echo "Nothing to delete."
+            exit 0
+          fi
+
+          echo "Deleting $DELETE_COUNT release(s)..."
+          while IFS= read -r rel; do
+            ID="$(echo "$rel" | jq -r '.id')"
+            TAG="$(echo "$rel" | jq -r '.tag_name')"
+            NAME="$(echo "$rel" | jq -r '.name // "<no name>"')"
+            echo "Deleting release id=$ID tag=$TAG name=$NAME"
+            gh api -X DELETE "repos/$REPO/releases/$ID"
+
+            if [ -n "$TAG" ] && [ "$TAG" != "null" ]; then
+              echo "Deleting tag ref tags/$TAG"
+              gh api -X DELETE "repos/$REPO/git/refs/tags/$TAG" || echo "Tag refs/tags/$TAG already missing"
+            fi
+          done < to_delete.jsonl
 
       - name: Block unsafe run
         if: ${{ !inputs.dry_run && !inputs.confirm_delete }}
