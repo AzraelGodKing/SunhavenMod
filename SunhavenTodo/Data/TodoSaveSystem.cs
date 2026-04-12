@@ -202,6 +202,12 @@ namespace SunhavenTodo.Data
                 WriteJsonString(sb, item.Description ?? "");
                 sb.AppendLine(",");
 
+                sb.AppendLine($"      \"IconItemId\": {item.IconItemId},");
+
+                sb.Append("      \"MuseumDestination\": ");
+                WriteJsonString(sb, item.MuseumDestination ?? "");
+                sb.AppendLine(",");
+
                 sb.AppendLine($"      \"Priority\": {(int)item.Priority},");
                 sb.AppendLine($"      \"Category\": {(int)item.Category},");
                 sb.AppendLine($"      \"IsCompleted\": {(item.IsCompleted ? "true" : "false")},");
@@ -285,6 +291,14 @@ namespace SunhavenTodo.Data
                             item.Title = titleVal as string ?? "";
                         if (itemDict.TryGetValue("Description", out var descVal))
                             item.Description = descVal as string ?? "";
+                        if (itemDict.TryGetValue("IconItemId", out var iconVal))
+                            item.IconItemId = ToInt(iconVal);
+                        else
+                            item.IconItemId = -1;
+                        if (itemDict.TryGetValue("MuseumDestination", out var hallVal))
+                            item.MuseumDestination = hallVal as string ?? "";
+                        else
+                            item.MuseumDestination = "";
                         if (itemDict.TryGetValue("Priority", out var prioVal))
                             item.Priority = (TodoPriority)ToInt(prioVal);
                         if (itemDict.TryGetValue("Category", out var catVal))

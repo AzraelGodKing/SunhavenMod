@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using SunhavenMods.Shared;
 using SunhavenTodo.Data;
 using UnityEngine;
 
@@ -19,6 +20,7 @@ namespace SunhavenTodo.UI
         private const float BASE_MAX_HEIGHT = 300f;
         private const float BASE_HEADER_HEIGHT = 28f;
         private const float BASE_ITEM_HEIGHT = 24f;
+        private const float BASE_ICON_SIZE = 16f;
         private const int MAX_ITEMS = 5;
 
         private float _scale = 1f;
@@ -27,6 +29,7 @@ namespace SunhavenTodo.UI
         private float MaxHeight => BASE_MAX_HEIGHT * _scale;
         private float HeaderHeight => BASE_HEADER_HEIGHT * _scale;
         private float ItemHeight => BASE_ITEM_HEIGHT * _scale;
+        private float IconSize => BASE_ICON_SIZE * _scale;
         private int ScaledFont(int baseSize) => Mathf.Max(8, Mathf.RoundToInt(baseSize * _scale));
         private float Scaled(float value) => value * _scale;
         private int ScaledInt(float value) => Mathf.RoundToInt(value * _scale);
@@ -190,7 +193,11 @@ namespace SunhavenTodo.UI
             }
             else
             {
-                contentHeight += _cachedItems.Count * ItemHeight + Scaled(4);
+                for (int i = 0; i < _cachedItems.Count; i++)
+                {
+                    contentHeight += GetItemRowHeight(_cachedItems[i]);
+                }
+                contentHeight += Scaled(4);
             }
             _windowRect.width = WindowWidth;
             _windowRect.height = Mathf.Clamp(contentHeight, MinHeight, MaxHeight);
@@ -289,6 +296,18 @@ namespace SunhavenTodo.UI
         private void DrawItem(TodoItem item, int index)
         {
             var bgTex = index % 2 == 0 ? _itemEven : _itemOdd;
+            var titleText = string.IsNullOrWhiteSpace(item.Title) ? "(No title)" : item.Title;
+
+            var wrappedTitleStyle = new GUIStyle(_titleStyle)
+            {
+                wordWrap = true,
+                clipping = TextClipping.Overflow,
+                alignment = TextAnchor.UpperLeft
+            };
+
+            float titleAvailableWidth = GetTitleAvailableWidth(item);
+            float titleHeight = Mathf.Ceil(wrappedTitleStyle.CalcHeight(new GUIContent(titleText), titleAvailableWidth));
+            float rowHeight = Mathf.Max(ItemHeight, titleHeight + Scaled(6));
 
             // Use row style with background so content stays in layout flow (avoids blank title in some setups)
             var rowStyle = new GUIStyle(_itemStyle)
@@ -297,7 +316,7 @@ namespace SunhavenTodo.UI
                 padding = new RectOffset(ScaledInt(6), ScaledInt(6), ScaledInt(2), ScaledInt(2))
             };
 
-            GUILayout.BeginHorizontal(rowStyle, GUILayout.Height(ItemHeight));
+            GUILayout.BeginHorizontal(rowStyle, GUILayout.MinHeight(rowHeight));
             GUILayout.Space(Scaled(6));
 
             // Priority indicator
@@ -312,13 +331,53 @@ namespace SunhavenTodo.UI
 
             GUILayout.Space(Scaled(4));
 
-            // Title (truncated if too long; guard against null/empty)
-            var title = string.IsNullOrWhiteSpace(item.Title) ? "(No title)" : item.Title;
-            var displayTitle = title.Length > 25 ? title.Substring(0, 22) + "..." : title;
-            GUILayout.Label(displayTitle, _titleStyle, GUILayout.ExpandWidth(true));
+            // Item icon for integration-generated tasks (e.g., museum items)
+            if (item.IconItemId > 0)
+            {
+                var icon = IconCache.GetIcon(item.IconItemId);
+                if (icon != null)
+                {
+                    var iconRect = GUILayoutUtility.GetRect(IconSize, IconSize, GUILayout.Width(IconSize), GUILayout.Height(IconSize));
+                    GUI.DrawTexture(iconRect, icon, ScaleMode.ScaleToFit);
+                }
+                else
+                {
+                    GUILayout.Space(IconSize);
+                }
+
+                GUILayout.Space(Scaled(4));
+            }
+
+            // Wrapped title (no truncation)
+            GUILayout.Label(titleText, wrappedTitleStyle, GUILayout.Width(titleAvailableWidth), GUILayout.MinHeight(titleHeight));
+            GUILayout.FlexibleSpace();
 
             GUILayout.Space(Scaled(6));
             GUILayout.EndHorizontal();
+        }
+
+        private float GetItemRowHeight(TodoItem item)
+        {
+            if (item == null) return ItemHeight;
+
+            var titleText = string.IsNullOrWhiteSpace(item.Title) ? "(No title)" : item.Title;
+            var wrappedTitleStyle = new GUIStyle(_titleStyle)
+            {
+                wordWrap = true,
+                clipping = TextClipping.Overflow,
+                alignment = TextAnchor.UpperLeft
+            };
+            float titleWidth = GetTitleAvailableWidth(item);
+            float titleHeight = Mathf.Ceil(wrappedTitleStyle.CalcHeight(new GUIContent(titleText), titleWidth));
+            return Mathf.Max(ItemHeight, titleHeight + Scaled(6));
+        }
+
+        private float GetTitleAvailableWidth(TodoItem item)
+        {
+            float reserved = Scaled(6 + 16 + 36 + 4 + 6); // left pad + priority + category + spacing + right pad
+            if (item != null && item.IconItemId > 0)
+                reserved += IconSize + Scaled(4);
+            return Mathf.Max(Scaled(100), WindowWidth - reserved);
         }
 
         private string GetPriorityIcon(TodoPriority priority)
@@ -416,7 +475,8 @@ namespace SunhavenTodo.UI
                 fontSize = ScaledFont(11),
                 normal = { textColor = _textDark },
                 alignment = TextAnchor.MiddleLeft,
-                clipping = TextClipping.Clip
+                clipping = TextClipping.Overflow,
+                wordWrap = true
             };
 
             _emptyStyle = new GUIStyle

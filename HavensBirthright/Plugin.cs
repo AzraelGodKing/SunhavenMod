@@ -6,6 +6,7 @@ using HarmonyLib;
 using SunhavenMods.Shared;
 using System;
 using System.Linq;
+using System.IO;
 using UnityEngine;
 
 namespace HavensBirthright
@@ -31,27 +32,27 @@ namespace HavensBirthright
         {
             Instance = this;
             Log = Logger;
-            ConfigFile = Config;
+            ConfigFile = CreateNamedConfig();
 
             Log.LogInfo($"Loading {PluginInfo.PLUGIN_NAME} v{PluginInfo.PLUGIN_VERSION}");
 
             try
             {
                 // Initialize configuration
-                RacialConfig.Initialize(Config);
-                AbilityConfig.Initialize(Config);
+                RacialConfig.Initialize(ConfigFile);
+                AbilityConfig.Initialize(ConfigFile);
 
                 // Cache static keybind for BirthrightRunner to access
                 StaticAbilityToggleKey = AbilityConfig.ActiveAbilityToggleKey.Value;
 
-                _checkForUpdates = Config.Bind(
+                _checkForUpdates = ConfigFile.Bind(
                     "Updates",
                     "CheckForUpdates",
                     true,
                     "Check for mod updates on startup"
                 );
 
-                _reloadConfigKey = Config.Bind(
+                _reloadConfigKey = ConfigFile.Bind(
                     "General",
                     "ReloadConfigKey",
                     UnityEngine.KeyCode.F12,
@@ -230,9 +231,9 @@ namespace HavensBirthright
         {
             try
             {
-                Config.Reload();
-                RacialConfig.Initialize(Config);
-                AbilityConfig.Initialize(Config);
+                ConfigFile.Reload();
+                RacialConfig.Initialize(ConfigFile);
+                AbilityConfig.Initialize(ConfigFile);
                 StaticAbilityToggleKey = AbilityConfig.ActiveAbilityToggleKey.Value;
                 StaticReloadConfigKey = _reloadConfigKey.Value;
                 _racialBonusManager = new RacialBonusManager();
@@ -242,6 +243,22 @@ namespace HavensBirthright
             {
                 Log?.LogError($"[Haven's Birthright] Config reload failed: {ex.Message}");
             }
+        }
+
+        private static ConfigFile CreateNamedConfig()
+        {
+            string configPath = Path.Combine(Paths.ConfigPath, "HavensBirthright.cfg");
+            string legacyPath = Path.Combine(Paths.ConfigPath, $"{PluginInfo.PLUGIN_GUID}.cfg");
+            try
+            {
+                if (!File.Exists(configPath) && File.Exists(legacyPath))
+                    File.Copy(legacyPath, configPath);
+            }
+            catch (Exception ex)
+            {
+                Log?.LogWarning($"[Config] Migration to HavensBirthright.cfg failed: {ex.Message}");
+            }
+            return new ConfigFile(configPath, true);
         }
 
         private void OnDestroy()
@@ -389,6 +406,6 @@ namespace HavensBirthright
     {
         public const string PLUGIN_GUID = "com.azraelgodking.havensbirthright";
         public const string PLUGIN_NAME = "Haven's Birthright";
-        public const string PLUGIN_VERSION = "2.0.0";
+        public const string PLUGIN_VERSION = "2.0.1";
     }
 }

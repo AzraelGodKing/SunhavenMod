@@ -222,18 +222,28 @@ namespace BirthdayReminder.Data
 
                 // Get all NPCs and check birthdays
                 var npcBirthdays = GetNPCsWithBirthdayToday(season, day);
+                var seenDisplayNames = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
 
                 foreach (var npc in npcBirthdays)
                 {
+                    string rawNpcName = npc.NPCName ?? "";
+                    string displayNpcName = NormalizeNpcName(rawNpcName);
+                    if (string.IsNullOrEmpty(displayNpcName))
+                        continue;
+
+                    // Some game NPC entries use aliases/duplicates (e.g. "Darius+Darius"). Keep one display row.
+                    if (!seenDisplayNames.Add(displayNpcName))
+                        continue;
+
                     // Check gift status - prefer game's gaveGiftForDay, fall back to our tracking
                     bool hasGifted = false;
                     if (_gaveGiftForDayField != null && _useGameData)
                     {
-                        hasGifted = CheckGaveGiftForDay(npc.NPCName);
+                        hasGifted = CheckGaveGiftForDay(rawNpcName) || CheckGaveGiftForDay(displayNpcName);
                     }
                     if (!hasGifted)
                     {
-                        hasGifted = _giftTracking.HasGifted(npc.NPCName);
+                        hasGifted = _giftTracking.HasGifted(displayNpcName) || _giftTracking.HasGifted(rawNpcName);
                     }
 
                     // Get gift suggestions - prefer NPC's own gifts from game data, fall back to cache
@@ -253,7 +263,7 @@ namespace BirthdayReminder.Data
 
                     // Pass full gift lists for expanded view
                     _todaysBirthdays.Add(new BirthdayDisplayInfo(
-                        npc.NPCName,
+                        displayNpcName,
                         hasGifted,
                         giftHint,
                         npc.LovedGifts.ToList(),
@@ -298,6 +308,8 @@ namespace BirthdayReminder.Data
         public void MarkGifted(string npcName)
         {
             if (_giftTracking == null) return;
+            npcName = NormalizeNpcName(npcName);
+            if (string.IsNullOrEmpty(npcName)) return;
 
             _giftTracking.MarkGifted(npcName);
 
@@ -308,6 +320,26 @@ namespace BirthdayReminder.Data
             }
 
             OnBirthdaysUpdated?.Invoke();
+        }
+
+        private static string NormalizeNpcName(string npcName)
+        {
+            if (string.IsNullOrWhiteSpace(npcName))
+                return "";
+
+            var parts = npcName
+                .Split(new[] { '+' }, StringSplitOptions.RemoveEmptyEntries)
+                .Select(p => p.Trim())
+                .Where(p => !string.IsNullOrEmpty(p))
+                .Distinct(StringComparer.OrdinalIgnoreCase)
+                .ToList();
+
+            if (parts.Count == 0)
+                return npcName.Trim();
+            if (parts.Count == 1)
+                return parts[0];
+
+            return string.Join("+", parts);
         }
 
         /// <summary>

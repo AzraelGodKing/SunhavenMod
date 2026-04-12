@@ -11,6 +11,8 @@ namespace SenpaisChest.ChestLabels
 {
     internal class ChestLabel : MonoBehaviour
     {
+        private const float LabelVerticalOffset = 0.35f;
+
         private static readonly (Color32 color, Color32 outlineColor)[] ChestColors = new (int, int)[]
         {
             (6045747, 3021313),
@@ -30,20 +32,21 @@ namespace SenpaisChest.ChestLabels
         private Image _image;
         private TextMeshProUGUI _label;
         private ChestHitbox _hitbox;
+        private Chest _chest;
         private bool _hasImage;
         private int _pendingItemId = -1;
         public bool PlayerOver { get; private set; }
 
         public ChestLabel Init()
         {
-            var chest = transform.GetComponentInParent<Chest>();
-            if (chest == null)
+            _chest = transform.GetComponentInParent<Chest>();
+            if (_chest == null)
             {
                 Plugin.Log?.LogError("ChestLabel.Init: Could not find Chest in parent.");
                 return this;
             }
 
-            var boxCollider = chest.GetComponent<BoxCollider2D>() ?? chest.GetComponentInChildren<BoxCollider2D>();
+            var boxCollider = _chest.GetComponent<BoxCollider2D>() ?? _chest.GetComponentInChildren<BoxCollider2D>();
             if (boxCollider == null)
             {
                 Plugin.Log?.LogError("ChestLabel.Init: Chest has no BoxCollider2D - labels will not show.");
@@ -67,15 +70,15 @@ namespace SenpaisChest.ChestLabels
             _canvas.overrideSorting = true;
             _canvas.sortingOrder = 5000;
             _canvas.transform.SetParent(transform, false);
-            _canvas.transform.localPosition = Vector3.zero;
             _canvas.transform.eulerAngles = new Vector3(315f, 0f, 0f);
-            _canvas.GetComponent<RectTransform>().sizeDelta = boxCollider.size;
+            _canvas.GetComponent<RectTransform>().sizeDelta = new Vector2(Mathf.Max(1.8f, boxCollider.size.x * 2f), Mathf.Max(0.9f, boxCollider.size.y));
+            UpdateCanvasAnchor(boxCollider);
 
             _label = new GameObject("SenpaisChest_Label").AddComponent<TextMeshProUGUI>();
             _label.raycastTarget = false;
             _label.transform.SetParent(_canvas.transform, false);
-            _label.GetComponent<RectTransform>().sizeDelta = boxCollider.size * 1.75f;
-            _label.transform.localPosition = boxCollider.bounds.center - transform.position + new Vector3(0f, 0.9f, 0f);
+            _label.GetComponent<RectTransform>().sizeDelta = new Vector2(Mathf.Max(2.2f, boxCollider.size.x * 2.2f), Mathf.Max(0.9f, boxCollider.size.y * 1.2f));
+            _label.transform.localPosition = Vector3.zero;
             _label.alignment = TextAlignmentOptions.Center;
             _label.enableAutoSizing = true;
             _label.enableWordWrapping = false;
@@ -92,7 +95,7 @@ namespace SenpaisChest.ChestLabels
             _image.raycastTarget = false;
             _image.transform.SetParent(_canvas.transform, false);
             _image.GetComponent<RectTransform>().sizeDelta = Vector2.one * 0.75f;
-            _image.transform.localPosition = new Vector3(boxCollider.bounds.center.x - transform.position.x, 0.5f, -0.1f);
+            _image.transform.localPosition = new Vector3(0f, -0.32f, -0.1f);
             _image.preserveAspect = true;
 
             var hitboxGo = new GameObject("SenpaisChest_LabelHitbox");
@@ -106,9 +109,12 @@ namespace SenpaisChest.ChestLabels
         public void DoUpdate()
         {
             if (_label == null) return; // Not initialized yet (InitWhenReady may still be running)
-            var chest = transform.GetComponentInParent<Chest>();
-            if (chest == null) return;
-            var data = chest.GetChestData();
+            if (_chest == null)
+                _chest = transform.GetComponentInParent<Chest>();
+            if (_chest == null) return;
+
+            UpdateCanvasAnchor();
+            var data = _chest.GetChestData();
             SetTextAndIcon(data.name ?? "", data.color);
         }
 
@@ -173,10 +179,59 @@ namespace SenpaisChest.ChestLabels
 
             if (_canvas != null && _canvas.worldCamera == null && Camera.main != null)
                 _canvas.worldCamera = Camera.main;
+            UpdateCanvasAnchor();
             if (_label != null)
                 _label.enabled = ShouldBeVisible(config.LabelVisibility.Value);
             if (_image != null)
                 _image.enabled = _hasImage && ShouldBeVisible(config.IconVisibility.Value);
+        }
+
+        private void UpdateCanvasAnchor(BoxCollider2D fallbackCollider = null)
+        {
+            if (_canvas == null) return;
+            if (_chest == null)
+                _chest = transform.GetComponentInParent<Chest>();
+            if (_chest == null) return;
+
+            var anchor = ResolveAnchorWorldPosition(_chest, fallbackCollider);
+            _canvas.transform.position = anchor;
+        }
+
+        private static Vector3 ResolveAnchorWorldPosition(Chest chest, BoxCollider2D fallbackCollider)
+        {
+            bool hasBounds = false;
+            Bounds worldBounds = default;
+
+            var renderers = chest.GetComponentsInChildren<SpriteRenderer>(true);
+            foreach (var renderer in renderers)
+            {
+                if (renderer == null || !renderer.enabled)
+                    continue;
+
+                if (!hasBounds)
+                {
+                    worldBounds = renderer.bounds;
+                    hasBounds = true;
+                }
+                else
+                {
+                    worldBounds.Encapsulate(renderer.bounds);
+                }
+            }
+
+            if (!hasBounds && fallbackCollider != null)
+            {
+                worldBounds = fallbackCollider.bounds;
+                hasBounds = true;
+            }
+
+            if (!hasBounds)
+            {
+                var pos = chest.transform.position;
+                return new Vector3(pos.x, pos.y + 1f, pos.z - 0.1f);
+            }
+
+            return new Vector3(worldBounds.center.x, worldBounds.max.y + LabelVerticalOffset, chest.transform.position.z - 0.1f);
         }
 
         private void OnTriggerEnter2D(Collider2D other)

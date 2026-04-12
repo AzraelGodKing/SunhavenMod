@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+using SunhavenMods.Shared;
 using SunhavenTodo.Data;
 using UnityEngine;
 using Wish;
@@ -16,12 +17,14 @@ namespace SunhavenTodo.UI
         private const float BASE_WINDOW_HEIGHT = 600f;
         private const float BASE_HEADER_HEIGHT = 50f;
         private const float BASE_ITEM_HEIGHT = 36f;
+        private const float BASE_ICON_SIZE = 24f;
 
         private float _scale = 1f;
         private float WindowWidth => BASE_WINDOW_WIDTH * _scale;
         private float WindowHeight => BASE_WINDOW_HEIGHT * _scale;
         private float HeaderHeight => BASE_HEADER_HEIGHT * _scale;
         private float ItemHeight => BASE_ITEM_HEIGHT * _scale;
+        private float IconSize => BASE_ICON_SIZE * _scale;
         private int ScaledFont(int baseSize) => Mathf.Max(8, Mathf.RoundToInt(baseSize * _scale));
         private float Scaled(float value) => value * _scale;
         private int ScaledInt(float value) => Mathf.RoundToInt(value * _scale);
@@ -466,6 +469,25 @@ namespace SunhavenTodo.UI
         {
             var bgTex = item.IsCompleted ? _itemCompleted : (index % 2 == 0 ? _itemEven : _itemOdd);
             var itemStyle = item.IsCompleted ? _itemCompletedStyle : _itemStyle;
+            var titleText = string.IsNullOrWhiteSpace(item.Title) ? "(No title)" : item.Title;
+
+            // Wrap long titles and grow row height dynamically instead of clipping.
+            var titleBaseStyle = item.IsCompleted ? _completedTitleStyle : _labelBoldStyle;
+            var wrappedTitleStyle = new GUIStyle(titleBaseStyle)
+            {
+                wordWrap = true,
+                clipping = TextClipping.Overflow,
+                alignment = TextAnchor.UpperLeft
+            };
+
+            float controlsWidth = Scaled(20 + 4 + 20 + 45 + 4 + 22 + 4); // checkbox, spaces, priority, category, delete button
+            if (item.IconItemId > 0)
+                controlsWidth += IconSize + Scaled(4);
+
+            float contentPadding = Scaled(32); // window + row paddings
+            float titleAvailableWidth = Mathf.Max(Scaled(120), WindowWidth - controlsWidth - contentPadding);
+            float titleHeight = Mathf.Ceil(wrappedTitleStyle.CalcHeight(new GUIContent(titleText), titleAvailableWidth));
+            float rowHeight = Mathf.Max(ItemHeight, titleHeight + Scaled(10));
 
             // Use a row style with background so the row stays in layout flow (avoids BeginArea + ScrollView coordinate bug that made titles appear blank)
             var rowStyle = new GUIStyle(itemStyle)
@@ -474,7 +496,7 @@ namespace SunhavenTodo.UI
                 padding = new RectOffset(8, 8, 4, 4)
             };
 
-            GUILayout.BeginHorizontal(rowStyle, GUILayout.Height(ItemHeight));
+            GUILayout.BeginHorizontal(rowStyle, GUILayout.MinHeight(rowHeight));
             // Checkbox
             var isCompleted = GUILayout.Toggle(item.IsCompleted, "", GUILayout.Width(20));
             if (isCompleted != item.IsCompleted)
@@ -495,10 +517,26 @@ namespace SunhavenTodo.UI
 
             GUILayout.Space(4);
 
-            // Title (using cached styles; guard against null/empty so row is never blank)
-            var titleStyle = item.IsCompleted ? _completedTitleStyle : _labelBoldStyle;
-            var titleText = string.IsNullOrWhiteSpace(item.Title) ? "(No title)" : item.Title;
-            GUILayout.Label(titleText, titleStyle, GUILayout.ExpandWidth(true));
+            // Item icon (used by museum integration tasks)
+            if (item.IconItemId > 0)
+            {
+                var icon = IconCache.GetIcon(item.IconItemId);
+                if (icon != null)
+                {
+                    var iconRect = GUILayoutUtility.GetRect(IconSize, IconSize, GUILayout.Width(IconSize), GUILayout.Height(IconSize));
+                    GUI.DrawTexture(iconRect, icon, ScaleMode.ScaleToFit);
+                }
+                else
+                {
+                    GUILayout.Space(IconSize);
+                }
+
+                GUILayout.Space(4);
+            }
+
+            // Wrapped title with dynamic row height.
+            GUILayout.Label(titleText, wrappedTitleStyle, GUILayout.Width(titleAvailableWidth), GUILayout.MinHeight(titleHeight));
+            GUILayout.FlexibleSpace();
 
             // Delete button
             if (GUILayout.Button("x", _buttonStyle, GUILayout.Width(22), GUILayout.Height(22)))

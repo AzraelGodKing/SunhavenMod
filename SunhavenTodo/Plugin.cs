@@ -1,4 +1,5 @@
 using System;
+using System.IO;
 using BepInEx;
 using BepInEx.Configuration;
 using BepInEx.Logging;
@@ -16,6 +17,7 @@ namespace SunhavenTodo
     {
         public static Plugin Instance { get; private set; }
         public static ManualLogSource Log { get; private set; }
+        public static ConfigFile ConfigFile { get; private set; }
 
         // Static references that survive plugin destruction
         private static TodoManager _staticTodoManager;
@@ -54,7 +56,7 @@ namespace SunhavenTodo
 
         // State
         private Harmony _harmony;
-        private float _lastAutoSaveTime;
+        private static float _lastAutoSaveTime;
         private bool _isDataLoaded;
         private string _loadedCharacterName;
 
@@ -75,8 +77,10 @@ namespace SunhavenTodo
         {
             Instance = this;
             Log = Logger;
+            ConfigFile = CreateNamedConfig();
 
             Log.LogInfo($"Loading {PluginInfo.PLUGIN_NAME} v{PluginInfo.PLUGIN_VERSION}");
+            IconCache.Initialize(Log);
 
             BindConfiguration();
             CreatePersistentRunner();
@@ -97,7 +101,7 @@ namespace SunhavenTodo
 
         private void BindConfiguration()
         {
-            _toggleKey = Config.Bind(
+            _toggleKey = ConfigFile.Bind(
                 "Hotkeys",
                 "ToggleKey",
                 KeyCode.T,
@@ -106,7 +110,7 @@ namespace SunhavenTodo
             _staticToggleKey = _toggleKey.Value;
             _toggleKey.SettingChanged += (_, _) => _staticToggleKey = _toggleKey.Value;
 
-            _requireCtrl = Config.Bind(
+            _requireCtrl = ConfigFile.Bind(
                 "Hotkeys",
                 "RequireCtrl",
                 true,
@@ -115,7 +119,7 @@ namespace SunhavenTodo
             _staticRequireCtrl = _requireCtrl.Value;
             _requireCtrl.SettingChanged += (_, _) => _staticRequireCtrl = _requireCtrl.Value;
 
-            _autoSave = Config.Bind(
+            _autoSave = ConfigFile.Bind(
                 "Saving",
                 "AutoSave",
                 true,
@@ -124,7 +128,7 @@ namespace SunhavenTodo
             _staticAutoSave = _autoSave.Value;
             _autoSave.SettingChanged += (_, _) => _staticAutoSave = _autoSave.Value;
 
-            _autoSaveInterval = Config.Bind(
+            _autoSaveInterval = ConfigFile.Bind(
                 "Saving",
                 "AutoSaveInterval",
                 60f,
@@ -134,7 +138,7 @@ namespace SunhavenTodo
             _autoSaveInterval.SettingChanged += (_, _) => _staticAutoSaveInterval = _autoSaveInterval.Value;
 
             // HUD Configuration
-            _hudEnabled = Config.Bind(
+            _hudEnabled = ConfigFile.Bind(
                 "HUD",
                 "Enabled",
                 true,
@@ -147,7 +151,7 @@ namespace SunhavenTodo
                 _staticTodoHUD?.SetEnabled(_staticHUDEnabled);
             };
 
-            _hudPositionX = Config.Bind(
+            _hudPositionX = ConfigFile.Bind(
                 "HUD",
                 "PositionX",
                 -1f,
@@ -155,7 +159,7 @@ namespace SunhavenTodo
             );
             _staticHUDPositionX = _hudPositionX.Value;
 
-            _hudPositionY = Config.Bind(
+            _hudPositionY = ConfigFile.Bind(
                 "HUD",
                 "PositionY",
                 -1f,
@@ -163,7 +167,7 @@ namespace SunhavenTodo
             );
             _staticHUDPositionY = _hudPositionY.Value;
 
-            _hudToggleKey = Config.Bind(
+            _hudToggleKey = ConfigFile.Bind(
                 "Hotkeys",
                 "HUDToggleKey",
                 KeyCode.H,
@@ -172,14 +176,14 @@ namespace SunhavenTodo
             _staticHUDToggleKey = _hudToggleKey.Value;
             _hudToggleKey.SettingChanged += (_, _) => _staticHUDToggleKey = _hudToggleKey.Value;
 
-            _checkForUpdates = Config.Bind(
+            _checkForUpdates = ConfigFile.Bind(
                 "Updates",
                 "CheckForUpdates",
                 true,
                 "Check for mod updates on startup"
             );
 
-            _uiScale = Config.Bind(
+            _uiScale = ConfigFile.Bind(
                 "Display",
                 "UIScale",
                 1f,
@@ -195,6 +199,22 @@ namespace SunhavenTodo
                 _staticTodoUI?.SetScale(_staticUIScale);
                 _staticTodoHUD?.SetScale(_staticUIScale);
             };
+        }
+
+        private static ConfigFile CreateNamedConfig()
+        {
+            string configPath = Path.Combine(Paths.ConfigPath, "SunhavenTodo.cfg");
+            string legacyPath = Path.Combine(Paths.ConfigPath, $"{PluginInfo.PLUGIN_GUID}.cfg");
+            try
+            {
+                if (!File.Exists(configPath) && File.Exists(legacyPath))
+                    File.Copy(legacyPath, configPath);
+            }
+            catch (Exception ex)
+            {
+                Log?.LogWarning($"[Config] Migration to SunhavenTodo.cfg failed: {ex.Message}");
+            }
+            return new ConfigFile(configPath, true);
         }
 
         private void CreatePersistentRunner()
@@ -325,19 +345,6 @@ namespace SunhavenTodo
             }
         }
 
-        private void Update()
-        {
-            // Auto-save logic
-            if (_staticAutoSave && _staticTodoManager != null && _staticTodoManager.IsDirty)
-            {
-                if (Time.unscaledTime - _lastAutoSaveTime >= _staticAutoSaveInterval)
-                {
-                    SaveData();
-                    _lastAutoSaveTime = Time.unscaledTime;
-                }
-            }
-        }
-
         private void OnTodosChanged()
         {
             // Mark for auto-save in 5 seconds
@@ -397,6 +404,18 @@ namespace SunhavenTodo
             _staticTodoHUD?.Toggle();
         }
 
+        internal static void TickAutoSave()
+        {
+            if (!_staticAutoSave || _staticTodoManager == null || !_staticTodoManager.IsDirty)
+                return;
+
+            if (Time.unscaledTime - _lastAutoSaveTime < _staticAutoSaveInterval)
+                return;
+
+            SaveData();
+            _lastAutoSaveTime = Time.unscaledTime;
+        }
+
         private void OnDestroy()
         {
             Log.LogWarning("[CRITICAL] Plugin OnDestroy called!");
@@ -421,6 +440,7 @@ namespace SunhavenTodo
         private void Update()
         {
             CheckHotkeys();
+            Plugin.TickAutoSave();
         }
 
         private void CheckHotkeys()

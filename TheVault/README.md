@@ -20,13 +20,13 @@
 
 - **Main window:** IMGUI vault UI (**Ctrl+V** or **F8**). The HUD hides while the window is open.
 - **F7:** Toggle HUD.
-- **HUD position:** drag the **top accent strip** to move the bar; **`[HUD] PositionX`** / **`PositionY`** in `thevault.cfg` persist placement. **`[HUD] Position`** is the anchor when those are `-1`; changing **Position** clears a custom drag placement.
+- **HUD position:** drag the **top accent strip** to move the bar; **`[HUD] PositionX`** / **`PositionY`** in `TheVault.cfg` persist placement. **`[HUD] Position`** is the anchor when those are `-1`; changing **Position** clears a custom drag placement.
 - Select a row, enter a quantity, then **Withdraw** (vault → bag) or **Deposit** (bag → vault). Status text under the buttons reports success or errors (not only the BepInEx log).
 - **`[HUD] Density`:** **Normal**, **Compact**, or **Minimal**. **`[HUD] CompactMode`** still narrows the bar when Density is **Normal**. The in-game **Settings** tab shows HUD density and the compact toggle.
 
 ## Full vault inspector
 
-Enable **`[The Vault] FullVaultInspector = true`** in `BepInEx/config/com.azraelgodking.havendevtools.cfg`, or in **Haven Dev Tools** (F11) → **Azrael's Mods** → **The Vault**. The vault **Settings** tab shows whether this mode is on (it is not stored in `thevault.cfg`).
+Enable **`[The Vault] FullVaultInspector = true`** in `BepInEx/config/HavenDevTools.cfg`, or in **Haven Dev Tools** (F11) → **Azrael's Mods** → **The Vault**. The vault **Settings** tab shows whether this mode is on (it is not stored in `TheVault.cfg`).
 
 When enabled:
 
