@@ -1,8 +1,9 @@
 # =============================================================================
-# Remove GitHub Releases and keep only latest 3
+# Remove GitHub Releases and keep latest 3 per mod
 # =============================================================================
-# Scans all repository releases (not per-mod) and keeps only the 3 newest.
-# Deletes older releases and their corresponding git tags.
+# Scans all repository releases and groups by release tag prefix before "-v"
+# (e.g. TheVault-v3.0.5 -> TheVault). Keeps newest 3 per mod group and deletes
+# older releases plus their corresponding git tags.
 #
 # SAFETY: Default run is dry-run only. To actually delete, turn OFF dry_run and
 # turn ON confirm_delete in the workflow dispatch form.
@@ -33,7 +34,7 @@ jobs:
   cleanup:
     runs-on: ubuntu-latest
     steps:
-      - name: Preview releases to delete (dry run)
+      - name: Preview releases to delete (dry run, keep latest 3 per mod)
         if: ${{ inputs.dry_run }}
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -45,9 +46,36 @@ jobs:
 
           gh api --paginate "repos/$REPO/releases?per_page=100" > all_releases.json
           TOTAL="$(jq 'length' all_releases.json)"
-          echo "Found $TOTAL total release(s). Keeping newest $KEEP_COUNT."
+          echo "Found $TOTAL total release(s). Keeping newest $KEEP_COUNT per mod tag prefix."
 
-          jq -c 'sort_by(.published_at // .created_at) | reverse | .[3:][]' all_releases.json > to_delete.jsonl || true
+          echo "Per-mod release counts:"
+          jq -r '
+            [ .[] 
+              | select((.tag_name // "") | test(".+-v.+"))
+              | . + {mod_prefix: ((.tag_name | split("-v"))[0])}
+            ]
+            | group_by(.mod_prefix)
+            | map({
+                mod: .[0].mod_prefix,
+                total: length,
+                keep: (if length > 3 then 3 else length end),
+                delete: (if length > 3 then length - 3 else 0 end)
+              })
+            | sort_by(.mod)
+            | .[]
+            | "- \(.mod): total=\(.total), keep=\(.keep), delete=\(.delete)"
+          ' all_releases.json
+
+          jq -c '
+            [ .[]
+              | select((.tag_name // "") | test(".+-v.+"))
+              | . + {mod_prefix: ((.tag_name | split("-v"))[0])}
+            ]
+            | group_by(.mod_prefix)
+            | map(sort_by(.published_at // .created_at) | reverse | .[3:][])
+            | flatten
+            | .[]
+          ' all_releases.json > to_delete.jsonl || true
           DELETE_COUNT="$(wc -l < to_delete.jsonl | tr -d ' ')"
 
           if [ "$DELETE_COUNT" = "0" ]; then
@@ -64,7 +92,7 @@ jobs:
             echo "- id=$ID tag=$TAG name=$NAME published=$PUB"
           done < to_delete.jsonl
 
-      - name: Delete old releases (keep latest 3)
+      - name: Delete old releases (keep latest 3 per mod)
         if: ${{ !inputs.dry_run && inputs.confirm_delete }}
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -76,9 +104,18 @@ jobs:
 
           gh api --paginate "repos/$REPO/releases?per_page=100" > all_releases.json
           TOTAL="$(jq 'length' all_releases.json)"
-          echo "Found $TOTAL total release(s). Keeping newest $KEEP_COUNT."
+          echo "Found $TOTAL total release(s). Keeping newest $KEEP_COUNT per mod tag prefix."
 
-          jq -c 'sort_by(.published_at // .created_at) | reverse | .[3:][]' all_releases.json > to_delete.jsonl || true
+          jq -c '
+            [ .[]
+              | select((.tag_name // "") | test(".+-v.+"))
+              | . + {mod_prefix: ((.tag_name | split("-v"))[0])}
+            ]
+            | group_by(.mod_prefix)
+            | map(sort_by(.published_at // .created_at) | reverse | .[3:][])
+            | flatten
+            | .[]
+          ' all_releases.json > to_delete.jsonl || true
           DELETE_COUNT="$(wc -l < to_delete.jsonl | tr -d ' ')"
 
           if [ "$DELETE_COUNT" = "0" ]; then
