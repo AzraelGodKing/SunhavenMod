@@ -3,6 +3,7 @@ using BepInEx.Configuration;
 using BepInEx.Logging;
 using HarmonyLib;
 using System.IO;
+using UnityEngine;
 using Wish;
 
 namespace FasterRaces
@@ -13,6 +14,8 @@ namespace FasterRaces
         public static ManualLogSource Log { get; private set; }
         internal static ConfigEntry<bool> EnableMod;
         internal static ConfigEntry<float> SpeedBonusPercent;
+        private const float MinSpeedBonusPercent = 0f;
+        private const float MaxSpeedBonusPercent = 300f;
 
         private Harmony _harmony;
 
@@ -21,7 +24,15 @@ namespace FasterRaces
             Log = Logger;
             var configFile = CreateNamedConfig();
             EnableMod = configFile.Bind("General", "Enabled", true, "Enable Faster Races movement speed bonus. When enabled, Haven's Birthright will not apply its own movement speed bonuses to avoid double speed.");
-            SpeedBonusPercent = configFile.Bind("General", "SpeedBonusPercent", 25f, "Percentage bonus to movement speed (e.g. 25 = +25%). Applied after other mods; Haven's Birthright skips its speed buff when this mod is loaded.");
+            SpeedBonusPercent = configFile.Bind(
+                "General",
+                "SpeedBonusPercent",
+                25f,
+                new ConfigDescription(
+                    "Percentage bonus to movement speed (e.g. 25 = +25%). Applied after other mods; Haven's Birthright skips its speed buff when this mod is loaded.",
+                    new AcceptableValueRange<float>(MinSpeedBonusPercent, MaxSpeedBonusPercent)
+                )
+            );
 
             _harmony = new Harmony(PluginInfo.PLUGIN_GUID);
             var playerType = typeof(Player);
@@ -36,6 +47,22 @@ namespace FasterRaces
                 Log.LogWarning("Could not find Player.GetStat or SpeedPatch.Postfix");
 
             Log.LogInfo($"{PluginInfo.PLUGIN_NAME} v{PluginInfo.PLUGIN_VERSION} loaded. Speed bonus: {SpeedBonusPercent.Value}%");
+        }
+
+        /// <summary>
+        /// Compatibility hook for other mods (e.g. Haven's Birthright):
+        /// true only when this mod is currently enabled and has a positive bonus.
+        /// </summary>
+        public static bool IsSpeedBonusActive
+        {
+            get
+            {
+                if (EnableMod == null || !EnableMod.Value)
+                    return false;
+
+                float pct = SpeedBonusPercent != null ? SpeedBonusPercent.Value : 0f;
+                return pct > 0f;
+            }
         }
 
         private static ConfigFile CreateNamedConfig()
@@ -62,7 +89,7 @@ namespace FasterRaces
                     return;
                 if (EnableMod == null || !EnableMod.Value)
                     return;
-                float pct = SpeedBonusPercent != null ? SpeedBonusPercent.Value : 0f;
+                float pct = SpeedBonusPercent != null ? Mathf.Clamp(SpeedBonusPercent.Value, MinSpeedBonusPercent, MaxSpeedBonusPercent) : 0f;
                 if (pct <= 0f)
                     return;
                 __result *= (1f + pct / 100f);
@@ -70,10 +97,4 @@ namespace FasterRaces
         }
     }
 
-    public static class PluginInfo
-    {
-        public const string PLUGIN_GUID = "com.azraelgodking.fasterraces";
-        public const string PLUGIN_NAME = "Faster Races";
-        public const string PLUGIN_VERSION = "1.1.3";
-    }
 }

@@ -193,23 +193,8 @@ namespace SenpaisChest.Integration
         private static void SetTodoMetadata(TodoItem todoItem, int gameItemId, string destinationHall)
         {
             if (todoItem == null) return;
-
-            try
-            {
-                var todoType = todoItem.GetType();
-                var iconProp = todoType.GetProperty("IconItemId");
-                var destinationProp = todoType.GetProperty("MuseumDestination");
-
-                if (iconProp != null && iconProp.CanWrite)
-                    iconProp.SetValue(todoItem, gameItemId);
-
-                if (destinationProp != null && destinationProp.CanWrite)
-                    destinationProp.SetValue(todoItem, destinationHall ?? "");
-            }
-            catch (Exception ex)
-            {
-                Plugin.Log?.LogDebug($"[MuseumTodoIntegration] Failed to set todo metadata: {ex.Message}");
-            }
+            todoItem.IconItemId = gameItemId;
+            todoItem.MuseumDestination = destinationHall ?? "";
         }
     }
 }

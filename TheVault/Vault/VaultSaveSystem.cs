@@ -382,20 +382,7 @@ namespace TheVault.Vault
         /// </summary>
         private VaultData MigrateData(VaultData data)
         {
-            if (data.Version < 1)
-            {
-                // Version 0 -> 1 migration
-                data.Version = 1;
-                Plugin.Log?.LogInfo("Migrated vault data to version 1");
-            }
-
-            if (data.Version < 2)
-            {
-                data.Version = 2;
-                Plugin.Log?.LogInfo("Migrated vault data to version 2 (no transform; reserves the version for future field changes)");
-            }
-
-            return data;
+            return VaultDataMigration.Migrate(data, message => Plugin.Log?.LogInfo(message));
         }
 
         /// <summary>

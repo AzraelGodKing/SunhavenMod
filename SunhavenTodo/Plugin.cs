@@ -505,6 +505,10 @@ namespace SunhavenTodo
                     _isDataLoaded = true;
                     _loadedCharacterName = characterName;
                 }
+                else
+                {
+                    Plugin.Log?.LogWarning("Skipping todo load because character name is unavailable.");
+                }
             }
             catch (Exception ex)
             {
@@ -562,7 +566,10 @@ namespace SunhavenTodo
                 Plugin.Log?.LogWarning($"Failed to get character name: {ex.Message}");
             }
 
-            return "DefaultCharacter";
+            if (!string.IsNullOrEmpty(_loadedCharacterName))
+                return _loadedCharacterName;
+
+            return null;
         }
 
         private static void ResetState()

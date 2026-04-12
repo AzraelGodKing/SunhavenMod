@@ -1,8 +1,10 @@
 using BepInEx.Bootstrap;
+using BepInEx.Configuration;
 using HavensBirthright.Abilities;
 using HavensBirthright;
 using System;
 using System.Collections.Generic;
+using System.Reflection;
 using UnityEngine;
 using Wish;
 
@@ -32,10 +34,56 @@ namespace HavensBirthright.Patches
             return stat == StatType.AttackSpeed || stat == StatType.SpellAttackSpeed;
         }
 
-        /// <summary>True when Faster Races mod is loaded; we skip our movement speed bonuses so we don't double speed.</summary>
-        private static bool IsFasterRacesLoaded()
+        private const string FasterRacesGuid = "com.azraelgodking.fasterraces";
+        private static int _fasterRacesStateFrame = -1;
+        private static bool _fasterRacesSpeedActive;
+
+        /// <summary>
+        /// True when Faster Races is loaded and currently applying a positive speed bonus.
+        /// We intentionally avoid skipping HB speed bonuses when Faster Races is installed but disabled.
+        /// </summary>
+        private static bool IsFasterRacesSpeedBonusActive()
         {
-            return Chainloader.PluginInfos != null && Chainloader.PluginInfos.ContainsKey("com.azraelgodking.fasterraces");
+            if (_fasterRacesStateFrame == Time.frameCount)
+                return _fasterRacesSpeedActive;
+
+            _fasterRacesStateFrame = Time.frameCount;
+            _fasterRacesSpeedActive = false;
+
+            if (Chainloader.PluginInfos == null || !Chainloader.PluginInfos.TryGetValue(FasterRacesGuid, out var pluginInfo))
+                return false;
+
+            // Conservative fallback: if Faster Races is loaded but we cannot inspect state, skip HB speed buffs.
+            _fasterRacesSpeedActive = true;
+
+            var instance = pluginInfo?.Instance;
+            if (instance == null)
+                return _fasterRacesSpeedActive;
+
+            var pluginType = instance.GetType();
+
+            try
+            {
+                var activeProperty = pluginType.GetProperty("IsSpeedBonusActive", BindingFlags.Public | BindingFlags.Static);
+                if (activeProperty != null && activeProperty.PropertyType == typeof(bool))
+                {
+                    _fasterRacesSpeedActive = (bool)activeProperty.GetValue(null, null);
+                    return _fasterRacesSpeedActive;
+                }
+
+                var enabledField = pluginType.GetField("EnableMod", BindingFlags.NonPublic | BindingFlags.Public | BindingFlags.Static);
+                if (enabledField?.GetValue(null) is ConfigEntry<bool> enabledEntry)
+                {
+                    _fasterRacesSpeedActive = enabledEntry.Value;
+                    return _fasterRacesSpeedActive;
+                }
+            }
+            catch
+            {
+                // Keep conservative fallback when reflection fails.
+            }
+
+            return _fasterRacesSpeedActive;
         }
 
         /// <summary>
@@ -156,8 +204,8 @@ namespace HavensBirthright.Patches
                     break;
 
                 case StatType.Movespeed:
-                    // When Faster Races is loaded, skip our movement speed bonus so we don't double speed
-                    if (!IsFasterRacesLoaded() && manager.HasBonus(BonusType.MovementSpeed))
+                    // When Faster Races speed bonus is active, skip HB movement speed bonus to avoid double speed.
+                    if (!IsFasterRacesSpeedBonusActive() && manager.HasBonus(BonusType.MovementSpeed))
                         __result = manager.ApplyBonus(__result, BonusType.MovementSpeed);
                     break;
 
@@ -322,9 +370,9 @@ namespace HavensBirthright.Patches
                     }
                     break;
 
-                // Amari Bird - Tailwind: movement speed from outdoor time (skipped when Faster Races is loaded)
+                // Amari Bird - Tailwind: movement speed from outdoor time (skipped while Faster Races speed bonus is active)
                 case Race.AmariBird:
-                    if (!IsFasterRacesLoaded() && AbilityConfig.EnableTailwind.Value && stat == StatType.Movespeed)
+                    if (!IsFasterRacesSpeedBonusActive() && AbilityConfig.EnableTailwind.Value && stat == StatType.Movespeed)
                     {
                         float tailwindBonus = ActiveAbilityManager.GetBonusValue(ActiveAbilityManager.TailwindOutdoor);
                         if (tailwindBonus > 0)

@@ -9,6 +9,7 @@ namespace SunHavenMuseumUtilityTracker.Data
     /// </summary>
     public class DonationManager
     {
+        private static Dictionary<int, List<string>> _museumIdsByGameItemId;
         private DonationData _donationData;
         private string _currentCharacter;
         private bool _isDirty;
@@ -58,14 +59,16 @@ namespace SunHavenMuseumUtilityTracker.Data
         /// </summary>
         public bool HasDonatedByGameId(int gameItemId)
         {
-            bool found = false;
-            foreach (var item in MuseumContent.GetAllItems())
+            var museumIds = GetMuseumItemIdsForGameItem(gameItemId);
+            if (museumIds.Count == 0)
+                return false;
+
+            foreach (var museumItemId in museumIds)
             {
-                if (item.GameItemId != gameItemId) continue;
-                found = true;
-                if (!HasDonated(item.Id)) return false;
+                if (!HasDonated(museumItemId))
+                    return false;
             }
-            return found;
+            return true;
         }
 
         /// <summary>
@@ -89,11 +92,25 @@ namespace SunHavenMuseumUtilityTracker.Data
         /// </summary>
         public void MarkDonatedByGameId(int gameItemId)
         {
-            foreach (var item in MuseumContent.GetAllItems())
+            foreach (var museumItemId in GetMuseumItemIdsForGameItem(gameItemId))
             {
-                if (item.GameItemId == gameItemId)
-                    MarkDonated(item.Id);
+                MarkDonated(museumItemId);
             }
+        }
+
+        private static List<string> GetMuseumItemIdsForGameItem(int gameItemId)
+        {
+            if (_museumIdsByGameItemId == null)
+            {
+                _museumIdsByGameItemId = MuseumContent
+                    .GetAllItems()
+                    .GroupBy(item => item.GameItemId)
+                    .ToDictionary(group => group.Key, group => group.Select(item => item.Id).ToList());
+            }
+
+            return _museumIdsByGameItemId.TryGetValue(gameItemId, out var ids)
+                ? ids
+                : new List<string>();
         }
 
         /// <summary>

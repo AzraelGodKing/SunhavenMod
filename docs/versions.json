@@ -91,13 +91,13 @@
     "changelog": "Config now uses BepInEx/config/FasterRaces.cfg with first-run migration from the legacy GUID config file."
   },
   "com.azraelgodking.trinketfortune": {
-    "version": "1.0.2",
+    "version": "1.0.3",
     "name": "Trinket Fortune",
     "description": "Increases odds of unowned fishing trinkets dropping as you complete the aquarium",
     "nexus": "https://www.nexusmods.com/sunhaven/mods/498",
     "nexus_file_group_id": "7159384",
     "thunderstore": "https://thunderstore.io/c/sun-haven/p/AzraelGodKing/TrinketFortune/",
     "thunderstoreName": "TrinketFortune",
-    "changelog": "Config now uses BepInEx/config/TrinketFortune.cfg with first-run migration from the legacy GUID config file."
+    "changelog": "Config now uses BepInEx/config/TrinketFortune.cfg with first-run migration from the legacy GUID config file. Startup now runs in standalone-safe mode so Trinket Fortune no longer hard-requires HavenDevTools.dll to load."
   }
 }

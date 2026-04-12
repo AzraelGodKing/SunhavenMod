@@ -14,8 +14,9 @@ A collection of BepInEx mods for [Sun Haven](https://store.steampowered.com/app/
 | [**Haven's Almanac**](HavensAlmanac/) | Mod compatibility registry and info hub | 1.0.5 |
 | [**A Squirrel's Birthday Reminder**](BirthdayReminder/) | Reminds you of villagers' birthdays | 1.1.5 |
 | [**Haven Dev Tools**](HavenDevTools/) | Developer utilities and debugging tools | 1.0.8 |
-| [**Trinket Fortune**](TrinketFortune/) | Increases odds of unowned fishing trinkets dropping as you complete the aquarium | 1.0.2 |
+| [**Trinket Fortune**](TrinketFortune/) | Increases odds of unowned fishing trinkets dropping as you complete the aquarium | 1.0.3 |
 | [**Faster Races**](FasterRaces/) | Configurable movement speed bonus; integrates with Haven's Birthright to avoid double speed | 1.1.3 |
+| [**Justice for Harold**](JusticeForHarold/) | Quest interaction tweak for Harold's reward flow | 1.0.0 |
 
 ---
 
@@ -25,7 +26,7 @@ Smart chests that automatically collect items matching your rules. Open a chest,
 
 ### Sunhaven Todo
 
-In-game todo list and journal. Create tasks with categories, priorities, and notes. Each character has a separate list that persists between sessions. Hotkey: **J** or **F9**.
+In-game todo list and journal. Create tasks with categories, priorities, and notes. Each character has a separate list that persists between sessions. Hotkey: **Ctrl+T** by default.
 
 ### Sun Haven Museum Utility Tracker (S.M.U.T.)
 
@@ -38,7 +39,7 @@ Per-character saves, item icons, and bundle progress. Hotkey: **Ctrl+C**.
 
 ### The Vault
 
-**Full rework of The Vault system** (current release **3.0.4**): classic `VaultManager` / `VaultSaveSystem` stack, one codebase under `TheVault/`, Harmony integration rebased on `Wish.*` types, single build (`TheVault/TheVault.csproj`). Secure storage for seasonal tokens, keys, and special currencies; auto-deposit, HUD, shop and inventory vault hooks; **Ctrl+V** or **F8** (Steam Deck). Details: [`TheVault/README.md`]
+**Full rework of The Vault system** (current release **3.0.5**): classic `VaultManager` / `VaultSaveSystem` stack, one codebase under `TheVault/`, Harmony integration rebased on `Wish.*` types, single build (`TheVault/TheVault.csproj`). Secure storage for seasonal tokens, keys, and special currencies; auto-deposit, HUD, shop and inventory vault hooks; **Ctrl+V** or **F8** (Steam Deck). Details: [`TheVault/README.md`]
 
 ### Haven's Birthright
 
@@ -62,7 +63,11 @@ Increases the odds of unowned fishing trinkets dropping as you complete the aqua
 
 ### Faster Races
 
-Configurable percentage bonus to movement speed for all races. When installed with Haven's Birthright, disables Birthright's speed buffs so speed is not doubled.
+Configurable percentage bonus to movement speed for all races. With Haven's Birthright installed, Birthright speed bonuses are suppressed only while Faster Races speed bonus is active.
+
+### Justice for Harold
+
+Small quest behavior tweak focused on Harold interaction outcomes.
 
 ---
 
@@ -107,6 +112,8 @@ SunhavenMod/
 
 ## Documentation site changelog
 
+- **2026-04-11** — **Trinket Fortune load fix:** removed hard runtime dependency on `HavenDevTools.dll` to prevent startup black screens when HavenDevTools is not installed. Updated [`TrinketFortune/thunderstore/README.md`](TrinketFortune/thunderstore/README.md) and [`docs/versions.json`](docs/versions.json) changelog text (no version bump).
+- **2026-04-11** — Maintainer/compat pass: added [`docs/MAINTAINER_VERSION_DRIFT_CHECKLIST.md`](docs/MAINTAINER_VERSION_DRIFT_CHECKLIST.md) and [`docs/COMPATIBILITY_CONTRACT.md`](docs/COMPATIBILITY_CONTRACT.md); aligned Sunhaven Todo + The Vault docs text drift; updated release metadata URLs (`SenpaisChest`, `HavenDevTools`, `TrinketFortune`); expanded [`builds/README.md`](builds/README.md) artifact map; added concise repo READMEs for `BirthdayReminder`, `FasterRaces`, and `SenpaisChest`.
 - **2026-04-09** — **Haven's Birthright v2.0.0:** Changing saves or characters—and Fire/Water Elemental behavior after loads and F9—is more reliable. The code was reorganized for upkeep, and the mod keeps its hidden runner alive with shared SceneRootSurvivor instead of a third-party Keep Alive mod. Docs: [`docs/RacialBonuses/RacialBonuses.html`](docs/RacialBonuses/RacialBonuses.html), [`docs/index.html`](docs/index.html); source changelog [`HavensBirthright/README.md`](HavensBirthright/README.md); [`docs/versions.json`](docs/versions.json) for live hub badges.
 - **2026-04-05** — Maintainer script [`scripts/remove-stale-github-releases.ps1`](scripts/remove-stale-github-releases.ps1): removes GitHub releases whose tags are not the current `{thunderstoreName}-v{version}` from [`docs/versions.json`](docs/versions.json). **GitHub Actions:** workflow [`.github/workflows/remove-stale-github-releases.yml`](.github/workflows/remove-stale-github-releases.yml) (manual dispatch; **dry run** default; turn off dry run + enable **confirm_delete** to delete). **Local:** set **`GITHUB_TOKEN`** (classic PAT, **repo** scope) or **`-Token`**; **`-WhatIf`** first; **`YES`** or **`-Force`**.
 - **2026-04-03** — **The Vault:** [`TheVault/README.md`](TheVault/README.md) aligned with **v3.0.4** (version + changelog **3.0.3** / **3.0.4**); removed erroneous in-repo breaking callout; HUD usage text matches cfg keys; intro links **`TheVault.Abstractions/`**.

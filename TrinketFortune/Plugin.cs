@@ -2,8 +2,6 @@ using BepInEx;
 using BepInEx.Bootstrap;
 using BepInEx.Logging;
 using HarmonyLib;
-using HavenDevTools.API;
-using TrinketFortune.DevTools;
 using TrinketFortune.Patches;
 using System.IO;
 
@@ -23,11 +21,10 @@ namespace TrinketFortune
             _harmony = new Harmony(PluginInfo.PLUGIN_GUID);
             FishingTrinketPatches.ApplyPatches(_harmony);
 
-            if (Chainloader.PluginInfos != null && Chainloader.PluginInfos.ContainsKey("com.azraelgodking.havendevtools"))
-            {
-                DevToolsRegistry.Register(new TrinketFortunePanel());
-                Log.LogInfo("Registered Trinket Fortune panel with HavenDevTools");
-            }
+            bool hasHavenDevTools = Chainloader.PluginInfos != null &&
+                                    Chainloader.PluginInfos.ContainsKey("com.azraelgodking.havendevtools");
+            if (hasHavenDevTools)
+                Log.LogInfo("HavenDevTools detected. Trinket Fortune runs in standalone-safe mode (no hard API dependency).");
 
             Log.LogInfo($"{PluginInfo.PLUGIN_NAME} v{PluginInfo.PLUGIN_VERSION} loaded. Fishing loot bias active when S.M.U.T. is installed.");
         }
@@ -52,7 +49,7 @@ namespace TrinketFortune
         {
             public const string PLUGIN_GUID = "com.azraelgodking.trinketfortune";
             public const string PLUGIN_NAME = "Trinket Fortune";
-            public const string PLUGIN_VERSION = "1.0.2";
+            public const string PLUGIN_VERSION = "1.0.3";
         }
     }
 }

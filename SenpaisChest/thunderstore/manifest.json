@@ -1,7 +1,7 @@
 ﻿{
     "name": "SenpaisChest",
     "version_number": "2.2.4",
-    "website_url": "",
+    "website_url": "https://www.nexusmods.com/sunhaven/mods/496",
     "description": "Smart Chests with configurable item rules for automatic storage organization in Sun Haven.",
     "dependencies": [
         "BepInEx-BepInExPack-5.4.2100"
