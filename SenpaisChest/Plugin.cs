@@ -1,5 +1,6 @@
 #pragma warning disable CS0436 // Type conflicts with imported type - we explicitly use SunhavenMods.Shared types
 using BepInEx;
+using BepInEx.Configuration;
 using BepInEx.Logging;
 using SenpaisChest.Config;
 using SenpaisChest.Data;
@@ -9,6 +10,7 @@ using SunhavenMods.Shared;
 using HarmonyLib;
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Reflection;
 using UnityEngine;
 using UnityEngine.UI;
@@ -24,6 +26,7 @@ namespace SenpaisChest
     {
         public static Plugin Instance { get; private set; }
         public static ManualLogSource Log { get; private set; }
+        public static ConfigFile ConfigFile { get; private set; }
 
         // Static references that survive Plugin destruction
         private static SmartChestManager _staticManager;
@@ -70,6 +73,7 @@ namespace SenpaisChest
         {
             Instance = this;
             Log = Logger;
+            ConfigFile = CreateNamedConfig();
 
             Log.LogInfo($"Loading {PluginInfo.PLUGIN_NAME} v{PluginInfo.PLUGIN_VERSION}");
 
@@ -79,7 +83,7 @@ namespace SenpaisChest
             {
                 // Initialize config
                 _config = new SmartChestConfig();
-                _config.Initialize(Config);
+                _config.Initialize(ConfigFile);
                 _staticConfig = _config;
                 _config.UIScale.SettingChanged += (_, _) =>
                 {
@@ -147,6 +151,22 @@ namespace SenpaisChest
             _updateRunner = _persistentRunner.AddComponent<SmartChestPersistentRunner>();
 
             Log.LogInfo("Created hidden PersistentRunner");
+        }
+
+        private static ConfigFile CreateNamedConfig()
+        {
+            string configPath = Path.Combine(Paths.ConfigPath, "SenpaisChest.cfg");
+            string legacyPath = Path.Combine(Paths.ConfigPath, $"{PluginInfo.PLUGIN_GUID}.cfg");
+            try
+            {
+                if (!File.Exists(configPath) && File.Exists(legacyPath))
+                    File.Copy(legacyPath, configPath);
+            }
+            catch (Exception ex)
+            {
+                Log?.LogWarning($"[Config] Migration to SenpaisChest.cfg failed: {ex.Message}");
+            }
+            return new ConfigFile(configPath, true);
         }
 
         public static void EnsureUIComponentsExist()

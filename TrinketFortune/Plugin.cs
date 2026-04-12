@@ -5,6 +5,7 @@ using HarmonyLib;
 using HavenDevTools.API;
 using TrinketFortune.DevTools;
 using TrinketFortune.Patches;
+using System.IO;
 
 namespace TrinketFortune
 {
@@ -17,7 +18,7 @@ namespace TrinketFortune
         private void Awake()
         {
             Log = Logger;
-            TrinketFortune.Config.Bind(Config);
+            TrinketFortune.Config.Bind(CreateNamedConfig());
 
             _harmony = new Harmony(PluginInfo.PLUGIN_GUID);
             FishingTrinketPatches.ApplyPatches(_harmony);
@@ -31,11 +32,27 @@ namespace TrinketFortune
             Log.LogInfo($"{PluginInfo.PLUGIN_NAME} v{PluginInfo.PLUGIN_VERSION} loaded. Fishing loot bias active when S.M.U.T. is installed.");
         }
 
+        private static BepInEx.Configuration.ConfigFile CreateNamedConfig()
+        {
+            string configPath = Path.Combine(Paths.ConfigPath, "TrinketFortune.cfg");
+            string legacyPath = Path.Combine(Paths.ConfigPath, $"{PluginInfo.PLUGIN_GUID}.cfg");
+            try
+            {
+                if (!File.Exists(configPath) && File.Exists(legacyPath))
+                    File.Copy(legacyPath, configPath);
+            }
+            catch (System.Exception ex)
+            {
+                Log?.LogWarning($"[Config] Migration to TrinketFortune.cfg failed: {ex.Message}");
+            }
+            return new BepInEx.Configuration.ConfigFile(configPath, true);
+        }
+
         public static class PluginInfo
         {
             public const string PLUGIN_GUID = "com.azraelgodking.trinketfortune";
             public const string PLUGIN_NAME = "Trinket Fortune";
-            public const string PLUGIN_VERSION = "1.0.1";
+            public const string PLUGIN_VERSION = "1.0.2";
         }
     }
 }

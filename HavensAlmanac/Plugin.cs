@@ -1,6 +1,7 @@
 using System;
 using System.Reflection;
 using BepInEx;
+using BepInEx.Configuration;
 using BepInEx.Logging;
 using HarmonyLib;
 using HavensAlmanac.Config;
@@ -10,6 +11,7 @@ using SunhavenMods.Shared;
 using UnityEngine;
 using UnityEngine.Events;
 using UnityEngine.SceneManagement;
+using System.IO;
 
 namespace HavensAlmanac
 {
@@ -25,6 +27,7 @@ namespace HavensAlmanac
     {
         public static Plugin Instance { get; private set; }
         public static ManualLogSource Log { get; private set; }
+        public static ConfigFile ConfigFile { get; private set; }
 
         // Static references
         private static AlmanacDataAggregator _staticAggregator;
@@ -46,10 +49,11 @@ namespace HavensAlmanac
         {
             Instance = this;
             Log = Logger;
+            ConfigFile = CreateNamedConfig();
 
             Log.LogInfo($"Loading {PluginInfo.PLUGIN_NAME} v{PluginInfo.PLUGIN_VERSION}");
 
-            AlmanacConfig.Initialize(Config);
+            AlmanacConfig.Initialize(ConfigFile);
             CreatePersistentRunner();
 
             _staticAggregator = new AlmanacDataAggregator();
@@ -69,6 +73,22 @@ namespace HavensAlmanac
 
             if (_staticAggregator.InstalledModCount == 0)
                 Log.LogWarning("No supported mods detected! Haven's Almanac requires at least one other mod to be useful.");
+        }
+
+        private static ConfigFile CreateNamedConfig()
+        {
+            string configPath = Path.Combine(Paths.ConfigPath, "HavensAlmanac.cfg");
+            string legacyPath = Path.Combine(Paths.ConfigPath, $"{PluginInfo.PLUGIN_GUID}.cfg");
+            try
+            {
+                if (!File.Exists(configPath) && File.Exists(legacyPath))
+                    File.Copy(legacyPath, configPath);
+            }
+            catch (Exception ex)
+            {
+                Log?.LogWarning($"[Config] Migration to HavensAlmanac.cfg failed: {ex.Message}");
+            }
+            return new ConfigFile(configPath, true);
         }
 
         private void CreatePersistentRunner()

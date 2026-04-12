@@ -1,6 +1,8 @@
 # Haven's Birthright
 
-**Version 2.0.0** — Unique racial bonuses, active abilities, drawbacks, and conditional synergies for all 12 playable races in Sun Haven. Celestial Bloodlines: Font of Light (Angel) and Soul Harvest (Demon). Correctly resets when switching saves. Optional **[BonusTransfers]** (off by default): copy **passive** table bonuses between races via `TargetRace|SourceRace|BonusType` rules in the main Birthright config.
+**Version 2.0.1** — Unique racial bonuses, active abilities, drawbacks, and conditional synergies for all 12 playable races in Sun Haven. Celestial Bloodlines: Font of Light (Angel) and Soul Harvest (Demon). Correctly resets when switching saves. Optional **[BonusTransfers]** (off by default): copy **passive** table bonuses between races via `TargetRace|SourceRace|BonusType` rules in the main Birthright config.
+
+**2.0.1:** Config file now uses `BepInEx/config/HavensBirthright.cfg` (auto-migrates values from the legacy GUID-named config on first load).
 
 ## Features
 
@@ -41,7 +43,7 @@
 
 ## Configuration
 
-Edit `BepInEx/config/com.azraelgodking.havensbirthright.cfg` to customize bonuses.
+Edit `BepInEx/config/HavensBirthright.cfg` to customize bonuses.
 
 **F9** (or **`ToggleKey`** under **Active Abilities**): Infernal Forge, Tidal Blessing, Font of Light, and Soul Harvest **start OFF** each session or after switching character. Press the key **any time** to turn them **ON** or **OFF** — as **often** as you like (not limited to a single press).
 
@@ -52,7 +54,7 @@ Section **`[BonusTransfers]`**:
 - **`EnableBonusTransfers`** — default **false**. When true, **`Rules`** apply.
 - **`Rules`** — semicolon-separated entries: **`TargetRace|SourceRace|BonusType`**. Each rule adds the **same passive percentage** the source race gets for that bonus type (from the usual Birthright tables in config). Does **not** copy active abilities, drawbacks, or conditional synergies.
 
-**Example** (`com.azraelgodking.havensbirthright.cfg`):
+**Example** (`HavensBirthright.cfg`):
 
 ```ini
 [BonusTransfers]

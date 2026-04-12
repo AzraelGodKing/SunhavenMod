@@ -1,6 +1,8 @@
 # Trinket Fortune
 
-**Version 1.0.1** — Increases the odds of **unowned fishing trinkets** dropping as you complete the museum aquarium. Fishing for that last trinket becomes less frustrating.
+**Version 1.0.2** — Increases the odds of **unowned fishing trinkets** dropping as you complete the museum aquarium. Fishing for that last trinket becomes less frustrating.
+
+**1.0.2:** Config file now uses `BepInEx/config/TrinketFortune.cfg` (auto-migrates values from the legacy GUID-named config on first load).
 
 ## Features
 
@@ -9,7 +11,7 @@
 
 ## Configuration
 
-Edit `BepInEx/config/com.azraelgodking.trinketfortune.cfg`:
+Edit `BepInEx/config/TrinketFortune.cfg`:
 
 - **Enabled** – Turn the mod on or off (default: true).
 - **MuseumProgressBonusPercent** – Bonus to unowned trinket odds per 10% aquarium completion (e.g. 5 = +5% per 10%, default: 5).

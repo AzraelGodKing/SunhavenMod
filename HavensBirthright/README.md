@@ -158,7 +158,7 @@ Bonuses that activate based on time of day, season, or HP threshold.
 ## Configuration
 
 All bonus values are configurable! After first launch, edit the config file at:
-`Sun Haven/BepInEx/config/com.azraelgodking.havensbirthright.cfg`
+`Sun Haven/BepInEx/config/HavensBirthright.cfg`
 
 You can:
 - Enable/disable racial bonuses entirely
@@ -190,6 +190,9 @@ This adds Water Elemental’s Defense % to Humans and Human’s experience % to 
 - [Discord — bugs & discussion](https://discord.gg/Vwh2y7qMXv)
 
 ## Changelog
+
+### v2.0.1
+- Config file now uses `HavensBirthright.cfg`, with first-run migration from the previous GUID-named config file.
 
 ### v2.0.0
 
