@@ -1,6 +1,6 @@
 # Sun Haven Museum Utility Tracker (S.M.U.T.)
 
-**Version 2.2.5**
+**Version 2.2.7**
 
 Track museum donations across **Hall of Gems**, **Hall of Culture**, and the **Aquarium** in [Sun Haven](https://store.steampowered.com/app/1432860/Sun_Haven/). Lists use the game’s real item IDs (from `Wish.ItemID` and official bundle layouts), so icons, search, and cross-mod features stay aligned with your save.
 

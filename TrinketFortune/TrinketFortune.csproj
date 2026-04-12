@@ -42,10 +42,6 @@
       <HintPath>$(ManagedPath)\SunHaven.Core.dll</HintPath>
       <Private>false</Private>
     </Reference>
-    <Reference Include="HavenDevTools">
-      <HintPath>..\builds\HavenDevTools\HavenDevTools.dll</HintPath>
-      <Private>false</Private>
-    </Reference>
   </ItemGroup>
 
   <Target Name="CopyToPlugins" AfterTargets="Build">

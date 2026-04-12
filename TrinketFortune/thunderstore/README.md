@@ -1,8 +1,8 @@
 # Trinket Fortune
 
-**Version 1.0.2** — Increases the odds of **unowned fishing trinkets** dropping as you complete the museum aquarium. Fishing for that last trinket becomes less frustrating.
+**Version 1.0.3** — Increases the odds of **unowned fishing trinkets** dropping as you complete the museum aquarium. Fishing for that last trinket becomes less frustrating.
 
-**1.0.2:** Config file now uses `BepInEx/config/TrinketFortune.cfg` (auto-migrates values from the legacy GUID-named config on first load).
+**1.0.2:** Config file now uses `BepInEx/config/TrinketFortune.cfg` (auto-migrates values from the legacy GUID-named config on first load). Runtime load safety was hardened so Trinket Fortune no longer requires `HavenDevTools.dll` to be present at startup.
 
 ## Features
 
@@ -25,7 +25,7 @@ Edit `BepInEx/config/TrinketFortune.cfg`:
 ## Optional
 
 - **Sun Haven Museum Utility Tracker (S.M.U.T.)** – Provides aquarium donation data for missing trinket list.
-- **HavenDevTools** – When installed, adds a Trinket Fortune panel in the Extensions tab showing missing aquarium trinkets and (when available) probability of getting them.
+- **HavenDevTools** – Optional companion for debugging workflows. Trinket Fortune starts and runs normally without it.
 
 ## Links
 
