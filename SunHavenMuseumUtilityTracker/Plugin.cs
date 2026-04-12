@@ -1,4 +1,5 @@
 using System;
+using System.IO;
 using BepInEx;
 using BepInEx.Configuration;
 using BepInEx.Logging;
@@ -18,6 +19,7 @@ namespace SunHavenMuseumUtilityTracker
         // Static references for access from patches
         public static Plugin Instance { get; private set; }
         public static ManualLogSource Log { get; private set; }
+        public static ConfigFile ConfigFile { get; private set; }
 
         // Static references that survive plugin destruction
         private static DonationManager _staticDonationManager;
@@ -45,14 +47,13 @@ namespace SunHavenMuseumUtilityTracker
         public static KeyCode StaticAltToggleKey { get; private set; }
         public static float StaticUIScale { get; private set; } = 1f;
 
-        private string _lastScene = "";
-
         public DonationManager DonationManager => _donationManager;
 
         private void Awake()
         {
             Instance = this;
             Log = Logger;
+            ConfigFile = CreateNamedConfig();
 
             Logger.LogInfo($"{PluginInfo.PLUGIN_NAME} v{PluginInfo.PLUGIN_VERSION} loading...");
 
@@ -91,35 +92,35 @@ namespace SunHavenMuseumUtilityTracker
 
         private void BindConfiguration()
         {
-            _toggleKey = Config.Bind(
+            _toggleKey = ConfigFile.Bind(
                 "Hotkeys",
                 "ToggleKey",
                 KeyCode.C,
                 "Key to toggle the Museum Tracker window"
             );
 
-            _requireCtrl = Config.Bind(
+            _requireCtrl = ConfigFile.Bind(
                 "Hotkeys",
                 "RequireCtrl",
                 true,
                 "Require Ctrl to be held when pressing the toggle key"
             );
 
-            _altToggleKey = Config.Bind(
+            _altToggleKey = ConfigFile.Bind(
                 "Hotkeys",
                 "AltToggleKey",
                 KeyCode.F7,
                 "Alternative key to toggle the Museum Tracker (no modifier required). Useful for Steam Deck."
             );
 
-            _checkForUpdates = Config.Bind(
+            _checkForUpdates = ConfigFile.Bind(
                 "Updates",
                 "CheckForUpdates",
                 true,
                 "Check for mod updates on startup"
             );
 
-            _uiScale = Config.Bind(
+            _uiScale = ConfigFile.Bind(
                 "Display",
                 "UIScale",
                 1f,
@@ -155,6 +156,22 @@ namespace SunHavenMuseumUtilityTracker
                 StaticUIScale = Mathf.Clamp(_uiScale.Value, 0.5f, 2.5f);
                 _trackerUI?.SetScale(StaticUIScale);
             };
+        }
+
+        private static ConfigFile CreateNamedConfig()
+        {
+            string configPath = Path.Combine(Paths.ConfigPath, "SunHavenMuseumUtilityTracker.cfg");
+            string legacyPath = Path.Combine(Paths.ConfigPath, $"{PluginInfo.PLUGIN_GUID}.cfg");
+            try
+            {
+                if (!File.Exists(configPath) && File.Exists(legacyPath))
+                    File.Copy(legacyPath, configPath);
+            }
+            catch (Exception ex)
+            {
+                Log?.LogWarning($"[Config] Migration to SunHavenMuseumUtilityTracker.cfg failed: {ex.Message}");
+            }
+            return new ConfigFile(configPath, true);
         }
 
         private void CreatePersistentRunner()
@@ -283,29 +300,6 @@ namespace SunHavenMuseumUtilityTracker
             }
         }
 
-        private void Update()
-        {
-            // Check auto-save
-            if (PlayerPatches.IsDataLoaded)
-            {
-                _saveSystem?.CheckAutoSave();
-            }
-
-            // Scene polling backup
-            string currentScene = SceneManager.GetActiveScene().name;
-            if (currentScene != _lastScene)
-            {
-                Logger.LogInfo($"[ScenePoll] Scene changed: '{_lastScene}' -> '{currentScene}'");
-                _lastScene = currentScene;
-
-                string lower = currentScene.ToLowerInvariant();
-                if (lower.Contains("menu") || lower.Contains("title"))
-                {
-                    PlayerPatches.SaveAndReset();
-                }
-            }
-        }
-
         private void OnApplicationQuit()
         {
             Logger.LogInfo("Application quitting, saving data...");
@@ -339,6 +333,14 @@ namespace SunHavenMuseumUtilityTracker
             _staticTrackerUI?.Toggle();
         }
 
+        internal static void TickAutoSave()
+        {
+            if (!PlayerPatches.IsDataLoaded)
+                return;
+
+            _staticSaveSystem?.CheckAutoSave();
+        }
+
         #endregion
     }
 
@@ -348,11 +350,15 @@ namespace SunHavenMuseumUtilityTracker
     public class PersistentRunner : MonoBehaviour
     {
         private string _lastScene = "";
+        private float _worldSyncTimer = 0f;
+        private const float WORLD_SYNC_INTERVAL = 5f;
 
         private void Update()
         {
+            Plugin.TickAutoSave();
             CheckHotkeys();
             CheckSceneChange();
+            SyncWorldProgress();
         }
 
         private void CheckHotkeys()
@@ -393,6 +399,36 @@ namespace SunHavenMuseumUtilityTracker
             }
         }
 
+        /// <summary>
+        /// Senpai's Chest-style background refresh loop:
+        /// periodically pull world progress so co-op players converge without opening the UI.
+        /// </summary>
+        private void SyncWorldProgress()
+        {
+            _worldSyncTimer += Time.unscaledDeltaTime;
+            if (_worldSyncTimer < WORLD_SYNC_INTERVAL)
+                return;
+
+            _worldSyncTimer = 0f;
+
+            if (!PlayerPatches.IsDataLoaded)
+                return;
+
+            var manager = Plugin.GetDonationManager();
+            if (manager == null || !manager.IsLoaded)
+                return;
+
+            var (before, _) = manager.GetOverallStats();
+            MuseumPatches.SyncWithGameProgress(verboseLogging: false);
+            var (after, _) = manager.GetOverallStats();
+
+            if (after <= before)
+                return;
+
+            Plugin.SaveData();
+            Plugin.Log?.LogInfo($"[PersistentRunner] Background world sync marked {after - before} items");
+        }
+
         private void OnDestroy()
         {
             Plugin.Log?.LogWarning("[PersistentRunner] OnDestroy called - this should NOT happen!");
@@ -406,6 +442,6 @@ namespace SunHavenMuseumUtilityTracker
     {
         public const string PLUGIN_GUID = "com.azraelgodking.sunhavenmuseumutilitytracker";
         public const string PLUGIN_NAME = "Sun Haven Museum Utility Tracker";
-        public const string PLUGIN_VERSION = "2.2.6";
+        public const string PLUGIN_VERSION = "2.2.7";
     }
 }

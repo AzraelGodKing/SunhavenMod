@@ -13,6 +13,7 @@ namespace TheVault.Patches
     {
         private static bool _isVaultLoaded = false;
         private static string _loadedCharacterName = null;
+        private static string _pendingCharacterName = null;
 
         /// <summary>
         /// Returns true if a vault is currently loaded.
@@ -85,6 +86,7 @@ namespace TheVault.Patches
                 // Update state
                 _isVaultLoaded = true;
                 _loadedCharacterName = characterName;
+                ClearPendingCharacterName();
 
                 // Set player name in vault manager
                 var vaultManager = Plugin.GetVaultManager();
@@ -110,12 +112,19 @@ namespace TheVault.Patches
         {
             try
             {
+                if (!string.IsNullOrEmpty(_pendingCharacterName))
+                {
+                    string pending = NormalizeCharacterNameForVault(_pendingCharacterName);
+                    Plugin.Log?.LogInfo($"GetCurrentCharacterName: Using pending character name = '{pending}'");
+                    return pending;
+                }
+
                 // PRIMARY: Use the character name extracted during LoadCharacter
                 // This bypasses the stale CurrentCharacter issue
                 string lastLoadedName = GameSavePatches.LastLoadedCharacterName;
                 if (!string.IsNullOrEmpty(lastLoadedName))
                 {
-                    string sanitizedName = SanitizeFileName(lastLoadedName);
+                    string sanitizedName = NormalizeCharacterNameForVault(lastLoadedName);
                     Plugin.Log?.LogInfo($"GetCurrentCharacterName: Using LastLoadedCharacterName = '{sanitizedName}'");
                     return sanitizedName;
                 }
@@ -131,7 +140,7 @@ namespace TheVault.Patches
                 var currentChar = GameSave.CurrentCharacter;
                 if (currentChar != null && !string.IsNullOrEmpty(currentChar.characterName))
                 {
-                    string nameFromCurrent = SanitizeFileName(currentChar.characterName);
+                    string nameFromCurrent = NormalizeCharacterNameForVault(currentChar.characterName);
                     Plugin.Log?.LogWarning($"GetCurrentCharacterName: FALLBACK to CurrentCharacter = '{nameFromCurrent}' (LastLoadedCharacterName was null)");
                     return nameFromCurrent;
                 }
@@ -149,7 +158,7 @@ namespace TheVault.Patches
         /// <summary>
         /// Sanitize a string for use as a filename.
         /// </summary>
-        private static string SanitizeFileName(string name)
+        internal static string NormalizeCharacterNameForVault(string name)
         {
             if (string.IsNullOrEmpty(name))
                 return "default";
@@ -164,6 +173,17 @@ namespace TheVault.Patches
             return string.IsNullOrEmpty(name) ? "default" : name;
         }
 
+        internal static void SetPendingCharacterName(string characterName)
+        {
+            _pendingCharacterName = NormalizeCharacterNameForVault(characterName);
+            Plugin.Log?.LogDebug($"Set pending character name: '{_pendingCharacterName}'");
+        }
+
+        private static void ClearPendingCharacterName()
+        {
+            _pendingCharacterName = null;
+        }
+
         /// <summary>
         /// Reset vault state. Called when returning to menu.
         /// </summary>
@@ -172,6 +192,7 @@ namespace TheVault.Patches
             Plugin.Log?.LogInfo("Resetting vault state");
             _isVaultLoaded = false;
             _loadedCharacterName = null;
+            ClearPendingCharacterName();
             GameSavePatches.ResetLastLoadedSlot(); // Reset slot tracker so next character gets fresh data
             ItemPatches.ResetState();
             IconCache.Clear();
@@ -204,5 +225,40 @@ namespace TheVault.Patches
         public static void ResetVaultLoaded() => ResetState();
         public static void ForceVaultReload() => ResetState();
         public static void TriggerVaultLoad(string characterName) => LoadVaultForCharacter(characterName);
+
+        /// <summary>
+        /// Fallback loop called by PersistentRunner to keep active vault aligned with active character.
+        /// This covers cases where game updates change hook timings/signatures.
+        /// </summary>
+        internal static void TrySynchronizeCharacterContext()
+        {
+            try
+            {
+                if (Player.Instance == null)
+                    return;
+
+                string candidate = GetCurrentCharacterName();
+                if (string.IsNullOrEmpty(candidate) || string.Equals(candidate, "default", StringComparison.OrdinalIgnoreCase))
+                    return;
+
+                if (_isVaultLoaded && string.Equals(_loadedCharacterName, candidate, StringComparison.Ordinal))
+                    return;
+
+                Plugin.Log?.LogInfo($"[CharacterSync] Aligning vault context to '{candidate}' (currently '{_loadedCharacterName ?? "none"}')");
+                Plugin.EnsureUIComponentsExist();
+
+                if (_isVaultLoaded && !string.Equals(_loadedCharacterName, candidate, StringComparison.Ordinal))
+                {
+                    Plugin.SaveVault();
+                    ResetState();
+                }
+
+                LoadVaultForCharacter(candidate);
+            }
+            catch (Exception ex)
+            {
+                Plugin.Log?.LogError($"[CharacterSync] Error: {ex.Message}");
+            }
+        }
     }
 }

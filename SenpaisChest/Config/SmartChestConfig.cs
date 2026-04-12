@@ -10,6 +10,7 @@ namespace SenpaisChest.Config
         public ConfigEntry<int> MaxItemsPerScan { get; private set; }
         public ConfigEntry<KeyCode> ToggleKey { get; private set; }
         public ConfigEntry<bool> RequireCtrlModifier { get; private set; }
+        public ConfigEntry<bool> AutoEnableSmartChestOnRuleAdd { get; private set; }
         public ConfigEntry<bool> CheckForUpdates { get; private set; }
 
         // Chest Labels (integrated)
@@ -61,6 +62,13 @@ namespace SenpaisChest.Config
                 "RequireCtrlModifier",
                 false,
                 "Require Ctrl key to be held when pressing the toggle key"
+            );
+
+            AutoEnableSmartChestOnRuleAdd = config.Bind(
+                "UI",
+                "AutoEnableSmartChestOnRuleAdd",
+                true,
+                "Automatically enable Smart Chest when adding a new rule to a chest"
             );
 
             UIScale = config.Bind(

@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Reflection;
+using BepInEx.Bootstrap;
 using SenpaisChest.Config;
 using SenpaisChest.Data;
 using SunhavenMods.Shared;
@@ -75,7 +76,8 @@ namespace SenpaisChest.UI
 
         // Dropdown options
         private static readonly string[] RuleTypeNames = { "By Item", "By Category", "By Item Type", "By Property", "By Group" };
-        private static readonly string[] CategoryNames = { "Equip", "Use", "Craftable", "Monster", "Furniture", "Quest" };
+        private static readonly string[] BaseCategoryNames = { "Equip", "Use", "Craftable", "Monster", "Furniture", "Quest" };
+        private static readonly string[] CategoryNamesWithMuseum = { "Equip", "Use", "Craftable", "Monster", "Furniture", "Quest", "Undonated Items" };
         private static readonly string[] ItemTypeNames = { "Normal", "Armor", "Food", "Fish", "Crop", "WateringCan", "Animal", "Pet", "Tool" };
         private static readonly string[] PropertyNames = { "isGem", "isForageable", "isAnimalProduct", "isMeal", "isFruit", "isArtisanryItem", "isPotion", "isNotDonated" };
         private static readonly string[] PropertyDisplayNames = { "Gems", "Forageables", "Animal Products", "Meals", "Fruits", "Artisanry Items", "Potions", "Museum (Not Donated)" };
@@ -985,7 +987,10 @@ namespace SenpaisChest.UI
 
                 case 1: // ByCategory
                     GUILayout.Label("Category:", labelBold);
-                    DrawOptionGrid(CategoryNames, ref _selectedCategory, 3, useChestStyles);
+                    var categoryNames = GetCategoryNames();
+                    if (_selectedCategory < 0 || _selectedCategory >= categoryNames.Length)
+                        _selectedCategory = 0;
+                    DrawOptionGrid(categoryNames, ref _selectedCategory, 3, useChestStyles);
                     break;
 
                 case 2: // ByItemType
@@ -1088,6 +1093,24 @@ namespace SenpaisChest.UI
             }
         }
 
+        private static string[] GetCategoryNames()
+        {
+            return IsSmutAvailable() ? CategoryNamesWithMuseum : BaseCategoryNames;
+        }
+
+        private static bool IsSmutAvailable()
+        {
+            try
+            {
+                var pluginInfos = Chainloader.PluginInfos;
+                return pluginInfos != null && pluginInfos.ContainsKey("com.azraelgodking.sunhavenmuseumutilitytracker");
+            }
+            catch
+            {
+                return false;
+            }
+        }
+
         private void AddRule()
         {
             SmartChestRule rule = null;
@@ -1111,9 +1134,10 @@ namespace SenpaisChest.UI
                     break;
 
                 case 1: // ByCategory
-                    if (_selectedCategory >= 0 && _selectedCategory < CategoryNames.Length)
+                    var categoryNames = GetCategoryNames();
+                    if (_selectedCategory >= 0 && _selectedCategory < categoryNames.Length)
                     {
-                        rule = new SmartChestRule { Type = RuleType.ByCategory, CategoryName = CategoryNames[_selectedCategory] };
+                        rule = new SmartChestRule { Type = RuleType.ByCategory, CategoryName = categoryNames[_selectedCategory] };
                     }
                     break;
 
@@ -1163,6 +1187,14 @@ namespace SenpaisChest.UI
                 }
 
                 _currentData.Rules.Add(rule);
+
+                var config = Plugin.GetConfig();
+                if (!_currentData.IsEnabled && (config == null || config.AutoEnableSmartChestOnRuleAdd.Value))
+                {
+                    _currentData.IsEnabled = true;
+                    Plugin.Log?.LogInfo("Auto-enabled Smart Chest after adding a rule");
+                }
+
                 _manager.MarkDirty();
                 SaveIfDirty();
                 Plugin.Log?.LogInfo($"Added rule: {rule.GetDisplayText()}");

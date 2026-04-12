@@ -1,6 +1,8 @@
 # Faster Races
 
-**Version 1.1.2** — Adds a **configurable movement speed bonus** for your character. When used with **Haven's Birthright**, this mod disables Haven's Birthright movement speed bonuses so you don't get double speed—you get one consistent bonus from Faster Races instead.
+**Version 1.1.3** — Adds a **configurable movement speed bonus** for your character. When used with **Haven's Birthright**, this mod disables Haven's Birthright movement speed bonuses so you don't get double speed—you get one consistent bonus from Faster Races instead.
+
+**1.1.3:** Config file now uses `BepInEx/config/FasterRaces.cfg` (auto-migrates values from the legacy GUID-named config on first load).
 
 ## Features
 
@@ -9,7 +11,7 @@
 
 ## Configuration
 
-Edit `BepInEx/config/com.azraelgodking.fasterraces.cfg`:
+Edit `BepInEx/config/FasterRaces.cfg`:
 
 - **Enabled** – Turn the speed bonus on or off (default: true).
 - **SpeedBonusPercent** – Percentage added to movement speed (e.g. 25 = +25%, default: 25).

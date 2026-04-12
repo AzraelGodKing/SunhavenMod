@@ -6,16 +6,16 @@ A collection of BepInEx mods for [Sun Haven](https://store.steampowered.com/app/
 
 | Mod | Description | Version |
 |-----|-------------|---------|
-| [**Senpai's Chest**](SenpaisChest/) | Smart chests with configurable item rules for automatic storage sorting | 2.2.3 |
-| [**Sunhaven Todo**](SunhavenTodo/) | In-game todo list and journal with per-character saves | 1.1.6 |
-| [**Sun Haven Museum Utility Tracker**](SunHavenMuseumUtilityTracker/) | Track museum donations across all sections | 2.2.6 |
-| [**The Vault**](TheVault/) | Full rework of the vault system; classic core, single project; shop and inventory vault hooks | 3.0.4 |
-| [**Haven's Birthright**](HavensBirthright/) | Unique racial bonuses and traits for each playable race; optional `[BonusTransfers]` cross-race passive grants (off by default) | 2.0.0 |
-| [**Haven's Almanac**](HavensAlmanac/) | Mod compatibility registry and info hub | 1.0.4 |
-| [**A Squirrel's Birthday Reminder**](BirthdayReminder/) | Reminds you of villagers' birthdays | 1.1.4 |
-| [**Haven Dev Tools**](HavenDevTools/) | Developer utilities and debugging tools | 1.0.7 |
-| [**Trinket Fortune**](TrinketFortune/) | Increases odds of unowned fishing trinkets dropping as you complete the aquarium | 1.0.1 |
-| [**Faster Races**](FasterRaces/) | Configurable movement speed bonus; integrates with Haven's Birthright to avoid double speed | 1.1.2 |
+| [**Senpai's Chest**](SenpaisChest/) | Smart chests with configurable item rules for automatic storage sorting | 2.2.4 |
+| [**Sunhaven Todo**](SunhavenTodo/) | In-game todo list and journal with per-character saves | 1.1.7 |
+| [**Sun Haven Museum Utility Tracker**](SunHavenMuseumUtilityTracker/) | Track museum donations across all sections | 2.2.7 |
+| [**The Vault**](TheVault/) | Full rework of the vault system; classic core, single project; shop and inventory vault hooks | 3.0.5 |
+| [**Haven's Birthright**](HavensBirthright/) | Unique racial bonuses and traits for each playable race; optional `[BonusTransfers]` cross-race passive grants (off by default) | 2.0.1 |
+| [**Haven's Almanac**](HavensAlmanac/) | Mod compatibility registry and info hub | 1.0.5 |
+| [**A Squirrel's Birthday Reminder**](BirthdayReminder/) | Reminds you of villagers' birthdays | 1.1.5 |
+| [**Haven Dev Tools**](HavenDevTools/) | Developer utilities and debugging tools | 1.0.8 |
+| [**Trinket Fortune**](TrinketFortune/) | Increases odds of unowned fishing trinkets dropping as you complete the aquarium | 1.0.2 |
+| [**Faster Races**](FasterRaces/) | Configurable movement speed bonus; integrates with Haven's Birthright to avoid double speed | 1.1.3 |
 
 ---
 
@@ -42,7 +42,7 @@ Per-character saves, item icons, and bundle progress. Hotkey: **Ctrl+C**.
 
 ### Haven's Birthright
 
-Adds unique racial bonuses and traits for each playable race in Sun Haven. Optional **`[BonusTransfers]`** in `com.azraelgodking.havensbirthright.cfg` lets you grant extra **passive** table bonuses to one race using the configured values from another (`TargetRace|SourceRace|BonusType`, semicolon-separated). **`EnableBonusTransfers`** defaults to **false**. Does not copy active abilities, drawbacks, or synergies.
+Adds unique racial bonuses and traits for each playable race in Sun Haven. Optional **`[BonusTransfers]`** in `HavensBirthright.cfg` lets you grant extra **passive** table bonuses to one race using the configured values from another (`TargetRace|SourceRace|BonusType`, semicolon-separated). **`EnableBonusTransfers`** defaults to **false**. Does not copy active abilities, drawbacks, or synergies.
 
 ### Haven's Almanac
 

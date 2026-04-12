@@ -1,5 +1,7 @@
 using System;
+using System.Linq;
 using System.Reflection;
+using System.IO;
 using BepInEx;
 using BepInEx.Configuration;
 using BepInEx.Logging;
@@ -20,6 +22,7 @@ namespace BirthdayReminder
     {
         public static Plugin Instance { get; private set; }
         public static ManualLogSource Log { get; private set; }
+        public static ConfigFile ConfigFile { get; private set; }
 
         // Static references
         private static BirthdayManager _staticManager;
@@ -78,6 +81,7 @@ namespace BirthdayReminder
         {
             Instance = this;
             Log = Logger;
+            ConfigFile = CreateNamedConfig();
 
             Log.LogInfo($"Loading {PluginInfo.PLUGIN_NAME} v{PluginInfo.PLUGIN_VERSION}");
 
@@ -106,7 +110,7 @@ namespace BirthdayReminder
 
         private void BindConfiguration()
         {
-            _enabled = Config.Bind(
+            _enabled = ConfigFile.Bind(
                 "General",
                 "Enabled",
                 true,
@@ -115,7 +119,7 @@ namespace BirthdayReminder
             _staticEnabled = _enabled.Value;
             _enabled.SettingChanged += (_, _) => _staticEnabled = _enabled.Value;
 
-            _hudPositionX = Config.Bind(
+            _hudPositionX = ConfigFile.Bind(
                 "HUD",
                 "PositionX",
                 -1f,
@@ -123,7 +127,7 @@ namespace BirthdayReminder
             );
             _staticHUDPositionX = _hudPositionX.Value;
 
-            _hudPositionY = Config.Bind(
+            _hudPositionY = ConfigFile.Bind(
                 "HUD",
                 "PositionY",
                 -1f,
@@ -131,7 +135,7 @@ namespace BirthdayReminder
             );
             _staticHUDPositionY = _hudPositionY.Value;
 
-            _toggleKey = Config.Bind(
+            _toggleKey = ConfigFile.Bind(
                 "Hotkeys",
                 "ToggleKey",
                 KeyCode.B,
@@ -140,21 +144,21 @@ namespace BirthdayReminder
             _staticToggleKey = _toggleKey.Value;
             _toggleKey.SettingChanged += (_, _) => _staticToggleKey = _toggleKey.Value;
 
-            _showGiftHints = Config.Bind(
+            _showGiftHints = ConfigFile.Bind(
                 "General",
                 "ShowGiftHints",
                 true,
                 "Show gift preferences in the birthday reminder"
             );
 
-            _useNativeNotifications = Config.Bind(
+            _useNativeNotifications = ConfigFile.Bind(
                 "General",
                 "UseNativeNotifications",
                 true,
                 "Show birthday notifications using the game's native notification system"
             );
 
-            _debugMode = Config.Bind(
+            _debugMode = ConfigFile.Bind(
                 "Debug",
                 "DebugMode",
                 false,
@@ -166,14 +170,14 @@ namespace BirthdayReminder
             _staticUseNativeNotifications = _useNativeNotifications.Value;
             _useNativeNotifications.SettingChanged += (_, _) => _staticUseNativeNotifications = _useNativeNotifications.Value;
 
-            _checkForUpdates = Config.Bind(
+            _checkForUpdates = ConfigFile.Bind(
                 "Updates",
                 "CheckForUpdates",
                 true,
                 "Check for mod updates on startup"
             );
 
-            _uiScale = Config.Bind(
+            _uiScale = ConfigFile.Bind(
                 "Display",
                 "UIScale",
                 1f,
@@ -188,6 +192,22 @@ namespace BirthdayReminder
                 _staticUIScale = Mathf.Clamp(_uiScale.Value, 0.5f, 2.5f);
                 _staticHUD?.SetScale(_staticUIScale);
             };
+        }
+
+        private static ConfigFile CreateNamedConfig()
+        {
+            string configPath = Path.Combine(Paths.ConfigPath, "BirthdayReminder.cfg");
+            string legacyPath = Path.Combine(Paths.ConfigPath, $"{PluginInfo.PLUGIN_GUID}.cfg");
+            try
+            {
+                if (!File.Exists(configPath) && File.Exists(legacyPath))
+                    File.Copy(legacyPath, configPath);
+            }
+            catch (Exception ex)
+            {
+                Log?.LogWarning($"[Config] Migration to BirthdayReminder.cfg failed: {ex.Message}");
+            }
+            return new ConfigFile(configPath, true);
         }
 
         private void CreatePersistentRunner()
@@ -461,11 +481,6 @@ namespace BirthdayReminder
             {
                 Log?.LogError($"[EnsureUI] Error: {ex.Message}");
             }
-        }
-
-        private void Update()
-        {
-            // Hotkeys are handled only in PersistentRunner to avoid duplicate key processing.
         }
 
         public static BirthdayManager GetManager() => _staticManager;
@@ -839,25 +854,48 @@ namespace BirthdayReminder
 
                 string npcName = nameProp?.GetValue(__instance)?.ToString();
                 if (string.IsNullOrEmpty(npcName)) return;
+                string normalizedNpcName = NormalizeNpcName(npcName);
+                if (string.IsNullOrEmpty(normalizedNpcName)) return;
 
                 var manager = Plugin.GetManager();
                 if (manager == null || !manager.HasBirthdays) return;
 
                 var birthdayInfo = manager.TodaysBirthdays.Find(b =>
+                    string.Equals(NormalizeNpcName(b.NPCName), normalizedNpcName, StringComparison.OrdinalIgnoreCase) ||
                     string.Equals(b.NPCName, npcName, StringComparison.OrdinalIgnoreCase) ||
                     (b.NPCName != null && b.NPCName.Contains("+" + npcName)));
                 if (birthdayInfo != null && !birthdayInfo.HasBeenGifted)
                 {
-                    manager.MarkGifted(npcName);
-                    Plugin.Log?.LogInfo($"[BirthdayReminder] Marked {npcName} as gifted on their birthday!");
+                    manager.MarkGifted(normalizedNpcName);
+                    Plugin.Log?.LogInfo($"[BirthdayReminder] Marked {normalizedNpcName} as gifted on their birthday!");
 
-                    Plugin.GetTodoIntegration()?.OnGiftGiven(npcName);
+                    Plugin.GetTodoIntegration()?.OnGiftGiven(normalizedNpcName);
                 }
             }
             catch (Exception ex)
             {
                 Plugin.Log?.LogWarning($"Error tracking gift: {ex.Message}");
             }
+        }
+
+        private static string NormalizeNpcName(string npcName)
+        {
+            if (string.IsNullOrWhiteSpace(npcName))
+                return "";
+
+            var parts = npcName
+                .Split(new[] { '+' }, StringSplitOptions.RemoveEmptyEntries)
+                .Select(p => p.Trim())
+                .Where(p => !string.IsNullOrEmpty(p))
+                .Distinct(StringComparer.OrdinalIgnoreCase)
+                .ToList();
+
+            if (parts.Count == 0)
+                return npcName.Trim();
+            if (parts.Count == 1)
+                return parts[0];
+
+            return string.Join("+", parts);
         }
     }
 
