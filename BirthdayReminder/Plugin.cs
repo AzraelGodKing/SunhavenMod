@@ -1,7 +1,6 @@
 using System;
 using System.Linq;
 using System.Reflection;
-using System.IO;
 using BepInEx;
 using BepInEx.Configuration;
 using BepInEx.Logging;
@@ -196,18 +195,11 @@ namespace BirthdayReminder
 
         private static ConfigFile CreateNamedConfig()
         {
-            string configPath = Path.Combine(Paths.ConfigPath, "BirthdayReminder.cfg");
-            string legacyPath = Path.Combine(Paths.ConfigPath, $"{PluginInfo.PLUGIN_GUID}.cfg");
-            try
-            {
-                if (!File.Exists(configPath) && File.Exists(legacyPath))
-                    File.Copy(legacyPath, configPath);
-            }
-            catch (Exception ex)
-            {
-                Log?.LogWarning($"[Config] Migration to BirthdayReminder.cfg failed: {ex.Message}");
-            }
-            return new ConfigFile(configPath, true);
+            return ConfigFileHelper.CreateNamedConfig(
+                PluginInfo.PLUGIN_GUID,
+                "BirthdayReminder.cfg",
+                message => Log?.LogWarning(message)
+            );
         }
 
         private void CreatePersistentRunner()
@@ -335,71 +327,14 @@ namespace BirthdayReminder
         /// </summary>
         public static void TryHookOvernightEvent()
         {
-            if (_overnightHooked) return;
-
-            try
-            {
-                // Try to hook DayCycle.OnDayStart (most reliable)
-                var dayCycleType = AccessTools.TypeByName("Wish.DayCycle");
-                if (dayCycleType != null)
-                {
-                    var onDayStartField = AccessTools.Field(dayCycleType, "OnDayStart");
-                    if (onDayStartField != null)
-                    {
-                        var currentAction = onDayStartField.GetValue(null) as UnityAction;
-                        _overnightCallback = OnOvernightComplete;
-
-                        if (currentAction != null)
-                        {
-                            currentAction += _overnightCallback;
-                            onDayStartField.SetValue(null, currentAction);
-                        }
-                        else
-                        {
-                            onDayStartField.SetValue(null, _overnightCallback);
-                        }
-
-                        _overnightHooked = true;
-                        Log?.LogInfo("Hooked into DayCycle.OnDayStart event");
-                        return;
-                    }
-                }
-
-                // Fallback: Try UIHandler.OnCompleteOvernight
-                var uiHandlerType = AccessTools.TypeByName("Wish.UIHandler");
-                if (uiHandlerType == null) return;
-
-                var uiHandler = GetSingletonInstance(uiHandlerType);
-
-                if (uiHandler == null) return;
-
-                // Get the OnCompleteOvernight event
-                var overnightField = AccessTools.Field(uiHandlerType, "OnCompleteOvernight");
-                if (overnightField != null)
-                {
-                    var currentAction = overnightField.GetValue(uiHandler) as UnityAction;
-
-                    _overnightCallback = OnOvernightComplete;
-
-                    // Combine with existing action
-                    if (currentAction != null)
-                    {
-                        currentAction += _overnightCallback;
-                        overnightField.SetValue(uiHandler, currentAction);
-                    }
-                    else
-                    {
-                        overnightField.SetValue(uiHandler, _overnightCallback);
-                    }
-
-                    _overnightHooked = true;
-                    Log?.LogInfo("Hooked into OnCompleteOvernight event");
-                }
-            }
-            catch (Exception ex)
-            {
-                Log?.LogWarning($"Failed to hook overnight event: {ex.Message}");
-            }
+            OvernightHookUtility.TryHookOvernightEvent(
+                ref _overnightHooked,
+                ref _overnightCallback,
+                OnOvernightComplete,
+                GetSingletonInstance,
+                message => Log?.LogInfo(message),
+                message => Log?.LogWarning(message)
+            );
         }
 
         /// <summary>

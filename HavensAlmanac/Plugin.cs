@@ -11,7 +11,6 @@ using SunhavenMods.Shared;
 using UnityEngine;
 using UnityEngine.Events;
 using UnityEngine.SceneManagement;
-using System.IO;
 
 namespace HavensAlmanac
 {
@@ -77,18 +76,11 @@ namespace HavensAlmanac
 
         private static ConfigFile CreateNamedConfig()
         {
-            string configPath = Path.Combine(Paths.ConfigPath, "HavensAlmanac.cfg");
-            string legacyPath = Path.Combine(Paths.ConfigPath, $"{PluginInfo.PLUGIN_GUID}.cfg");
-            try
-            {
-                if (!File.Exists(configPath) && File.Exists(legacyPath))
-                    File.Copy(legacyPath, configPath);
-            }
-            catch (Exception ex)
-            {
-                Log?.LogWarning($"[Config] Migration to HavensAlmanac.cfg failed: {ex.Message}");
-            }
-            return new ConfigFile(configPath, true);
+            return ConfigFileHelper.CreateNamedConfig(
+                PluginInfo.PLUGIN_GUID,
+                "HavensAlmanac.cfg",
+                message => Log?.LogWarning(message)
+            );
         }
 
         private void CreatePersistentRunner()
@@ -157,15 +149,7 @@ namespace HavensAlmanac
                 _staticHUD = hudObj.AddComponent<AlmanacHUD>();
                 _staticHUD.Initialize(_staticAggregator);
                 _staticHUD.SetScale(AlmanacConfig.StaticUIScale);
-
-                // Wire position persistence
-                _staticHUD.OnPositionChanged = (x, y) =>
-                {
-                    AlmanacConfig.StaticHUDPositionX = x;
-                    AlmanacConfig.StaticHUDPositionY = y;
-                    AlmanacConfig.HUDPositionX?.SetSerializedValue(x.ToString());
-                    AlmanacConfig.HUDPositionY?.SetSerializedValue(y.ToString());
-                };
+                WireHudPositionPersistence();
 
                 // Dashboard
                 var dashObj = new GameObject("HavensAlmanac_Dashboard");
@@ -218,6 +202,7 @@ namespace HavensAlmanac
                     _staticHUD = hudObj.AddComponent<AlmanacHUD>();
                     _staticHUD.Initialize(_staticAggregator);
                     _staticHUD.SetScale(AlmanacConfig.StaticUIScale);
+                    WireHudPositionPersistence();
                 }
 
                 if (_staticDashboard == null)
@@ -308,72 +293,14 @@ namespace HavensAlmanac
 
         public static void TryHookOvernightEvent()
         {
-            if (_overnightHooked) return;
-
-            try
-            {
-                // Try DayCycle.OnDayStart first (most reliable)
-                var dayCycleType = AccessTools.TypeByName("Wish.DayCycle");
-                if (dayCycleType != null)
-                {
-                    var onDayStartField = AccessTools.Field(dayCycleType, "OnDayStart");
-                    if (onDayStartField != null)
-                    {
-                        var currentAction = onDayStartField.GetValue(null) as UnityAction;
-                        _overnightCallback = OnOvernightComplete;
-
-                        if (currentAction != null)
-                        {
-                            currentAction += _overnightCallback;
-                            onDayStartField.SetValue(null, currentAction);
-                        }
-                        else
-                        {
-                            onDayStartField.SetValue(null, _overnightCallback);
-                        }
-
-                        _overnightHooked = true;
-                        Log?.LogInfo("Hooked into DayCycle.OnDayStart");
-                        return;
-                    }
-                }
-
-                // Fallback: UIHandler.OnCompleteOvernight
-                var uiHandlerType = AccessTools.TypeByName("Wish.UIHandler");
-                if (uiHandlerType == null) return;
-
-                var singletonBaseType = AccessTools.TypeByName("Wish.SingletonBehaviour`1");
-                if (singletonBaseType == null) return;
-
-                var genericType = singletonBaseType.MakeGenericType(uiHandlerType);
-                var instanceProp = AccessTools.Property(genericType, "Instance");
-                var uiHandler = instanceProp?.GetValue(null);
-                if (uiHandler == null) return;
-
-                var overnightField = AccessTools.Field(uiHandlerType, "OnCompleteOvernight");
-                if (overnightField != null)
-                {
-                    var currentAction = overnightField.GetValue(uiHandler) as UnityAction;
-                    _overnightCallback = OnOvernightComplete;
-
-                    if (currentAction != null)
-                    {
-                        currentAction += _overnightCallback;
-                        overnightField.SetValue(uiHandler, currentAction);
-                    }
-                    else
-                    {
-                        overnightField.SetValue(uiHandler, _overnightCallback);
-                    }
-
-                    _overnightHooked = true;
-                    Log?.LogInfo("Hooked into UIHandler.OnCompleteOvernight");
-                }
-            }
-            catch (Exception ex)
-            {
-                Log?.LogWarning($"Failed to hook overnight event: {ex.Message}");
-            }
+            OvernightHookUtility.TryHookOvernightEvent(
+                ref _overnightHooked,
+                ref _overnightCallback,
+                OnOvernightComplete,
+                ResolveSingletonInstance,
+                message => Log?.LogInfo(message),
+                message => Log?.LogWarning(message)
+            );
         }
 
         private static void OnOvernightComplete()
@@ -401,6 +328,34 @@ namespace HavensAlmanac
 
             EnsureUIComponentsExist();
             TryHookOvernightEvent();
+        }
+
+        private static void WireHudPositionPersistence()
+        {
+            if (_staticHUD == null)
+                return;
+
+            _staticHUD.OnPositionChanged = (x, y) =>
+            {
+                AlmanacConfig.StaticHUDPositionX = x;
+                AlmanacConfig.StaticHUDPositionY = y;
+                AlmanacConfig.HUDPositionX?.SetSerializedValue(x.ToString());
+                AlmanacConfig.HUDPositionY?.SetSerializedValue(y.ToString());
+            };
+        }
+
+        private static object ResolveSingletonInstance(Type targetType)
+        {
+            if (targetType == null)
+                return null;
+
+            var singletonBaseType = AccessTools.TypeByName("Wish.SingletonBehaviour`1");
+            if (singletonBaseType == null)
+                return null;
+
+            var genericType = singletonBaseType.MakeGenericType(targetType);
+            var instanceProp = AccessTools.Property(genericType, "Instance");
+            return instanceProp?.GetValue(null);
         }
 
         #endregion
