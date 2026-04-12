@@ -207,32 +207,41 @@ namespace SunHavenMuseumUtilityTracker.Patches
         /// Called from debug mode for inspection purposes.
         /// NOTE: This only syncs COMPLETED bundles, not individual items.
         /// </summary>
-        public static void SyncWithGameProgress()
+        public static void SyncWithGameProgress(bool verboseLogging = true)
         {
             try
             {
                 var manager = Plugin.GetDonationManager();
                 if (manager == null)
                 {
-                    Plugin.Log?.LogWarning("[SYNC] DonationManager is null");
+                    if (verboseLogging)
+                        Plugin.Log?.LogWarning("[SYNC] DonationManager is null");
                     return;
                 }
 
-                Plugin.Log?.LogInfo("[SYNC] ======= Starting sync with game progress =======");
+                if (verboseLogging)
+                    Plugin.Log?.LogInfo("[SYNC] ======= Starting sync with game progress =======");
 
                 if (!TryGetGameSaveForWorldProgress(out _))
                 {
-                    Plugin.Log?.LogWarning("[SYNC] Game progress not available - cannot sync (world not loaded yet)");
+                    if (verboseLogging)
+                        Plugin.Log?.LogWarning("[SYNC] Game progress not available - cannot sync (world not loaded yet)");
                     return;
                 }
 
-                Plugin.Log?.LogInfo("[SYNC] NOTE: The game only stores BUNDLE completion, not individual items.");
-                Plugin.Log?.LogInfo("[SYNC] This will mark ALL items in completed bundles as donated.");
+                if (verboseLogging)
+                {
+                    Plugin.Log?.LogInfo("[SYNC] NOTE: The game only stores BUNDLE completion, not individual items.");
+                    Plugin.Log?.LogInfo("[SYNC] This will mark ALL items in completed bundles as donated.");
+                }
 
-                int bundlesSynced = SyncCompletedBundles(manager);
+                int bundlesSynced = SyncCompletedBundles(manager, verboseLogging);
 
-                Plugin.Log?.LogInfo($"[SYNC] Synced {bundlesSynced} completed bundles");
-                Plugin.Log?.LogInfo("[SYNC] ======= Sync complete =======");
+                if (verboseLogging)
+                {
+                    Plugin.Log?.LogInfo($"[SYNC] Synced {bundlesSynced} completed bundles");
+                    Plugin.Log?.LogInfo("[SYNC] ======= Sync complete =======");
+                }
             }
             catch (Exception ex)
             {
@@ -384,12 +393,13 @@ namespace SunHavenMuseumUtilityTracker.Patches
         /// <summary>
         /// Checks all known bundle progress keys and marks their items as donated if complete.
         /// </summary>
-        private static int SyncCompletedBundles(DonationManager manager)
+        private static int SyncCompletedBundles(DonationManager manager, bool verboseLogging)
         {
             int bundlesSynced = 0;
 
             var bundleIds = MuseumContent.GetAllBundleIds();
-            Plugin.Log?.LogInfo($"[SYNC] Checking {bundleIds.Count} bundles for completion...");
+            if (verboseLogging)
+                Plugin.Log?.LogInfo($"[SYNC] Checking {bundleIds.Count} bundles for completion...");
 
             foreach (var bundleId in bundleIds)
             {
@@ -402,11 +412,13 @@ namespace SunHavenMuseumUtilityTracker.Patches
                     int gameDonationCount = GetBundleDonationCount(progressKey);
                     bool isComplete = IsBundleCompleteInGame(progressKey, items.Count);
 
-                    Plugin.Log?.LogDebug($"[SYNC] Bundle '{bundleId}' ({progressKey}): {gameDonationCount}/{items.Count} donated, complete={isComplete}");
+                    if (verboseLogging)
+                        Plugin.Log?.LogDebug($"[SYNC] Bundle '{bundleId}' ({progressKey}): {gameDonationCount}/{items.Count} donated, complete={isComplete}");
 
                     if (isComplete)
                     {
-                        Plugin.Log?.LogInfo($"[SYNC] Bundle '{bundleId}' is COMPLETE, marking all items...");
+                        if (verboseLogging)
+                            Plugin.Log?.LogInfo($"[SYNC] Bundle '{bundleId}' is COMPLETE, marking all items...");
 
                         int markedCount = 0;
                         foreach (var item in items)
@@ -420,18 +432,21 @@ namespace SunHavenMuseumUtilityTracker.Patches
 
                         if (markedCount > 0)
                         {
-                            Plugin.Log?.LogInfo($"[SYNC] Marked {markedCount} items from bundle '{bundleId}'");
+                            if (verboseLogging)
+                                Plugin.Log?.LogInfo($"[SYNC] Marked {markedCount} items from bundle '{bundleId}'");
                             bundlesSynced++;
                         }
                     }
                     else if (gameDonationCount > 0)
                     {
-                        Plugin.Log?.LogInfo($"[SYNC] Bundle '{bundleId}' has {gameDonationCount}/{items.Count} donations (not complete)");
+                        if (verboseLogging)
+                            Plugin.Log?.LogInfo($"[SYNC] Bundle '{bundleId}' has {gameDonationCount}/{items.Count} donations (not complete)");
                     }
                 }
                 catch (Exception ex)
                 {
-                    Plugin.Log?.LogDebug($"[SYNC] Error checking bundle '{bundleId}': {ex.Message}");
+                    if (verboseLogging)
+                        Plugin.Log?.LogDebug($"[SYNC] Error checking bundle '{bundleId}': {ex.Message}");
                 }
             }
 

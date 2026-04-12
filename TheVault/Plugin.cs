@@ -9,6 +9,8 @@ using TheVault.Vault;
 using HarmonyLib;
 using SunhavenMods.Shared;
 using System;
+using System.IO;
+using System.Linq;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using Wish;
@@ -60,7 +62,6 @@ namespace TheVault
         private ConfigEntry<bool> _enableAutoSave;
         private ConfigEntry<float> _autoSaveInterval;
         private ConfigEntry<bool> _checkForUpdates;
-        private ConfigEntry<bool> _useLegacyImguiVault;
 
         /// <summary>Last applied <see cref="_hudPosition"/>; when it changes, saved pixel HUD coords are cleared.</summary>
         private string _hudPositionConfigBaseline;
@@ -70,17 +71,6 @@ namespace TheVault
         /// </summary>
         private static bool _debugFullVaultInspector;
 
-        // Backup menu detection via polling (in case SceneManager.sceneLoaded stops working)
-        private string _lastKnownScene = "";
-        private bool _wasInMenuScene = true; // Start as true since game starts at menu
-        private float _sceneCheckTimer = 0f;
-        private const float SCENE_CHECK_INTERVAL = 0.5f; // Check every 0.5 seconds
-
-        // Heartbeat for debugging - proves plugin is still running
-        private float _heartbeatTimer = 0f;
-        private const float HEARTBEAT_INTERVAL = 30f; // Log every 30 seconds to prove plugin is alive
-        private int _heartbeatCount = 0;
-
         // Separate persistent object that survives game's UIHandler.UnloadGame cleanup
         private static GameObject _persistentRunner;
         private static PersistentUpdateRunner _updateRunner;
@@ -89,7 +79,7 @@ namespace TheVault
         {
             Instance = this;
             Log = Logger;
-            ConfigFile = Config;
+            ConfigFile = CreateNamedConfig();
 
             // NOTE: DontDestroyOnLoad on this gameObject doesn't help because
             // the game's UIHandler.UnloadGame explicitly destroys UI objects.
@@ -113,6 +103,7 @@ namespace TheVault
                 _saveSystem = new VaultSaveSystem(_vaultManager);
                 _staticVaultManager = _vaultManager;
                 _staticSaveSystem = _saveSystem;
+                _saveSystem.SetAutoSaveIntervalSeconds(Mathf.Max(10f, _autoSaveInterval.Value));
 
                 // Create UI GameObject (RectTransform stretched to full screen for uGUI Canvas)
                 var uiObject = CreateTheVaultUiHost();
@@ -210,6 +201,22 @@ namespace TheVault
             Log.LogInfo("Created hidden PersistentRunner that survives game cleanup");
         }
 
+        private static ConfigFile CreateNamedConfig()
+        {
+            string configPath = Path.Combine(Paths.ConfigPath, "TheVault.cfg");
+            string legacyPath = Path.Combine(Paths.ConfigPath, $"{PluginInfo.PLUGIN_GUID}.cfg");
+            try
+            {
+                if (!File.Exists(configPath) && File.Exists(legacyPath))
+                    File.Copy(legacyPath, configPath);
+            }
+            catch (Exception ex)
+            {
+                Log?.LogWarning($"[Config] Migration to TheVault.cfg failed: {ex.Message}");
+            }
+            return new ConfigFile(configPath, true);
+        }
+
         /// <summary>
         /// uGUI needs a <see cref="RectTransform"/> that spans the overlay; a plain Transform clips to a tiny default rect.
         /// </summary>
@@ -259,6 +266,8 @@ namespace TheVault
 
                     _staticVaultUI = uiObject.AddComponent<VaultUI>();
                     _staticVaultUI.Initialize(_staticVaultManager);
+                    // Legacy-only build: ensure IMGUI path is active even if Plugin instance was destroyed.
+                    _staticVaultUI.SetLegacyImguiEnabled(true);
                     float windowScale = Instance != null ? Mathf.Clamp(Instance._windowScale.Value, 0.5f, 2.5f) : 1f;
                     _staticVaultUI.SetScale(windowScale);
                     _staticVaultUI.SetToggleKey(StaticToggleKey, StaticRequireCtrl);
@@ -293,77 +302,70 @@ namespace TheVault
 
         private void InitializeConfig()
         {
-            _toggleKey = Config.Bind(
+            _toggleKey = ConfigFile.Bind(
                 "UI",
                 "ToggleKey",
                 KeyCode.V,
                 "Key to toggle the vault UI"
             );
 
-            _requireCtrlModifier = Config.Bind(
+            _requireCtrlModifier = ConfigFile.Bind(
                 "UI",
                 "RequireCtrlModifier",
                 true,
                 "Require Ctrl key to be held when pressing toggle key"
             );
 
-            _altToggleKey = Config.Bind(
+            _altToggleKey = ConfigFile.Bind(
                 "UI",
                 "AltToggleKey",
                 KeyCode.F8,
                 "Alternative key to toggle vault UI (no modifier required). Useful for Steam Deck."
             );
 
-            _useLegacyImguiVault = Config.Bind(
-                "UI",
-                "UseLegacyImguiVault",
-                true,
-                "Legacy-only build: keep using the classic OnGUI/IMGUI vault window. (uGUI panel has been disabled.)"
-            );
-
-            _enableHUD = Config.Bind(
+            _enableHUD = ConfigFile.Bind(
                 "HUD",
                 "EnableHUD",
                 true,
                 "Show a persistent HUD bar displaying vault currency totals"
             );
 
-            _hudPosition = Config.Bind(
+            _hudPosition = ConfigFile.Bind(
                 "HUD",
                 "Position",
                 "TopLeft",
                 "Anchor when not using a custom drag position. Changing this clears PositionX/PositionY. Drag the HUD top strip to save a custom position (like Sun Haven Todo)."
             );
 
-            _hudPositionX = Config.Bind(
+            _hudPositionX = ConfigFile.Bind(
                 "HUD",
                 "PositionX",
                 -1f,
                 "HUD left edge in pixels after dragging (-1 = use Position anchor only)"
             );
 
-            _hudPositionY = Config.Bind(
+            _hudPositionY = ConfigFile.Bind(
                 "HUD",
                 "PositionY",
                 -1f,
                 "HUD top edge in pixels after dragging (-1 = use Position anchor only)"
             );
 
-            _hudScale = Config.Bind(
+            _hudScale = ConfigFile.Bind(
                 "HUD",
                 "Scale",
                 1.25f,
                 "Scale factor for the HUD bar (1.0 = smaller, 1.25 = new default, 2.0 = very large). Use a dot as decimal separator in the config file (e.g. 1.25)."
             );
 
-            _hudCompactMode = Config.Bind(
+            _hudCompactMode = ConfigFile.Bind(
                 "HUD",
                 "CompactMode",
                 false,
                 "Legacy: when Density is Normal and this is true, HUD uses Compact spacing. Prefer [HUD] Density."
             );
 
-            _hudDensity = Config.Bind(
+            _hudDensity = ConfigFile.Bind(
                 "HUD",
                 "Density",
                 "Normal",
@@ -372,7 +374,7 @@ namespace TheVault
                     new AcceptableValueList<string>(new[] { "Normal", "Compact", "Minimal" }))
             );
 
-            _windowScale = Config.Bind(
+            _windowScale = ConfigFile.Bind(
                 "Display",
                 "WindowScale",
                 1.0f,
@@ -382,28 +384,28 @@ namespace TheVault
                 )
             );
 
-            _hudToggleKey = Config.Bind(
+            _hudToggleKey = ConfigFile.Bind(
                 "HUD",
                 "ToggleKey",
                 KeyCode.F7,
                 "Key to toggle the HUD display on/off"
             );
 
-            _enableAutoSave = Config.Bind(
+            _enableAutoSave = ConfigFile.Bind(
                 "Saving",
                 "EnableAutoSave",
                 true,
                 "Automatically save vault data periodically"
             );
 
-            _autoSaveInterval = Config.Bind(
+            _autoSaveInterval = ConfigFile.Bind(
                 "Saving",
                 "AutoSaveInterval",
                 300f,
                 "Auto-save interval in seconds (default: 5 minutes)"
             );
 
-            _checkForUpdates = Config.Bind(
+            _checkForUpdates = ConfigFile.Bind(
                 "Updates",
                 "CheckForUpdates",
                 true,
@@ -430,7 +432,7 @@ namespace TheVault
             _hudDensity.SettingChanged += OnConfigChanged;
             _hudToggleKey.SettingChanged += OnConfigChanged;
             _windowScale.SettingChanged += OnConfigChanged;
-            _useLegacyImguiVault.SettingChanged += OnConfigChanged;
+            _autoSaveInterval.SettingChanged += OnConfigChanged;
         }
 
         /// <summary>
@@ -444,6 +446,7 @@ namespace TheVault
                 StaticRequireCtrl = _requireCtrlModifier.Value;
                 StaticAltToggleKey = _altToggleKey.Value;
                 StaticHUDToggleKey = _hudToggleKey.Value;
+                _staticSaveSystem?.SetAutoSaveIntervalSeconds(Mathf.Max(10f, _autoSaveInterval.Value));
 
                 var vaultUI = GetVaultUI();
                 if (vaultUI != null)
@@ -506,7 +509,7 @@ namespace TheVault
         {
             try
             {
-                Config.Reload();
+                ConfigFile.Reload();
                 ApplyConfigToState();
                 Log?.LogInfo("[The Vault] Config reloaded from file");
             }
@@ -740,15 +743,28 @@ namespace TheVault
             try
             {
                 var gameSaveType = typeof(GameSave);
-                var loadCharMethod = AccessTools.Method(gameSaveType, "LoadCharacter", new[] { typeof(int) });
-                if (loadCharMethod != null)
+                var postfix = AccessTools.Method(typeof(GameSavePatches), "OnLoadCharacterAny");
+                if (postfix == null)
                 {
-                    var postfix = AccessTools.Method(typeof(GameSavePatches), "OnLoadCharacter");
-                    if (postfix != null)
-                    {
-                        _harmony.Patch(loadCharMethod, postfix: new HarmonyMethod(postfix));
-                        Log.LogInfo("Patched GameSave.LoadCharacter");
-                    }
+                    Log.LogWarning("Could not find GameSavePatches.OnLoadCharacterAny");
+                    return;
+                }
+
+                var loadCharacterMethods = AccessTools.GetDeclaredMethods(gameSaveType)
+                    .Where(m => string.Equals(m.Name, "LoadCharacter", StringComparison.Ordinal))
+                    .ToList();
+
+                if (loadCharacterMethods.Count == 0)
+                {
+                    Log.LogWarning("No GameSave.LoadCharacter overloads found to patch");
+                    return;
+                }
+
+                foreach (var method in loadCharacterMethods)
+                {
+                    _harmony.Patch(method, postfix: new HarmonyMethod(postfix));
+                    var signature = string.Join(", ", method.GetParameters().Select(p => p.ParameterType.Name));
+                    Log.LogInfo($"Patched GameSave.LoadCharacter({signature})");
                 }
             }
             catch (Exception ex)
@@ -1003,75 +1019,6 @@ namespace TheVault
             }
         }
 
-        private void Update()
-        {
-            // Check for auto-save
-            if (_enableAutoSave.Value)
-            {
-                _saveSystem?.CheckAutoSave();
-            }
-
-            // Check for HUD toggle
-            if (!TextInputFocusGuard.ShouldDeferModHotkeys(Log) && Input.GetKeyDown(_hudToggleKey.Value))
-            {
-                _vaultHUD?.Toggle();
-            }
-
-            // BACKUP: Poll for menu scene changes
-            // This is a failsafe in case SceneManager.sceneLoaded stops firing
-            _sceneCheckTimer += Time.deltaTime;
-            if (_sceneCheckTimer >= SCENE_CHECK_INTERVAL)
-            {
-                _sceneCheckTimer = 0f;
-                CheckForMenuSceneChange();
-            }
-
-            // Heartbeat - prove the plugin is still running
-            _heartbeatTimer += Time.deltaTime;
-            if (_heartbeatTimer >= HEARTBEAT_INTERVAL)
-            {
-                _heartbeatTimer = 0f;
-                _heartbeatCount++;
-                Log.LogInfo($"[Heartbeat #{_heartbeatCount}] Plugin alive. Scene: {_lastKnownScene}, VaultLoaded: {PlayerPatches.IsVaultLoaded}, Character: {PlayerPatches.LoadedCharacterName ?? "none"}");
-            }
-        }
-
-        /// <summary>
-        /// Backup menu detection via polling.
-        /// Checks the active scene name and triggers SaveAndReset when entering a menu scene.
-        /// </summary>
-        private void CheckForMenuSceneChange()
-        {
-            try
-            {
-                var activeScene = SceneManager.GetActiveScene();
-                string sceneName = activeScene.name;
-
-                // Only log if scene actually changed
-                if (sceneName != _lastKnownScene)
-                {
-                    Log.LogInfo($"[ScenePoll] Scene changed: '{_lastKnownScene}' -> '{sceneName}'");
-                    _lastKnownScene = sceneName;
-
-                    string sceneLower = sceneName.ToLowerInvariant();
-                    bool isMenuScene = sceneLower.Contains("menu") || sceneLower.Contains("title");
-
-                    // Detect transition INTO menu scene (was not in menu, now is)
-                    if (isMenuScene && !_wasInMenuScene)
-                    {
-                        Log.LogInfo($"[ScenePoll] Menu scene detected via polling: {sceneName}");
-                        PlayerPatches.SaveAndReset();
-                    }
-
-                    _wasInMenuScene = isMenuScene;
-                }
-            }
-            catch (Exception ex)
-            {
-                Log.LogError($"Error in CheckForMenuSceneChange: {ex.Message}");
-            }
-        }
-
         private void ApplyVaultHudPlacementFromConfig(VaultHUD hud)
         {
             hud.SetPosition(ParseHUDPosition(_hudPosition.Value));
@@ -1112,7 +1059,7 @@ namespace TheVault
         private void OnDisable()
         {
             Log.LogWarning("[CRITICAL] Plugin OnDisable called! Plugin is being disabled.");
-            Log.LogWarning($"[CRITICAL] Last known scene: {_lastKnownScene}");
+            Log.LogWarning($"[CRITICAL] Current scene: {SceneManager.GetActiveScene().name}");
             Log.LogWarning($"[CRITICAL] Stack trace: {Environment.StackTrace}");
         }
 
@@ -1121,7 +1068,7 @@ namespace TheVault
             VaultModApiBridge.Instance = null;
 
             Log.LogWarning("[CRITICAL] Plugin OnDestroy called! Plugin is being destroyed.");
-            Log.LogWarning($"[CRITICAL] Last known scene: {_lastKnownScene}");
+            Log.LogWarning($"[CRITICAL] Current scene: {SceneManager.GetActiveScene().name}");
             Log.LogWarning($"[CRITICAL] Stack trace: {Environment.StackTrace}");
             SceneManager.sceneLoaded -= OnSceneLoaded;
 
@@ -1261,6 +1208,14 @@ namespace TheVault
             _staticVaultHUD?.Toggle();
         }
 
+        internal static void TickAutoSave()
+        {
+            if (Instance?._enableAutoSave == null || !Instance._enableAutoSave.Value)
+                return;
+
+            _staticSaveSystem?.CheckAutoSave();
+        }
+
         #endregion
     }
 
@@ -1268,7 +1223,7 @@ namespace TheVault
     {
         public const string PLUGIN_GUID = "com.azraelgodking.thevault";
         public const string PLUGIN_NAME = "The Vault";
-        public const string PLUGIN_VERSION = "3.0.4";
+        public const string PLUGIN_VERSION = "3.0.5";
     }
 
     /// <summary>
@@ -1298,6 +1253,8 @@ namespace TheVault
 
         private void Update()
         {
+            Plugin.TickAutoSave();
+
             // Poll for menu scene changes
             _sceneCheckTimer += Time.deltaTime;
             if (_sceneCheckTimer >= SCENE_CHECK_INTERVAL)
@@ -1321,6 +1278,9 @@ namespace TheVault
             // Drain auto-deposit notifications off the pickup path (reduces lag)
             if (PlayerPatches.IsVaultLoaded)
                 ItemPatches.DrainAutoDepositNotifications();
+
+            // Character-switch survival fallback: if any hook missed, detect and correct active vault.
+            PlayerPatches.TrySynchronizeCharacterContext();
         }
 
         private void CheckHotkeys()

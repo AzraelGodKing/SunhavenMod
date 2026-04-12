@@ -30,7 +30,7 @@ namespace TheVault.Vault
         private static readonly byte[] _iv = new byte[16] { 0x43, 0x75, 0x72, 0x72, 0x65, 0x6E, 0x63, 0x79, 0x53, 0x70, 0x65, 0x6C, 0x6C, 0x49, 0x56, 0x31 };
 
         // Auto-save interval in seconds
-        private const float AUTO_SAVE_INTERVAL = 300f; // 5 minutes
+        private float _autoSaveIntervalSeconds = 300f;
         private float _lastAutoSave;
 
         public VaultSaveSystem(VaultManager vaultManager)
@@ -362,11 +362,19 @@ namespace TheVault.Vault
             if (!_vaultManager.IsDirty)
                 return;
 
-            if (Time.time - _lastAutoSave >= AUTO_SAVE_INTERVAL)
+            if (Time.time - _lastAutoSave >= _autoSaveIntervalSeconds)
             {
                 Plugin.Log?.LogInfo("Auto-saving vault data...");
                 Save();
             }
+        }
+
+        /// <summary>
+        /// Runtime-configurable autosave interval. Values below 10 seconds are clamped.
+        /// </summary>
+        public void SetAutoSaveIntervalSeconds(float seconds)
+        {
+            _autoSaveIntervalSeconds = Mathf.Max(10f, seconds);
         }
 
         /// <summary>

@@ -30,6 +30,8 @@ namespace SunhavenTodo.Data
         public string Id { get; set; }
         public string Title { get; set; }
         public string Description { get; set; }
+        public int IconItemId { get; set; }
+        public string MuseumDestination { get; set; }
         public TodoPriority Priority { get; set; }
         public TodoCategory Category { get; set; }
         public bool IsCompleted { get; set; }
@@ -41,6 +43,8 @@ namespace SunhavenTodo.Data
             Id = Guid.NewGuid().ToString();
             Priority = TodoPriority.Normal;
             Category = TodoCategory.General;
+            IconItemId = -1;
+            MuseumDestination = "";
             CreatedAt = DateTime.Now;
             IsCompleted = false;
         }

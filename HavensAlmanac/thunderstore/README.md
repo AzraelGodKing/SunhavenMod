@@ -1,6 +1,8 @@
 # Haven's Almanac
 
-**Version 1.0.4** — Unified mod dashboard for Sun Haven. Aggregates data from supported installed mods: compact HUD, full dashboard (Ctrl+F5 by default), daily briefing, draggable UI, optional UI scale and update check.
+**Version 1.0.5** — Unified mod dashboard for Sun Haven. Aggregates data from supported installed mods: compact HUD, full dashboard (Ctrl+F5 by default), daily briefing, draggable UI, optional UI scale and update check.
+
+**1.0.5:** Config file now uses `BepInEx/config/HavensAlmanac.cfg` (auto-migrates values from the legacy GUID-named config on first load).
 
 ## Features
 
@@ -37,7 +39,7 @@ At least one supported mod must be installed for the Almanac to display content.
 
 ## Configuration
 
-Edit `BepInEx/config/com.azraelgodking.havensalmanac.cfg` to customize hotkeys, HUD visibility, and daily briefing settings.
+Edit `BepInEx/config/HavensAlmanac.cfg` to customize hotkeys, HUD visibility, and daily briefing settings.
 
 ## Links
 

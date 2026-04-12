@@ -88,7 +88,7 @@ Fishing (treasures), seasonal fish tanks, Nel’Vari fish tank, Withergate fish 
 
 File (after first run):
 
-`Sun Haven/BepInEx/config/com.azraelgodking.sunhavenmuseumutilitytracker.cfg`
+`Sun Haven/BepInEx/config/SunHavenMuseumUtilityTracker.cfg`
 
 | Section | Key | Default | Description |
 |---------|-----|---------|-------------|
@@ -130,6 +130,7 @@ Backups may appear beside the primary file after failed loads. Keep these if you
 
 ## Version history
 
+- **2.2.7** — Co-op freshness: switched to a Senpai's Chest-style background refresh loop that syncs world museum progress every few seconds, so each player's tracker stays aligned even if the window is closed. Runtime autosave now runs solely from the hidden keepalive runner (no `Plugin.Update` dependency). Config file now uses `SunHavenMuseumUtilityTracker.cfg` with first-run migration from the legacy GUID-based filename.
 - **2.2.5** — Hall of Culture: full static lists with real `Wish.ItemID` + wiki ordering; bundle-scoped lookup and `HasDonatedByGameId` across duplicate rows (e.g. Pepper in Spring and Summer). Aquarium: all tanks use static fish data; removed runtime `AquariumFishResolver`. **Note:** older saves may use placeholder culture row IDs — re-check or Sync.  
 - **2.2.4** — Reliable `GameSave` world progress; bundle completion aligned with `MuseumCurator`; season fish icons; placeholders where icons missing; persist save after Sync.  
 - **2.2.3** — Thunderstore packaging iteration.  

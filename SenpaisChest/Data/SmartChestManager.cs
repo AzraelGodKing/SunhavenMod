@@ -619,6 +619,9 @@ namespace SenpaisChest.Data
 
         private bool MatchesCategory(int itemId, string categoryName)
         {
+            if (string.Equals(categoryName, "Undonated Items", StringComparison.OrdinalIgnoreCase))
+                return IsMuseumItemNotDonated(itemId);
+
             if (_categoryCache.TryGetValue(itemId, out var cached))
             {
                 return cached == categoryName;

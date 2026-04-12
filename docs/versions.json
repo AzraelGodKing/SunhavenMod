@@ -1,46 +1,46 @@
 ﻿{
   "com.azraelgodking.squirrelsbirthdayreminder": {
-    "version": "1.1.4",
+    "version": "1.1.5",
     "name": "A Squirrel's Birthday Reminder",
     "description": "Never miss an NPC birthday - get reminders and gift suggestions",
     "nexus": "https://www.nexusmods.com/sunhaven/mods/493",
     "nexus_file_group_id": "1311370",
     "thunderstore": "https://thunderstore.io/c/sun-haven/p/AzraelGodKing/SquirrelsBirthdayReminder/",
     "thunderstoreName": "SquirrelsBirthdayReminder",
-    "changelog": "CheatEnabler compatibility: mod hotkeys defer while typing in chat, console, or UI text fields (shared TextInputFocusGuard)."
+    "changelog": "Normalized duplicate composite NPC names (e.g. Darius+Darius -> Darius), aligned gift tracking with normalized names, and removed the no-op Plugin.Update path so runtime stays in the persistent runner. Config now uses BepInEx/config/BirthdayReminder.cfg with first-run migration from the legacy GUID config file."
   },
   "com.azraelgodking.havensbirthright": {
-    "version": "2.0.0",
+    "version": "2.0.1",
     "name": "Haven's Birthright",
     "description": "Unique racial bonuses and abilities for all 12 playable races",
     "nexus": "https://www.nexusmods.com/sunhaven/mods/487",
     "nexus_file_group_id": "1297555",
     "thunderstore": "https://thunderstore.io/c/sun-haven/p/AzraelGodKing/HavensBirthright/",
     "thunderstoreName": "HavensBirthright",
-    "changelog": "Changing saves or characters—and Fire/Water Elemental behavior after loads and F9—is more reliable. The code was reorganized for upkeep, and the mod keeps its hidden runner alive with shared SceneRootSurvivor instead of a third-party Keep Alive mod."
+    "changelog": "Config now uses BepInEx/config/HavensBirthright.cfg with first-run migration from the legacy GUID config file."
   },
   "com.azraelgodking.sunhavenmuseumutilitytracker": {
-    "version": "2.2.6",
+    "version": "2.2.7",
     "name": "Sunhaven Museum Utility Tracker",
     "description": "Track museum donation progress across all three halls",
     "nexus": "https://www.nexusmods.com/sunhaven/mods/490",
     "nexus_file_group_id": "1309168",
     "thunderstore": "https://thunderstore.io/c/sun-haven/p/AzraelGodKing/SMUT/",
     "thunderstoreName": "SMUT",
-    "changelog": "CheatEnabler compatibility: mod hotkeys defer while typing in chat, console, or UI text fields (shared TextInputFocusGuard)."
+    "changelog": "Config now uses BepInEx/config/SunHavenMuseumUtilityTracker.cfg with first-run migration from the legacy GUID config file."
   },
   "com.azraelgodking.sunhaventodo": {
-    "version": "1.1.6",
+    "version": "1.1.7",
     "name": "Sun Haven Todo",
     "description": "In-game task tracker for farming goals, quests, and daily tasks",
     "nexus": "https://www.nexusmods.com/sunhaven/mods/491",
     "nexus_file_group_id": "1310599",
     "thunderstore": "https://thunderstore.io/c/sun-haven/p/AzraelGodKing/SunHavenTodo/",
     "thunderstoreName": "SunHavenTodo",
-    "changelog": "CheatEnabler compatibility: mod hotkeys defer while typing in chat, console, or UI text fields (shared TextInputFocusGuard)."
+    "changelog": "Museum-detected tasks now show destination hall and item icons in both Todo UI and HUD, long task titles wrap in both views, and runtime autosave now runs from the hidden persistent keepalive runner. Config now uses BepInEx/config/SunhavenTodo.cfg with first-run migration from the legacy GUID config file."
   },
   "com.azraelgodking.thevault": {
-    "version": "3.0.4",
+    "version": "3.0.5",
     "name": "The Vault",
     "description": "The Vault 3 — per-character vault, encrypted saves, HUD, auto-deposit, shop and inventory vault integration, Custom tab & mod API.",
     "vault_save_breaking": false,
@@ -49,55 +49,55 @@
     "nexus_file_group_id": "1305781",
     "thunderstore": "https://thunderstore.io/c/sun-haven/p/AzraelGodKing/TheVault/",
     "thunderstoreName": "TheVault",
-    "changelog": "HUD is draggable via the top accent strip; **`[HUD] PositionX`** / **`PositionY`** in `thevault.cfg` persist placement."
+    "changelog": "Hardened character-switch survival by patching all GameSave.LoadCharacter overloads, queueing selected character identity, and adding persistent runtime sync fallback; autosave now runs only from the keepalive runner, AutoSaveInterval is wired, and legacy stale UI config was removed. Also fixed the character-switch regression where only HUD stayed visible and migrated config to BepInEx/config/TheVault.cfg with first-run migration from the legacy GUID config file."
   },
   "com.azraelgodking.havendevtools": {
-    "version": "1.0.7",
+    "version": "1.0.8",
     "name": "HavenDevTools",
     "description": "Developer utilities for mod debugging and game state inspection",
     "nexus": "https://www.nexusmods.com/sunhaven/mods/495",
     "nexus_file_group_id": "1316842",
     "thunderstore": "https://thunderstore.io/c/sun-haven/p/AzraelGodKing/HavenDevTools/",
     "thunderstoreName": "HavenDevTools",
-    "changelog": "CheatEnabler compatibility: mod hotkeys defer while typing in chat, console, or UI text fields (shared TextInputFocusGuard)."
+    "changelog": "Config now uses BepInEx/config/HavenDevTools.cfg with first-run migration from the legacy GUID config file."
   },
   "com.azraelgodking.senpaischest": {
-    "version": "2.2.3",
+    "version": "2.2.4",
     "name": "Senpai's Chest",
     "description": "Smart chest auto-sorting with custom rules by item, type, category, property, or player groups. Manage Groups tab for custom subcategories.",
     "nexus": "https://www.nexusmods.com/sunhaven/mods/496",
     "nexus_file_group_id": "1317103",
     "thunderstore": "https://thunderstore.io/c/sun-haven/p/AzraelGodKing/SenpaisChest/",
     "thunderstoreName": "SenpaisChest",
-    "changelog": "CheatEnabler compatibility: mod hotkeys defer while typing in chat, console, or UI text fields (shared TextInputFocusGuard)."
+    "changelog": "Chest labels now anchor to chest sprite world bounds, museum Todo tasks include destination and icon metadata, Undonated Items category was added and now only appears when S.M.U.T. is installed, and adding a rule can auto-enable Smart Chest (configurable). Config now uses BepInEx/config/SenpaisChest.cfg with first-run migration from the legacy GUID config file."
   },
   "com.azraelgodking.havensalmanac": {
-    "version": "1.0.4",
+    "version": "1.0.5",
     "name": "Haven's Almanac",
     "description": "Unified mod dashboard - HUD, full dashboard, and daily morning briefing aggregating data from all installed mods",
     "nexus": "",
     "thunderstore": "https://thunderstore.io/c/sun-haven/p/AzraelGodKing/HavensAlmanac/",
     "thunderstoreName": "HavensAlmanac",
-    "changelog": "CheatEnabler compatibility: mod hotkeys defer while typing in chat, console, or UI text fields (shared TextInputFocusGuard)."
+    "changelog": "Config now uses BepInEx/config/HavensAlmanac.cfg with first-run migration from the legacy GUID config file."
   },
   "com.azraelgodking.fasterraces": {
-    "version": "1.1.2",
+    "version": "1.1.3",
     "name": "Faster Races",
     "description": "Configurable movement speed bonus for all races; disables Haven's Birthright speed buffs when both are installed",
     "nexus": "https://www.nexusmods.com/sunhaven/mods/497",
     "nexus_file_group_id": "7154323",
     "thunderstore": "https://thunderstore.io/c/sun-haven/p/AzraelGodKing/FasterRaces/",
     "thunderstoreName": "FasterRaces",
-    "changelog": "1.1.1: version alignment (docs, assembly metadata); configurable movement speed with Haven's Birthright integration"
+    "changelog": "Config now uses BepInEx/config/FasterRaces.cfg with first-run migration from the legacy GUID config file."
   },
   "com.azraelgodking.trinketfortune": {
-    "version": "1.0.1",
+    "version": "1.0.2",
     "name": "Trinket Fortune",
     "description": "Increases odds of unowned fishing trinkets dropping as you complete the aquarium",
     "nexus": "https://www.nexusmods.com/sunhaven/mods/498",
     "nexus_file_group_id": "7159384",
     "thunderstore": "https://thunderstore.io/c/sun-haven/p/AzraelGodKing/TrinketFortune/",
     "thunderstoreName": "TrinketFortune",
-    "changelog": "Initial release - stub implementation"
+    "changelog": "Config now uses BepInEx/config/TrinketFortune.cfg with first-run migration from the legacy GUID config file."
   }
 }

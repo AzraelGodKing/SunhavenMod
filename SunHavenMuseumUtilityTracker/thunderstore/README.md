@@ -1,6 +1,8 @@
 # S.M.U.T. - Sun Haven Museum Utility Tracker
 
-**Version 2.2.6** — Track your museum donation progress across all three halls (Hall of Gems, Hall of Culture, Aquarium) in Sun Haven. Manual tracking, per-character saves, item icons, search and filter.
+**Version 2.2.7** — Track your museum donation progress across all three halls (Hall of Gems, Hall of Culture, Aquarium) in Sun Haven. Manual tracking, per-character saves, item icons, search and filter.
+
+**2.2.7:** Config file now uses `BepInEx/config/SunHavenMuseumUtilityTracker.cfg` (auto-migrates values from the legacy GUID-named config on first load).
 
 ## Features
 
@@ -22,7 +24,7 @@ Press **Ctrl+C** (configurable) to open the museum tracker UI.
 
 ## Configuration
 
-Edit `BepInEx/config/com.azraelgodking.sunhavenmuseumutilitytracker.cfg` to customize settings.
+Edit `BepInEx/config/SunHavenMuseumUtilityTracker.cfg` to customize settings.
 
 ## Links
 

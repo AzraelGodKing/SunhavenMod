@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Reflection;
 using System.Security.Cryptography;
 using System.Text;
+using System.IO;
 using BepInEx;
 using BepInEx.Configuration;
 using BepInEx.Logging;
@@ -75,14 +76,14 @@ namespace HavenDevTools
         {
             Instance = this;
             Log = Logger;
-            ConfigFile = Config;
+            ConfigFile = CreateNamedConfig();
 
             Log.LogInfo($"Loading {PluginInfo.PLUGIN_NAME} v{PluginInfo.PLUGIN_VERSION}");
 
             try
             {
                 // Initialize configuration
-                ModConfig.Initialize(Config);
+                ModConfig.Initialize(ConfigFile);
 
                 // Store static config values for PersistentRunner
                 StaticToggleKey = ModConfig.ToggleKey.Value;
@@ -129,6 +130,22 @@ namespace HavenDevTools
             {
                 Log.LogError($"Failed to load {PluginInfo.PLUGIN_NAME}: {ex}");
             }
+        }
+
+        private static ConfigFile CreateNamedConfig()
+        {
+            string configPath = Path.Combine(Paths.ConfigPath, "HavenDevTools.cfg");
+            string legacyPath = Path.Combine(Paths.ConfigPath, $"{PluginInfo.PLUGIN_GUID}.cfg");
+            try
+            {
+                if (!File.Exists(configPath) && File.Exists(legacyPath))
+                    File.Copy(legacyPath, configPath);
+            }
+            catch (Exception ex)
+            {
+                Log?.LogWarning($"[Config] Migration to HavenDevTools.cfg failed: {ex.Message}");
+            }
+            return new ConfigFile(configPath, true);
         }
 
         private void CreatePersistentRunner()
@@ -516,6 +533,6 @@ namespace HavenDevTools
     {
         public const string PLUGIN_GUID = "com.azraelgodking.havendevtools";
         public const string PLUGIN_NAME = "Haven Dev Tools";
-        public const string PLUGIN_VERSION = "1.0.7";
+        public const string PLUGIN_VERSION = "1.0.8";
     }
 }

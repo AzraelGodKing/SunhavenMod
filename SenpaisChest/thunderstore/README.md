@@ -1,6 +1,8 @@
 # Senpai's Chest
 
-**Version 2.2.3** — Smart chests with configurable item rules for hands-free storage organization in Sun Haven. Chest labels, rules by item/category/type/property/group, per-character saves.
+**Version 2.2.4** — Smart chests with configurable item rules for hands-free storage organization in Sun Haven. Chest labels, rules by item/category/type/property/group, per-character saves.
+
+**2.2.4:** Chest labels now anchor from chest sprite world bounds (top-center), fixing cases where labels appeared offset instead of directly above the chest. Museum-detected Todo tasks now include destination hall and item icon metadata for richer Todo/HUD display. Added a new **By Category** option: **Undonated Items** (museum-needed items via S.M.U.T), and the category now only appears when S.M.U.T. is installed. Adding a rule now auto-enables Smart Chest by default (configurable via `AutoEnableSmartChestOnRuleAdd`). Config file now uses `BepInEx/config/SenpaisChest.cfg` (auto-migrates values from the legacy GUID-named config on first load).
 
 **2.2.2:** No per-scene disk reload that overwrote in-memory config. **Rule deletion** only when a chest **actually leaves the world** (picked up / destroyed): `Chest.OnDisable` plus guards for **application quit** and **scene teardown** (active scene replaced). Scene-discard suppression now tracks replaced scene handles long enough for slower transitions, so area changes do not delete rules. Sorts never delete saved rules; no scan-time “orphan” wipe.
 
@@ -13,7 +15,7 @@
 - **Automatic Sorting** — Smart Chests periodically scan nearby chests and pull matching items (scan interval configurable)
 - **Flexible Rules** — Filter items by:
   - **By Item** — Specific items (search by name)
-  - **By Category** — Equip, Use, Craftable, Monster, Furniture, Quest
+  - **By Category** — Equip, Use, Craftable, Monster, Furniture, Quest, Undonated Items
   - **By Item Type** — Normal, Armor, Food, Fish, Crop, Watering Can, Animal, Pet, Tool
   - **By Property** — Gems, Forageables, Animal Products, Meals, Fruits, Artisanry Items, Potions, Museum (Not Donated)
   - **By Group** — Your own custom subcategories (e.g. Flowers, Vegetables). Create groups in Manage Groups, add items via search, then attach to chests with one click.
@@ -30,7 +32,7 @@
 
 ## Configuration
 
-Edit `BepInEx/config/com.azraelgodking.senpaischest.cfg`:
+Edit `BepInEx/config/SenpaisChest.cfg`:
 
 | Setting | Default | Description |
 |---------|---------|-------------|
@@ -42,6 +44,7 @@ Edit `BepInEx/config/com.azraelgodking.senpaischest.cfg`:
 | MaxItemsPerScan | 50 | Max item stacks moved per scan (reduces lag) |
 | ToggleKey | F9 | Key to open config UI while chest is open |
 | RequireCtrlModifier | false | Require Ctrl held with toggle key |
+| AutoEnableSmartChestOnRuleAdd | true | Automatically enable Smart Chest when adding a rule |
 | CheckForUpdates | true | Check for mod updates on startup |
 
 ## Notes

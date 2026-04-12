@@ -1,4 +1,5 @@
 using System;
+using System.Reflection;
 using Wish;
 
 namespace TheVault.Patches
@@ -36,22 +37,35 @@ namespace TheVault.Patches
             }
         }
 
-        /// <summary>
-        /// Called after GameSave.LoadCharacter is invoked.
-        /// </summary>
-        public static void OnLoadCharacter(int characterNumber)
+        public static void OnLoadCharacterAny(object[] __args, MethodBase __originalMethod)
         {
             try
             {
-                Plugin.Log?.LogDebug($"GameSave.LoadCharacter: slot {characterNumber}");
+                int characterNumber = -1;
+                if (__args != null && __args.Length > 0 && __args[0] != null)
+                {
+                    try
+                    {
+                        characterNumber = Convert.ToInt32(__args[0]);
+                    }
+                    catch
+                    {
+                        characterNumber = -1;
+                    }
+                }
 
-                LastLoadedSlot = characterNumber;
+                string sourceMethod = __originalMethod != null ? __originalMethod.Name : "LoadCharacter";
+                Plugin.Log?.LogDebug($"GameSave.{sourceMethod} invoked (slot={characterNumber})");
+
+                if (characterNumber >= 0)
+                    LastLoadedSlot = characterNumber;
 
                 if (GameSave.Instance?.Saves == null ||
                     characterNumber < 0 ||
                     characterNumber >= GameSave.Instance.Saves.Count)
                 {
-                    Plugin.Log?.LogWarning($"GameSavePatches: invalid slot {characterNumber}");
+                    TrySetCharacterFromCurrentCharacter("LoadCharacter fallback");
+                    Plugin.Log?.LogWarning($"GameSavePatches: invalid or missing slot {characterNumber}; used fallback");
                     return;
                 }
 
@@ -60,16 +74,18 @@ namespace TheVault.Patches
                 if (!string.IsNullOrEmpty(charName))
                 {
                     LastLoadedCharacterName = charName;
+                    PlayerPatches.SetPendingCharacterName(charName);
                     Plugin.Log?.LogDebug($"GameSavePatches: character name '{charName}' from slot {characterNumber}");
                 }
                 else
                 {
+                    TrySetCharacterFromCurrentCharacter("LoadCharacter slot resolve fallback");
                     Plugin.Log?.LogWarning($"GameSavePatches: could not resolve name for slot {characterNumber}");
                 }
             }
             catch (Exception ex)
             {
-                Plugin.Log?.LogError($"Error in OnLoadCharacter: {ex.Message}");
+                Plugin.Log?.LogError($"Error in OnLoadCharacterAny: {ex.Message}");
             }
         }
 
@@ -80,6 +96,11 @@ namespace TheVault.Patches
             string name = saveData.characterData?.characterName;
             if (!string.IsNullOrEmpty(name))
                 return name;
+
+            // Reflection fallback for game patches where characterData is nested or renamed.
+            string reflected = GetCharacterNameFromUnknownSaveData(saveData);
+            if (!string.IsNullOrEmpty(reflected))
+                return reflected;
 
             if (!string.IsNullOrEmpty(saveData.fileName))
             {
@@ -93,6 +114,47 @@ namespace TheVault.Patches
             return null;
         }
 
+        private static string GetCharacterNameFromUnknownSaveData(object saveData)
+        {
+            if (saveData == null) return null;
+
+            var type = saveData.GetType();
+            string[] possibleNames = { "characterName", "CharacterName", "name", "Name", "playerName", "PlayerName" };
+
+            foreach (var propName in possibleNames)
+            {
+                var prop = type.GetProperty(propName, System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.NonPublic);
+                if (prop != null && prop.PropertyType == typeof(string))
+                {
+                    var value = prop.GetValue(saveData) as string;
+                    if (!string.IsNullOrEmpty(value))
+                        return value;
+                }
+            }
+
+            var charDataProp = type.GetProperty("characterData", System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.NonPublic);
+            if (charDataProp != null)
+            {
+                var charDataObj = charDataProp.GetValue(saveData);
+                if (charDataObj != null)
+                {
+                    var charDataType = charDataObj.GetType();
+                    foreach (var propName in possibleNames)
+                    {
+                        var nameProp = charDataType.GetProperty(propName, System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.NonPublic);
+                        if (nameProp != null && nameProp.PropertyType == typeof(string))
+                        {
+                            var value = nameProp.GetValue(charDataObj) as string;
+                            if (!string.IsNullOrEmpty(value))
+                                return value;
+                        }
+                    }
+                }
+            }
+
+            return null;
+        }
+
         public static void OnSetCurrentCharacter()
         {
             try
@@ -100,13 +162,31 @@ namespace TheVault.Patches
                 var currentChar = GameSave.CurrentCharacter;
                 if (currentChar != null)
                 {
-                    Plugin.Log?.LogInfo($"GameSave.SetCurrentCharacter: {currentChar.characterName}");
+                    string currentName = currentChar.characterName;
+                    if (!string.IsNullOrEmpty(currentName))
+                    {
+                        LastLoadedCharacterName = currentName;
+                        PlayerPatches.SetPendingCharacterName(currentName);
+                    }
+                    Plugin.Log?.LogInfo($"GameSave.SetCurrentCharacter: {currentName}");
                 }
             }
             catch (Exception ex)
             {
                 Plugin.Log?.LogError($"Error in OnSetCurrentCharacter: {ex.Message}");
             }
+        }
+
+        private static void TrySetCharacterFromCurrentCharacter(string reason)
+        {
+            var currentChar = GameSave.CurrentCharacter;
+            string currentName = currentChar?.characterName;
+            if (string.IsNullOrEmpty(currentName))
+                return;
+
+            LastLoadedCharacterName = currentName;
+            PlayerPatches.SetPendingCharacterName(currentName);
+            Plugin.Log?.LogDebug($"GameSavePatches: using CurrentCharacter '{currentName}' ({reason})");
         }
     }
 }

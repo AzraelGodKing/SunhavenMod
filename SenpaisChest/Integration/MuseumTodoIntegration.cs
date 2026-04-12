@@ -99,16 +99,19 @@ namespace SenpaisChest.Integration
             if (donationManager.HasDonatedByGameId(gameItemId))
                 return;
 
+            string destinationHall = GetDestinationHallForItem(gameItemId);
+
             // Create a todo for this museum item
-            string title = $"Donate {museumItem.Name} to the museum";
-            string description = "Found in a chest - this item is still needed for the museum!";
+            string title = $"Donate {museumItem.Name} -> {destinationHall}";
+            string description = $"Found in a chest. Needed in {destinationHall}.";
 
             var todoItem = new TodoItem(title, description, TodoPriority.High, TodoCategory.Collection);
+            SetTodoMetadata(todoItem, gameItemId, destinationHall);
             todoManager.AddTodo(todoItem);
 
             _museumTodoIds[gameItemId] = todoItem.Id;
 
-            Plugin.Log?.LogInfo($"[MuseumTodoIntegration] Created todo for museum item: {museumItem.Name} (ID: {gameItemId})");
+            Plugin.Log?.LogInfo($"[MuseumTodoIntegration] Created todo for museum item: {museumItem.Name} -> {destinationHall} (ID: {gameItemId})");
         }
 
         /// <summary>
@@ -163,6 +166,50 @@ namespace SenpaisChest.Integration
         {
             _museumTodoIds.Clear();
             _scanCounter = 0;
+        }
+
+        private static string GetDestinationHallForItem(int gameItemId)
+        {
+            var halls = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+
+            foreach (var section in MuseumContent.GetAllSections())
+            {
+                foreach (var bundle in section.Bundles)
+                {
+                    foreach (var item in bundle.Items)
+                    {
+                        if (item.GameItemId == gameItemId)
+                            halls.Add(section.Name);
+                    }
+                }
+            }
+
+            if (halls.Count == 0)
+                return "the museum";
+
+            return string.Join(" / ", halls);
+        }
+
+        private static void SetTodoMetadata(TodoItem todoItem, int gameItemId, string destinationHall)
+        {
+            if (todoItem == null) return;
+
+            try
+            {
+                var todoType = todoItem.GetType();
+                var iconProp = todoType.GetProperty("IconItemId");
+                var destinationProp = todoType.GetProperty("MuseumDestination");
+
+                if (iconProp != null && iconProp.CanWrite)
+                    iconProp.SetValue(todoItem, gameItemId);
+
+                if (destinationProp != null && destinationProp.CanWrite)
+                    destinationProp.SetValue(todoItem, destinationHall ?? "");
+            }
+            catch (Exception ex)
+            {
+                Plugin.Log?.LogDebug($"[MuseumTodoIntegration] Failed to set todo metadata: {ex.Message}");
+            }
         }
     }
 }

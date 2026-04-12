@@ -28,7 +28,7 @@ An in-game to-do list for Sun Haven with per-character saves, categories, priori
 ## Configuration
 
 After first launch, edit the config file at:
-`Sun Haven/BepInEx/config/com.azraelgodking.sunhaventodo.cfg`
+`Sun Haven/BepInEx/config/SunhavenTodo.cfg`
 
 | Setting | Default | Description |
 |---------|---------|-------------|

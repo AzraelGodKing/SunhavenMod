@@ -1,6 +1,8 @@
 # HavenDevTools
 
-**Version 1.0.7** — Developer utilities for mod debugging and game state inspection in Sun Haven. Not intended for typical players; may impact performance.
+**Version 1.0.8** — Developer utilities for mod debugging and game state inspection in Sun Haven. Not intended for typical players; may impact performance.
+
+**1.0.8:** Config file now uses `BepInEx/config/HavenDevTools.cfg` (auto-migrates values from the legacy GUID-named config on first load).
 
 ## Features
 
@@ -21,7 +23,7 @@ This mod is intended for mod developers. Press the configured hotkey to open the
 
 ## Configuration
 
-Edit `BepInEx/config/com.azraelgodking.havendevtools.cfg` to customize settings.
+Edit `BepInEx/config/HavenDevTools.cfg` to customize settings.
 
 **The Vault (when installed):** `[The Vault]` → **FullVaultInspector** — same as the old “full vault debug” mode (zeros in tabs, Debug dump tab, full HUD). You can also toggle it in the dev window under **Azrael's Mods → The Vault**.
 

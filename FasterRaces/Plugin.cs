@@ -2,6 +2,7 @@ using BepInEx;
 using BepInEx.Configuration;
 using BepInEx.Logging;
 using HarmonyLib;
+using System.IO;
 using Wish;
 
 namespace FasterRaces
@@ -18,8 +19,9 @@ namespace FasterRaces
         private void Awake()
         {
             Log = Logger;
-            EnableMod = Config.Bind("General", "Enabled", true, "Enable Faster Races movement speed bonus. When enabled, Haven's Birthright will not apply its own movement speed bonuses to avoid double speed.");
-            SpeedBonusPercent = Config.Bind("General", "SpeedBonusPercent", 25f, "Percentage bonus to movement speed (e.g. 25 = +25%). Applied after other mods; Haven's Birthright skips its speed buff when this mod is loaded.");
+            var configFile = CreateNamedConfig();
+            EnableMod = configFile.Bind("General", "Enabled", true, "Enable Faster Races movement speed bonus. When enabled, Haven's Birthright will not apply its own movement speed bonuses to avoid double speed.");
+            SpeedBonusPercent = configFile.Bind("General", "SpeedBonusPercent", 25f, "Percentage bonus to movement speed (e.g. 25 = +25%). Applied after other mods; Haven's Birthright skips its speed buff when this mod is loaded.");
 
             _harmony = new Harmony(PluginInfo.PLUGIN_GUID);
             var playerType = typeof(Player);
@@ -34,6 +36,22 @@ namespace FasterRaces
                 Log.LogWarning("Could not find Player.GetStat or SpeedPatch.Postfix");
 
             Log.LogInfo($"{PluginInfo.PLUGIN_NAME} v{PluginInfo.PLUGIN_VERSION} loaded. Speed bonus: {SpeedBonusPercent.Value}%");
+        }
+
+        private static ConfigFile CreateNamedConfig()
+        {
+            string configPath = Path.Combine(Paths.ConfigPath, "FasterRaces.cfg");
+            string legacyPath = Path.Combine(Paths.ConfigPath, $"{PluginInfo.PLUGIN_GUID}.cfg");
+            try
+            {
+                if (!File.Exists(configPath) && File.Exists(legacyPath))
+                    File.Copy(legacyPath, configPath);
+            }
+            catch (System.Exception ex)
+            {
+                Log?.LogWarning($"[Config] Migration to FasterRaces.cfg failed: {ex.Message}");
+            }
+            return new ConfigFile(configPath, true);
         }
 
         public static class SpeedPatch
@@ -56,6 +74,6 @@ namespace FasterRaces
     {
         public const string PLUGIN_GUID = "com.azraelgodking.fasterraces";
         public const string PLUGIN_NAME = "Faster Races";
-        public const string PLUGIN_VERSION = "1.1.2";
+        public const string PLUGIN_VERSION = "1.1.3";
     }
 }

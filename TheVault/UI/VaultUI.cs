@@ -129,8 +129,8 @@ namespace TheVault.UI
             "V", "B", "G", "K", "U", "H"
         };
 
-        /// <summary>When false (default), IMGUI draw and toggles are disabled; use uGUI via config <c>[UI] UseLegacyImguiVault</c>.</summary>
-        private bool _legacyImguiEnabled;
+        /// <summary>When false, IMGUI draw and toggles are disabled.</summary>
+        private bool _legacyImguiEnabled = true;
 
         /// <summary>Enable or disable the legacy IMGUI window. When disabled, <see cref="IsVisible"/> stays false for HUD checks.</summary>
         public void SetLegacyImguiEnabled(bool enabled) => _legacyImguiEnabled = enabled;
