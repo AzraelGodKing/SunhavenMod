@@ -70,7 +70,7 @@ namespace HavenDevTools.UI
             ("com.azraelgodking.squirrelsbirthdayreminder", "Birthday Reminder", "1.1.5"),
             ("com.azraelgodking.havensbirthright", "Haven's Birthright", "2.0.1"),
             ("com.azraelgodking.sunhavenmuseumutilitytracker", "S.M.U.T.", "2.2.7"),
-            ("com.azraelgodking.sunhaventodo", "Sunhaven Todo", "1.1.7"),
+            ("com.azraelgodking.sunhaventodo", "Sunhaven Todo", "1.1.8"),
             ("com.azraelgodking.thevault", "The Vault", "3.0.5"),
             ("com.azraelgodking.havensalmanac", "Haven's Almanac", "1.0.5"),
             ("com.azraelgodking.fasterraces", "Faster Races", "1.1.3"),
