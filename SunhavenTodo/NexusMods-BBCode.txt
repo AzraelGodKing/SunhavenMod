@@ -1,4 +1,4 @@
-[b][size=5]Sunhaven Todo[/size][/b] [i](v1.1.7)[/i]
+[b][size=5]Sunhaven Todo[/size][/b] [i](v1.1.8)[/i]
 
 An in-game to-do list for Sun Haven with per-character saves, categories, priorities, and a parchment-styled UI.
 
