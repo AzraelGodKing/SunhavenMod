@@ -25,6 +25,12 @@ namespace SenpaisChest.ChestLabels
             if (config == null || !config.EnableChestLabels.Value) return;
             if (chest == null || chest.gameObject == null) return;
             if (!AllowedChestTypes.Contains(chest.GetType())) return;
+            if (!ShouldShowLabelForChest(chest))
+            {
+                if (chest.TryGetComponent<ChestLabel>(out var staleLabel))
+                    UnityEngine.Object.Destroy(staleLabel);
+                return;
+            }
 
             if (!chest.TryGetComponent<ChestLabel>(out var label))
             {
@@ -58,6 +64,7 @@ namespace SenpaisChest.ChestLabels
             if (__result == null) return;
             var config = Plugin.GetConfig();
             if (config == null || !config.EnableChestLabels.Value) return;
+            if (!ShouldShowLabelForChest(__instance)) return;
 
             var label = __instance.GetComponent<ChestLabel>();
             if (label == null) return;
@@ -67,6 +74,19 @@ namespace SenpaisChest.ChestLabels
             {
                 !string.IsNullOrWhiteSpace(text) ? text : "Chest"
             };
+        }
+
+        private static bool ShouldShowLabelForChest(Chest chest)
+        {
+            if (chest == null)
+                return false;
+
+            var decoration = chest as Decoration;
+            var config = Plugin.GetConfig();
+            if (decoration == null || config == null)
+                return false;
+
+            return config.IsLabeledChestDecorationId(decoration.id);
         }
     }
 }
