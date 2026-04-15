@@ -2,6 +2,7 @@ using System;
 using System.Linq;
 using SenpaisChest.ChestLabels.Extensions;
 using SenpaisChest.Config;
+using SenpaisChest.Data;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
@@ -11,7 +12,8 @@ namespace SenpaisChest.ChestLabels
 {
     internal class ChestLabel : MonoBehaviour
     {
-        private const float LabelVerticalOffset = 0.35f;
+        private const float LabelVerticalOffset = 0.45f;
+        private const float ScreenYOffset = 16f;
 
         private static readonly (Color32 color, Color32 outlineColor)[] ChestColors = new (int, int)[]
         {
@@ -28,12 +30,15 @@ namespace SenpaisChest.ChestLabels
             (2761770, 854797)
         }.Select(hex => (hex.Item1.ToColor(), hex.Item2.ToColor())).ToArray();
 
-        private Canvas _canvas;
-        private Image _image;
+        private static Canvas _overlayCanvas;
+        private static RectTransform _overlayRoot;
+
+        private RectTransform _labelRoot;
+        private Image _iconImage;
         private TextMeshProUGUI _label;
         private ChestHitbox _hitbox;
         private Chest _chest;
-        private bool _hasImage;
+        private bool _hasIcon;
         private int _pendingItemId = -1;
         public bool PlayerOver { get; private set; }
 
@@ -53,50 +58,45 @@ namespace SenpaisChest.ChestLabels
                 return this;
             }
 
-            TextMeshProUGUI yearUI = null;
-            try
+            EnsureOverlayCanvas();
+            if (_overlayRoot == null)
             {
-                var dayCycle = SingletonBehaviour<DayCycle>.Instance;
-                yearUI = dayCycle?.GetYearUI();
-            }
-            catch (Exception ex)
-            {
-                Plugin.Log?.LogWarning($"ChestLabel.Init: Could not get DayCycle font: {ex.Message}");
+                Plugin.Log?.LogError("ChestLabel.Init: Could not initialize overlay canvas.");
+                return this;
             }
 
-            _canvas = new GameObject("SenpaisChest_LabelCanvas").AddComponent<Canvas>();
-            _canvas.renderMode = RenderMode.WorldSpace;
-            _canvas.worldCamera = Camera.main ?? UnityEngine.Object.FindObjectOfType<Camera>();
-            _canvas.overrideSorting = true;
-            _canvas.sortingOrder = 5000;
-            _canvas.transform.SetParent(transform, false);
-            _canvas.transform.eulerAngles = new Vector3(315f, 0f, 0f);
-            _canvas.GetComponent<RectTransform>().sizeDelta = new Vector2(Mathf.Max(1.8f, boxCollider.size.x * 2f), Mathf.Max(0.9f, boxCollider.size.y));
-            UpdateCanvasAnchor(boxCollider);
+            _labelRoot = new GameObject("SenpaisChest_LabelRoot", typeof(RectTransform)).GetComponent<RectTransform>();
+            _labelRoot.SetParent(_overlayRoot, false);
+            _labelRoot.anchorMin = new Vector2(0.5f, 0.5f);
+            _labelRoot.anchorMax = new Vector2(0.5f, 0.5f);
+            _labelRoot.pivot = new Vector2(0.5f, 0f);
+            _labelRoot.sizeDelta = new Vector2(240f, 42f);
 
-            _label = new GameObject("SenpaisChest_Label").AddComponent<TextMeshProUGUI>();
-            _label.raycastTarget = false;
-            _label.transform.SetParent(_canvas.transform, false);
-            _label.GetComponent<RectTransform>().sizeDelta = new Vector2(Mathf.Max(2.2f, boxCollider.size.x * 2.2f), Mathf.Max(0.9f, boxCollider.size.y * 1.2f));
-            _label.transform.localPosition = Vector3.zero;
+            _label = new GameObject("SenpaisChest_LabelText", typeof(RectTransform)).AddComponent<TextMeshProUGUI>();
+            _label.transform.SetParent(_labelRoot, false);
             _label.alignment = TextAlignmentOptions.Center;
-            _label.enableAutoSizing = true;
             _label.enableWordWrapping = false;
-            if (yearUI != null && yearUI.font != null)
-                _label.font = yearUI.font;
-            else
-                Plugin.Log?.LogError("Chest Labels: Could not find font - labels may not display correctly.");
-            _label.fontSizeMin = 0.3f;
-            _label.fontSizeMax = 0.5f;
-            _label.isOverlay = true;
+            _label.overflowMode = TextOverflowModes.Overflow;
+            _label.fontSize = 24f;
             _label.outlineWidth = 0.15f;
+            _label.text = "Chest";
+            var labelRt = _label.rectTransform;
+            labelRt.anchorMin = new Vector2(0.5f, 0f);
+            labelRt.anchorMax = new Vector2(0.5f, 0f);
+            labelRt.pivot = new Vector2(0.5f, 0f);
+            labelRt.anchoredPosition = Vector2.zero;
+            labelRt.sizeDelta = new Vector2(240f, 30f);
 
-            _image = new GameObject("SenpaisChest_LabelImage").AddComponent<Image>();
-            _image.raycastTarget = false;
-            _image.transform.SetParent(_canvas.transform, false);
-            _image.GetComponent<RectTransform>().sizeDelta = Vector2.one * 0.75f;
-            _image.transform.localPosition = new Vector3(0f, -0.32f, -0.1f);
-            _image.preserveAspect = true;
+            _iconImage = new GameObject("SenpaisChest_LabelIcon", typeof(RectTransform)).AddComponent<Image>();
+            _iconImage.transform.SetParent(_labelRoot, false);
+            var iconRt = _iconImage.rectTransform;
+            iconRt.anchorMin = new Vector2(0.5f, 0f);
+            iconRt.anchorMax = new Vector2(0.5f, 0f);
+            iconRt.pivot = new Vector2(0.5f, 0f);
+            iconRt.anchoredPosition = new Vector2(0f, -18f);
+            iconRt.sizeDelta = new Vector2(16f, 16f);
+            _iconImage.enabled = false;
+            _iconImage.raycastTarget = false;
 
             var hitboxGo = new GameObject("SenpaisChest_LabelHitbox");
             hitboxGo.transform.SetParent(transform, false);
@@ -113,9 +113,14 @@ namespace SenpaisChest.ChestLabels
                 _chest = transform.GetComponentInParent<Chest>();
             if (_chest == null) return;
 
-            UpdateCanvasAnchor();
+            UpdateAnchor();
             var data = _chest.GetChestData();
-            SetTextAndIcon(data.name ?? "", data.color);
+            string labelText = data.name;
+            if (string.IsNullOrWhiteSpace(labelText))
+                labelText = SmartChestManager.GetChestName(_chest);
+            if (string.Equals(labelText, "Chest", StringComparison.OrdinalIgnoreCase))
+                labelText = string.Empty;
+            SetTextAndIcon(labelText, data.color);
         }
 
         public string GetText()
@@ -137,8 +142,10 @@ namespace SenpaisChest.ChestLabels
             if (parts.Length == 1 || !int.TryParse(parts[0], out var itemId))
             {
                 _label.text = text;
-                _hasImage = false;
+                _hasIcon = false;
                 _pendingItemId = -1;
+                if (_iconImage != null)
+                    _iconImage.enabled = false;
                 return;
             }
 
@@ -147,28 +154,37 @@ namespace SenpaisChest.ChestLabels
                 if (!PSS.Database.ValidID(itemId))
                 {
                     _label.text = text;
-                    _hasImage = false;
+                    _hasIcon = false;
                     _pendingItemId = -1;
+                    if (_iconImage != null)
+                        _iconImage.enabled = false;
                     return;
                 }
                 _label.text = parts[parts.Length - 1];
                 _pendingItemId = itemId;
-                _hasImage = false;
-                _image.sprite = null;
+                _hasIcon = false;
+                if (_iconImage != null)
+                {
+                    _iconImage.sprite = null;
+                    _iconImage.enabled = false;
+                }
                 PSS.Database.GetData<ItemData>(itemId, data =>
                 {
-                    if (data != null && _image != null && _pendingItemId == itemId)
+                    if (data != null && _iconImage != null && _pendingItemId == itemId)
                     {
-                        _image.sprite = data.icon;
-                        _hasImage = _image.sprite != null;
+                        _iconImage.sprite = data.icon;
+                        _hasIcon = _iconImage.sprite != null;
+                        _iconImage.enabled = _hasIcon;
                     }
                 }, null);
             }
             catch
             {
                 _label.text = text;
-                _hasImage = false;
+                _hasIcon = false;
                 _pendingItemId = -1;
+                if (_iconImage != null)
+                    _iconImage.enabled = false;
             }
         }
 
@@ -177,37 +193,58 @@ namespace SenpaisChest.ChestLabels
             var config = Plugin.GetConfig();
             if (config == null || !config.EnableChestLabels.Value) return;
 
-            if (_canvas != null && _canvas.worldCamera == null && Camera.main != null)
-                _canvas.worldCamera = Camera.main;
-            UpdateCanvasAnchor();
+            UpdateAnchor();
             if (_label != null)
                 _label.enabled = ShouldBeVisible(config.LabelVisibility.Value);
-            if (_image != null)
-                _image.enabled = _hasImage && ShouldBeVisible(config.IconVisibility.Value);
+            if (_iconImage != null)
+                _iconImage.enabled = _hasIcon && ShouldBeVisible(config.IconVisibility.Value);
         }
 
-        private void UpdateCanvasAnchor(BoxCollider2D fallbackCollider = null)
+        private void UpdateAnchor(BoxCollider2D fallbackCollider = null)
         {
-            if (_canvas == null) return;
+            if (_labelRoot == null) return;
             if (_chest == null)
                 _chest = transform.GetComponentInParent<Chest>();
             if (_chest == null) return;
 
             var anchor = ResolveAnchorWorldPosition(_chest, fallbackCollider);
-            _canvas.transform.position = anchor;
+            var cam = Camera.main;
+            if (cam == null)
+                return;
+            Vector3 screen = cam.WorldToScreenPoint(anchor);
+            if (screen.z <= 0f)
+            {
+                _labelRoot.gameObject.SetActive(false);
+                return;
+            }
+            _labelRoot.gameObject.SetActive(true);
+            if (_overlayRoot == null)
+                return;
+            var screenPoint = new Vector2(screen.x, screen.y + ScreenYOffset);
+            if (RectTransformUtility.ScreenPointToLocalPointInRectangle(_overlayRoot, screenPoint, null, out var localPoint))
+            {
+                _labelRoot.anchoredPosition = localPoint;
+            }
         }
 
         private static Vector3 ResolveAnchorWorldPosition(Chest chest, BoxCollider2D fallbackCollider)
         {
+            // Primary anchor: chest collider top-center is the most stable "above chest" point.
+            var collider = fallbackCollider ?? chest.GetComponent<BoxCollider2D>() ?? chest.GetComponentInChildren<BoxCollider2D>();
+            if (collider != null)
+            {
+                var b = collider.bounds;
+                return new Vector3(b.center.x, b.max.y + LabelVerticalOffset, chest.transform.position.z);
+            }
+
+            // Fallback: sprite bounds if collider is unavailable.
             bool hasBounds = false;
             Bounds worldBounds = default;
-
             var renderers = chest.GetComponentsInChildren<SpriteRenderer>(true);
             foreach (var renderer in renderers)
             {
                 if (renderer == null || !renderer.enabled)
                     continue;
-
                 if (!hasBounds)
                 {
                     worldBounds = renderer.bounds;
@@ -219,19 +256,11 @@ namespace SenpaisChest.ChestLabels
                 }
             }
 
-            if (!hasBounds && fallbackCollider != null)
-            {
-                worldBounds = fallbackCollider.bounds;
-                hasBounds = true;
-            }
+            if (hasBounds)
+                return new Vector3(worldBounds.center.x, worldBounds.max.y + LabelVerticalOffset, chest.transform.position.z);
 
-            if (!hasBounds)
-            {
-                var pos = chest.transform.position;
-                return new Vector3(pos.x, pos.y + 1f, pos.z - 0.1f);
-            }
-
-            return new Vector3(worldBounds.center.x, worldBounds.max.y + LabelVerticalOffset, chest.transform.position.z - 0.1f);
+            var pos = chest.transform.position;
+            return new Vector3(pos.x, pos.y + 1f, pos.z);
         }
 
         private void OnTriggerEnter2D(Collider2D other)
@@ -248,9 +277,37 @@ namespace SenpaisChest.ChestLabels
 
         private bool ShouldBeVisible(SmartChestConfig.ChestLabelVisibility visibility)
         {
+            if (Plugin.CurrentInteractingChest != null)
+                return false;
             if (visibility == SmartChestConfig.ChestLabelVisibility.Hidden) return false;
             if (visibility == SmartChestConfig.ChestLabelVisibility.Visible) return true;
             return _hitbox != null && (_hitbox.MouseOver || PlayerOver);
+        }
+
+        private static void EnsureOverlayCanvas()
+        {
+            if (_overlayCanvas != null && _overlayRoot != null)
+                return;
+
+            var go = new GameObject("SenpaisChest_LabelOverlayCanvas", typeof(Canvas), typeof(CanvasScaler), typeof(GraphicRaycaster));
+            UnityEngine.Object.DontDestroyOnLoad(go);
+
+            _overlayCanvas = go.GetComponent<Canvas>();
+            _overlayCanvas.renderMode = RenderMode.ScreenSpaceOverlay;
+            _overlayCanvas.sortingOrder = short.MaxValue;
+
+            var scaler = go.GetComponent<CanvasScaler>();
+            scaler.uiScaleMode = CanvasScaler.ScaleMode.ScaleWithScreenSize;
+            scaler.referenceResolution = new Vector2(1920f, 1080f);
+            scaler.matchWidthOrHeight = 0.5f;
+
+            _overlayRoot = go.GetComponent<RectTransform>();
+        }
+
+        private void OnDestroy()
+        {
+            if (_labelRoot != null)
+                UnityEngine.Object.Destroy(_labelRoot.gameObject);
         }
     }
 }

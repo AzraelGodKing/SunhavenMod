@@ -1,4 +1,6 @@
 using BepInEx.Configuration;
+using System;
+using System.Collections.Generic;
 using UnityEngine;
 
 namespace SenpaisChest.Config
@@ -17,8 +19,10 @@ namespace SenpaisChest.Config
         public ConfigEntry<bool> EnableChestLabels { get; private set; }
         public ConfigEntry<ChestLabelVisibility> LabelVisibility { get; private set; }
         public ConfigEntry<ChestLabelVisibility> IconVisibility { get; private set; }
+        public ConfigEntry<string> LabeledChestDecorationIds { get; private set; }
         public ConfigEntry<float> UIScale { get; private set; }
         public ConfigEntry<bool> BlockInputWhenTypingInConfig { get; private set; }
+        private readonly HashSet<int> _labeledChestDecorationIdSet = new HashSet<int>();
 
         // Static copies for PersistentRunner access
         internal static KeyCode StaticToggleKey = KeyCode.F9;
@@ -114,20 +118,50 @@ namespace SenpaisChest.Config
                 "When to show item icons (when label starts with item ID): Visible, OnHover, or Hidden"
             );
 
+            LabeledChestDecorationIds = config.Bind(
+                "ChestLabels",
+                "LabeledChestDecorationIds",
+                "10110",
+                "Comma-separated chest decoration IDs allowed to show labels (example: 10110,10111)"
+            );
+
             // Initialize static values
             StaticToggleKey = ToggleKey.Value;
             StaticRequireCtrl = RequireCtrlModifier.Value;
             StaticBlockInputWhenTyping = BlockInputWhenTypingInConfig.Value;
+            RefreshLabeledChestDecorationIds();
 
             // Subscribe to config changes
             ToggleKey.SettingChanged += (_, _) => StaticToggleKey = ToggleKey.Value;
             RequireCtrlModifier.SettingChanged += (_, _) => StaticRequireCtrl = RequireCtrlModifier.Value;
             BlockInputWhenTypingInConfig.SettingChanged += (_, _) => StaticBlockInputWhenTyping = BlockInputWhenTypingInConfig.Value;
+            LabeledChestDecorationIds.SettingChanged += (_, _) => RefreshLabeledChestDecorationIds();
         }
 
         public float GetScanInterval()
         {
             return Mathf.Max(10f, ScanInterval.Value);
+        }
+
+        public bool IsLabeledChestDecorationId(int decorationId)
+        {
+            return _labeledChestDecorationIdSet.Contains(decorationId);
+        }
+
+        private void RefreshLabeledChestDecorationIds()
+        {
+            _labeledChestDecorationIdSet.Clear();
+            var raw = LabeledChestDecorationIds?.Value;
+            if (string.IsNullOrWhiteSpace(raw))
+                return;
+
+            var entries = raw.Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries);
+            for (int i = 0; i < entries.Length; i++)
+            {
+                var token = entries[i].Trim();
+                if (int.TryParse(token, out var parsed))
+                    _labeledChestDecorationIdSet.Add(parsed);
+            }
         }
     }
 }
