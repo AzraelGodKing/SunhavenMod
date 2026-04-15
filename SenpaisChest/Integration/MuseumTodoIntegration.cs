@@ -21,6 +21,8 @@ namespace SenpaisChest.Integration
     {
         // Track which museum items already have todos (game item ID → todo item ID)
         private readonly Dictionary<int, string> _museumTodoIds = new Dictionary<int, string>();
+        // Track "one item short" bundle todos (bundle id -> todo id)
+        private readonly Dictionary<string, string> _bundleTodoIds = new Dictionary<string, string>();
 
         // Throttle: don't scan every chest cycle, only every N scans
         private int _scanCounter;
@@ -77,10 +79,52 @@ namespace SenpaisChest.Integration
                         CheckMuseumItem(slotData.id, donationManager, todoManager);
                     }
                 }
+
+                SyncOneItemShortBundleTodos(donationManager, todoManager);
             }
             catch (Exception ex)
             {
                 Plugin.Log?.LogWarning($"[MuseumTodoIntegration] Error during scan: {ex.Message}");
+            }
+        }
+
+        private void SyncOneItemShortBundleTodos(DonationManager donationManager, TodoManager todoManager)
+        {
+            var activeBundleIds = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+
+            foreach (var section in MuseumContent.GetAllSections())
+            {
+                foreach (var bundle in section.Bundles)
+                {
+                    var needed = donationManager.GetNeededItems(bundle);
+                    if (needed == null || needed.Count != 1)
+                        continue;
+
+                    var lastItem = needed[0];
+                    if (lastItem == null)
+                        continue;
+
+                    activeBundleIds.Add(bundle.Id);
+                    if (_bundleTodoIds.ContainsKey(bundle.Id))
+                        continue;
+
+                    string title = $"Museum nearly complete: {bundle.Name}";
+                    string desc = $"One item left: {lastItem.Name}";
+                    var todo = new TodoItem(title, desc, TodoPriority.High, TodoCategory.Collection);
+                    SetTodoMetadata(todo, lastItem.GameItemId, section.Name);
+                    todoManager.AddTodo(todo);
+                    _bundleTodoIds[bundle.Id] = todo.Id;
+                }
+            }
+
+            var toRemove = _bundleTodoIds.Keys.Where(id => !activeBundleIds.Contains(id)).ToList();
+            foreach (string bundleId in toRemove)
+            {
+                string todoId = _bundleTodoIds[bundleId];
+                var existing = todoManager.GetAllTodos().FirstOrDefault(t => t.Id == todoId);
+                if (existing != null && !existing.IsCompleted)
+                    todoManager.RemoveTodo(todoId);
+                _bundleTodoIds.Remove(bundleId);
             }
         }
 
@@ -165,6 +209,7 @@ namespace SenpaisChest.Integration
         public void Reset()
         {
             _museumTodoIds.Clear();
+            _bundleTodoIds.Clear();
             _scanCounter = 0;
         }
 

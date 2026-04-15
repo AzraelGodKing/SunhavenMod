@@ -61,19 +61,27 @@ namespace SunhavenTodo.Data
 
                 // Write to temp file first (atomic operation)
                 var tempFilePath = filePath + ".tmp";
-                File.WriteAllText(tempFilePath, json);
-
-                // Backup existing file before overwriting
-                if (File.Exists(filePath))
+                try
                 {
-                    var backupPath = filePath + ".bak";
-                    if (File.Exists(backupPath))
-                        File.Delete(backupPath);
-                    File.Move(filePath, backupPath);
-                }
+                    File.WriteAllText(tempFilePath, json);
 
-                // Move temp file to final location
-                File.Move(tempFilePath, filePath);
+                    // Backup existing file before overwriting
+                    if (File.Exists(filePath))
+                    {
+                        var backupPath = filePath + ".bak";
+                        if (File.Exists(backupPath))
+                            File.Delete(backupPath);
+                        File.Move(filePath, backupPath);
+                    }
+
+                    // Move temp file to final location
+                    File.Move(tempFilePath, filePath);
+                }
+                finally
+                {
+                    if (File.Exists(tempFilePath))
+                        File.Delete(tempFilePath);
+                }
 
                 _manager.MarkClean();
                 Plugin.Log?.LogInfo($"[Save] Saved successfully: {filePath}");

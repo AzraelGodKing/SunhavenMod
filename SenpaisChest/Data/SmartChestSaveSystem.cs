@@ -75,17 +75,25 @@ namespace SenpaisChest.Data
                 Plugin.Log?.LogDebug($"[Save] JSON length: {json.Length} chars");
 
                 var tempFilePath = filePath + ".tmp";
-                File.WriteAllText(tempFilePath, json);
-
-                if (File.Exists(filePath))
+                try
                 {
-                    var backupPath = filePath + ".bak";
-                    if (File.Exists(backupPath))
-                        File.Delete(backupPath);
-                    File.Move(filePath, backupPath);
-                }
+                    File.WriteAllText(tempFilePath, json);
 
-                File.Move(tempFilePath, filePath);
+                    if (File.Exists(filePath))
+                    {
+                        var backupPath = filePath + ".bak";
+                        if (File.Exists(backupPath))
+                            File.Delete(backupPath);
+                        File.Move(filePath, backupPath);
+                    }
+
+                    File.Move(tempFilePath, filePath);
+                }
+                finally
+                {
+                    if (File.Exists(tempFilePath))
+                        File.Delete(tempFilePath);
+                }
 
                 _manager.MarkClean();
                 Plugin.Log?.LogInfo($"[Save] Saved successfully: {filePath}");
