@@ -67,8 +67,6 @@ namespace CropOptimizer.UI
             GUILayout.BeginArea(new Rect(20, 80, 340 * _scale, 120 * _scale), "Crop Optimizer", _windowStyle);
             GUILayout.Label($"Tracked crops: {_forecast.Snapshot().Count}", _labelStyle);
             GUILayout.Label($"Projected sell value: {_forecast.GetProjectedSellTotal()}g", _labelStyle);
-            GUILayout.Label("Sprinkler coverage: n/a", _labelStyle);
-            GUILayout.Label("Planting advisor: n/a", _labelStyle);
             GUILayout.EndArea();
         }
     }
