@@ -16,6 +16,7 @@ namespace BirthdayReminder.Data
         private GiftTrackingData _giftTracking;
         private List<BirthdayDisplayInfo> _todaysBirthdays = new List<BirthdayDisplayInfo>();
         private string _currentCharacter;
+        private FavoriteGiftStore _favoriteGiftStore;
 
         // Cached date for HUD display (avoids logging spam from per-frame calls)
         private string _cachedDateString = "";
@@ -218,6 +219,7 @@ namespace BirthdayReminder.Data
                 {
                     _giftTracking = new GiftTrackingData(characterName, year, season, day);
                     _currentCharacter = characterName;
+                    _favoriteGiftStore = FavoriteGiftStore.Load(characterName);
                 }
 
                 // Get all NPCs and check birthdays
@@ -259,6 +261,13 @@ namespace BirthdayReminder.Data
                         // Fall back to cache suggestions
                         var randomGifts = BirthdayCache.GetRandomGiftSuggestions(npc.NPCName, 3);
                         giftHint = randomGifts.Count > 0 ? $"Loves: {string.Join(", ", randomGifts)}" : "";
+                    }
+
+                    if (_favoriteGiftStore != null && _favoriteGiftStore.TryGetFavorite(displayNpcName, out string favoriteGift))
+                    {
+                        giftHint = string.IsNullOrWhiteSpace(giftHint)
+                            ? $"Favorite: {favoriteGift}"
+                            : $"Favorite: {favoriteGift} | {giftHint}";
                     }
 
                     // Pass full gift lists for expanded view
@@ -322,6 +331,33 @@ namespace BirthdayReminder.Data
             OnBirthdaysUpdated?.Invoke();
         }
 
+        public void TryRecordLovedGift(string npcName, object giftedItem)
+        {
+            if (giftedItem == null || _favoriteGiftStore == null || _todaysBirthdays == null)
+                return;
+
+            string normalizedName = NormalizeNpcName(npcName);
+            if (string.IsNullOrEmpty(normalizedName))
+                return;
+
+            var birthday = _todaysBirthdays.FirstOrDefault(b => string.Equals(b.NPCName, normalizedName, StringComparison.OrdinalIgnoreCase));
+            if (birthday == null || birthday.AllLovedGifts == null || birthday.AllLovedGifts.Count == 0)
+                return;
+
+            string giftedName = GetItemName(giftedItem);
+            if (string.IsNullOrWhiteSpace(giftedName))
+                return;
+
+            bool isLoved = birthday.AllLovedGifts.Any(g =>
+                !string.IsNullOrWhiteSpace(g) && string.Equals(g.Trim(), giftedName.Trim(), StringComparison.OrdinalIgnoreCase));
+            if (!isLoved)
+                return;
+
+            _favoriteGiftStore.SetFavorite(normalizedName, giftedName);
+            _favoriteGiftStore.Save();
+            Plugin.Log?.LogInfo($"[BirthdayManager] Recorded favorite gift for {normalizedName}: {giftedName}");
+        }
+
         private static string NormalizeNpcName(string npcName)
         {
             if (string.IsNullOrWhiteSpace(npcName))
@@ -351,6 +387,7 @@ namespace BirthdayReminder.Data
 
             _currentCharacter = newCharacterName;
             _giftTracking = null;
+            _favoriteGiftStore = FavoriteGiftStore.Load(newCharacterName);
             _todaysBirthdays.Clear();
 
             OnBirthdaysUpdated?.Invoke();

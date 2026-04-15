@@ -9,6 +9,7 @@ using TheVault.Vault;
 using HarmonyLib;
 using SunhavenMods.Shared;
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using UnityEngine;
@@ -38,6 +39,7 @@ namespace TheVault
         internal static bool StaticRequireCtrl = true;
         internal static KeyCode StaticAltToggleKey = KeyCode.F8;
         internal static KeyCode StaticHUDToggleKey = KeyCode.F7;
+        internal static KeyCode StaticQuickConvertKey = KeyCode.F6;
 
         private Harmony _harmony;
         private VaultManager _vaultManager;
@@ -58,6 +60,8 @@ namespace TheVault
         private ConfigEntry<bool> _hudCompactMode;
         private ConfigEntry<string> _hudDensity;
         private ConfigEntry<KeyCode> _hudToggleKey;
+        private ConfigEntry<KeyCode> _quickConvertKey;
+        private ConfigEntry<string> _quickConvertTable;
         private ConfigEntry<float> _windowScale;
         private ConfigEntry<bool> _enableAutoSave;
         private ConfigEntry<float> _autoSaveInterval;
@@ -124,6 +128,7 @@ namespace TheVault
                 StaticRequireCtrl = _requireCtrlModifier.Value;
                 StaticAltToggleKey = _altToggleKey.Value;
                 StaticHUDToggleKey = _hudToggleKey.Value;
+                StaticQuickConvertKey = _quickConvertKey.Value;
 
                 // Create HUD for persistent display
                 _vaultHUD = uiObject.AddComponent<VaultHUD>();
@@ -391,6 +396,20 @@ namespace TheVault
                 "Key to toggle the HUD display on/off"
             );
 
+            _quickConvertKey = ConfigFile.Bind(
+                "Hotkeys",
+                "QuickConvertKey",
+                KeyCode.F6,
+                "Key to trigger quick token/key conversion using [QuickConvert] ExchangeTable"
+            );
+
+            _quickConvertTable = ConfigFile.Bind(
+                "QuickConvert",
+                "ExchangeTable",
+                "seasonal_Winter->key_copper:10:1;key_copper->seasonal_Winter:1:10",
+                "Conversion rules: from->to:fromAmount:toAmount;from->to:... (example seasonal_Winter->key_copper:10:1)"
+            );
+
             _enableAutoSave = ConfigFile.Bind(
                 "Saving",
                 "EnableAutoSave",
@@ -421,18 +440,23 @@ namespace TheVault
         /// </summary>
         private void SubscribeConfigChanged()
         {
-            void OnConfigChanged(object s, EventArgs e) => ApplyConfigToState();
-            _toggleKey.SettingChanged += OnConfigChanged;
-            _requireCtrlModifier.SettingChanged += OnConfigChanged;
-            _altToggleKey.SettingChanged += OnConfigChanged;
-            _enableHUD.SettingChanged += OnConfigChanged;
-            _hudPosition.SettingChanged += OnConfigChanged;
-            _hudScale.SettingChanged += OnConfigChanged;
-            _hudCompactMode.SettingChanged += OnConfigChanged;
-            _hudDensity.SettingChanged += OnConfigChanged;
-            _hudToggleKey.SettingChanged += OnConfigChanged;
-            _windowScale.SettingChanged += OnConfigChanged;
-            _autoSaveInterval.SettingChanged += OnConfigChanged;
+            if (ConfigFile != null)
+                ConfigFile.SettingChanged += OnAnyConfigSettingChanged;
+        }
+
+        private void OnAnyConfigSettingChanged(object sender, SettingChangedEventArgs args)
+        {
+            try
+            {
+                // Live-apply only our own entries to avoid unrelated plugin config noise.
+                if (args?.ChangedSetting == null || args.ChangedSetting.ConfigFile != ConfigFile)
+                    return;
+                ApplyConfigToState();
+            }
+            catch (Exception ex)
+            {
+                Log?.LogError($"[The Vault] Config change handler failed: {ex.Message}");
+            }
         }
 
         /// <summary>
@@ -446,6 +470,7 @@ namespace TheVault
                 StaticRequireCtrl = _requireCtrlModifier.Value;
                 StaticAltToggleKey = _altToggleKey.Value;
                 StaticHUDToggleKey = _hudToggleKey.Value;
+                StaticQuickConvertKey = _quickConvertKey.Value;
                 _staticSaveSystem?.SetAutoSaveIntervalSeconds(Mathf.Max(10f, _autoSaveInterval.Value));
 
                 var vaultUI = GetVaultUI();
@@ -1216,6 +1241,124 @@ namespace TheVault
             _staticSaveSystem?.CheckAutoSave();
         }
 
+        internal static void TryQuickConvertHotkey()
+        {
+            Instance?.TryQuickConvert();
+        }
+
+        private void TryQuickConvert()
+        {
+            var manager = GetVaultManager();
+            if (manager == null)
+                return;
+
+            var rules = ParseQuickConvertRules(_quickConvertTable?.Value);
+            foreach (var rule in rules)
+            {
+                int available = manager.GetCurrency(rule.FromCurrencyId);
+                if (available < rule.FromAmount)
+                    continue;
+
+                if (!TryMutateCurrency(manager, rule.FromCurrencyId, rule.FromAmount, add: false))
+                    continue;
+                if (!TryMutateCurrency(manager, rule.ToCurrencyId, rule.ToAmount, add: true))
+                {
+                    TryMutateCurrency(manager, rule.FromCurrencyId, rule.FromAmount, add: true);
+                    continue;
+                }
+
+                Log?.LogInfo($"[QuickConvert] {rule.FromAmount} {rule.FromCurrencyId} -> {rule.ToAmount} {rule.ToCurrencyId}");
+                return;
+            }
+        }
+
+        private static List<QuickConvertRule> ParseQuickConvertRules(string table)
+        {
+            var rules = new List<QuickConvertRule>();
+            if (string.IsNullOrWhiteSpace(table))
+                return rules;
+
+            foreach (string rawEntry in table.Split(new[] { ';' }, StringSplitOptions.RemoveEmptyEntries))
+            {
+                string entry = rawEntry.Trim();
+                int arrow = entry.IndexOf("->", StringComparison.Ordinal);
+                int colonA = entry.IndexOf(':');
+                int colonB = colonA >= 0 ? entry.IndexOf(':', colonA + 1) : -1;
+                if (arrow <= 0 || colonA <= arrow || colonB <= colonA)
+                    continue;
+
+                string from = entry.Substring(0, arrow).Trim();
+                string to = entry.Substring(arrow + 2, colonA - (arrow + 2)).Trim();
+                if (!int.TryParse(entry.Substring(colonA + 1, colonB - colonA - 1), out int fromAmount) || fromAmount <= 0)
+                    continue;
+                if (!int.TryParse(entry.Substring(colonB + 1), out int toAmount) || toAmount <= 0)
+                    continue;
+                if (string.IsNullOrWhiteSpace(from) || string.IsNullOrWhiteSpace(to))
+                    continue;
+
+                rules.Add(new QuickConvertRule(from, to, fromAmount, toAmount));
+            }
+
+            return rules;
+        }
+
+        private static bool TryMutateCurrency(VaultManager manager, string currencyId, int amount, bool add)
+        {
+            if (manager == null || string.IsNullOrWhiteSpace(currencyId) || amount <= 0)
+                return false;
+
+            if (currencyId.StartsWith(VaultCurrencyIds.PrefixSeasonal, StringComparison.Ordinal))
+            {
+                string token = currencyId.Substring(VaultCurrencyIds.PrefixSeasonal.Length);
+                if (!Enum.TryParse(token, out SeasonalTokenType type))
+                    return false;
+                return add ? manager.AddSeasonalTokens(type, amount) : manager.RemoveSeasonalTokens(type, amount);
+            }
+            if (currencyId.StartsWith(VaultCurrencyIds.PrefixCommunity, StringComparison.Ordinal))
+            {
+                string id = currencyId.Substring(VaultCurrencyIds.PrefixCommunity.Length);
+                return add ? manager.AddCommunityTokens(id, amount) : manager.RemoveCommunityTokens(id, amount);
+            }
+            if (currencyId.StartsWith(VaultCurrencyIds.PrefixKey, StringComparison.Ordinal))
+            {
+                string id = currencyId.Substring(VaultCurrencyIds.PrefixKey.Length);
+                return add ? manager.AddKeys(id, amount) : manager.RemoveKeys(id, amount);
+            }
+            if (currencyId.StartsWith(VaultCurrencyIds.PrefixSpecial, StringComparison.Ordinal))
+            {
+                string id = currencyId.Substring(VaultCurrencyIds.PrefixSpecial.Length);
+                return add ? manager.AddSpecial(id, amount) : manager.RemoveSpecial(id, amount);
+            }
+            if (currencyId.StartsWith(VaultCurrencyIds.PrefixOrb, StringComparison.Ordinal))
+            {
+                string id = currencyId.Substring(VaultCurrencyIds.PrefixOrb.Length);
+                return add ? manager.AddOrbs(id, amount) : manager.RemoveOrbs(id, amount);
+            }
+            if (currencyId.StartsWith(VaultCurrencyIds.PrefixCustom, StringComparison.Ordinal))
+            {
+                string id = currencyId.Substring(VaultCurrencyIds.PrefixCustom.Length);
+                return add ? manager.AddCustomCurrency(id, amount) : manager.RemoveCustomCurrency(id, amount);
+            }
+
+            return false;
+        }
+
+        private readonly struct QuickConvertRule
+        {
+            public QuickConvertRule(string fromCurrencyId, string toCurrencyId, int fromAmount, int toAmount)
+            {
+                FromCurrencyId = fromCurrencyId;
+                ToCurrencyId = toCurrencyId;
+                FromAmount = fromAmount;
+                ToAmount = toAmount;
+            }
+
+            public string FromCurrencyId { get; }
+            public string ToCurrencyId { get; }
+            public int FromAmount { get; }
+            public int ToAmount { get; }
+        }
+
         #endregion
     }
 
@@ -1312,6 +1455,11 @@ namespace TheVault
                 {
                     var vaultHUD = Plugin.GetVaultHUD();
                     vaultHUD?.Toggle();
+                }
+
+                if (Plugin.StaticQuickConvertKey != KeyCode.None && Input.GetKeyDown(Plugin.StaticQuickConvertKey))
+                {
+                    Plugin.TryQuickConvertHotkey();
                 }
 
             }

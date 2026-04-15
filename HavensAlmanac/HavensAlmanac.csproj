@@ -96,6 +96,10 @@
       <HintPath>..\builds\HavenDevTools\HavenDevTools.dll</HintPath>
       <Private>false</Private>
     </Reference>
+    <Reference Include="CropOptimizer">
+      <HintPath>..\builds\CropOptimizer\CropOptimizer.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
   </ItemGroup>
 
   <!-- Exclude decompiled reference files -->

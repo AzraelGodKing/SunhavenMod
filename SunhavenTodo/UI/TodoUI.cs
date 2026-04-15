@@ -650,33 +650,37 @@ namespace SunhavenTodo.UI
 
         private IEnumerable<TodoItem> GetFilteredTodos()
         {
-            var todos = _manager.GetAllTodos();
+            var todos = _manager.GetAllTodos().ToList();
 
             // Filter by completion
             if (!_showCompletedItems)
             {
-                todos = todos.Where(t => !t.IsCompleted);
+                todos = todos.Where(t => !t.IsCompleted).ToList();
             }
 
             // Filter by category
             if (_selectedCategoryFilter >= 0)
             {
                 var category = (TodoCategory)_selectedCategoryFilter;
-                todos = todos.Where(t => t.Category == category);
+                todos = todos.Where(t => t.Category == category).ToList();
             }
 
             // Filter by search
             if (!string.IsNullOrWhiteSpace(_searchQuery))
             {
-                todos = _manager.SearchTodos(_searchQuery);
+                string lowerQuery = _searchQuery.ToLowerInvariant();
+                todos = todos.Where(t =>
+                    t.Title.ToLowerInvariant().Contains(lowerQuery) ||
+                    (!string.IsNullOrEmpty(t.Description) && t.Description.ToLowerInvariant().Contains(lowerQuery)))
+                    .ToList();
                 if (!_showCompletedItems)
                 {
-                    todos = todos.Where(t => !t.IsCompleted);
+                    todos = todos.Where(t => !t.IsCompleted).ToList();
                 }
                 if (_selectedCategoryFilter >= 0)
                 {
                     var category = (TodoCategory)_selectedCategoryFilter;
-                    todos = todos.Where(t => t.Category == category);
+                    todos = todos.Where(t => t.Category == category).ToList();
                 }
             }
 

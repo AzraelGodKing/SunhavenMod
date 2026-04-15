@@ -10,6 +10,8 @@ builds/
 │   └── BirthdayReminder.dll
 ├── FasterRaces/
 │   └── FasterRaces.dll
+├── CropOptimizer/
+│   └── CropOptimizer.dll
 ├── HavenDevTools/
 │   └── HavenDevTools.dll
 ├── HavensAlmanac/

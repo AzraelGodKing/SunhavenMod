@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 using BirthdayReminder.Data;
 using SunhavenTodo;
 using SunhavenTodo.Data;
@@ -18,6 +19,8 @@ namespace BirthdayReminder.Integration
     public class TodoIntegration
     {
         private readonly BirthdayManager _birthdayManager;
+        private static MethodInfo _todoGetByIdMethod;
+        private static bool _todoGetByIdLookedUp;
 
         // Track which NPC birthday todos we've created (NPC name → todo item ID)
         private readonly Dictionary<string, string> _birthdayTodoIds = new Dictionary<string, string>();
@@ -51,7 +54,7 @@ namespace BirthdayReminder.Integration
                     return;
                 }
 
-                var todo = todoManager.GetAllTodos().FirstOrDefault(t => t.Id == todoId);
+                var todo = FindTodoById(todoManager, todoId);
                 if (todo == null)
                 {
                     Plugin.Log?.LogWarning($"[TodoIntegration] OnGiftGiven: Todo {todoId} not found for {npcName}");
@@ -148,12 +151,39 @@ namespace BirthdayReminder.Integration
         {
             if (!_birthdayTodoIds.TryGetValue(npcName, out var todoId)) return;
 
-            var todo = todoManager.GetAllTodos().FirstOrDefault(t => t.Id == todoId);
+            var todo = FindTodoById(todoManager, todoId);
             if (todo != null && !todo.IsCompleted)
             {
                 todoManager.ToggleComplete(todoId);
                 Plugin.Log?.LogInfo($"[TodoIntegration] Completed birthday todo for {npcName} (event path)");
             }
+        }
+
+        private static TodoItem FindTodoById(TodoManager todoManager, string todoId)
+        {
+            if (todoManager == null || string.IsNullOrEmpty(todoId))
+                return null;
+
+            // Prefer O(1) TodoManager.GetTodoById when available.
+            if (!_todoGetByIdLookedUp)
+            {
+                _todoGetByIdMethod = typeof(TodoManager).GetMethod("GetTodoById", BindingFlags.Public | BindingFlags.Instance);
+                _todoGetByIdLookedUp = true;
+            }
+
+            if (_todoGetByIdMethod != null)
+            {
+                try
+                {
+                    return _todoGetByIdMethod.Invoke(todoManager, new object[] { todoId }) as TodoItem;
+                }
+                catch
+                {
+                    // Fall back to linear scan if reflective call fails.
+                }
+            }
+
+            return todoManager.GetAllTodos().FirstOrDefault(t => t.Id == todoId);
         }
 
         private void RemoveBirthdayTodo(TodoManager todoManager, string npcName)

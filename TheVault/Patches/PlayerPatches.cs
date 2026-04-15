@@ -90,7 +90,14 @@ namespace TheVault.Patches
 
                 // Set player name in vault manager
                 var vaultManager = Plugin.GetVaultManager();
-                vaultManager?.SetPlayerName(characterName);
+                if (vaultManager == null)
+                {
+                    Plugin.Log?.LogWarning("VaultManager not available during character load");
+                }
+                else
+                {
+                    vaultManager.SetPlayerName(characterName);
+                }
 
                 // Load UI icons
                 IconCache.LoadAllIcons();

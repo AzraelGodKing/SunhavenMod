@@ -22,6 +22,7 @@ namespace HavensAlmanac
     [BepInDependency("com.azraelgodking.thevault", BepInDependency.DependencyFlags.SoftDependency)]
     [BepInDependency("com.azraelgodking.havensbirthright", BepInDependency.DependencyFlags.SoftDependency)]
     [BepInDependency("com.azraelgodking.havendevtools", BepInDependency.DependencyFlags.SoftDependency)]
+    [BepInDependency("com.azraelgodking.cropoptimizer", BepInDependency.DependencyFlags.SoftDependency)]
     public class Plugin : BaseUnityPlugin
     {
         public static Plugin Instance { get; private set; }
@@ -99,6 +100,9 @@ namespace HavensAlmanac
         {
             var pluginInfos = BepInEx.Bootstrap.Chainloader.PluginInfos;
 
+            // Always available: telemetry surfaced by SharedUtilities.VersionChecker
+            _staticAggregator.RegisterProvider(new Integration.ModHealthDataProvider());
+
             TryRegisterProvider(pluginInfos, "com.azraelgodking.sunhaventodo",
                 () => new Integration.TodoDataProvider(), "SunhavenTodo");
 
@@ -119,6 +123,9 @@ namespace HavensAlmanac
 
             TryRegisterProvider(pluginInfos, "com.azraelgodking.havendevtools",
                 () => new Integration.DevToolsDataProvider(), "HavenDevTools");
+
+            TryRegisterProvider(pluginInfos, "com.azraelgodking.cropoptimizer",
+                () => new Integration.CropOptimizerDataProvider(), "CropOptimizer");
         }
 
         private void TryRegisterProvider(

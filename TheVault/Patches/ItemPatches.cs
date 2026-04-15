@@ -52,6 +52,8 @@ namespace TheVault.Patches
         private static MethodInfo _cachedItemIdMethod;
         /// <summary>Delegate for ID() method - avoids MethodInfo.Invoke overhead on every pickup.</summary>
         private static Func<object, int> _cachedGetItemIdDelegate;
+        private static bool _canResolveItemId;
+        private static bool _loggedMissingItemIdResolver;
 
         private enum InventoryRemoveKind { None, IntIntInt, IntInt, IntIntBool, RemoveAmount }
 
@@ -65,6 +67,9 @@ namespace TheVault.Patches
         private const BindingFlags InstanceMemberFlags = BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic;
         private static object _itemInfoDatabaseInstance;
         private static FieldInfo _allItemSellInfosField;
+        private static int _lastCurrencyLookupItemId = -1;
+        private static string _lastCurrencyLookupCurrencyId;
+        private static bool _lastCurrencyLookupValid;
 
         /// <summary>
         /// Check if auto-deposit is enabled for a currency.
@@ -143,6 +148,8 @@ namespace TheVault.Patches
         {
             _itemToCurrency[gameItemId] = (currencyId, autoDeposit);
             _currencyToItem[currencyId] = gameItemId;
+            if (_lastCurrencyLookupValid && _lastCurrencyLookupItemId == gameItemId)
+                _lastCurrencyLookupCurrencyId = currencyId;
             Plugin.Log?.LogInfo($"Registered item-currency mapping: Item {gameItemId} <-> {currencyId}");
         }
 
@@ -280,7 +287,14 @@ namespace TheVault.Patches
         /// </summary>
         public static string GetCurrencyForItem(int gameItemId)
         {
-            return _itemToCurrency.TryGetValue(gameItemId, out var mapping) ? mapping.currencyId : null;
+            if (_lastCurrencyLookupValid && gameItemId == _lastCurrencyLookupItemId)
+                return _lastCurrencyLookupCurrencyId;
+
+            string currencyId = _itemToCurrency.TryGetValue(gameItemId, out var mapping) ? mapping.currencyId : null;
+            _lastCurrencyLookupItemId = gameItemId;
+            _lastCurrencyLookupCurrencyId = currencyId;
+            _lastCurrencyLookupValid = true;
+            return currencyId;
         }
 
         /// <summary>
@@ -728,6 +742,8 @@ namespace TheVault.Patches
         public static void InitializePickupCache()
         {
             EnsureItemIdCache();
+            if (!_canResolveItemId)
+                Plugin.Log?.LogWarning("[ItemPatches] Item ID resolver is unavailable; pickup object patch paths will be skipped.");
         }
 
         /// <summary>
@@ -758,7 +774,13 @@ namespace TheVault.Patches
                         {
                             try
                             {
-                                _cachedGetItemIdDelegate = (Func<object, int>)_cachedItemIdMethod.CreateDelegate(typeof(Func<object, int>));
+                                var typedDelegate = (Func<Item, int>)Delegate.CreateDelegate(typeof(Func<Item, int>), _cachedItemIdMethod);
+                                _cachedGetItemIdDelegate = obj =>
+                                {
+                                    if (obj is Item wishItem)
+                                        return typedDelegate(wishItem);
+                                    return -1;
+                                };
                             }
                             catch
                             {
@@ -766,11 +788,13 @@ namespace TheVault.Patches
                             }
                         }
                     }
+                    _canResolveItemId = _cachedGetItemIdDelegate != null || _cachedItemIdField != null || _cachedItemIdProperty != null;
                     _itemIdReflectionCached = true;
                 }
                 catch (Exception ex)
                 {
                     Plugin.Log?.LogDebug($"[ItemPatches] EnsureItemIdCache: {ex.Message}");
+                    _canResolveItemId = false;
                     _itemIdReflectionCached = true;
                 }
             }
@@ -785,6 +809,15 @@ namespace TheVault.Patches
             if (item is Item wishItem)
                 return wishItem.ID();
             EnsureItemIdCache();
+            if (!_canResolveItemId)
+            {
+                if (!_loggedMissingItemIdResolver)
+                {
+                    Plugin.Log?.LogWarning("[ItemPatches] Missing item ID resolver; skipping object-based pickup handling.");
+                    _loggedMissingItemIdResolver = true;
+                }
+                return -1;
+            }
             try
             {
                 // Fast path: delegate call (no reflection invoke)
@@ -798,11 +831,6 @@ namespace TheVault.Patches
                 if (_cachedItemIdProperty != null)
                 {
                     var r = _cachedItemIdProperty.GetValue(item);
-                    if (r is int id) return id;
-                }
-                if (_cachedItemIdMethod != null)
-                {
-                    var r = _cachedItemIdMethod.Invoke(item, null);
                     if (r is int id) return id;
                 }
             }

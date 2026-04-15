@@ -17,6 +17,7 @@ A collection of BepInEx mods for [Sun Haven](https://store.steampowered.com/app/
 | [**Trinket Fortune**](TrinketFortune/) | Increases odds of unowned fishing trinkets dropping as you complete the aquarium | 1.0.3 |
 | [**Faster Races**](FasterRaces/) | Configurable movement speed bonus; integrates with Haven's Birthright to avoid double speed | 1.1.3 |
 | [**Justice for Harold**](JusticeForHarold/) | Quest interaction tweak for Harold's reward flow | 1.0.0 |
+| [**Crop Optimizer**](CropOptimizer/) | Crop forecast HUD with soft Todo/Birthday/Vault integrations | 1.0.0 |
 
 ---
 
@@ -69,6 +70,10 @@ Configurable percentage bonus to movement speed for all races. With Haven's Birt
 
 Small quest behavior tweak focused on Harold interaction outcomes.
 
+### Crop Optimizer
+
+Adds crop forecast tracking and a compact HUD with soft integrations for Sunhaven Todo, Birthday Reminder, The Vault, and Haven's Almanac.
+
 ---
 
 ## Installation
@@ -103,6 +108,7 @@ SunhavenMod/
 ├── HavenDevTools/         # Dev tools
 ├── TrinketFortune/        # Fishing trinket drop rates
 ├── FasterRaces/           # Movement speed bonus
+├── CropOptimizer/         # Crop forecasting + HUD
 ├── SharedUtilities/       # Shared code (VersionChecker, etc.)
 ├── scripts/               # Maintainer helpers (pre-push-build.ps1, remove-stale-github-releases.ps1)
 └── docs/                  # Shared documentation
@@ -113,6 +119,7 @@ SunhavenMod/
 ## Documentation site changelog
 
 - **2026-04-11** — **Trinket Fortune load fix:** removed hard runtime dependency on `HavenDevTools.dll` to prevent startup black screens when HavenDevTools is not installed. Updated [`TrinketFortune/thunderstore/README.md`](TrinketFortune/thunderstore/README.md) and [`docs/versions.json`](docs/versions.json) changelog text (no version bump).
+- **2026-04-15** — Added new mod scaffold [`CropOptimizer/`](CropOptimizer/) with crop-growth Harmony hook, HUD, soft integrations (SunhavenTodo/BirthdayReminder/TheVault), Almanac provider wiring, and release metadata entries.
 - **2026-04-11** — Maintainer/compat pass: added [`docs/MAINTAINER_VERSION_DRIFT_CHECKLIST.md`](docs/MAINTAINER_VERSION_DRIFT_CHECKLIST.md) and [`docs/COMPATIBILITY_CONTRACT.md`](docs/COMPATIBILITY_CONTRACT.md); aligned Sunhaven Todo + The Vault docs text drift; updated release metadata URLs (`SenpaisChest`, `HavenDevTools`, `TrinketFortune`); expanded [`builds/README.md`](builds/README.md) artifact map; added concise repo READMEs for `BirthdayReminder`, `FasterRaces`, and `SenpaisChest`.
 - **2026-04-09** — **Haven's Birthright v2.0.0:** Changing saves or characters—and Fire/Water Elemental behavior after loads and F9—is more reliable. The code was reorganized for upkeep, and the mod keeps its hidden runner alive with shared SceneRootSurvivor instead of a third-party Keep Alive mod. Docs: [`docs/RacialBonuses/RacialBonuses.html`](docs/RacialBonuses/RacialBonuses.html), [`docs/index.html`](docs/index.html); source changelog [`HavensBirthright/README.md`](HavensBirthright/README.md); [`docs/versions.json`](docs/versions.json) for live hub badges.
 - **2026-04-05** — Maintainer script [`scripts/remove-stale-github-releases.ps1`](scripts/remove-stale-github-releases.ps1): removes GitHub releases whose tags are not the current `{thunderstoreName}-v{version}` from [`docs/versions.json`](docs/versions.json). **GitHub Actions:** workflow [`.github/workflows/remove-stale-github-releases.yml`](.github/workflows/remove-stale-github-releases.yml) (manual dispatch; **dry run** default; turn off dry run + enable **confirm_delete** to delete). **Local:** set **`GITHUB_TOKEN`** (classic PAT, **repo** scope) or **`-Token`**; **`-WhatIf`** first; **`YES`** or **`-Force`**.

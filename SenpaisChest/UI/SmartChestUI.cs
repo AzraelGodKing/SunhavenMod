@@ -203,7 +203,6 @@ namespace SenpaisChest.UI
         private GUIStyle _configRemoveButtonStyle;
         private GUIStyle _configCloseBottomStyle;
         private GUIStyle _configWindowStyle;
-        private bool _stylesInitialized;
 
         public bool IsVisible => _isVisible;
         /// <summary>True when config is drawn inside the chest UI panel (we should not block closing the chest).</summary>
@@ -227,11 +226,12 @@ namespace SenpaisChest.UI
         public void SetScale(float scale)
         {
             _scale = Mathf.Clamp(scale, 0.5f, 2.5f);
-            _stylesInitialized = false;
+            _configWindowStyle = null;
             _windowRect.width = WindowWidth;
             _windowRect.height = WindowHeight;
             _groupsWindowRect.width = GroupsWindowWidth;
             _groupsWindowRect.height = GroupsWindowHeight;
+            InitializeStyles();
         }
 
         public void Show()
@@ -386,8 +386,10 @@ namespace SenpaisChest.UI
 
         private void OnGUI()
         {
-            if (!_stylesInitialized)
+            if (_configWindowStyle == null)
                 InitializeStyles();
+            if (_configWindowStyle == null)
+                return;
 
             // Note panel: "Press F9 to configure rules" when chest is open and config not visible
             if (_notePanelRoot != null && !_isVisible)
@@ -644,6 +646,17 @@ namespace SenpaisChest.UI
                 GUILayout.Space(4);
             }
 
+            GUILayout.Label("Presets", useParchmentTheme ? _chestLabelBoldStyle : _labelBoldStyle);
+            GUILayout.BeginHorizontal();
+            if (GUILayout.Button("Equipment", useParchmentTheme ? _chestSelectorStyle : _selectorStyle, GUILayout.Height((useParchmentTheme || compact) ? 24 : 28)))
+                ApplyPreset("Equipment");
+            if (GUILayout.Button("Consumables", useParchmentTheme ? _chestSelectorStyle : _selectorStyle, GUILayout.Height((useParchmentTheme || compact) ? 24 : 28)))
+                ApplyPreset("Consumables");
+            if (GUILayout.Button("Crafting", useParchmentTheme ? _chestSelectorStyle : _selectorStyle, GUILayout.Height((useParchmentTheme || compact) ? 24 : 28)))
+                ApplyPreset("Crafting");
+            GUILayout.EndHorizontal();
+            GUILayout.Space(compact ? 4 : 6);
+
             GUILayout.BeginHorizontal();
             DrawSelectorButton(0, useParchmentTheme || compact, GUILayout.Height((useParchmentTheme || compact) ? 24 : 28));
             DrawSelectorButton(1, useParchmentTheme || compact, GUILayout.Height((useParchmentTheme || compact) ? 24 : 28));
@@ -760,7 +773,7 @@ namespace SenpaisChest.UI
 
         private void DrawGroupsWindow(int windowId)
         {
-            if (!_stylesInitialized) InitializeStyles();
+            if (_configWindowStyle == null) InitializeStyles();
             var labelBold = _chestLabelBoldStyle;
             var label = _chestLabelStyle;
             var labelDim = _chestLabelDimStyle;
@@ -884,7 +897,7 @@ namespace SenpaisChest.UI
 
         private void DrawNoteContent(float width, float height)
         {
-            if (!_stylesInitialized) InitializeStyles();
+            if (_configWindowStyle == null) InitializeStyles();
             string keyStr = SmartChestConfig.StaticRequireCtrl ? $"Ctrl+{SmartChestConfig.StaticToggleKey}" : SmartChestConfig.StaticToggleKey.ToString();
             string text = $"Press [{keyStr}] to configure smart chest rules";
             if (_noteBannerBg != null)
@@ -1212,16 +1225,65 @@ namespace SenpaisChest.UI
             saveSystem.Save();
         }
 
+        private void ApplyPreset(string presetName)
+        {
+            if (_currentData == null || string.IsNullOrWhiteSpace(presetName))
+                return;
+
+            var presetRules = new List<SmartChestRule>();
+            switch (presetName)
+            {
+                case "Equipment":
+                    presetRules.Add(new SmartChestRule { Type = RuleType.ByCategory, CategoryName = "Equip" });
+                    break;
+                case "Consumables":
+                    presetRules.Add(new SmartChestRule { Type = RuleType.ByCategory, CategoryName = "Use" });
+                    presetRules.Add(new SmartChestRule { Type = RuleType.ByItemType, ItemTypeName = "Food" });
+                    presetRules.Add(new SmartChestRule { Type = RuleType.ByProperty, PropertyName = "isPotion" });
+                    break;
+                case "Crafting":
+                    presetRules.Add(new SmartChestRule { Type = RuleType.ByCategory, CategoryName = "Craftable" });
+                    presetRules.Add(new SmartChestRule { Type = RuleType.ByProperty, PropertyName = "isArtisanryItem" });
+                    break;
+                default:
+                    return;
+            }
+
+            int added = 0;
+            foreach (var rule in presetRules)
+            {
+                bool exists = _currentData.Rules.Exists(existing =>
+                    existing.Type == rule.Type &&
+                    existing.ItemId == rule.ItemId &&
+                    existing.CategoryName == rule.CategoryName &&
+                    existing.ItemTypeName == rule.ItemTypeName &&
+                    existing.PropertyName == rule.PropertyName &&
+                    existing.GroupName == rule.GroupName);
+                if (!exists)
+                {
+                    _currentData.Rules.Add(rule);
+                    added++;
+                }
+            }
+
+            if (added > 0)
+            {
+                _currentData.IsEnabled = true;
+                _manager.MarkDirty();
+                SaveIfDirty();
+                Plugin.Log?.LogInfo($"[SmartChestUI] Applied preset '{presetName}' (+{added} rule(s))");
+            }
+        }
+
         #region Style Initialization
 
         private void InitializeStyles()
         {
-            if (_stylesInitialized) return;
+            if (_configWindowStyle != null) return;
 
             CreateTextures();
             CreateStyles();
 
-            _stylesInitialized = true;
         }
 
         private void CreateTextures()
@@ -1738,6 +1800,16 @@ namespace SenpaisChest.UI
             if (_configCloseBtnHoverTex != null) Destroy(_configCloseBtnHoverTex);
             if (_configWindowBg != null) Destroy(_configWindowBg);
             if (_configInnerBorderTex != null) Destroy(_configInnerBorderTex);
+        }
+
+        private void Awake()
+        {
+            InitializeStyles();
+        }
+
+        private void OnEnable()
+        {
+            InitializeStyles();
         }
     }
 }
