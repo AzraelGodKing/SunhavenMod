@@ -20,6 +20,7 @@ namespace SunhavenMods.Shared
 
         private static ManualLogSource _logger;
         private static readonly Dictionary<string, ModHealthSnapshot> HealthByPluginGuid = new Dictionary<string, ModHealthSnapshot>(StringComparer.OrdinalIgnoreCase);
+        private static readonly object HealthLock = new object();
 
         /// <summary>
         /// Result of a version check operation.
@@ -67,15 +68,18 @@ namespace SunhavenMods.Shared
         {
             if (string.IsNullOrWhiteSpace(pluginGuid))
                 return null;
-            if (!HealthByPluginGuid.TryGetValue(pluginGuid, out var snapshot))
-                return null;
-            return new ModHealthSnapshot
+            lock (HealthLock)
             {
-                PluginGuid = snapshot.PluginGuid,
-                LastCheckUtc = snapshot.LastCheckUtc,
-                ExceptionCount = snapshot.ExceptionCount,
-                LastError = snapshot.LastError
-            };
+                if (!HealthByPluginGuid.TryGetValue(pluginGuid, out var snapshot))
+                    return null;
+                return new ModHealthSnapshot
+                {
+                    PluginGuid = snapshot.PluginGuid,
+                    LastCheckUtc = snapshot.LastCheckUtc,
+                    ExceptionCount = snapshot.ExceptionCount,
+                    LastError = snapshot.LastError
+                };
+            }
         }
 
         /// <summary>
@@ -127,22 +131,32 @@ namespace SunhavenMods.Shared
         {
             if (string.IsNullOrWhiteSpace(pluginGuid))
                 return;
-            if (!HealthByPluginGuid.TryGetValue(pluginGuid, out var snapshot))
+            lock (HealthLock)
             {
-                snapshot = new ModHealthSnapshot { PluginGuid = pluginGuid };
-                HealthByPluginGuid[pluginGuid] = snapshot;
+                if (!HealthByPluginGuid.TryGetValue(pluginGuid, out var snapshot))
+                {
+                    snapshot = new ModHealthSnapshot { PluginGuid = pluginGuid };
+                    HealthByPluginGuid[pluginGuid] = snapshot;
+                }
+                snapshot.LastCheckUtc = DateTime.UtcNow;
             }
-            snapshot.LastCheckUtc = DateTime.UtcNow;
         }
 
         private static void RecordHealthError(string pluginGuid, string errorMessage)
         {
             if (string.IsNullOrWhiteSpace(pluginGuid))
                 return;
-            TouchHealth(pluginGuid);
-            var snapshot = HealthByPluginGuid[pluginGuid];
-            snapshot.ExceptionCount++;
-            snapshot.LastError = errorMessage;
+            lock (HealthLock)
+            {
+                if (!HealthByPluginGuid.TryGetValue(pluginGuid, out var snapshot))
+                {
+                    snapshot = new ModHealthSnapshot { PluginGuid = pluginGuid };
+                    HealthByPluginGuid[pluginGuid] = snapshot;
+                }
+                snapshot.LastCheckUtc = DateTime.UtcNow;
+                snapshot.ExceptionCount++;
+                snapshot.LastError = errorMessage;
+            }
         }
 
         /// <summary>

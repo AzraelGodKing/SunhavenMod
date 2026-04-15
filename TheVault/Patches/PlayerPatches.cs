@@ -96,15 +96,7 @@ namespace TheVault.Patches
                 }
                 else
                 {
-                    var unityVaultManager = (object)vaultManager as UnityEngine.Object;
-                    if (!ReferenceEquals(unityVaultManager, null) && unityVaultManager == null)
-                    {
-                        Plugin.Log?.LogWarning("VaultManager was destroyed before SetPlayerName could run");
-                    }
-                    else
-                    {
-                        vaultManager.SetPlayerName(characterName);
-                    }
+                    vaultManager.SetPlayerName(characterName);
                 }
 
                 // Load UI icons

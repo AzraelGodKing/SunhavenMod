@@ -20,8 +20,8 @@ namespace CropOptimizer.Patches
                 return;
             }
 
-            MethodInfo updateGrowth = AccessTools.Method(cropType, "UpdateGrowth")
-                                      ?? AccessTools.Method(cropType, "GrowCrop");
+            MethodInfo updateGrowth = AccessTools.Method(cropType, "UpdateGrowth", Type.EmptyTypes)
+                                      ?? AccessTools.Method(cropType, "GrowCrop", Type.EmptyTypes);
             if (updateGrowth == null)
             {
                 Plugin.Log?.LogWarning("[CropGrowthPatch] Could not find crop growth method");
@@ -29,8 +29,21 @@ namespace CropOptimizer.Patches
             }
 
             var postfix = AccessTools.Method(typeof(CropGrowthPatch), nameof(OnAfterCropGrowth));
-            harmony.Patch(updateGrowth, postfix: new HarmonyMethod(postfix));
-            Plugin.Log?.LogInfo($"[CropGrowthPatch] Patched {cropType.Name}.{updateGrowth.Name}");
+            if (postfix == null)
+            {
+                Plugin.Log?.LogWarning("[CropGrowthPatch] Postfix method not found");
+                return;
+            }
+
+            try
+            {
+                harmony.Patch(updateGrowth, postfix: new HarmonyMethod(postfix));
+                Plugin.Log?.LogInfo($"[CropGrowthPatch] Patched {cropType.Name}.{updateGrowth.Name}()");
+            }
+            catch (Exception ex)
+            {
+                Plugin.Log?.LogError($"[CropGrowthPatch] Harmony patch failed: {ex.Message}");
+            }
         }
 
         private static void OnAfterCropGrowth(object __instance)

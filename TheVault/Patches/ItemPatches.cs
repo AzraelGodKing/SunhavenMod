@@ -69,6 +69,7 @@ namespace TheVault.Patches
         private static FieldInfo _allItemSellInfosField;
         private static int _lastCurrencyLookupItemId = -1;
         private static string _lastCurrencyLookupCurrencyId;
+        private static bool _lastCurrencyLookupValid;
 
         /// <summary>
         /// Check if auto-deposit is enabled for a currency.
@@ -147,7 +148,7 @@ namespace TheVault.Patches
         {
             _itemToCurrency[gameItemId] = (currencyId, autoDeposit);
             _currencyToItem[currencyId] = gameItemId;
-            if (_lastCurrencyLookupItemId == gameItemId)
+            if (_lastCurrencyLookupValid && _lastCurrencyLookupItemId == gameItemId)
                 _lastCurrencyLookupCurrencyId = currencyId;
             Plugin.Log?.LogInfo($"Registered item-currency mapping: Item {gameItemId} <-> {currencyId}");
         }
@@ -286,12 +287,13 @@ namespace TheVault.Patches
         /// </summary>
         public static string GetCurrencyForItem(int gameItemId)
         {
-            if (gameItemId == _lastCurrencyLookupItemId)
+            if (_lastCurrencyLookupValid && gameItemId == _lastCurrencyLookupItemId)
                 return _lastCurrencyLookupCurrencyId;
 
             string currencyId = _itemToCurrency.TryGetValue(gameItemId, out var mapping) ? mapping.currencyId : null;
             _lastCurrencyLookupItemId = gameItemId;
             _lastCurrencyLookupCurrencyId = currencyId;
+            _lastCurrencyLookupValid = true;
             return currencyId;
         }
 

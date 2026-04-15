@@ -75,6 +75,7 @@ namespace BirthdayReminder.Data
                 if (!Directory.Exists(dir))
                     Directory.CreateDirectory(dir);
 
+                string tempPath = path + ".tmp";
                 var sb = new StringBuilder();
                 foreach (var kvp in _favoritesByNpc)
                 {
@@ -83,7 +84,18 @@ namespace BirthdayReminder.Data
                     sb.Append(kvp.Value);
                     sb.AppendLine();
                 }
-                File.WriteAllText(path, sb.ToString());
+                try
+                {
+                    File.WriteAllText(tempPath, sb.ToString());
+                    if (File.Exists(path))
+                        File.Delete(path);
+                    File.Move(tempPath, path);
+                }
+                finally
+                {
+                    if (File.Exists(tempPath))
+                        File.Delete(tempPath);
+                }
             }
             catch (Exception ex)
             {

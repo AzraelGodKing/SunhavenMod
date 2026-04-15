@@ -90,7 +90,11 @@ namespace TheVault.Patches
                 if (vaultManager == null) return;
 
                 // Deduct the currency now that purchase is confirmed
-                DeductCurrency(vaultManager, requirement.currencyId, requirement.amount);
+                if (!DeductCurrency(vaultManager, requirement.currencyId, requirement.amount))
+                {
+                    Plugin.Log?.LogError($"Failed to deduct {requirement.amount} {requirement.currencyId} after purchase; potential desync.");
+                    return;
+                }
                 Plugin.Log?.LogInfo($"Deducted {requirement.amount} {requirement.currencyId} for purchase");
             }
             catch (Exception ex)
@@ -160,38 +164,41 @@ namespace TheVault.Patches
         /// <summary>
         /// Deduct currency from the vault
         /// </summary>
-        private static void DeductCurrency(VaultManager vaultManager, string currencyId, int amount)
+        private static bool DeductCurrency(VaultManager vaultManager, string currencyId, int amount)
         {
             if (TryExtractSuffix(currencyId, "seasonal_", out string seasonalSuffix))
             {
                 if (Enum.TryParse<SeasonalTokenType>(seasonalSuffix, out var tokenType))
                 {
-                    vaultManager.RemoveSeasonalTokens(tokenType, amount);
+                    return vaultManager.RemoveSeasonalTokens(tokenType, amount);
                 }
+                Plugin.Log?.LogWarning($"Invalid seasonal token type '{seasonalSuffix}' in currency id '{currencyId}'");
+                return false;
             }
             else if (TryExtractSuffix(currencyId, "community_", out string communitySuffix))
             {
-                vaultManager.RemoveCommunityTokens(communitySuffix, amount);
+                return vaultManager.RemoveCommunityTokens(communitySuffix, amount);
             }
             else if (TryExtractSuffix(currencyId, "key_", out string keySuffix))
             {
-                vaultManager.RemoveKeys(keySuffix, amount);
+                return vaultManager.RemoveKeys(keySuffix, amount);
             }
             else if (TryExtractSuffix(currencyId, "special_", out string specialSuffix))
             {
-                vaultManager.RemoveSpecial(specialSuffix, amount);
+                return vaultManager.RemoveSpecial(specialSuffix, amount);
             }
             else if (TryExtractSuffix(currencyId, "orb_", out string orbSuffix))
             {
-                vaultManager.RemoveOrbs(orbSuffix, amount);
+                return vaultManager.RemoveOrbs(orbSuffix, amount);
             }
             else if (TryExtractSuffix(currencyId, "custom_", out string customSuffix))
             {
-                vaultManager.RemoveCustomCurrency(customSuffix, amount);
+                return vaultManager.RemoveCustomCurrency(customSuffix, amount);
             }
             else
             {
                 Plugin.Log?.LogWarning($"Unknown vault currency id format '{currencyId}', skipping deduction");
+                return false;
             }
         }
 
@@ -237,6 +244,10 @@ namespace TheVault.Patches
                 displayName = keySuffix + " Keys";
             else if (TryExtractSuffix(currencyId, "special_", out string specialSuffix))
                 displayName = FormatSpecialName(specialSuffix);
+            else if (TryExtractSuffix(currencyId, "orb_", out string orbSuffix))
+                displayName = orbSuffix + " Orbs";
+            else if (TryExtractSuffix(currencyId, "custom_", out string customSuffix))
+                displayName = customSuffix;
 
             _currencyDisplayNameCache[currencyId] = displayName;
             return displayName;

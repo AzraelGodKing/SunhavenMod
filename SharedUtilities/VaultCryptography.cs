@@ -129,7 +129,7 @@ namespace SunhavenMods.Shared
                 }
                 catch (Exception ex)
                 {
-                    LogSource?.LogWarning($"[VaultCryptography] Legacy key attempt failed: {ex.Message}");
+                    LogSource?.LogWarning($"[VaultCryptography] Legacy key attempt failed ({ex.GetType().Name}).");
                 }
             }
             return null;
@@ -143,7 +143,7 @@ namespace SunhavenMods.Shared
             }
             catch (Exception ex)
             {
-                LogSource?.LogWarning($"[VaultCryptography] Primary key decrypt failed: {ex.Message}");
+                LogSource?.LogWarning($"[VaultCryptography] Primary key decrypt failed ({ex.GetType().Name}).");
                 return null;
             }
         }
@@ -215,7 +215,7 @@ namespace SunhavenMods.Shared
                         }
                         catch (Exception ex)
                         {
-                            LogSource?.LogWarning($"[VaultCryptography] Steam assembly probe failed for '{a.FullName}': {ex.Message}");
+                            LogSource?.LogWarning($"[VaultCryptography] Steam assembly probe failed for '{a.FullName}' ({ex.GetType().Name}).");
                         }
                     }
                 }
@@ -232,7 +232,7 @@ namespace SunhavenMods.Shared
             }
             catch (Exception ex)
             {
-                LogSource?.LogWarning($"[VaultCryptography] Steam ID lookup failed: {ex.Message}");
+                LogSource?.LogWarning($"[VaultCryptography] Steam ID lookup failed ({ex.GetType().Name}).");
                 return null;
             }
         }
@@ -242,7 +242,7 @@ namespace SunhavenMods.Shared
             try { return SystemInfo.deviceUniqueIdentifier; }
             catch (Exception ex)
             {
-                LogSource?.LogWarning($"[VaultCryptography] Machine ID lookup failed: {ex.Message}");
+                LogSource?.LogWarning($"[VaultCryptography] Machine ID lookup failed ({ex.GetType().Name}).");
                 return "unknown";
             }
         }
