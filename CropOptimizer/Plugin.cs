@@ -10,6 +10,8 @@ using CropOptimizer.Integration;
 using CropOptimizer.Patches;
 using CropOptimizer.UI;
 using HarmonyLib;
+using SunhavenMods.Shared;
+using System.Reflection;
 using UnityEngine;
 
 namespace CropOptimizer
@@ -25,12 +27,15 @@ namespace CropOptimizer
 
         private Harmony _harmony;
         private CropOptimizerConfig _config;
-        private CropForecast _forecast;
+        internal CropForecast _forecast;
         private CropHUD _hud;
         private TodoIntegration _todoIntegration;
         private BirthdayIntegration _birthdayIntegration;
         private VaultIntegration _vaultIntegration;
         private bool _hudVisible = true;
+        private bool _isVaultLoadedEventSubscribed;
+        private EventInfo _vaultLoadedEventInfo;
+        private Delegate _vaultLoadedHandler;
 
         private void Awake()
         {
@@ -50,19 +55,28 @@ namespace CropOptimizer
 
             _harmony = new Harmony(PluginInfo.PLUGIN_GUID);
             CropGrowthPatch.Apply(_harmony, _forecast);
+            CharacterLoadPatch.Apply(_harmony, _forecast);
 
-            var hudObject = new GameObject("CropOptimizer_HUD");
-            DontDestroyOnLoad(hudObject);
-            _hud = hudObject.AddComponent<CropHUD>();
+            _hud = PersistentRunnerBase.CreateRunner<CropHUD>();
             _hud.Initialize(_forecast);
             _hud.SetScale(_config.HudScale.Value);
             _hud.SetVisible(_config.HudEnabled.Value);
             _hudVisible = _config.HudEnabled.Value;
 
-            if (_vaultIntegration.IsAvailable)
-                _vaultIntegration.TryRegisterProjectedValueCurrency();
+            TrySubscribeVaultLoaded();
 
             Log.LogInfo($"{PluginInfo.PLUGIN_NAME} v{PluginInfo.PLUGIN_VERSION} loaded");
+        }
+
+        private void OnDestroy()
+        {
+            if (_isVaultLoadedEventSubscribed && _vaultLoadedEventInfo != null && _vaultLoadedHandler != null)
+            {
+                _vaultLoadedEventInfo.RemoveEventHandler(null, _vaultLoadedHandler);
+                _isVaultLoadedEventSubscribed = false;
+                _vaultLoadedEventInfo = null;
+                _vaultLoadedHandler = null;
+            }
         }
 
         private void Update()
@@ -82,6 +96,58 @@ namespace CropOptimizer
             if (Instance?._forecast == null)
                 return "Not ready";
             return $"Crops: {Instance._forecast.Snapshot().Count}, Value: {Instance._forecast.GetProjectedSellTotal()}g";
+        }
+
+        private void TrySubscribeVaultLoaded()
+        {
+            if (_vaultIntegration == null || !_vaultIntegration.IsAvailable)
+                return;
+
+            try
+            {
+                var bridgeType = typeof(TheVault.Modding.VaultModApiBridge);
+                var evt = bridgeType.GetEvent("OnVaultLoaded", BindingFlags.Public | BindingFlags.Static);
+                if (evt == null)
+                {
+                    Log?.LogDebug("[CropOptimizer] Vault bridge OnVaultLoaded event not found; skipping subscription.");
+                    return;
+                }
+
+                var method = GetType().GetMethod(nameof(OnVaultLoaded), BindingFlags.Instance | BindingFlags.NonPublic);
+                if (method == null)
+                    return;
+
+                var handler = Delegate.CreateDelegate(evt.EventHandlerType, this, method, false);
+                if (handler == null)
+                {
+                    Log?.LogWarning("[CropOptimizer] Vault OnVaultLoaded handler could not be bound.");
+                    return;
+                }
+
+                evt.AddEventHandler(null, handler);
+                _isVaultLoadedEventSubscribed = true;
+                _vaultLoadedEventInfo = evt;
+                _vaultLoadedHandler = handler;
+
+                if (TheVault.Modding.VaultModApiBridge.Instance != null && TheVault.Modding.VaultModApiBridge.Instance.IsVaultReady)
+                    _vaultIntegration.TryRegisterProjectedValueCurrency();
+            }
+            catch (Exception ex)
+            {
+                Log?.LogWarning($"[CropOptimizer] Failed to subscribe to Vault OnVaultLoaded: {ex.Message}");
+            }
+        }
+
+        private void OnVaultLoaded()
+        {
+            try
+            {
+                _vaultIntegration?.TryRegisterProjectedValueCurrency();
+            }
+            catch (Exception ex)
+            {
+                Log?.LogWarning($"[CropOptimizer] Vault currency registration failed on OnVaultLoaded: {ex.Message}");
+            }
         }
 
         private static ConfigFile CreateNamedConfig()

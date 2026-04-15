@@ -1,15 +1,19 @@
 using CropOptimizer.Data;
+using SunhavenMods.Shared;
 using UnityEngine;
 
 namespace CropOptimizer.UI
 {
-    internal sealed class CropHUD : MonoBehaviour
+    internal sealed class CropHUD : PersistentRunnerBase
     {
         private CropForecast _forecast;
         private GUIStyle _windowStyle;
         private GUIStyle _labelStyle;
         private float _scale = 1f;
         private bool _isVisible = true;
+        private bool _stylesDirty = true;
+
+        protected override string RunnerName => "CropHUD";
 
         public void Initialize(CropForecast forecast)
         {
@@ -19,7 +23,9 @@ namespace CropOptimizer.UI
         public void SetScale(float scale)
         {
             _scale = Mathf.Clamp(scale, 0.5f, 2.5f);
-            InitializeStyles();
+            _stylesDirty = true;
+            _windowStyle = null;
+            _labelStyle = null;
         }
 
         public void SetVisible(bool visible)
@@ -27,49 +33,57 @@ namespace CropOptimizer.UI
             _isVisible = visible;
         }
 
-        private void Awake()
-        {
-            InitializeStyles();
-        }
-
-        private void OnEnable()
-        {
-            InitializeStyles();
-        }
-
         private void InitializeStyles()
         {
-            if (_windowStyle == null)
+            _windowStyle = new GUIStyle(GUI.skin.window)
             {
-                _windowStyle = new GUIStyle(GUI.skin.window)
-                {
-                    fontSize = Mathf.RoundToInt(12f * _scale)
-                };
-            }
+                fontSize = Mathf.RoundToInt(12f * _scale)
+            };
 
-            if (_labelStyle == null)
+            _labelStyle = new GUIStyle(GUI.skin.label)
             {
-                _labelStyle = new GUIStyle(GUI.skin.label)
-                {
-                    fontSize = Mathf.RoundToInt(11f * _scale),
-                    richText = true
-                };
-            }
+                fontSize = Mathf.RoundToInt(11f * _scale),
+                richText = true
+            };
+
+            _stylesDirty = false;
         }
 
         private void OnGUI()
         {
             if (!_isVisible || _forecast == null)
                 return;
-            if (_windowStyle == null || _labelStyle == null)
+            if (_stylesDirty || _windowStyle == null || _labelStyle == null)
                 InitializeStyles();
 
             GUILayout.BeginArea(new Rect(20, 80, 340 * _scale, 120 * _scale), "Crop Optimizer", _windowStyle);
             GUILayout.Label($"Tracked crops: {_forecast.Snapshot().Count}", _labelStyle);
             GUILayout.Label($"Projected sell value: {_forecast.GetProjectedSellTotal()}g", _labelStyle);
-            GUILayout.Label("Sprinkler coverage: n/a", _labelStyle);
-            GUILayout.Label("Planting advisor: n/a", _labelStyle);
             GUILayout.EndArea();
+        }
+
+        protected override void OnGameTransition()
+        {
+            _stylesDirty = true;
+            _windowStyle = null;
+            _labelStyle = null;
+        }
+
+        protected override void OnMenuTransition()
+        {
+            _stylesDirty = true;
+            _windowStyle = null;
+            _labelStyle = null;
+        }
+
+        protected override void Log(string message)
+        {
+            Plugin.Log?.LogDebug(message);
+        }
+
+        protected override void LogWarning(string message)
+        {
+            Plugin.Log?.LogWarning(message);
         }
     }
 }
