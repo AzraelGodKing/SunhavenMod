@@ -26,15 +26,22 @@ Crop Optimizer adds field-level harvest forecasting, a lightweight crop HUD, and
 - `Enabled`
 - `HUD.Enabled`
 - `HUD.Scale`
+- `HUD.PositionX` / `HUD.PositionY` (updated when you drag the HUD window)
 - `HUD.ToggleKey`
 - `Debug.DebugLogging`
+
+## Roadmap (later)
+
+- Richer visual design for the HUD (themed panel, typography, optional uGUI) while keeping the same data.
 
 ## Changelog
 
 ### Unreleased
 - Crop growth forecasting now reads reflected crop stage/timing, quality, and item sell data instead of placeholder values.
 - **Fixed:** Harmony now patches real `Wish.Crop` entry points (`SetCropSprite`, `SetMeta`, `Water`, `Grow`) — the previous `UpdateGrowth`/`GrowCrop` targets do not exist in Sun Haven, so no crop data was ever recorded.
-- **Fixed:** Harvest item id no longer resolves to `Decoration.id`; sell price reads `ItemData.sellPrice` as float where applicable.
+- **Fixed:** Projected sell value uses harvest item id from `Crop._cropItem` / `ItemData.id` and looks up `ItemSellInfo.sellPrice` via `ItemInfoDatabase` first (not `Decoration.id` or broken dictionary `out` reflection).
+- HUD hidden until a character save is active (main menu / pre-load no longer shows the panel).
+- Draggable IMGUI HUD; position saved to `HUD.PositionX` / `HUD.PositionY`.
 - HUD now shows only live-backed metrics (removed permanent `n/a` placeholder lines).
 - Vault projected-value registration now hooks the Vault-loaded bridge event instead of running too early during plugin `Awake`.
 - Crop forecast cache now clears on character load via a `GameSave.LoadCharacter` postfix patch.
