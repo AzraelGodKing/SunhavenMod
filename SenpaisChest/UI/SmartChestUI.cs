@@ -203,6 +203,7 @@ namespace SenpaisChest.UI
         private GUIStyle _configRemoveButtonStyle;
         private GUIStyle _configCloseBottomStyle;
         private GUIStyle _configWindowStyle;
+        private bool _stylesDirty = true;
 
         public bool IsVisible => _isVisible;
         /// <summary>True when config is drawn inside the chest UI panel (we should not block closing the chest).</summary>
@@ -226,6 +227,7 @@ namespace SenpaisChest.UI
         public void SetScale(float scale)
         {
             _scale = Mathf.Clamp(scale, 0.5f, 2.5f);
+            _stylesDirty = true;
             _configWindowStyle = null;
             _windowRect.width = WindowWidth;
             _windowRect.height = WindowHeight;
@@ -385,7 +387,7 @@ namespace SenpaisChest.UI
 
         private void OnGUI()
         {
-            if (_configWindowStyle == null)
+            if (_stylesDirty || _configWindowStyle == null)
                 InitializeStyles();
             if (_configWindowStyle == null)
                 return;
@@ -1278,11 +1280,11 @@ namespace SenpaisChest.UI
 
         private void InitializeStyles()
         {
-            if (_configWindowStyle != null) return;
+            if (!_stylesDirty && _configWindowStyle != null) return;
 
             CreateTextures();
             CreateStyles();
-
+            _stylesDirty = false;
         }
 
         private void CreateTextures()
@@ -1803,12 +1805,14 @@ namespace SenpaisChest.UI
 
         private void Awake()
         {
-            InitializeStyles();
+            _stylesDirty = true;
+            _configWindowStyle = null;
         }
 
         private void OnEnable()
         {
-            InitializeStyles();
+            _stylesDirty = true;
+            _configWindowStyle = null;
         }
     }
 }
