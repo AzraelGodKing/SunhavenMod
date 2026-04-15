@@ -53,8 +53,9 @@ namespace HavensBirthright.Patches
             if (Chainloader.PluginInfos == null || !Chainloader.PluginInfos.TryGetValue(FasterRacesGuid, out var pluginInfo))
                 return false;
 
-            // Conservative fallback: if Faster Races is loaded but we cannot inspect state, skip HB speed buffs.
-            _fasterRacesSpeedActive = true;
+            // Safe fallback: if reflection fails, assume Faster Races speed bonus is NOT active
+            // so HavensBirthright keeps its own movement speed bonuses.
+            _fasterRacesSpeedActive = false;
 
             var instance = pluginInfo?.Instance;
             if (instance == null)
@@ -78,9 +79,9 @@ namespace HavensBirthright.Patches
                     return _fasterRacesSpeedActive;
                 }
             }
-            catch
+            catch (Exception ex)
             {
-                // Keep conservative fallback when reflection fails.
+                Plugin.Log?.LogWarning($"[StatPatches] FasterRaces reflection failed; defaulting IsSpeedBonusActive=false. {ex.Message}");
             }
 
             return _fasterRacesSpeedActive;
@@ -443,6 +444,7 @@ namespace HavensBirthright.Patches
                                 __result *= (1f + AbilityConfig.ElementalResonanceMiningDamageBonus.Value / 100f);
                         }
                     }
+                    if (AbilityConfig.EnableInfernalForge != null && AbilityConfig.EnableInfernalForge.Value)
                     {
                         Race eff = ElementalVariantResolver.ResolveElementalAbilityRace(race);
                         if (eff != Race.WaterElemental &&
