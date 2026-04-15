@@ -33,6 +33,8 @@ Crop Optimizer adds field-level harvest forecasting, a lightweight crop HUD, and
 
 ### Unreleased
 - Crop growth forecasting now reads reflected crop stage/timing, quality, and item sell data instead of placeholder values.
+- **Fixed:** Harmony now patches real `Wish.Crop` entry points (`SetCropSprite`, `SetMeta`, `Water`, `Grow`) — the previous `UpdateGrowth`/`GrowCrop` targets do not exist in Sun Haven, so no crop data was ever recorded.
+- **Fixed:** Harvest item id no longer resolves to `Decoration.id`; sell price reads `ItemData.sellPrice` as float where applicable.
 - HUD now shows only live-backed metrics (removed permanent `n/a` placeholder lines).
 - Vault projected-value registration now hooks the Vault-loaded bridge event instead of running too early during plugin `Awake`.
 - Crop forecast cache now clears on character load via a `GameSave.LoadCharacter` postfix patch.
