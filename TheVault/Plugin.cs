@@ -108,6 +108,7 @@ namespace TheVault
                 _staticVaultManager = _vaultManager;
                 _staticSaveSystem = _saveSystem;
                 _saveSystem.SetAutoSaveIntervalSeconds(Mathf.Max(10f, _autoSaveInterval.Value));
+                _vaultManager.OnVaultLoaded += OnVaultDataLoaded;
 
                 // Create UI GameObject (RectTransform stretched to full screen for uGUI Canvas)
                 var uiObject = CreateTheVaultUiHost();
@@ -1091,6 +1092,8 @@ namespace TheVault
         private void OnDestroy()
         {
             VaultModApiBridge.Instance = null;
+            if (_vaultManager != null)
+                _vaultManager.OnVaultLoaded -= OnVaultDataLoaded;
 
             Log.LogWarning("[CRITICAL] Plugin OnDestroy called! Plugin is being destroyed.");
             Log.LogWarning($"[CRITICAL] Current scene: {SceneManager.GetActiveScene().name}");
@@ -1105,6 +1108,18 @@ namespace TheVault
             // _harmony?.UnpatchSelf(); // REMOVED - this was breaking character switching!
 
             _saveSystem?.ForceSave();
+        }
+
+        private static void OnVaultDataLoaded()
+        {
+            try
+            {
+                VaultModApiBridge.NotifyVaultLoaded();
+            }
+            catch (Exception ex)
+            {
+                Log?.LogWarning($"[The Vault] Failed to raise OnVaultLoaded bridge event: {ex.Message}");
+            }
         }
 
         /// <summary>
