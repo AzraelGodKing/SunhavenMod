@@ -68,6 +68,9 @@ The vault UI includes a **Custom** tab for currencies registered at runtime. Fro
 
 ## Changelog
 
+### Unreleased
+- Added a `VaultModApiBridge.OnVaultLoaded` bridge event notification so soft-dependent mods can register integrations after vault data is actually loaded.
+
 ### 3.0.4
 
 - **HUD:** Draggable via the top accent strip; **`[HUD] PositionX`** / **`PositionY`** in `thevault.cfg` persist placement.
