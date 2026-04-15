@@ -62,6 +62,12 @@
     </Reference>
   </ItemGroup>
 
+  <ItemGroup>
+    <Compile Include="..\SharedUtilities\PersistentRunnerBase.cs" Link="Shared\PersistentRunnerBase.cs" />
+    <Compile Include="..\SharedUtilities\SceneHelpers.cs" Link="Shared\SceneHelpers.cs" />
+    <Compile Include="..\SharedUtilities\SceneRootSurvivor.cs" Link="Shared\SceneRootSurvivor.cs" />
+  </ItemGroup>
+
   <Target Name="CopyToPlugins" AfterTargets="Build">
     <Copy SourceFiles="$(TargetPath)" DestinationFolder="$(BepInExPath)\plugins\CropOptimizer" />
     <Copy SourceFiles="$(TargetPath)" DestinationFolder="$(MSBuildProjectDirectory)\..\builds\CropOptimizer" />

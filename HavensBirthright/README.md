@@ -191,6 +191,10 @@ This adds Water Elemental’s Defense % to Humans and Human’s experience % to 
 
 ## Changelog
 
+### Unreleased
+- Fixed Elemental stat processing so Infernal Forge mana-lock logic is gated by `EnableInfernalForge` instead of running unconditionally.
+- Adjusted Faster Races speed-bonus reflection fallback to keep Haven's Birthright movement bonuses active when reflection fails, with a warning log for visibility.
+
 ### v2.0.1
 - Config file now uses `HavensBirthright.cfg`, with first-run migration from the previous GUID-named config file.
 
