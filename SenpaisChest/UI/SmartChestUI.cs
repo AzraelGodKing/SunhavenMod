@@ -231,7 +231,6 @@ namespace SenpaisChest.UI
             _windowRect.height = WindowHeight;
             _groupsWindowRect.width = GroupsWindowWidth;
             _groupsWindowRect.height = GroupsWindowHeight;
-            InitializeStyles();
         }
 
         public void Show()

@@ -16,3 +16,11 @@ File: `Sun Haven/BepInEx/config/SenpaisChest.cfg`
 
 - This README is intentionally short for repository contributors.
 - Full player-facing documentation is in `thunderstore/README.md`.
+
+## Changelog
+
+### Unreleased
+
+- Reworked chest-label rendering to use a screen overlay anchor so labels stay above chests.
+- Hide chest labels while chest UI is open.
+- Restrict chest labels to chest item/deco id `10110` only.
