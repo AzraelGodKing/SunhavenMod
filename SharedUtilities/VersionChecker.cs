@@ -1,6 +1,7 @@
 #pragma warning disable CS0436 // Type conflicts with imported type - this is our VersionChecker/ReflectionHelper
 using System;
 using System.Collections;
+using System.Collections.Generic;
 using System.Net;
 using System.Text.RegularExpressions;
 using BepInEx.Logging;
@@ -18,6 +19,8 @@ namespace SunhavenMods.Shared
         private const string VersionsUrl = "https://azraelgodking.github.io/SunhavenMod/versions.json";
 
         private static ManualLogSource _logger;
+        private static readonly Dictionary<string, ModHealthSnapshot> HealthByPluginGuid = new Dictionary<string, ModHealthSnapshot>(StringComparer.OrdinalIgnoreCase);
+        private static readonly object HealthLock = new object();
 
         /// <summary>
         /// Result of a version check operation.
@@ -34,6 +37,14 @@ namespace SunhavenMods.Shared
             public string ErrorMessage { get; set; }
         }
 
+        public class ModHealthSnapshot
+        {
+            public string PluginGuid { get; set; }
+            public DateTime LastCheckUtc { get; set; }
+            public int ExceptionCount { get; set; }
+            public string LastError { get; set; }
+        }
+
         /// <summary>
         /// Checks for updates for a specific mod. Call this from your plugin's Awake or Start.
         /// </summary>
@@ -44,12 +55,31 @@ namespace SunhavenMods.Shared
         public static void CheckForUpdate(string pluginGuid, string currentVersion, ManualLogSource logger = null, Action<VersionCheckResult> onComplete = null)
         {
             _logger = logger;
+            TouchHealth(pluginGuid);
 
             // Use a MonoBehaviour to run the coroutine
             var runner = new GameObject("VersionChecker").AddComponent<VersionCheckRunner>();
             UnityEngine.Object.DontDestroyOnLoad(runner.gameObject);
             SceneRootSurvivor.TryRegisterPersistentRunnerGameObject(runner.gameObject);
             runner.StartCheck(pluginGuid, currentVersion, onComplete);
+        }
+
+        public static ModHealthSnapshot GetHealthSnapshot(string pluginGuid)
+        {
+            if (string.IsNullOrWhiteSpace(pluginGuid))
+                return null;
+            lock (HealthLock)
+            {
+                if (!HealthByPluginGuid.TryGetValue(pluginGuid, out var snapshot))
+                    return null;
+                return new ModHealthSnapshot
+                {
+                    PluginGuid = snapshot.PluginGuid,
+                    LastCheckUtc = snapshot.LastCheckUtc,
+                    ExceptionCount = snapshot.ExceptionCount,
+                    LastError = snapshot.LastError
+                };
+            }
         }
 
         /// <summary>
@@ -97,6 +127,38 @@ namespace SunhavenMods.Shared
             _logger?.LogError($"[VersionChecker] {message}");
         }
 
+        private static void TouchHealth(string pluginGuid)
+        {
+            if (string.IsNullOrWhiteSpace(pluginGuid))
+                return;
+            lock (HealthLock)
+            {
+                if (!HealthByPluginGuid.TryGetValue(pluginGuid, out var snapshot))
+                {
+                    snapshot = new ModHealthSnapshot { PluginGuid = pluginGuid };
+                    HealthByPluginGuid[pluginGuid] = snapshot;
+                }
+                snapshot.LastCheckUtc = DateTime.UtcNow;
+            }
+        }
+
+        private static void RecordHealthError(string pluginGuid, string errorMessage)
+        {
+            if (string.IsNullOrWhiteSpace(pluginGuid))
+                return;
+            lock (HealthLock)
+            {
+                if (!HealthByPluginGuid.TryGetValue(pluginGuid, out var snapshot))
+                {
+                    snapshot = new ModHealthSnapshot { PluginGuid = pluginGuid };
+                    HealthByPluginGuid[pluginGuid] = snapshot;
+                }
+                snapshot.LastCheckUtc = DateTime.UtcNow;
+                snapshot.ExceptionCount++;
+                snapshot.LastError = errorMessage;
+            }
+        }
+
         /// <summary>
         /// Helper MonoBehaviour to run the version check coroutine.
         /// </summary>
@@ -126,6 +188,7 @@ namespace SunhavenMods.Shared
                     {
                         result.Success = false;
                         result.ErrorMessage = $"Network error: {www.error}";
+                        RecordHealthError(pluginGuid, result.ErrorMessage);
                         LogWarning(result.ErrorMessage);
                         onComplete?.Invoke(result);
                         Destroy(gameObject);
@@ -145,6 +208,7 @@ namespace SunhavenMods.Shared
                         {
                             result.Success = false;
                             result.ErrorMessage = $"Mod '{pluginGuid}' not found in versions.json";
+                            RecordHealthError(pluginGuid, result.ErrorMessage);
                             LogWarning(result.ErrorMessage);
                             onComplete?.Invoke(result);
                             Destroy(gameObject);
@@ -163,6 +227,7 @@ namespace SunhavenMods.Shared
                         {
                             result.Success = false;
                             result.ErrorMessage = "Could not parse version from response";
+                            RecordHealthError(pluginGuid, result.ErrorMessage);
                             LogWarning(result.ErrorMessage);
                             onComplete?.Invoke(result);
                             Destroy(gameObject);
@@ -185,6 +250,7 @@ namespace SunhavenMods.Shared
                     {
                         result.Success = false;
                         result.ErrorMessage = $"Parse error: {ex.Message}";
+                        RecordHealthError(pluginGuid, result.ErrorMessage);
                         LogError(result.ErrorMessage);
                     }
                 }

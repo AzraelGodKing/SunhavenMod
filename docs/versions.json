@@ -99,5 +99,14 @@
     "thunderstore": "https://thunderstore.io/c/sun-haven/p/AzraelGodKing/TrinketFortune/",
     "thunderstoreName": "TrinketFortune",
     "changelog": "Config now uses BepInEx/config/TrinketFortune.cfg with first-run migration from the legacy GUID config file. Startup now runs in standalone-safe mode so Trinket Fortune no longer hard-requires HavenDevTools.dll to load."
+  },
+  "com.azraelgodking.cropoptimizer": {
+    "version": "1.0.0",
+    "name": "Crop Optimizer",
+    "description": "Crop forecast HUD with seasonal planning helpers and soft Todo/Birthday/Vault integrations",
+    "nexus": "",
+    "thunderstore": "",
+    "thunderstoreName": "CropOptimizer",
+    "changelog": "Initial release scaffold: crop growth patch, forecast cache, HUD, and soft integrations for SunhavenTodo, BirthdayReminder, TheVault, and HavensAlmanac."
   }
 }

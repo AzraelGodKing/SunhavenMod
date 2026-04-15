@@ -1,0 +1,15 @@
+[B]Crop Optimizer[/B]
+
+Optimize your farm day with crop forecasting and a compact HUD.
+
+[LIST]
+[*]Per-field next-harvest ETA and projected sell value summary
+[*]Season-aware planting helper foundation
+[*]Soft integrations with Sunhaven Todo, Birthday Reminder, and The Vault
+[/LIST]
+
+[B]Requirements[/B]
+[LIST]
+[*]BepInEx 5.x
+[*]Sun Haven
+[/LIST]

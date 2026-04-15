@@ -802,6 +802,7 @@ namespace BirthdayReminder
                 if (birthdayInfo != null && !birthdayInfo.HasBeenGifted)
                 {
                     manager.MarkGifted(normalizedNpcName);
+                    manager.TryRecordLovedGift(normalizedNpcName, __0);
                     Plugin.Log?.LogInfo($"[BirthdayReminder] Marked {normalizedNpcName} as gifted on their birthday!");
 
                     Plugin.GetTodoIntegration()?.OnGiftGiven(normalizedNpcName);

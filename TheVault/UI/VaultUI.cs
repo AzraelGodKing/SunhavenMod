@@ -40,7 +40,6 @@ namespace TheVault.UI
         private GUIStyle _rowStyle;
         private GUIStyle _closeButtonStyle;
         private GUIStyle _textFieldStyle;
-        private bool _stylesInitialized;
         private Texture2D _windowBackground;
         private Texture2D _rowBackground;
         private Texture2D _rowAltBackground;
@@ -164,10 +163,11 @@ namespace TheVault.UI
         public void SetScale(float scale)
         {
             _scale = Mathf.Clamp(scale, 0.5f, 2.5f);
-            _stylesInitialized = false;
+            _windowStyle = null;
             float w = WindowWidth;
             float h = HeaderHeight + 260f * _scale + FooterHeight;
             _windowRect = new Rect((Screen.width - w) / 2f, (Screen.height - h) / 2f, w, h);
+            InitializeStyles();
         }
 
         public bool IsVisible => _isVisible;
@@ -250,6 +250,16 @@ namespace TheVault.UI
             }
         }
 
+        private void Awake()
+        {
+            InitializeStyles();
+        }
+
+        private void OnEnable()
+        {
+            InitializeStyles();
+        }
+
         private void Update()
         {
             if (!string.IsNullOrEmpty(_vaultStatusMessage) && Time.unscaledTime > _vaultStatusUntil)
@@ -327,7 +337,7 @@ namespace TheVault.UI
 
         private void InitializeStyles()
         {
-            if (_stylesInitialized) return;
+            if (_windowStyle != null) return;
 
             // Create textures
             _windowBackground = MakeRoundedTex(64, 64, _windowBgColor, 8);
@@ -523,7 +533,6 @@ namespace TheVault.UI
             };
             _statusOkStyle.normal.textColor = new Color(0.5f, 0.95f, 0.65f);
 
-            _stylesInitialized = true;
         }
 
         private void OnGUI()
@@ -532,7 +541,13 @@ namespace TheVault.UI
             // Don't show UI until vault is loaded for the current character
             if (!_isVisible || _vaultManager == null || !PlayerPatches.IsVaultLoaded) return;
 
-            InitializeStyles();
+            if (_windowStyle == null || _headerBarStyle == null)
+            {
+                Plugin.Log?.LogWarning("VaultUI styles are not initialized; skipping draw this frame");
+                InitializeStyles();
+                if (_windowStyle == null || _headerBarStyle == null)
+                    return;
+            }
 
             // Compute content-reactive height
             float contentHeight = GetContentHeight();
