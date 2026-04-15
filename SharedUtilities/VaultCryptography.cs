@@ -127,7 +127,10 @@ namespace SunhavenMods.Shared
                     string json = DecryptAesBodyAfterHeader(encryptedData, key);
                     if (IsVaultJson(json)) return json;
                 }
-                catch { }
+                catch (Exception ex)
+                {
+                    LogSource?.LogWarning($"[VaultCryptography] Legacy key attempt failed: {ex.Message}");
+                }
             }
             return null;
         }
@@ -138,8 +141,9 @@ namespace SunhavenMods.Shared
             {
                 return DecryptAesBodyAfterHeader(cipherData, key);
             }
-            catch
+            catch (Exception ex)
             {
+                LogSource?.LogWarning($"[VaultCryptography] Primary key decrypt failed: {ex.Message}");
                 return null;
             }
         }
@@ -205,8 +209,14 @@ namespace SunhavenMods.Shared
                 {
                     foreach (var a in AppDomain.CurrentDomain.GetAssemblies())
                     {
-                        try { if (a.GetType("Steamworks.SteamUser") != null) { steamAssembly = a; break; } }
-                        catch { }
+                        try
+                        {
+                            if (a.GetType("Steamworks.SteamUser") != null) { steamAssembly = a; break; }
+                        }
+                        catch (Exception ex)
+                        {
+                            LogSource?.LogWarning($"[VaultCryptography] Steam assembly probe failed for '{a.FullName}': {ex.Message}");
+                        }
                     }
                 }
                 if (steamAssembly == null) return null;
@@ -230,7 +240,11 @@ namespace SunhavenMods.Shared
         private static string GetMachineId()
         {
             try { return SystemInfo.deviceUniqueIdentifier; }
-            catch { return "unknown"; }
+            catch (Exception ex)
+            {
+                LogSource?.LogWarning($"[VaultCryptography] Machine ID lookup failed: {ex.Message}");
+                return "unknown";
+            }
         }
 
         private static bool IsVaultJson(string json)

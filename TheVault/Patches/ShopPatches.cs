@@ -19,6 +19,7 @@ namespace TheVault.Patches
         /// </summary>
         private static Dictionary<int, (string currencyId, int amount)> _vaultPurchaseRequirements
             = new Dictionary<int, (string, int)>();
+        private static readonly Dictionary<string, string> _currencyDisplayNameCache = new Dictionary<string, string>(StringComparer.Ordinal);
 
         /// <summary>
         /// Register an item that requires vault currency to purchase.
@@ -161,33 +162,36 @@ namespace TheVault.Patches
         /// </summary>
         private static void DeductCurrency(VaultManager vaultManager, string currencyId, int amount)
         {
-            if (currencyId.StartsWith("seasonal_"))
+            if (TryExtractSuffix(currencyId, "seasonal_", out string seasonalSuffix))
             {
-                string typeName = currencyId.Substring("seasonal_".Length);
-                if (Enum.TryParse<SeasonalTokenType>(typeName, out var tokenType))
+                if (Enum.TryParse<SeasonalTokenType>(seasonalSuffix, out var tokenType))
                 {
                     vaultManager.RemoveSeasonalTokens(tokenType, amount);
                 }
             }
-            else if (currencyId.StartsWith("community_"))
+            else if (TryExtractSuffix(currencyId, "community_", out string communitySuffix))
             {
-                vaultManager.RemoveCommunityTokens(currencyId.Substring("community_".Length), amount);
+                vaultManager.RemoveCommunityTokens(communitySuffix, amount);
             }
-            else if (currencyId.StartsWith("key_"))
+            else if (TryExtractSuffix(currencyId, "key_", out string keySuffix))
             {
-                vaultManager.RemoveKeys(currencyId.Substring("key_".Length), amount);
+                vaultManager.RemoveKeys(keySuffix, amount);
             }
-            else if (currencyId.StartsWith("special_"))
+            else if (TryExtractSuffix(currencyId, "special_", out string specialSuffix))
             {
-                vaultManager.RemoveSpecial(currencyId.Substring("special_".Length), amount);
+                vaultManager.RemoveSpecial(specialSuffix, amount);
             }
-            else if (currencyId.StartsWith("orb_"))
+            else if (TryExtractSuffix(currencyId, "orb_", out string orbSuffix))
             {
-                vaultManager.RemoveOrbs(currencyId.Substring("orb_".Length), amount);
+                vaultManager.RemoveOrbs(orbSuffix, amount);
             }
-            else if (currencyId.StartsWith("custom_"))
+            else if (TryExtractSuffix(currencyId, "custom_", out string customSuffix))
             {
-                vaultManager.RemoveCustomCurrency(currencyId.Substring("custom_".Length), amount);
+                vaultManager.RemoveCustomCurrency(customSuffix, amount);
+            }
+            else
+            {
+                Plugin.Log?.LogWarning($"Unknown vault currency id format '{currencyId}', skipping deduction");
             }
         }
 
@@ -218,16 +222,40 @@ namespace TheVault.Patches
         /// </summary>
         private static string GetCurrencyDisplayName(string currencyId)
         {
-            if (currencyId.StartsWith("seasonal_"))
-                return currencyId.Substring("seasonal_".Length) + " Tokens";
-            if (currencyId.StartsWith("community_"))
-                return "Community Tokens";
-            if (currencyId.StartsWith("key_"))
-                return currencyId.Substring("key_".Length) + " Keys";
-            if (currencyId.StartsWith("special_"))
-                return FormatSpecialName(currencyId.Substring("special_".Length));
+            if (string.IsNullOrEmpty(currencyId))
+                return string.Empty;
 
-            return currencyId;
+            if (_currencyDisplayNameCache.TryGetValue(currencyId, out string cached))
+                return cached;
+
+            string displayName = currencyId;
+            if (TryExtractSuffix(currencyId, "seasonal_", out string seasonalSuffix))
+                displayName = seasonalSuffix + " Tokens";
+            else if (TryExtractSuffix(currencyId, "community_", out _))
+                displayName = "Community Tokens";
+            else if (TryExtractSuffix(currencyId, "key_", out string keySuffix))
+                displayName = keySuffix + " Keys";
+            else if (TryExtractSuffix(currencyId, "special_", out string specialSuffix))
+                displayName = FormatSpecialName(specialSuffix);
+
+            _currencyDisplayNameCache[currencyId] = displayName;
+            return displayName;
+        }
+
+        private static bool TryExtractSuffix(string currencyId, string prefix, out string suffix)
+        {
+            suffix = string.Empty;
+            if (string.IsNullOrEmpty(currencyId))
+            {
+                Plugin.Log?.LogWarning("Encountered empty currency id");
+                return false;
+            }
+
+            if (!currencyId.StartsWith(prefix, StringComparison.Ordinal))
+                return false;
+
+            suffix = currencyId.Remove(0, prefix.Length);
+            return true;
         }
 
         private static string FormatSpecialName(string specialName)
