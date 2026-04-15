@@ -24,3 +24,5 @@ File: `Sun Haven/BepInEx/config/SenpaisChest.cfg`
 - Reworked chest-label rendering to use a screen overlay anchor so labels stay above chests.
 - Hide chest labels while chest UI is open.
 - Restrict chest labels to chest item/deco id `10110` only.
+- Implement chest-label decoration ID allowlist (`10110` seeded) for easy future expansion.
+- Add config-backed `ChestLabels.LabeledChestDecorationIds` list for runtime control of labeled chest IDs.

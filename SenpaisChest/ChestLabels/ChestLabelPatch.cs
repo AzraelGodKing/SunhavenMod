@@ -80,9 +80,13 @@ namespace SenpaisChest.ChestLabels
         {
             if (chest == null)
                 return false;
-            // Temporary rule requested by user: only show labels for chest item/deco id 10110.
+
             var decoration = chest as Decoration;
-            return decoration != null && decoration.id == 10110;
+            var config = Plugin.GetConfig();
+            if (decoration == null || config == null)
+                return false;
+
+            return config.IsLabeledChestDecorationId(decoration.id);
         }
     }
 }
