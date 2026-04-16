@@ -118,6 +118,7 @@ SunhavenMod/
 
 ## Documentation site changelog
 
+- **2026-04-16** — Self-hosted build jobs pass MSBuild properties `-p:BepInExPath` and `-p:ManagedPath` (container paths `/sunhaven/BepInEx` and `/sunhaven/Sun Haven_Data/Managed`) in the **Build mod** step so `dotnet build` resolves game assemblies.
 - **2026-04-16** — Self-hosted Linux build jobs set `DOTNET_INSTALL_DIR` / `DOTNET_ROOT` to `${{ runner.temp }}/dotnet` so `actions/setup-dotnet` does not try to install under `/usr/share/dotnet` (non-root runners get “Permission denied”).
 - **2026-04-16** — Self-hosted build jobs use `runs-on: [self-hosted, Linux, X64, sunhaven]` to match the registered runner (labels are **case-sensitive**).
 - **2026-04-16** — Added [`Test — Self-hosted Sunhaven runner`](.github/workflows/test-self-hosted-sunhaven-runner.yml): same build/package shape as Release & Publish with **`dry_run` defaulting to true** (workflow artifacts only; no GitHub Release / Thunderstore / Nexus / Discord until you set `dry_run` to false).

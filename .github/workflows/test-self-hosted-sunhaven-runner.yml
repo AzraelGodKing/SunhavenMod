@@ -186,10 +186,15 @@ jobs:
       - name: Build mod
         if: matrix.mod != 'test_discord'
         shell: bash
+        env:
+          BEPINEX_PATH: /sunhaven/BepInEx
+          MANAGED_PATH: "/sunhaven/Sun Haven_Data/Managed"
         run: |
           set -euo pipefail
           dotnet restore "${{ steps.build_config.outputs.csproj }}"
-          dotnet build "${{ steps.build_config.outputs.csproj }}" -c Release --nologo
+          dotnet build "${{ steps.build_config.outputs.csproj }}" -c Release --nologo \
+            -p:BepInExPath="$BEPINEX_PATH" \
+            -p:ManagedPath="$MANAGED_PATH"
 
       - name: Collect build outputs
         if: matrix.mod != 'test_discord'
