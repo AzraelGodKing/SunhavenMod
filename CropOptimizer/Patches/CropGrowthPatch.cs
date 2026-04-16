@@ -4,6 +4,7 @@ using System.Linq;
 using System.Reflection;
 using CropOptimizer.Data;
 using HarmonyLib;
+using SunhavenMods.Shared;
 using UnityEngine;
 
 namespace CropOptimizer.Patches
@@ -18,13 +19,11 @@ namespace CropOptimizer.Patches
         private static MemberInfo _growthDaysMember;
 
         private static bool _itemMembersResolved;
-        private static MemberInfo _itemIdMember;
         private static Type _itemDatabaseType;
         private static MethodInfo _itemDatabaseGetItemMethod;
         private static object _itemDatabaseItemsContainer;
         private static MethodInfo _dictTryGetValueMethod;
         private static PropertyInfo _dictIndexerProperty;
-        private static Type _itemInfoDatabaseType;
         private static PropertyInfo _itemInfoDatabaseInstanceProperty;
         private static FieldInfo _allItemSellInfosField;
 
@@ -228,8 +227,8 @@ namespace CropOptimizer.Patches
 
             try
             {
-                EnsureItemMembers(cropInstance.GetType());
-                if (!TryReadIntMember(cropInstance, _itemIdMember, out int itemId) || itemId <= 0)
+                EnsureItemPriceCaches();
+                if (!TryGetHarvestItemId(cropInstance, out int itemId) || itemId <= 0)
                     return false;
 
                 if (!TryGetBaseSellPrice(itemId, out int baseSellPrice))
@@ -270,12 +269,17 @@ namespace CropOptimizer.Patches
             }
         }
 
-        private static void EnsureItemMembers(Type cropType)
+        /// <summary>
+        /// Resolves ItemDatabase / ItemInfoDatabase accessors once. Harvest item id comes from
+        /// <see cref="TryGetHarvestItemId"/> (Crop._cropItem.id), not Decoration.id.
+        /// </summary>
+        private static void EnsureItemPriceCaches()
         {
-            if (_itemMembersResolved || cropType == null)
+            if (_itemMembersResolved)
                 return;
             _itemMembersResolved = true;
 
+<<<<<<< HEAD
             // Do not use bare "id" on Crop — it resolves to Decoration.id (world decoration id), not harvest item id.
             _itemIdMember = FindMember(cropType, "itemID", "_itemId", "cropItemId", "ItemID");
             if (_itemIdMember == null)
@@ -285,6 +289,8 @@ namespace CropOptimizer.Patches
                     _itemIdMember = FindMember(itemType, "id", "itemID", "ItemID", "_itemId");
             }
 
+=======
+>>>>>>> 66677421d01b589bb9ab434899543c8f7a6c702a
             _itemDatabaseType = AccessTools.TypeByName("Wish.ItemDatabase");
             if (_itemDatabaseType != null)
             {
@@ -306,11 +312,39 @@ namespace CropOptimizer.Patches
                 }
             }
 
-            _itemInfoDatabaseType = AccessTools.TypeByName("Wish.ItemInfoDatabase");
-            if (_itemInfoDatabaseType != null)
+            var itemInfoDatabaseType = AccessTools.TypeByName("Wish.ItemInfoDatabase");
+            if (itemInfoDatabaseType != null)
             {
-                _itemInfoDatabaseInstanceProperty = AccessTools.Property(_itemInfoDatabaseType, "Instance");
-                _allItemSellInfosField = AccessTools.Field(_itemInfoDatabaseType, "allItemSellInfos");
+                _itemInfoDatabaseInstanceProperty = AccessTools.Property(itemInfoDatabaseType, "Instance")
+                                                   ?? AccessTools.Property(itemInfoDatabaseType, "instance");
+                _allItemSellInfosField = AccessTools.Field(itemInfoDatabaseType, "allItemSellInfos");
+            }
+        }
+
+        private static bool TryGetHarvestItemId(object cropInstance, out int itemId)
+        {
+            itemId = 0;
+            if (cropInstance == null)
+                return false;
+            try
+            {
+                object cropItem = ReflectionHelper.GetInstanceValue(cropInstance, "_cropItem")
+                    ?? ReflectionHelper.GetInstanceValue(cropInstance, "cropItem")
+                    ?? ReflectionHelper.GetInstanceValue(cropInstance, "item");
+                if (cropItem == null)
+                    return false;
+
+                object rawId = ReflectionHelper.GetInstanceValue(cropItem, "id");
+                if (rawId == null)
+                    rawId = ReflectionHelper.GetInstanceValue(cropItem, "ID");
+
+                if (rawId == null)
+                    return false;
+                return TryConvertToInt(rawId, out itemId) && itemId > 0;
+            }
+            catch
+            {
+                return false;
             }
         }
 
@@ -319,6 +353,21 @@ namespace CropOptimizer.Patches
             sellPrice = 0;
             try
             {
+                EnsureItemPriceCaches();
+
+                // Primary path: ItemInfoDatabase.Instance.allItemSellInfos[itemId] -> ItemSellInfo.sellPrice
+                if (_itemInfoDatabaseInstanceProperty != null && _allItemSellInfosField != null)
+                {
+                    object instance = _itemInfoDatabaseInstanceProperty.GetValue(null);
+                    object dictObj = instance != null ? _allItemSellInfosField.GetValue(instance) : null;
+                    if (dictObj is IDictionary idict && idict.Contains(itemId))
+                    {
+                        object entry = idict[itemId];
+                        if (TryExtractSellPrice(entry, out sellPrice))
+                            return true;
+                    }
+                }
+
                 if (_itemDatabaseGetItemMethod != null)
                 {
                     object itemData = _itemDatabaseGetItemMethod.Invoke(null, new object[] { itemId });
@@ -342,23 +391,6 @@ namespace CropOptimizer.Patches
                     }
                     if (TryExtractSellPrice(itemData, out sellPrice))
                         return true;
-                }
-
-                if (_itemInfoDatabaseInstanceProperty != null && _allItemSellInfosField != null)
-                {
-                    object instance = _itemInfoDatabaseInstanceProperty.GetValue(null);
-                    object dict = instance != null ? _allItemSellInfosField.GetValue(instance) : null;
-                    if (dict != null)
-                    {
-                        var tryGetValue = dict.GetType().GetMethod("TryGetValue", BindingFlags.Instance | BindingFlags.Public);
-                        if (tryGetValue != null)
-                        {
-                            var args = new object[] { itemId, null };
-                            bool found = (bool)tryGetValue.Invoke(dict, args);
-                            if (found && TryExtractSellPrice(args[1], out sellPrice))
-                                return true;
-                        }
-                    }
                 }
             }
             catch
