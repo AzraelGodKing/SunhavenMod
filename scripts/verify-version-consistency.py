@@ -14,6 +14,8 @@ from pathlib import Path
 
 REPO = Path(__file__).resolve().parent.parent
 VERSIONS_PATH = REPO / "docs" / "versions.json"
+# utf-8-sig strips UTF-8 BOM if present (some editors save JSON with BOM).
+_READ_ENCODING = "utf-8-sig"
 
 # json_key -> (mod_dir, plugin_filename relative to mod dir)
 MOD_PLUGIN_FILES: dict[str, tuple[str, str]] = {
@@ -38,18 +40,18 @@ MANIFEST_VER_RE = re.compile(r'"version_number"\s*:\s*"([^"]*)"')
 def read_manifest_version(manifest_path: Path) -> str | None:
     if not manifest_path.is_file():
         return None
-    text = manifest_path.read_text(encoding="utf-8")
+    text = manifest_path.read_text(encoding=_READ_ENCODING)
     m = MANIFEST_VER_RE.search(text)
     return m.group(1) if m else None
 
 
 def read_plugin_versions(plugin_path: Path) -> list[str]:
-    text = plugin_path.read_text(encoding="utf-8")
+    text = plugin_path.read_text(encoding=_READ_ENCODING)
     return PLUGIN_VER_RE.findall(text)
 
 
 def main() -> int:
-    data = json.loads(VERSIONS_PATH.read_text(encoding="utf-8"))
+    data = json.loads(VERSIONS_PATH.read_text(encoding=_READ_ENCODING))
     errors: list[str] = []
 
     for key, entry in data.items():
