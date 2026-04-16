@@ -5,5 +5,7 @@
     <SunHavenPath Condition="'$(SUNHAVEN_PATH)' != ''">$(SUNHAVEN_PATH)</SunHavenPath>
     <BepInExPath>$(SunHavenPath)\BepInEx</BepInExPath>
     <ManagedPath>$(SunHavenPath)\Sun Haven_Data\Managed</ManagedPath>
+    <!-- Set false in CI when the game mount is read-only (references still use BepInExPath). -->
+    <SunhavenCopyToBepInExPlugins>true</SunhavenCopyToBepInExPlugins>
   </PropertyGroup>
 </Project>

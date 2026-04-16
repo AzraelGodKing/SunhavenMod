@@ -118,6 +118,8 @@ SunhavenMod/
 
 ## Documentation site changelog
 
+- **2026-04-16** — **Version → build → release:** added [`docs/VERSION_AND_RELEASE.md`](docs/VERSION_AND_RELEASE.md) and [`scripts/verify-version-consistency.py`](scripts/verify-version-consistency.py). Release and test workflows run the verifier in the setup job so `docs/versions.json`, `PLUGIN_VERSION`, and `thunderstore/manifest.json` agree before the self-hosted build.
+- **2026-04-16** — `CopyToPlugins` targets skip copying into `$(BepInExPath)/plugins` when `SunhavenCopyToBepInExPlugins` is false (CI uses `-p:SunhavenCopyToBepInExPlugins=false` because the `/sunhaven` mount is read-only); local builds still copy to the game by default.
 - **2026-04-16** — Self-hosted build jobs pass MSBuild properties `-p:BepInExPath` and `-p:ManagedPath` (container paths `/sunhaven/BepInEx` and `/sunhaven/Sun Haven_Data/Managed`) in the **Build mod** step so `dotnet build` resolves game assemblies.
 - **2026-04-16** — Self-hosted Linux build jobs set `DOTNET_INSTALL_DIR` / `DOTNET_ROOT` to `${{ runner.temp }}/dotnet` so `actions/setup-dotnet` does not try to install under `/usr/share/dotnet` (non-root runners get “Permission denied”).
 - **2026-04-16** — Self-hosted build jobs use `runs-on: [self-hosted, Linux, X64, sunhaven]` to match the registered runner (labels are **case-sensitive**).

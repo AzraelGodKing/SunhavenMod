@@ -7,6 +7,8 @@
 #
 # Use this until you trust the runner, then set dry_run=false and match the
 # publish toggles to the production workflow.
+#
+# Version / release: docs/VERSION_AND_RELEASE.md — verify step runs before matrix setup.
 # =============================================================================
 
 name: Test — Self-hosted Sunhaven runner
@@ -73,6 +75,12 @@ jobs:
     outputs:
       matrix: ${{ steps.set-matrix.outputs.matrix }}
     steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Verify version consistency (versions.json vs PLUGIN_VERSION vs manifest)
+        run: python3 scripts/verify-version-consistency.py
+
       - name: Set mod matrix
         id: set-matrix
         run: |
@@ -194,7 +202,8 @@ jobs:
           dotnet restore "${{ steps.build_config.outputs.csproj }}"
           dotnet build "${{ steps.build_config.outputs.csproj }}" -c Release --nologo \
             -p:BepInExPath="$BEPINEX_PATH" \
-            -p:ManagedPath="$MANAGED_PATH"
+            -p:ManagedPath="$MANAGED_PATH" \
+            -p:SunhavenCopyToBepInExPlugins=false
 
       - name: Collect build outputs
         if: matrix.mod != 'test_discord'
