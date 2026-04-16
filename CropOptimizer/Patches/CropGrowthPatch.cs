@@ -1,9 +1,11 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using System.Reflection;
 using CropOptimizer.Data;
 using HarmonyLib;
+using SunhavenMods.Shared;
 using UnityEngine;
 
 namespace CropOptimizer.Patches
@@ -18,13 +20,11 @@ namespace CropOptimizer.Patches
         private static MemberInfo _growthDaysMember;
 
         private static bool _itemMembersResolved;
-        private static MemberInfo _itemIdMember;
         private static Type _itemDatabaseType;
         private static MethodInfo _itemDatabaseGetItemMethod;
         private static object _itemDatabaseItemsContainer;
         private static MethodInfo _dictTryGetValueMethod;
         private static PropertyInfo _dictIndexerProperty;
-        private static Type _itemInfoDatabaseType;
         private static PropertyInfo _itemInfoDatabaseInstanceProperty;
         private static FieldInfo _allItemSellInfosField;
 
@@ -46,11 +46,33 @@ namespace CropOptimizer.Patches
                 return;
             }
 
-            MethodInfo updateGrowth = AccessTools.Method(cropType, "UpdateGrowth", Type.EmptyTypes)
-                                      ?? AccessTools.Method(cropType, "GrowCrop", Type.EmptyTypes);
-            if (updateGrowth == null)
+            // Sun Haven's Wish.Crop does not expose UpdateGrowth/GrowCrop; growth runs through
+            // SetMeta/SetCropSprite/Water/Grow. Patch every resolved entry point once.
+            var methodsToPatch = new List<MethodInfo>();
+            void TryAdd(MethodInfo m)
             {
-                Plugin.Log?.LogWarning("[CropGrowthPatch] Could not find crop growth method");
+                if (m != null)
+                    methodsToPatch.Add(m);
+            }
+
+            TryAdd(AccessTools.Method(cropType, "SetCropSprite", Type.EmptyTypes));
+            var decorationDataType = AccessTools.TypeByName("Wish.DecorationPositionData");
+            if (decorationDataType != null)
+                TryAdd(AccessTools.Method(cropType, "SetMeta", new[] { decorationDataType }));
+            TryAdd(AccessTools.Method(cropType, "Water", Type.EmptyTypes));
+            TryAdd(AccessTools.Method(cropType, "Grow", new[] { typeof(float) }));
+            // Legacy / alternate builds (harmless if absent)
+            TryAdd(AccessTools.Method(cropType, "UpdateGrowth", Type.EmptyTypes));
+            TryAdd(AccessTools.Method(cropType, "GrowCrop", Type.EmptyTypes));
+
+            methodsToPatch = methodsToPatch
+                .GroupBy(m => m.MetadataToken)
+                .Select(g => g.First())
+                .ToList();
+
+            if (methodsToPatch.Count == 0)
+            {
+                Plugin.Log?.LogError("[CropGrowthPatch] No Crop methods found to patch — forecast will stay empty.");
                 return;
             }
 
@@ -61,15 +83,23 @@ namespace CropOptimizer.Patches
                 return;
             }
 
-            try
+            int patched = 0;
+            foreach (var method in methodsToPatch)
             {
-                harmony.Patch(updateGrowth, postfix: new HarmonyMethod(postfix));
-                Plugin.Log?.LogInfo($"[CropGrowthPatch] Patched {cropType.Name}.{updateGrowth.Name}()");
+                try
+                {
+                    harmony.Patch(method, postfix: new HarmonyMethod(postfix));
+                    patched++;
+                    Plugin.Log?.LogInfo($"[CropGrowthPatch] Patched {cropType.Name}.{method.Name}({string.Join(", ", method.GetParameters().Select(p => p.ParameterType.Name))})");
+                }
+                catch (Exception ex)
+                {
+                    Plugin.Log?.LogWarning($"[CropGrowthPatch] Skipped {method.Name}: {ex.Message}");
+                }
             }
-            catch (Exception ex)
-            {
-                Plugin.Log?.LogError($"[CropGrowthPatch] Harmony patch failed: {ex.Message}");
-            }
+
+            if (patched == 0)
+                Plugin.Log?.LogError("[CropGrowthPatch] No Harmony patches applied — check game version compatibility.");
         }
 
         private static void OnAfterCropGrowth(object __instance)
@@ -198,8 +228,8 @@ namespace CropOptimizer.Patches
 
             try
             {
-                EnsureItemMembers(cropInstance.GetType());
-                if (!TryReadIntMember(cropInstance, _itemIdMember, out int itemId) || itemId <= 0)
+                EnsureItemPriceCaches();
+                if (!TryGetHarvestItemId(cropInstance, out int itemId) || itemId <= 0)
                     return false;
 
                 if (!TryGetBaseSellPrice(itemId, out int baseSellPrice))
@@ -240,19 +270,15 @@ namespace CropOptimizer.Patches
             }
         }
 
-        private static void EnsureItemMembers(Type cropType)
+        /// <summary>
+        /// Resolves ItemDatabase / ItemInfoDatabase accessors once. Harvest item id comes from
+        /// <see cref="TryGetHarvestItemId"/> (Crop._cropItem.id), not Decoration.id.
+        /// </summary>
+        private static void EnsureItemPriceCaches()
         {
-            if (_itemMembersResolved || cropType == null)
+            if (_itemMembersResolved)
                 return;
             _itemMembersResolved = true;
-
-            _itemIdMember = FindMember(cropType, "itemID", "_itemId", "cropItemId", "ItemID", "id");
-            if (_itemIdMember == null)
-            {
-                var cropItemMember = FindMember(cropType, "_cropItem", "cropItem", "item");
-                if (cropItemMember != null && TryReadMemberType(cropItemMember, out Type itemType))
-                    _itemIdMember = FindMember(itemType, "id", "itemID", "ItemID", "_itemId");
-            }
 
             _itemDatabaseType = AccessTools.TypeByName("Wish.ItemDatabase");
             if (_itemDatabaseType != null)
@@ -275,11 +301,39 @@ namespace CropOptimizer.Patches
                 }
             }
 
-            _itemInfoDatabaseType = AccessTools.TypeByName("Wish.ItemInfoDatabase");
-            if (_itemInfoDatabaseType != null)
+            var itemInfoDatabaseType = AccessTools.TypeByName("Wish.ItemInfoDatabase");
+            if (itemInfoDatabaseType != null)
             {
-                _itemInfoDatabaseInstanceProperty = AccessTools.Property(_itemInfoDatabaseType, "Instance");
-                _allItemSellInfosField = AccessTools.Field(_itemInfoDatabaseType, "allItemSellInfos");
+                _itemInfoDatabaseInstanceProperty = AccessTools.Property(itemInfoDatabaseType, "Instance")
+                                                   ?? AccessTools.Property(itemInfoDatabaseType, "instance");
+                _allItemSellInfosField = AccessTools.Field(itemInfoDatabaseType, "allItemSellInfos");
+            }
+        }
+
+        private static bool TryGetHarvestItemId(object cropInstance, out int itemId)
+        {
+            itemId = 0;
+            if (cropInstance == null)
+                return false;
+            try
+            {
+                object cropItem = ReflectionHelper.GetInstanceValue(cropInstance, "_cropItem")
+                    ?? ReflectionHelper.GetInstanceValue(cropInstance, "cropItem")
+                    ?? ReflectionHelper.GetInstanceValue(cropInstance, "item");
+                if (cropItem == null)
+                    return false;
+
+                object rawId = ReflectionHelper.GetInstanceValue(cropItem, "id");
+                if (rawId == null)
+                    rawId = ReflectionHelper.GetInstanceValue(cropItem, "ID");
+
+                if (rawId == null)
+                    return false;
+                return TryConvertToInt(rawId, out itemId) && itemId > 0;
+            }
+            catch
+            {
+                return false;
             }
         }
 
@@ -288,6 +342,21 @@ namespace CropOptimizer.Patches
             sellPrice = 0;
             try
             {
+                EnsureItemPriceCaches();
+
+                // Primary path: ItemInfoDatabase.Instance.allItemSellInfos[itemId] -> ItemSellInfo.sellPrice
+                if (_itemInfoDatabaseInstanceProperty != null && _allItemSellInfosField != null)
+                {
+                    object instance = _itemInfoDatabaseInstanceProperty.GetValue(null);
+                    object dictObj = instance != null ? _allItemSellInfosField.GetValue(instance) : null;
+                    if (dictObj is IDictionary idict && idict.Contains(itemId))
+                    {
+                        object entry = idict[itemId];
+                        if (TryExtractSellPrice(entry, out sellPrice))
+                            return true;
+                    }
+                }
+
                 if (_itemDatabaseGetItemMethod != null)
                 {
                     object itemData = _itemDatabaseGetItemMethod.Invoke(null, new object[] { itemId });
@@ -312,23 +381,6 @@ namespace CropOptimizer.Patches
                     if (TryExtractSellPrice(itemData, out sellPrice))
                         return true;
                 }
-
-                if (_itemInfoDatabaseInstanceProperty != null && _allItemSellInfosField != null)
-                {
-                    object instance = _itemInfoDatabaseInstanceProperty.GetValue(null);
-                    object dict = instance != null ? _allItemSellInfosField.GetValue(instance) : null;
-                    if (dict != null)
-                    {
-                        var tryGetValue = dict.GetType().GetMethod("TryGetValue", BindingFlags.Instance | BindingFlags.Public);
-                        if (tryGetValue != null)
-                        {
-                            var args = new object[] { itemId, null };
-                            bool found = (bool)tryGetValue.Invoke(dict, args);
-                            if (found && TryExtractSellPrice(args[1], out sellPrice))
-                                return true;
-                        }
-                    }
-                }
             }
             catch
             {
@@ -346,12 +398,27 @@ namespace CropOptimizer.Patches
 
             var type = itemData.GetType();
             var member = FindMember(type, "sellPrice", "sellGold", "sell", "price", "Price");
-            if (member != null && TryConvertToInt(GetMemberValue(itemData, member), out int parsed))
+            if (member == null)
+                return false;
+
+            object raw = GetMemberValue(itemData, member);
+            if (raw == null)
+                return false;
+
+            try
             {
-                sellPrice = parsed;
+                if (raw is float f)
+                    sellPrice = Mathf.Max(0, Mathf.RoundToInt(f));
+                else if (raw is double d)
+                    sellPrice = Mathf.Max(0, Mathf.RoundToInt((float)d));
+                else
+                    sellPrice = Mathf.Max(0, Mathf.RoundToInt(Convert.ToSingle(raw)));
                 return true;
             }
-            return false;
+            catch
+            {
+                return false;
+            }
         }
 
         private static float MapQualityMultiplier(object qualityValue)

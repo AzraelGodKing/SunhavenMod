@@ -69,6 +69,7 @@ The vault UI includes a **Custom** tab for currencies registered at runtime. Fro
 ## Changelog
 
 ### Unreleased
+- **Fixed:** `VaultUI` no longer calls `InitializeStyles()` from `Awake` / `OnEnable` / `SetScale` (those touch `GUI.skin` outside `OnGUI` and could throw `ArgumentException`, preventing the plugin from loading). Styles are built lazily on the first `OnGUI` when the window is shown, with a `_stylesDirty` flag when scale changes.
 - Added a `VaultModApiBridge.OnVaultLoaded` bridge event notification so soft-dependent mods can register integrations after vault data is actually loaded.
 
 ### 3.0.4

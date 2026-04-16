@@ -58,7 +58,7 @@ param(
         "senpaischest", "havensbirthright", "sunhavenmuseumutilitytracker",
         "squirrelsbirthdayreminder", "sunhaventodo", "thevault",
         "havendevtools", "havensalmanac", "fasterraces", "trinketfortune",
-        "justiceforharold"
+        "justiceforharold", "cropoptimizer"
     )]
     [string]$Mod,
 
@@ -96,6 +96,7 @@ $ModDefs = [ordered]@{
     "fasterraces"                  = @{ JsonKey = "com.azraelgodking.fasterraces"; ModDir = "FasterRaces"; UsePluginInfo = $false; ReadmePath = "FasterRaces"; IndexDataName = "Faster Races"; DocsHtml = "FasterRaces\FasterRaces.html"; ExtraCsproj = @("FasterRaces\FasterRaces.csproj") }
     "trinketfortune"               = @{ JsonKey = "com.azraelgodking.trinketfortune"; ModDir = "TrinketFortune"; UsePluginInfo = $false; ReadmePath = "TrinketFortune"; IndexDataName = "Trinket Fortune"; DocsHtml = "TrinketFortune\TrinketFortune.html"; ExtraCsproj = @() }
     "justiceforharold"             = @{ JsonKey = "com.azraelgodking.justiceforharold"; ModDir = "JusticeForHarold"; UsePluginInfo = $true; ReadmePath = $null; IndexDataName = $null; DocsHtml = $null; ExtraCsproj = @() }
+    "cropoptimizer"                = @{ JsonKey = "com.azraelgodking.cropoptimizer"; ModDir = "CropOptimizer"; UsePluginInfo = $true; ReadmePath = "CropOptimizer"; IndexDataName = "Crop Optimizer"; DocsHtml = $null; ExtraCsproj = @() }
 }
 
 function Get-VersionParts {

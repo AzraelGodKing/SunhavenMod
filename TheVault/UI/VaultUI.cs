@@ -96,6 +96,9 @@ namespace TheVault.UI
         // UI scale (from config, 0.5-2.5)
         private float _scale = 1f;
 
+        /// <summary>GUIStyle/GUI.skin may only be touched inside OnGUI; defer full style build until then.</summary>
+        private bool _stylesDirty = true;
+
         private float WindowWidth => BASE_WINDOW_WIDTH * _scale;
         private float RowHeight => BASE_ROW_HEIGHT * _scale;
         private float HeaderHeight => BASE_HEADER_HEIGHT * _scale;
@@ -163,11 +166,11 @@ namespace TheVault.UI
         public void SetScale(float scale)
         {
             _scale = Mathf.Clamp(scale, 0.5f, 2.5f);
+            _stylesDirty = true;
             _windowStyle = null;
             float w = WindowWidth;
             float h = HeaderHeight + 260f * _scale + FooterHeight;
             _windowRect = new Rect((Screen.width - w) / 2f, (Screen.height - h) / 2f, w, h);
-            InitializeStyles();
         }
 
         public bool IsVisible => _isVisible;
@@ -252,12 +255,14 @@ namespace TheVault.UI
 
         private void Awake()
         {
-            InitializeStyles();
+            _stylesDirty = true;
+            _windowStyle = null;
         }
 
         private void OnEnable()
         {
-            InitializeStyles();
+            _stylesDirty = true;
+            _windowStyle = null;
         }
 
         private void Update()
@@ -337,7 +342,8 @@ namespace TheVault.UI
 
         private void InitializeStyles()
         {
-            if (_windowStyle != null) return;
+            if (!_stylesDirty && _windowStyle != null && _headerBarStyle != null)
+                return;
 
             // Create textures
             _windowBackground = MakeRoundedTex(64, 64, _windowBgColor, 8);
@@ -533,6 +539,7 @@ namespace TheVault.UI
             };
             _statusOkStyle.normal.textColor = new Color(0.5f, 0.95f, 0.65f);
 
+            _stylesDirty = false;
         }
 
         private void OnGUI()
@@ -541,9 +548,8 @@ namespace TheVault.UI
             // Don't show UI until vault is loaded for the current character
             if (!_isVisible || _vaultManager == null || !PlayerPatches.IsVaultLoaded) return;
 
-            if (_windowStyle == null || _headerBarStyle == null)
+            if (_stylesDirty || _windowStyle == null || _headerBarStyle == null)
             {
-                Plugin.Log?.LogWarning("VaultUI styles are not initialized; skipping draw this frame");
                 InitializeStyles();
                 if (_windowStyle == null || _headerBarStyle == null)
                     return;
