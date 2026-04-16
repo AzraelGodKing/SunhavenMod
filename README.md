@@ -119,7 +119,7 @@ SunhavenMod/
 ## Documentation site changelog
 
 - **2026-04-16** — Self-hosted Linux build jobs set `DOTNET_INSTALL_DIR` / `DOTNET_ROOT` to `${{ runner.temp }}/dotnet` so `actions/setup-dotnet` does not try to install under `/usr/share/dotnet` (non-root runners get “Permission denied”).
-- **2026-04-16** — Self-hosted build jobs use `runs-on: [self-hosted, Linux, sunhaven]` to match the registered runner (OS and custom labels are **case-sensitive**; our runner is **Linux**, not Windows, and uses the **`sunhaven`** label).
+- **2026-04-16** — Self-hosted build jobs use `runs-on: [self-hosted, Linux, X64, sunhaven]` to match the registered runner (labels are **case-sensitive**).
 - **2026-04-16** — Added [`Test — Self-hosted Sunhaven runner`](.github/workflows/test-self-hosted-sunhaven-runner.yml): same build/package shape as Release & Publish with **`dry_run` defaulting to true** (workflow artifacts only; no GitHub Release / Thunderstore / Nexus / Discord until you set `dry_run` to false).
 - **2026-04-16** — Updated the release workflow build job to use a self-hosted runner for .NET mod builds (`actions/setup-dotnet`, DLL artifacts) instead of committing pre-built DLLs [`.github/workflows/build-release-publish.yml`](.github/workflows/build-release-publish.yml).
 - **2026-04-16** — Added a local Docker .NET SDK builder setup (`Dockerfile.dotnet-sdk`, `docker-compose.dotnet-sdk.yml`, `.env.dotnet-sdk.example`) and usage doc at [`docs/DOCKER_DOTNET_CONTAINER.md`](docs/DOCKER_DOTNET_CONTAINER.md) to run .NET commands in a container on your own PC.
