@@ -51,15 +51,8 @@
     </Reference>
   </ItemGroup>
 
+  <!-- TheVault.Abstractions: compile-time types for VaultModApiBridge (VaultIntegration); other mods are soft-deps at runtime via reflection -->
   <ItemGroup>
-    <Reference Include="SunhavenTodo">
-      <HintPath>..\builds\SunhavenTodo\SunhavenTodo.dll</HintPath>
-      <Private>false</Private>
-    </Reference>
-    <Reference Include="BirthdayReminder">
-      <HintPath>..\builds\BirthdayReminder\BirthdayReminder.dll</HintPath>
-      <Private>false</Private>
-    </Reference>
     <Reference Include="TheVault.Abstractions">
       <HintPath>..\builds\TheVault\TheVault.Abstractions.dll</HintPath>
       <Private>false</Private>

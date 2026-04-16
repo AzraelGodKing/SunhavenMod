@@ -37,6 +37,7 @@ Crop Optimizer adds field-level harvest forecasting, a lightweight crop HUD, and
 ## Changelog
 
 ### Unreleased
+- **Build:** Project no longer references Sunhaven Todo or Birthday Reminder DLLs; those integrations call into optional mods via reflection, matching other slim mods (only game + BepInEx + TheVault.Abstractions for Vault types).
 - Crop growth forecasting now reads reflected crop stage/timing, quality, and item sell data instead of placeholder values.
 - **Fixed:** Harmony now patches real `Wish.Crop` entry points (`SetCropSprite`, `SetMeta`, `Water`, `Grow`) — the previous `UpdateGrowth`/`GrowCrop` targets do not exist in Sun Haven, so no crop data was ever recorded.
 - **Fixed:** Projected sell value uses harvest item id from `Crop._cropItem` / `ItemData.id` and looks up `ItemSellInfo.sellPrice` via `ItemInfoDatabase` first (not `Decoration.id` or broken dictionary `out` reflection).
