@@ -129,6 +129,10 @@ jobs:
         uses: actions/setup-dotnet@v4
         with:
           dotnet-version: 8.0.x
+        env:
+          # Self-hosted Linux runners run as non-root; /usr/share/dotnet is not writable.
+          DOTNET_INSTALL_DIR: ${{ runner.temp }}/dotnet
+          DOTNET_ROOT: ${{ runner.temp }}/dotnet
 
       - name: Set build targets
         if: matrix.mod != 'test_discord'
