@@ -59,9 +59,11 @@ namespace CropOptimizer
 
             _hud = PersistentRunnerBase.CreateRunner<CropHUD>();
             _hud.Initialize(_forecast);
+            _hud.SetPlacement(_config.HudPositionX.Value, _config.HudPositionY.Value);
             _hud.SetScale(_config.HudScale.Value);
             _hud.SetVisible(_config.HudEnabled.Value);
             _hudVisible = _config.HudEnabled.Value;
+            _hud.PlacementChanged += OnCropHudPlacementChanged;
 
             TrySubscribeVaultLoaded();
 
@@ -70,6 +72,9 @@ namespace CropOptimizer
 
         private void OnDestroy()
         {
+            if (_hud != null)
+                _hud.PlacementChanged -= OnCropHudPlacementChanged;
+
             if (_isVaultLoadedEventSubscribed && _vaultLoadedEventInfo != null && _vaultLoadedHandler != null)
             {
                 _vaultLoadedEventInfo.RemoveEventHandler(null, _vaultLoadedHandler);
@@ -77,6 +82,14 @@ namespace CropOptimizer
                 _vaultLoadedEventInfo = null;
                 _vaultLoadedHandler = null;
             }
+        }
+
+        private void OnCropHudPlacementChanged(float x, float y)
+        {
+            if (_config == null)
+                return;
+            _config.HudPositionX.Value = x;
+            _config.HudPositionY.Value = y;
         }
 
         private void Update()

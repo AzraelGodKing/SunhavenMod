@@ -1,0 +1,21 @@
+FROM mcr.microsoft.com/dotnet/sdk:8.0-jammy
+
+ARG USER_NAME=dev
+ARG USER_UID=1000
+ARG USER_GID=1000
+
+ENV DOTNET_CLI_TELEMETRY_OPTOUT=1 \
+    DOTNET_NOLOGO=1
+
+RUN apt-get update \
+    && apt-get install -y --no-install-recommends git curl unzip ca-certificates \
+    && rm -rf /var/lib/apt/lists/*
+
+RUN groupadd --gid ${USER_GID} ${USER_NAME} \
+    && useradd --uid ${USER_UID} --gid ${USER_GID} -m ${USER_NAME}
+
+WORKDIR /workspace
+
+USER ${USER_NAME}
+
+CMD ["bash"]
