@@ -1,5 +1,5 @@
 # =============================================================================
-# Test pipeline — Self-hosted Windows runner (sunhaven-mods)
+# Test pipeline — Self-hosted Linux runner (labels: self-hosted, Linux, sunhaven)
 # =============================================================================
 # Like Release & Publish, but **dry_run defaults to true**: builds and packages
 # locally, uploads the zip as a workflow artifact, and does NOT create a GitHub
@@ -89,7 +89,7 @@ jobs:
 
   build:
     needs: setup
-    runs-on: [self-hosted, windows, sunhaven-mods]
+    runs-on: [self-hosted, Linux, sunhaven]
     strategy:
       fail-fast: false
       matrix:

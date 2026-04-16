@@ -3,7 +3,7 @@
 # =============================================================================
 # TRIGGER: Manual workflow dispatch - select which mod to release/publish
 #
-# IMPORTANT: This workflow builds mod DLLs on a self-hosted Windows runner.
+# IMPORTANT: This workflow builds mod DLLs on a self-hosted runner (labels: self-hosted, Linux, sunhaven).
 # It then packages the produced DLLs for GitHub/Thunderstore/Nexus.
 #
 # WHAT IT DOES:
@@ -110,12 +110,12 @@ jobs:
           fi
 
   # --------------------------------------------------------------------
-  # BUILD — Compile selected mod(s) with .NET on self-hosted Windows runner
+  # BUILD — Compile selected mod(s) with .NET on self-hosted Linux runner
   # --------------------------------------------------------------------
   build:
     if: github.event_name == 'workflow_dispatch'
     needs: setup
-    runs-on: [self-hosted, windows, sunhaven-mods]
+    runs-on: [self-hosted, Linux, sunhaven]
     strategy:
       fail-fast: false
       matrix:
