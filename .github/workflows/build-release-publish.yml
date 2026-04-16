@@ -3,7 +3,7 @@
 # =============================================================================
 # TRIGGER: Manual workflow dispatch - select which mod to release/publish
 #
-# IMPORTANT: This workflow builds mod DLLs on a self-hosted runner (labels: self-hosted, Linux, sunhaven).
+# IMPORTANT: This workflow builds mod DLLs on a self-hosted runner (labels: self-hosted, Linux, X64, sunhaven).
 # It then packages the produced DLLs for GitHub/Thunderstore/Nexus.
 #
 # WHAT IT DOES:
@@ -115,7 +115,7 @@ jobs:
   build:
     if: github.event_name == 'workflow_dispatch'
     needs: setup
-    runs-on: [self-hosted, Linux, sunhaven]
+    runs-on: [self-hosted, Linux, X64, sunhaven]
     strategy:
       fail-fast: false
       matrix:
