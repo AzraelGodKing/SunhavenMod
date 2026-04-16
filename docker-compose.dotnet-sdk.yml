@@ -1,0 +1,16 @@
+services:
+  dotnet-builder:
+    build:
+      context: .
+      dockerfile: Dockerfile.dotnet-sdk
+      args:
+        USER_NAME: ${USER_NAME:-dev}
+        USER_UID: ${USER_UID:-1000}
+        USER_GID: ${USER_GID:-1000}
+    image: sunhavenmod/dotnet-builder:8.0
+    container_name: sunhavenmod-dotnet-builder
+    working_dir: /workspace
+    tty: true
+    stdin_open: true
+    volumes:
+      - ./:/workspace
