@@ -225,7 +225,8 @@ jobs:
           echo "📄 Copied: $SRC_DLL -> $DEST_DIR/"
 
           if [ "${{ matrix.mod }}" = "thevault" ]; then
-            ABS_SRC="TheVault.Abstractions/bin/Release/net48/TheVault.Abstractions.dll"
+            # TheVault.Abstractions.csproj targets netstandard2.0 (not net48)
+            ABS_SRC="TheVault.Abstractions/bin/Release/netstandard2.0/TheVault.Abstractions.dll"
             if [ -f "$ABS_SRC" ]; then
               cp "$ABS_SRC" "$DEST_DIR/"
               echo "📄 Copied: $ABS_SRC -> $DEST_DIR/"

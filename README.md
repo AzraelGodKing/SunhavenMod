@@ -118,6 +118,7 @@ SunhavenMod/
 
 ## Documentation site changelog
 
+- **2026-04-16** — CI **Collect build outputs** copies `TheVault.Abstractions.dll` from `bin/Release/netstandard2.0/` (the abstractions project targets netstandard2.0, not net48).
 - **2026-04-16** — `verify-version-consistency.py` reads JSON and sources with **UTF-8 with BOM** (`utf-8-sig`) so `docs/versions.json` saved from editors that emit a BOM does not break CI.
 - **2026-04-16** — **Version → build → release:** added [`docs/VERSION_AND_RELEASE.md`](docs/VERSION_AND_RELEASE.md) and [`scripts/verify-version-consistency.py`](scripts/verify-version-consistency.py). Release and test workflows run the verifier in the setup job so `docs/versions.json`, `PLUGIN_VERSION`, and `thunderstore/manifest.json` agree before the self-hosted build.
 - **2026-04-16** — `CopyToPlugins` targets skip copying into `$(BepInExPath)/plugins` when `SunhavenCopyToBepInExPlugins` is false (CI uses `-p:SunhavenCopyToBepInExPlugins=false` because the `/sunhaven` mount is read-only); local builds still copy to the game by default.
