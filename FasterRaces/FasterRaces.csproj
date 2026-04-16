@@ -42,7 +42,7 @@
   </ItemGroup>
 
   <Target Name="CopyToPlugins" AfterTargets="Build">
-    <Copy SourceFiles="$(TargetPath)" DestinationFolder="$(BepInExPath)\plugins\FasterRaces" />
+    <Copy SourceFiles="$(TargetPath)" DestinationFolder="$(BepInExPath)\plugins\FasterRaces" Condition="'$(SunhavenCopyToBepInExPlugins)' == 'true'" />
     <Copy SourceFiles="$(TargetPath)" DestinationFolder="$(MSBuildProjectDirectory)\..\builds\FasterRaces" />
     <Message Text="Copied $(TargetFileName) to BepInEx plugins and builds folder" Importance="High" />
   </Target>

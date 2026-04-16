@@ -13,6 +13,9 @@
 #   4. Optionally uploads to Nexus Mods (manual checkbox; needs NEXUSMODS_API_KEY)
 #      Haven's Almanac: Nexus is always skipped; workflow logs a positive note; no Discord pings.
 #
+# Version / release: see docs/VERSION_AND_RELEASE.md — bump via scripts/pre-push-build.ps1;
+# CI runs scripts/verify-version-consistency.py before build.
+#
 # SETUP REQUIRED:
 #   1. Thunderstore: THUNDERSTORE_TOKEN (Service Account token)
 #   2. Nexus Mods (optional): NEXUSMODS_API_KEY from https://www.nexusmods.com/users/myaccount?tab=api
@@ -95,6 +98,12 @@ jobs:
     outputs:
       matrix: ${{ steps.set-matrix.outputs.matrix }}
     steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Verify version consistency (versions.json vs PLUGIN_VERSION vs manifest)
+        run: python3 scripts/verify-version-consistency.py
+
       - name: Set mod matrix
         id: set-matrix
         run: |
@@ -212,7 +221,8 @@ jobs:
           dotnet restore "${{ steps.build_config.outputs.csproj }}"
           dotnet build "${{ steps.build_config.outputs.csproj }}" -c Release --nologo \
             -p:BepInExPath="$BEPINEX_PATH" \
-            -p:ManagedPath="$MANAGED_PATH"
+            -p:ManagedPath="$MANAGED_PATH" \
+            -p:SunhavenCopyToBepInExPlugins=false
 
       - name: Collect build outputs
         if: matrix.mod != 'test_discord'

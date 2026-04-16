@@ -92,9 +92,9 @@
   </ItemGroup>
 
   <Target Name="CopyToPlugins" AfterTargets="Build">
-    <Copy SourceFiles="$(TargetPath)" DestinationFolder="$(BepInExPath)\plugins\TheVault" />
+    <Copy SourceFiles="$(TargetPath)" DestinationFolder="$(BepInExPath)\plugins\TheVault" Condition="'$(SunhavenCopyToBepInExPlugins)' == 'true'" />
     <Copy SourceFiles="$(TargetPath)" DestinationFolder="$(MSBuildProjectDirectory)\..\builds\TheVault" />
-    <Copy SourceFiles="$(TargetDir)TheVault.Abstractions.dll" DestinationFolder="$(BepInExPath)\plugins\TheVault" Condition="Exists('$(TargetDir)TheVault.Abstractions.dll')" />
+    <Copy SourceFiles="$(TargetDir)TheVault.Abstractions.dll" DestinationFolder="$(BepInExPath)\plugins\TheVault" Condition="'$(SunhavenCopyToBepInExPlugins)' == 'true' And Exists('$(TargetDir)TheVault.Abstractions.dll')" />
     <Copy SourceFiles="$(TargetDir)TheVault.Abstractions.dll" DestinationFolder="$(MSBuildProjectDirectory)\..\builds\TheVault" Condition="Exists('$(TargetDir)TheVault.Abstractions.dll')" />
     <Message Text="Copied $(TargetFileName) to BepInEx plugins and builds folder" Importance="High" />
   </Target>

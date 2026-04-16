@@ -49,7 +49,7 @@
   </ItemGroup>
 
   <Target Name="CopyToPlugins" AfterTargets="Build">
-    <Copy SourceFiles="$(TargetPath)" DestinationFolder="$(BepInExPath)\plugins\JusticeForHarold" />
+    <Copy SourceFiles="$(TargetPath)" DestinationFolder="$(BepInExPath)\plugins\JusticeForHarold" Condition="'$(SunhavenCopyToBepInExPlugins)' == 'true'" />
     <Copy SourceFiles="$(TargetPath)" DestinationFolder="$(MSBuildProjectDirectory)\..\builds\JusticeForHarold" />
     <Message Text="Copied $(TargetFileName) to BepInEx plugins and builds folder" Importance="High" />
   </Target>

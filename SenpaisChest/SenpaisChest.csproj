@@ -120,7 +120,7 @@
 
   <!-- Copy to BepInEx plugins folder and builds folder after build -->
   <Target Name="CopyToPlugins" AfterTargets="Build">
-    <Copy SourceFiles="$(TargetPath)" DestinationFolder="$(BepInExPath)\plugins\SenpaisChest" />
+    <Copy SourceFiles="$(TargetPath)" DestinationFolder="$(BepInExPath)\plugins\SenpaisChest" Condition="'$(SunhavenCopyToBepInExPlugins)' == 'true'" />
     <Copy SourceFiles="$(TargetPath)" DestinationFolder="$(MSBuildProjectDirectory)\..\builds\SenpaisChest" />
     <Message Text="Copied $(TargetFileName) to BepInEx plugins and builds folder" Importance="High" />
   </Target>
