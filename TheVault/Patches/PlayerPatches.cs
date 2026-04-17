@@ -14,6 +14,8 @@ namespace TheVault.Patches
         private static bool _isVaultLoaded = false;
         private static string _loadedCharacterName = null;
         private static string _pendingCharacterName = null;
+        private static string _lastCharacterSourceLog = null;
+        private static string _lastCharacterNameLog = null;
 
         /// <summary>
         /// Returns true if a vault is currently loaded.
@@ -122,7 +124,7 @@ namespace TheVault.Patches
                 if (!string.IsNullOrEmpty(_pendingCharacterName))
                 {
                     string pending = NormalizeCharacterNameForVault(_pendingCharacterName);
-                    Plugin.Log?.LogInfo($"GetCurrentCharacterName: Using pending character name = '{pending}'");
+                    LogCharacterSourceOnce("pending", pending);
                     return pending;
                 }
 
@@ -132,7 +134,7 @@ namespace TheVault.Patches
                 if (!string.IsNullOrEmpty(lastLoadedName))
                 {
                     string sanitizedName = NormalizeCharacterNameForVault(lastLoadedName);
-                    Plugin.Log?.LogInfo($"GetCurrentCharacterName: Using LastLoadedCharacterName = '{sanitizedName}'");
+                    LogCharacterSourceOnce("lastLoaded", sanitizedName);
                     return sanitizedName;
                 }
 
@@ -191,6 +193,19 @@ namespace TheVault.Patches
             _pendingCharacterName = null;
         }
 
+        private static void LogCharacterSourceOnce(string source, string characterName)
+        {
+            if (string.Equals(_lastCharacterSourceLog, source, StringComparison.Ordinal) &&
+                string.Equals(_lastCharacterNameLog, characterName, StringComparison.Ordinal))
+            {
+                return;
+            }
+
+            _lastCharacterSourceLog = source;
+            _lastCharacterNameLog = characterName;
+            Plugin.Log?.LogInfo($"GetCurrentCharacterName: Using {source} character name = '{characterName}'");
+        }
+
         /// <summary>
         /// Reset vault state. Called when returning to menu.
         /// </summary>
@@ -199,6 +214,8 @@ namespace TheVault.Patches
             Plugin.Log?.LogInfo("Resetting vault state");
             _isVaultLoaded = false;
             _loadedCharacterName = null;
+            _lastCharacterSourceLog = null;
+            _lastCharacterNameLog = null;
             ClearPendingCharacterName();
             GameSavePatches.ResetLastLoadedSlot(); // Reset slot tracker so next character gets fresh data
             ItemPatches.ResetState();
