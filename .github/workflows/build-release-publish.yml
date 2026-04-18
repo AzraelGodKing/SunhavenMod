@@ -29,6 +29,13 @@
 #      - Verify nexus_file_group_id matches the mod’s Files tab → API info → file group id (not guessed).
 #      - Use an API key with upload permission; avoid re-publishing the same version if the site rejects it.
 #      - Enable ACTIONS_STEP_DEBUG on the repo for verbose upload-action logs.
+#   NEXUS: "Cannot read properties of undefined (reading 'length')"
+#      That is POST /v3/uploads/multipart responding 201 with a body missing `data.part_presigned_urls`.
+#      The action destructures `part_presigned_urls.length` immediately after, which blows up.
+#      Upload step is now wrapped in 4 attempts with continue-on-error and 30s / 2min / 5min backoff,
+#      and a step-summary message distinguishes "flaked but recovered on retry N" from "all 4 failed".
+#      If all 4 fail: GitHub Release + Thunderstore still publish; bump patch version + rerun Nexus-only,
+#      or upload the dist zip manually via the Nexus Files tab.
 #   3. The Vault breaking vault saves: TheVault/SAVE_COMPATIBILITY.md — set vault_save_breaking + banner in versions.json,
 #      README callout, VaultSaveCompatibility.cs, thunderstore README; CI prepends banner to published description/changelog.
 # =============================================================================
@@ -54,6 +61,7 @@ on:
           - havensalmanac
           - fasterraces
           - trinketfortune
+          - cropoptimizer
       publish_thunderstore:
         description: 'Publish to Thunderstore after release?'
         required: true
@@ -112,7 +120,7 @@ jobs:
           else
             MOD_KEY="${{ github.event.inputs.mod }}"
             if [ "$MOD_KEY" == "all" ]; then
-              echo 'matrix=["havensbirthright","sunhavenmuseumutilitytracker","squirrelsbirthdayreminder","sunhaventodo","thevault","havendevtools","senpaischest","havensalmanac","fasterraces","trinketfortune"]' >> "$GITHUB_OUTPUT"
+              echo 'matrix=["havensbirthright","sunhavenmuseumutilitytracker","squirrelsbirthdayreminder","sunhaventodo","thevault","havendevtools","senpaischest","havensalmanac","fasterraces","trinketfortune","cropoptimizer"]' >> "$GITHUB_OUTPUT"
             else
               echo "matrix=[\"$MOD_KEY\"]" >> "$GITHUB_OUTPUT"
             fi
@@ -199,6 +207,11 @@ jobs:
               MOD_DIR="TrinketFortune"
               DLL_NAME="TrinketFortune"
               CSPROJ="TrinketFortune/TrinketFortune.csproj"
+              ;;
+            "cropoptimizer")
+              MOD_DIR="CropOptimizer"
+              DLL_NAME="CropOptimizer"
+              CSPROJ="CropOptimizer/CropOptimizer.csproj"
               ;;
             *)
               echo "❌ Unknown mod: $MOD_KEY"
@@ -369,6 +382,12 @@ jobs:
               MOD_DIR="TrinketFortune"
               DLL_NAME="TrinketFortune"
               THUNDERSTORE_NAME="TrinketFortune"
+              ;;
+            "cropoptimizer")
+              JSON_KEY="com.azraelgodking.cropoptimizer"
+              MOD_DIR="CropOptimizer"
+              DLL_NAME="CropOptimizer"
+              THUNDERSTORE_NAME="CropOptimizer"
               ;;
             *)
               echo "❌ Unknown mod: $MOD_KEY"
@@ -627,8 +646,14 @@ jobs:
           ls -lh "$ZIP"
           echo "nexus_display_name=${{ steps.config.outputs.display_name }} v${{ steps.config.outputs.version }}.zip"
 
-      - name: Upload to Nexus Mods
+      # Nexus v3 API is marked "evaluation only" and intermittently returns 201 with an empty body
+      # (action crashes with: Cannot read properties of undefined (reading 'length') on
+      # part_presigned_urls). Each attempt is continue-on-error so GitHub Release + Thunderstore
+      # publish are not held hostage by a Nexus flake. Backoff: 30s -> 2min -> 5min (~7.5 min worst case).
+      - name: Upload to Nexus Mods (attempt 1)
+        id: nexus_upload_1
         if: github.event.inputs.publish_discord_only != 'true' && github.event.inputs.publish_nexus == 'true' && github.event.inputs.test_discord != 'true' && steps.version_check.outputs.version_unchanged != 'true' && steps.config.outputs.nexus_file_group_id != ''
+        continue-on-error: true
         uses: Nexus-Mods/upload-action@v1.0.0-beta.3
         with:
           api_key: ${{ secrets.NEXUSMODS_API_KEY }}
@@ -647,6 +672,129 @@ jobs:
 
             If Nexus displays an alphanumeric file label, the upload is still a ZIP package.
           file_category: main
+
+      - name: Nexus retry backoff (30s)
+        if: steps.nexus_upload_1.outcome == 'failure' && github.event.inputs.publish_discord_only != 'true' && github.event.inputs.publish_nexus == 'true' && github.event.inputs.test_discord != 'true' && steps.version_check.outputs.version_unchanged != 'true' && steps.config.outputs.nexus_file_group_id != ''
+        run: |
+          echo "::warning title=Nexus upload attempt 1 failed::Nexus v3 flaked (likely 201 with empty body). Sleeping 30s before retry 1/3."
+          sleep 30
+
+      - name: Upload to Nexus Mods (attempt 2)
+        id: nexus_upload_2
+        if: steps.nexus_upload_1.outcome == 'failure' && github.event.inputs.publish_discord_only != 'true' && github.event.inputs.publish_nexus == 'true' && github.event.inputs.test_discord != 'true' && steps.version_check.outputs.version_unchanged != 'true' && steps.config.outputs.nexus_file_group_id != ''
+        continue-on-error: true
+        uses: Nexus-Mods/upload-action@v1.0.0-beta.3
+        with:
+          api_key: ${{ secrets.NEXUSMODS_API_KEY }}
+          file_group_id: ${{ steps.config.outputs.nexus_file_group_id }}
+          filename: dist/${{ steps.config.outputs.thunderstore_name }}-${{ steps.config.outputs.version }}.zip
+          version: ${{ steps.config.outputs.version }}
+          display_name: ${{ steps.config.outputs.display_name }} v${{ steps.config.outputs.version }}.zip
+          description: |
+            ${{ steps.config.outputs.description }}
+
+            ### Changes
+            ${{ steps.config.outputs.changelog }}
+
+            ### Installation
+            Download this ZIP and extract the contents to your Sun Haven BepInEx/plugins folder.
+
+            If Nexus displays an alphanumeric file label, the upload is still a ZIP package.
+          file_category: main
+
+      - name: Nexus retry backoff (2 min)
+        if: steps.nexus_upload_1.outcome == 'failure' && steps.nexus_upload_2.outcome == 'failure' && github.event.inputs.publish_discord_only != 'true' && github.event.inputs.publish_nexus == 'true' && github.event.inputs.test_discord != 'true' && steps.version_check.outputs.version_unchanged != 'true' && steps.config.outputs.nexus_file_group_id != ''
+        run: |
+          echo "::warning title=Nexus upload attempt 2 failed::Sleeping 2 min before retry 2/3."
+          sleep 120
+
+      - name: Upload to Nexus Mods (attempt 3)
+        id: nexus_upload_3
+        if: steps.nexus_upload_1.outcome == 'failure' && steps.nexus_upload_2.outcome == 'failure' && github.event.inputs.publish_discord_only != 'true' && github.event.inputs.publish_nexus == 'true' && github.event.inputs.test_discord != 'true' && steps.version_check.outputs.version_unchanged != 'true' && steps.config.outputs.nexus_file_group_id != ''
+        continue-on-error: true
+        uses: Nexus-Mods/upload-action@v1.0.0-beta.3
+        with:
+          api_key: ${{ secrets.NEXUSMODS_API_KEY }}
+          file_group_id: ${{ steps.config.outputs.nexus_file_group_id }}
+          filename: dist/${{ steps.config.outputs.thunderstore_name }}-${{ steps.config.outputs.version }}.zip
+          version: ${{ steps.config.outputs.version }}
+          display_name: ${{ steps.config.outputs.display_name }} v${{ steps.config.outputs.version }}.zip
+          description: |
+            ${{ steps.config.outputs.description }}
+
+            ### Changes
+            ${{ steps.config.outputs.changelog }}
+
+            ### Installation
+            Download this ZIP and extract the contents to your Sun Haven BepInEx/plugins folder.
+
+            If Nexus displays an alphanumeric file label, the upload is still a ZIP package.
+          file_category: main
+
+      - name: Nexus retry backoff (5 min)
+        if: steps.nexus_upload_1.outcome == 'failure' && steps.nexus_upload_2.outcome == 'failure' && steps.nexus_upload_3.outcome == 'failure' && github.event.inputs.publish_discord_only != 'true' && github.event.inputs.publish_nexus == 'true' && github.event.inputs.test_discord != 'true' && steps.version_check.outputs.version_unchanged != 'true' && steps.config.outputs.nexus_file_group_id != ''
+        run: |
+          echo "::warning title=Nexus upload attempt 3 failed::Sleeping 5 min before final retry 3/3."
+          sleep 300
+
+      - name: Upload to Nexus Mods (attempt 4 — final)
+        id: nexus_upload_4
+        if: steps.nexus_upload_1.outcome == 'failure' && steps.nexus_upload_2.outcome == 'failure' && steps.nexus_upload_3.outcome == 'failure' && github.event.inputs.publish_discord_only != 'true' && github.event.inputs.publish_nexus == 'true' && github.event.inputs.test_discord != 'true' && steps.version_check.outputs.version_unchanged != 'true' && steps.config.outputs.nexus_file_group_id != ''
+        continue-on-error: true
+        uses: Nexus-Mods/upload-action@v1.0.0-beta.3
+        with:
+          api_key: ${{ secrets.NEXUSMODS_API_KEY }}
+          file_group_id: ${{ steps.config.outputs.nexus_file_group_id }}
+          filename: dist/${{ steps.config.outputs.thunderstore_name }}-${{ steps.config.outputs.version }}.zip
+          version: ${{ steps.config.outputs.version }}
+          display_name: ${{ steps.config.outputs.display_name }} v${{ steps.config.outputs.version }}.zip
+          description: |
+            ${{ steps.config.outputs.description }}
+
+            ### Changes
+            ${{ steps.config.outputs.changelog }}
+
+            ### Installation
+            Download this ZIP and extract the contents to your Sun Haven BepInEx/plugins folder.
+
+            If Nexus displays an alphanumeric file label, the upload is still a ZIP package.
+          file_category: main
+
+      - name: Nexus upload summary
+        if: always() && github.event.inputs.publish_discord_only != 'true' && github.event.inputs.publish_nexus == 'true' && github.event.inputs.test_discord != 'true' && steps.version_check.outputs.version_unchanged != 'true' && steps.config.outputs.nexus_file_group_id != ''
+        env:
+          NEXUS_OUTCOME_1: ${{ steps.nexus_upload_1.outcome }}
+          NEXUS_OUTCOME_2: ${{ steps.nexus_upload_2.outcome }}
+          NEXUS_OUTCOME_3: ${{ steps.nexus_upload_3.outcome }}
+          NEXUS_OUTCOME_4: ${{ steps.nexus_upload_4.outcome }}
+        run: |
+          WHICH=""
+          for i in 1 2 3 4; do
+            VAR="NEXUS_OUTCOME_$i"
+            OUT="${!VAR:-skipped}"
+            if [ "$OUT" = "success" ]; then
+              WHICH="$i"
+              break
+            fi
+          done
+
+          {
+            echo "## Nexus upload — ${{ steps.config.outputs.display_name }} v${{ steps.config.outputs.version }}"
+            echo ""
+            if [ -n "$WHICH" ]; then
+              echo "✅ Uploaded on attempt ${WHICH}/4."
+            else
+              echo "⚠️ All 4 Nexus upload attempts failed."
+              echo ""
+              echo "Nexus v3 API is marked \`evaluation only\` and intermittently returns 201 OK with an empty body (\`part_presigned_urls\` undefined), which makes \`Nexus-Mods/upload-action\` throw \`Cannot read properties of undefined (reading 'length')\`. This is a Nexus-side issue — the rest of this release (GitHub Release + Thunderstore + Discord) completed normally."
+              echo ""
+              echo "**To retry Nexus only:**"
+              echo "1. Bump the patch version in \`docs/versions.json\` and rebuild (local \`scripts/pre-push-build.ps1\`), OR upload the zip manually via the Nexus Mods website → Files tab."
+              echo "2. If bumping, re-run **Release & Publish** with \`publish_nexus=true\`, \`publish_thunderstore=false\`, \`create_github_release=false\`."
+              echo ""
+              echo "Release zip available as a workflow artifact: \`dist/${{ steps.config.outputs.thunderstore_name }}-${{ steps.config.outputs.version }}.zip\`"
+            fi
+          } >> "$GITHUB_STEP_SUMMARY"
 
       # ------------------------------------------------------------------
       # 5c. NOTIFY DISCORD (when we created a release in this workflow run)
@@ -709,6 +857,7 @@ jobs:
             "com.azraelgodking.havensalmanac:HavensAlmanac"
             "com.azraelgodking.fasterraces:FasterRaces"
             "com.azraelgodking.trinketfortune:TrinketFortune"
+            "com.azraelgodking.cropoptimizer:CropOptimizer"
           )
           IDX=$((RANDOM % ${#MODS[@]}))
           ENTRY="${MODS[$IDX]}"
