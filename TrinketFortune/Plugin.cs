@@ -16,7 +16,9 @@ namespace TrinketFortune
         private void Awake()
         {
             Log = Logger;
-            TrinketFortune.Config.Bind(CreateNamedConfig());
+            var namedConfig = CreateNamedConfig();
+            SunhavenMods.Shared.ConfigFileHelper.ReplacePluginConfig(this, namedConfig, Log.LogWarning);
+            TrinketFortune.Config.Bind(namedConfig);
 
             _harmony = new Harmony(PluginInfo.PLUGIN_GUID);
             FishingTrinketPatches.ApplyPatches(_harmony);
@@ -49,7 +51,7 @@ namespace TrinketFortune
         {
             public const string PLUGIN_GUID = "com.azraelgodking.trinketfortune";
             public const string PLUGIN_NAME = "Trinket Fortune";
-            public const string PLUGIN_VERSION = "1.0.3";
+            public const string PLUGIN_VERSION = "1.0.4";
         }
     }
 }

@@ -23,6 +23,7 @@ namespace FasterRaces
         {
             Log = Logger;
             var configFile = CreateNamedConfig();
+            SunhavenMods.Shared.ConfigFileHelper.ReplacePluginConfig(this, configFile, Log.LogWarning);
             EnableMod = configFile.Bind("General", "Enabled", true, "Enable Faster Races movement speed bonus. When enabled, Haven's Birthright will not apply its own movement speed bonuses to avoid double speed.");
             SpeedBonusPercent = configFile.Bind(
                 "General",

@@ -77,6 +77,7 @@ namespace HavenDevTools
             Instance = this;
             Log = Logger;
             ConfigFile = CreateNamedConfig();
+            SunhavenMods.Shared.ConfigFileHelper.ReplacePluginConfig(this, ConfigFile, Log.LogWarning);
 
             Log.LogInfo($"Loading {PluginInfo.PLUGIN_NAME} v{PluginInfo.PLUGIN_VERSION}");
 
@@ -543,6 +544,6 @@ namespace HavenDevTools
     {
         public const string PLUGIN_GUID = "com.azraelgodking.havendevtools";
         public const string PLUGIN_NAME = "Haven Dev Tools";
-        public const string PLUGIN_VERSION = "1.0.8";
+        public const string PLUGIN_VERSION = "1.0.9";
     }
 }

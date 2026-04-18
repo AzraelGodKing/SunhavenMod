@@ -50,6 +50,7 @@ namespace HavensAlmanac
             Instance = this;
             Log = Logger;
             ConfigFile = CreateNamedConfig();
+            SunhavenMods.Shared.ConfigFileHelper.ReplacePluginConfig(this, ConfigFile, Log.LogWarning);
 
             Log.LogInfo($"Loading {PluginInfo.PLUGIN_NAME} v{PluginInfo.PLUGIN_VERSION}");
 

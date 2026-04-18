@@ -284,6 +284,18 @@ h1 {
     animation: pulse-glow-gold 2s ease-in-out infinite;
 }
 
+.update-badge.crop-badge {
+    background: linear-gradient(135deg, #4f9b52, #2f6833);
+    color: #fff;
+    box-shadow: 0 4px 12px rgba(79, 155, 82, 0.35);
+    animation: pulse-glow-sprout 2s ease-in-out infinite;
+}
+
+@keyframes pulse-glow-sprout {
+    0%, 100% { box-shadow: 0 4px 12px rgba(79, 155, 82, 0.3); }
+    50% { box-shadow: 0 4px 20px rgba(79, 155, 82, 0.55); }
+}
+
 @keyframes pulse-glow {
     0%, 100% {
         box-shadow: 0 4px 12px rgba(15, 142, 142, 0.3);
@@ -415,6 +427,20 @@ h1 {
 .mod-cta-button.faster-btn {
     background: linear-gradient(135deg, #e67e22, #d35400);
     color: #fff;
+}
+
+.mod-cta-button.crop-btn {
+    background: linear-gradient(135deg, #4f9b52, #2f6833);
+    color: #fff;
+}
+
+.mod-card.crop-theme {
+    border-color: rgba(79, 155, 82, 0.4);
+    background: linear-gradient(135deg, rgba(79, 155, 82, 0.12) 0%, rgba(212, 166, 47, 0.04) 100%);
+}
+
+.mod-card.crop-theme:hover {
+    border-color: rgba(79, 155, 82, 0.7);
 }
 
 .mod-card.trinket-theme {
