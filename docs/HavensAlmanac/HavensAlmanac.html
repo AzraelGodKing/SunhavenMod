@@ -23,7 +23,7 @@
         <a href="../index.html" class="nav-home">Mod Hub</a>
         <span class="nav-divider">/</span>
         <span class="nav-current">Haven's Almanac</span>
-        <span class="breadcrumb-date">Updated Mar 2026</span>
+        <span class="breadcrumb-date">Updated Apr 2026</span>
     </nav>
 
     <div class="container" id="main-content" role="main">
@@ -41,7 +41,7 @@
             <div class="hero-icon">&#x1F4D6;</div>
             <h1>Haven's Almanac</h1>
             <p class="tagline">Unified Mod Dashboard<span class="cursor">|</span></p>
-            <span class="version-badge">v1.0.6</span>
+            <span class="version-badge">v1.1.0</span>
         </header>
 
         <!-- Epigraph -->
@@ -89,7 +89,7 @@
             <div class="feature-card">
                 <div class="feature-icon">&#x2600;&#xFE0F;</div>
                 <h3>Daily Briefing</h3>
-                <p>Summary popup after you load in as the player owner, and again when a <strong>new day</strong> starts (sleep / day roll). Shows birthdays, tasks, museum progress, and more. Dismiss with the button or <kbd>Esc</kbd>.</p>
+                <p>Summary popup after you load in and when a <strong>new day</strong> starts (sleep / day roll). <strong>Only opens when there's something noteworthy</strong> &mdash; today's birthdays, active tasks, or museum progress near completion. Dismiss with the button, <kbd>Esc</kbd>, or let the optional <strong>auto-dismiss countdown</strong> close it for you.</p>
             </div>
             <div class="feature-card">
                 <div class="feature-icon">&#x1F517;</div>
@@ -163,8 +163,28 @@
                     <p>Dev tools authorization status and current player name.</p>
                 </div>
             </div>
+            <div class="mod-card">
+                <span class="mod-card-icon">&#x1F33D;</span>
+                <div>
+                    <h4>Crop Optimizer</h4>
+                    <p>Live crop forecast summary pulled from Crop Optimizer's data provider (ready-to-harvest and projected gold).</p>
+                </div>
+            </div>
         </div>
         <p class="section-footnote"><strong>Not integrated yet:</strong> Faster Races and Trinket Fortune do not expose Almanac panels; other mods above register automatically when their plugins are present.</p>
+
+        <!-- Built-in telemetry -->
+        <h2 class="section-title">Built-in: Mod Health</h2>
+        <p class="section-desc">Always on &mdash; no companion mod required. The Almanac's <strong>Mod Health</strong> panel aggregates <code>SunhavenMods.Shared.VersionChecker</code> telemetry across every mod in the repo.</p>
+        <div class="mod-grid">
+            <div class="mod-card">
+                <span class="mod-card-icon">&#x2795;</span>
+                <div>
+                    <h4>Mod Health</h4>
+                    <p>One row per mod that registers a version check on startup &mdash; last-check timestamp and cumulative exception count. Each mod compiles its own copy of <code>VersionChecker</code> into its DLL, so the Almanac reflects across every loaded assembly to merge them into one dashboard view; friendly plugin names come from <code>Chainloader.PluginInfos</code>. A mod that never calls <code>CheckForUpdate</code> won't appear.</p>
+                </div>
+            </div>
+        </div>
 
         <div class="ornamental-divider"></div>
 
@@ -248,7 +268,7 @@
                     <tr>
                         <td><code>DailyBriefing → AutoDismissSeconds</code></td>
                         <td>0</td>
-                        <td>Auto-close briefing after N seconds (<code>0</code> = manual only)</td>
+                        <td>Auto-close briefing after N seconds; a live "Auto-dismissing in Ns" countdown renders under the Dismiss button (<code>0</code> = manual only)</td>
                     </tr>
                     <tr>
                         <td><code>Updates → CheckForUpdates</code></td>
@@ -263,7 +283,7 @@
                 </tbody>
             </table>
         </div>
-        <p class="config-note">Configuration file: <code>BepInEx/config/com.azraelgodking.havensalmanac.cfg</code></p>
+        <p class="config-note">Configuration file: <code>BepInEx/config/HavensAlmanac.cfg</code> (auto-migrated from the legacy <code>com.azraelgodking.havensalmanac.cfg</code> on first load of <strong>1.0.5+</strong>).</p>
 
         <!-- Colophon / Footer -->
         <nav class="download-nav" data-mod-key="com.azraelgodking.havensalmanac" aria-label="Download links"></nav>

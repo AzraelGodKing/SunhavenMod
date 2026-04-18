@@ -20,6 +20,9 @@ namespace HavensAlmanac.Integration
         public string HudSummary => _hudSummary;
         public bool IsReady => _isReady;
 
+        // Racial bonuses are static per-character; nothing daily to brief.
+        public bool HasBriefingContent => false;
+
         public void Refresh()
         {
             try

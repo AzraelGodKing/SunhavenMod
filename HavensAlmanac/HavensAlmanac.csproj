@@ -102,9 +102,11 @@
     </Reference>
   </ItemGroup>
 
-  <!-- Exclude decompiled reference files -->
+  <!-- Exclude decompiled reference files: kept in _refs/ as dnSpy dumps for -->
+  <!-- local debugging of game internals, never compiled into the plugin DLL.  -->
   <ItemGroup>
-    <Compile Remove="Inventory_decompiled.cs" />
+    <Compile Remove="_refs\**\*.cs" />
+    <None Include="_refs\**\*.cs" />
   </ItemGroup>
 
   <!-- Shared Utilities (linked files) -->

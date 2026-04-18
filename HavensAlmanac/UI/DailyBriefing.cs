@@ -22,6 +22,12 @@ namespace HavensAlmanac.UI
         private bool _isVisible;
         private float _contentHeight = BASE_MIN_HEIGHT;
 
+        // Snapshot of auto-dismiss deadline taken when the window becomes
+        // visible. Using unscaled time so the countdown keeps ticking even if
+        // something (overnight fade, UI pause) zeros Time.timeScale.
+        private float _visibleSinceUnscaledTime;
+        private float _autoDismissSeconds;
+
         private float Width => BASE_WIDTH * _scale;
         private float MinHeight => BASE_MIN_HEIGHT * _scale;
         private float Scaled(float value) => value * _scale;
@@ -52,21 +58,16 @@ namespace HavensAlmanac.UI
 
             _aggregator.RefreshAll();
 
-            // Only show if at least one provider has briefing content
-            bool hasContent = false;
-            foreach (var provider in _aggregator.Providers)
-            {
-                if (provider.IsReady)
-                {
-                    hasContent = true;
-                    break;
-                }
-            }
-
-            if (!hasContent) return;
+            // Gate the window on the stricter HasBriefingContent contract rather
+            // than plain IsReady: Mod Health (and other non-briefing providers)
+            // are always ready but never emit briefing content, so IsReady would
+            // open the window only to show a "Nothing noteworthy today." shell.
+            if (!_aggregator.HasAnyBriefingContent) return;
 
             CenterWindow();
             _isVisible = true;
+            _visibleSinceUnscaledTime = Time.unscaledTime;
+            _autoDismissSeconds = Mathf.Max(0f, AlmanacConfig.StaticBriefingAutoDismiss);
         }
 
         public void Hide() => _isVisible = false;
@@ -89,9 +90,26 @@ namespace HavensAlmanac.UI
         {
             if (!_isVisible) return;
 
-            // Escape to dismiss
             if (Input.GetKeyDown(KeyCode.Escape))
+            {
                 Hide();
+                return;
+            }
+
+            // Auto-dismiss timer (0 = disabled, wait for manual dismiss).
+            if (_autoDismissSeconds > 0f)
+            {
+                float elapsed = Time.unscaledTime - _visibleSinceUnscaledTime;
+                if (elapsed >= _autoDismissSeconds)
+                    Hide();
+            }
+        }
+
+        private float GetAutoDismissRemaining()
+        {
+            if (_autoDismissSeconds <= 0f) return -1f;
+            float remaining = _autoDismissSeconds - (Time.unscaledTime - _visibleSinceUnscaledTime);
+            return Mathf.Max(0f, remaining);
         }
 
         private void OnGUI()
@@ -112,7 +130,6 @@ namespace HavensAlmanac.UI
 
         private void DrawWindow(int id)
         {
-            // Header
             GUILayout.Label("Good Morning!", _titleStyle);
             GUILayout.Space(Scaled(6));
 
@@ -120,31 +137,25 @@ namespace HavensAlmanac.UI
 
             foreach (var provider in _aggregator.Providers)
             {
-                if (!provider.IsReady) continue;
+                // HasBriefingContent is the single source of truth for both
+                // gating the window AND deciding whether to render this
+                // provider's section, which guarantees no orphan section
+                // headers when the provider has nothing to say.
+                if (!provider.HasBriefingContent) continue;
 
-                try
+                if (TryDrawProviderSection(provider))
                 {
-                    // Use a temporary vertical group to test if the provider draws anything
-                    GUILayout.BeginVertical();
-                    GUILayout.Label($"{provider.ModIcon} {provider.ModName}", _sectionTitleStyle);
-
-                    bool drew = provider.DrawBriefingSection();
-                    GUILayout.EndVertical();
-
-                    if (drew)
-                    {
-                        anyContent = true;
-                        GUILayout.Space(Scaled(6));
-                    }
-                }
-                catch
-                {
-                    GUILayout.EndVertical();
+                    anyContent = true;
+                    GUILayout.Space(Scaled(6));
                 }
             }
 
             if (!anyContent)
             {
+                // Defensive: HasAnyBriefingContent in ShowBriefing normally
+                // prevents us from reaching here, but if a provider's content
+                // evaporated between the gate and the draw pass we still want
+                // a graceful fallback rather than a blank window.
                 GUILayout.Label("Nothing noteworthy today. Have a great day!", _contentStyle);
             }
 
@@ -157,6 +168,16 @@ namespace HavensAlmanac.UI
             GUILayout.FlexibleSpace();
             GUILayout.EndHorizontal();
 
+            float remaining = GetAutoDismissRemaining();
+            if (remaining >= 0f)
+            {
+                int seconds = Mathf.CeilToInt(remaining);
+                GUILayout.Space(Scaled(4));
+                GUILayout.Label(
+                    $"Auto-dismissing in {seconds}s ({_autoDismissSeconds:F0}s total)",
+                    _contentStyle);
+            }
+
             if (Event.current.type == UnityEngine.EventType.Repaint)
             {
                 var lastRect = GUILayoutUtility.GetLastRect();
@@ -164,6 +185,51 @@ namespace HavensAlmanac.UI
             }
 
             GUI.DragWindow(new Rect(0, 0, _windowRect.width, Scaled(30)));
+        }
+
+        /// <summary>
+        /// Draws one provider's section with balanced IMGUI layout guarantees.
+        /// Returns true when the provider actually emitted briefing content.
+        /// </summary>
+        private bool TryDrawProviderSection(IModDataProvider provider)
+        {
+            // Snapshot IMGUI's BeginGroup/Vertical stack depth as a recovery
+            // anchor. If the provider throws mid-draw we pop back down to this
+            // depth instead of blindly calling EndVertical a second time, which
+            // is the latent bug the old catch-block had.
+            bool verticalOpened = false;
+            try
+            {
+                GUILayout.BeginVertical();
+                verticalOpened = true;
+
+                GUILayout.Label($"{provider.ModIcon} {provider.ModName}", _sectionTitleStyle);
+                bool drew = provider.DrawBriefingSection();
+
+                GUILayout.EndVertical();
+                verticalOpened = false;
+                return drew;
+            }
+            catch (Exception ex)
+            {
+                Plugin.Log?.LogWarning($"[Briefing] {provider.ModName} threw during DrawBriefingSection: {ex.Message}");
+            }
+            finally
+            {
+                if (verticalOpened)
+                {
+                    // Swallow any inner exception from the unmatched EndVertical:
+                    // if the layout stack was already unwound by the outer throw,
+                    // calling EndVertical here would just re-raise.
+                    try { GUILayout.EndVertical(); }
+                    catch (Exception innerEx)
+                    {
+                        Plugin.Log?.LogWarning($"[Briefing] Layout recovery: {innerEx.Message}");
+                    }
+                }
+            }
+
+            return false;
         }
 
         private void InitializeStyles()

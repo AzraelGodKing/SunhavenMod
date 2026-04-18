@@ -16,6 +16,22 @@ namespace HavensAlmanac.Data
         public int InstalledModCount => _providers.Count;
         public bool HasAnyData => _providers.Any(p => p.IsReady);
 
+        /// <summary>
+        /// Count of providers that represent actual other-mod integrations
+        /// (excludes the always-registered built-in Mod Health provider).
+        /// Used for "no supported mods detected" messaging so it only fires when
+        /// the user really has nothing else installed to aggregate data from.
+        /// </summary>
+        public int IntegrationModCount =>
+            _providers.Count(p => !(p is Integration.ModHealthDataProvider));
+
+        /// <summary>
+        /// True when at least one provider reports it has daily-relevant content
+        /// to show in the morning briefing right now. The DailyBriefing uses this
+        /// to suppress itself when there's nothing noteworthy to say.
+        /// </summary>
+        public bool HasAnyBriefingContent => _providers.Any(p => p.HasBriefingContent);
+
         public void RegisterProvider(IModDataProvider provider)
         {
             _providers.Add(provider);
