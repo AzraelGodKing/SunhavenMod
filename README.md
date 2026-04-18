@@ -118,6 +118,8 @@ SunhavenMod/
 
 ## Documentation site changelog
 
+- **2026-04-16** — Persistent runner `OnDestroy` logs now distinguish expected teardown (app quit/menu unload → info) from unexpected in-session destruction (warning) across shared runner base and mods with custom runner classes.
+- **2026-04-16** — Sun Haven Museum Utility Tracker log spam reduction: `GetCurrentCharacterName` now logs source/name only on change, preventing repeated identical `LastLoadedCharacterName` info lines during poll loops.
 - **2026-04-16** — The Vault log spam reduction: `GetCurrentCharacterName` now logs source/name only when it changes (instead of every poll), preventing massive repeated `LastLoadedCharacterName` info lines in `LogOutput.log`.
 - **2026-04-16** — CI **Collect build outputs** copies `TheVault.Abstractions.dll` from `bin/Release/netstandard2.0/` (the abstractions project targets netstandard2.0, not net48).
 - **2026-04-16** — `verify-version-consistency.py` reads JSON and sources with **UTF-8 with BOM** (`utf-8-sig`) so `docs/versions.json` saved from editors that emit a BOM does not break CI.

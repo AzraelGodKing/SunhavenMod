@@ -148,7 +148,20 @@ namespace SunhavenMods.Shared
 
         protected virtual void OnDestroy()
         {
-            LogWarning($"[{RunnerName}] OnDestroy called - this should NOT happen!");
+            string sceneName = SceneManager.GetActiveScene().name ?? string.Empty;
+            string sceneLower = sceneName.ToLowerInvariant();
+            bool expectedTeardown = !Application.isPlaying ||
+                                    sceneLower.Contains("menu") ||
+                                    sceneLower.Contains("title");
+
+            if (expectedTeardown)
+            {
+                Log($"[{RunnerName}] OnDestroy during app quit/menu unload (expected).");
+            }
+            else
+            {
+                LogWarning($"[{RunnerName}] OnDestroy outside quit/menu (unexpected).");
+            }
         }
     }
 }

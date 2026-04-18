@@ -525,7 +525,17 @@ namespace HavenDevTools
 
         private void OnDestroy()
         {
-            Plugin.Log?.LogWarning("[PersistentRunner] OnDestroy called - this should NOT happen!");
+            string sceneName = SceneManager.GetActiveScene().name ?? string.Empty;
+            string sceneLower = sceneName.ToLowerInvariant();
+            bool expectedTeardown = !Application.isPlaying || sceneLower.Contains("menu") || sceneLower.Contains("title");
+            if (expectedTeardown)
+            {
+                Plugin.Log?.LogInfo("[PersistentRunner] OnDestroy during app quit/menu unload (expected).");
+            }
+            else
+            {
+                Plugin.Log?.LogWarning("[PersistentRunner] OnDestroy outside quit/menu (unexpected).");
+            }
         }
     }
 
