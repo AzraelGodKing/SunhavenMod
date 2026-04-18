@@ -259,14 +259,15 @@ namespace CropOptimizer.UI
             return s;
         }
 
-        public static string BuildTooltipLines(Component crop, CropForecast forecast)
+        /// <summary>Builds a structured <see cref="TooltipContent"/> for the uGUI hover card.</summary>
+        public static TooltipContent BuildTooltipContent(Component crop, CropForecast forecast)
         {
-            if (crop == null)
-                return string.Empty;
+            if (crop == null) return null;
 
             object inst = crop;
             DumpCropMembersOnce(inst);
-            var lines = new System.Collections.Generic.List<string>();
+
+            var content = new TooltipContent();
 
             int itemId = 0;
             string cropTitle = "Crop";
@@ -277,63 +278,96 @@ namespace CropOptimizer.UI
                 else
                     cropTitle = $"Item #{itemId}";
             }
+            content.Title = cropTitle;
 
             bool fullyGrown = false;
             CropGrowthPatch.TryGetTooltipFullyGrown(inst, out fullyGrown);
-            lines.Add(fullyGrown ? $"{cropTitle} (ready to harvest)" : cropTitle);
+            if (fullyGrown) content.HeaderTag = "ready to harvest";
+
+            // Rich-text accent colors are tuned to read on the dark panel fill:
+            //   #F7D982 = warm gold (numbers / emphasis), #B8A078 = muted cream (secondary notes).
+            const string accentGold = "#F7D982";
+            const string mutedCream = "#B8A078";
 
             if (CropGrowthPatch.TryGetTooltipQualityInfo(inst, out string qualityLabel, out float qMul) && !string.IsNullOrEmpty(qualityLabel))
-                lines.Add($"Quality: {qualityLabel} (×{qMul:0.##})");
+            {
+                content.QualityColor = QualityColorFor(qualityLabel);
+                content.Rows.Add(RowSpec.Make(UiStyle.IconKind.Quality, content.QualityColor,
+                    $"Quality: <b>{qualityLabel}</b> <color={mutedCream}>(×{qMul:0.##})</color>"));
+            }
 
             if (CropGrowthPatch.TryGetTooltipGrowthStageInfo(inst, out string stageText, out _) && !string.IsNullOrEmpty(stageText))
-                lines.Add($"Growth: {stageText}");
+                content.Rows.Add(RowSpec.Make(UiStyle.IconKind.Sprout, UiStyle.Sprout, $"Growth: <b>{stageText}</b>"));
 
             if (fullyGrown)
-                lines.Add("Ready now");
+                content.Rows.Add(RowSpec.Make(UiStyle.IconKind.Ready, UiStyle.Fertilizer, "<b><color=" + accentGold + ">Ready now</color></b>"));
             else if (CropGrowthPatch.TryGetTooltipEtaHours(inst, out float liveEta, out bool reflOk) && reflOk)
-                lines.Add($"Ready in ~{Mathf.Max(0f, liveEta):0.#} h");
+                content.Rows.Add(RowSpec.Make(UiStyle.IconKind.Clock, UiStyle.Clock, $"Ready in <b><color={accentGold}>~{Mathf.Max(0f, liveEta):0.#} h</color></b>"));
             else if (forecast != null && forecast.TryGetState(crop.GetInstanceID(), out CropForecast.CropState st))
-                lines.Add($"Ready in ~{Mathf.Max(0f, st.NextHarvestEtaHours):0.#} h (cached)");
+                content.Rows.Add(RowSpec.Make(UiStyle.IconKind.Clock, UiStyle.Clock, $"Ready in <b><color={accentGold}>~{Mathf.Max(0f, st.NextHarvestEtaHours):0.#} h</color></b> <color={mutedCream}>(cached)</color>"));
             else
-                lines.Add("ETA: unknown (grow once to calibrate)");
+                content.Rows.Add(RowSpec.Make(UiStyle.IconKind.Clock, UiStyle.Clock, $"<color={mutedCream}>ETA unknown — grow once to calibrate</color>"));
 
             if (CropGrowthPatch.TryGetTooltipProjectedGold(inst, out int gold, out _) && gold > 0)
-                lines.Add($"~{gold}g at shop");
+                content.Rows.Add(RowSpec.Make(UiStyle.IconKind.Coin, UiStyle.Coin, $"<b><color={accentGold}>~{gold:N0}g</color></b> at shop"));
 
-            // Fertilizer / mana come directly from Wish.Crop properties.
-            if (CropGrowthPatch.TryGetTooltipFertilized(inst, out bool fertilized))
-                lines.Add($"Fertilized: {(fertilized ? "yes" : "no")}");
-            if (CropGrowthPatch.TryGetTooltipManaInfused(inst, out bool manaInfused) && manaInfused)
-                lines.Add("Mana infused");
-
-            // Tile state (watered/hoed) lives on TileManager. The water tilemap is queried with the
-            // crop's world position directly; farmingData / IsHoed use the nearest tile key.
-            string tileState = null;
+            // Water (from the water tilemap; fallback to "?" if nothing resolves).
             Vector2Int tile = default;
-            Vector2Int matchedTile = default;
             bool haveTile = CropTileReflection.TryGetTileCoordForCrop(crop, out tile);
+            string tileState = null;
             if (haveTile)
             {
-                tileState = CropTileReflection.DescribeFarmingTileState(tile, crop.transform.position, true, out matchedTile);
-                string waterLine = string.IsNullOrEmpty(tileState)
-                    ? "Water: ?"
-                    : $"Water: {tileState}" + (matchedTile != tile ? $" (neighbor {matchedTile.x},{matchedTile.y})" : string.Empty);
-                lines.Add(waterLine);
-                lines.Add($"Tile: ({tile.x}, {tile.y})");
+                tileState = CropTileReflection.DescribeFarmingTileState(tile, crop.transform.position, true, out _);
+                if (IsDebugLogEnabled()) LogTileDebugOnce(crop, tile);
+            }
 
-                if (IsDebugLogEnabled())
-                    LogTileDebugOnce(crop, tile);
-            }
-            else
+            (string waterText, Color32 waterColor) = DescribeWaterState(tileState);
+            content.Rows.Add(RowSpec.Make(UiStyle.IconKind.Water, waterColor, waterText));
+
+            if (CropGrowthPatch.TryGetTooltipFertilized(inst, out bool fertilized))
             {
-                // Last-ditch guess off the crop object itself (rare).
-                lines.Add($"Water (fallback guess): {FormatWaterGuess(inst)}");
+                string label = fertilized ? "<b>Fertilized</b>" : "Not fertilized";
+                content.Rows.Add(RowSpec.Make(UiStyle.IconKind.Fertilizer,
+                    fertilized ? UiStyle.Fertilizer : (Color32)new Color32(0x9A, 0x88, 0x60, 0xFF), label));
             }
+
+            if (CropGrowthPatch.TryGetTooltipManaInfused(inst, out bool manaInfused) && manaInfused)
+                content.Rows.Add(RowSpec.Make(UiStyle.IconKind.Mana, UiStyle.Mana, "<b>Mana infused</b>"));
+
+            if (haveTile)
+                content.Rows.Add(RowSpec.Make(UiStyle.IconKind.Tile, UiStyle.Tile,
+                    $"<color={mutedCream}>Tile ({tile.x}, {tile.y})</color>"));
 
             if (itemId > 0)
-                CropGrowthPatch.AppendItemExtraLines(itemId, lines);
+            {
+                var extras = new System.Collections.Generic.List<string>();
+                CropGrowthPatch.AppendItemExtraLines(itemId, extras);
+                if (extras.Count > 0)
+                    content.Extras = string.Join(" · ", extras);
+            }
 
-            return string.Join("\n", lines);
+            return content;
+        }
+
+        private static Color32 QualityColorFor(string label)
+        {
+            if (string.IsNullOrEmpty(label)) return UiStyle.QualityNormal;
+            string l = label.ToLowerInvariant();
+            if (l.Contains("gold") || l.Contains("iridium")) return UiStyle.QualityGold;
+            if (l.Contains("silver")) return UiStyle.QualitySilver;
+            return UiStyle.QualityNormal;
+        }
+
+        private static (string text, Color32 color) DescribeWaterState(string raw)
+        {
+            if (string.IsNullOrEmpty(raw))
+                return ("Water: <color=#B8A078>unknown</color>", UiStyle.Water);
+            string r = raw.ToLowerInvariant();
+            if (r.Contains("water"))
+                return ("<b><color=#8AD4FF>Watered</color></b>", UiStyle.Water);
+            if (r.Contains("hoed"))
+                return ("Hoed <color=#B8A078>(dry — needs water)</color>", new Color32(0xC9, 0xA0, 0x70, 0xFF));
+            return ($"Water: {raw}", UiStyle.Water);
         }
     }
 }

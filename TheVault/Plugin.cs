@@ -84,6 +84,7 @@ namespace TheVault
             Instance = this;
             Log = Logger;
             ConfigFile = CreateNamedConfig();
+            SunhavenMods.Shared.ConfigFileHelper.ReplacePluginConfig(this, ConfigFile, Log.LogWarning);
 
             // NOTE: DontDestroyOnLoad on this gameObject doesn't help because
             // the game's UIHandler.UnloadGame explicitly destroys UI objects.
@@ -1381,7 +1382,7 @@ namespace TheVault
     {
         public const string PLUGIN_GUID = "com.azraelgodking.thevault";
         public const string PLUGIN_NAME = "The Vault";
-        public const string PLUGIN_VERSION = "3.0.5";
+        public const string PLUGIN_VERSION = "3.0.6";
     }
 
     /// <summary>

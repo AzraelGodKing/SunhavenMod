@@ -7,10 +7,10 @@
     <LangVersion>latest</LangVersion>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <EnableDefaultCompileItems>false</EnableDefaultCompileItems>
-    <Version>3.0.5</Version>
-    <AssemblyVersion>3.0.5.0</AssemblyVersion>
-    <FileVersion>3.0.5.0</FileVersion>
-    <InformationalVersion>3.0.5</InformationalVersion>
+    <Version>3.0.6</Version>
+    <AssemblyVersion>3.0.6.0</AssemblyVersion>
+    <FileVersion>3.0.6.0</FileVersion>
+    <InformationalVersion>3.0.6</InformationalVersion>
   </PropertyGroup>
 
   <ItemGroup>
@@ -19,6 +19,7 @@
 
   <ItemGroup>
     <Compile Include="$(MSBuildProjectDirectory)\**\*.cs" Exclude="$(MSBuildProjectDirectory)\Decomplied\**;$(MSBuildProjectDirectory)\obj\**;$(MSBuildProjectDirectory)\bin\**;$(MSBuildProjectDirectory)\Tests\**" />
+    <Compile Include="..\SharedUtilities\ConfigFileHelper.cs" Link="Shared\ConfigFileHelper.cs" />
     <Compile Include="..\SharedUtilities\VersionChecker.cs" Link="Shared\VersionChecker.cs" />
     <Compile Include="..\SharedUtilities\SceneRootSurvivor.cs" Link="Shared\SceneRootSurvivor.cs" />
     <Compile Include="..\SharedUtilities\ReflectionHelper.cs" Link="Shared\ReflectionHelper.cs" />

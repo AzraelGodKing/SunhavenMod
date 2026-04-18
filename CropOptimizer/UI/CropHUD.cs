@@ -3,33 +3,35 @@ using BepInEx.Configuration;
 using CropOptimizer.Data;
 using SunhavenMods.Shared;
 using UnityEngine;
+using UnityEngine.UI;
 using Wish;
 
 namespace CropOptimizer.UI
 {
     /// <summary>
-    /// IMGUI crop summary panel. Draggable; position persisted via config from <see cref="Plugin"/>.
-    /// Hidden until a character save is active (not main menu / not pre-load).
+    /// Sun Haven-styled HUD runner. Owns a persistent ScreenSpaceOverlay canvas that hosts the
+    /// summary panel (draggable) and the hover tooltip card. Runs on <see cref="PersistentRunnerBase"/>
+    /// so it survives scene loads; the UI is recreated on game/menu transitions so it can't leak or
+    /// reference stale objects after the player returns to the main menu.
     /// </summary>
     internal sealed class CropHUD : PersistentRunnerBase
     {
-        private const int HudWindowId = 948301;
-
         private CropForecast _forecast;
-        private GUIStyle _windowStyle;
-        private GUIStyle _labelStyle;
+        private Canvas _canvas;
+        private GameObject _canvasGo;
+        private CropHudView _hudView;
+        private CropTooltipView _tooltipView;
+
         private float _scale = 1f;
         private bool _isVisible = true;
-        private bool _stylesDirty = true;
-
-        private Rect _windowRect;
-        private bool _hasInitialRect;
+        private float _initialX = 24f;
+        private float _initialY = 80f;
+        private bool _hasInitialPlacement;
 
         private ConfigEntry<bool> _hoverTooltipEnabled;
         private ConfigEntry<float> _hoverTooltipMaxWorldDistance;
-        private GUIStyle _tooltipStyle;
 
-        /// <summary>Invoked when the player drags the HUD; parent saves X/Y to config.</summary>
+        /// <summary>Invoked when the player drags the HUD; parent saves X/Y to config (pixels from top-left).</summary>
         public event Action<float, float> PlacementChanged;
 
         protected override string RunnerName => "CropHUD";
@@ -45,25 +47,25 @@ namespace CropOptimizer.UI
             _hoverTooltipMaxWorldDistance = maxWorldDistance;
         }
 
-        /// <summary>Initial anchor from config (pixels).</summary>
         public void SetPlacement(float x, float y)
         {
-            _windowRect.x = x;
-            _windowRect.y = y;
-            _hasInitialRect = true;
+            _initialX = x;
+            _initialY = y;
+            _hasInitialPlacement = true;
+            _hudView?.SetPlacement(x, y);
         }
 
         public void SetScale(float scale)
         {
             _scale = Mathf.Clamp(scale, 0.5f, 2.5f);
-            _stylesDirty = true;
-            _windowStyle = null;
-            _labelStyle = null;
+            _hudView?.SetScale(_scale);
+            _tooltipView?.SetScale(_scale);
         }
 
         public void SetVisible(bool visible)
         {
             _isVisible = visible;
+            _hudView?.SetVisible(visible && IsCharacterSessionActive());
         }
 
         private static bool IsCharacterSessionActive()
@@ -73,11 +75,9 @@ namespace CropOptimizer.UI
             try
             {
                 var gs = GameSave.Instance;
-                if (gs == null)
-                    return false;
+                if (gs == null) return false;
                 var save = gs.CurrentSave;
-                if (save == null)
-                    return false;
+                if (save == null) return false;
                 return save.characterData != null;
             }
             catch
@@ -86,126 +86,154 @@ namespace CropOptimizer.UI
             }
         }
 
-        private void InitializeStyles()
+        private void EnsureCanvas()
         {
-            _windowStyle = new GUIStyle(GUI.skin.window)
-            {
-                fontSize = Mathf.RoundToInt(12f * _scale)
-            };
+            if (_canvas != null && _canvasGo != null) return;
 
-            _labelStyle = new GUIStyle(GUI.skin.label)
-            {
-                fontSize = Mathf.RoundToInt(11f * _scale),
-                richText = true
-            };
+            _canvasGo = new GameObject("CropOptimizer_HUDCanvas",
+                typeof(Canvas), typeof(CanvasScaler), typeof(GraphicRaycaster));
+            UnityEngine.Object.DontDestroyOnLoad(_canvasGo);
 
-            _stylesDirty = false;
+            _canvas = _canvasGo.GetComponent<Canvas>();
+            _canvas.renderMode = RenderMode.ScreenSpaceOverlay;
+            _canvas.sortingOrder = 5000; // above most game HUD, below modal dialogs
+
+            var scaler = _canvasGo.GetComponent<CanvasScaler>();
+            scaler.uiScaleMode = CanvasScaler.ScaleMode.ScaleWithScreenSize;
+            scaler.referenceResolution = new Vector2(1920f, 1080f);
+            scaler.matchWidthOrHeight = 0.5f;
+
+            _hudView = new CropHudView(_canvasGo.transform);
+            _hudView.PlacementChanged += (x, y) => PlacementChanged?.Invoke(x, y);
+            _hudView.TooltipToggleClicked += OnTooltipToggleClicked;
+            _hudView.SetScale(_scale);
+            if (_hasInitialPlacement) _hudView.SetPlacement(_initialX, _initialY);
+            _hudView.SetVisible(_isVisible);
+            _hudView.SetTooltipEnabled(_hoverTooltipEnabled != null && _hoverTooltipEnabled.Value);
+
+            _tooltipView = new CropTooltipView(_canvasGo.transform);
+            _tooltipView.SetScale(_scale);
+            _tooltipView.SetVisible(false);
         }
 
-        private void EnsureWindowSize()
+        private void RebuildCanvas()
         {
-            _windowRect.width = 340f * _scale;
-            _windowRect.height = 78f * _scale;
+            if (_canvasGo != null)
+            {
+                UnityEngine.Object.Destroy(_canvasGo);
+                _canvasGo = null;
+                _canvas = null;
+                _hudView = null;
+                _tooltipView = null;
+            }
+            EnsureCanvas();
         }
 
-        private void OnGUI()
+        protected override void OnUpdate()
         {
-            if (_forecast == null || !IsCharacterSessionActive())
-                return;
+            if (_forecast == null) return;
+            EnsureCanvas();
 
-            // Hover works even when the summary HUD is toggled off (F3)
-            DrawHoverTooltip();
+            bool sessionLive = IsCharacterSessionActive();
 
-            if (!_isVisible)
-                return;
-
-            if (_stylesDirty || _windowStyle == null || _labelStyle == null)
-                InitializeStyles();
-
-            EnsureWindowSize();
-            if (!_hasInitialRect)
+            // Summary panel
+            if (_hudView != null)
             {
-                _windowRect.x = 20f;
-                _windowRect.y = 80f;
-                _hasInitialRect = true;
+                bool showHud = _isVisible && sessionLive;
+                _hudView.SetVisible(showHud);
+                if (showHud)
+                {
+                    var snap = _forecast.Snapshot();
+                    _hudView.UpdateStats(snap.Count, _forecast.GetProjectedSellTotal());
+                    // Keep the toggle button in sync with config (covers live edits to the cfg file
+                    // as well as our own click-driven writes).
+                    _hudView.SetTooltipEnabled(_hoverTooltipEnabled != null && _hoverTooltipEnabled.Value);
+                }
             }
 
-            GUI.depth = -50;
-            Rect before = _windowRect;
-            _windowRect = GUI.Window(HudWindowId, _windowRect, DrawHudWindow, "Crop Optimizer", _windowStyle);
-            _windowRect.x = Mathf.Clamp(_windowRect.x, 0f, Mathf.Max(0f, Screen.width - _windowRect.width));
-            _windowRect.y = Mathf.Clamp(_windowRect.y, 0f, Mathf.Max(0f, Screen.height - _windowRect.height));
-
-            if (Mathf.Abs(_windowRect.x - before.x) > 0.5f || Mathf.Abs(_windowRect.y - before.y) > 0.5f)
-                PlacementChanged?.Invoke(_windowRect.x, _windowRect.y);
+            // Hover tooltip
+            UpdateHoverTooltip(sessionLive);
         }
 
-        private void DrawHudWindow(int windowId)
+        private void OnTooltipToggleClicked()
         {
-            GUILayout.BeginVertical();
-            GUILayout.Label($"Tracked crops: {_forecast.Snapshot().Count}", _labelStyle);
-            GUILayout.Label($"Projected sell value: {_forecast.GetProjectedSellTotal()}g", _labelStyle);
-            GUILayout.EndVertical();
-
-            // Drag from title bar only (window chrome); avoids stealing clicks from labels.
-            GUI.DragWindow(new Rect(0f, 0f, _windowRect.width, 22f * _scale));
+            if (_hoverTooltipEnabled == null) return;
+            _hoverTooltipEnabled.Value = !_hoverTooltipEnabled.Value;
+            _hudView?.SetTooltipEnabled(_hoverTooltipEnabled.Value);
+            // BepInEx writes config changes to disk lazily; ConfigFile.Save forces a flush so
+            // the new value survives a game restart.
+            try { _hoverTooltipEnabled.ConfigFile?.Save(); } catch { /* ignore disk write errors */ }
         }
 
-        private void DrawHoverTooltip()
+        private void UpdateHoverTooltip(bool sessionLive)
         {
-            if (_hoverTooltipEnabled == null || !_hoverTooltipEnabled.Value || _forecast == null || !IsCharacterSessionActive())
+            if (_tooltipView == null) return;
+            if (!sessionLive || _hoverTooltipEnabled == null || !_hoverTooltipEnabled.Value)
+            {
+                _tooltipView.SetVisible(false);
                 return;
+            }
 
-            Vector2 guiMouse = new Vector2(Input.mousePosition.x, Screen.height - Input.mousePosition.y);
-            if (_windowRect.Contains(guiMouse))
-                return;
+            // Don't pop the tooltip while the mouse is over our own HUD panel.
+            if (_hudView != null && _hudView.IsVisible)
+            {
+                if (RectTransformUtility.RectangleContainsScreenPoint(_hudView.Rect, Input.mousePosition))
+                {
+                    _tooltipView.SetVisible(false);
+                    return;
+                }
+            }
 
             Camera cam = CropHoverQuery.ResolveGameplayCamera();
             if (cam == null)
-                return;
-
-            float maxDist = _hoverTooltipMaxWorldDistance != null ? _hoverTooltipMaxWorldDistance.Value : 5f;
-            if (!CropHoverQuery.TryGetClosestCropNearMouse(cam, maxDist, out UnityEngine.Component crop))
-                return;
-
-            string text = CropHoverQuery.BuildTooltipLines(crop, _forecast);
-            if (string.IsNullOrEmpty(text))
-                return;
-
-            if (_tooltipStyle == null || _stylesDirty)
             {
-                _tooltipStyle = new GUIStyle(GUI.skin.box)
-                {
-                    fontSize = Mathf.RoundToInt(11f * _scale),
-                    wordWrap = true,
-                    padding = new RectOffset(8, 8, 6, 6)
-                };
+                _tooltipView.SetVisible(false);
+                return;
             }
 
-            GUIContent content = new GUIContent(text);
-            float maxW = 360f * _scale;
-            float h = _tooltipStyle.CalcHeight(content, maxW);
-            Rect r = new Rect(guiMouse.x + 18f, guiMouse.y + 18f, maxW, h);
-            r.x = Mathf.Clamp(r.x, 0f, Mathf.Max(0f, Screen.width - r.width));
-            r.y = Mathf.Clamp(r.y, 0f, Mathf.Max(0f, Screen.height - r.height));
-            GUI.depth = -60;
-            GUI.Box(r, text, _tooltipStyle);
+            float maxDist = _hoverTooltipMaxWorldDistance != null ? _hoverTooltipMaxWorldDistance.Value : 5f;
+            if (!CropHoverQuery.TryGetClosestCropNearMouse(cam, maxDist, out Component crop))
+            {
+                _tooltipView.SetVisible(false);
+                return;
+            }
+
+            TooltipContent content = CropHoverQuery.BuildTooltipContent(crop, _forecast);
+            if (content == null)
+            {
+                _tooltipView.SetVisible(false);
+                return;
+            }
+
+            _tooltipView.SetVisible(true);
+            _tooltipView.ApplyContent(content);
+            _tooltipView.SetScreenPosition(Input.mousePosition);
         }
 
         protected override void OnGameTransition()
         {
-            _stylesDirty = true;
-            _windowStyle = null;
-            _labelStyle = null;
-            _tooltipStyle = null;
+            // Canvas + TMP font should be live now; recreate the UI to pick up fresh styles.
+            RebuildCanvas();
         }
 
         protected override void OnMenuTransition()
         {
-            _stylesDirty = true;
-            _windowStyle = null;
-            _labelStyle = null;
-            _tooltipStyle = null;
+            // Hide but keep canvas around; UI will be rebuilt if the player starts a new session.
+            _hudView?.SetVisible(false);
+            _tooltipView?.SetVisible(false);
+        }
+
+        protected override void OnDestroy()
+        {
+            base.OnDestroy();
+            if (_canvasGo != null)
+            {
+                UnityEngine.Object.Destroy(_canvasGo);
+                _canvasGo = null;
+                _canvas = null;
+                _hudView = null;
+                _tooltipView = null;
+            }
         }
 
         protected override void Log(string message)

@@ -6,16 +6,16 @@ A collection of BepInEx mods for [Sun Haven](https://store.steampowered.com/app/
 
 | Mod | Description | Version |
 |-----|-------------|---------|
-| [**Senpai's Chest**](SenpaisChest/) | Smart chests with configurable item rules for automatic storage sorting | 2.2.4 |
-| [**Sunhaven Todo**](SunhavenTodo/) | In-game todo list and journal with per-character saves | 1.1.8 |
-| [**Sun Haven Museum Utility Tracker**](SunHavenMuseumUtilityTracker/) | Track museum donations across all sections | 2.2.7 |
-| [**The Vault**](TheVault/) | Full rework of the vault system; classic core, single project; shop and inventory vault hooks | 3.0.5 |
-| [**Haven's Birthright**](HavensBirthright/) | Unique racial bonuses and traits for each playable race; optional `[BonusTransfers]` cross-race passive grants (off by default) | 2.0.1 |
-| [**Haven's Almanac**](HavensAlmanac/) | Mod compatibility registry and info hub | 1.0.5 |
-| [**A Squirrel's Birthday Reminder**](BirthdayReminder/) | Reminds you of villagers' birthdays | 1.1.5 |
-| [**Haven Dev Tools**](HavenDevTools/) | Developer utilities and debugging tools | 1.0.8 |
-| [**Trinket Fortune**](TrinketFortune/) | Increases odds of unowned fishing trinkets dropping as you complete the aquarium | 1.0.3 |
-| [**Faster Races**](FasterRaces/) | Configurable movement speed bonus; integrates with Haven's Birthright to avoid double speed | 1.1.3 |
+| [**Senpai's Chest**](SenpaisChest/) | Smart chests with configurable item rules for automatic storage sorting | 2.2.5 |
+| [**Sunhaven Todo**](SunhavenTodo/) | In-game todo list and journal with per-character saves | 1.1.9 |
+| [**Sun Haven Museum Utility Tracker**](SunHavenMuseumUtilityTracker/) | Track museum donations across all sections | 2.2.8 |
+| [**The Vault**](TheVault/) | Full rework of the vault system; classic core, single project; shop and inventory vault hooks | 3.0.6 |
+| [**Haven's Birthright**](HavensBirthright/) | Unique racial bonuses and traits for each playable race; optional `[BonusTransfers]` cross-race passive grants (off by default) | 2.0.2 |
+| [**Haven's Almanac**](HavensAlmanac/) | Mod compatibility registry and info hub | 1.0.6 |
+| [**A Squirrel's Birthday Reminder**](BirthdayReminder/) | Reminds you of villagers' birthdays | 1.1.6 |
+| [**Haven Dev Tools**](HavenDevTools/) | Developer utilities and debugging tools | 1.0.9 |
+| [**Trinket Fortune**](TrinketFortune/) | Increases odds of unowned fishing trinkets dropping as you complete the aquarium | 1.0.4 |
+| [**Faster Races**](FasterRaces/) | Configurable movement speed bonus; integrates with Haven's Birthright to avoid double speed | 1.1.4 |
 | [**Justice for Harold**](JusticeForHarold/) | Quest interaction tweak for Harold's reward flow | 1.0.0 |
 | [**Crop Optimizer**](CropOptimizer/) | Crop forecast HUD with soft Todo/Birthday/Vault integrations | 1.0.0 |
 
@@ -118,6 +118,9 @@ SunhavenMod/
 
 ## Documentation site changelog
 
+- **2026-04-17** — **Docs: Crop Optimizer now syncs its version badge from `versions.json`.** Added `"Crop Optimizer": "com.azraelgodking.cropoptimizer"` to both the hub `nameToKey` map and the per-page `navToKey` map in [`docs/shared.js`](docs/shared.js), so the mod-card badge on [`docs/index.html`](docs/index.html) and the hero `.version-badge` on [`docs/CropOptimizer/CropOptimizer.html`](docs/CropOptimizer/CropOptimizer.html) are overwritten from `versions.json` at load time. The hardcoded `v1.0.0` in the HTML is now just a pre-JS fallback for crawlers / no-JS readers.
+- **2026-04-17** — **Crop Optimizer page shipped:** added [`docs/CropOptimizer/CropOptimizer.html`](docs/CropOptimizer/CropOptimizer.html) + [`docs/CropOptimizer/crop-style.css`](docs/CropOptimizer/crop-style.css) (field-journal parchment theme: sprout green + harvest gold on warm parchment, dark-mode twilight-field variant). Added a `crop-theme` mod card with `crop-btn` CTA and a pulsing sprout-green `crop-badge` to [`docs/index.html`](docs/index.html) / [`docs/index-style.css`](docs/index-style.css); bumped the guild-header contract counter from 10 to 11. Page covers HUD, hover tooltip, growth ETA, quality tier, water / fertilizer detection (direct `TileManager.waterTileMap` read), projected sell value, soft integrations (Sunhaven Todo / Birthday Reminder / The Vault / Haven's Almanac), a tooltip-anatomy grid, compatibility notes, and the full `CropOptimizer.cfg` table. Registered the page in [`docs/search-index.json`](docs/search-index.json) so it surfaces in site-wide search / `Ctrl+K`.
+- **2026-04-17** — **All mods: configs now visible in BepInEx Configuration Manager.** Every mod in this repo binds to a custom `ConfigFile` (e.g. `CropOptimizer.cfg`, `thevault.cfg`, `HavensBirthright.cfg`) rather than the default per-GUID file, and Configuration Manager only scans each plugin's inherited `BaseUnityPlugin.Config` property — so it never saw any of our entries. Added [`SharedUtilities/ConfigFileHelper.ReplacePluginConfig`](SharedUtilities/ConfigFileHelper.cs) which rewires that inherited property to the custom file via reflection right after Awake (applied in every plugin's `Awake`), so the live config UI now picks up every `Config.Bind(...)` call without changing any config file names or paths.
 - **2026-04-16** — Persistent runner `OnDestroy` logs now distinguish expected teardown (app quit/menu unload → info) from unexpected in-session destruction (warning) across shared runner base and mods with custom runner classes.
 - **2026-04-16** — Sun Haven Museum Utility Tracker log spam reduction: `GetCurrentCharacterName` now logs source/name only on change, preventing repeated identical `LastLoadedCharacterName` info lines during poll loops.
 - **2026-04-16** — The Vault log spam reduction: `GetCurrentCharacterName` now logs source/name only when it changes (instead of every poll), preventing massive repeated `LastLoadedCharacterName` info lines in `LogOutput.log`.

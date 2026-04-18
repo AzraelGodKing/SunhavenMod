@@ -192,6 +192,7 @@ This adds Water Elemental’s Defense % to Humans and Human’s experience % to 
 ## Changelog
 
 ### Unreleased
+- **Fixed:** Configs now appear in BepInEx Configuration Manager. The mod binds entries to a custom `ConfigFile` (`HavensBirthright.cfg`) rather than the default per-GUID file, and Configuration Manager only scans each plugin's inherited `BaseUnityPlugin.Config` property — so it never saw our entries. `ConfigFileHelper.ReplacePluginConfig` now rewires that inherited property to the custom file via reflection right after Awake, so the live config UI picks up every `Config.Bind(...)` call without changing the config file name or path.
 - Fixed Elemental stat processing so Infernal Forge mana-lock logic is gated by `EnableInfernalForge` instead of running unconditionally.
 - Adjusted Faster Races speed-bonus reflection fallback to keep Haven's Birthright movement bonuses active when reflection fails, with a warning log for visibility.
 

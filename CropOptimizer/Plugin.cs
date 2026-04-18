@@ -42,7 +42,9 @@ namespace CropOptimizer
         {
             Instance = this;
             Log = Logger;
-            _config = new CropOptimizerConfig(CreateNamedConfig());
+            var namedConfig = CreateNamedConfig();
+            SunhavenMods.Shared.ConfigFileHelper.ReplacePluginConfig(this, namedConfig, Log.LogWarning);
+            _config = new CropOptimizerConfig(namedConfig);
             if (!_config.Enabled.Value)
             {
                 Log.LogInfo($"{PluginInfo.PLUGIN_NAME} disabled in config.");
