@@ -39,6 +39,11 @@ namespace CropOptimizer.Data
             return total;
         }
 
+        public bool TryGetState(int cropInstanceId, out CropState state)
+        {
+            return _cropStateByInstanceId.TryGetValue(cropInstanceId, out state);
+        }
+
         public void Clear()
         {
             _cropStateByInstanceId.Clear();
