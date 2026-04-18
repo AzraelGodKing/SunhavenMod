@@ -23,6 +23,7 @@ namespace HavensAlmanac.Integration
 
         public string HudSummary => _hudSummary;
         public bool IsReady => _isReady;
+        public bool HasBriefingContent => _isReady && _activeCount > 0;
 
         public void Refresh()
         {

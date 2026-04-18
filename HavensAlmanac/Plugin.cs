@@ -70,10 +70,14 @@ namespace HavensAlmanac
                     result => result.NotifyUpdateAvailable(Log));
             }
 
-            Log.LogInfo($"{PluginInfo.PLUGIN_NAME} loaded with {_staticAggregator.InstalledModCount} mod(s) detected");
+            int integrationCount = _staticAggregator.IntegrationModCount;
+            Log.LogInfo($"{PluginInfo.PLUGIN_NAME} loaded with {integrationCount} integration{(integrationCount == 1 ? string.Empty : "s")} + built-in Mod Health telemetry");
 
-            if (_staticAggregator.InstalledModCount == 0)
-                Log.LogWarning("No supported mods detected! Haven's Almanac requires at least one other mod to be useful.");
+            // IntegrationModCount excludes the always-registered Mod Health
+            // provider, so this fires only when the user really has none of
+            // the supported companion mods installed.
+            if (integrationCount == 0)
+                Log.LogWarning("No supported companion mods detected. Haven's Almanac is most useful alongside SunhavenTodo, Birthday Reminder, Museum Tracker, Senpai's Chest, The Vault, Haven's Birthright, Haven Dev Tools, or Crop Optimizer.");
         }
 
         private static ConfigFile CreateNamedConfig()

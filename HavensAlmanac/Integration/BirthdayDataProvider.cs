@@ -19,6 +19,7 @@ namespace HavensAlmanac.Integration
 
         public string HudSummary => _hudSummary;
         public bool IsReady => _isReady;
+        public bool HasBriefingContent => _isReady && _birthdays != null && _birthdays.Count > 0;
 
         public void Refresh()
         {

@@ -72,7 +72,7 @@ namespace HavenDevTools.UI
             ("com.azraelgodking.sunhavenmuseumutilitytracker", "S.M.U.T.", "2.2.8"),
             ("com.azraelgodking.sunhaventodo", "Sunhaven Todo", "1.1.9"),
             ("com.azraelgodking.thevault", "The Vault", "3.0.6"),
-            ("com.azraelgodking.havensalmanac", "Haven's Almanac", "1.0.6"),
+            ("com.azraelgodking.havensalmanac", "Haven's Almanac", "1.1.0"),
             ("com.azraelgodking.fasterraces", "Faster Races", "1.1.4"),
         };
 
