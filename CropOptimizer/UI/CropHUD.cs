@@ -1,4 +1,5 @@
 using System;
+using BepInEx.Configuration;
 using CropOptimizer.Data;
 using SunhavenMods.Shared;
 using UnityEngine;
@@ -24,6 +25,10 @@ namespace CropOptimizer.UI
         private Rect _windowRect;
         private bool _hasInitialRect;
 
+        private ConfigEntry<bool> _hoverTooltipEnabled;
+        private ConfigEntry<float> _hoverTooltipMaxWorldDistance;
+        private GUIStyle _tooltipStyle;
+
         /// <summary>Invoked when the player drags the HUD; parent saves X/Y to config.</summary>
         public event Action<float, float> PlacementChanged;
 
@@ -32,6 +37,12 @@ namespace CropOptimizer.UI
         public void Initialize(CropForecast forecast)
         {
             _forecast = forecast;
+        }
+
+        public void SetHoverConfig(ConfigEntry<bool> enabled, ConfigEntry<float> maxWorldDistance)
+        {
+            _hoverTooltipEnabled = enabled;
+            _hoverTooltipMaxWorldDistance = maxWorldDistance;
         }
 
         /// <summary>Initial anchor from config (pixels).</summary>
@@ -99,7 +110,13 @@ namespace CropOptimizer.UI
 
         private void OnGUI()
         {
-            if (!_isVisible || _forecast == null || !IsCharacterSessionActive())
+            if (_forecast == null || !IsCharacterSessionActive())
+                return;
+
+            // Hover works even when the summary HUD is toggled off (F3)
+            DrawHoverTooltip();
+
+            if (!_isVisible)
                 return;
 
             if (_stylesDirty || _windowStyle == null || _labelStyle == null)
@@ -134,11 +151,53 @@ namespace CropOptimizer.UI
             GUI.DragWindow(new Rect(0f, 0f, _windowRect.width, 22f * _scale));
         }
 
+        private void DrawHoverTooltip()
+        {
+            if (_hoverTooltipEnabled == null || !_hoverTooltipEnabled.Value || _forecast == null || !IsCharacterSessionActive())
+                return;
+
+            Vector2 guiMouse = new Vector2(Input.mousePosition.x, Screen.height - Input.mousePosition.y);
+            if (_windowRect.Contains(guiMouse))
+                return;
+
+            Camera cam = CropHoverQuery.ResolveGameplayCamera();
+            if (cam == null)
+                return;
+
+            float maxDist = _hoverTooltipMaxWorldDistance != null ? _hoverTooltipMaxWorldDistance.Value : 5f;
+            if (!CropHoverQuery.TryGetClosestCropNearMouse(cam, maxDist, out UnityEngine.Component crop))
+                return;
+
+            string text = CropHoverQuery.BuildTooltipLines(crop, _forecast);
+            if (string.IsNullOrEmpty(text))
+                return;
+
+            if (_tooltipStyle == null || _stylesDirty)
+            {
+                _tooltipStyle = new GUIStyle(GUI.skin.box)
+                {
+                    fontSize = Mathf.RoundToInt(11f * _scale),
+                    wordWrap = true,
+                    padding = new RectOffset(8, 8, 6, 6)
+                };
+            }
+
+            GUIContent content = new GUIContent(text);
+            float maxW = 360f * _scale;
+            float h = _tooltipStyle.CalcHeight(content, maxW);
+            Rect r = new Rect(guiMouse.x + 18f, guiMouse.y + 18f, maxW, h);
+            r.x = Mathf.Clamp(r.x, 0f, Mathf.Max(0f, Screen.width - r.width));
+            r.y = Mathf.Clamp(r.y, 0f, Mathf.Max(0f, Screen.height - r.height));
+            GUI.depth = -60;
+            GUI.Box(r, text, _tooltipStyle);
+        }
+
         protected override void OnGameTransition()
         {
             _stylesDirty = true;
             _windowStyle = null;
             _labelStyle = null;
+            _tooltipStyle = null;
         }
 
         protected override void OnMenuTransition()
@@ -146,6 +205,7 @@ namespace CropOptimizer.UI
             _stylesDirty = true;
             _windowStyle = null;
             _labelStyle = null;
+            _tooltipStyle = null;
         }
 
         protected override void Log(string message)

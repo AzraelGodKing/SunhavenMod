@@ -11,6 +11,8 @@ namespace CropOptimizer.Config
         public ConfigEntry<float> HudPositionX { get; }
         public ConfigEntry<float> HudPositionY { get; }
         public ConfigEntry<KeyCode> ToggleHudKey { get; }
+        public ConfigEntry<bool> HoverTooltipEnabled { get; }
+        public ConfigEntry<float> HoverTooltipMaxWorldDistance { get; }
         public ConfigEntry<bool> DebugLogging { get; }
 
         public CropOptimizerConfig(ConfigFile config)
@@ -21,6 +23,8 @@ namespace CropOptimizer.Config
             HudPositionX = config.Bind("HUD", "PositionX", 20f, "HUD window X (pixels); updated when you drag the panel)");
             HudPositionY = config.Bind("HUD", "PositionY", 80f, "HUD window Y (pixels); updated when you drag the panel)");
             ToggleHudKey = config.Bind("HUD", "ToggleKey", KeyCode.F3, "Toggle crop HUD");
+            HoverTooltipEnabled = config.Bind("HUD", "HoverTooltip", true, "Experimental: show crop info (crop name, water/fertil guess, ETA) when the mouse is near a crop in-world");
+            HoverTooltipMaxWorldDistance = config.Bind("HUD", "HoverTooltipMaxWorldDistance", 5f, new ConfigDescription("Max distance from mouse (world units) to treat a crop as hovered", new AcceptableValueRange<float>(0.25f, 16f)));
             DebugLogging = config.Bind("Debug", "DebugLogging", false, "Enable debug logging");
         }
     }

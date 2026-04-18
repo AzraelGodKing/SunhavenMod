@@ -24,6 +24,7 @@ namespace CropOptimizer
     {
         public static ManualLogSource Log { get; private set; }
         public static Plugin Instance { get; private set; }
+        public static bool IsDebugLoggingEnabled => Instance?._config?.DebugLogging?.Value == true;
 
         private Harmony _harmony;
         private CropOptimizerConfig _config;
@@ -64,6 +65,7 @@ namespace CropOptimizer
             _hud.SetVisible(_config.HudEnabled.Value);
             _hudVisible = _config.HudEnabled.Value;
             _hud.PlacementChanged += OnCropHudPlacementChanged;
+            _hud.SetHoverConfig(_config.HoverTooltipEnabled, _config.HoverTooltipMaxWorldDistance);
 
             TrySubscribeVaultLoaded();
 

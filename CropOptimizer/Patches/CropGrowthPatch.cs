@@ -14,9 +14,14 @@ namespace CropOptimizer.Patches
         private static CropForecast _forecast;
         private static bool _growthMembersResolved;
         private static MemberInfo _daysLeftMember;
+        private static MemberInfo _percentGrownMember;
+        private static MemberInfo _fullyGrownMember;
         private static MemberInfo _currentStageMember;
         private static MemberInfo _totalGrowthMember;
         private static MemberInfo _growthDaysMember;
+        private static MemberInfo _fertilizedMember;
+        private static MemberInfo _manaInfusedMember;
+        private static MemberInfo _cropPositionMember;
 
         private static bool _itemMembersResolved;
         private static Type _itemDatabaseType;
@@ -145,10 +150,111 @@ namespace CropOptimizer.Patches
         private static float _resolvedQualityMultiplierCache;
         private static int _resolvedProjectedSellGoldCache;
 
-        private static bool TryResolveEtaHours(object cropInstance, out bool resolved)
+        /// <summary>Live read for UI (hover); safe to call outside Harmony postfix (no shared static ETA cache).</summary>
+        internal static bool TryGetTooltipEtaHours(object cropInstance, out float etaHours, out bool resolvedFromReflection)
         {
-            resolved = false;
-            _resolvedEtaHoursCache = 24f;
+            return TryComputeEtaHours(cropInstance, out etaHours, out resolvedFromReflection);
+        }
+
+        internal static bool TryGetTooltipHarvestItemId(object cropInstance, out int itemId)
+        {
+            return TryGetHarvestItemId(cropInstance, out itemId);
+        }
+
+        internal static bool TryGetItemDisplayName(int itemId, out string displayName)
+        {
+            displayName = null;
+            if (itemId <= 0)
+                return false;
+            try
+            {
+                if (!TryGetItemDataObject(itemId, out object itemData) || itemData == null)
+                    return false;
+                Type t = itemData.GetType();
+                var member = FindMember(t, "displayName", "name", "itemName", "Name", "localizedName", "LocalizedName");
+                if (member == null)
+                    return false;
+                object raw = GetMemberValue(itemData, member);
+                if (raw == null)
+                    return false;
+                displayName = raw.ToString();
+                return !string.IsNullOrWhiteSpace(displayName);
+            }
+            catch
+            {
+                return false;
+            }
+        }
+
+        /// <summary>Tier label ("Normal"/"Silver"/"Gold"/etc.) plus the sell multiplier used by the forecast.</summary>
+        internal static bool TryGetTooltipQualityInfo(object cropInstance, out string label, out float multiplier)
+        {
+            label = "Normal";
+            multiplier = 1f;
+            if (cropInstance == null)
+                return false;
+
+            try
+            {
+                EnsureQualityMembers(cropInstance.GetType());
+                object qualityValue = null;
+                if (!TryReadMemberValue(cropInstance, _qualityMember, out qualityValue) || qualityValue == null)
+                {
+                    if (!TryReadMemberValue(cropInstance, _cropDataMember, out object cropDataObj) || cropDataObj == null)
+                        return false;
+                    if (!TryReadMemberValue(cropDataObj, _qualityMember, out qualityValue) || qualityValue == null)
+                        return false;
+                }
+
+                multiplier = MapQualityMultiplier(qualityValue);
+                label = FormatQualityLabel(qualityValue, multiplier);
+                return true;
+            }
+            catch
+            {
+                return false;
+            }
+        }
+
+        private static string FormatQualityLabel(object qualityValue, float multiplier)
+        {
+            if (qualityValue != null)
+            {
+                string text = qualityValue.ToString();
+                if (!string.IsNullOrWhiteSpace(text))
+                {
+                    if (text.IndexOf("gold", StringComparison.OrdinalIgnoreCase) >= 0)
+                        return "Gold";
+                    if (text.IndexOf("silver", StringComparison.OrdinalIgnoreCase) >= 0)
+                        return "Silver";
+
+                    if (TryConvertToInt(qualityValue, out int code))
+                    {
+                        switch (code)
+                        {
+                            case 0: return "Normal";
+                            case 1: return "Silver";
+                            case 2: return "Gold";
+                            default: return code > 0 ? $"Tier {code}" : "Normal";
+                        }
+                    }
+
+                    return text;
+                }
+            }
+
+            if (multiplier >= 1.99f) return "Gold";
+            if (multiplier >= 1.49f) return "Silver";
+            return "Normal";
+        }
+
+        /// <summary>
+        /// Stage text ("stage N / M") and a 0..1 grown ratio. Ratio is best-effort; ETA is more reliable.
+        /// </summary>
+        internal static bool TryGetTooltipGrowthStageInfo(object cropInstance, out string stageText, out float grownRatio)
+        {
+            stageText = null;
+            grownRatio = -1f;
             if (cropInstance == null)
                 return false;
 
@@ -156,10 +262,171 @@ namespace CropOptimizer.Patches
             {
                 EnsureGrowthMembers(cropInstance.GetType());
 
+                // Wish.Crop exposes PercentGrown (Single, 0..1). Prefer that when available.
+                if (TryReadNumericMember(cropInstance, _percentGrownMember, out float percent))
+                {
+                    grownRatio = Mathf.Clamp01(percent);
+                    bool haveStageForHint = TryReadNumericMember(cropInstance, _currentStageMember, out float stageHint);
+                    stageText = haveStageForHint
+                        ? $"{grownRatio * 100f:0}% (stage {Mathf.Max(0f, stageHint):0.#})"
+                        : $"{grownRatio * 100f:0}%";
+                    return true;
+                }
+
+                bool haveStage = TryReadNumericMember(cropInstance, _currentStageMember, out float currentStage);
+                bool haveTotal = TryReadNumericMember(cropInstance, _totalGrowthMember, out float totalGrowth);
+
+                if (haveStage && haveTotal && totalGrowth > 0f)
+                {
+                    float cur = Mathf.Max(0f, currentStage);
+                    float tot = Mathf.Max(cur, totalGrowth);
+                    grownRatio = Mathf.Clamp01(cur / tot);
+                    stageText = $"stage {cur:0.#} / {tot:0.#} ({grownRatio * 100f:0}%)";
+                    return true;
+                }
+
+                if (haveStage)
+                {
+                    stageText = $"stage {Mathf.Max(0f, currentStage):0.#}";
+                    return true;
+                }
+            }
+            catch
+            {
+            }
+            return false;
+        }
+
+        internal static bool TryGetTooltipProjectedGold(object cropInstance, out int projectedGold, out float qualityMultiplier)
+        {
+            projectedGold = 0;
+            qualityMultiplier = 1f;
+            if (cropInstance == null)
+                return false;
+
+            try
+            {
+                if (TryGetTooltipQualityInfo(cropInstance, out _, out float qm))
+                    qualityMultiplier = qm;
+
+                if (!TryGetHarvestItemId(cropInstance, out int itemId) || itemId <= 0)
+                    return false;
+
+                if (!TryGetBaseSellPrice(itemId, out int baseSell))
+                    return false;
+
+                projectedGold = Mathf.Max(0, Mathf.RoundToInt(baseSell * Mathf.Max(0f, qualityMultiplier)));
+                return true;
+            }
+            catch
+            {
+                return false;
+            }
+        }
+
+        /// <summary>Best-effort item-panel extras for hover (season/regrows/seed/bundle). Missing fields are silently skipped.</summary>
+        internal static void AppendItemExtraLines(int itemId, System.Collections.Generic.List<string> lines)
+        {
+            if (itemId <= 0 || lines == null)
+                return;
+
+            try
+            {
+                if (!TryGetItemDataObject(itemId, out object itemData) || itemData == null)
+                    return;
+                Type t = itemData.GetType();
+
+                string season = ReadStringLike(itemData, t, "seasons", "Seasons", "season", "Season", "plantableSeasons");
+                if (!string.IsNullOrWhiteSpace(season))
+                    lines.Add($"Season: {season}");
+
+                bool? regrows = ReadBool(itemData, t, "regrowable", "Regrowable", "regrows", "Regrows", "isRegrowable");
+                if (regrows.HasValue)
+                    lines.Add($"Regrows: {(regrows.Value ? "yes" : "no")}");
+
+                bool? isSeed = ReadBool(itemData, t, "isSeed", "IsSeed", "seedItem", "SeedItem");
+                if (isSeed == true)
+                    lines.Add("Type: Seed");
+
+                bool? museum = ReadBool(itemData, t, "isMuseum", "IsMuseum", "museumItem", "museumDonation");
+                if (museum == true)
+                    lines.Add("Museum: yes");
+
+                bool? bundle = ReadBool(itemData, t, "isBundleItem", "bundleItem", "inBundle", "IsBundleItem");
+                if (bundle == true)
+                    lines.Add("Bundle: yes");
+            }
+            catch
+            {
+            }
+        }
+
+        private static string ReadStringLike(object instance, Type t, params string[] names)
+        {
+            foreach (var name in names)
+            {
+                var m = FindMember(t, name);
+                if (m == null) continue;
+                object raw = GetMemberValue(instance, m);
+                if (raw == null) continue;
+                if (raw is System.Collections.IEnumerable en && !(raw is string))
+                {
+                    var parts = new System.Collections.Generic.List<string>();
+                    foreach (var e in en)
+                    {
+                        if (e == null) continue;
+                        parts.Add(e.ToString());
+                    }
+                    if (parts.Count > 0)
+                        return string.Join(", ", parts);
+                }
+                else
+                {
+                    string s = raw.ToString();
+                    if (!string.IsNullOrWhiteSpace(s))
+                        return s;
+                }
+            }
+            return null;
+        }
+
+        private static bool? ReadBool(object instance, Type t, params string[] names)
+        {
+            foreach (var name in names)
+            {
+                var m = FindMember(t, name);
+                if (m == null) continue;
+                object raw = GetMemberValue(instance, m);
+                if (raw == null) continue;
+                if (raw is bool b) return b;
+                if (raw is int i) return i != 0;
+                if (raw is float f) return Math.Abs(f) > 0.0001f;
+            }
+            return null;
+        }
+
+        private static bool TryComputeEtaHours(object cropInstance, out float etaHours, out bool resolved)
+        {
+            resolved = false;
+            etaHours = 24f;
+            if (cropInstance == null)
+                return false;
+
+            try
+            {
+                EnsureGrowthMembers(cropInstance.GetType());
+
+                if (TryReadBoolMember(cropInstance, _fullyGrownMember, out bool fullyGrown) && fullyGrown)
+                {
+                    etaHours = 0f;
+                    resolved = true;
+                    return true;
+                }
+
                 float daysLeft;
                 if (TryReadNumericMember(cropInstance, _daysLeftMember, out daysLeft))
                 {
-                    _resolvedEtaHoursCache = Mathf.Max(0f, daysLeft * 24f);
+                    etaHours = Mathf.Max(0f, daysLeft * 24f);
                     resolved = true;
                     return true;
                 }
@@ -169,7 +436,7 @@ namespace CropOptimizer.Patches
                 if (TryReadNumericMember(cropInstance, _currentStageMember, out currentStage) &&
                     TryReadNumericMember(cropInstance, _totalGrowthMember, out totalGrowth))
                 {
-                    _resolvedEtaHoursCache = Mathf.Max(0f, (totalGrowth - currentStage) * 24f);
+                    etaHours = Mathf.Max(0f, (totalGrowth - currentStage) * 24f);
                     resolved = true;
                     return true;
                 }
@@ -177,7 +444,7 @@ namespace CropOptimizer.Patches
                 float growthDays;
                 if (TryReadNumericMember(cropInstance, _growthDaysMember, out growthDays))
                 {
-                    _resolvedEtaHoursCache = Mathf.Max(0f, growthDays * 24f);
+                    etaHours = Mathf.Max(0f, growthDays * 24f);
                     resolved = true;
                     return true;
                 }
@@ -187,6 +454,75 @@ namespace CropOptimizer.Patches
                 // per-value fallback handled by caller
             }
             return false;
+        }
+
+        internal static bool TryReadBoolMember(object instance, MemberInfo member, out bool value)
+        {
+            value = false;
+            if (!TryReadMemberValue(instance, member, out object raw) || raw == null)
+                return false;
+            if (raw is bool b) { value = b; return true; }
+            if (raw is int i) { value = i != 0; return true; }
+            if (raw is float f) { value = Math.Abs(f) > 0.0001f; return true; }
+            return false;
+        }
+
+        /// <summary>Direct reads of <c>Wish.Crop</c> boolean flags (Fertilized / ManaInfused).</summary>
+        internal static bool TryGetTooltipFertilized(object cropInstance, out bool fertilized)
+        {
+            fertilized = false;
+            if (cropInstance == null) return false;
+            EnsureGrowthMembers(cropInstance.GetType());
+            return TryReadBoolMember(cropInstance, _fertilizedMember, out fertilized);
+        }
+
+        internal static bool TryGetTooltipManaInfused(object cropInstance, out bool manaInfused)
+        {
+            manaInfused = false;
+            if (cropInstance == null) return false;
+            EnsureGrowthMembers(cropInstance.GetType());
+            return TryReadBoolMember(cropInstance, _manaInfusedMember, out manaInfused);
+        }
+
+        internal static bool TryGetTooltipFullyGrown(object cropInstance, out bool fullyGrown)
+        {
+            fullyGrown = false;
+            if (cropInstance == null) return false;
+            EnsureGrowthMembers(cropInstance.GetType());
+            return TryReadBoolMember(cropInstance, _fullyGrownMember, out fullyGrown);
+        }
+
+        /// <summary>Crop's reported tile/grid coord (Wish.Crop.Position, Vector3Int). Source of truth, no raycast needed.</summary>
+        internal static bool TryGetCropGridPosition(object cropInstance, out Vector2Int tile)
+        {
+            tile = default;
+            if (cropInstance == null) return false;
+            EnsureGrowthMembers(cropInstance.GetType());
+            if (!TryReadMemberValue(cropInstance, _cropPositionMember, out object raw) || raw == null)
+                return false;
+            if (raw is Vector3Int v3)
+            {
+                tile = new Vector2Int(v3.x, v3.y);
+                return true;
+            }
+            if (raw is Vector2Int v2)
+            {
+                tile = v2;
+                return true;
+            }
+            return false;
+        }
+
+        private static bool TryResolveEtaHours(object cropInstance, out bool resolved)
+        {
+            resolved = false;
+            _resolvedEtaHoursCache = 24f;
+            if (cropInstance == null)
+                return false;
+            if (!TryComputeEtaHours(cropInstance, out float eta, out resolved) || !resolved)
+                return false;
+            _resolvedEtaHoursCache = eta;
+            return true;
         }
 
         private static bool TryResolveQualityMultiplier(object cropInstance, out bool resolved)
@@ -249,10 +585,17 @@ namespace CropOptimizer.Patches
             if (_growthMembersResolved || cropType == null)
                 return;
             _growthMembersResolved = true;
-            _daysLeftMember = FindMember(cropType, "daysLeft", "DaysLeft", "remainingDays", "daysRemaining");
-            _currentStageMember = FindMember(cropType, "currentGrowthStage", "growthStage", "_growthStage", "_stage", "stage");
+            // Sun Haven exposes these as properties on Wish.Crop: DaysLeft (Int32), PercentGrown (Single),
+            // FullyGrown (Boolean), Fertilized (Boolean), ManaInfused (Boolean), Position (Vector3Int).
+            _daysLeftMember = FindMember(cropType, "DaysLeft", "daysLeft", "remainingDays", "daysRemaining");
+            _percentGrownMember = FindMember(cropType, "PercentGrown", "percentGrown");
+            _fullyGrownMember = FindMember(cropType, "FullyGrown", "fullyGrown");
+            _currentStageMember = FindMember(cropType, "_stage", "stage", "currentGrowthStage", "growthStage");
             _totalGrowthMember = FindMember(cropType, "totalGrowthTime", "daysToGrow");
             _growthDaysMember = FindMember(cropType, "growthDays");
+            _fertilizedMember = FindMember(cropType, "Fertilized", "fertilized");
+            _manaInfusedMember = FindMember(cropType, "ManaInfused", "manaInfused");
+            _cropPositionMember = FindMember(cropType, "Position", "position");
         }
 
         private static void EnsureQualityMembers(Type cropType)
@@ -279,27 +622,15 @@ namespace CropOptimizer.Patches
                 return;
             _itemMembersResolved = true;
 
-<<<<<<< HEAD
-            // Do not use bare "id" on Crop — it resolves to Decoration.id (world decoration id), not harvest item id.
-            _itemIdMember = FindMember(cropType, "itemID", "_itemId", "cropItemId", "ItemID");
-            if (_itemIdMember == null)
-            {
-                var cropItemMember = FindMember(cropType, "_cropItem", "cropItem", "item");
-                if (cropItemMember != null && TryReadMemberType(cropItemMember, out Type itemType))
-                    _itemIdMember = FindMember(itemType, "id", "itemID", "ItemID", "_itemId");
-            }
-
-=======
->>>>>>> 66677421d01b589bb9ab434899543c8f7a6c702a
             _itemDatabaseType = AccessTools.TypeByName("Wish.ItemDatabase");
             if (_itemDatabaseType != null)
             {
-                _itemDatabaseGetItemMethod = AccessTools.Method(_itemDatabaseType, "GetItem", new[] { typeof(int) })
-                                         ?? AccessTools.Method(_itemDatabaseType, "GetItemData", new[] { typeof(int) });
+                _itemDatabaseGetItemMethod = _itemDatabaseType.GetMethod("GetItem", AllMemberFlags, null, new[] { typeof(int) }, null)
+                                         ?? _itemDatabaseType.GetMethod("GetItemData", AllMemberFlags, null, new[] { typeof(int) }, null);
 
-                var itemsField = AccessTools.Field(_itemDatabaseType, "Items")
-                               ?? AccessTools.Field(_itemDatabaseType, "items")
-                               ?? AccessTools.Field(_itemDatabaseType, "_items");
+                var itemsField = _itemDatabaseType.GetField("Items", AllMemberFlags)
+                               ?? _itemDatabaseType.GetField("items", AllMemberFlags)
+                               ?? _itemDatabaseType.GetField("_items", AllMemberFlags);
                 if (itemsField != null)
                 {
                     _itemDatabaseItemsContainer = itemsField.GetValue(null);
@@ -315,10 +646,65 @@ namespace CropOptimizer.Patches
             var itemInfoDatabaseType = AccessTools.TypeByName("Wish.ItemInfoDatabase");
             if (itemInfoDatabaseType != null)
             {
-                _itemInfoDatabaseInstanceProperty = AccessTools.Property(itemInfoDatabaseType, "Instance")
-                                                   ?? AccessTools.Property(itemInfoDatabaseType, "instance");
-                _allItemSellInfosField = AccessTools.Field(itemInfoDatabaseType, "allItemSellInfos");
+                _itemInfoDatabaseInstanceProperty = itemInfoDatabaseType.GetProperty("Instance", AllMemberFlags)
+                                                   ?? itemInfoDatabaseType.GetProperty("instance", AllMemberFlags);
+                _allItemSellInfosField = itemInfoDatabaseType.GetField("allItemSellInfos", AllMemberFlags);
             }
+        }
+
+        /// <summary>Best-effort item row for tooltips; prefers <c>ItemDatabase.GetItem</c> when available.</summary>
+        private static bool TryGetItemDataObject(int itemId, out object itemData)
+        {
+            itemData = null;
+            try
+            {
+                EnsureItemPriceCaches();
+
+                if (_itemDatabaseGetItemMethod != null)
+                {
+                    itemData = _itemDatabaseGetItemMethod.Invoke(null, new object[] { itemId });
+                    if (itemData != null)
+                        return true;
+                }
+
+                if (_itemDatabaseItemsContainer != null)
+                {
+                    if (_dictTryGetValueMethod != null)
+                    {
+                        var args = new object[] { itemId, null };
+                        bool found = (bool)_dictTryGetValueMethod.Invoke(_itemDatabaseItemsContainer, args);
+                        if (found)
+                        {
+                            itemData = args[1];
+                            if (itemData != null)
+                                return true;
+                        }
+                    }
+                    else if (_dictIndexerProperty != null)
+                    {
+                        itemData = _dictIndexerProperty.GetValue(_itemDatabaseItemsContainer, new object[] { itemId });
+                        if (itemData != null)
+                            return true;
+                    }
+                }
+
+                if (_itemInfoDatabaseInstanceProperty != null && _allItemSellInfosField != null)
+                {
+                    object instance = _itemInfoDatabaseInstanceProperty.GetValue(null);
+                    object dictObj = instance != null ? _allItemSellInfosField.GetValue(instance) : null;
+                    if (dictObj is System.Collections.IDictionary idict && idict.Contains(itemId))
+                    {
+                        itemData = idict[itemId];
+                        if (itemData != null)
+                            return true;
+                    }
+                }
+            }
+            catch
+            {
+            }
+
+            return false;
         }
 
         private static bool TryGetHarvestItemId(object cropInstance, out int itemId)
@@ -360,7 +746,7 @@ namespace CropOptimizer.Patches
                 {
                     object instance = _itemInfoDatabaseInstanceProperty.GetValue(null);
                     object dictObj = instance != null ? _allItemSellInfosField.GetValue(instance) : null;
-                    if (dictObj is IDictionary idict && idict.Contains(itemId))
+                    if (dictObj is System.Collections.IDictionary idict && idict.Contains(itemId))
                     {
                         object entry = idict[itemId];
                         if (TryExtractSellPrice(entry, out sellPrice))
@@ -455,16 +841,33 @@ namespace CropOptimizer.Patches
             return 1f;
         }
 
+        private const BindingFlags AllMemberFlags =
+            BindingFlags.Public | BindingFlags.NonPublic |
+            BindingFlags.Instance | BindingFlags.Static |
+            BindingFlags.FlattenHierarchy;
+
+        /// <summary>Silent member probe; avoids HarmonyX's AccessTools logging every miss at Warning.</summary>
         private static MemberInfo FindMember(Type type, params string[] names)
         {
             if (type == null || names == null)
                 return null;
-            foreach (var name in names)
+            for (Type cur = type; cur != null; cur = cur.BaseType)
             {
-                var field = AccessTools.Field(type, name);
-                if (field != null) return field;
-                var prop = AccessTools.Property(type, name);
-                if (prop != null) return prop;
+                foreach (var name in names)
+                {
+                    try
+                    {
+                        var field = cur.GetField(name, AllMemberFlags);
+                        if (field != null) return field;
+                    }
+                    catch { }
+                    try
+                    {
+                        var prop = cur.GetProperty(name, AllMemberFlags);
+                        if (prop != null) return prop;
+                    }
+                    catch { }
+                }
             }
             return null;
         }

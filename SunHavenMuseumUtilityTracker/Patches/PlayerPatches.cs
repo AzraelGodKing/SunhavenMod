@@ -11,6 +11,8 @@ namespace SunHavenMuseumUtilityTracker.Patches
     {
         private static bool _isDataLoaded = false;
         private static string _loadedCharacterName = null;
+        private static string _lastCharacterSourceLog = null;
+        private static string _lastCharacterNameLog = null;
 
         public static bool IsDataLoaded => _isDataLoaded;
         public static string LoadedCharacterName => _loadedCharacterName;
@@ -83,7 +85,7 @@ namespace SunHavenMuseumUtilityTracker.Patches
                 if (!string.IsNullOrEmpty(lastLoadedName))
                 {
                     string sanitizedName = SanitizeFileName(lastLoadedName);
-                    Plugin.Log?.LogInfo($"GetCurrentCharacterName: Using LastLoadedCharacterName = '{sanitizedName}'");
+                    LogCharacterSourceOnce("lastLoaded", sanitizedName);
                     return sanitizedName;
                 }
 
@@ -121,11 +123,26 @@ namespace SunHavenMuseumUtilityTracker.Patches
             return string.IsNullOrEmpty(name) ? "default" : name;
         }
 
+        private static void LogCharacterSourceOnce(string source, string characterName)
+        {
+            if (string.Equals(_lastCharacterSourceLog, source, StringComparison.Ordinal) &&
+                string.Equals(_lastCharacterNameLog, characterName, StringComparison.Ordinal))
+            {
+                return;
+            }
+
+            _lastCharacterSourceLog = source;
+            _lastCharacterNameLog = characterName;
+            Plugin.Log?.LogInfo($"GetCurrentCharacterName: Using {source} character name = '{characterName}'");
+        }
+
         public static void ResetState()
         {
             Plugin.Log?.LogInfo("Resetting data state");
             _isDataLoaded = false;
             _loadedCharacterName = null;
+            _lastCharacterSourceLog = null;
+            _lastCharacterNameLog = null;
             GameSavePatches.ResetLastLoadedSlot();
         }
 
