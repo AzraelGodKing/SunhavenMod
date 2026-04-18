@@ -72,7 +72,7 @@
     "changelog": "Chest labels now anchor to chest sprite world bounds, museum Todo tasks include destination and icon metadata, Undonated Items category was added and now only appears when S.M.U.T. is installed, and adding a rule can auto-enable Smart Chest (configurable). Config now uses BepInEx/config/SenpaisChest.cfg with first-run migration from the legacy GUID config file."
   },
   "com.azraelgodking.havensalmanac": {
-    "version": "1.0.6",
+    "version": "1.1.0",
     "name": "Haven's Almanac",
     "description": "Unified mod dashboard - HUD, full dashboard, and daily morning briefing aggregating data from all installed mods",
     "nexus": "",
@@ -104,8 +104,9 @@
     "version": "1.0.0",
     "name": "Crop Optimizer",
     "description": "Crop forecast HUD with seasonal planning helpers and soft Todo/Birthday/Vault integrations",
-    "nexus": "",
-    "thunderstore": "",
+    "nexus": "https://www.nexusmods.com/sunhaven/mods/500",
+    "nexus_file_group_id": "7320911",
+    "thunderstore": "https://thunderstore.io/c/sun-haven/p/AzraelGodKing/CropOptimizer/",
     "thunderstoreName": "CropOptimizer",
     "changelog": "Initial release scaffold: crop growth patch, forecast cache, HUD, and soft integrations for SunhavenTodo, BirthdayReminder, TheVault, and HavensAlmanac."
   }

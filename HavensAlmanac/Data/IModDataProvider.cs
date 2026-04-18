@@ -18,6 +18,15 @@ namespace HavensAlmanac.Data
         /// <summary>Whether this provider has data ready to display</summary>
         bool IsReady { get; }
 
+        /// <summary>
+        /// Whether this provider has daily-relevant content to show in the morning
+        /// briefing right now. The briefing window uses this to decide whether to
+        /// open at all and to skip rendering a section header for providers that
+        /// would only produce an empty body. Providers MUST keep this consistent
+        /// with what <see cref="DrawBriefingSection"/> would actually draw.
+        /// </summary>
+        bool HasBriefingContent { get; }
+
         /// <summary>Refresh cached data from the mod's API.</summary>
         void Refresh();
 

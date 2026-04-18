@@ -21,6 +21,14 @@ namespace HavensAlmanac.Integration
         public string HudSummary => _hudSummary;
         public bool IsReady => _isReady;
 
+        // Museum progress is persistent (no new donation windows open daily),
+        // so the HUD is the right surface for routine progress. The briefing
+        // only pipes up when the player is close to finishing (within the
+        // threshold below) so they get a useful nudge before bed/today's run.
+        private const int BriefingNearCompletionThreshold = 5;
+        public bool HasBriefingContent =>
+            _isReady && _neededCount > 0 && _neededCount <= BriefingNearCompletionThreshold;
+
         public void Refresh()
         {
             try
@@ -68,9 +76,13 @@ namespace HavensAlmanac.Integration
 
         public bool DrawBriefingSection()
         {
+            // Mirror HasBriefingContent: only nudge when within the
+            // near-completion threshold so the briefing isn't daily filler.
+            if (!_isReady || _neededCount <= 0 || _neededCount > BriefingNearCompletionThreshold)
+                return false;
+
             GUILayout.Label($"Museum: {_completionPercent:F0}% complete ({_donated}/{_total})");
-            if (_neededCount > 0)
-                GUILayout.Label($"  {_neededCount} items still needed");
+            GUILayout.Label($"  Only {_neededCount} item{(_neededCount != 1 ? "s" : "")} left!");
             return true;
         }
     }

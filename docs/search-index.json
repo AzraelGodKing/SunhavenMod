@@ -12,7 +12,7 @@
   {"t": "Sun Haven Todo", "u": "Todo/todo.html", "d": "In-game task list with categories; integrates with Birthday and museum todos.", "k": "tasks journal checklist quest","tags":["QoL","Tracking","UI"]},
   {"t": "Birthday Reminder", "u": "BirthdayReminder/BirthdayReminder.html", "d": "NPC birthday reminders and gift suggestions; Todo integration.", "k": "gifts villagers romance social","tags":["Social","QoL"]},
   {"t": "Senpai's Chest", "u": "SenpaisChest/SenpaisChest.html", "d": "Smart chest sorting rules, groups, museum-aware with S.M.U.T.", "k": "storage sort inventory chest","tags":["QoL","Storage"]},
-  {"t": "Haven's Almanac", "u": "HavensAlmanac/HavensAlmanac.html", "d": "Unified HUD, dashboard, and morning briefing across your mods.", "k": "dashboard hud briefing summary","tags":["QoL","UI","Tracking"]},
+  {"t": "Haven's Almanac", "u": "HavensAlmanac/HavensAlmanac.html", "d": "Unified HUD, dashboard, and morning briefing across your mods; aggregates mod health telemetry.", "k": "dashboard hud briefing summary modhealth version checker telemetry auto-dismiss almanac","tags":["QoL","UI","Tracking"]},
   {"t": "Crop Optimizer", "u": "CropOptimizer/CropOptimizer.html", "d": "Farm HUD and hover tooltip: quality, growth ETA, water, fertilizer, projected gold, tile coords.", "k": "crops farm forecast water fertilize harvest sprout eta gold","tags":["QoL","UI","Tracking"]},
   {"t": "HavenDevTools", "u": "HavenDevTools/HavenDevTools.html", "d": "Debug and inspection utilities for mod authors.", "k": "debug developer log inspector","tags":["Dev"]}
 ]

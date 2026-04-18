@@ -17,6 +17,9 @@ namespace HavensAlmanac.Integration
         public string HudSummary => _hudSummary;
         public bool IsReady => _isReady;
 
+        // Dev tools authorization is not daily-relevant.
+        public bool HasBriefingContent => false;
+
         public void Refresh()
         {
             try

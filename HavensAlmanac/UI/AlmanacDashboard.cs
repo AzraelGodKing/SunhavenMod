@@ -100,9 +100,13 @@ namespace HavensAlmanac.UI
 
             GUILayout.Space(Scaled(6));
 
-            if (_aggregator.InstalledModCount == 0)
+            // Mod Health alone doesn't justify an expanded dashboard; only
+            // open the provider scroll list when at least one integration
+            // provider is present (IntegrationModCount excludes Mod Health).
+            if (_aggregator.IntegrationModCount == 0)
             {
-                GUILayout.Label("No mods detected. Install at least one supported mod to see data here.", _noModsStyle);
+                GUILayout.Label("No supported companion mods detected.", _noModsStyle);
+                GUILayout.Label("Install any of: SunhavenTodo, Birthday Reminder, Museum Tracker, Senpai's Chest, The Vault, Haven's Birthright, Haven Dev Tools, or Crop Optimizer.", _noModsStyle);
                 GUI.DragWindow(new Rect(0, 0, _windowRect.width, Scaled(30)));
                 return;
             }

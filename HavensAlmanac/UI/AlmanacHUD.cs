@@ -116,9 +116,13 @@ namespace HavensAlmanac.UI
 
             GUILayout.Space(Scaled(2));
 
-            if (_aggregator.InstalledModCount == 0)
+            // The always-registered Mod Health provider alone isn't enough to
+            // make the HUD useful; nudge the user to install a companion mod
+            // rather than showing a lonely telemetry line.
+            if (_aggregator.IntegrationModCount == 0)
             {
-                GUILayout.Label("No mods detected", _noModsStyle);
+                GUILayout.Label("No supported mods detected", _noModsStyle);
+                GUILayout.Label("Install SunhavenTodo, Birthday, Museum, Vault, Chests, Birthright, DevTools, or CropOptimizer", _noModsStyle);
             }
             else
             {
