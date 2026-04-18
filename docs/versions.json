@@ -88,7 +88,7 @@
     "nexus_file_group_id": "7154323",
     "thunderstore": "https://thunderstore.io/c/sun-haven/p/AzraelGodKing/FasterRaces/",
     "thunderstoreName": "FasterRaces",
-    "changelog": "Config now uses BepInEx/config/FasterRaces.cfg with first-run migration from the legacy GUID config file."
+    "changelog": "Fixed: Faster Races settings now appear in the in-game BepInEx Configuration Manager UI. The mod binds to FasterRaces.cfg (not the default per-GUID file), but Configuration Manager only scans each plugin's inherited BaseUnityPlugin.Config. Faster Races now rewires that inherited property to the custom file via reflection right after Awake so toggles are editable live, without changing the config file path."
   },
   "com.azraelgodking.trinketfortune": {
     "version": "1.0.4",
