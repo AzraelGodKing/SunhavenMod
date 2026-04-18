@@ -72,7 +72,7 @@
     "changelog": "Chest labels now anchor to chest sprite world bounds, museum Todo tasks include destination and icon metadata, Undonated Items category was added and now only appears when S.M.U.T. is installed, and adding a rule can auto-enable Smart Chest (configurable). Config now uses BepInEx/config/SenpaisChest.cfg with first-run migration from the legacy GUID config file."
   },
   "com.azraelgodking.havensalmanac": {
-    "version": "1.0.6",
+    "version": "1.1.0",
     "name": "Haven's Almanac",
     "description": "Unified mod dashboard - HUD, full dashboard, and daily morning briefing aggregating data from all installed mods",
     "nexus": "",

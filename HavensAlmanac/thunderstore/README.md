@@ -1,6 +1,6 @@
 # Haven's Almanac
 
-**Version 1.0.6** — Unified mod dashboard for Sun Haven. Aggregates data from supported installed mods: compact HUD, full dashboard (Ctrl+F5 by default), daily briefing, draggable UI, optional UI scale and update check.
+**Version 1.1.0** — Unified mod dashboard for Sun Haven. Aggregates data from supported installed mods: compact HUD, full dashboard (Ctrl+F5 by default), daily briefing, draggable UI, optional UI scale and update check.
 
 **1.0.5:** Config file now uses `BepInEx/config/HavensAlmanac.cfg` (auto-migrates values from the legacy GUID-named config on first load).
 
@@ -22,6 +22,7 @@ Haven's Almanac soft-depends on these mods and will display data from any that a
 - **The Vault** - Stored currencies
 - **Haven's Birthright** - Racial bonuses
 - **Haven Dev Tools** - Dev tools status
+- **Crop Optimizer** - Live crop forecast summary (ready-to-harvest and projected gold)
 
 At least one supported mod must be installed for the Almanac to display content.
 

@@ -15,6 +15,10 @@ namespace HavensAlmanac.Integration
         public string HudSummary => _hudSummary;
         public bool IsReady => _isReady;
 
+        // Crop Optimizer surfaces its own hover tooltip + forecast HUD in-game;
+        // Almanac's morning briefing stays out of its way.
+        public bool HasBriefingContent => false;
+
         public void Refresh()
         {
             try
