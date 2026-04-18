@@ -16,7 +16,6 @@ A collection of BepInEx mods for [Sun Haven](https://store.steampowered.com/app/
 | [**Haven Dev Tools**](HavenDevTools/) | Developer utilities and debugging tools | 1.0.9 |
 | [**Trinket Fortune**](TrinketFortune/) | Increases odds of unowned fishing trinkets dropping as you complete the aquarium | 1.0.4 |
 | [**Faster Races**](FasterRaces/) | Configurable movement speed bonus; integrates with Haven's Birthright to avoid double speed | 1.1.4 |
-| [**Justice for Harold**](JusticeForHarold/) | Quest interaction tweak for Harold's reward flow | 1.0.0 |
 | [**Crop Optimizer**](CropOptimizer/) | Crop forecast HUD with soft Todo/Birthday/Vault integrations | 1.0.0 |
 
 ---
@@ -66,10 +65,6 @@ Increases the odds of unowned fishing trinkets dropping as you complete the aqua
 
 Configurable percentage bonus to movement speed for all races. With Haven's Birthright installed, Birthright speed bonuses are suppressed only while Faster Races speed bonus is active.
 
-### Justice for Harold
-
-Small quest behavior tweak focused on Harold interaction outcomes.
-
 ### Crop Optimizer
 
 Adds crop forecast tracking and a compact HUD with soft integrations for Sunhaven Todo, Birthday Reminder, The Vault, and Haven's Almanac.
@@ -109,6 +104,7 @@ SunhavenMod/
 ├── TrinketFortune/        # Fishing trinket drop rates
 ├── FasterRaces/           # Movement speed bonus
 ├── CropOptimizer/         # Crop forecasting + HUD
+
 ├── SharedUtilities/       # Shared code (VersionChecker, etc.)
 ├── scripts/               # Maintainer helpers (pre-push-build.ps1, remove-stale-github-releases.ps1)
 └── docs/                  # Shared documentation

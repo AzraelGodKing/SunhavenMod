@@ -47,13 +47,15 @@ namespace HavensAlmanac.Integration
         public bool HasBriefingContent => false;
 
         // Cached cross-assembly probes. Each tuple is (Type, FieldInfo for
-        // the private static HealthByPluginGuid dictionary). Cached because
-        // loaded assemblies don't come and go after BepInEx chainload, and
-        // we refresh every ~5 seconds — no point re-walking AppDomain each
-        // tick.
+        // the private static HealthByPluginGuid dictionary). Rebuilt when the
+        // assembly count changes (new BepInEx plugin loaded, extremely rare)
+        // OR when a forced timer-based refresh fires every 5 minutes to pick
+        // up any per-assembly changes that don't change the count.
         private static readonly object CacheLock = new object();
         private static List<FieldInfo> _cachedHealthFields;
         private static int _cachedAssemblyCount;
+        private static DateTime _cacheBuiltAt = DateTime.MinValue;
+        private static readonly TimeSpan CacheMaxAge = TimeSpan.FromMinutes(5);
 
         public void Refresh()
         {
@@ -174,13 +176,14 @@ namespace HavensAlmanac.Integration
 
         private static List<FieldInfo> GetCachedHealthFields()
         {
-            // Rebuild the cache only when the assembly count changes (new
-            // plugin loaded mid-session, which shouldn't happen with BepInEx
-            // but is cheap to be safe about).
             var assemblies = AppDomain.CurrentDomain.GetAssemblies();
             lock (CacheLock)
             {
-                if (_cachedHealthFields != null && assemblies.Length == _cachedAssemblyCount)
+                bool stale = _cachedHealthFields == null
+                    || assemblies.Length != _cachedAssemblyCount
+                    || DateTime.UtcNow - _cacheBuiltAt > CacheMaxAge;
+
+                if (!stale)
                     return _cachedHealthFields;
 
                 var found = new List<FieldInfo>();
@@ -201,6 +204,7 @@ namespace HavensAlmanac.Integration
 
                 _cachedHealthFields = found;
                 _cachedAssemblyCount = assemblies.Length;
+                _cacheBuiltAt = DateTime.UtcNow;
                 HavensAlmanac.Plugin.Log?.LogInfo(
                     $"[ModHealthProvider] Discovered {found.Count} VersionChecker copies across loaded assemblies.");
                 return _cachedHealthFields;

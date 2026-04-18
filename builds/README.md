@@ -18,8 +18,6 @@ builds/
 │   └── HavensAlmanac.dll
 ├── HavensBirthright/
 │   └── HavensBirthright.dll
-├── JusticeForHarold/
-│   └── JusticeForHarold.dll
 ├── SenpaisChest/
 │   └── SenpaisChest.dll
 ├── SunHavenMuseumUtilityTracker/

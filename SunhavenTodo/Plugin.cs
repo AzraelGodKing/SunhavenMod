@@ -59,6 +59,8 @@ namespace SunhavenTodo
         private static float _lastAutoSaveTime;
         private bool _isDataLoaded;
         private string _loadedCharacterName;
+        private static bool _overnightHooked;
+        private static UnityEngine.Events.UnityAction _overnightCallback;
 
         // Static access for patches and hotkeys
         public static KeyCode StaticToggleKey => _staticToggleKey;
@@ -371,11 +373,45 @@ namespace SunhavenTodo
             _isDataLoaded = true;
             _loadedCharacterName = characterName;
             Log.LogInfo($"Loaded todo list for character: {characterName}");
+            _overnightHooked = false;
+            TryHookOvernight();
         }
 
         public static void SaveData()
         {
             _staticSaveSystem?.Save();
+        }
+
+        public static void TryHookOvernight()
+        {
+            SunhavenMods.Shared.OvernightHookUtility.TryHookOvernightEvent(
+                ref _overnightHooked,
+                ref _overnightCallback,
+                OnNewDay,
+                type =>
+                {
+                    try
+                    {
+                        var singletonBaseType = AccessTools.TypeByName("Wish.SingletonBehaviour`1");
+                        if (singletonBaseType != null)
+                        {
+                            var genericType = singletonBaseType.MakeGenericType(type);
+                            return genericType.GetProperty("Instance")?.GetValue(null);
+                        }
+                    }
+                    catch { }
+                    return null;
+                },
+                msg => Log?.LogInfo(msg),
+                msg => Log?.LogWarning(msg));
+        }
+
+        private static void OnNewDay()
+        {
+            if (_staticTodoManager == null) return;
+            _staticTodoManager.ResetRecurringTodos(Data.RecurInterval.Daily);
+            Log?.LogInfo("[Todo] Reset daily recurring tasks.");
+            SaveData();
         }
 
         public static void ToggleUI()

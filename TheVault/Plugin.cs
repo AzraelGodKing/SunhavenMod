@@ -30,8 +30,6 @@ namespace TheVault
         private static VaultManager _staticVaultManager;
         private static VaultSaveSystem _staticSaveSystem;
         private static VaultUI _staticVaultUI;
-        // uGUI panel disabled (legacy-only).
-        // private static VaultUguiPanel _staticVaultUgui;
         private static VaultHUD _staticVaultHUD;
 
         // Static config values for PersistentRunner to use for hotkey detection
@@ -45,7 +43,6 @@ namespace TheVault
         private VaultManager _vaultManager;
         private VaultSaveSystem _saveSystem;
         private VaultUI _vaultUI;
-        // private VaultUguiPanel _vaultUgui;
         private VaultHUD _vaultHUD;
 
         // Configuration
@@ -121,10 +118,6 @@ namespace TheVault
                 _vaultUI.SetAltToggleKey(_altToggleKey.Value);
                 _staticVaultUI = _vaultUI;
 
-                // Legacy-only: uGUI panel is no longer created by default.
-                // Keep the old IMGUI window + HUD path (player preference).
-                ApplyLegacyVaultUiMode();
-
                 // Store config values for PersistentRunner hotkey detection
                 StaticToggleKey = _toggleKey.Value;
                 StaticRequireCtrl = _requireCtrlModifier.Value;
@@ -138,7 +131,7 @@ namespace TheVault
                 _vaultHUD.SetEnabled(_enableHUD.Value);
                 ApplyVaultHudPlacementFromConfig(_vaultHUD);
                 WireVaultHudPositionPersistence(_vaultHUD);
-                _vaultHUD.SetScale(Mathf.Clamp(_hudScale.Value, 0.5f, 3f));
+                _vaultHUD.SetScale(Mathf.Clamp(_hudScale.Value, 0.5f, 2.5f));
                 _vaultHUD.SetHudDensity(GetResolvedHudDensity());
                 _staticVaultHUD = _vaultHUD;
 
@@ -273,16 +266,10 @@ namespace TheVault
 
                     _staticVaultUI = uiObject.AddComponent<VaultUI>();
                     _staticVaultUI.Initialize(_staticVaultManager);
-                    // Legacy-only build: ensure IMGUI path is active even if Plugin instance was destroyed.
-                    _staticVaultUI.SetLegacyImguiEnabled(true);
                     float windowScale = Instance != null ? Mathf.Clamp(Instance._windowScale.Value, 0.5f, 2.5f) : 1f;
                     _staticVaultUI.SetScale(windowScale);
                     _staticVaultUI.SetToggleKey(StaticToggleKey, StaticRequireCtrl);
                     _staticVaultUI.SetAltToggleKey(StaticAltToggleKey);
-
-                    // Legacy-only: do not recreate uGUI panel.
-                    if (Instance != null)
-                        Instance.ApplyLegacyVaultUiMode();
 
                     _staticVaultHUD = uiObject.AddComponent<VaultHUD>();
                     _staticVaultHUD.Initialize(_staticVaultManager);
@@ -294,7 +281,7 @@ namespace TheVault
                         _staticVaultHUD.SetEnabled(Instance._enableHUD.Value);
                         Instance.ApplyVaultHudPlacementFromConfig(_staticVaultHUD);
                         Instance.WireVaultHudPositionPersistence(_staticVaultHUD);
-                        _staticVaultHUD.SetScale(Mathf.Clamp(Instance._hudScale.Value, 0.5f, 3f));
+                        _staticVaultHUD.SetScale(Mathf.Clamp(Instance._hudScale.Value, 0.5f, 2.5f));
                         _staticVaultHUD.SetHudDensity(GetResolvedHudDensity());
                     }
 
@@ -362,7 +349,9 @@ namespace TheVault
                 "HUD",
                 "Scale",
                 1.25f,
-                "Scale factor for the HUD bar (1.0 = smaller, 1.25 = new default, 2.0 = very large). Use a dot as decimal separator in the config file (e.g. 1.25)."
+                new BepInEx.Configuration.ConfigDescription(
+                    "Scale factor for the HUD bar (1.0 = smaller, 1.25 = new default, 2.0 = very large). Use a dot as decimal separator in the config file (e.g. 1.25).",
+                    new BepInEx.Configuration.AcceptableValueRange<float>(0.5f, 2.5f))
             );
 
             _hudCompactMode = ConfigFile.Bind(
@@ -483,8 +472,6 @@ namespace TheVault
                     vaultUI.SetAltToggleKey(StaticAltToggleKey);
                 }
 
-                ApplyLegacyVaultUiMode();
-
                 var vaultHUD = GetVaultHUD();
                 if (vaultHUD != null)
                 {
@@ -502,7 +489,7 @@ namespace TheVault
                     if (_hudPositionX.Value >= 0f && _hudPositionY.Value >= 0f)
                         vaultHUD.RestoreHudPixelPosition(_hudPositionX.Value, _hudPositionY.Value);
 
-                    vaultHUD.SetScale(Mathf.Clamp(_hudScale.Value, 0.5f, 3f));
+                    vaultHUD.SetScale(Mathf.Clamp(_hudScale.Value, 0.5f, 2.5f));
                     vaultHUD.SetHudDensity(GetResolvedHudDensity());
                 }
             }
@@ -513,15 +500,7 @@ namespace TheVault
         }
 
         /// <summary>Sync which vault window is active (IMGUI vs uGUI).</summary>
-        private void ApplyLegacyVaultUiMode()
-        {
-            if (_staticVaultUI == null) return;
-            // Legacy-only mode: always enable the IMGUI window.
-            _staticVaultUI.SetLegacyImguiEnabled(true);
-            // uGUI disabled: nothing to hide.
-        }
-
-        /// <summary>Apply window scale to both vault UIs (IMGUI + uGUI).</summary>
+        /// <summary>Apply window scale to the vault UI.</summary>
         public void ApplyVaultWindowScaleToUi()
         {
             float s = Mathf.Clamp(_windowScale?.Value ?? 1f, 0.5f, 2.5f);
@@ -556,7 +535,7 @@ namespace TheVault
         public static bool GetConfigHUDEnabled() => Instance?._enableHUD?.Value ?? true;
         public static void SetConfigHUDEnabled(bool v) { if (Instance?._enableHUD != null) Instance._enableHUD.Value = v; }
         public static float GetConfigHUDScale() => Instance?._hudScale?.Value ?? 1f;
-        public static void SetConfigHUDScale(float v) { if (Instance?._hudScale != null) Instance._hudScale.Value = Mathf.Clamp(v, 0.5f, 3f); }
+        public static void SetConfigHUDScale(float v) { if (Instance?._hudScale != null) Instance._hudScale.Value = Mathf.Clamp(v, 0.5f, 2.5f); }
         public static bool GetConfigHUDCompactMode() => Instance?._hudCompactMode?.Value ?? false;
         public static void SetConfigHUDCompactMode(bool v) { if (Instance?._hudCompactMode != null) Instance._hudCompactMode.Value = v; }
 
@@ -1179,13 +1158,7 @@ namespace TheVault
             return _staticVaultUI;
         }
 
-        /// <summary>Legacy-only build: uGUI panel is disabled and always null.</summary>
-        public static VaultUguiPanel GetVaultUgui() => null;
-
-        /// <summary>Legacy-only build: always true (IMGUI path).</summary>
-        public static bool LegacyImguiVaultEnabled() => true;
-
-        /// <summary>Whether the active main vault window (IMGUI or uGUI) is open.</summary>
+        /// <summary>Whether the active main vault window is open.</summary>
         public static bool IsMainVaultPanelVisible()
         {
             return _staticVaultUI != null && _staticVaultUI.IsVisible;

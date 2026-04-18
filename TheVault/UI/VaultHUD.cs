@@ -117,7 +117,7 @@ namespace TheVault.UI
             _windowRect.y = y;
             _useCustomHudPlacement = true;
         }
-        public void SetScale(float scale) { _scale = Mathf.Clamp(scale, 0.5f, 3f); _stylesForMul = -1f; }
+        public void SetScale(float scale) { _scale = Mathf.Clamp(scale, 0.5f, 2.5f); _stylesForMul = -1f; }
         public void SetHudDensity(VaultHudDensity density) { _hudDensity = density; _stylesForMul = -1f; }
         public void SetOpacity(float opacity)
         {
