@@ -44,6 +44,10 @@
     </Reference>
   </ItemGroup>
 
+  <ItemGroup>
+    <Compile Include="..\SharedUtilities\ConfigFileHelper.cs" Link="Shared\ConfigFileHelper.cs" />
+  </ItemGroup>
+
   <Target Name="CopyToPlugins" AfterTargets="Build">
     <Copy SourceFiles="$(TargetPath)" DestinationFolder="$(BepInExPath)\plugins\TrinketFortune" Condition="'$(SunhavenCopyToBepInExPlugins)' == 'true'" />
     <Copy SourceFiles="$(TargetPath)" DestinationFolder="$(MSBuildProjectDirectory)\..\builds\TrinketFortune" />

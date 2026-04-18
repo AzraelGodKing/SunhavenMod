@@ -256,7 +256,8 @@ document.addEventListener('DOMContentLoaded', function() {
             "A Squirrel's Birthday Reminder": 'com.azraelgodking.squirrelsbirthdayreminder',
             "Senpai's Chest": 'com.azraelgodking.senpaischest',
             "Haven's Almanac": 'com.azraelgodking.havensalmanac',
-            'HavenDevTools': 'com.azraelgodking.havendevtools'
+            'HavenDevTools': 'com.azraelgodking.havendevtools',
+            'Crop Optimizer': 'com.azraelgodking.cropoptimizer'
         };
 
         // Determine base path for versions.json
@@ -305,7 +306,8 @@ document.addEventListener('DOMContentLoaded', function() {
                         'Birthday Reminder': 'com.azraelgodking.squirrelsbirthdayreminder',
                         "Senpai's Chest": 'com.azraelgodking.senpaischest',
                         "Haven's Almanac": 'com.azraelgodking.havensalmanac',
-                        'HavenDevTools': 'com.azraelgodking.havendevtools'
+                        'HavenDevTools': 'com.azraelgodking.havendevtools',
+                        'Crop Optimizer': 'com.azraelgodking.cropoptimizer'
                     };
                     var pageKey = navToKey[pageName];
                     if (pageKey && data[pageKey]) {

@@ -69,6 +69,7 @@ The vault UI includes a **Custom** tab for currencies registered at runtime. Fro
 ## Changelog
 
 ### Unreleased
+- **Fixed:** Configs now appear in BepInEx Configuration Manager. The mod binds entries to a custom `ConfigFile` (`thevault.cfg`) rather than the default per-GUID file, and Configuration Manager only scans each plugin's inherited `BaseUnityPlugin.Config` property — so it never saw our entries. `ConfigFileHelper.ReplacePluginConfig` now rewires that inherited property to the custom file via reflection right after Awake, so the live config UI picks up every `Config.Bind(...)` call without changing the config file name or path.
 - **Fixed:** `VaultUI` no longer calls `InitializeStyles()` from `Awake` / `OnEnable` / `SetScale` (those touch `GUI.skin` outside `OnGUI` and could throw `ArgumentException`, preventing the plugin from loading). Styles are built lazily on the first `OnGUI` when the window is shown, with a `_stylesDirty` flag when scale changes.
 - Added a `VaultModApiBridge.OnVaultLoaded` bridge event notification so soft-dependent mods can register integrations after vault data is actually loaded.
 

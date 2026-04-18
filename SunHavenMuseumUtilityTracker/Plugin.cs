@@ -54,6 +54,7 @@ namespace SunHavenMuseumUtilityTracker
             Instance = this;
             Log = Logger;
             ConfigFile = CreateNamedConfig();
+            SunhavenMods.Shared.ConfigFileHelper.ReplacePluginConfig(this, ConfigFile, Log.LogWarning);
 
             Logger.LogInfo($"{PluginInfo.PLUGIN_NAME} v{PluginInfo.PLUGIN_VERSION} loading...");
 
@@ -452,6 +453,6 @@ namespace SunHavenMuseumUtilityTracker
     {
         public const string PLUGIN_GUID = "com.azraelgodking.sunhavenmuseumutilitytracker";
         public const string PLUGIN_NAME = "Sun Haven Museum Utility Tracker";
-        public const string PLUGIN_VERSION = "2.2.7";
+        public const string PLUGIN_VERSION = "2.2.8";
     }
 }
