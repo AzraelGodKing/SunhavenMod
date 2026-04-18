@@ -1,0 +1,24 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net48</TargetFramework>
+    <RootNamespace>SunhavenTodo.Tests</RootNamespace>
+    <IsPackable>false</IsPackable>
+    <LangVersion>latest</LangVersion>
+    <EnableDefaultCompileItems>false</EnableDefaultCompileItems>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.11.1" />
+    <PackageReference Include="NUnit" Version="3.14.0" />
+    <PackageReference Include="NUnit3TestAdapter" Version="4.6.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <!-- Pure data + JSON serialization — no BepInEx/Unity dependency -->
+    <Compile Include="..\Data\TodoData.cs" Link="Data\TodoData.cs" />
+    <Compile Include="..\Data\TodoJson.cs" Link="Data\TodoJson.cs" />
+    <Compile Include="TodoJsonTests.cs" />
+  </ItemGroup>
+
+</Project>

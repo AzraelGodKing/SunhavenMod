@@ -122,8 +122,10 @@ namespace HavensAlmanac.UI
                 bool expanded = _sectionExpanded[provider.ModName];
                 var headerStyle = expanded ? _sectionHeaderExpandedStyle : _sectionHeaderStyle;
                 string arrow = expanded ? "\u25BC" : "\u25B6";
+                string providerError = _aggregator.GetProviderError(provider);
+                string errorBadge = providerError != null ? " [!]" : "";
 
-                if (GUILayout.Button($"{arrow}  {provider.ModIcon}  {provider.ModName}  —  {provider.HudSummary}", headerStyle))
+                if (GUILayout.Button($"{arrow}  {provider.ModIcon}  {provider.ModName}{errorBadge}  —  {provider.HudSummary}", headerStyle))
                 {
                     _sectionExpanded[provider.ModName] = !expanded;
                 }
@@ -133,6 +135,8 @@ namespace HavensAlmanac.UI
                     GUILayout.BeginVertical(_contentStyle);
                     try
                     {
+                        if (providerError != null)
+                            GUILayout.Label($"[!] Last refresh error: {providerError}", _contentStyle);
                         provider.DrawDashboardSection();
                     }
                     catch (Exception ex)

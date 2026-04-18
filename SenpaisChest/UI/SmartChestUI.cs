@@ -693,6 +693,24 @@ namespace SenpaisChest.UI
             if (GUILayout.Button("Add Rule", addBtnStyle, GUILayout.Height((useParchmentTheme || compact) ? 24 : 30)))
                 AddRule();
 
+            // Bulk-apply: copy this chest's rules to all same-name smart chests
+            if (_currentData.Rules.Count > 0)
+            {
+                int sameNameCount = _manager.CountSameNameChests(_chestId);
+                if (sameNameCount > 0)
+                {
+                    GUILayout.Space(compact ? 2 : 4);
+                    var bulkBtnStyle = useParchmentTheme ? _chestSelectorStyle : (compact ? _chestSelectorStyle : _selectorStyle);
+                    string bulkLabel = $"Copy Rules to All \"{_currentData.ChestName}\" ({sameNameCount})";
+                    if (GUILayout.Button(bulkLabel, bulkBtnStyle, GUILayout.Height((useParchmentTheme || compact) ? 24 : 28)))
+                    {
+                        int updated = _manager.CopyRulesToSameNameChests(_chestId);
+                        SaveIfDirty();
+                        Plugin.Log?.LogInfo($"[SmartChestUI] Copied rules to {updated} same-name chest(s)");
+                    }
+                }
+            }
+
             if (compact)
             {
                 GUILayout.EndVertical();

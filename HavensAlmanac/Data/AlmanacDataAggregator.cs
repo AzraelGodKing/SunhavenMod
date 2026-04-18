@@ -11,10 +11,19 @@ namespace HavensAlmanac.Data
     public class AlmanacDataAggregator
     {
         private readonly List<IModDataProvider> _providers = new List<IModDataProvider>();
+        private readonly Dictionary<string, string> _providerErrors = new Dictionary<string, string>();
 
         public IReadOnlyList<IModDataProvider> Providers => _providers;
         public int InstalledModCount => _providers.Count;
         public bool HasAnyData => _providers.Any(p => p.IsReady);
+
+        /// <summary>Returns the last error message for a provider, or null if healthy.</summary>
+        public string GetProviderError(IModDataProvider provider)
+        {
+            if (provider == null) return null;
+            _providerErrors.TryGetValue(provider.ModName, out var err);
+            return err;
+        }
 
         /// <summary>
         /// Count of providers that represent actual other-mod integrations
@@ -44,10 +53,13 @@ namespace HavensAlmanac.Data
                 try
                 {
                     provider.Refresh();
+                    _providerErrors.Remove(provider.ModName);
                 }
                 catch (Exception ex)
                 {
-                    Plugin.Log?.LogWarning($"[Almanac] Error refreshing {provider.ModName}: {ex.Message}");
+                    var msg = ex.Message;
+                    _providerErrors[provider.ModName] = msg;
+                    Plugin.Log?.LogWarning($"[Almanac] Error refreshing {provider.ModName}: {msg}");
                 }
             }
         }

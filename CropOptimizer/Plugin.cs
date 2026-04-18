@@ -71,6 +71,15 @@ namespace CropOptimizer
 
             TrySubscribeVaultLoaded();
 
+            if (_config.CheckForUpdates.Value)
+            {
+                SunhavenMods.Shared.VersionChecker.CheckForUpdate(
+                    PluginInfo.PLUGIN_GUID,
+                    PluginInfo.PLUGIN_VERSION,
+                    Log,
+                    result => result.NotifyUpdateAvailable(Log));
+            }
+
             Log.LogInfo($"{PluginInfo.PLUGIN_NAME} v{PluginInfo.PLUGIN_VERSION} loaded");
         }
 
@@ -115,6 +124,12 @@ namespace CropOptimizer
             if (Instance?._forecast == null)
                 return "Not ready";
             return $"Crops: {Instance._forecast.Snapshot().Count}, Value: {Instance._forecast.GetProjectedSellTotal()}g";
+        }
+
+        public static System.Collections.Generic.List<CropForecast.CropTypeSummary> GetTopCrops(int count = 5)
+        {
+            return Instance?._forecast?.GetTopCropsByValue(count)
+                ?? new System.Collections.Generic.List<CropForecast.CropTypeSummary>();
         }
 
         private void TrySubscribeVaultLoaded()
