@@ -1,6 +1,79 @@
 {
-  "lastFetched": null,
-  "mods": {},
+  "lastFetched": "2026-04-19T18:55:33.101Z",
+  "mods": {
+    "senpais-chest": {
+      "name": "SenpaisChest",
+      "thunderstore": {
+        "total_downloads": 0,
+        "versions": {}
+      },
+      "nexus": null,
+      "combined_total": 0
+    },
+    "havens-todo": {
+      "name": "HavensTODO",
+      "thunderstore": {
+        "total_downloads": 0,
+        "versions": {}
+      },
+      "nexus": null,
+      "combined_total": 0
+    },
+    "the-vault": {
+      "name": "TheVault",
+      "thunderstore": {
+        "total_downloads": 0,
+        "versions": {}
+      },
+      "nexus": null,
+      "combined_total": 0
+    },
+    "havens-birthright": {
+      "name": "HavensBirthright",
+      "thunderstore": {
+        "total_downloads": 0,
+        "versions": {}
+      },
+      "nexus": null,
+      "combined_total": 0
+    },
+    "museum-utility-tracker": {
+      "name": "MuseumUtilityTracker",
+      "thunderstore": {
+        "total_downloads": 0,
+        "versions": {}
+      },
+      "nexus": null,
+      "combined_total": 0
+    },
+    "haven-dev-tools": {
+      "name": "HavenDevTools",
+      "thunderstore": {
+        "total_downloads": 0,
+        "versions": {}
+      },
+      "nexus": null,
+      "combined_total": 0
+    },
+    "squirrels-birthday-reminder": {
+      "name": "SquirrelsBirthdayReminder",
+      "thunderstore": {
+        "total_downloads": 0,
+        "versions": {}
+      },
+      "nexus": null,
+      "combined_total": 0
+    },
+    "havens-almanac": {
+      "name": "HavensAlmanac",
+      "thunderstore": {
+        "total_downloads": 0,
+        "versions": {}
+      },
+      "nexus": null,
+      "combined_total": 0
+    }
+  },
   "site_total": {
     "thunderstore": 0,
     "nexus_total": 0,
