@@ -92,7 +92,7 @@ namespace HavensRespec
             var resetKey = _config.ResetCurrentTabHotkey.Value;
             if (resetKey != KeyCode.None && Input.GetKeyDown(resetKey))
             {
-                var profession = TryGetActiveProfessionTab();
+                var profession = _controller.TryGetActiveProfessionTab();
                 if (profession.HasValue)
                     _controller.TryResetCurrentTab(profession.Value, bypassConfirm: false);
             }
@@ -100,46 +100,10 @@ namespace HavensRespec
             var undoKey = _config.UndoHotkey.Value;
             if (undoKey != KeyCode.None && Input.GetKeyDown(undoKey))
             {
-                var profession = TryGetActiveProfessionTab();
+                var profession = _controller.TryGetActiveProfessionTab();
                 if (profession.HasValue)
                     _controller.TryUndoCurrentTab(profession.Value);
             }
         }
-
-        /// <summary>
-        /// Best-effort resolution of which profession tab is currently visible. The game has no
-        /// single API for this, so we peek at each per-profession panel GameObject (via our
-        /// reset service's reflection cache) and return the first one whose root is active.
-        /// </summary>
-        private static ProfessionType? TryGetActiveProfessionTab()
-        {
-            try
-            {
-                var player = UnityEngine.Object.FindObjectOfType<Skills>();
-                if (player == null) return null;
-
-                foreach (ProfessionType profession in Enum.GetValues(typeof(ProfessionType)))
-                {
-                    var panel = AccessTools.Field(typeof(Skills), ResolvePanelFieldName(profession))?.GetValue(player) as Component;
-                    if (panel != null && panel.gameObject.activeInHierarchy)
-                        return profession;
-                }
-            }
-            catch
-            {
-                // best-effort
-            }
-            return null;
-        }
-
-        private static string ResolvePanelFieldName(ProfessionType profession) => profession switch
-        {
-            ProfessionType.Combat => "_combatPanel",
-            ProfessionType.Farming => "_farmingPanel",
-            ProfessionType.Mining => "_miningPanel",
-            ProfessionType.Exploration => "_artisanryPanel",
-            ProfessionType.Fishing => "_fishingPanel",
-            _ => null,
-        };
     }
 }

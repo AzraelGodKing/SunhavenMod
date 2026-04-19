@@ -66,6 +66,8 @@ namespace HavensRespec.Services
             balance = ReadBalance();
             if (cost <= 0)
                 return true;
+            if (balance < 0)
+                return false; // unknown/failed balance reads fail closed
             return balance >= cost;
         }
 
@@ -114,6 +116,49 @@ namespace HavensRespec.Services
             }
         }
 
+        /// <summary>
+        /// Refunds a previously charged reset cost (used by Undo). Returns true on success (or if
+        /// amount is zero). Fails closed if the underlying game API is unavailable.
+        /// </summary>
+        public bool TryRefund(int amount, RespecCostMode mode)
+        {
+            if (amount <= 0 || mode == RespecCostMode.None)
+                return true;
+
+            EnsureReflection();
+
+            try
+            {
+                var player = Player.Instance;
+                if (player == null)
+                {
+                    _log?.LogWarning("[Respec] TryRefund: Player.Instance was null.");
+                    return false;
+                }
+
+                switch (mode)
+                {
+                    case RespecCostMode.Gold:
+                        if (_addMoneyMethod == null)
+                            return false;
+                        _addMoneyMethod.Invoke(player, new object[] { amount, true, false, true });
+                        return true;
+                    case RespecCostMode.Gems:
+                        if (_addTicketsMethod == null)
+                            return false;
+                        _addTicketsMethod.Invoke(player, new object[] { amount });
+                        return true;
+                    default:
+                        return true;
+                }
+            }
+            catch (Exception ex)
+            {
+                _log?.LogError($"[Respec] TryRefund failed: {ex}");
+                return false;
+            }
+        }
+
         private int ReadBalance()
         {
             EnsureReflection();
@@ -136,7 +181,7 @@ namespace HavensRespec.Services
             {
                 _log?.LogDebug($"[Respec] ReadBalance swallowed: {ex.Message}");
             }
-            return int.MaxValue; // treat unknown as "enough" so the reset still goes through
+            return -1; // fail closed if balance cannot be resolved
         }
 
         private static void EnsureReflection()

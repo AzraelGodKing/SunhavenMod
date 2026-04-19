@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using HavensRespec.Config;
 using Wish;
 
 namespace HavensRespec.Services
@@ -14,13 +15,23 @@ namespace HavensRespec.Services
         public IReadOnlyDictionary<int, int> Nodes { get; }
         public int SkillPointsUsed { get; }
         public int NumActiveNodes { get; }
+        public int ChargedCost { get; }
+        public RespecCostMode ChargedCostMode { get; }
 
-        public ResetSnapshot(ProfessionType profession, IReadOnlyDictionary<int, int> nodes, int skillPointsUsed, int numActiveNodes)
+        public ResetSnapshot(
+            ProfessionType profession,
+            IReadOnlyDictionary<int, int> nodes,
+            int skillPointsUsed,
+            int numActiveNodes,
+            int chargedCost = 0,
+            RespecCostMode chargedCostMode = RespecCostMode.None)
         {
             Profession = profession;
             Nodes = nodes;
             SkillPointsUsed = skillPointsUsed;
             NumActiveNodes = numActiveNodes;
+            ChargedCost = chargedCost;
+            ChargedCostMode = chargedCostMode;
         }
     }
 }

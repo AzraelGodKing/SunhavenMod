@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Reflection;
 using BepInEx.Logging;
+using HavensRespec.Config;
 using HarmonyLib;
 using UnityEngine;
 using Wish;
@@ -36,6 +37,26 @@ namespace HavensRespec.Services
         }
 
         public bool HasUndo(ProfessionType profession) => _undoByProfession.ContainsKey(profession);
+
+        /// <summary>
+        /// Once reset + charge have both succeeded, attach the charged currency metadata to the
+        /// pending undo snapshot so Undo can fully restore both nodes and wallet.
+        /// </summary>
+        public void AttachUndoCharge(ProfessionType profession, int chargedCost, RespecCostMode chargedCostMode)
+        {
+            if (!_undoByProfession.TryGetValue(profession, out var snapshot))
+                return;
+            if (chargedCost <= 0 || chargedCostMode == RespecCostMode.None)
+                return;
+
+            _undoByProfession[profession] = new ResetSnapshot(
+                snapshot.Profession,
+                snapshot.Nodes,
+                snapshot.SkillPointsUsed,
+                snapshot.NumActiveNodes,
+                chargedCost,
+                chargedCostMode);
+        }
 
         /// <summary>
         /// Reset every node of <paramref name="profession"/> to 0 and refund the skill points.
@@ -149,8 +170,9 @@ namespace HavensRespec.Services
         }
 
         /// <summary>Restore the most recent snapshot for <paramref name="profession"/>.</summary>
-        public bool UndoLastReset(Skills skills, ProfessionType profession)
+        public bool UndoLastReset(Skills skills, ProfessionType profession, out ResetSnapshot restoredSnapshot)
         {
+            restoredSnapshot = null;
             if (!_undoByProfession.TryGetValue(profession, out var snapshot))
                 return false;
 
@@ -172,6 +194,7 @@ namespace HavensRespec.Services
                 TryRefreshProfessionPanel(skills, profession);
 
                 _undoByProfession.Remove(profession);
+                restoredSnapshot = snapshot;
                 _log?.LogInfo($"[Respec] Undo {profession}: restored {snapshot.Nodes.Count} node(s), {snapshot.SkillPointsUsed} point(s) used.");
                 return true;
             }
@@ -200,7 +223,7 @@ namespace HavensRespec.Services
 
         // ---------------------------------------------------------------- helpers
 
-        private static Profession ResolveProfessionData(ProfessionType profession)
+        private Profession ResolveProfessionData(ProfessionType profession)
         {
             var save = SingletonBehaviour<GameSave>.Instance;
             if (save == null || save.CurrentSave == null || save.CurrentSave.characterData == null)
@@ -210,7 +233,7 @@ namespace HavensRespec.Services
             return prof;
         }
 
-        private static ResetSnapshot CaptureSnapshot(ProfessionType profession, Profession profData)
+        private ResetSnapshot CaptureSnapshot(ProfessionType profession, Profession profData)
         {
             var copy = new Dictionary<int, int>(profData.Nodes.Count);
             foreach (var kv in profData.Nodes)
@@ -228,16 +251,16 @@ namespace HavensRespec.Services
                 if (activeDict != null && activeDict.TryGetValue(profession, out var a))
                     active = a;
             }
-            catch
+            catch (Exception ex)
             {
-                // best-effort; snapshot still round-trips the Nodes dict which is the critical payload
+                _log?.LogDebug($"[Respec] CaptureSnapshot({profession}) counters fallback: {ex.Message}");
             }
             return new ResetSnapshot(profession, copy, used, active);
         }
 
-        private static List<int> CollectNodeHashes(Skills skills, ProfessionType profession, Profession profData)
+        private List<int> CollectNodeHashes(Skills skills, ProfessionType profession, Profession profData)
         {
-            var hashes = new List<int>();
+            var hashSet = new HashSet<int>();
             try
             {
                 var dict = _professionNodeDictionaryField?.GetValue(skills) as IDictionary;
@@ -249,14 +272,14 @@ namespace HavensRespec.Services
                         {
                             if (node == null || string.IsNullOrEmpty(node.nodeName))
                                 continue;
-                            hashes.Add(node.nodeName.GetStableHashCode());
+                            hashSet.Add(node.nodeName.GetStableHashCode());
                         }
                     }
                 }
             }
-            catch
+            catch (Exception ex)
             {
-                // fall through — if reflection fails we still zero every Nodes key below
+                _log?.LogDebug($"[Respec] CollectNodeHashes({profession}) reflection fallback: {ex.Message}");
             }
 
             // Always include every key the Profession knows about — covers cases where the Skills
@@ -264,10 +287,9 @@ namespace HavensRespec.Services
             // still holds allocations from a previous session.
             foreach (var key in profData.Nodes.Keys)
             {
-                if (!hashes.Contains(key))
-                    hashes.Add(key);
+                hashSet.Add(key);
             }
-            return hashes;
+            return new List<int>(hashSet);
         }
 
         private static void SetSkillPointsUsed(ProfessionType profession, int value)
@@ -313,15 +335,7 @@ namespace HavensRespec.Services
 
         private static object ResolvePanelField(Skills skills, ProfessionType profession)
         {
-            string name = profession switch
-            {
-                ProfessionType.Combat => "_combatPanel",
-                ProfessionType.Farming => "_farmingPanel",
-                ProfessionType.Mining => "_miningPanel",
-                ProfessionType.Exploration => "_artisanryPanel",
-                ProfessionType.Fishing => "_fishingPanel",
-                _ => null,
-            };
+            string name = ProfessionUiMap.ResolvePanelFieldName(profession);
             return name == null ? null : AccessTools.Field(typeof(Skills), name)?.GetValue(skills);
         }
 

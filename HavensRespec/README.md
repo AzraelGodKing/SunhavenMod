@@ -34,7 +34,7 @@ recent reset can be undone per-profession during the same session.
 | `UI` | `RequireConfirmation` | `true` | Show a confirmation dialog. |
 | `UI` | `ShiftSkipsConfirmation` | `true` | Hold Shift to bypass the dialog. |
 | `UI` | `EnableUndo` | `true` | Show an Undo button after a reset. |
-| `UI` | `EnableResetAll` | `true` | Reserved for the planned global Reset All button. |
+| `UI` | `EnableResetAll` | `true` | Adds a single "Reset All" button above skill tabs; one confirm runs resets for every profession. |
 | `Cost` | `Mode` | `None` | `None` / `Gold` / `Gems`. |
 | `Cost` | `GoldPerPoint` | `100` | Used when `Mode = Gold`. |
 | `Cost` | `GemsPerPoint` | `1` | Used when `Mode = Gems`. |
@@ -120,3 +120,25 @@ correctness and UX upgrades over the prior implementation.
   - Repo hygiene: root `.gitignore` now ignores `builds/` staging outputs. CI workflows still
     use `builds/<ModDir>/` during each run, but those DLLs are treated as ephemeral artifacts
     (download/upload/package inputs), not tracked source files.
+  - Cost correctness hardening:
+    - `CostService.ReadBalance` now fails closed (`-1`) on reflection errors so `CanAfford`
+      refuses paid resets when wallet verification is unavailable.
+    - `RespecController.PerformReset` now charges by the **actual** refunded points returned by
+      `ResetProfession` (post node-walk), not the preflight estimate. If affordability/deduction
+      fails at actual cost time, the reset is automatically rolled back via undo snapshot.
+    - Undo now refunds the exact charged amount/currency. `ResetSnapshot` carries
+      `ChargedCost` + `ChargedCostMode`, set only after a successful deduction, and
+      `PerformUndo` applies `CostService.TryRefund(...)` after restoring nodes.
+  - Cleanup / perf pass:
+    - Implemented `EnableResetAll`: adds a top-level **RESET ALL** button with one
+      confirmation dialog, then runs per-profession reset flow in sequence.
+    - Hotkey tab detection now uses cached `_activeSkills` via `RespecController`
+      instead of `FindObjectOfType<Skills>()` every keypress.
+    - Removed silent catches in `TryGetActiveProfessionTab`, `CaptureSnapshot`,
+      and `CollectNodeHashes`; failures now emit debug logs with context.
+    - `CollectNodeHashes` now deduplicates with `HashSet<int>` (replacing
+      `List.Contains` O(n²) checks).
+    - Consolidated profession panel field mapping into
+      `Services/ProfessionUiMap.cs` and reused it from both UI and services.
+    - Confirmation dialog hover no longer regenerates rounded sprites per pointer
+      event; it now updates `Image.color` only (matching button injector behavior).

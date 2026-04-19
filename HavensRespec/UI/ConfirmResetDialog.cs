@@ -172,8 +172,9 @@ namespace HavensRespec.UI
             rt.anchoredPosition = anchoredPos;
 
             var image = go.AddComponent<Image>();
-            image.sprite = RespecStyle.SolidRounded(normal, new Color(0f, 0f, 0f, 0.45f), 20, 1, 5);
+            image.sprite = RespecStyle.SolidRounded(Color.white, new Color(0f, 0f, 0f, 0.45f), 20, 1, 5);
             image.type = Image.Type.Sliced;
+            image.color = normal;
             image.raycastTarget = true;
 
             var button = go.AddComponent<Button>();
@@ -191,7 +192,6 @@ namespace HavensRespec.UI
             hoverHandler.Normal = normal;
             hoverHandler.Hover = hover;
             hoverHandler.Pressed = pressed;
-            hoverHandler.Border = new Color(0f, 0f, 0f, 0.45f);
 
             var textGo = new GameObject("Text");
             textGo.transform.SetParent(go.transform, false);
@@ -209,14 +209,13 @@ namespace HavensRespec.UI
             tmp.raycastTarget = false;
         }
 
-        /// <summary>Swaps the button's tinted sprite on hover / pressed state.</summary>
+        /// <summary>Updates button tint on hover / pressed state without regenerating sprites.</summary>
         private sealed class ButtonHoverTint : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler, IPointerDownHandler, IPointerUpHandler
         {
             public Image Target;
             public Color Normal;
             public Color Hover;
             public Color Pressed;
-            public Color Border;
 
             private bool _isOver;
 
@@ -228,7 +227,7 @@ namespace HavensRespec.UI
             private void Apply(Color fill)
             {
                 if (Target == null) return;
-                Target.sprite = RespecStyle.SolidRounded(fill, Border, 20, 1, 5);
+                Target.color = fill;
             }
         }
     }
