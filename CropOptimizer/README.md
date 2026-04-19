@@ -1,5 +1,8 @@
 # Crop Optimizer
 
+- **Thunderstore:** [CropOptimizer](https://thunderstore.io/c/sun-haven/p/AzraelGodKing/CropOptimizer/)
+- **Nexus Mods:** [Crop Optimizer](https://www.nexusmods.com/sunhaven/mods/501)
+
 Crop Optimizer adds field-level harvest forecasting, a lightweight crop HUD, and soft integrations with Sunhaven Todo, Birthday Reminder, and The Vault.
 
 ## Features
@@ -38,6 +41,8 @@ Crop Optimizer adds field-level harvest forecasting, a lightweight crop HUD, and
 ## Changelog
 
 ### Unreleased
+- **Nexus:** Canonical listing is [mod 501](https://www.nexusmods.com/sunhaven/mods/501) in [`docs/versions.json`](../docs/versions.json) (was 500); README download line matches.
+- **Thunderstore:** Package `website_url` in `thunderstore/manifest.json` now points at the [Crop Optimizer listing](https://thunderstore.io/c/sun-haven/p/AzraelGodKing/CropOptimizer/); root README lists the same canonical link. `thunderstore/README.md` version line aligned with `docs/versions.json`.
 - **Build:** `CropOptimizer.csproj` now uses a `ProjectReference` to [`TheVault.Abstractions`](../TheVault.Abstractions/TheVault.Abstractions.csproj) instead of `..\builds\TheVault\TheVault.Abstractions.dll`, so `dotnet build` succeeds on a clean clone without pre-building The Vault into `builds/`.
 - **Performance:** Reduced per-frame work that could tank FPS on large farms: projected sell total is now maintained incrementally in `CropForecast` (no full dictionary scan each frame); gameplay camera resolution no longer calls `FindObjectsOfType<Camera>()` every frame when `Camera.main` is unset (cached + cooldown, invalidated on transitions); crop instance cache refresh slowed slightly; hover closest-crop search skips full O(n) scans while the pointer is stable within a short window; tooltip card content rebuilds are throttled when hovering the same crop; tile coord lookup tries `Wish.Crop` grid position / `WorldToCell` before the expensive nearest-`farmingData`-key scan.
 - **Docs:** Added a dedicated Crop Optimizer docs page at [`docs/CropOptimizer/CropOptimizer.html`](../docs/CropOptimizer/CropOptimizer.html) — field-journal parchment theme with a sprout-green + harvest-gold palette and a twilight-field dark mode, matching the existing mod hub style. Covers HUD / hover tooltip features, a tooltip-anatomy grid mapping each row to its underlying game state, the full `CropOptimizer.cfg` reference, soft-integration notes (Sunhaven Todo / Birthday Reminder / The Vault / Haven's Almanac), and compatibility notes. A `crop-theme` card with a pulsing sprout-green "New!" badge was added to the mod hub (`docs/index.html`), and the page was registered in `docs/search-index.json` so it appears in `Ctrl+K` site search.

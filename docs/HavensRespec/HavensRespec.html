@@ -13,8 +13,9 @@
     <meta property="og:image" content="https://azraelgodking.github.io/SunhavenMod/og-card.png">
     <meta name="theme-color" content="#b8732a">
     <link rel="icon" type="image/svg+xml" href="../favicon.svg">
-    <link rel="stylesheet" href="respec-style.css">
+    <link rel="stylesheet" href="../HavensAlmanac/almanac-style.css">
     <link rel="stylesheet" href="../shared-styles.css">
+    <link rel="stylesheet" href="respec-style.css">
     <script src="../shared.js" defer></script>
     <script src="../scripts/stats-display.js" defer></script>
 </head>
@@ -54,7 +55,7 @@
         <!-- Epigraph -->
         <section class="intro-section">
             <p>Haven&rsquo;s Respec lets you cleanly reset any of the five profession skill trees &mdash; Combat, Farming, Fishing, Mining, Exploration &mdash; without editing save files or forcing a new character. A styled <strong>confirmation dialog</strong> surfaces exactly how many skill points you are about to refund, a per-profession <strong>one-step Undo</strong> catches mis-clicks, and an optional <strong>cost model</strong> (free, gold, or gems) adds friction if you want some weight to the decision.</p>
-            <p>This is a <strong>clean-room</strong> mod &mdash; inspired by <code>devopsdinosaur.sunhaven.skill_reset</code> but written from scratch. No node names are hardcoded: the service enumerates live <code>SkillNode</code> instances from <code>Skills._professionNodeDictionary</code> and whatever keys already exist on <code>Profession.Nodes</code>, so a game update that adds, renames, or re-arranges nodes does not break the reset.</p>
+            <p>This is a <strong>clean-room</strong> mod &mdash; inspired by other community skill-respec mods but written from scratch. No node names are hardcoded: the service enumerates live <code>SkillNode</code> instances from <code>Skills._professionNodeDictionary</code> and whatever keys already exist on <code>Profession.Nodes</code>, so a game update that adds, renames, or re-arranges nodes does not break the reset.</p>
         </section>
 
         <div class="ornamental-divider"></div>
@@ -135,7 +136,7 @@
         <h2 class="section-title">Why a New Respec Mod?</h2>
         <div class="respec-card">
             <h3>The short version</h3>
-            <p>The existing <code>devopsdinosaur.sunhaven.skill_reset</code> mod works, but it hardcodes node names (<code>{Prof}{1..10}{a|b|c|d}</code>), has no confirmation, no undo, and no cost controls. It also has not seen upstream maintenance in a while. Haven&rsquo;s Respec is written from the ground up with those gaps in mind &mdash; no files were copied from the original.</p>
+            <p>Some other mods in this space hardcode node names (<code>{Prof}{1..10}{a|b|c|d}</code>), ship without confirmation, undo, or cost controls, or are no longer maintained. Haven&rsquo;s Respec is written from the ground up with those gaps in mind &mdash; no files were copied from other mods.</p>
         </div>
         <div class="respec-card">
             <h3>What we do differently</h3>
@@ -268,7 +269,7 @@
         <h2 class="section-title">Install</h2>
         <ol class="install-steps">
             <li>Install <a href="https://docs.bepinex.dev/articles/user_guide/installation/index.html" target="_blank" rel="noopener">BepInEx 5.x</a> for Sun Haven if you haven&rsquo;t already.</li>
-            <li>Grab <code>HavensRespec.dll</code> from <a href="https://github.com/AzraelGodKing/SunhavenMod/releases" target="_blank" rel="noopener">GitHub Releases</a>, <a href="https://thunderstore.io/c/sun-haven/p/AzraelGodKing/HavensRespec/" target="_blank" rel="noopener">Thunderstore</a>, or <a href="https://www.nexusmods.com/sunhaven" target="_blank" rel="noopener">Nexus Mods</a>.</li>
+            <li>Grab <code>HavensRespec.dll</code> from <a href="https://github.com/AzraelGodKing/SunhavenMod/releases" target="_blank" rel="noopener">GitHub Releases</a>, <a href="https://thunderstore.io/c/sun-haven/p/AzraelGodKing/HavensRespec/" target="_blank" rel="noopener">Thunderstore</a>, or <a href="https://www.nexusmods.com/sunhaven/mods/502?tab=files" target="_blank" rel="noopener">Nexus Mods (files)</a>.</li>
             <li>Drop it into <code>Sun Haven/BepInEx/plugins/HavensRespec/</code>.</li>
             <li>Launch the game, open any skill tree &mdash; you should see the Reset button next to the skill points counter.</li>
             <li>(Optional) Install <a href="https://github.com/BepInEx/BepInEx.ConfigurationManager" target="_blank" rel="noopener">BepInEx Configuration Manager</a> to edit settings live.</li>
@@ -301,7 +302,7 @@
             </div>
             <div class="note-card">
                 <h4>Not a Copy</h4>
-                <p>Haven&rsquo;s Respec was written from scratch; no files were copied from <code>devopsdinosaur.sunhaven.skill_reset</code>. The older mod inspired the feature, not the implementation.</p>
+                <p>Haven&rsquo;s Respec was written from scratch; no files were copied from other mods. The idea existed in the community before; this implementation is new.</p>
             </div>
         </div>
 

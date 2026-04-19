@@ -57,6 +57,7 @@ The built-in **Mod Health** provider is always on and surfaces
 
 ### Unreleased
 
+- **Release metadata:** `docs/versions.json` now includes `nexus_file_group_id` **7326779** for Nexus Mods CI uploads (Files tab → API / file group id).
 - **Build:** Integration DLL references now use `ProjectReference` to sibling mods (`SunhavenTodo`, `BirthdayReminder`, `SunHavenMuseumUtilityTracker`, `SenpaisChest`, `TheVault`, `HavensBirthright`, `HavenDevTools`, `CropOptimizer`) so `dotnet build` works without copying plugins into `builds/` first. `BirthdayReminder` and `SenpaisChest` were updated the same way for their Todo / museum soft-deps.
 - **Briefing: `AutoDismissSeconds` is now actually honored.** The config
   entry has been bound since 1.0.x but `DailyBriefing.cs` never read it, so

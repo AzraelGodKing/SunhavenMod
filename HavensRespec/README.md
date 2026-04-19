@@ -1,5 +1,7 @@
 # Haven's Respec
 
+- **Documentation (GitHub Pages):** [Haven's Respec](https://azraelgodking.github.io/SunhavenMod/HavensRespec/HavensRespec.html)
+
 Haven's Respec adds a safe, configurable way to reset your Sun Haven skill trees.
 
 Every profession tab gets a styled **Reset** button. Clicking it brings up a confirmation
@@ -67,6 +69,10 @@ correctness and UX upgrades over the prior implementation.
 
 ### Unreleased
 
+- **Release metadata:** `docs/versions.json` includes Nexus mod page `https://www.nexusmods.com/sunhaven/mods/502`, `nexus_file_group_id` **7326839** (Files tab → API / file group id) for CI Nexus uploads, and the Thunderstore URL for `download-nav` on the doc page.
+- **Copy:** Removed named references to a specific legacy skill-reset mod; docs and `RespecCostMode` comments now refer generically to other community mods.
+- **Docs:** [`docs/HavensRespec/HavensRespec.html`](../docs/HavensRespec/HavensRespec.html) now loads [`docs/HavensAlmanac/almanac-style.css`](../docs/HavensAlmanac/almanac-style.css) for the shared book / parchment layout; [`docs/HavensRespec/respec-style.css`](../docs/HavensRespec/respec-style.css) adds copper accents, fixes the configuration table (wrapper vs. `<table>`), and styles compatibility note cards and install steps.
+- **Thunderstore:** `thunderstore/manifest.json` `website_url` points at the [GitHub Pages mod guide](https://azraelgodking.github.io/SunhavenMod/HavensRespec/HavensRespec.html) (canonical with `docs/HavensRespec/HavensRespec.html`).
 - **Initial release scaffold** of Haven's Respec v1.0.0:
   - Harmony postfix on `Skills.SetupProfession(ProfessionType, SkillTree, SkillTreeAsset)`
     injects a styled Reset (and optional Undo) button onto every profession tab.

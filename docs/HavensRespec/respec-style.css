@@ -1,5 +1,4 @@
-/* Haven's Respec — parchment-and-ink palette.
-   Extends shared-styles.css; only add what's genuinely needed here. */
+/* Haven's Respec — copper / wood accents on top of HavensAlmanac/almanac-style.css + shared-styles.css */
 
 :root {
     --respec-wood: #5d3413;
@@ -11,102 +10,148 @@
     --respec-ink: #2b1b0a;
 }
 
-/* Hero accent — warm wood gradient behind the title. */
+/* Hero — warm copper glow (Almanac hero structure) */
 .hero {
-    background: radial-gradient(ellipse at top, rgba(184, 115, 42, 0.18) 0%, transparent 70%);
+    background: radial-gradient(ellipse at top, rgba(184, 115, 42, 0.2) 0%, transparent 72%);
 }
 
 .hero-icon {
     color: var(--respec-gold-bright);
-    text-shadow: 0 0 30px rgba(216, 151, 83, 0.45);
+    text-shadow: 0 0 28px rgba(216, 151, 83, 0.42);
 }
 
 .version-badge {
     background: linear-gradient(135deg, var(--respec-gold), var(--respec-wood));
     color: var(--respec-parchment);
-    border-color: rgba(216, 151, 83, 0.5);
+    border-color: rgba(216, 151, 83, 0.45);
 }
 
-.section-title::before,
+/* Section titles — keep Almanac double-line; tint to copper */
 .section-title::after {
-    background: linear-gradient(90deg, transparent, var(--respec-gold), transparent);
+    border-top-color: rgba(184, 115, 42, 0.75);
+    border-bottom-color: rgba(184, 115, 42, 0.75);
 }
 
-/* Configuration reference table. */
+[data-theme="dark"] .section-title::after {
+    border-top-color: rgba(216, 151, 83, 0.42);
+    border-bottom-color: rgba(216, 151, 83, 0.42);
+}
+
+/* Download stats strip — copper instead of hub green */
+.mod-page-download-stats {
+    background: rgba(184, 115, 42, 0.08);
+    border-color: rgba(184, 115, 42, 0.28);
+}
+
+[data-theme="dark"] .mod-page-download-stats {
+    background: rgba(184, 115, 42, 0.12);
+    border-color: rgba(216, 151, 83, 0.28);
+}
+
+/* Config reference: .config-table is a scroll wrapper; style the inner table */
 .config-table {
-    width: 100%;
-    border-collapse: collapse;
-    background: rgba(43, 27, 10, 0.25);
-    border: 1px solid rgba(184, 115, 42, 0.3);
+    max-width: 820px;
+}
+
+.config-table table {
+    background: rgba(43, 27, 10, 0.06);
     border-radius: 8px;
     overflow: hidden;
-    margin-top: 1rem;
-}
-
-.config-table th,
-.config-table td {
-    padding: 0.75rem 1rem;
-    text-align: left;
-    border-bottom: 1px solid rgba(184, 115, 42, 0.18);
-    vertical-align: top;
 }
 
 .config-table th {
-    background: linear-gradient(135deg, rgba(184, 115, 42, 0.25), rgba(93, 52, 19, 0.35));
-    color: var(--respec-parchment);
-    font-weight: 600;
-    letter-spacing: 0.03em;
-    text-transform: uppercase;
-    font-size: 0.85rem;
+    background: linear-gradient(135deg, rgba(184, 115, 42, 0.14), rgba(93, 52, 19, 0.1));
+    border-bottom: 2px solid rgba(184, 115, 42, 0.4);
+    color: var(--respec-wood);
 }
 
-.config-table td code {
-    color: var(--respec-gold-bright);
-    background: rgba(0, 0, 0, 0.35);
-    padding: 0.1rem 0.4rem;
-    border-radius: 4px;
-    font-size: 0.9em;
-}
-
-.config-table tr:last-child td {
-    border-bottom: none;
+.config-table td {
+    border-bottom-color: rgba(184, 115, 42, 0.15);
 }
 
 .config-table tr:hover td {
-    background: rgba(184, 115, 42, 0.08);
+    background: rgba(184, 115, 42, 0.06);
 }
 
-/* Section "card" used for features / compat blocks. */
+.config-table td code {
+    color: var(--respec-wood-light);
+    background: rgba(92, 58, 30, 0.12);
+}
+
+[data-theme="dark"] .config-table table {
+    background: rgba(30, 24, 18, 0.45);
+}
+
+[data-theme="dark"] .config-table th {
+    color: var(--respec-gold-bright);
+    border-bottom-color: rgba(216, 151, 83, 0.38);
+    background: linear-gradient(135deg, rgba(184, 115, 42, 0.2), rgba(60, 40, 22, 0.5));
+}
+
+[data-theme="dark"] .config-table td {
+    border-bottom-color: rgba(184, 115, 42, 0.12);
+}
+
+[data-theme="dark"] .config-table tr:hover td {
+    background: rgba(184, 115, 42, 0.07);
+}
+
+[data-theme="dark"] .config-table td code {
+    color: #e8c896;
+    background: rgba(0, 0, 0, 0.35);
+}
+
+/* “Why /” feature blocks */
 .respec-card {
-    background: linear-gradient(135deg, rgba(184, 115, 42, 0.10) 0%, rgba(93, 52, 19, 0.04) 100%);
-    border: 1px solid rgba(184, 115, 42, 0.3);
+    background: linear-gradient(135deg, rgba(184, 115, 42, 0.1) 0%, rgba(93, 52, 19, 0.04) 100%);
+    border: 1px solid rgba(184, 115, 42, 0.28);
     border-radius: 10px;
     padding: 1.25rem 1.5rem;
     margin-bottom: 1rem;
 }
 
 .respec-card h3 {
-    color: var(--respec-gold-bright);
+    color: var(--respec-wood);
     margin-top: 0;
     margin-bottom: 0.5rem;
     font-size: 1.15rem;
+    font-family: "Cinzel", serif;
 }
 
 .respec-card p,
 .respec-card li {
-    color: var(--respec-parchment-muted);
+    color: rgba(44, 36, 24, 0.78);
     line-height: 1.55;
 }
 
 .respec-card strong {
-    color: var(--respec-parchment);
+    color: var(--respec-ink);
 }
 
-/* Dedicated install steps list. */
+[data-theme="dark"] .respec-card {
+    background: rgba(34, 28, 20, 0.45);
+    border-color: rgba(184, 115, 42, 0.22);
+}
+
+[data-theme="dark"] .respec-card h3 {
+    color: var(--respec-gold-bright);
+}
+
+[data-theme="dark"] .respec-card p,
+[data-theme="dark"] .respec-card li {
+    color: rgba(232, 216, 180, 0.72);
+}
+
+[data-theme="dark"] .respec-card strong {
+    color: #f0e6c8;
+}
+
+/* Install steps */
 .install-steps {
     counter-reset: step;
     list-style: none;
     padding-left: 0;
+    margin: 0 40px 40px;
 }
 
 .install-steps > li {
@@ -114,9 +159,10 @@
     position: relative;
     padding: 0.75rem 1rem 0.75rem 3rem;
     margin-bottom: 0.75rem;
-    background: rgba(43, 27, 10, 0.25);
-    border: 1px solid rgba(184, 115, 42, 0.2);
+    background: rgba(43, 27, 10, 0.06);
+    border: 1px solid rgba(184, 115, 42, 0.22);
     border-radius: 8px;
+    color: rgba(44, 36, 24, 0.85);
 }
 
 .install-steps > li::before {
@@ -135,14 +181,76 @@
     border-radius: 50%;
     font-weight: 700;
     font-size: 0.9rem;
-    box-shadow: 0 0 10px rgba(216, 151, 83, 0.35);
+    font-family: "Cinzel", serif;
+    box-shadow: 0 0 10px rgba(216, 151, 83, 0.3);
 }
 
-/* Keybind chips reuse shared-styles base; just tint them. */
+[data-theme="dark"] .install-steps > li {
+    background: rgba(30, 24, 18, 0.45);
+    border-color: rgba(184, 115, 42, 0.2);
+    color: rgba(232, 216, 180, 0.82);
+}
+
+/* Compatibility notes */
+.notes-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+    gap: 16px;
+    margin: 0 40px 40px;
+}
+
+.note-card {
+    background: rgba(232, 216, 180, 0.35);
+    border: 1px solid rgba(184, 115, 42, 0.22);
+    border-left: 3px solid var(--respec-gold);
+    border-radius: 0 8px 8px 0;
+    padding: 18px 20px;
+}
+
+.note-card h4 {
+    font-family: "Cinzel", serif;
+    color: var(--respec-wood);
+    font-size: 0.95em;
+    font-weight: 600;
+    margin-bottom: 6px;
+    letter-spacing: 0.5px;
+}
+
+.note-card p {
+    color: rgba(44, 36, 24, 0.78);
+    font-size: 0.92em;
+    line-height: 1.6;
+}
+
+[data-theme="dark"] .note-card {
+    background: rgba(34, 28, 20, 0.5);
+    border-color: rgba(184, 115, 42, 0.2);
+    border-left-color: var(--respec-gold-bright);
+}
+
+[data-theme="dark"] .note-card h4 {
+    color: #e8c896;
+}
+
+[data-theme="dark"] .note-card p {
+    color: rgba(232, 216, 180, 0.72);
+}
+
+/* Keybind chips — copper border */
 .keybind-card {
-    border-color: rgba(184, 115, 42, 0.3);
+    border-color: rgba(184, 115, 42, 0.28);
 }
 
 .keybind-card:hover {
-    border-color: rgba(216, 151, 83, 0.6);
+    border-color: rgba(216, 151, 83, 0.55);
+}
+
+@media (max-width: 768px) {
+    .install-steps {
+        margin: 0 20px 32px;
+    }
+
+    .notes-grid {
+        margin: 0 20px 32px;
+    }
 }
