@@ -5,8 +5,8 @@ namespace HavensRespec.Config
 {
     /// <summary>
     /// What, if anything, the player pays to reset a profession.
-    /// Default is <see cref="None"/> — match the behaviour the community is used to from the
-    /// original <c>devopsdinosaur.sunhaven.skill_reset</c> while keeping a path to add friction.
+    /// Default is <see cref="None"/> — match what players usually expect from free skill respecs
+    /// in other mods, while keeping a path to add friction.
     /// </summary>
     public enum RespecCostMode
     {
