@@ -7,12 +7,14 @@ const ROOT = path.resolve(__dirname, "..");
 const CACHE_PATH = path.join(ROOT, "data", "stats-cache.json");
 const TMP_PATH = `${CACHE_PATH}.tmp`;
 
+const THUNDERSTORE_SUN_HAVEN_COMMUNITY = "sun-haven";
+
 const MOD_ROSTER = [
   { id: "senpais-chest", name: "SenpaisChest", thunderstore: { namespace: "AzraelGodKing", name: "SenpaisChest" }, nexus: { game: "sunhaven", modId: null } },
-  { id: "havens-todo", name: "HavensTODO", thunderstore: { namespace: "AzraelGodKing", name: "HavensTODO" }, nexus: { game: "sunhaven", modId: null } },
+  { id: "havens-todo", name: "Sun Haven Todo", thunderstore: { namespace: "AzraelGodKing", name: "SunHavenTodo" }, nexus: { game: "sunhaven", modId: null } },
   { id: "the-vault", name: "TheVault", thunderstore: { namespace: "AzraelGodKing", name: "TheVault" }, nexus: { game: "sunhaven", modId: null } },
   { id: "havens-birthright", name: "HavensBirthright", thunderstore: { namespace: "AzraelGodKing", name: "HavensBirthright" }, nexus: { game: "sunhaven", modId: null } },
-  { id: "museum-utility-tracker", name: "MuseumUtilityTracker", thunderstore: { namespace: "AzraelGodKing", name: "MuseumUtilityTracker" }, nexus: { game: "sunhaven", modId: null } },
+  { id: "museum-utility-tracker", name: "Museum Utility Tracker", thunderstore: { namespace: "AzraelGodKing", name: "SMUT" }, nexus: { game: "sunhaven", modId: null } },
   { id: "haven-dev-tools", name: "HavenDevTools", thunderstore: { namespace: "AzraelGodKing", name: "HavenDevTools" }, nexus: { game: "sunhaven", modId: null } },
   { id: "squirrels-birthday-reminder", name: "SquirrelsBirthdayReminder", thunderstore: { namespace: "AzraelGodKing", name: "SquirrelsBirthdayReminder" }, nexus: { game: "sunhaven", modId: null } },
   { id: "havens-almanac", name: "HavensAlmanac", thunderstore: { namespace: "AzraelGodKing", name: "HavensAlmanac" }, nexus: { game: "sunhaven", modId: null } },
@@ -47,20 +49,52 @@ async function fetchJson(url, options = {}) {
   return res.json();
 }
 
-async function fetchThunderstore(mod) {
-  const url = `https://thunderstore.io/api/v1/package/${encodeURIComponent(mod.thunderstore.namespace)}/${encodeURIComponent(mod.thunderstore.name)}/`;
-  const payload = await fetchJson(url);
+function packageKey(namespace, packageName) {
+  return `${namespace}/${packageName}`;
+}
+
+/** @param {unknown[]} packages */
+function buildSunHavenPackageIndex(packages) {
+  const map = new Map();
+  for (const pkg of packages) {
+    if (!pkg || typeof pkg !== "object") continue;
+    const owner = /** @type {{ owner?: string; name?: string }} */ (pkg).owner;
+    const name = /** @type {{ owner?: string; name?: string }} */ (pkg).name;
+    if (!owner || !name) continue;
+    map.set(packageKey(owner, name), pkg);
+  }
+  return map;
+}
+
+function thunderstoreStatsFromPackage(pkg) {
   const versions = {};
-  for (const version of payload.versions || []) {
+  let total = 0;
+  for (const version of pkg?.versions || []) {
     const versionNumber = version?.version_number;
     if (!versionNumber) continue;
-    versions[versionNumber] = Number(version?.downloads || 0);
+    const n = Number(version?.downloads || 0);
+    versions[versionNumber] = n;
+    total += n;
   }
+  return { total_downloads: total, versions };
+}
 
-  return {
-    total_downloads: Number(payload?.total_downloads || 0),
-    versions,
-  };
+async function loadSunHavenThunderstoreIndex() {
+  const url = `https://thunderstore.io/c/${THUNDERSTORE_SUN_HAVEN_COMMUNITY}/api/v1/package/`;
+  const list = await fetchJson(url);
+  if (!Array.isArray(list)) {
+    throw new Error("Sun Haven community package list is not an array");
+  }
+  return buildSunHavenPackageIndex(list);
+}
+
+async function fetchThunderstore(mod, packageIndex) {
+  const key = packageKey(mod.thunderstore.namespace, mod.thunderstore.name);
+  const payload = packageIndex.get(key);
+  if (!payload) {
+    throw new Error(`Package not in Sun Haven community listing: ${key}`);
+  }
+  return thunderstoreStatsFromPackage(payload);
 }
 
 async function fetchNexus(mod) {
@@ -89,11 +123,11 @@ function getPreviousMod(cache, mod) {
   };
 }
 
-async function fetchModStats(mod, cache) {
+async function fetchModStats(mod, cache, packageIndex) {
   const previous = getPreviousMod(cache, mod);
 
   const [tsResult, nxResult] = await Promise.allSettled([
-    fetchThunderstore(mod),
+    fetchThunderstore(mod, packageIndex),
     fetchNexus(mod),
   ]);
 
@@ -162,8 +196,9 @@ async function main() {
     }
   }
 
+  const packageIndex = await loadSunHavenThunderstoreIndex();
   const modsEntries = await Promise.all(
-    MOD_ROSTER.map(async (mod) => [mod.id, await fetchModStats(mod, cache)])
+    MOD_ROSTER.map(async (mod) => [mod.id, await fetchModStats(mod, cache, packageIndex)])
   );
   const mods = Object.fromEntries(modsEntries);
 
