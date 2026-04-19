@@ -1,4 +1,4 @@
-[b][size=5]The Vault[/size][/b] [i](v3.0.6)[/i]
+[b][size=5]The Vault[/size][/b] [i](v3.0.7)[/i]
 
 Sun Haven BepInEx mod: per-character vault, encrypted saves, HUD, auto-deposit—with shops and in-game costs (keys, etc.) reading and spending vault balances via your bag when the game uses inventory checks.
 
