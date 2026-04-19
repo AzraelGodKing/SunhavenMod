@@ -183,7 +183,10 @@
           "1.0.0": 6
         }
       },
-      "nexus": null,
+      "nexus": {
+        "total_downloads": 0,
+        "unique_downloads": 0
+      },
       "combined_total": 6
     },
     "faster-races": {
@@ -221,7 +224,10 @@
         "total_downloads": 0,
         "versions": {}
       },
-      "nexus": null,
+      "nexus": {
+        "total_downloads": 0,
+        "unique_downloads": 0
+      },
       "combined_total": 0
     }
   },
