@@ -38,11 +38,18 @@ python3 scripts/verify-version-consistency.py
 
 Requires Python 3.6+.
 
+## Automatic sync on merge (optional drift repair)
+
+The workflow [`.github/workflows/sync-mod-versions.yml`](../.github/workflows/sync-mod-versions.yml) runs on every push to `main` / `master`. It executes `.\scripts\pre-push-build.ps1 -All -SyncOnly` (no `dotnet build`), then `python3 scripts/verify-version-consistency.py`. If any tracked file was behind `docs/versions.json`, it commits and pushes with message `chore: sync mod versions from versions.json [skip ci]` so the job does not re-trigger in a loop.
+
+**Source of truth remains `docs/versions.json`.** The workflow only copies those values into plugin sources and store metadata; it does not invent new semver bumps.
+
 ## Related files
 
 | Piece | Role |
 |--------|------|
 | `docs/versions.json` | Source of truth for semver, changelog, store links |
-| `scripts/pre-push-build.ps1` | Bump/sync version across plugin, manifests, docs |
+| `scripts/pre-push-build.ps1` | Bump/sync version across plugin, manifests, docs (`-SyncOnly` for CI without game DLLs) |
 | `scripts/verify-version-consistency.py` | CI + local guard: JSON vs plugin vs manifest |
+| `.github/workflows/sync-mod-versions.yml` | After merge: align tracked files with `versions.json` if needed |
 | `.github/workflows/build-release-publish.yml` | Build → package → GitHub / Thunderstore / Nexus |

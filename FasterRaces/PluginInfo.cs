@@ -4,6 +4,6 @@ namespace FasterRaces
     {
         public const string PLUGIN_GUID = "com.azraelgodking.fasterraces";
         public const string PLUGIN_NAME = "Faster Races";
-        public const string PLUGIN_VERSION = "1.1.4";
+        public const string PLUGIN_VERSION = "1.1.6";
     }
 }
