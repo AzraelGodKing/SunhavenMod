@@ -270,7 +270,16 @@ namespace SunhavenTodo
 
         private void OnSceneLoaded(Scene scene, LoadSceneMode mode)
         {
+            if (scene.name == "MainMenu" || scene.name == "Bootstrap")
+            {
+                // DayCycle singleton is gone on main menu — reset so we re-hook on next game load
+                _overnightHooked = false;
+                _overnightCallback = null;
+                return;
+            }
+
             EnsureUIComponentsExist();
+            TryHookOvernight();
         }
 
         public static void EnsureUIComponentsExist()
