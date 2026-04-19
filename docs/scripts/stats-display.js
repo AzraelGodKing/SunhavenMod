@@ -1,4 +1,26 @@
 // Load this script with `defer` so rendering is never blocked.
+// Cache file: docs/data/stats-cache.json → on GitHub Pages (publish /docs) public URL is /data/stats-cache.json at site root (no "/docs" segment).
+
+function resolveStatsCacheUrl() {
+  const scripts = document.getElementsByTagName("script");
+  for (let i = scripts.length - 1; i >= 0; i--) {
+    const s = scripts[i];
+    if (!s.src) continue;
+    const u = new URL(s.src, window.location.href);
+    if (!/\/scripts\/stats-display\.js(\?|$)/.test(u.pathname)) continue;
+    u.pathname = u.pathname.replace(/\/scripts\/stats-display\.js$/, "/data/stats-cache.json");
+    return u.href;
+  }
+
+  // Local / preview: URL path still contains "/docs/" (e.g. Live Server opened from repo root)
+  const m = window.location.pathname.match(/^(.*\/docs\/)/);
+  if (m) {
+    return new URL("data/stats-cache.json", window.location.origin + m[1]).href;
+  }
+
+  return new URL("data/stats-cache.json", window.location.href).href;
+}
+
 document.addEventListener("DOMContentLoaded", () => {
   const formatValue = (value) => {
     if (value == null) return "—";
@@ -11,7 +33,7 @@ document.addEventListener("DOMContentLoaded", () => {
     el.textContent = formatValue(value);
   };
 
-  fetch("/data/stats-cache.json", { cache: "no-cache" })
+  fetch(resolveStatsCacheUrl(), { cache: "no-cache" })
     .then((res) => {
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
       return res.json();
