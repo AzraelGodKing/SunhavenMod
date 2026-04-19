@@ -66,12 +66,11 @@
     </Reference>
   </ItemGroup>
 
-  <!-- Soft Dependency: SunhavenTodo (optional integration) -->
+  <!-- Soft dependency: compile against sibling project (no `builds/SunhavenTodo` required). -->
   <ItemGroup>
-    <Reference Include="SunhavenTodo">
-      <HintPath>..\builds\SunhavenTodo\SunhavenTodo.dll</HintPath>
+    <ProjectReference Include="..\SunhavenTodo\SunhavenTodo.csproj">
       <Private>false</Private>
-    </Reference>
+    </ProjectReference>
   </ItemGroup>
 
   <!-- Shared Utilities (linked files) -->

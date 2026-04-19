@@ -6,19 +6,19 @@ A collection of BepInEx mods for [Sun Haven](https://store.steampowered.com/app/
 
 | Mod | Description | Version |
 |-----|-------------|---------|
-| [**Senpai's Chest**](SenpaisChest/) | Smart chests with configurable item rules for automatic storage sorting | 2.2.5 |
-| [**Sunhaven Todo**](SunhavenTodo/) | In-game todo list and journal with per-character saves | 1.1.9 |
-| [**Sun Haven Museum Utility Tracker**](SunHavenMuseumUtilityTracker/) | Track museum donations across all sections | 2.2.8 |
-| [**The Vault**](TheVault/) | Full rework of the vault system; classic core, single project; shop and inventory vault hooks | 3.0.6 |
-| [**Haven's Birthright**](HavensBirthright/) | Unique racial bonuses and traits for each playable race; optional `[BonusTransfers]` cross-race passive grants (off by default) | 2.0.2 |
-| [**Haven's Almanac**](HavensAlmanac/) | Mod compatibility registry and info hub | 1.1.0 |
-| [**A Squirrel's Birthday Reminder**](BirthdayReminder/) | Reminds you of villagers' birthdays | 1.1.6 |
-| [**Haven Dev Tools**](HavenDevTools/) | Developer utilities and debugging tools | 1.0.9 |
-| [**Trinket Fortune**](TrinketFortune/) | Increases odds of unowned fishing trinkets dropping as you complete the aquarium | 1.0.4 |
-| [**Faster Races**](FasterRaces/) | Configurable movement speed bonus; integrates with Haven's Birthright to avoid double speed | 1.1.4 |
+| [**Senpai's Chest**](SenpaisChest/) | Smart chests with configurable item rules for automatic storage sorting | 2.2.6 |
+| [**Sunhaven Todo**](SunhavenTodo/) | In-game todo list and journal with per-character saves | 1.1.10 |
+| [**Sun Haven Museum Utility Tracker**](SunHavenMuseumUtilityTracker/) | Track museum donations across all sections | 2.2.9 |
+| [**The Vault**](TheVault/) | Full rework of the vault system; classic core, single project; shop and inventory vault hooks | 3.0.7 |
+| [**Haven's Birthright**](HavensBirthright/) | Unique racial bonuses and traits for each playable race; optional `[BonusTransfers]` cross-race passive grants (off by default) | 2.0.3 |
+| [**Haven's Almanac**](HavensAlmanac/) | Mod compatibility registry and info hub | 1.1.2 |
+| [**A Squirrel's Birthday Reminder**](BirthdayReminder/) | Reminds you of villagers' birthdays | 1.1.7 |
+| [**Haven Dev Tools**](HavenDevTools/) | Developer utilities and debugging tools | 1.0.11 |
+| [**Trinket Fortune**](TrinketFortune/) | Increases odds of unowned fishing trinkets dropping as you complete the aquarium | 1.0.5 |
+| [**Faster Races**](FasterRaces/) | Configurable movement speed bonus; integrates with Haven's Birthright to avoid double speed | 1.1.6 |
 | [**Justice for Harold**](JusticeForHarold/) | Quest interaction tweak for Harold's reward flow | 1.0.0 |
-| [**Crop Optimizer**](CropOptimizer/) | Crop forecast HUD with soft Todo/Birthday/Vault integrations | 1.0.0 |
-| [**Haven's Respec**](HavensRespec/) | Safe skill tree respec with confirmation, per-profession Undo, optional cost, hotkeys | 1.0.0 |
+| [**Crop Optimizer**](CropOptimizer/) | Crop forecast HUD with soft Todo/Birthday/Vault integrations | 1.0.2 |
+| [**Haven's Respec**](HavensRespec/) | Safe skill tree respec with confirmation, per-profession Undo, optional cost, hotkeys | 1.0.1 |
 
 ---
 
@@ -124,6 +124,9 @@ SunhavenMod/
 
 ## Documentation site changelog
 
+- **2026-04-19** — **Haven's Almanac + Birthday Reminder + Senpai's Chest: `ProjectReference` for soft-deps.** `HavensAlmanac.csproj` no longer points at `builds/<Mod>/*.dll` for companion mods; `BirthdayReminder` / `SenpaisChest` likewise reference sibling Todo / museum projects. Clean `dotnet build` / `pre-push-build.ps1 -All` no longer requires pre-staging `builds/`. See per-mod README Unreleased.
+- **2026-04-19** — **Crop Optimizer: build without `builds/TheVault/TheVault.Abstractions.dll`.** `CropOptimizer.csproj` now references [`TheVault.Abstractions/TheVault.Abstractions.csproj`](TheVault.Abstractions/TheVault.Abstractions.csproj) so a clean `dotnet build` resolves `TheVault.Modding` types. No version bump.
+- **2026-04-19** — **Crop Optimizer: FPS / hitch reductions (no version bump).** Incremental projected-sell total in `CropForecast`; cached gameplay camera with search cooldown instead of per-frame `FindObjectsOfType<Camera>` when `Camera.main` is missing; slower crop list refresh + hover fast-path + throttled tooltip content rebuild; cheaper tile coord resolution order before the farmingData key scan. Details in [`CropOptimizer/README.md`](CropOptimizer/README.md) Unreleased.
 - **2026-04-19** — **Docs hub: restore download rollups without Nexus explainer.** Put back the hub **combined total** and **Thunderstore / Nexus** site lines on [`docs/index.html`](docs/index.html); the long Nexus API / `versions.json` callout stays removed. Hub styles restored in [`docs/shared-styles.css`](docs/shared-styles.css). No version bump.
 - **2026-04-19** — **Docs hub: center download stats block.** [`docs/shared-styles.css`](docs/shared-styles.css): `.hub-download-stats` uses horizontal auto margins plus `text-align: center` so totals and Thunderstore/Nexus line align with the guild title; the Nexus explainer keeps `text-align: left` inside the callout for readability. No version bump.
 - **2026-04-19** — **Docs hub: Nexus stats note visible.** Removed faded opacity on the download-stats block and styled the Nexus/API explainer as a bordered callout on [`docs/index.html`](docs/index.html) so the copy (incl. the em dash placeholder for missing Nexus) is easy to read. No version bump.

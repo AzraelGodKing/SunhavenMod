@@ -16,3 +16,9 @@ File: `Sun Haven/BepInEx/config/BirthdayReminder.cfg`
 
 - This README is intentionally concise for repository maintenance.
 - Full player-facing documentation is in `thunderstore/README.md`.
+
+## Changelog
+
+### Unreleased
+
+- **Build:** Optional `SunhavenTodo` integration now references [`../SunhavenTodo/SunhavenTodo.csproj`](../SunhavenTodo/SunhavenTodo.csproj) instead of `..\builds\SunhavenTodo\SunhavenTodo.dll` so a clean `dotnet build` succeeds.

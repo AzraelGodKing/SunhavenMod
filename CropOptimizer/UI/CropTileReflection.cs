@@ -91,24 +91,14 @@ namespace CropOptimizer.UI
             object tm = ResolveInstance();
             Vector3 pos = crop.transform.position;
 
-            // Primary: nearest farmingData key to the crop's world position.
-            // This works regardless of the tilemap's origin/scale transform because crops
-            // grow on hoed/watered soil, which is always present in farmingData.
-            if (tm != null && _farmingDataField != null &&
-                TryFindNearestFarmingKey(tm, pos, out Vector2Int nearest, maxSqDist: 64f * 64f))
-            {
-                tile = nearest;
-                return true;
-            }
-
-            // Fallback 1: Wish.Crop.Position property (some builds store the tile coord here).
+            // Prefer O(1) sources before scanning all farmingData keys (large farms: key scan is costly per hover).
             if (CropOptimizer.Patches.CropGrowthPatch.TryGetCropGridPosition(crop, out Vector2Int cropTile))
             {
                 tile = cropTile;
                 return true;
             }
 
-            // Fallback 2: game's WorldToCell on the farming tilemap.
+            // Fallback: game's WorldToCell on the farming tilemap.
             if (tm != null)
             {
                 try
@@ -130,6 +120,14 @@ namespace CropOptimizer.UI
                 catch
                 {
                 }
+            }
+
+            // Last resort: nearest farmingData key to world position (handles offset tilemap / key space).
+            if (tm != null && _farmingDataField != null &&
+                TryFindNearestFarmingKey(tm, pos, out Vector2Int nearest, maxSqDist: 64f * 64f))
+            {
+                tile = nearest;
+                return true;
             }
 
             tile = new Vector2Int(Mathf.RoundToInt(pos.x - 0.5f), Mathf.RoundToInt(pos.y - 0.5f));

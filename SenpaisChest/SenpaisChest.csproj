@@ -97,16 +97,14 @@
     <InternalsVisibleTo Include="HavenDevTools" />
   </ItemGroup>
 
-  <!-- Soft Dependencies: SMUT + SunhavenTodo (optional integration) -->
+  <!-- Soft dependencies: sibling projects (no pre-built `builds/` DLLs). -->
   <ItemGroup>
-    <Reference Include="SunHavenMuseumUtilityTracker">
-      <HintPath>..\builds\SunHavenMuseumUtilityTracker\SunHavenMuseumUtilityTracker.dll</HintPath>
+    <ProjectReference Include="..\SunHavenMuseumUtilityTracker\SunHavenMuseumUtilityTracker.csproj">
       <Private>false</Private>
-    </Reference>
-    <Reference Include="SunhavenTodo">
-      <HintPath>..\builds\SunhavenTodo\SunhavenTodo.dll</HintPath>
+    </ProjectReference>
+    <ProjectReference Include="..\SunhavenTodo\SunhavenTodo.csproj">
       <Private>false</Private>
-    </Reference>
+    </ProjectReference>
   </ItemGroup>
 
   <!-- Shared Utilities (linked files) -->

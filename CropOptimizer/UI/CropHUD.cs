@@ -31,6 +31,13 @@ namespace CropOptimizer.UI
         private ConfigEntry<bool> _hoverTooltipEnabled;
         private ConfigEntry<float> _hoverTooltipMaxWorldDistance;
 
+        private Component _tooltipContentCrop;
+        private TooltipContent _tooltipContentCache;
+        private float _nextTooltipContentRebuildTime;
+
+        /// <summary>Tooltip rows use reflection and tile probes — limit rebuild rate while the pointer stays on one crop.</summary>
+        private const float TooltipContentRefreshSeconds = 0.22f;
+
         /// <summary>Invoked when the player drags the HUD; parent saves X/Y to config (pixels from top-left).</summary>
         public event Action<float, float> PlacementChanged;
 
@@ -170,6 +177,7 @@ namespace CropOptimizer.UI
             if (_tooltipView == null) return;
             if (!sessionLive || _hoverTooltipEnabled == null || !_hoverTooltipEnabled.Value)
             {
+                ClearTooltipContentState();
                 _tooltipView.SetVisible(false);
                 return;
             }
@@ -179,6 +187,7 @@ namespace CropOptimizer.UI
             {
                 if (RectTransformUtility.RectangleContainsScreenPoint(_hudView.Rect, Input.mousePosition))
                 {
+                    ClearTooltipContentState();
                     _tooltipView.SetVisible(false);
                     return;
                 }
@@ -187,6 +196,7 @@ namespace CropOptimizer.UI
             Camera cam = CropHoverQuery.ResolveGameplayCamera();
             if (cam == null)
             {
+                ClearTooltipContentState();
                 _tooltipView.SetVisible(false);
                 return;
             }
@@ -194,30 +204,54 @@ namespace CropOptimizer.UI
             float maxDist = _hoverTooltipMaxWorldDistance != null ? _hoverTooltipMaxWorldDistance.Value : 5f;
             if (!CropHoverQuery.TryGetClosestCropNearMouse(cam, maxDist, out Component crop))
             {
+                ClearTooltipContentState();
                 _tooltipView.SetVisible(false);
                 return;
             }
 
-            TooltipContent content = CropHoverQuery.BuildTooltipContent(crop, _forecast);
-            if (content == null)
+            float now = Time.unscaledTime;
+            bool cropChanged = crop != _tooltipContentCrop;
+            bool needRebuild = cropChanged || _tooltipContentCache == null || now >= _nextTooltipContentRebuildTime;
+            if (needRebuild)
             {
+                _tooltipContentCache = CropHoverQuery.BuildTooltipContent(crop, _forecast);
+                _tooltipContentCrop = crop;
+                _nextTooltipContentRebuildTime = now + TooltipContentRefreshSeconds;
+            }
+
+            if (_tooltipContentCache == null)
+            {
+                ClearTooltipContentState();
                 _tooltipView.SetVisible(false);
                 return;
             }
 
             _tooltipView.SetVisible(true);
-            _tooltipView.ApplyContent(content);
+            _tooltipView.ApplyContent(_tooltipContentCache);
             _tooltipView.SetScreenPosition(Input.mousePosition);
+        }
+
+        private void ClearTooltipContentState()
+        {
+            _tooltipContentCrop = null;
+            _tooltipContentCache = null;
+            _nextTooltipContentRebuildTime = 0f;
         }
 
         protected override void OnGameTransition()
         {
+            CropHoverQuery.InvalidateGameplayCameraCache();
+            CropHoverQuery.InvalidateHoverAssist();
+            ClearTooltipContentState();
             // Canvas + TMP font should be live now; recreate the UI to pick up fresh styles.
             RebuildCanvas();
         }
 
         protected override void OnMenuTransition()
         {
+            CropHoverQuery.InvalidateGameplayCameraCache();
+            CropHoverQuery.InvalidateHoverAssist();
+            ClearTooltipContentState();
             // Hide but keep canvas around; UI will be rebuilt if the player starts a new session.
             _hudView?.SetVisible(false);
             _tooltipView?.SetVisible(false);

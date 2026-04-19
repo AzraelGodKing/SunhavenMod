@@ -16,6 +16,24 @@ namespace CropOptimizer.UI
         private static UnityEngine.Object[] _cachedCrops;
         private static float _nextCacheTime;
 
+        private static Camera _cachedGameplayCamera;
+        private static float _nextGameplayCameraSearchTime;
+
+        private static Vector3 _lastHoverMouseScreen;
+        private static Component _lastHoverCrop;
+        private static float _nextHoverFullScanTime;
+
+        /// <summary>How often we refresh the crop list from the scene (large farms: avoid hammering <c>FindObjectsOfType</c>).</summary>
+        private const float CropCacheRefreshSeconds = 0.45f;
+
+        /// <summary>When the mouse is stable, skip the O(n) closest-crop scan for a short window.</summary>
+        private const float HoverRescanMinInterval = 0.055f;
+
+        private const float MouseMoveSkipScanPxSq = 9f;
+
+        /// <summary>After a successful camera search, wait before scanning all cameras again (avoids per-frame <c>FindObjectsOfType&lt;Camera&gt;</c>).</summary>
+        private const float GameplayCameraSearchCooldown = 2f;
+
         private static readonly string[] WaterMemberNames =
         {
             "isWatered", "IsWatered", "watered", "Watered", "needsWater", "NeedsWater",
@@ -36,7 +54,17 @@ namespace CropOptimizer.UI
         public static Camera ResolveGameplayCamera()
         {
             if (Camera.main != null && Camera.main.enabled)
+            {
+                _cachedGameplayCamera = Camera.main;
                 return Camera.main;
+            }
+
+            if (_cachedGameplayCamera != null && _cachedGameplayCamera.enabled && _cachedGameplayCamera.gameObject.activeInHierarchy)
+                return _cachedGameplayCamera;
+
+            float now = Time.unscaledTime;
+            if (now < _nextGameplayCameraSearchTime)
+                return _cachedGameplayCamera;
 
             Camera[] cams = UnityEngine.Object.FindObjectsOfType<Camera>();
             Camera best = null;
@@ -48,7 +76,24 @@ namespace CropOptimizer.UI
                     best = c;
             }
 
+            _cachedGameplayCamera = best;
+            // Retry sooner when no camera yet (e.g. load-in); back off when we have one.
+            _nextGameplayCameraSearchTime = now + (best != null ? GameplayCameraSearchCooldown : 0.25f);
             return best;
+        }
+
+        /// <summary>Call on scene/game transitions so we do not keep a stale camera reference.</summary>
+        public static void InvalidateGameplayCameraCache()
+        {
+            _cachedGameplayCamera = null;
+            _nextGameplayCameraSearchTime = 0f;
+        }
+
+        /// <summary>Clears hover fast-path state (e.g. after load) so we never reference destroyed crops.</summary>
+        public static void InvalidateHoverAssist()
+        {
+            _lastHoverCrop = null;
+            _nextHoverFullScanTime = 0f;
         }
 
         /// <summary>
@@ -101,8 +146,31 @@ namespace CropOptimizer.UI
             if (!TryMouseWorldOnPlane(camera, planeZ, out Vector3 worldOnPlane))
                 return false;
 
-            Vector2 mouse2 = new Vector2(worldOnPlane.x, worldOnPlane.y);
+            Vector3 mouseScreen = Input.mousePosition;
+            float now = Time.unscaledTime;
             float maxSq = maxWorldDistance * maxWorldDistance;
+            Vector2 mouse2 = new Vector2(worldOnPlane.x, worldOnPlane.y);
+
+            bool mouseStable = (mouseScreen - _lastHoverMouseScreen).sqrMagnitude <= MouseMoveSkipScanPxSq;
+            _lastHoverMouseScreen = mouseScreen;
+
+            // Fast path: between full scans, if the pointer barely moved and the last crop is still closest in range, skip O(n).
+            if (mouseStable && now < _nextHoverFullScanTime && _lastHoverCrop != null)
+            {
+                Component last = _lastHoverCrop;
+                if (last != null)
+                {
+                    Vector2 p = new Vector2(last.transform.position.x, last.transform.position.y);
+                    if ((p - mouse2).sqrMagnitude < maxSq)
+                    {
+                        crop = last;
+                        return true;
+                    }
+                }
+            }
+
+            _nextHoverFullScanTime = now + HoverRescanMinInterval;
+
             float bestSq = maxSq;
             Component best = null;
 
@@ -120,8 +188,12 @@ namespace CropOptimizer.UI
             }
 
             if (best == null)
+            {
+                _lastHoverCrop = null;
                 return false;
+            }
             crop = best;
+            _lastHoverCrop = best;
             return true;
         }
 
@@ -130,7 +202,7 @@ namespace CropOptimizer.UI
             float now = Time.unscaledTime;
             if (_cachedCrops != null && now < _nextCacheTime)
                 return;
-            _nextCacheTime = now + 0.2f;
+            _nextCacheTime = now + CropCacheRefreshSeconds;
             Type ct = CropType;
             if (ct == null)
             {

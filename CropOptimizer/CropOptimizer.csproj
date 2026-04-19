@@ -67,12 +67,11 @@
     </Reference>
   </ItemGroup>
 
-  <!-- TheVault.Abstractions: compile-time types for VaultModApiBridge (VaultIntegration); other mods are soft-deps at runtime via reflection -->
+  <!-- TheVault.Abstractions: compile-time types for VaultModApiBridge (VaultIntegration). ProjectReference builds the ref assembly when `builds/` is empty. -->
   <ItemGroup>
-    <Reference Include="TheVault.Abstractions">
-      <HintPath>..\builds\TheVault\TheVault.Abstractions.dll</HintPath>
+    <ProjectReference Include="..\TheVault.Abstractions\TheVault.Abstractions.csproj">
       <Private>false</Private>
-    </Reference>
+    </ProjectReference>
   </ItemGroup>
 
   <ItemGroup>

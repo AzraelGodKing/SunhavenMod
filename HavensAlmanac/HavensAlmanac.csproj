@@ -66,40 +66,32 @@
     </Reference>
   </ItemGroup>
 
-  <!-- Soft Dependencies: All 7 mods (optional integration) -->
+  <!-- Soft dependencies: compile against sibling projects so `dotnet build` works without `builds/<Mod>/*.dll`. -->
   <ItemGroup>
-    <Reference Include="SunhavenTodo">
-      <HintPath>..\builds\SunhavenTodo\SunhavenTodo.dll</HintPath>
+    <ProjectReference Include="..\SunhavenTodo\SunhavenTodo.csproj">
       <Private>false</Private>
-    </Reference>
-    <Reference Include="BirthdayReminder">
-      <HintPath>..\builds\BirthdayReminder\BirthdayReminder.dll</HintPath>
+    </ProjectReference>
+    <ProjectReference Include="..\BirthdayReminder\BirthdayReminder.csproj">
       <Private>false</Private>
-    </Reference>
-    <Reference Include="SunHavenMuseumUtilityTracker">
-      <HintPath>..\builds\SunHavenMuseumUtilityTracker\SunHavenMuseumUtilityTracker.dll</HintPath>
+    </ProjectReference>
+    <ProjectReference Include="..\SunHavenMuseumUtilityTracker\SunHavenMuseumUtilityTracker.csproj">
       <Private>false</Private>
-    </Reference>
-    <Reference Include="SenpaisChest">
-      <HintPath>..\builds\SenpaisChest\SenpaisChest.dll</HintPath>
+    </ProjectReference>
+    <ProjectReference Include="..\SenpaisChest\SenpaisChest.csproj">
       <Private>false</Private>
-    </Reference>
-    <Reference Include="TheVault">
-      <HintPath>..\builds\TheVault\TheVault.dll</HintPath>
+    </ProjectReference>
+    <ProjectReference Include="..\TheVault\TheVault.csproj">
       <Private>false</Private>
-    </Reference>
-    <Reference Include="HavensBirthright">
-      <HintPath>..\builds\HavensBirthright\HavensBirthright.dll</HintPath>
+    </ProjectReference>
+    <ProjectReference Include="..\HavensBirthright\HavensBirthright.csproj">
       <Private>false</Private>
-    </Reference>
-    <Reference Include="HavenDevTools">
-      <HintPath>..\builds\HavenDevTools\HavenDevTools.dll</HintPath>
+    </ProjectReference>
+    <ProjectReference Include="..\HavenDevTools\HavenDevTools.csproj">
       <Private>false</Private>
-    </Reference>
-    <Reference Include="CropOptimizer">
-      <HintPath>..\builds\CropOptimizer\CropOptimizer.dll</HintPath>
+    </ProjectReference>
+    <ProjectReference Include="..\CropOptimizer\CropOptimizer.csproj">
       <Private>false</Private>
-    </Reference>
+    </ProjectReference>
   </ItemGroup>
 
   <!-- Exclude decompiled reference files: kept in _refs/ as dnSpy dumps for -->
