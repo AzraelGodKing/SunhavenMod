@@ -89,7 +89,13 @@ correctness and UX upgrades over the prior implementation.
     `Player.AddTickets` with a negative amount. Missing API → refuse reset (never free-ride
     a failed deduction).
   - `ConfirmResetDialog` uGUI modal with scrim, wood border, parchment-accented typography,
-    and hover/pressed tint states on both the Cancel and Reset buttons.
+    and hover/pressed tint states on both the Cancel and Reset buttons. The dialog root is a
+    full-screen `RectTransform` (not a plain `Transform` under the canvas — that broke stretch
+    layout and could desync visuals from raycasts), with a **nested** `Canvas`
+    (`overrideSorting`, `sortingOrder = parent + 200`, matching `renderMode` / `worldCamera` /
+    `planeDistance`) plus its own `GraphicRaycaster` so the scrim and buttons sit above sibling
+    UI and reliably receive clicks. Title, body, and card border use `raycastTarget = false`
+    so they cannot steal hits from the buttons.
   - `RespecButtonInjector` ships a layered wood-plaque look — drop shadow → tintable fill →
     top-half gloss highlight → fixed gold border ring → all-caps letter-spaced TMP label.
     Hover / press now nudge only `Image.color` + `localScale` (1.04× hover lift, 0.97× press
@@ -111,3 +117,6 @@ correctness and UX upgrades over the prior implementation.
   - Build + publish plumbing: GitHub Actions matrix entry, `scripts/pre-push-build.ps1`
     tracking, `docs/versions.json` entry, mod card on the Sun Haven docs hub, and a dedicated
     `docs/HavensRespec/HavensRespec.html` page.
+  - Repo hygiene: root `.gitignore` now ignores `builds/` staging outputs. CI workflows still
+    use `builds/<ModDir>/` during each run, but those DLLs are treated as ephemeral artifacts
+    (download/upload/package inputs), not tracked source files.

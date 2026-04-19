@@ -12,7 +12,6 @@ namespace HavensRespec.UI
     /// </summary>
     internal sealed class ConfirmResetDialog : MonoBehaviour
     {
-        private GameObject _root;
         private TextMeshProUGUI _title;
         private TextMeshProUGUI _body;
         private Action _onConfirm;
@@ -23,8 +22,32 @@ namespace HavensRespec.UI
         /// </summary>
         public static ConfirmResetDialog BuildUnder(Transform parent)
         {
-            var go = new GameObject("HavensRespec_ConfirmDialog");
-            go.transform.SetParent(parent, false);
+            // Must be a RectTransform stretched to the parent canvas — a plain Transform breaks
+            // layout for full-screen children and can leave raycasts not matching visuals.
+            var go = new GameObject("HavensRespec_ConfirmDialog", typeof(RectTransform));
+            var rootRt = go.GetComponent<RectTransform>();
+            rootRt.SetParent(parent, false);
+            rootRt.anchorMin = Vector2.zero;
+            rootRt.anchorMax = Vector2.one;
+            rootRt.offsetMin = Vector2.zero;
+            rootRt.offsetMax = Vector2.zero;
+            rootRt.localScale = Vector3.one;
+
+            // Nested canvas above sibling UI (inventory overlays, other panels) so our scrim and
+            // buttons reliably receive pointer events. Parent canvas already has a raycaster; a
+            // child canvas needs its own GraphicRaycaster for its draw hierarchy.
+            var parentCanvas = parent.GetComponent<Canvas>() ?? parent.GetComponentInParent<Canvas>();
+            var overlayCanvas = go.AddComponent<Canvas>();
+            if (parentCanvas != null)
+            {
+                overlayCanvas.renderMode = parentCanvas.renderMode;
+                overlayCanvas.worldCamera = parentCanvas.worldCamera;
+                overlayCanvas.planeDistance = parentCanvas.planeDistance;
+            }
+            overlayCanvas.overrideSorting = true;
+            overlayCanvas.sortingOrder = parentCanvas != null ? parentCanvas.sortingOrder + 200 : 32000;
+            go.AddComponent<GraphicRaycaster>();
+
             var dialog = go.AddComponent<ConfirmResetDialog>();
             dialog.BuildHierarchy();
             dialog.Hide();
@@ -36,29 +59,22 @@ namespace HavensRespec.UI
             _title.text = title ?? "Confirm reset?";
             _body.text = body ?? string.Empty;
             _onConfirm = onConfirm;
-            _root.SetActive(true);
-            _root.transform.SetAsLastSibling();
+            gameObject.SetActive(true);
+            transform.SetAsLastSibling();
         }
 
         public void Hide()
         {
-            _root.SetActive(false);
+            gameObject.SetActive(false);
             _onConfirm = null;
         }
 
         private void BuildHierarchy()
         {
-            _root = new GameObject("Root");
-            var rootRt = _root.AddComponent<RectTransform>();
-            rootRt.SetParent(transform, false);
-            rootRt.anchorMin = Vector2.zero;
-            rootRt.anchorMax = Vector2.one;
-            rootRt.offsetMin = Vector2.zero;
-            rootRt.offsetMax = Vector2.zero;
-
+            // Content is parented directly to this behaviour's RectTransform (full screen).
             // Full-screen scrim — eats clicks so the player cannot click underneath the dialog.
             var scrimGo = new GameObject("Scrim");
-            scrimGo.transform.SetParent(_root.transform, false);
+            scrimGo.transform.SetParent(transform, false);
             var scrimRt = scrimGo.AddComponent<RectTransform>();
             scrimRt.anchorMin = Vector2.zero;
             scrimRt.anchorMax = Vector2.one;
@@ -74,7 +90,7 @@ namespace HavensRespec.UI
 
             // Card.
             var cardGo = new GameObject("Card");
-            cardGo.transform.SetParent(_root.transform, false);
+            cardGo.transform.SetParent(transform, false);
             var cardRt = cardGo.AddComponent<RectTransform>();
             cardRt.anchorMin = new Vector2(0.5f, 0.5f);
             cardRt.anchorMax = new Vector2(0.5f, 0.5f);
@@ -83,6 +99,7 @@ namespace HavensRespec.UI
             var cardBorder = cardGo.AddComponent<Image>();
             cardBorder.sprite = RespecStyle.SolidRounded(RespecStyle.Wood, RespecStyle.WoodShadow, 28, 3, 8);
             cardBorder.type = Image.Type.Sliced;
+            cardBorder.raycastTarget = false;
 
             var fillGo = new GameObject("Fill");
             fillGo.transform.SetParent(cardGo.transform, false);
@@ -111,6 +128,7 @@ namespace HavensRespec.UI
             _title.fontStyle = FontStyles.Bold;
             _title.color = RespecStyle.AccentGold;
             _title.text = "Confirm reset?";
+            _title.raycastTarget = false;
 
             // Body.
             var bodyGo = new GameObject("Body");
@@ -125,6 +143,7 @@ namespace HavensRespec.UI
             _body.fontSize = 15f;
             _body.color = new Color(0.95f, 0.92f, 0.83f, 1f);
             _body.text = string.Empty;
+            _body.raycastTarget = false;
 
             // Buttons row.
             BuildButton(fillGo.transform, "Cancel", new Vector2(-10f, 12f), new Vector2(1f, 0f), new Vector2(1f, 0f), new Vector2(1f, 0f),
