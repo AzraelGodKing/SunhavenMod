@@ -1,7 +1,7 @@
 # Crop Optimizer
 
 - **Thunderstore:** [CropOptimizer](https://thunderstore.io/c/sun-haven/p/AzraelGodKing/CropOptimizer/)
-- **Nexus Mods:** [Crop Optimizer](https://www.nexusmods.com/sunhaven/mods/501)
+- **Nexus Mods:** [Crop Optimizer](https://www.nexusmods.com/sunhaven/mods/500) ([files tab](https://www.nexusmods.com/sunhaven/mods/500?tab=files))
 
 Crop Optimizer adds field-level harvest forecasting, a lightweight crop HUD, and soft integrations with Sunhaven Todo, Birthday Reminder, and The Vault.
 
@@ -41,7 +41,7 @@ Crop Optimizer adds field-level harvest forecasting, a lightweight crop HUD, and
 ## Changelog
 
 ### Unreleased
-- **Nexus:** Canonical listing is [mod 501](https://www.nexusmods.com/sunhaven/mods/501) in [`docs/versions.json`](../docs/versions.json) (was 500); README download line matches.
+- **Nexus:** Canonical listing is [mod 500](https://www.nexusmods.com/sunhaven/mods/500) in [`docs/versions.json`](../docs/versions.json) (Haven's Almanac is [mod 501](https://www.nexusmods.com/sunhaven/mods/501)). `nexus_file_group_id` **7320911** remains for CI uploads.
 - **Thunderstore:** Package `website_url` in `thunderstore/manifest.json` now points at the [Crop Optimizer listing](https://thunderstore.io/c/sun-haven/p/AzraelGodKing/CropOptimizer/); root README lists the same canonical link. `thunderstore/README.md` version line aligned with `docs/versions.json`.
 - **Build:** `CropOptimizer.csproj` now uses a `ProjectReference` to [`TheVault.Abstractions`](../TheVault.Abstractions/TheVault.Abstractions.csproj) instead of `..\builds\TheVault\TheVault.Abstractions.dll`, so `dotnet build` succeeds on a clean clone without pre-building The Vault into `builds/`.
 - **Performance:** Reduced per-frame work that could tank FPS on large farms: projected sell total is now maintained incrementally in `CropForecast` (no full dictionary scan each frame); gameplay camera resolution no longer calls `FindObjectsOfType<Camera>()` every frame when `Camera.main` is unset (cached + cooldown, invalidated on transitions); crop instance cache refresh slowed slightly; hover closest-crop search skips full O(n) scans while the pointer is stable within a short window; tooltip card content rebuilds are throttled when hovering the same crop; tile coord lookup tries `Wish.Crop` grid position / `WorldToCell` before the expensive nearest-`farmingData`-key scan.

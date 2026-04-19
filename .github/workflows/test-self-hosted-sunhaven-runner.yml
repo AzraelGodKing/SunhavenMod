@@ -385,12 +385,6 @@ jobs:
             fi
           fi
 
-          SKIP_DISCORD_FOR_ALMANAC=false
-          if [ "$JSON_KEY" == "com.azraelgodking.havensalmanac" ]; then
-            NEXUS_FILE_GROUP_ID=""
-            SKIP_DISCORD_FOR_ALMANAC=true
-          fi
-
           echo "json_key=$JSON_KEY" >> "$GITHUB_OUTPUT"
           echo "mod_dir=$MOD_DIR" >> "$GITHUB_OUTPUT"
           echo "dll_name=$DLL_NAME" >> "$GITHUB_OUTPUT"
@@ -402,7 +396,7 @@ jobs:
           echo "nexus_url=$NEXUS_URL" >> "$GITHUB_OUTPUT"
           echo "nexus_file_group_id=$NEXUS_FILE_GROUP_ID" >> "$GITHUB_OUTPUT"
           echo "thunderstore_url=$THUNDERSTORE_URL" >> "$GITHUB_OUTPUT"
-          echo "skip_discord_for_almanac=$SKIP_DISCORD_FOR_ALMANAC" >> "$GITHUB_OUTPUT"
+          echo "skip_discord_for_almanac=false" >> "$GITHUB_OUTPUT"
 
           echo "📦 Packaging: $MOD_DISPLAY_NAME v$VERSION"
 

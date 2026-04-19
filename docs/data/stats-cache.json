@@ -1,5 +1,5 @@
 {
-  "lastFetched": "2026-04-19T23:22:23.271Z",
+  "lastFetched": "2026-04-19T23:36:02.752Z",
   "mods": {
     "senpais-chest": {
       "name": "SenpaisChest",
@@ -183,11 +183,8 @@
           "1.0.0": 6
         }
       },
-      "nexus": {
-        "total_downloads": 11,
-        "unique_downloads": 11
-      },
-      "combined_total": 17
+      "nexus": null,
+      "combined_total": 6
     },
     "faster-races": {
       "name": "FasterRaces",
@@ -230,8 +227,8 @@
   },
   "site_total": {
     "thunderstore": 2100,
-    "nexus_total": 3865,
-    "nexus_unique": 2821,
-    "grand_total": 5965
+    "nexus_total": 3854,
+    "nexus_unique": 2810,
+    "grand_total": 5954
   }
 }
