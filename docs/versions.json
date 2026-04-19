@@ -109,5 +109,14 @@
     "thunderstore": "https://thunderstore.io/c/sun-haven/p/AzraelGodKing/CropOptimizer/",
     "thunderstoreName": "CropOptimizer",
     "changelog": "Initial release scaffold: crop growth patch, forecast cache, HUD, and soft integrations for SunhavenTodo, BirthdayReminder, TheVault, and HavensAlmanac."
+  },
+  "com.azraelgodking.havensrespec": {
+    "version": "1.0.0",
+    "name": "Haven's Respec",
+    "description": "Safe skill respec — Reset button on every skill tab, confirmation dialog, one-step Undo, configurable cost, and full Configuration Manager support",
+    "nexus": "",
+    "thunderstore": "",
+    "thunderstoreName": "HavensRespec",
+    "changelog": "Initial release of Haven's Respec v1.0.0: clean-room, tree-driven per-profession reset with confirmation dialog, session-scoped Undo, configurable cost (None/Gold/Gems), optional Shift-skip and hotkeys. Config lives in BepInEx/config/HavensRespec.cfg and is editable live via Configuration Manager."
   }
 }

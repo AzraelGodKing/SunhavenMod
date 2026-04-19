@@ -58,7 +58,7 @@ param(
         "senpaischest", "havensbirthright", "sunhavenmuseumutilitytracker",
         "squirrelsbirthdayreminder", "sunhaventodo", "thevault",
         "havendevtools", "havensalmanac", "fasterraces", "trinketfortune",
-        "justiceforharold", "cropoptimizer"
+        "justiceforharold", "cropoptimizer", "havensrespec"
     )]
     [string]$Mod,
 
@@ -97,6 +97,7 @@ $ModDefs = [ordered]@{
     "trinketfortune"               = @{ JsonKey = "com.azraelgodking.trinketfortune"; ModDir = "TrinketFortune"; UsePluginInfo = $false; ReadmePath = "TrinketFortune"; IndexDataName = "Trinket Fortune"; DocsHtml = "TrinketFortune\TrinketFortune.html"; ExtraCsproj = @() }
     "justiceforharold"             = @{ JsonKey = "com.azraelgodking.justiceforharold"; ModDir = "JusticeForHarold"; UsePluginInfo = $true; ReadmePath = $null; IndexDataName = $null; DocsHtml = $null; ExtraCsproj = @() }
     "cropoptimizer"                = @{ JsonKey = "com.azraelgodking.cropoptimizer"; ModDir = "CropOptimizer"; UsePluginInfo = $true; ReadmePath = "CropOptimizer"; IndexDataName = "Crop Optimizer"; DocsHtml = "CropOptimizer\CropOptimizer.html"; ExtraCsproj = @() }
+    "havensrespec"                 = @{ JsonKey = "com.azraelgodking.havensrespec"; ModDir = "HavensRespec"; UsePluginInfo = $true; ReadmePath = "HavensRespec"; IndexDataName = "Haven's Respec"; DocsHtml = "HavensRespec\HavensRespec.html"; ExtraCsproj = @() }
 }
 
 function Get-VersionParts {

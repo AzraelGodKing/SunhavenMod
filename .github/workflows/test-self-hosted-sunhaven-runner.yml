@@ -38,6 +38,7 @@ on:
           - fasterraces
           - trinketfortune
           - cropoptimizer
+          - havensrespec
       publish_thunderstore:
         description: 'Publish to Thunderstore? (ignored while dry_run is true)'
         required: true
@@ -90,7 +91,7 @@ jobs:
           else
             MOD_KEY="${{ github.event.inputs.mod }}"
             if [ "$MOD_KEY" == "all" ]; then
-              echo 'matrix=["havensbirthright","sunhavenmuseumutilitytracker","squirrelsbirthdayreminder","sunhaventodo","thevault","havendevtools","senpaischest","havensalmanac","fasterraces","trinketfortune","cropoptimizer"]' >> "$GITHUB_OUTPUT"
+              echo 'matrix=["havensbirthright","sunhavenmuseumutilitytracker","squirrelsbirthdayreminder","sunhaventodo","thevault","havendevtools","senpaischest","havensalmanac","fasterraces","trinketfortune","cropoptimizer","havensrespec"]' >> "$GITHUB_OUTPUT"
             else
               echo "matrix=[\"$MOD_KEY\"]" >> "$GITHUB_OUTPUT"
             fi
@@ -186,6 +187,11 @@ jobs:
               MOD_DIR="CropOptimizer"
               DLL_NAME="CropOptimizer"
               CSPROJ="CropOptimizer/CropOptimizer.csproj"
+              ;;
+            "havensrespec")
+              MOD_DIR="HavensRespec"
+              DLL_NAME="HavensRespec"
+              CSPROJ="HavensRespec/HavensRespec.csproj"
               ;;
             *)
               echo "❌ Unknown mod: $MOD_KEY"
@@ -351,6 +357,12 @@ jobs:
               MOD_DIR="CropOptimizer"
               DLL_NAME="CropOptimizer"
               THUNDERSTORE_NAME="CropOptimizer"
+              ;;
+            "havensrespec")
+              JSON_KEY="com.azraelgodking.havensrespec"
+              MOD_DIR="HavensRespec"
+              DLL_NAME="HavensRespec"
+              THUNDERSTORE_NAME="HavensRespec"
               ;;
             *)
               echo "❌ Unknown mod: $MOD_KEY"
@@ -789,6 +801,7 @@ jobs:
             "com.azraelgodking.fasterraces:FasterRaces"
             "com.azraelgodking.trinketfortune:TrinketFortune"
             "com.azraelgodking.cropoptimizer:CropOptimizer"
+            "com.azraelgodking.havensrespec:HavensRespec"
           )
           IDX=$((RANDOM % ${#MODS[@]}))
           ENTRY="${MODS[$IDX]}"

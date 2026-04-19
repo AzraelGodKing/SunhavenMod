@@ -257,7 +257,8 @@ document.addEventListener('DOMContentLoaded', function() {
             "Senpai's Chest": 'com.azraelgodking.senpaischest',
             "Haven's Almanac": 'com.azraelgodking.havensalmanac',
             'HavenDevTools': 'com.azraelgodking.havendevtools',
-            'Crop Optimizer': 'com.azraelgodking.cropoptimizer'
+            'Crop Optimizer': 'com.azraelgodking.cropoptimizer',
+            "Haven's Respec": 'com.azraelgodking.havensrespec'
         };
 
         // Determine base path for versions.json
@@ -307,7 +308,8 @@ document.addEventListener('DOMContentLoaded', function() {
                         "Senpai's Chest": 'com.azraelgodking.senpaischest',
                         "Haven's Almanac": 'com.azraelgodking.havensalmanac',
                         'HavenDevTools': 'com.azraelgodking.havendevtools',
-                        'Crop Optimizer': 'com.azraelgodking.cropoptimizer'
+                        'Crop Optimizer': 'com.azraelgodking.cropoptimizer',
+                        "Haven's Respec": 'com.azraelgodking.havensrespec'
                     };
                     var pageKey = navToKey[pageName];
                     if (pageKey && data[pageKey]) {
