@@ -3,7 +3,8 @@
   "private": true,
   "version": "1.0.0",
   "scripts": {
-    "stats": "node scripts/fetch-stats.js"
+    "stats": "node scripts/fetch-stats.js",
+    "stats:force": "node scripts/fetch-stats.js --force"
   },
   "dependencies": {
     "dotenv": "^17.4.2"

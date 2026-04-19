@@ -1,7 +1,11 @@
 const fs = require("fs");
 const path = require("path");
 
-require("dotenv").config();
+try {
+  require("dotenv").config();
+} catch (e) {
+  if (e && e.code !== "MODULE_NOT_FOUND") throw e;
+}
 
 const ROOT = path.resolve(__dirname, "..");
 const CACHE_PATH = path.join(ROOT, "data", "stats-cache.json");
@@ -185,15 +189,26 @@ function writeCacheAtomic(data) {
   fs.renameSync(TMP_PATH, CACHE_PATH);
 }
 
+function isForceRefresh() {
+  const argv = process.argv.slice(2);
+  if (argv.includes("--force") || argv.includes("-f")) return true;
+  const v = String(process.env.STATS_FORCE || "").trim().toLowerCase();
+  return v === "1" || v === "true" || v === "yes";
+}
+
 async function main() {
+  const force = isForceRefresh();
   const cache = readCache();
   const now = new Date();
-  if (cache?.lastFetched) {
+  if (!force && cache?.lastFetched) {
     const last = new Date(cache.lastFetched);
     if (!Number.isNaN(last.valueOf()) && utcDateString(last) === utcDateString(now)) {
-      console.log("Stats already up to date");
+      console.log("Stats already up to date (same UTC day). Use --force or STATS_FORCE=1 to refresh anyway.");
       return;
     }
+  }
+  if (force) {
+    console.log("[stats] Force refresh: bypassing same-day short-circuit");
   }
 
   const packageIndex = await loadSunHavenThunderstoreIndex();
