@@ -1693,6 +1693,93 @@ body.site-search-open {
 }
 
 /* -----------------------------------------------------------------
+   DOWNLOAD STATS (docs/scripts/stats-display.js + docs/data/stats-cache.json)
+   ----------------------------------------------------------------- */
+.hub-download-stats {
+    margin-top: 16px;
+    max-width: 44rem;
+    font-size: 0.82em;
+    line-height: 1.55;
+    opacity: 0.82;
+}
+
+.hub-download-stats-primary {
+    margin: 0 0 6px;
+    font-size: 1.05em;
+    letter-spacing: 0.02em;
+}
+
+.hub-download-grand {
+    font-weight: 700;
+    font-variant-numeric: tabular-nums;
+    color: var(--accent, #2f8f5b);
+}
+
+.hub-download-stats-detail {
+    margin: 0 0 6px;
+    font-variant-numeric: tabular-nums;
+}
+
+.hub-download-stats-note {
+    margin: 0;
+    font-size: 0.88em;
+    opacity: 0.75;
+    line-height: 1.45;
+}
+
+.mod-card-downloads {
+    margin: 10px 0 8px;
+    padding: 8px 10px;
+    border-radius: 8px;
+    font-size: 0.78em;
+    line-height: 1.45;
+    background: rgba(0, 0, 0, 0.04);
+    border: 1px solid rgba(47, 143, 91, 0.15);
+}
+
+[data-theme="dark"] .mod-card-downloads {
+    background: rgba(0, 0, 0, 0.25);
+    border-color: rgba(111, 207, 151, 0.18);
+}
+
+.mod-card-downloads-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px 14px;
+    align-items: baseline;
+    justify-content: flex-start;
+}
+
+.mod-card-downloads-row > span {
+    font-variant-numeric: tabular-nums;
+    white-space: nowrap;
+}
+
+.mod-page-download-stats {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px 18px;
+    align-items: baseline;
+    margin: 14px 0 20px;
+    padding: 12px 16px;
+    border-radius: 10px;
+    font-size: 0.88em;
+    line-height: 1.5;
+    background: rgba(47, 143, 91, 0.09);
+    border: 1px solid rgba(47, 143, 91, 0.22);
+    font-variant-numeric: tabular-nums;
+}
+
+[data-theme="dark"] .mod-page-download-stats {
+    background: rgba(63, 185, 80, 0.1);
+    border-color: rgba(111, 207, 151, 0.25);
+}
+
+.mod-page-download-stats strong {
+    font-weight: 700;
+}
+
+/* -----------------------------------------------------------------
    PRINT
    ----------------------------------------------------------------- */
 @media print {
