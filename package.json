@@ -1,0 +1,11 @@
+{
+  "name": "sunhavenmod-site-tools",
+  "private": true,
+  "version": "1.0.0",
+  "scripts": {
+    "stats": "node scripts/fetch-stats.js"
+  },
+  "dependencies": {
+    "dotenv": "^17.4.2"
+  }
+}
