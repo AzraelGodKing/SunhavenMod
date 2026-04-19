@@ -484,7 +484,7 @@ namespace SunhavenTodo.UI
                 alignment = TextAnchor.UpperLeft
             };
 
-            float controlsWidth = Scaled(20 + 4 + 20 + 45 + 4 + 22 + 4); // checkbox, spaces, priority, category, delete button
+            float controlsWidth = Scaled(20 + 4 + 20 + 45 + 4 + 22 + 2 + 22 + 4); // checkbox, spaces, priority, category, edit, delete button
             if (item.IconItemId > 0)
                 controlsWidth += IconSize + Scaled(4);
 
@@ -541,6 +541,21 @@ namespace SunhavenTodo.UI
             // Wrapped title with dynamic row height.
             GUILayout.Label(titleText, wrappedTitleStyle, GUILayout.Width(titleAvailableWidth), GUILayout.MinHeight(titleHeight));
             GUILayout.FlexibleSpace();
+
+            // Edit button
+            if (GUILayout.Button("✎", _buttonStyle, GUILayout.Width(22), GUILayout.Height(22)))
+            {
+                _editingItemId = item.Id;
+                _newTodoTitle = item.Title ?? "";
+                _newTodoDescription = item.Description ?? "";
+                _selectedPriority = (int)item.Priority;
+                _selectedCategory = (int)item.Category;
+                _newTodoIsRecurring = item.IsRecurring;
+                _newTodoRecurInterval = (int)item.RecurInterval;
+                _showAddForm = true;
+            }
+
+            GUILayout.Space(2);
 
             // Delete button
             if (GUILayout.Button("x", _buttonStyle, GUILayout.Width(22), GUILayout.Height(22)))
@@ -734,6 +749,15 @@ namespace SunhavenTodo.UI
             if (_editingItemId != null)
             {
                 item.Id = _editingItemId;
+                var existing = _manager.GetTodo(_editingItemId);
+                if (existing != null)
+                {
+                    item.CreatedAt = existing.CreatedAt;
+                    item.IsCompleted = existing.IsCompleted;
+                    item.CompletedAt = existing.CompletedAt;
+                    item.IconItemId = existing.IconItemId;
+                    item.MuseumDestination = existing.MuseumDestination;
+                }
                 _manager.UpdateTodo(item);
             }
             else

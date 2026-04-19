@@ -411,6 +411,31 @@ namespace SunhavenTodo
             if (_staticTodoManager == null) return;
             _staticTodoManager.ResetRecurringTodos(Data.RecurInterval.Daily);
             Log?.LogInfo("[Todo] Reset daily recurring tasks.");
+
+            try
+            {
+                var dayCycleType = AccessTools.TypeByName("Wish.DayCycle");
+                if (dayCycleType != null)
+                {
+                    var monthDayProp = AccessTools.Property(dayCycleType, "MonthDay");
+                    int day = monthDayProp != null ? (int)monthDayProp.GetValue(null) : 0;
+                    if (day > 0)
+                    {
+                        if ((day - 1) % 7 == 0)
+                        {
+                            _staticTodoManager.ResetRecurringTodos(Data.RecurInterval.Weekly);
+                            Log?.LogInfo("[Todo] Reset weekly recurring tasks.");
+                        }
+                        if (day == 1)
+                        {
+                            _staticTodoManager.ResetRecurringTodos(Data.RecurInterval.Seasonal);
+                            Log?.LogInfo("[Todo] Reset seasonal recurring tasks.");
+                        }
+                    }
+                }
+            }
+            catch { }
+
             SaveData();
         }
 
