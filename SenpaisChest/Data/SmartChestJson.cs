@@ -1,7 +1,6 @@
-using System;
 using System.Collections.Generic;
-using System.Globalization;
 using System.Text;
+using SunhavenMods.Shared;
 
 namespace SenpaisChest.Data
 {
@@ -12,7 +11,7 @@ namespace SenpaisChest.Data
             var sb = new StringBuilder();
             sb.AppendLine("{");
             sb.Append("  \"CharacterName\": ");
-            WriteJsonString(sb, data.CharacterName);
+            MinimalJsonParser.WriteJsonString(sb, data.CharacterName);
             sb.AppendLine(",");
             sb.AppendLine("  \"Chests\": [");
 
@@ -22,11 +21,11 @@ namespace SenpaisChest.Data
                 sb.AppendLine("    {");
 
                 sb.Append("      \"ChestId\": ");
-                WriteJsonString(sb, chest.ChestId);
+                MinimalJsonParser.WriteJsonString(sb, chest.ChestId);
                 sb.AppendLine(",");
 
                 sb.Append("      \"ChestName\": ");
-                WriteJsonString(sb, chest.ChestName);
+                MinimalJsonParser.WriteJsonString(sb, chest.ChestName);
                 sb.AppendLine(",");
 
                 sb.AppendLine($"      \"IsEnabled\": {(chest.IsEnabled ? "true" : "false")},");
@@ -40,19 +39,19 @@ namespace SenpaisChest.Data
                     sb.AppendLine($"          \"ItemId\": {rule.ItemId},");
 
                     sb.Append("          \"CategoryName\": ");
-                    WriteJsonString(sb, rule.CategoryName ?? "");
+                    MinimalJsonParser.WriteJsonString(sb, rule.CategoryName ?? "");
                     sb.AppendLine(",");
 
                     sb.Append("          \"ItemTypeName\": ");
-                    WriteJsonString(sb, rule.ItemTypeName ?? "");
+                    MinimalJsonParser.WriteJsonString(sb, rule.ItemTypeName ?? "");
                     sb.AppendLine(",");
 
                     sb.Append("          \"PropertyName\": ");
-                    WriteJsonString(sb, rule.PropertyName ?? "");
+                    MinimalJsonParser.WriteJsonString(sb, rule.PropertyName ?? "");
                     sb.AppendLine(",");
 
                     sb.Append("          \"GroupName\": ");
-                    WriteJsonString(sb, rule.GroupName ?? "");
+                    MinimalJsonParser.WriteJsonString(sb, rule.GroupName ?? "");
                     sb.AppendLine();
 
                     sb.Append("        }");
@@ -78,7 +77,7 @@ namespace SenpaisChest.Data
                 var g = groups[i];
                 sb.AppendLine("    {");
                 sb.Append("      \"Name\": ");
-                WriteJsonString(sb, g.Name ?? "");
+                MinimalJsonParser.WriteJsonString(sb, g.Name ?? "");
                 sb.AppendLine(",");
                 sb.AppendLine("      \"ItemIds\": [");
                 var ids = g.ItemIds ?? new List<int>();
@@ -101,8 +100,21 @@ namespace SenpaisChest.Data
 
         internal static SmartChestSaveData Deserialize(string json)
         {
+            if (string.IsNullOrEmpty(json)) return null;
+            try
+            {
+                return DeserializeCore(json);
+            }
+            catch
+            {
+                return null;
+            }
+        }
+
+        private static SmartChestSaveData DeserializeCore(string json)
+        {
             int pos = 0;
-            var root = ParseObject(json, ref pos);
+            var root = MinimalJsonParser.ParseObject(json, ref pos);
             if (root == null)
                 return null;
 
@@ -137,9 +149,9 @@ namespace SenpaisChest.Data
                             var rule = new SmartChestRule();
 
                             if (ruleDict.TryGetValue("Type", out var typeVal))
-                                rule.Type = (RuleType)ToInt(typeVal);
+                                rule.Type = (RuleType)MinimalJsonParser.ToInt(typeVal);
                             if (ruleDict.TryGetValue("ItemId", out var itemIdVal))
-                                rule.ItemId = ToInt(itemIdVal);
+                                rule.ItemId = MinimalJsonParser.ToInt(itemIdVal);
                             if (ruleDict.TryGetValue("CategoryName", out var catVal))
                                 rule.CategoryName = catVal as string ?? "";
                             if (ruleDict.TryGetValue("ItemTypeName", out var typeNameVal))
@@ -169,7 +181,7 @@ namespace SenpaisChest.Data
                     if (groupDict.TryGetValue("ItemIds", out var idsObj) && idsObj is List<object> idsList)
                     {
                         foreach (var idObj in idsList)
-                            g.ItemIds.Add(ToInt(idObj));
+                            g.ItemIds.Add(MinimalJsonParser.ToInt(idObj));
                     }
                     if (!string.IsNullOrWhiteSpace(g.Name))
                         data.Groups.Add(g);
@@ -177,168 +189,6 @@ namespace SenpaisChest.Data
             }
 
             return data;
-        }
-
-        private static int ToInt(object val)
-        {
-            if (val is long l) return (int)l;
-            if (val is double d) return (int)d;
-            if (val is int i) return i;
-            return 0;
-        }
-
-        private static void WriteJsonString(StringBuilder sb, string value)
-        {
-            sb.Append('"');
-            if (value != null)
-            {
-                foreach (char c in value)
-                {
-                    switch (c)
-                    {
-                        case '"': sb.Append("\\\""); break;
-                        case '\\': sb.Append("\\\\"); break;
-                        case '\n': sb.Append("\\n"); break;
-                        case '\r': sb.Append("\\r"); break;
-                        case '\t': sb.Append("\\t"); break;
-                        case '\b': sb.Append("\\b"); break;
-                        case '\f': sb.Append("\\f"); break;
-                        default: sb.Append(c); break;
-                    }
-                }
-            }
-            sb.Append('"');
-        }
-
-        private static void SkipWhitespace(string json, ref int pos)
-        {
-            while (pos < json.Length && char.IsWhiteSpace(json[pos]))
-                pos++;
-        }
-
-        private static object ParseValue(string json, ref int pos)
-        {
-            SkipWhitespace(json, ref pos);
-            if (pos >= json.Length) return null;
-            char c = json[pos];
-            if (c == '"') return ParseString(json, ref pos);
-            if (c == '{') return ParseObject(json, ref pos);
-            if (c == '[') return ParseArray(json, ref pos);
-            if (c == 't') return ParseLiteral(json, ref pos, "true", true);
-            if (c == 'f') return ParseLiteral(json, ref pos, "false", false);
-            if (c == 'n') return ParseLiteral(json, ref pos, "null", null);
-            if (c == '-' || char.IsDigit(c)) return ParseNumber(json, ref pos);
-            return null;
-        }
-
-        private static Dictionary<string, object> ParseObject(string json, ref int pos)
-        {
-            SkipWhitespace(json, ref pos);
-            if (pos >= json.Length || json[pos] != '{') return null;
-            pos++;
-            var dict = new Dictionary<string, object>();
-            SkipWhitespace(json, ref pos);
-            if (pos < json.Length && json[pos] == '}') { pos++; return dict; }
-            while (pos < json.Length)
-            {
-                SkipWhitespace(json, ref pos);
-                var key = ParseString(json, ref pos);
-                if (key == null) break;
-                SkipWhitespace(json, ref pos);
-                if (pos >= json.Length || json[pos] != ':') break;
-                pos++;
-                SkipWhitespace(json, ref pos);
-                dict[key] = ParseValue(json, ref pos);
-                SkipWhitespace(json, ref pos);
-                if (pos < json.Length && json[pos] == ',') { pos++; continue; }
-                break;
-            }
-            SkipWhitespace(json, ref pos);
-            if (pos < json.Length && json[pos] == '}') pos++;
-            return dict;
-        }
-
-        private static List<object> ParseArray(string json, ref int pos)
-        {
-            SkipWhitespace(json, ref pos);
-            if (pos >= json.Length || json[pos] != '[') return null;
-            pos++;
-            var list = new List<object>();
-            SkipWhitespace(json, ref pos);
-            if (pos < json.Length && json[pos] == ']') { pos++; return list; }
-            while (pos < json.Length)
-            {
-                SkipWhitespace(json, ref pos);
-                list.Add(ParseValue(json, ref pos));
-                SkipWhitespace(json, ref pos);
-                if (pos < json.Length && json[pos] == ',') { pos++; continue; }
-                break;
-            }
-            SkipWhitespace(json, ref pos);
-            if (pos < json.Length && json[pos] == ']') pos++;
-            return list;
-        }
-
-        private static string ParseString(string json, ref int pos)
-        {
-            SkipWhitespace(json, ref pos);
-            if (pos >= json.Length || json[pos] != '"') return null;
-            pos++;
-            var sb = new StringBuilder();
-            while (pos < json.Length)
-            {
-                char c = json[pos];
-                if (c == '\\' && pos + 1 < json.Length)
-                {
-                    pos++;
-                    switch (json[pos])
-                    {
-                        case '"': sb.Append('"'); break;
-                        case '\\': sb.Append('\\'); break;
-                        case '/': sb.Append('/'); break;
-                        case 'n': sb.Append('\n'); break;
-                        case 'r': sb.Append('\r'); break;
-                        case 't': sb.Append('\t'); break;
-                        case 'b': sb.Append('\b'); break;
-                        case 'f': sb.Append('\f'); break;
-                        default: sb.Append(json[pos]); break;
-                    }
-                    pos++;
-                }
-                else if (c == '"') { pos++; return sb.ToString(); }
-                else { sb.Append(c); pos++; }
-            }
-            return sb.ToString();
-        }
-
-        private static object ParseNumber(string json, ref int pos)
-        {
-            int start = pos;
-            bool isFloat = false;
-            if (pos < json.Length && json[pos] == '-') pos++;
-            while (pos < json.Length && char.IsDigit(json[pos])) pos++;
-            if (pos < json.Length && json[pos] == '.') { isFloat = true; pos++; while (pos < json.Length && char.IsDigit(json[pos])) pos++; }
-            if (pos < json.Length && (json[pos] == 'e' || json[pos] == 'E'))
-            {
-                isFloat = true; pos++;
-                if (pos < json.Length && (json[pos] == '+' || json[pos] == '-')) pos++;
-                while (pos < json.Length && char.IsDigit(json[pos])) pos++;
-            }
-            string numStr = json.Substring(start, pos - start);
-            if (isFloat && double.TryParse(numStr, NumberStyles.Float, CultureInfo.InvariantCulture, out double d)) return d;
-            if (!isFloat && long.TryParse(numStr, NumberStyles.Integer, CultureInfo.InvariantCulture, out long l)) return l;
-            return 0L;
-        }
-
-        private static object ParseLiteral(string json, ref int pos, string literal, object result)
-        {
-            if (pos + literal.Length <= json.Length && json.Substring(pos, literal.Length) == literal)
-            {
-                pos += literal.Length;
-                return result;
-            }
-            pos++;
-            return null;
         }
     }
 }

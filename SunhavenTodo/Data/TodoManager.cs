@@ -71,6 +71,12 @@ namespace SunhavenTodo.Data
             AddTodo(item);
         }
 
+        public TodoItem GetTodo(string id)
+        {
+            _todoById.TryGetValue(id, out var item);
+            return item;
+        }
+
         public void UpdateTodo(TodoItem item)
         {
             if (_todoData == null) return;

@@ -18,6 +18,7 @@
     <!-- Pure data + JSON serialization — no BepInEx/Unity dependency -->
     <Compile Include="..\Data\SmartChestData.cs" Link="Data\SmartChestData.cs" />
     <Compile Include="..\Data\SmartChestJson.cs" Link="Data\SmartChestJson.cs" />
+    <Compile Include="..\..\SharedUtilities\MinimalJsonParser.cs" Link="Shared\MinimalJsonParser.cs" />
     <Compile Include="SmartChestJsonTests.cs" />
   </ItemGroup>
 
