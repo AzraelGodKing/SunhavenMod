@@ -34,7 +34,7 @@ jobs:
 
       - name: Fetch latest stats
         env:
-          NEXUS_API_KEY: ${{ secrets.NEXUS_API_KEY }}
+          NEXUSMODS_API_KEY: ${{ secrets.NEXUSMODS_API_KEY }}
           STATS_FORCE: ${{ github.event_name == 'workflow_dispatch' && inputs.force && '1' || '' }}
         run: npm run stats
 
