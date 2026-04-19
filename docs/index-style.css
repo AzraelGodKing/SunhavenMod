@@ -443,6 +443,28 @@ h1 {
     border-color: rgba(79, 155, 82, 0.7);
 }
 
+/* Haven's Respec theme — deep wood border with a parchment-gold accent, evoking an
+   ancient tome / scroll of forgetting. */
+.update-badge.respec-badge {
+    background: linear-gradient(135deg, #b8732a, #5d3413);
+    color: #fff3d8;
+    box-shadow: 0 4px 12px rgba(184, 115, 42, 0.4);
+}
+
+.mod-cta-button.respec-btn {
+    background: linear-gradient(135deg, #b8732a, #5d3413);
+    color: #fff3d8;
+}
+
+.mod-card.respec-theme {
+    border-color: rgba(184, 115, 42, 0.4);
+    background: linear-gradient(135deg, rgba(184, 115, 42, 0.12) 0%, rgba(93, 52, 19, 0.05) 100%);
+}
+
+.mod-card.respec-theme:hover {
+    border-color: rgba(184, 115, 42, 0.75);
+}
+
 .mod-card.trinket-theme {
     border-color: rgba(13, 148, 136, 0.4);
     background: linear-gradient(135deg, rgba(13, 148, 136, 0.1) 0%, rgba(20, 184, 166, 0.03) 100%);

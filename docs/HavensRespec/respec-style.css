@@ -1,0 +1,148 @@
+/* Haven's Respec — parchment-and-ink palette.
+   Extends shared-styles.css; only add what's genuinely needed here. */
+
+:root {
+    --respec-wood: #5d3413;
+    --respec-wood-light: #8a5022;
+    --respec-gold: #b8732a;
+    --respec-gold-bright: #d89753;
+    --respec-parchment: #fff3d8;
+    --respec-parchment-muted: #ded3b3;
+    --respec-ink: #2b1b0a;
+}
+
+/* Hero accent — warm wood gradient behind the title. */
+.hero {
+    background: radial-gradient(ellipse at top, rgba(184, 115, 42, 0.18) 0%, transparent 70%);
+}
+
+.hero-icon {
+    color: var(--respec-gold-bright);
+    text-shadow: 0 0 30px rgba(216, 151, 83, 0.45);
+}
+
+.version-badge {
+    background: linear-gradient(135deg, var(--respec-gold), var(--respec-wood));
+    color: var(--respec-parchment);
+    border-color: rgba(216, 151, 83, 0.5);
+}
+
+.section-title::before,
+.section-title::after {
+    background: linear-gradient(90deg, transparent, var(--respec-gold), transparent);
+}
+
+/* Configuration reference table. */
+.config-table {
+    width: 100%;
+    border-collapse: collapse;
+    background: rgba(43, 27, 10, 0.25);
+    border: 1px solid rgba(184, 115, 42, 0.3);
+    border-radius: 8px;
+    overflow: hidden;
+    margin-top: 1rem;
+}
+
+.config-table th,
+.config-table td {
+    padding: 0.75rem 1rem;
+    text-align: left;
+    border-bottom: 1px solid rgba(184, 115, 42, 0.18);
+    vertical-align: top;
+}
+
+.config-table th {
+    background: linear-gradient(135deg, rgba(184, 115, 42, 0.25), rgba(93, 52, 19, 0.35));
+    color: var(--respec-parchment);
+    font-weight: 600;
+    letter-spacing: 0.03em;
+    text-transform: uppercase;
+    font-size: 0.85rem;
+}
+
+.config-table td code {
+    color: var(--respec-gold-bright);
+    background: rgba(0, 0, 0, 0.35);
+    padding: 0.1rem 0.4rem;
+    border-radius: 4px;
+    font-size: 0.9em;
+}
+
+.config-table tr:last-child td {
+    border-bottom: none;
+}
+
+.config-table tr:hover td {
+    background: rgba(184, 115, 42, 0.08);
+}
+
+/* Section "card" used for features / compat blocks. */
+.respec-card {
+    background: linear-gradient(135deg, rgba(184, 115, 42, 0.10) 0%, rgba(93, 52, 19, 0.04) 100%);
+    border: 1px solid rgba(184, 115, 42, 0.3);
+    border-radius: 10px;
+    padding: 1.25rem 1.5rem;
+    margin-bottom: 1rem;
+}
+
+.respec-card h3 {
+    color: var(--respec-gold-bright);
+    margin-top: 0;
+    margin-bottom: 0.5rem;
+    font-size: 1.15rem;
+}
+
+.respec-card p,
+.respec-card li {
+    color: var(--respec-parchment-muted);
+    line-height: 1.55;
+}
+
+.respec-card strong {
+    color: var(--respec-parchment);
+}
+
+/* Dedicated install steps list. */
+.install-steps {
+    counter-reset: step;
+    list-style: none;
+    padding-left: 0;
+}
+
+.install-steps > li {
+    counter-increment: step;
+    position: relative;
+    padding: 0.75rem 1rem 0.75rem 3rem;
+    margin-bottom: 0.75rem;
+    background: rgba(43, 27, 10, 0.25);
+    border: 1px solid rgba(184, 115, 42, 0.2);
+    border-radius: 8px;
+}
+
+.install-steps > li::before {
+    content: counter(step);
+    position: absolute;
+    left: 1rem;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 1.7rem;
+    height: 1.7rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: linear-gradient(135deg, var(--respec-gold), var(--respec-wood));
+    color: var(--respec-parchment);
+    border-radius: 50%;
+    font-weight: 700;
+    font-size: 0.9rem;
+    box-shadow: 0 0 10px rgba(216, 151, 83, 0.35);
+}
+
+/* Keybind chips reuse shared-styles base; just tint them. */
+.keybind-card {
+    border-color: rgba(184, 115, 42, 0.3);
+}
+
+.keybind-card:hover {
+    border-color: rgba(216, 151, 83, 0.6);
+}
