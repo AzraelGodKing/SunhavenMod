@@ -1,0 +1,18 @@
+[B]Haven's Respec[/B]
+
+Respec your Sun Haven skill trees safely. A styled Reset button on every skill tab, with confirmation, undo, configurable cost, and full BepInEx Configuration Manager support.
+
+[LIST]
+[*]Clean-room reset that walks the live skill tree (no hardcoded node names) — survives future Sun Haven updates.
+[*]Confirmation dialog with per-profession breakdown and cost preview.
+[*]One-step Undo per profession (session-only).
+[*]Cost model: None / Gold / Gems with configurable cost per refunded point.
+[*]Optional Shift-click to skip confirmation, plus optional hotkeys for reset and undo.
+[*]Full Configuration Manager visibility (config lives in BepInEx/config/HavensRespec.cfg).
+[/LIST]
+
+[B]Requirements[/B]
+[LIST]
+[*]BepInEx 5.4+
+[*]Sun Haven
+[/LIST]

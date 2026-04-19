@@ -30,6 +30,7 @@ MOD_PLUGIN_FILES: dict[str, tuple[str, str]] = {
     "com.azraelgodking.fasterraces": ("FasterRaces", "PluginInfo.cs"),
     "com.azraelgodking.trinketfortune": ("TrinketFortune", "Plugin.cs"),
     "com.azraelgodking.cropoptimizer": ("CropOptimizer", "PluginInfo.cs"),
+    "com.azraelgodking.havensrespec": ("HavensRespec", "PluginInfo.cs"),
 }
 
 PLUGIN_VER_RE = re.compile(r'PLUGIN_VERSION\s*=\s*"([^"]*)"')
