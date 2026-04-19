@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Text;
 using SunhavenMods.Shared;
@@ -105,8 +106,9 @@ namespace SenpaisChest.Data
             {
                 return DeserializeCore(json);
             }
-            catch
+            catch (Exception ex)
             {
+                System.Diagnostics.Debug.WriteLine($"[SmartChestJson] Deserialize failed: {ex}");
                 return null;
             }
         }

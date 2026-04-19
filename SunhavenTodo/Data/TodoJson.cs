@@ -80,8 +80,9 @@ namespace SunhavenTodo.Data
             {
                 return DeserializeCore(json);
             }
-            catch
+            catch (Exception ex)
             {
+                System.Diagnostics.Debug.WriteLine($"[TodoJson] Deserialize failed: {ex}");
                 return null;
             }
         }
