@@ -132,7 +132,7 @@ async function fetchNexus(mod) {
   const modId = mod?.nexus?.modId;
   if (modId == null) return null;
 
-  const apiKey = process.env.NEXUS_API_KEY;
+  const apiKey = process.env.NEXUSMODS_API_KEY;
   if (!apiKey) {
     return null;
   }
@@ -186,7 +186,7 @@ async function fetchModStats(mod, cache, packageIndex, nexusIdLookup) {
     nexus = previous.nexus ?? null;
   } else if (nxResult.status === "fulfilled") {
     const v = nxResult.value;
-    if (v == null && !process.env.NEXUS_API_KEY) {
+    if (v == null && !process.env.NEXUSMODS_API_KEY) {
       nexus = previous.nexus ?? null;
     } else {
       nexus = v;
@@ -255,9 +255,9 @@ async function main() {
 
   const packageIndex = await loadSunHavenThunderstoreIndex();
   const nexusIdLookup = loadNexusModIdByThunderstoreName();
-  if (nexusIdLookup.size > 0 && !process.env.NEXUS_API_KEY) {
+  if (nexusIdLookup.size > 0 && !process.env.NEXUSMODS_API_KEY) {
     console.warn(
-      "[stats] NEXUS_API_KEY is not set; Nexus totals will stay empty or unchanged until you run with the key (local .env or CI secret)."
+      "[stats] NEXUSMODS_API_KEY is not set; Nexus totals will stay empty or unchanged until you run with the key (local .env or CI secret)."
     );
   }
   const modsEntries = await Promise.all(
