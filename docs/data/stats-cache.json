@@ -1,5 +1,5 @@
 {
-  "lastFetched": "2026-04-19T19:56:08.469Z",
+  "lastFetched": "2026-04-19T20:49:01.841Z",
   "mods": {
     "senpais-chest": {
       "name": "SenpaisChest",
@@ -153,12 +153,55 @@
       },
       "nexus": null,
       "combined_total": 180
+    },
+    "crop-optimizer": {
+      "name": "Crop Optimizer",
+      "thunderstore": {
+        "total_downloads": 6,
+        "versions": {
+          "1.0.0": 6
+        }
+      },
+      "nexus": null,
+      "combined_total": 6
+    },
+    "faster-races": {
+      "name": "FasterRaces",
+      "thunderstore": {
+        "total_downloads": 59,
+        "versions": {
+          "1.0.0": 59
+        }
+      },
+      "nexus": null,
+      "combined_total": 59
+    },
+    "trinket-fortune": {
+      "name": "TrinketFortune",
+      "thunderstore": {
+        "total_downloads": 95,
+        "versions": {
+          "1.0.3": 14,
+          "1.0.0": 81
+        }
+      },
+      "nexus": null,
+      "combined_total": 95
+    },
+    "havens-respec": {
+      "name": "HavensRespec",
+      "thunderstore": {
+        "total_downloads": 0,
+        "versions": {}
+      },
+      "nexus": null,
+      "combined_total": 0
     }
   },
   "site_total": {
-    "thunderstore": 1939,
+    "thunderstore": 2099,
     "nexus_total": 0,
     "nexus_unique": 0,
-    "grand_total": 1939
+    "grand_total": 2099
   }
 }

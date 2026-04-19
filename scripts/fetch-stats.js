@@ -8,10 +8,33 @@ try {
 }
 
 const ROOT = path.resolve(__dirname, "..");
-const CACHE_PATH = path.join(ROOT, "data", "stats-cache.json");
+/** Served as /data/stats-cache.json on GitHub Pages when publishing from /docs */
+const CACHE_PATH = path.join(ROOT, "docs", "data", "stats-cache.json");
 const TMP_PATH = `${CACHE_PATH}.tmp`;
 
 const THUNDERSTORE_SUN_HAVEN_COMMUNITY = "sun-haven";
+
+/** Nexus mod ids from `docs/versions.json` (`nexus` URL …/mods/{id}); used when `nexus.modId` is omitted in the roster. */
+function loadNexusModIdByThunderstoreName() {
+  const versionsPath = path.join(ROOT, "docs", "versions.json");
+  const map = new Map();
+  try {
+    const text = fs.readFileSync(versionsPath, "utf8").replace(/^\uFEFF/, "");
+    const j = JSON.parse(text);
+    for (const entry of Object.values(j)) {
+      if (!entry || typeof entry !== "object") continue;
+      const url = entry.nexus;
+      if (!url || typeof url !== "string") continue;
+      const m = url.match(/\/mods\/(\d+)/);
+      if (!m) continue;
+      const ts = entry.thunderstoreName;
+      if (ts) map.set(ts, Number(m[1]));
+    }
+  } catch (e) {
+    console.warn(`[stats] Could not read Nexus mod ids from docs/versions.json: ${e.message}`);
+  }
+  return map;
+}
 
 const MOD_ROSTER = [
   { id: "senpais-chest", name: "SenpaisChest", thunderstore: { namespace: "AzraelGodKing", name: "SenpaisChest" }, nexus: { game: "sunhaven", modId: null } },
@@ -22,6 +45,10 @@ const MOD_ROSTER = [
   { id: "haven-dev-tools", name: "HavenDevTools", thunderstore: { namespace: "AzraelGodKing", name: "HavenDevTools" }, nexus: { game: "sunhaven", modId: null } },
   { id: "squirrels-birthday-reminder", name: "SquirrelsBirthdayReminder", thunderstore: { namespace: "AzraelGodKing", name: "SquirrelsBirthdayReminder" }, nexus: { game: "sunhaven", modId: null } },
   { id: "havens-almanac", name: "HavensAlmanac", thunderstore: { namespace: "AzraelGodKing", name: "HavensAlmanac" }, nexus: { game: "sunhaven", modId: null } },
+  { id: "crop-optimizer", name: "Crop Optimizer", thunderstore: { namespace: "AzraelGodKing", name: "CropOptimizer" }, nexus: { game: "sunhaven", modId: null } },
+  { id: "faster-races", name: "FasterRaces", thunderstore: { namespace: "AzraelGodKing", name: "FasterRaces" }, nexus: { game: "sunhaven", modId: null } },
+  { id: "trinket-fortune", name: "TrinketFortune", thunderstore: { namespace: "AzraelGodKing", name: "TrinketFortune" }, nexus: { game: "sunhaven", modId: null } },
+  { id: "havens-respec", name: "HavensRespec", thunderstore: { namespace: "AzraelGodKing", name: "HavensRespec" }, nexus: { game: "sunhaven", modId: null } },
 ];
 
 function utcDateString(date) {
@@ -107,7 +134,7 @@ async function fetchNexus(mod) {
 
   const apiKey = process.env.NEXUS_API_KEY;
   if (!apiKey) {
-    throw new Error("NEXUS_API_KEY missing");
+    return null;
   }
 
   const url = `https://api.nexusmods.com/v1/games/${encodeURIComponent(mod.nexus.game)}/mods/${modId}.json`;
@@ -127,12 +154,22 @@ function getPreviousMod(cache, mod) {
   };
 }
 
-async function fetchModStats(mod, cache, packageIndex) {
+function resolveNexusModId(mod, nexusIdLookup) {
+  if (mod?.nexus?.modId != null) return mod.nexus.modId;
+  const fromVersions = nexusIdLookup.get(mod.thunderstore.name);
+  return fromVersions != null ? fromVersions : null;
+}
+
+async function fetchModStats(mod, cache, packageIndex, nexusIdLookup) {
   const previous = getPreviousMod(cache, mod);
+  const modForNexus = {
+    ...mod,
+    nexus: { ...mod.nexus, modId: resolveNexusModId(mod, nexusIdLookup) },
+  };
 
   const [tsResult, nxResult] = await Promise.allSettled([
     fetchThunderstore(mod, packageIndex),
-    fetchNexus(mod),
+    fetchNexus(modForNexus),
   ]);
 
   const thunderstore =
@@ -145,10 +182,15 @@ async function fetchModStats(mod, cache, packageIndex) {
   }
 
   let nexus = null;
-  if (mod?.nexus?.modId == null) {
+  if (modForNexus?.nexus?.modId == null) {
     nexus = previous.nexus ?? null;
   } else if (nxResult.status === "fulfilled") {
-    nexus = nxResult.value;
+    const v = nxResult.value;
+    if (v == null && !process.env.NEXUS_API_KEY) {
+      nexus = previous.nexus ?? null;
+    } else {
+      nexus = v;
+    }
   } else {
     nexus = previous.nexus || { total_downloads: 0, unique_downloads: 0 };
     console.warn(`[stats] Nexus fetch failed for ${mod.id}, preserving cached value: ${nxResult.reason?.message || nxResult.reason}`);
@@ -212,8 +254,14 @@ async function main() {
   }
 
   const packageIndex = await loadSunHavenThunderstoreIndex();
+  const nexusIdLookup = loadNexusModIdByThunderstoreName();
+  if (nexusIdLookup.size > 0 && !process.env.NEXUS_API_KEY) {
+    console.warn(
+      "[stats] NEXUS_API_KEY is not set; Nexus totals will stay empty or unchanged until you run with the key (local .env or CI secret)."
+    );
+  }
   const modsEntries = await Promise.all(
-    MOD_ROSTER.map(async (mod) => [mod.id, await fetchModStats(mod, cache, packageIndex)])
+    MOD_ROSTER.map(async (mod) => [mod.id, await fetchModStats(mod, cache, packageIndex, nexusIdLookup)])
   );
   const mods = Object.fromEntries(modsEntries);
 
