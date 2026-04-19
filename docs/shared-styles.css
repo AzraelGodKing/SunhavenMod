@@ -1697,10 +1697,12 @@ body.site-search-open {
    ----------------------------------------------------------------- */
 .hub-download-stats {
     margin-top: 16px;
+    margin-left: auto;
+    margin-right: auto;
     max-width: 44rem;
     font-size: 0.82em;
     line-height: 1.55;
-    opacity: 0.82;
+    text-align: center;
 }
 
 .hub-download-stats-primary {
@@ -1716,15 +1718,9 @@ body.site-search-open {
 }
 
 .hub-download-stats-detail {
-    margin: 0 0 6px;
-    font-variant-numeric: tabular-nums;
-}
-
-.hub-download-stats-note {
     margin: 0;
-    font-size: 0.88em;
-    opacity: 0.75;
-    line-height: 1.45;
+    font-variant-numeric: tabular-nums;
+    opacity: 0.92;
 }
 
 .mod-card-downloads {
