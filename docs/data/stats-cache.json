@@ -1,5 +1,5 @@
 {
-  "lastFetched": "2026-04-19T21:07:25.282Z",
+  "lastFetched": "2026-04-19T22:15:41.900Z",
   "mods": {
     "senpais-chest": {
       "name": "SenpaisChest",
@@ -45,10 +45,10 @@
         }
       },
       "nexus": {
-        "total_downloads": 240,
-        "unique_downloads": 193
+        "total_downloads": 241,
+        "unique_downloads": 194
       },
-      "combined_total": 504
+      "combined_total": 505
     },
     "the-vault": {
       "name": "TheVault",
@@ -230,8 +230,8 @@
   },
   "site_total": {
     "thunderstore": 2099,
-    "nexus_total": 3864,
-    "nexus_unique": 2820,
-    "grand_total": 5963
+    "nexus_total": 3865,
+    "nexus_unique": 2821,
+    "grand_total": 5964
   }
 }
