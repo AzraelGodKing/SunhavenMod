@@ -8,6 +8,7 @@ try {
 }
 
 const ROOT = path.resolve(__dirname, "..");
+const MOD_MATRIX_PATH = path.join(ROOT, "scripts", "mod-matrix.json");
 /** Served as /data/stats-cache.json on GitHub Pages when publishing from /docs */
 const CACHE_PATH = path.join(ROOT, "docs", "data", "stats-cache.json");
 const TMP_PATH = `${CACHE_PATH}.tmp`;
@@ -36,20 +37,33 @@ function loadNexusModIdByThunderstoreName() {
   return map;
 }
 
-const MOD_ROSTER = [
-  { id: "senpais-chest", name: "SenpaisChest", thunderstore: { namespace: "AzraelGodKing", name: "SenpaisChest" }, nexus: { game: "sunhaven", modId: null } },
-  { id: "havens-todo", name: "Sun Haven Todo", thunderstore: { namespace: "AzraelGodKing", name: "SunHavenTodo" }, nexus: { game: "sunhaven", modId: null } },
-  { id: "the-vault", name: "TheVault", thunderstore: { namespace: "AzraelGodKing", name: "TheVault" }, nexus: { game: "sunhaven", modId: null } },
-  { id: "havens-birthright", name: "HavensBirthright", thunderstore: { namespace: "AzraelGodKing", name: "HavensBirthright" }, nexus: { game: "sunhaven", modId: null } },
-  { id: "museum-utility-tracker", name: "Museum Utility Tracker", thunderstore: { namespace: "AzraelGodKing", name: "SMUT" }, nexus: { game: "sunhaven", modId: null } },
-  { id: "haven-dev-tools", name: "HavenDevTools", thunderstore: { namespace: "AzraelGodKing", name: "HavenDevTools" }, nexus: { game: "sunhaven", modId: null } },
-  { id: "squirrels-birthday-reminder", name: "SquirrelsBirthdayReminder", thunderstore: { namespace: "AzraelGodKing", name: "SquirrelsBirthdayReminder" }, nexus: { game: "sunhaven", modId: null } },
-  { id: "havens-almanac", name: "HavensAlmanac", thunderstore: { namespace: "AzraelGodKing", name: "HavensAlmanac" }, nexus: { game: "sunhaven", modId: null } },
-  { id: "crop-optimizer", name: "Crop Optimizer", thunderstore: { namespace: "AzraelGodKing", name: "CropOptimizer" }, nexus: { game: "sunhaven", modId: null } },
-  { id: "faster-races", name: "FasterRaces", thunderstore: { namespace: "AzraelGodKing", name: "FasterRaces" }, nexus: { game: "sunhaven", modId: null } },
-  { id: "trinket-fortune", name: "TrinketFortune", thunderstore: { namespace: "AzraelGodKing", name: "TrinketFortune" }, nexus: { game: "sunhaven", modId: null } },
-  { id: "havens-respec", name: "HavensRespec", thunderstore: { namespace: "AzraelGodKing", name: "HavensRespec" }, nexus: { game: "sunhaven", modId: null } },
-];
+function slugify(value) {
+  return String(value || "")
+    .trim()
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-+|-+$/g, "");
+}
+
+function loadModRoster() {
+  try {
+    const text = fs.readFileSync(MOD_MATRIX_PATH, "utf8").replace(/^\uFEFF/, "");
+    const rows = JSON.parse(text);
+    if (!Array.isArray(rows)) {
+      throw new Error("mod-matrix.json must be an array");
+    }
+    return rows
+      .filter((row) => row && row.modKey && row.thunderstoreName)
+      .map((row) => ({
+        id: slugify(row.modKey),
+        name: row.indexDataName || row.modDir || row.modKey,
+        thunderstore: { namespace: "AzraelGodKing", name: row.thunderstoreName },
+        nexus: { game: "sunhaven", modId: null },
+      }));
+  } catch (e) {
+    throw new Error(`[stats] Could not read mod roster from scripts/mod-matrix.json: ${e.message}`);
+  }
+}
 
 function utcDateString(date) {
   return `${date.getUTCFullYear()}-${String(date.getUTCMonth() + 1).padStart(2, "0")}-${String(date.getUTCDate()).padStart(2, "0")}`;
@@ -260,8 +274,9 @@ async function main() {
       "[stats] NEXUSMODS_API_KEY is not set; Nexus totals will stay empty or unchanged until you run with the key (local .env or CI secret)."
     );
   }
+  const modRoster = loadModRoster();
   const modsEntries = await Promise.all(
-    MOD_ROSTER.map(async (mod) => [mod.id, await fetchModStats(mod, cache, packageIndex, nexusIdLookup)])
+    modRoster.map(async (mod) => [mod.id, await fetchModStats(mod, cache, packageIndex, nexusIdLookup)])
   );
   const mods = Object.fromEntries(modsEntries);
 

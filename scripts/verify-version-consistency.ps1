@@ -19,22 +19,7 @@ $ErrorActionPreference = "Stop"
 $scriptDir = Split-Path -Parent $MyInvocation.MyCommand.Path
 $repoRoot = [System.IO.Path]::GetFullPath((Join-Path $scriptDir ".."))
 $versionsPath = Join-Path $repoRoot "docs\versions.json"
-$readEncoding = [System.Text.Encoding]::UTF8
-
-$modPluginFiles = [ordered]@{
-    "com.azraelgodking.squirrelsbirthdayreminder" = @{ ModDir = "BirthdayReminder"; PluginFile = "PluginInfo.cs" }
-    "com.azraelgodking.havensbirthright" = @{ ModDir = "HavensBirthright"; PluginFile = "Plugin.cs" }
-    "com.azraelgodking.sunhavenmuseumutilitytracker" = @{ ModDir = "SunHavenMuseumUtilityTracker"; PluginFile = "Plugin.cs" }
-    "com.azraelgodking.sunhaventodo" = @{ ModDir = "SunhavenTodo"; PluginFile = "PluginInfo.cs" }
-    "com.azraelgodking.thevault" = @{ ModDir = "TheVault"; PluginFile = "Plugin.cs" }
-    "com.azraelgodking.havendevtools" = @{ ModDir = "HavenDevTools"; PluginFile = "Plugin.cs" }
-    "com.azraelgodking.senpaischest" = @{ ModDir = "SenpaisChest"; PluginFile = "PluginInfo.cs" }
-    "com.azraelgodking.havensalmanac" = @{ ModDir = "HavensAlmanac"; PluginFile = "PluginInfo.cs" }
-    "com.azraelgodking.fasterraces" = @{ ModDir = "FasterRaces"; PluginFile = "PluginInfo.cs" }
-    "com.azraelgodking.trinketfortune" = @{ ModDir = "TrinketFortune"; PluginFile = "Plugin.cs" }
-    "com.azraelgodking.cropoptimizer" = @{ ModDir = "CropOptimizer"; PluginFile = "PluginInfo.cs" }
-    "com.azraelgodking.havensrespec" = @{ ModDir = "HavensRespec"; PluginFile = "PluginInfo.cs" }
-}
+$modMatrixPath = Join-Path $scriptDir "mod-matrix.json"
 
 $pluginVersionRegex = 'PLUGIN_VERSION\s*=\s*"([^"]*)"'
 $manifestVersionRegex = '"version_number"\s*:\s*"([^"]*)"'
@@ -63,9 +48,9 @@ function Read-ManifestVersion {
 function Read-PluginVersions {
     param([Parameter(Mandatory = $true)][string]$PluginPath)
     $text = Read-TextWithBomSupport -Path $PluginPath
-    $matches = [regex]::Matches($text, $pluginVersionRegex)
+    $versionMatches = [regex]::Matches($text, $pluginVersionRegex)
     $versions = New-Object System.Collections.Generic.List[string]
-    foreach ($m in $matches) {
+    foreach ($m in $versionMatches) {
         $versions.Add($m.Groups[1].Value)
     }
     return $versions
@@ -74,6 +59,20 @@ function Read-PluginVersions {
 if (-not (Test-Path $versionsPath)) {
     Write-Error "versions.json not found: $versionsPath"
     exit 1
+}
+if (-not (Test-Path $modMatrixPath)) {
+    Write-Error "mod-matrix.json not found: $modMatrixPath"
+    exit 1
+}
+
+$modPluginFiles = [ordered]@{}
+$matrixRows = Get-Content $modMatrixPath -Raw -Encoding utf8 | ConvertFrom-Json
+foreach ($row in $matrixRows) {
+    if (-not $row.jsonKey -or -not $row.modDir -or -not $row.pluginFile) { continue }
+    $modPluginFiles[[string]$row.jsonKey] = @{
+        ModDir = [string]$row.modDir
+        PluginFile = [string]$row.pluginFile
+    }
 }
 
 $versionsRaw = Read-TextWithBomSupport -Path $versionsPath
@@ -85,7 +84,7 @@ foreach ($prop in $data.PSObject.Properties) {
     $entry = $prop.Value
 
     if (-not $modPluginFiles.Contains($key)) {
-        $errors.Add("Unknown mod key in versions.json (add to MOD_PLUGIN_FILES): $key")
+        $errors.Add("Unknown mod key in versions.json (add to scripts/mod-matrix.json): $key")
         continue
     }
 

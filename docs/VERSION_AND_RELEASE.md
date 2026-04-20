@@ -46,6 +46,18 @@ python3 scripts/verify-version-consistency.py
 
 The Python verifier requires Python 3.6+.
 
+## Mod matrix ownership
+
+Structural mod metadata now lives in [`scripts/mod-matrix.json`](../scripts/mod-matrix.json). This is the single source of truth for mod wiring used by scripts and workflows (mod keys, directories, plugin file path, csproj path, Thunderstore package name, docs page path, docs label aliases).
+
+When adding a new mod:
+
+1. Add one entry to `scripts/mod-matrix.json`.
+2. Add the mod's release metadata entry in [`docs/versions.json`](../docs/versions.json).
+3. Add the same docs mapping row in [`docs/mod-matrix.json`](../docs/mod-matrix.json) for hub/page version badge resolution.
+
+Required matrix fields per row: `modKey`, `jsonKey`, `modDir`, `pluginFile`, `dllName`, `csproj`, `thunderstoreName`, `readmePath`, `indexDataName`, `docsPagePath`, `extraCsprojPaths`.
+
 ## Automatic sync on merge (optional drift repair)
 
 The workflow [`.github/workflows/sync-mod-versions.yml`](../.github/workflows/sync-mod-versions.yml) runs on every push to `main` / `master`. It executes `.\scripts\pre-push-build.ps1 -All -SyncOnly` (no `dotnet build`), then `python3 scripts/verify-version-consistency.py`. If any tracked file was behind `docs/versions.json`, it commits and pushes with message `chore: sync mod versions from versions.json [skip ci]` so the job does not re-trigger in a loop.
