@@ -16,6 +16,7 @@
     <link rel="stylesheet" href="todo-style.css">
     <link rel="stylesheet" href="../shared-styles.css">
     <script src="../shared.js" defer></script>
+    <script src="../scripts/stats-display.js" defer></script>
 </head>
 <body>
     <a href="#main-content" class="skip-to-content">Skip to content</a>
@@ -41,9 +42,15 @@
             <div class="hero-icon">&#x1F4DD;</div>
             <h1>Sun Haven Todo<span class="full-name">In-Game Task Tracker</span></h1>
             <p class="tagline" style="font-style:italic;">Never Forget Your Farm Tasks Again</p>
-            <span class="version-badge">v1.1.9</span>
+            <span class="version-badge">v1.1.10</span>
             <div style="margin-top:10px; font-size:0.8em; opacity:0.4;">~ A Record of Things To Do ~</div>
         </header>
+
+        <div class="mod-page-download-stats" role="region" aria-label="Recorded download counts">
+            <span>Thunderstore <strong><span data-stats-mod="havens-todo" data-field="thunderstore_downloads">&mdash;</span></strong></span>
+            <span>Nexus Mods <strong><span data-stats-mod="havens-todo" data-field="nexus_downloads">&mdash;</span></strong></span>
+            <span>Combined <strong><span data-stats-mod="havens-todo" data-field="combined_total">&mdash;</span></strong></span>
+        </div>
 
         <!-- Journal entry intro -->
         <section class="intro-section" style="font-style:italic; border-left:3px solid #c4956a; padding-left:20px;">

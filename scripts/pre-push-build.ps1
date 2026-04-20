@@ -15,8 +15,9 @@
     - HavenDevTools/UI/DebugWindow.cs (_knownMods tuple for this GUID if present)
     - Optional: TheVault + TheVault.Abstractions .csproj; FasterRaces .csproj; any <Mod>.csproj
       that already contains a <Version> element
-    Then dotnet build for the mod's main .csproj.
+    Then dotnet build for the mod's main .csproj (skipped when -SyncOnly).
     Use -BuildOnly with -Mod or -All to run builds only (no version edits).
+    Use -SyncOnly with -Mod or -All to propagate versions without dotnet (for CI).
 
 .PARAMETER Mod
     Mod key (e.g. senpaischest, havensbirthright). Required unless -All is used.
@@ -30,6 +31,9 @@
 
 .PARAMETER BuildOnly
     Skip all version file updates; only dotnet build. Use with -Mod or -All.
+
+.PARAMETER SyncOnly
+    Update plugin files, manifests, README, and docs from docs/versions.json but do not run dotnet build.
 
 .EXAMPLE
     .\pre-push-build.ps1 -Mod senpaischest -Bump patch
@@ -50,6 +54,10 @@
     .\pre-push-build.ps1 -Mod senpaischest -BuildOnly
     .\pre-push-build.ps1 -All -BuildOnly
     (build only; does not read or require versions.json)
+
+.EXAMPLE
+    .\pre-push-build.ps1 -All -SyncOnly
+    (GitHub Actions: align all version strings with versions.json; no game assemblies required)
 #>
 
 param(
@@ -58,7 +66,7 @@ param(
         "senpaischest", "havensbirthright", "sunhavenmuseumutilitytracker",
         "squirrelsbirthdayreminder", "sunhaventodo", "thevault",
         "havendevtools", "havensalmanac", "fasterraces", "trinketfortune",
-        "cropoptimizer"
+        "cropoptimizer", "havensrespec"
     )]
     [string]$Mod,
 
@@ -70,7 +78,10 @@ param(
     [switch]$All,
 
     [Parameter(Mandatory = $false)]
-    [switch]$BuildOnly
+    [switch]$BuildOnly,
+
+    [Parameter(Mandatory = $false)]
+    [switch]$SyncOnly
 )
 
 $ErrorActionPreference = "Stop"
@@ -96,6 +107,7 @@ $ModDefs = [ordered]@{
     "fasterraces"                  = @{ JsonKey = "com.azraelgodking.fasterraces"; ModDir = "FasterRaces"; UsePluginInfo = $false; ReadmePath = "FasterRaces"; IndexDataName = "Faster Races"; DocsHtml = "FasterRaces\FasterRaces.html"; ExtraCsproj = @("FasterRaces\FasterRaces.csproj") }
     "trinketfortune"               = @{ JsonKey = "com.azraelgodking.trinketfortune"; ModDir = "TrinketFortune"; UsePluginInfo = $false; ReadmePath = "TrinketFortune"; IndexDataName = "Trinket Fortune"; DocsHtml = "TrinketFortune\TrinketFortune.html"; ExtraCsproj = @() }
     "cropoptimizer"                = @{ JsonKey = "com.azraelgodking.cropoptimizer"; ModDir = "CropOptimizer"; UsePluginInfo = $true; ReadmePath = "CropOptimizer"; IndexDataName = "Crop Optimizer"; DocsHtml = "CropOptimizer\CropOptimizer.html"; ExtraCsproj = @() }
+    "havensrespec"                 = @{ JsonKey = "com.azraelgodking.havensrespec"; ModDir = "HavensRespec"; UsePluginInfo = $true; ReadmePath = "HavensRespec"; IndexDataName = "Haven's Respec"; DocsHtml = "HavensRespec\HavensRespec.html"; ExtraCsproj = @() }
 }
 
 function Get-VersionParts {
@@ -351,7 +363,8 @@ function Sync-ModVersionEverywhere {
     param(
         [hashtable]$Def,
         [string]$Version,
-        [bool]$UpdateVersionsJson
+        [bool]$UpdateVersionsJson,
+        [bool]$SkipBuild
     )
 
     $jsonKey = $Def.JsonKey
@@ -397,7 +410,12 @@ function Sync-ModVersionEverywhere {
     if (-not (Test-Path $mainCsproj)) {
         throw "Project not found: $mainCsproj"
     }
-    Invoke-ModProjectBuild -Def $Def -ModPath $modPath -MainCsproj $mainCsproj
+    if ($SkipBuild) {
+        Write-Host "  Skipping dotnet build (-SyncOnly)."
+    }
+    else {
+        Invoke-ModProjectBuild -Def $Def -ModPath $modPath -MainCsproj $mainCsproj
+    }
 }
 
 function Invoke-ModProjectBuild {
@@ -431,6 +449,16 @@ if (-not $All -and -not $Mod) {
 
 if ($BuildOnly -and $Bump) {
     Write-Error "-BuildOnly cannot be used with -Bump"
+    exit 1
+}
+
+if ($SyncOnly -and $BuildOnly) {
+    Write-Error "-SyncOnly cannot be used with -BuildOnly"
+    exit 1
+}
+
+if ($SyncOnly -and $Bump) {
+    Write-Error "-SyncOnly cannot be used with -Bump (sync reads versions.json only)"
     exit 1
 }
 
@@ -481,7 +509,12 @@ foreach ($modKey in $modsToProcess) {
         Write-Host "Syncing ${modDir} to $targetVersion (no bump)"
     }
 
-    Sync-ModVersionEverywhere -Def $def -Version $targetVersion -UpdateVersionsJson ([bool]$Bump)
+    Sync-ModVersionEverywhere -Def $def -Version $targetVersion -UpdateVersionsJson ([bool]$Bump) -SkipBuild ([bool]$SyncOnly)
 }
 
-Write-Host "Done. Version strings aligned; DLL(s) built."
+if ($SyncOnly) {
+    Write-Host "Done. Version strings aligned; build skipped (-SyncOnly)."
+}
+else {
+    Write-Host "Done. Version strings aligned; DLL(s) built."
+}

@@ -1,5 +1,8 @@
 # Haven's Almanac
 
+- **Nexus Mods:** [Haven's Almanac](https://www.nexusmods.com/sunhaven/mods/501) ([files tab](https://www.nexusmods.com/sunhaven/mods/501?tab=files))
+- **Thunderstore:** [HavensAlmanac](https://thunderstore.io/c/sun-haven/p/AzraelGodKing/HavensAlmanac/)
+
 Haven's Almanac is the Sun Haven mod hub — one place to see what your other
 AzraelGodKing mods are telling you today. It ships a compact always-on HUD,
 an expandable dashboard, and a morning briefing that pops up after you wake
@@ -57,6 +60,8 @@ The built-in **Mod Health** provider is always on and surfaces
 
 ### Unreleased
 
+- **Release metadata:** `docs/versions.json` includes Nexus mod page [`/mods/501`](https://www.nexusmods.com/sunhaven/mods/501) and `nexus_file_group_id` **7326779** (Files tab → API / file group id) for CI uploads and download stats.
+- **Build:** Integration DLL references now use `ProjectReference` to sibling mods (`SunhavenTodo`, `BirthdayReminder`, `SunHavenMuseumUtilityTracker`, `SenpaisChest`, `TheVault`, `HavensBirthright`, `HavenDevTools`, `CropOptimizer`) so `dotnet build` works without copying plugins into `builds/` first. `BirthdayReminder` and `SenpaisChest` were updated the same way for their Todo / museum soft-deps.
 - **Briefing: `AutoDismissSeconds` is now actually honored.** The config
   entry has been bound since 1.0.x but `DailyBriefing.cs` never read it, so
   the window sat until you pressed the Dismiss button or Escape. Now the

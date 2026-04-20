@@ -408,7 +408,10 @@ namespace SunhavenTodo
                             return genericType.GetProperty("Instance")?.GetValue(null);
                         }
                     }
-                    catch { }
+                    catch (Exception ex)
+                    {
+                        System.Diagnostics.Debug.WriteLine($"[SunhavenTodo] TryHookOvernight instance resolver failed: {ex.Message}");
+                    }
                     return null;
                 },
                 msg => Log?.LogInfo(msg),
@@ -443,7 +446,10 @@ namespace SunhavenTodo
                     }
                 }
             }
-            catch { }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"[SunhavenTodo] OnNewDay recurring reset check failed: {ex.Message}");
+            }
 
             SaveData();
         }

@@ -168,8 +168,9 @@ namespace FasterRaces
                     var subRace = _subRaceProp?.GetValue(player);
                     return subRace?.ToString();
                 }
-                catch
+                catch (Exception ex)
                 {
+                    System.Diagnostics.Debug.WriteLine($"[FasterRaces] GetCurrentRaceName failed: {ex.Message}");
                     return null;
                 }
             }

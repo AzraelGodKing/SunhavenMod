@@ -1,0 +1,319 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Haven's Respec - Safe Skill Tree Respec for Sun Haven</title>
+    <meta name="description" content="Haven's Respec for Sun Haven: reset any profession's skill tree with a themed confirmation dialog, per-profession one-step Undo, configurable cost (free / gold / gems), and hotkeys. Clean-room, tree-driven, BepInEx Configuration Manager-compatible.">
+    <meta property="og:title" content="Haven's Respec - Safe Skill Tree Respec for Sun Haven">
+    <meta property="og:description" content="Reset any profession's skill tree with a confirmation dialog, one-step Undo, and optional gold or gem cost. Tree-driven so it survives Sun Haven updates.">
+    <meta property="og:type" content="website">
+    <link rel="canonical" href="https://azraelgodking.github.io/SunhavenMod/HavensRespec/HavensRespec.html">
+    <meta property="og:url" content="https://azraelgodking.github.io/SunhavenMod/HavensRespec/HavensRespec.html">
+    <meta property="og:image" content="https://azraelgodking.github.io/SunhavenMod/og-card.png">
+    <meta name="theme-color" content="#b8732a">
+    <link rel="icon" type="image/svg+xml" href="../favicon.svg">
+    <link rel="stylesheet" href="../HavensAlmanac/almanac-style.css">
+    <link rel="stylesheet" href="../shared-styles.css">
+    <link rel="stylesheet" href="respec-style.css">
+    <script src="../shared.js" defer></script>
+    <script src="../scripts/stats-display.js" defer></script>
+</head>
+<body>
+    <a href="#main-content" class="skip-to-content">Skip to content</a>
+    <nav class="top-nav" role="navigation" aria-label="Breadcrumb">
+        <a href="../index.html" class="nav-home">Mod Hub</a>
+        <span class="nav-divider">/</span>
+        <span class="nav-current">Haven&rsquo;s Respec</span>
+        <span class="breadcrumb-date">Updated Apr 2026</span>
+    </nav>
+
+    <div class="container" id="main-content" role="main">
+
+        <nav class="related-mods-strip" aria-label="Related mods">
+            <span class="related-mods-label">Also see</span>
+            <a href="../HavensAlmanac/HavensAlmanac.html">Haven&rsquo;s Almanac</a>
+            <a href="../CropOptimizer/CropOptimizer.html">Crop Optimizer</a>
+            <a href="../HavensBirthright/HavensBirthright.html">Haven&rsquo;s Birthright</a>
+            <a href="../TheVault/TheVault.html">The Vault</a>
+        </nav>
+
+        <!-- Title Page -->
+        <header class="hero">
+            <div class="hero-icon">&#x1F4DC;</div>
+            <h1>Haven&rsquo;s Respec</h1>
+            <p class="tagline">Safe Skill Tree Respec &middot; Tree-driven, Undo-aware<span class="cursor">|</span></p>
+            <span class="version-badge">v1.0.1</span>
+        </header>
+
+        <div class="mod-page-download-stats" role="region" aria-label="Recorded download counts">
+            <span>Thunderstore <strong><span data-stats-mod="havens-respec" data-field="thunderstore_downloads">&mdash;</span></strong></span>
+            <span>Nexus Mods <strong><span data-stats-mod="havens-respec" data-field="nexus_downloads">&mdash;</span></strong></span>
+            <span>Combined <strong><span data-stats-mod="havens-respec" data-field="combined_total">&mdash;</span></strong></span>
+        </div>
+
+        <!-- Epigraph -->
+        <section class="intro-section">
+            <p>Haven&rsquo;s Respec lets you cleanly reset any of the five profession skill trees &mdash; Combat, Farming, Fishing, Mining, Exploration &mdash; without editing save files or forcing a new character. A styled <strong>confirmation dialog</strong> surfaces exactly how many skill points you are about to refund, a per-profession <strong>one-step Undo</strong> catches mis-clicks, and an optional <strong>cost model</strong> (free, gold, or gems) adds friction if you want some weight to the decision.</p>
+            <p>This is a <strong>clean-room</strong> mod &mdash; inspired by other community skill-respec mods but written from scratch. No node names are hardcoded: the service enumerates live <code>SkillNode</code> instances from <code>Skills._professionNodeDictionary</code> and whatever keys already exist on <code>Profession.Nodes</code>, so a game update that adds, renames, or re-arranges nodes does not break the reset.</p>
+        </section>
+
+        <div class="ornamental-divider"></div>
+
+        <!-- Quick Controls -->
+        <section class="keybind-section">
+            <h2 class="section-title">Quick Controls</h2>
+            <div class="keybind-grid">
+                <div class="keybind-card">
+                    <div class="keybind-keys"><kbd>Click</kbd> Reset</div>
+                    <div class="keybind-action">Reset the current skill tab <span class="keybind-note">(confirmation dialog unless disabled)</span></div>
+                </div>
+                <div class="keybind-card">
+                    <div class="keybind-keys"><kbd>Shift</kbd> + <kbd>Click</kbd> Reset</div>
+                    <div class="keybind-action">Skip the confirmation dialog <span class="keybind-note">(if ShiftSkipsConfirmation is on)</span></div>
+                </div>
+                <div class="keybind-card">
+                    <div class="keybind-keys"><kbd>Click</kbd> Undo</div>
+                    <div class="keybind-action">Restore the most recent reset for this profession <span class="keybind-note">(one-step, in-memory, session only)</span></div>
+                </div>
+                <div class="keybind-card">
+                    <div class="keybind-keys"><kbd>Configurable</kbd></div>
+                    <div class="keybind-action">Reset-current-tab hotkey and Undo hotkey <span class="keybind-note">(unbound by default; set in Configuration Manager)</span></div>
+                </div>
+            </div>
+        </section>
+
+        <div class="ornamental-divider"></div>
+
+        <!-- Core Features -->
+        <h2 class="section-title">Core Features</h2>
+        <div class="features-grid">
+            <div class="feature-card">
+                <div class="feature-icon">&#x1F501;</div>
+                <h3>Per-Tab Reset</h3>
+                <p>A styled <strong>Reset</strong> button is injected onto every profession skill panel. Clicking it refunds <em>every</em> point spent in that tree and zeroes out <code>Skills.skillPointsUsed</code> and <code>numActiveNodes</code> for that profession.</p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon">&#x21A9;</div>
+                <h3>One-Step Undo</h3>
+                <p>Before a reset fires, the service snapshots the full node dictionary plus counters for that profession. An <strong>Undo</strong> button next to Reset restores the snapshot exactly, refunding the cost if one was charged. Snapshots do not survive a game restart.</p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon">&#x1F9FE;</div>
+                <h3>Themed Confirmation</h3>
+                <p>A uGUI modal built in the mod&rsquo;s parchment-and-ink palette shows the exact number of points to refund, the cost (if any), and your current balance. Cancel / Reset buttons with hover tints; keyboard dismissable.</p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon">&#x1FA99;</div>
+                <h3>Configurable Cost</h3>
+                <p>Three cost models: <strong>None</strong> (free, default), <strong>Gold</strong> (<code>GoldPerPoint</code> &times; points refunded), and <strong>Gems</strong> (<code>GemsPerPoint</code> &times; points refunded). Balances come from <code>GameSave.Coins</code> / <code>Tickets</code>; deductions go through <code>Player.AddMoney</code> / <code>AddTickets</code>.</p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon">&#x1F331;</div>
+                <h3>Tree-Driven</h3>
+                <p>No node-name allowlists. <code>SkillResetService</code> enumerates live <code>SkillNode</code> instances via reflection on <code>Skills._professionNodeDictionary</code> and unions in any keys already stored in <code>Profession.Nodes</code>, so every point is caught regardless of whether the panel has been opened yet.</p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon">&#x1F5DD;</div>
+                <h3>Hotkeys</h3>
+                <p>Two optional hotkeys &mdash; <strong>ResetCurrentTab</strong> and <strong>Undo</strong> &mdash; that act on whichever profession panel is currently open. Both default to <code>KeyCode.None</code> so nothing fires by accident.</p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon">&#x2699;</div>
+                <h3>Config Manager Ready</h3>
+                <p>Every option is a BepInEx <code>ConfigEntry</code> bound through <code>ConfigFileHelper</code> so it shows up live in the <a href="https://github.com/BepInEx/BepInEx.ConfigurationManager" target="_blank" rel="noopener">BepInEx Configuration Manager</a> &mdash; change cost mode, confirmation, hotkeys, or disable button injection without restarting the game.</p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon">&#x1F6E1;</div>
+                <h3>Client-Side &amp; Safe</h3>
+                <p>All operations are applied to the local player&rsquo;s <code>Skills</code> component. No network packets are sent. If you disable the mod, the next time you spend a point everything behaves exactly as stock Sun Haven.</p>
+            </div>
+        </div>
+
+        <div class="ornamental-divider"></div>
+
+        <!-- Why this mod? -->
+        <h2 class="section-title">Why a New Respec Mod?</h2>
+        <div class="respec-card">
+            <h3>The short version</h3>
+            <p>Some other mods in this space hardcode node names (<code>{Prof}{1..10}{a|b|c|d}</code>), ship without confirmation, undo, or cost controls, or are no longer maintained. Haven&rsquo;s Respec is written from the ground up with those gaps in mind &mdash; no files were copied from other mods.</p>
+        </div>
+        <div class="respec-card">
+            <h3>What we do differently</h3>
+            <ul>
+                <li><strong>Tree-driven enumeration.</strong> We read the live <code>SkillNode</code> objects the game builds in <code>Skills._professionNodeDictionary</code> instead of guessing node names.</li>
+                <li><strong>Confirm + Undo.</strong> A dialog shows you what is about to happen, and a session-level snapshot lets you take it back.</li>
+                <li><strong>Optional cost.</strong> Default is free, matching the original behaviour, but you can enable a gold or gem cost per refunded point if you want the decision to sting.</li>
+                <li><strong>First-class Config Manager support.</strong> Every setting is live-editable.</li>
+                <li><strong>Maintained in the open.</strong> Ships out of this repository&rsquo;s normal build / release pipeline alongside the rest of AzraelGodKing&rsquo;s Sun Haven mods.</li>
+            </ul>
+        </div>
+
+        <div class="ornamental-divider"></div>
+
+        <!-- How It Works -->
+        <h2 class="section-title">How It Works</h2>
+        <div class="usage-steps">
+            <div class="step">
+                <div class="step-number">1</div>
+                <div class="step-content">
+                    <h4>Plugin Load</h4>
+                    <p>On <code>Awake</code>, the plugin replaces its own <code>Config</code> with a nicely named file via <code>ConfigFileHelper</code>, registers <code>RespecConfig</code>, instantiates <code>SkillResetService</code>, <code>CostService</code>, and <code>RespecController</code>, and applies a Harmony patch that postfixes <code>Skills.SetupProfession</code>.</p>
+                </div>
+            </div>
+            <div class="step">
+                <div class="step-number">2</div>
+                <div class="step-content">
+                    <h4>Button Injection</h4>
+                    <p>When <code>Skills.SetupProfession</code> runs (opening a profession tab), <code>RespecController</code> spawns a <code>RespecButtonInjector</code> for that profession. It anchors off the existing <code>_skillPointsTMP</code> label and drops Reset / Undo buttons beside it with matching typography and hover tints.</p>
+                </div>
+            </div>
+            <div class="step">
+                <div class="step-number">3</div>
+                <div class="step-content">
+                    <h4>Reset Flow</h4>
+                    <p>Clicking <strong>Reset</strong> runs <code>BeginResetFlow</code>: cost is checked, a confirmation dialog is built (unless <kbd>Shift</kbd> is held and skipping is enabled), and on confirm <code>SkillResetService.ResetProfession</code> zeroes every node and refreshes the UI. The cost (if any) is deducted through <code>CostService.TryDeduct</code>.</p>
+                </div>
+            </div>
+            <div class="step">
+                <div class="step-number">4</div>
+                <div class="step-content">
+                    <h4>Undo Flow</h4>
+                    <p>Before the reset fires, a <code>ResetSnapshot</code> is pushed with the full node dictionary, <code>skillPointsUsed</code>, and <code>numActiveNodes</code>. Clicking <strong>Undo</strong> restores those values exactly and refunds the cost. Snapshots are per-profession and session-only.</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="ornamental-divider"></div>
+
+        <!-- Configuration -->
+        <h2 class="section-title">Configuration</h2>
+        <p class="section-desc">Every setting below is live-editable in the <a href="https://github.com/BepInEx/BepInEx.ConfigurationManager" target="_blank" rel="noopener">BepInEx Configuration Manager</a>. The config file on disk lives at <code>BepInEx/config/HavensRespec.cfg</code>.</p>
+        <div class="config-table">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Setting</th>
+                        <th>Default</th>
+                        <th>Description</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><code>General &rarr; Enabled</code></td>
+                        <td>true</td>
+                        <td>Master on / off. When false the mod loads but installs no patches and adds no buttons.</td>
+                    </tr>
+                    <tr>
+                        <td><code>UI &rarr; InjectButtons</code></td>
+                        <td>true</td>
+                        <td>Add styled Reset / Undo buttons to each skill tab. Disable to use only hotkeys or external integrations.</td>
+                    </tr>
+                    <tr>
+                        <td><code>UI &rarr; RequireConfirmation</code></td>
+                        <td>true</td>
+                        <td>Show the confirmation dialog before wiping a skill tree. Strongly recommended.</td>
+                    </tr>
+                    <tr>
+                        <td><code>UI &rarr; ShiftSkipsConfirmation</code></td>
+                        <td>true</td>
+                        <td>If RequireConfirmation is on, holding <kbd>Shift</kbd> while clicking Reset bypasses the dialog.</td>
+                    </tr>
+                    <tr>
+                        <td><code>UI &rarr; EnableUndo</code></td>
+                        <td>true</td>
+                        <td>Keep a one-step in-memory snapshot per profession and show an Undo button.</td>
+                    </tr>
+                    <tr>
+                        <td><code>UI &rarr; EnableResetAll</code></td>
+                        <td>true</td>
+                        <td>Show a "Reset All" button above the profession tabs that confirms once and resets every tree in sequence.</td>
+                    </tr>
+                    <tr>
+                        <td><code>Cost &rarr; Mode</code></td>
+                        <td>None</td>
+                        <td>Cost model: <code>None</code> (free), <code>Gold</code> (coins per refunded point), or <code>Gems</code> (tickets per refunded point).</td>
+                    </tr>
+                    <tr>
+                        <td><code>Cost &rarr; GoldPerPoint</code></td>
+                        <td>100</td>
+                        <td>Coins charged per refunded skill point when Mode = Gold (range 0&ndash;100,000).</td>
+                    </tr>
+                    <tr>
+                        <td><code>Cost &rarr; GemsPerPoint</code></td>
+                        <td>1</td>
+                        <td>Tickets / gems charged per refunded skill point when Mode = Gems (range 0&ndash;1,000).</td>
+                    </tr>
+                    <tr>
+                        <td><code>Hotkeys &rarr; ResetCurrentTab</code></td>
+                        <td>None</td>
+                        <td>Optional key that triggers a reset of the currently-open skill tab.</td>
+                    </tr>
+                    <tr>
+                        <td><code>Hotkeys &rarr; Undo</code></td>
+                        <td>None</td>
+                        <td>Optional key that undoes the last reset for the currently-open skill tab.</td>
+                    </tr>
+                    <tr>
+                        <td><code>Debug &rarr; DebugLogging</code></td>
+                        <td>false</td>
+                        <td>Verbose logging for patch hits, button injection, node zero-out, and snapshot operations.</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <div class="ornamental-divider"></div>
+
+        <!-- Install -->
+        <h2 class="section-title">Install</h2>
+        <ol class="install-steps">
+            <li>Install <a href="https://docs.bepinex.dev/articles/user_guide/installation/index.html" target="_blank" rel="noopener">BepInEx 5.x</a> for Sun Haven if you haven&rsquo;t already.</li>
+            <li>Grab <code>HavensRespec.dll</code> from <a href="https://github.com/AzraelGodKing/SunhavenMod/releases" target="_blank" rel="noopener">GitHub Releases</a>, <a href="https://thunderstore.io/c/sun-haven/p/AzraelGodKing/HavensRespec/" target="_blank" rel="noopener">Thunderstore</a>, or <a href="https://www.nexusmods.com/sunhaven/mods/502?tab=files" target="_blank" rel="noopener">Nexus Mods (files)</a>.</li>
+            <li>Drop it into <code>Sun Haven/BepInEx/plugins/HavensRespec/</code>.</li>
+            <li>Launch the game, open any skill tree &mdash; you should see the Reset button next to the skill points counter.</li>
+            <li>(Optional) Install <a href="https://github.com/BepInEx/BepInEx.ConfigurationManager" target="_blank" rel="noopener">BepInEx Configuration Manager</a> to edit settings live.</li>
+        </ol>
+
+        <div class="ornamental-divider"></div>
+
+        <!-- Compatibility / Notes -->
+        <h2 class="section-title">Compatibility &amp; Notes</h2>
+        <div class="notes-grid">
+            <div class="note-card">
+                <h4>BepInEx 5.x</h4>
+                <p>Standard BepInEx 5 plugin targeting <code>net48</code>. Drop the DLL into <code>BepInEx/plugins/HavensRespec/</code>.</p>
+            </div>
+            <div class="note-card">
+                <h4>Reflection-Backed</h4>
+                <p>All game-side reads (<code>Skills</code>, <code>Profession</code>, <code>Player</code>, <code>GameSave</code>) use cached reflection with graceful fallbacks. No AccessTools spam if a member name drifts on a future patch.</p>
+            </div>
+            <div class="note-card">
+                <h4>Multiplayer</h4>
+                <p>Client-side only. Haven&rsquo;s Respec edits the local player&rsquo;s <code>Skills</code> component; it does not send anything over the network. In multiplayer, re-opening your tree or a quick reload will re-sync.</p>
+            </div>
+            <div class="note-card">
+                <h4>Save Safety</h4>
+                <p>No save-file editing. If you uninstall the mod, your character keeps whatever state the skill tree was in the last time you played.</p>
+            </div>
+            <div class="note-card">
+                <h4>Localization</h4>
+                <p>Button labels are injected without <code>I2.Loc.Localize</code> components attached so they render verbatim regardless of the active language.</p>
+            </div>
+            <div class="note-card">
+                <h4>Not a Copy</h4>
+                <p>Haven&rsquo;s Respec was written from scratch; no files were copied from other mods. The idea existed in the community before; this implementation is new.</p>
+            </div>
+        </div>
+
+        <!-- Colophon / Footer -->
+        <nav class="download-nav" data-mod-key="com.azraelgodking.havensrespec" aria-label="Download links"></nav>
+        <footer class="footer">
+            <p>Haven&rsquo;s Respec - A Sun Haven Mod by AzraelGodKing</p>
+            <div class="footer-links">
+                <a href="../index.html">Back to Mod Hub</a>
+            </div>
+        </footer>
+    </div>
+</body>
+</html>

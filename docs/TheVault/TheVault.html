@@ -16,6 +16,7 @@
     <link rel="stylesheet" href="vault-style.css">
     <link rel="stylesheet" href="../shared-styles.css">
     <script src="../shared.js" defer></script>
+    <script src="../scripts/stats-display.js" defer></script>
 </head>
 <body>
     <a href="#main-content" class="skip-to-content">Skip to content</a>
@@ -45,13 +46,19 @@
                 </div>
             </div>
             <div style="display:flex; gap:16px; justify-content:center; align-items:center; margin-top:12px; flex-wrap:wrap;">
-                <span class="version-badge">v3.0.6</span>
+                <span class="version-badge">v3.0.7</span>
                 <span style="font-size:0.8em; opacity:0.6;">Account Status: <span style="color:#3fb950;">ACTIVE</span></span>
                 <span style="font-size:0.8em; opacity:0.6;">Encryption: <span style="color:#3fb950;">AES-256</span></span>
             </div>
             <div class="hero-corner-bl" aria-hidden="true"></div>
             <div class="hero-corner-br" aria-hidden="true"></div>
         </header>
+
+        <div class="mod-page-download-stats" role="region" aria-label="Recorded download counts">
+            <span>Thunderstore <strong><span data-stats-mod="the-vault" data-field="thunderstore_downloads">&mdash;</span></strong></span>
+            <span>Nexus Mods <strong><span data-stats-mod="the-vault" data-field="nexus_downloads">&mdash;</span></strong></span>
+            <span>Combined <strong><span data-stats-mod="the-vault" data-field="combined_total">&mdash;</span></strong></span>
+        </div>
 
         <!-- Account summary intro -->
         <section class="intro-section" style="border-left:3px solid #2d6cdf; padding-left:20px;">

@@ -26,7 +26,8 @@ packages/
 *.pdb
 *.exe
 
-# Allow pre-built DLLs in builds folder for CI/CD
-!builds/
-!builds/**/
-!builds/**/*.dll
+# Local/CI staging outputs (workflows recreate these each run)
+builds/
+
+# Local secrets for tooling
+.env

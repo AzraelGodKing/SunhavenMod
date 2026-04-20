@@ -16,6 +16,7 @@
     <link rel="stylesheet" href="devtools-style.css">
     <link rel="stylesheet" href="../shared-styles.css">
     <script src="../shared.js" defer></script>
+    <script src="../scripts/stats-display.js" defer></script>
 </head>
 <body>
     <a href="#main-content" class="skip-to-content">Skip to content</a>
@@ -42,11 +43,17 @@
                 <span>Loading HavenDevTools&hellip; <span style="color:#3fb950;">OK</span></span>
             </div>
             <h1 style="margin:12px 0 4px;font-size:1.6em;">
-                <span style="color:#3fb950;">&gt;</span> HavenDevTools <span class="version-badge">v1.0.9</span>
+                <span style="color:#3fb950;">&gt;</span> HavenDevTools <span class="version-badge">v1.0.11</span>
             </h1>
             <p class="tagline" style="margin:0;color:#8b949e;">Developer &amp; Debugging Utilities for Sun Haven<span class="cursor">|</span></p>
             <p style="margin:10px 0 0;color:#6e7681;font-size:0.85em;">Type <code>help</code> for available commands &mdash; Press <kbd>F12</kbd> to toggle console</p>
         </section>
+
+        <div class="mod-page-download-stats" role="region" aria-label="Recorded download counts" style="font-family:system-ui,Segoe UI,sans-serif;">
+            <span>Thunderstore <strong><span data-stats-mod="haven-dev-tools" data-field="thunderstore_downloads">&mdash;</span></strong></span>
+            <span>Nexus Mods <strong><span data-stats-mod="haven-dev-tools" data-field="nexus_downloads">&mdash;</span></strong></span>
+            <span>Combined <strong><span data-stats-mod="haven-dev-tools" data-field="combined_total">&mdash;</span></strong></span>
+        </div>
 
         <!-- Man-page style intro -->
         <section class="intro-section" style="font-family:monospace;">
