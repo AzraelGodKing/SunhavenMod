@@ -172,7 +172,17 @@ namespace BirthdayReminder.Data
                 }
                 else
                 {
-                    Plugin.Log?.LogDebug("[BirthdayManager] Game data API not available - using hardcoded cache");
+                    if (_npcManagerInstanceProp == null)
+                        Plugin.Log?.LogWarning("[BirthdayManager][Reflect] NPCManager.Instance property not found - check game version");
+                    if (_npcsDictField == null)
+                        Plugin.Log?.LogWarning("[BirthdayManager][Reflect] NPCManager._npcs field not found - check game version");
+                    if (_birthDayField == null)
+                        Plugin.Log?.LogWarning("[BirthdayManager][Reflect] NPCGiftTable.birthDay field not found - check game version");
+                    if (_birthMonthField == null)
+                        Plugin.Log?.LogWarning("[BirthdayManager][Reflect] NPCGiftTable.birthMonth field not found - check game version");
+                    if (_giftTableField == null)
+                        Plugin.Log?.LogWarning("[BirthdayManager][Reflect] NPCAI.giftTable field not found - check game version");
+                    Plugin.Log?.LogWarning("[BirthdayManager] Falling back to hardcoded birthday cache (game API unavailable)");
                 }
             }
             catch (Exception ex)
@@ -232,6 +242,12 @@ namespace BirthdayReminder.Data
                     string displayNpcName = NormalizeNpcName(rawNpcName);
                     if (string.IsNullOrEmpty(displayNpcName))
                         continue;
+
+                    // Fuzzy-resolve against the canonical cache names so that
+                    // modded or aliased game names still map to a known identity.
+                    displayNpcName = FuzzyMatchNpcName(
+                        displayNpcName,
+                        BirthdayCache.AllBirthdays.Select(b => b.NPCName));
 
                     // Some game NPC entries use aliases/duplicates (e.g. "Darius+Darius"). Keep one display row.
                     if (!seenDisplayNames.Add(displayNpcName))
@@ -376,6 +392,65 @@ namespace BirthdayReminder.Data
                 return parts[0];
 
             return string.Join("+", parts);
+        }
+
+        /// <summary>
+        /// Finds the best-matching known NPC name for a given raw name using
+        /// case-insensitive comparison and Levenshtein distance as a fallback.
+        /// Returns the matched known name, or the normalized input if no close
+        /// match is found. Used so modded or aliased NPC names can still resolve
+        /// to their birthday entry.
+        /// </summary>
+        private string FuzzyMatchNpcName(string rawName, IEnumerable<string> knownNames)
+        {
+            if (string.IsNullOrWhiteSpace(rawName)) return rawName;
+
+            var normalized = NormalizeNpcName(rawName);
+            // Exact case-insensitive match first
+            var exact = knownNames.FirstOrDefault(k =>
+                string.Equals(k, normalized, StringComparison.OrdinalIgnoreCase));
+            if (exact != null) return exact;
+
+            // Partial match: raw name contains or is contained by a known name
+            var partial = knownNames.FirstOrDefault(k =>
+                k.IndexOf(normalized, StringComparison.OrdinalIgnoreCase) >= 0
+                || normalized.IndexOf(k, StringComparison.OrdinalIgnoreCase) >= 0);
+            if (partial != null) return partial;
+
+            // Levenshtein distance fallback. Keep stricter matching for short names
+            // to avoid accidental collisions (e.g., 3-4 character NPC names).
+            string bestMatch = null;
+            int bestDist = int.MaxValue;
+            foreach (var known in knownNames)
+            {
+                int dist = LevenshteinDistance(normalized, known);
+                if (dist < bestDist)
+                {
+                    bestDist = dist;
+                    bestMatch = known;
+                }
+            }
+            int minLen = bestMatch != null ? Math.Min(normalized.Length, bestMatch.Length) : normalized.Length;
+            int maxDist = minLen <= 4 ? 1 : 2;
+            return (bestDist <= maxDist && bestMatch != null) ? bestMatch : normalized;
+        }
+
+        private static int LevenshteinDistance(string a, string b)
+        {
+            if (string.IsNullOrEmpty(a)) return b?.Length ?? 0;
+            if (string.IsNullOrEmpty(b)) return a.Length;
+
+            var al = a.ToLowerInvariant();
+            var bl = b.ToLowerInvariant();
+            int[,] dp = new int[al.Length + 1, bl.Length + 1];
+            for (int i = 0; i <= al.Length; i++) dp[i, 0] = i;
+            for (int j = 0; j <= bl.Length; j++) dp[0, j] = j;
+            for (int i = 1; i <= al.Length; i++)
+                for (int j = 1; j <= bl.Length; j++)
+                    dp[i, j] = al[i - 1] == bl[j - 1]
+                        ? dp[i - 1, j - 1]
+                        : 1 + Math.Min(dp[i - 1, j - 1], Math.Min(dp[i - 1, j], dp[i, j - 1]));
+            return dp[al.Length, bl.Length];
         }
 
         /// <summary>

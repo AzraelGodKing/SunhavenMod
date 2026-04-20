@@ -79,7 +79,9 @@ namespace TrinketFortune
             if (aquariumPct < Config.MinimumMuseumProgress.Value * 100f)
                 return items[UnityEngine.Random.Range(0, items.Count)];
 
-            float bonusChance = Config.MuseumProgressBonusPercent.Value * (aquariumPct / 10f);
+            float bonusChance = Mathf.Min(
+                Config.MuseumProgressBonusPercent.Value * (aquariumPct / 10f),
+                Config.MaxBonusChancePercent.Value);
             float roll = UnityEngine.Random.Range(0f, 100f);
             if (roll < bonusChance)
                 return unowned[UnityEngine.Random.Range(0, unowned.Count)];
@@ -141,7 +143,9 @@ namespace TrinketFortune
             float aquariumPct = GetAquariumProgress();
             if (aquariumPct < Config.MinimumMuseumProgress.Value * 100f) return null;
 
-            float bonusChance = Config.MuseumProgressBonusPercent.Value * (aquariumPct / 10f);
+            float bonusChance = Mathf.Min(
+                Config.MuseumProgressBonusPercent.Value * (aquariumPct / 10f),
+                Config.MaxBonusChancePercent.Value);
             if (UnityEngine.Random.Range(0f, 100f) >= bonusChance) return null;
 
             return unowned[UnityEngine.Random.Range(0, unowned.Count)];

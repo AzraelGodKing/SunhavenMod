@@ -59,6 +59,8 @@ namespace SunhavenTodo
         private static float _lastAutoSaveTime;
         private bool _isDataLoaded;
         private string _loadedCharacterName;
+        private static bool _overnightHooked;
+        private static UnityEngine.Events.UnityAction _overnightCallback;
 
         // Static access for patches and hotkeys
         public static KeyCode StaticToggleKey => _staticToggleKey;
@@ -268,7 +270,16 @@ namespace SunhavenTodo
 
         private void OnSceneLoaded(Scene scene, LoadSceneMode mode)
         {
+            if (scene.name == "MainMenu" || scene.name == "Bootstrap")
+            {
+                // DayCycle singleton is gone on main menu — reset so we re-hook on next game load
+                _overnightHooked = false;
+                _overnightCallback = null;
+                return;
+            }
+
             EnsureUIComponentsExist();
+            TryHookOvernight();
         }
 
         public static void EnsureUIComponentsExist()
@@ -371,11 +382,76 @@ namespace SunhavenTodo
             _isDataLoaded = true;
             _loadedCharacterName = characterName;
             Log.LogInfo($"Loaded todo list for character: {characterName}");
+            _overnightHooked = false;
+            TryHookOvernight();
         }
 
         public static void SaveData()
         {
             _staticSaveSystem?.Save();
+        }
+
+        public static void TryHookOvernight()
+        {
+            SunhavenMods.Shared.OvernightHookUtility.TryHookOvernightEvent(
+                ref _overnightHooked,
+                ref _overnightCallback,
+                OnNewDay,
+                type =>
+                {
+                    try
+                    {
+                        var singletonBaseType = AccessTools.TypeByName("Wish.SingletonBehaviour`1");
+                        if (singletonBaseType != null)
+                        {
+                            var genericType = singletonBaseType.MakeGenericType(type);
+                            return genericType.GetProperty("Instance")?.GetValue(null);
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        System.Diagnostics.Debug.WriteLine($"[SunhavenTodo] TryHookOvernight instance resolver failed: {ex.Message}");
+                    }
+                    return null;
+                },
+                msg => Log?.LogInfo(msg),
+                msg => Log?.LogWarning(msg));
+        }
+
+        private static void OnNewDay()
+        {
+            if (_staticTodoManager == null) return;
+            _staticTodoManager.ResetRecurringTodos(Data.RecurInterval.Daily);
+            Log?.LogInfo("[Todo] Reset daily recurring tasks.");
+
+            try
+            {
+                var dayCycleType = AccessTools.TypeByName("Wish.DayCycle");
+                if (dayCycleType != null)
+                {
+                    var monthDayProp = AccessTools.Property(dayCycleType, "MonthDay");
+                    int day = monthDayProp != null ? (int)monthDayProp.GetValue(null) : 0;
+                    if (day > 0)
+                    {
+                        if ((day - 1) % 7 == 0)
+                        {
+                            _staticTodoManager.ResetRecurringTodos(Data.RecurInterval.Weekly);
+                            Log?.LogInfo("[Todo] Reset weekly recurring tasks.");
+                        }
+                        if (day == 1)
+                        {
+                            _staticTodoManager.ResetRecurringTodos(Data.RecurInterval.Seasonal);
+                            Log?.LogInfo("[Todo] Reset seasonal recurring tasks.");
+                        }
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"[SunhavenTodo] OnNewDay recurring reset check failed: {ex.Message}");
+            }
+
+            SaveData();
         }
 
         public static void ToggleUI()

@@ -155,6 +155,57 @@ namespace SenpaisChest.Data
                 && _smartChests[chestId].Rules.Count > 0;
         }
 
+        /// <summary>
+        /// Returns how many other registered smart chests share the same ChestName
+        /// as the given chest (excludes the source chest itself).
+        /// </summary>
+        public int CountSameNameChests(string chestId)
+        {
+            if (!_smartChests.TryGetValue(chestId, out var source)) return 0;
+            int count = 0;
+            foreach (var kvp in _smartChests)
+            {
+                if (kvp.Key == chestId) continue;
+                if (string.Equals(kvp.Value.ChestName, source.ChestName, StringComparison.OrdinalIgnoreCase))
+                    count++;
+            }
+            return count;
+        }
+
+        /// <summary>
+        /// Copies the rule set of the source chest to every other registered smart
+        /// chest that shares the same ChestName. Returns the number of chests updated.
+        /// </summary>
+        public int CopyRulesToSameNameChests(string sourceChestId)
+        {
+            if (!_smartChests.TryGetValue(sourceChestId, out var source) || source.Rules.Count == 0)
+                return 0;
+
+            int updated = 0;
+            foreach (var kvp in _smartChests)
+            {
+                if (kvp.Key == sourceChestId) continue;
+                if (!string.Equals(kvp.Value.ChestName, source.ChestName, StringComparison.OrdinalIgnoreCase))
+                    continue;
+                kvp.Value.Rules.Clear();
+                foreach (var rule in source.Rules)
+                    kvp.Value.Rules.Add(CloneRule(rule));
+                updated++;
+            }
+            if (updated > 0) _isDirty = true;
+            return updated;
+        }
+
+        private static SmartChestRule CloneRule(SmartChestRule r) => new SmartChestRule
+        {
+            Type = r.Type,
+            ItemId = r.ItemId,
+            CategoryName = r.CategoryName,
+            ItemTypeName = r.ItemTypeName,
+            PropertyName = r.PropertyName,
+            GroupName = r.GroupName,
+        };
+
         /// <returns>True if a saved entry existed and was removed.</returns>
         public bool RemoveSmartChest(string chestId)
         {

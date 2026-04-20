@@ -124,6 +124,7 @@ namespace CropOptimizer.Patches
                 float etaHours = TryResolveEtaHours(__instance, out bool etaResolved) ? Mathf.Max(0f, _resolvedEtaHoursCache) : 24f;
                 float qualityMultiplier = TryResolveQualityMultiplier(__instance, out bool qualityResolved) ? _resolvedQualityMultiplierCache : 1f;
                 int projectedSellGold = TryResolveProjectedSellGold(__instance, qualityMultiplier, out bool sellResolved) ? _resolvedProjectedSellGoldCache : 0;
+                TryGetHarvestItemId(__instance, out int harvestItemId);
 
                 if (!etaResolved && !_loggedEtaFallback)
                 {
@@ -141,7 +142,7 @@ namespace CropOptimizer.Patches
                     Plugin.Log?.LogDebug("[CropGrowthPatch] Sell value reflection fallback active; using default 0g for unresolved crops.");
                 }
 
-                _forecast.UpdateCropState(id, etaHours, qualityMultiplier, projectedSellGold);
+                _forecast.UpdateCropState(id, etaHours, qualityMultiplier, projectedSellGold, harvestItemId);
             }
             catch (Exception ex)
             {

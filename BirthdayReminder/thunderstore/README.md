@@ -1,6 +1,6 @@
 # A Squirrel's Birthday Reminder
 
-**Version 1.1.7** — Never miss an NPC birthday in Sun Haven. Auto reminders, gift suggestions, gift tracking, draggable HUD.
+**Version 1.2.0** — Never miss an NPC birthday in Sun Haven. Auto reminders, gift suggestions, gift tracking, draggable HUD.
 
 **1.1.5:** Normalized duplicate composite NPC names from game data (e.g. `Darius+Darius` now displays as `Darius`) and aligned gift tracking lookups with normalized names. Keepalive cleanup: removed the no-op `Plugin.Update` path so runtime processing stays solely in the hidden persistent runner. Config file now uses `BepInEx/config/BirthdayReminder.cfg` (auto-migrates values from the legacy GUID-named config on first load).
 

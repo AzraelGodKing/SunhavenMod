@@ -80,13 +80,6 @@ Use this checklist before any release prep, documentation refresh, or compatibil
 - `TrinketFortune/thunderstore/manifest.json`
 - `TrinketFortune/thunderstore/README.md`
 
-### JusticeForHarold (if release-managed)
-
-- `JusticeForHarold/PluginInfo.cs`
-- `JusticeForHarold/README.md`
-- `docs/versions.json` (add entry only if this mod is officially release-managed)
-- `.github/workflows/build-release-publish.yml` (include only if release-managed)
-
 ## Final Sanity Pass
 
 - Run `scripts/pre-push-build.ps1 -All` without version bump.

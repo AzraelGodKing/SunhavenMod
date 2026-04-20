@@ -93,7 +93,7 @@ namespace TheVault.UI
         private const float BASE_MAX_CONTENT_HEIGHT = 420f;
         private const float BASE_SETTINGS_CONTENT_HEIGHT = 340f;
 
-        // UI scale (from config, 0.5-2.5)
+        // UI scale (from config, 0.5-3.0)
         private float _scale = 1f;
 
         /// <summary>GUIStyle/GUI.skin may only be touched inside OnGUI; defer full style build until then.</summary>
@@ -131,12 +131,6 @@ namespace TheVault.UI
             "V", "B", "G", "K", "U", "H"
         };
 
-        /// <summary>When false, IMGUI draw and toggles are disabled.</summary>
-        private bool _legacyImguiEnabled = true;
-
-        /// <summary>Enable or disable the legacy IMGUI window. When disabled, <see cref="IsVisible"/> stays false for HUD checks.</summary>
-        public void SetLegacyImguiEnabled(bool enabled) => _legacyImguiEnabled = enabled;
-
         public void Initialize(VaultManager vaultManager)
         {
             _vaultManager = vaultManager;
@@ -165,7 +159,7 @@ namespace TheVault.UI
 
         public void SetScale(float scale)
         {
-            _scale = Mathf.Clamp(scale, 0.5f, 2.5f);
+            _scale = Mathf.Clamp(scale, 0.5f, 3.0f);
             _stylesDirty = true;
             _windowStyle = null;
             float w = WindowWidth;
@@ -180,7 +174,6 @@ namespace TheVault.UI
 
         public void Show()
         {
-            if (!_legacyImguiEnabled) return;
             _isVisible = true;
 
             // Block game input while vault is open
@@ -230,7 +223,6 @@ namespace TheVault.UI
 
         public void Toggle()
         {
-            if (!_legacyImguiEnabled) return;
             // Don't allow toggle until vault is loaded
             if (!PlayerPatches.IsVaultLoaded)
             {
@@ -544,7 +536,6 @@ namespace TheVault.UI
 
         private void OnGUI()
         {
-            if (!_legacyImguiEnabled) return;
             // Don't show UI until vault is loaded for the current character
             if (!_isVisible || _vaultManager == null || !PlayerPatches.IsVaultLoaded) return;
 
@@ -936,7 +927,7 @@ namespace TheVault.UI
             GUILayout.BeginHorizontal();
             GUILayout.Label("Window scale:", _labelStyle, GUILayout.Width(Scaled(90)));
             float winScale = Plugin.GetConfigWindowScale();
-            float newWinScale = GUILayout.HorizontalSlider(winScale, 0.5f, 2.5f, GUILayout.Width(Scaled(120)));
+            float newWinScale = GUILayout.HorizontalSlider(winScale, 0.5f, 3f, GUILayout.Width(Scaled(120)));
             if (Math.Abs(newWinScale - winScale) > 0.01f) Plugin.SetConfigWindowScale(newWinScale);
             GUILayout.Label($"{newWinScale:F1}", _labelStyle, GUILayout.Width(Scaled(28)));
             GUILayout.EndHorizontal();

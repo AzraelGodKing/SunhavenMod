@@ -14,10 +14,12 @@ namespace CropOptimizer.Config
         public ConfigEntry<bool> HoverTooltipEnabled { get; }
         public ConfigEntry<float> HoverTooltipMaxWorldDistance { get; }
         public ConfigEntry<bool> DebugLogging { get; }
+        public ConfigEntry<bool> CheckForUpdates { get; }
 
         public CropOptimizerConfig(ConfigFile config)
         {
             Enabled = config.Bind("General", "Enabled", true, "Enable Crop Optimizer");
+            CheckForUpdates = config.Bind("General", "CheckForUpdates", true, "Check for Crop Optimizer updates on startup via GitHub Pages.");
             HudEnabled = config.Bind("HUD", "Enabled", true, "Show Crop Optimizer HUD");
             HudScale = config.Bind("HUD", "Scale", 1.0f, new ConfigDescription("HUD scale", new AcceptableValueRange<float>(0.5f, 2.5f)));
             HudPositionX = config.Bind("HUD", "PositionX", 20f, "HUD window X (pixels); updated when you drag the panel)");

@@ -24,6 +24,13 @@ namespace SunhavenTodo.Data
         Collection
     }
 
+    public enum RecurInterval
+    {
+        Daily,
+        Weekly,
+        Seasonal
+    }
+
     [Serializable]
     public class TodoItem
     {
@@ -37,6 +44,8 @@ namespace SunhavenTodo.Data
         public bool IsCompleted { get; set; }
         public DateTime CreatedAt { get; set; }
         public DateTime? CompletedAt { get; set; }
+        public bool IsRecurring { get; set; }
+        public RecurInterval RecurInterval { get; set; }
 
         public TodoItem()
         {
