@@ -102,7 +102,7 @@
     "changelog": "Config now uses BepInEx/config/TrinketFortune.cfg with first-run migration from the legacy GUID config file. Startup now runs in standalone-safe mode so Trinket Fortune no longer hard-requires HavenDevTools.dll to load."
   },
   "com.azraelgodking.cropoptimizer": {
-    "version": "1.0.2",
+    "version": "1.1.0",
     "name": "Crop Optimizer",
     "description": "Crop forecast HUD with seasonal planning helpers and soft Todo/Birthday/Vault integrations",
     "nexus": "https://www.nexusmods.com/sunhaven/mods/500",
@@ -112,7 +112,7 @@
     "changelog": "Initial release scaffold: crop growth patch, forecast cache, HUD, and soft integrations for SunhavenTodo, BirthdayReminder, TheVault, and HavensAlmanac."
   },
   "com.azraelgodking.havensrespec": {
-    "version": "1.0.1",
+    "version": "1.1.0",
     "name": "Haven's Respec",
     "description": "Safe skill respec — Reset button on every skill tab, confirmation dialog, one-step Undo, configurable cost, and full Configuration Manager support",
     "nexus": "https://www.nexusmods.com/sunhaven/mods/502",
