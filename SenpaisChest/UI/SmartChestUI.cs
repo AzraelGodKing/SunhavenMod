@@ -22,6 +22,8 @@ namespace SenpaisChest.UI
         private Chest _currentChest;
         private SmartChestData _currentData;
         private string _chestId;
+        private bool _confirmCopyRules;
+        private float _confirmCopyRulesUntil;
 
         // UI scale (0.5–2.5)
         private float _scale = 1f;
@@ -244,6 +246,7 @@ namespace SenpaisChest.UI
         public void Hide()
         {
             _isVisible = false;
+            _confirmCopyRules = false;
             BlockGameInput(false);
             var chestToClose = _currentChest;
             _currentChest = null;
@@ -266,6 +269,7 @@ namespace SenpaisChest.UI
         {
             SaveIfDirty(); // Ensure rules are saved before closing
             _isVisible = false;
+            _confirmCopyRules = false;
             _groupsWindowVisible = false;
             BlockGameInput(false);
         }
@@ -335,6 +339,7 @@ namespace SenpaisChest.UI
             _selectedCategory = 0;
             _selectedItemType = 0;
             _selectedProperty = 0;
+            _confirmCopyRules = false;
 
             _isVisible = true;
             BlockGameInput(true);
@@ -701,12 +706,27 @@ namespace SenpaisChest.UI
                 {
                     GUILayout.Space(compact ? 2 : 4);
                     var bulkBtnStyle = useParchmentTheme ? _chestSelectorStyle : (compact ? _chestSelectorStyle : _selectorStyle);
-                    string bulkLabel = $"Copy Rules to All \"{_currentData.ChestName}\" ({sameNameCount})";
+                    bool confirmActive = _confirmCopyRules && Time.unscaledTime <= _confirmCopyRulesUntil;
+                    if (!confirmActive)
+                        _confirmCopyRules = false;
+                    string bulkLabel = confirmActive
+                        ? $"Click Again to Confirm ({sameNameCount})"
+                        : $"Copy Rules to All \"{_currentData.ChestName}\" ({sameNameCount})";
                     if (GUILayout.Button(bulkLabel, bulkBtnStyle, GUILayout.Height((useParchmentTheme || compact) ? 24 : 28)))
                     {
-                        int updated = _manager.CopyRulesToSameNameChests(_chestId);
-                        SaveIfDirty();
-                        Plugin.Log?.LogInfo($"[SmartChestUI] Copied rules to {updated} same-name chest(s)");
+                        if (confirmActive)
+                        {
+                            int updated = _manager.CopyRulesToSameNameChests(_chestId);
+                            _confirmCopyRules = false;
+                            SaveIfDirty();
+                            Plugin.Log?.LogInfo($"[SmartChestUI] Copied rules to {updated} same-name chest(s)");
+                        }
+                        else
+                        {
+                            _confirmCopyRules = true;
+                            _confirmCopyRulesUntil = Time.unscaledTime + 3f;
+                            Plugin.Log?.LogInfo("[SmartChestUI] Copy-rules confirmation armed for 3 seconds");
+                        }
                     }
                 }
             }

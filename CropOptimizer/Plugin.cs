@@ -126,7 +126,7 @@ namespace CropOptimizer
             return $"Crops: {Instance._forecast.Snapshot().Count}, Value: {Instance._forecast.GetProjectedSellTotal()}g";
         }
 
-        public static System.Collections.Generic.List<CropForecast.CropTypeSummary> GetTopCrops(int count = 5)
+        internal static System.Collections.Generic.List<CropForecast.CropTypeSummary> GetTopCrops(int count = 5)
         {
             return Instance?._forecast?.GetTopCropsByValue(count)
                 ?? new System.Collections.Generic.List<CropForecast.CropTypeSummary>();

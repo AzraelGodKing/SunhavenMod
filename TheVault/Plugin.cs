@@ -113,7 +113,7 @@ namespace TheVault
                 DontDestroyOnLoad(uiObject);
                 _vaultUI = uiObject.AddComponent<VaultUI>();
                 _vaultUI.Initialize(_vaultManager);
-                _vaultUI.SetScale(Mathf.Clamp(_windowScale.Value, 0.5f, 2.5f));
+                _vaultUI.SetScale(Mathf.Clamp(_windowScale.Value, 0.5f, 3.0f));
                 _vaultUI.SetToggleKey(_toggleKey.Value, _requireCtrlModifier.Value);
                 _vaultUI.SetAltToggleKey(_altToggleKey.Value);
                 _staticVaultUI = _vaultUI;
@@ -131,7 +131,7 @@ namespace TheVault
                 _vaultHUD.SetEnabled(_enableHUD.Value);
                 ApplyVaultHudPlacementFromConfig(_vaultHUD);
                 WireVaultHudPositionPersistence(_vaultHUD);
-                _vaultHUD.SetScale(Mathf.Clamp(_hudScale.Value, 0.5f, 2.5f));
+                _vaultHUD.SetScale(Mathf.Clamp(_hudScale.Value, 0.5f, 3.0f));
                 _vaultHUD.SetHudDensity(GetResolvedHudDensity());
                 _staticVaultHUD = _vaultHUD;
 
@@ -266,7 +266,7 @@ namespace TheVault
 
                     _staticVaultUI = uiObject.AddComponent<VaultUI>();
                     _staticVaultUI.Initialize(_staticVaultManager);
-                    float windowScale = Instance != null ? Mathf.Clamp(Instance._windowScale.Value, 0.5f, 2.5f) : 1f;
+                    float windowScale = Instance != null ? Mathf.Clamp(Instance._windowScale.Value, 0.5f, 3.0f) : 1f;
                     _staticVaultUI.SetScale(windowScale);
                     _staticVaultUI.SetToggleKey(StaticToggleKey, StaticRequireCtrl);
                     _staticVaultUI.SetAltToggleKey(StaticAltToggleKey);
@@ -281,7 +281,7 @@ namespace TheVault
                         _staticVaultHUD.SetEnabled(Instance._enableHUD.Value);
                         Instance.ApplyVaultHudPlacementFromConfig(_staticVaultHUD);
                         Instance.WireVaultHudPositionPersistence(_staticVaultHUD);
-                        _staticVaultHUD.SetScale(Mathf.Clamp(Instance._hudScale.Value, 0.5f, 2.5f));
+                        _staticVaultHUD.SetScale(Mathf.Clamp(Instance._hudScale.Value, 0.5f, 3.0f));
                         _staticVaultHUD.SetHudDensity(GetResolvedHudDensity());
                     }
 
@@ -351,7 +351,7 @@ namespace TheVault
                 1.25f,
                 new BepInEx.Configuration.ConfigDescription(
                     "Scale factor for the HUD bar (1.0 = smaller, 1.25 = new default, 2.0 = very large). Use a dot as decimal separator in the config file (e.g. 1.25).",
-                    new BepInEx.Configuration.AcceptableValueRange<float>(0.5f, 2.5f))
+                    new BepInEx.Configuration.AcceptableValueRange<float>(0.5f, 3.0f))
             );
 
             _hudCompactMode = ConfigFile.Bind(
@@ -376,7 +376,7 @@ namespace TheVault
                 1.0f,
                 new BepInEx.Configuration.ConfigDescription(
                     "Scale factor for the main Vault window (1.0 = default, 1.5 = 50% larger)",
-                    new BepInEx.Configuration.AcceptableValueRange<float>(0.5f, 2.5f)
+                    new BepInEx.Configuration.AcceptableValueRange<float>(0.5f, 3.0f)
                 )
             );
 
@@ -467,7 +467,7 @@ namespace TheVault
                 var vaultUI = GetVaultUI();
                 if (vaultUI != null)
                 {
-                    vaultUI.SetScale(Mathf.Clamp(_windowScale.Value, 0.5f, 2.5f));
+                    vaultUI.SetScale(Mathf.Clamp(_windowScale.Value, 0.5f, 3.0f));
                     vaultUI.SetToggleKey(StaticToggleKey, StaticRequireCtrl);
                     vaultUI.SetAltToggleKey(StaticAltToggleKey);
                 }
@@ -489,7 +489,7 @@ namespace TheVault
                     if (_hudPositionX.Value >= 0f && _hudPositionY.Value >= 0f)
                         vaultHUD.RestoreHudPixelPosition(_hudPositionX.Value, _hudPositionY.Value);
 
-                    vaultHUD.SetScale(Mathf.Clamp(_hudScale.Value, 0.5f, 2.5f));
+                    vaultHUD.SetScale(Mathf.Clamp(_hudScale.Value, 0.5f, 3.0f));
                     vaultHUD.SetHudDensity(GetResolvedHudDensity());
                 }
             }
@@ -503,7 +503,7 @@ namespace TheVault
         /// <summary>Apply window scale to the vault UI.</summary>
         public void ApplyVaultWindowScaleToUi()
         {
-            float s = Mathf.Clamp(_windowScale?.Value ?? 1f, 0.5f, 2.5f);
+            float s = Mathf.Clamp(_windowScale?.Value ?? 1f, 0.5f, 3.0f);
             _staticVaultUI?.SetScale(s);
         }
 
@@ -535,7 +535,7 @@ namespace TheVault
         public static bool GetConfigHUDEnabled() => Instance?._enableHUD?.Value ?? true;
         public static void SetConfigHUDEnabled(bool v) { if (Instance?._enableHUD != null) Instance._enableHUD.Value = v; }
         public static float GetConfigHUDScale() => Instance?._hudScale?.Value ?? 1f;
-        public static void SetConfigHUDScale(float v) { if (Instance?._hudScale != null) Instance._hudScale.Value = Mathf.Clamp(v, 0.5f, 2.5f); }
+        public static void SetConfigHUDScale(float v) { if (Instance?._hudScale != null) Instance._hudScale.Value = Mathf.Clamp(v, 0.5f, 3.0f); }
         public static bool GetConfigHUDCompactMode() => Instance?._hudCompactMode?.Value ?? false;
         public static void SetConfigHUDCompactMode(bool v) { if (Instance?._hudCompactMode != null) Instance._hudCompactMode.Value = v; }
 
@@ -563,7 +563,7 @@ namespace TheVault
             return VaultHudDensity.Normal;
         }
         public static float GetConfigWindowScale() => Instance?._windowScale?.Value ?? 1f;
-        public static void SetConfigWindowScale(float v) { if (Instance?._windowScale != null) Instance._windowScale.Value = Mathf.Clamp(v, 0.5f, 2.5f); }
+        public static void SetConfigWindowScale(float v) { if (Instance?._windowScale != null) Instance._windowScale.Value = Mathf.Clamp(v, 0.5f, 3.0f); }
 
         public static bool GetConfigDebugFullVaultInspector() => _debugFullVaultInspector;
 
@@ -1355,7 +1355,7 @@ namespace TheVault
     {
         public const string PLUGIN_GUID = "com.azraelgodking.thevault";
         public const string PLUGIN_NAME = "The Vault";
-        public const string PLUGIN_VERSION = "3.0.7";
+        public const string PLUGIN_VERSION = "3.1.0";
     }
 
     /// <summary>

@@ -417,7 +417,8 @@ namespace BirthdayReminder.Data
                 || normalized.IndexOf(k, StringComparison.OrdinalIgnoreCase) >= 0);
             if (partial != null) return partial;
 
-            // Levenshtein distance fallback — accept if distance ≤ 2
+            // Levenshtein distance fallback. Keep stricter matching for short names
+            // to avoid accidental collisions (e.g., 3-4 character NPC names).
             string bestMatch = null;
             int bestDist = int.MaxValue;
             foreach (var known in knownNames)
@@ -429,7 +430,9 @@ namespace BirthdayReminder.Data
                     bestMatch = known;
                 }
             }
-            return (bestDist <= 2 && bestMatch != null) ? bestMatch : normalized;
+            int minLen = bestMatch != null ? Math.Min(normalized.Length, bestMatch.Length) : normalized.Length;
+            int maxDist = minLen <= 4 ? 1 : 2;
+            return (bestDist <= maxDist && bestMatch != null) ? bestMatch : normalized;
         }
 
         private static int LevenshteinDistance(string a, string b)

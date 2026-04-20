@@ -61,6 +61,15 @@ namespace CropOptimizer.Data
             return _cropStateByInstanceId.TryGetValue(cropInstanceId, out state);
         }
 
+        public bool RemoveCropState(int cropInstanceId)
+        {
+            if (!_cropStateByInstanceId.TryGetValue(cropInstanceId, out CropState previous))
+                return false;
+
+            _runningProjectedSellTotal -= Math.Max(0, previous.ProjectedSellGold);
+            return _cropStateByInstanceId.Remove(cropInstanceId);
+        }
+
         /// <summary>
         /// Returns the top <paramref name="count"/> crop types ranked by total projected gold,
         /// aggregated across all tracked instances. Types with itemId == 0 are skipped.

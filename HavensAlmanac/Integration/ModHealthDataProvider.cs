@@ -56,6 +56,7 @@ namespace HavensAlmanac.Integration
         private static int _cachedAssemblyCount;
         private static DateTime _cacheBuiltAt = DateTime.MinValue;
         private static readonly TimeSpan CacheMaxAge = TimeSpan.FromMinutes(5);
+        private static readonly Dictionary<Type, SnapshotShape> SnapshotShapeCache = new Dictionary<Type, SnapshotShape>();
 
         public void Refresh()
         {
@@ -220,28 +221,51 @@ namespace HavensAlmanac.Integration
             // map cleanly onto the shape we care about.
             var type = snap.GetType();
             var entry = new HealthEntry { PluginGuid = guid };
+            var shape = GetSnapshotShape(type);
 
-            var pLast = type.GetProperty("LastCheckUtc");
-            if (pLast != null)
+            if (shape.LastCheckUtc != null)
             {
-                object v = pLast.GetValue(snap);
+                object v = shape.LastCheckUtc.GetValue(snap);
                 if (v is DateTime dt) entry.LastCheckUtc = dt;
             }
 
-            var pEx = type.GetProperty("ExceptionCount");
-            if (pEx != null)
+            if (shape.ExceptionCount != null)
             {
-                object v = pEx.GetValue(snap);
+                object v = shape.ExceptionCount.GetValue(snap);
                 if (v is int n) entry.ExceptionCount = n;
             }
 
-            var pErr = type.GetProperty("LastError");
-            if (pErr != null)
+            if (shape.LastError != null)
             {
-                entry.LastError = pErr.GetValue(snap) as string;
+                entry.LastError = shape.LastError.GetValue(snap) as string;
             }
 
             return entry;
+        }
+
+        private struct SnapshotShape
+        {
+            public PropertyInfo LastCheckUtc;
+            public PropertyInfo ExceptionCount;
+            public PropertyInfo LastError;
+        }
+
+        private static SnapshotShape GetSnapshotShape(Type snapshotType)
+        {
+            lock (CacheLock)
+            {
+                if (SnapshotShapeCache.TryGetValue(snapshotType, out var shape))
+                    return shape;
+
+                shape = new SnapshotShape
+                {
+                    LastCheckUtc = snapshotType.GetProperty("LastCheckUtc"),
+                    ExceptionCount = snapshotType.GetProperty("ExceptionCount"),
+                    LastError = snapshotType.GetProperty("LastError")
+                };
+                SnapshotShapeCache[snapshotType] = shape;
+                return shape;
+            }
         }
 
         private static string ResolvePluginDisplayName(string pluginGuid)
