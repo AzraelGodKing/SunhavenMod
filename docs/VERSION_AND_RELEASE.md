@@ -28,15 +28,23 @@ This repo uses **one release version per mod** in [`docs/versions.json`](../docs
 - The **duplicate-version guard** compares `docs/versions.json` to the **last GitHub release tag** for that mod. Shipping without bumping would skip or confuse releases.
 - The **DLL** must be built from sources that already contain the new `PLUGIN_VERSION`, or the artifact version and the published metadata will not match.
 
-## Local checks without PowerShell
+## Local checks
 
-If you only need to validate consistency (for example before pushing):
+If you only need to validate consistency (for example before pushing), use either verifier:
+
+PowerShell (no Python required):
+
+```powershell
+.\scripts\verify-version-consistency.ps1
+```
+
+Python:
 
 ```bash
 python3 scripts/verify-version-consistency.py
 ```
 
-Requires Python 3.6+.
+The Python verifier requires Python 3.6+.
 
 ## Automatic sync on merge (optional drift repair)
 
@@ -51,5 +59,6 @@ The workflow [`.github/workflows/sync-mod-versions.yml`](../.github/workflows/sy
 | `docs/versions.json` | Source of truth for semver, changelog, store links |
 | `scripts/pre-push-build.ps1` | Bump/sync version across plugin, manifests, docs (`-SyncOnly` for CI without game DLLs) |
 | `scripts/verify-version-consistency.py` | CI + local guard: JSON vs plugin vs manifest |
+| `scripts/verify-version-consistency.ps1` | PowerShell equivalent guard (no Python dependency) |
 | `.github/workflows/sync-mod-versions.yml` | After merge: align tracked files with `versions.json` if needed |
 | `.github/workflows/build-release-publish.yml` | Build → package → GitHub / Thunderstore / Nexus |
