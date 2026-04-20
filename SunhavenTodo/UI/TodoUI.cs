@@ -45,6 +45,8 @@ namespace SunhavenTodo.UI
         private int _selectedCategory = 0; // General
         private bool _showAddForm = false;
         private string _editingItemId = null;
+        private bool _newTodoIsRecurring = false;
+        private int _newTodoRecurInterval = 0; // Daily
 
         // Filter state
         private int _selectedCategoryFilter = -1; // -1 = All
@@ -470,6 +472,8 @@ namespace SunhavenTodo.UI
             var bgTex = item.IsCompleted ? _itemCompleted : (index % 2 == 0 ? _itemEven : _itemOdd);
             var itemStyle = item.IsCompleted ? _itemCompletedStyle : _itemStyle;
             var titleText = string.IsNullOrWhiteSpace(item.Title) ? "(No title)" : item.Title;
+            if (item.IsRecurring)
+                titleText = $"[{GetRecurIcon(item.RecurInterval)}] {titleText}";
 
             // Wrap long titles and grow row height dynamically instead of clipping.
             var titleBaseStyle = item.IsCompleted ? _completedTitleStyle : _labelBoldStyle;
@@ -480,7 +484,7 @@ namespace SunhavenTodo.UI
                 alignment = TextAnchor.UpperLeft
             };
 
-            float controlsWidth = Scaled(20 + 4 + 20 + 45 + 4 + 22 + 4); // checkbox, spaces, priority, category, delete button
+            float controlsWidth = Scaled(20 + 4 + 20 + 45 + 4 + 22 + 2 + 22 + 4); // checkbox, spaces, priority, category, edit, delete button
             if (item.IconItemId > 0)
                 controlsWidth += IconSize + Scaled(4);
 
@@ -537,6 +541,21 @@ namespace SunhavenTodo.UI
             // Wrapped title with dynamic row height.
             GUILayout.Label(titleText, wrappedTitleStyle, GUILayout.Width(titleAvailableWidth), GUILayout.MinHeight(titleHeight));
             GUILayout.FlexibleSpace();
+
+            // Edit button
+            if (GUILayout.Button("✎", _buttonStyle, GUILayout.Width(22), GUILayout.Height(22)))
+            {
+                _editingItemId = item.Id;
+                _newTodoTitle = item.Title ?? "";
+                _newTodoDescription = item.Description ?? "";
+                _selectedPriority = (int)item.Priority;
+                _selectedCategory = (int)item.Category;
+                _newTodoIsRecurring = item.IsRecurring;
+                _newTodoRecurInterval = (int)item.RecurInterval;
+                _showAddForm = true;
+            }
+
+            GUILayout.Space(2);
 
             // Delete button
             if (GUILayout.Button("x", _buttonStyle, GUILayout.Width(22), GUILayout.Height(22)))
@@ -600,6 +619,30 @@ namespace SunhavenTodo.UI
                     var style = i == _selectedCategory ? _tabActiveStyle : _tabStyle;
                     if (GUILayout.Button(categories[i], style, GUILayout.Height(24)))
                         _selectedCategory = i;
+                }
+                GUILayout.FlexibleSpace();
+                GUILayout.EndHorizontal();
+            }
+
+            GUILayout.Space(6);
+
+            // Recurring toggle
+            GUILayout.BeginHorizontal();
+            _newTodoIsRecurring = GUILayout.Toggle(_newTodoIsRecurring, " Recurring task", _labelStyle);
+            GUILayout.FlexibleSpace();
+            GUILayout.EndHorizontal();
+
+            if (_newTodoIsRecurring)
+            {
+                GUILayout.Space(4);
+                GUILayout.BeginHorizontal();
+                GUILayout.Label("Resets:", _labelStyle, GUILayout.Width(50));
+                var intervals = Enum.GetNames(typeof(Data.RecurInterval));
+                for (int i = 0; i < intervals.Length; i++)
+                {
+                    var style = i == _newTodoRecurInterval ? _tabActiveStyle : _tabStyle;
+                    if (GUILayout.Button(intervals[i], style, GUILayout.Height(24)))
+                        _newTodoRecurInterval = i;
                 }
                 GUILayout.FlexibleSpace();
                 GUILayout.EndHorizontal();
@@ -697,11 +740,24 @@ namespace SunhavenTodo.UI
                 _newTodoDescription?.Trim() ?? "",
                 (TodoPriority)_selectedPriority,
                 category
-            );
+            )
+            {
+                IsRecurring = _newTodoIsRecurring,
+                RecurInterval = (Data.RecurInterval)_newTodoRecurInterval
+            };
 
             if (_editingItemId != null)
             {
                 item.Id = _editingItemId;
+                var existing = _manager.GetTodo(_editingItemId);
+                if (existing != null)
+                {
+                    item.CreatedAt = existing.CreatedAt;
+                    item.IsCompleted = existing.IsCompleted;
+                    item.CompletedAt = existing.CompletedAt;
+                    item.IconItemId = existing.IconItemId;
+                    item.MuseumDestination = existing.MuseumDestination;
+                }
                 _manager.UpdateTodo(item);
             }
             else
@@ -722,6 +778,8 @@ namespace SunhavenTodo.UI
             _selectedPriority = 1;
             _selectedCategory = 0;
             _editingItemId = null;
+            _newTodoIsRecurring = false;
+            _newTodoRecurInterval = 0;
         }
 
         private string GetPriorityIcon(TodoPriority priority)
@@ -733,6 +791,17 @@ namespace SunhavenTodo.UI
                 case TodoPriority.High: return "!";
                 case TodoPriority.Urgent: return "!!";
                 default: return "o";
+            }
+        }
+
+        private string GetRecurIcon(Data.RecurInterval interval)
+        {
+            switch (interval)
+            {
+                case Data.RecurInterval.Daily: return "D";
+                case Data.RecurInterval.Weekly: return "W";
+                case Data.RecurInterval.Seasonal: return "S";
+                default: return "R";
             }
         }
 

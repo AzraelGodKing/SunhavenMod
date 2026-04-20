@@ -71,6 +71,12 @@ namespace SunhavenTodo.Data
             AddTodo(item);
         }
 
+        public TodoItem GetTodo(string id)
+        {
+            _todoById.TryGetValue(id, out var item);
+            return item;
+        }
+
         public void UpdateTodo(TodoItem item)
         {
             if (_todoData == null) return;
@@ -119,11 +125,40 @@ namespace SunhavenTodo.Data
             }
         }
 
+        /// <summary>
+        /// Resets completed recurring todos so they appear active again.
+        /// Call this on day/week/season transitions as appropriate.
+        /// </summary>
+        public void ResetRecurringTodos(RecurInterval interval)
+        {
+            if (_todoData == null) return;
+
+            bool changed = false;
+            foreach (var item in _todoData.Items)
+            {
+                if (item.IsCompleted && item.IsRecurring && item.RecurInterval == interval)
+                {
+                    item.IsCompleted = false;
+                    item.CompletedAt = null;
+                    changed = true;
+                }
+            }
+
+            if (changed)
+            {
+                _todoData.LastUpdated = DateTime.Now;
+                _isDirty = true;
+                InvalidateQueryCaches();
+                OnTodosChanged?.Invoke();
+            }
+        }
+
         public void ClearCompleted()
         {
             if (_todoData == null) return;
 
-            var removed = _todoData.Items.RemoveAll(i => i.IsCompleted) > 0;
+            // Only clear non-recurring completed todos
+            var removed = _todoData.Items.RemoveAll(i => i.IsCompleted && !i.IsRecurring) > 0;
             if (removed)
             {
                 RebuildTodoIndex();

@@ -21,4 +21,5 @@ File: `Sun Haven/BepInEx/config/BirthdayReminder.cfg`
 
 ### Unreleased
 
+- **Changed:** Fuzzy NPC-name fallback is stricter for short names (3-4 chars) to reduce wrong matches from Levenshtein proximity.
 - **Build:** Optional `SunhavenTodo` integration now references [`../SunhavenTodo/SunhavenTodo.csproj`](../SunhavenTodo/SunhavenTodo.csproj) instead of `..\builds\SunhavenTodo\SunhavenTodo.dll` so a clean `dotnet build` succeeds.

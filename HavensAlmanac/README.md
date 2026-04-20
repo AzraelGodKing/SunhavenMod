@@ -60,6 +60,7 @@ The built-in **Mod Health** provider is always on and surfaces
 
 ### Unreleased
 
+- **Perf:** `ModHealthDataProvider` now caches reflected snapshot property handles by snapshot runtime type, removing repeated `GetProperty` lookups each refresh.
 - **Release metadata:** `docs/versions.json` includes Nexus mod page [`/mods/501`](https://www.nexusmods.com/sunhaven/mods/501) and `nexus_file_group_id` **7326779** (Files tab → API / file group id) for CI uploads and download stats.
 - **Build:** Integration DLL references now use `ProjectReference` to sibling mods (`SunhavenTodo`, `BirthdayReminder`, `SunHavenMuseumUtilityTracker`, `SenpaisChest`, `TheVault`, `HavensBirthright`, `HavenDevTools`, `CropOptimizer`) so `dotnet build` works without copying plugins into `builds/` first. `BirthdayReminder` and `SenpaisChest` were updated the same way for their Todo / museum soft-deps.
 - **Briefing: `AutoDismissSeconds` is now actually honored.** The config
