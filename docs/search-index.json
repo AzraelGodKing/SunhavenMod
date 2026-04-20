@@ -3,7 +3,7 @@
   {"t": "Guild Initiation — Install BepInEx", "u": "index.html#guild-initiation", "d": "Install BepInEx 5.x, download DLLs, place in BepInEx/plugins.", "k": "bepinex install setup plugins nexus"},
   {"t": "Guild Master's Wisdom — FAQ", "u": "index.html#guild-master-wisdom", "d": "Config files, upgrades, using several mods together.", "k": "faq cfg config log troubleshooting"},
   {"t": "Party loadouts", "u": "index.html#party-loadouts", "d": "Recommended mod bundles: curator, diplomat, homesteader, full arsenal.", "k": "bundle pack starter kit"},
-  {"t": "Arsenal comparison table", "u": "index.html#arsenal-comparison", "d": "Compare per-character saves, UI, controller support, synergy across mods.", "k": "matrix features compare"},
+  {"t": "Arsenal comparison table", "u": "index.html#arsenal-comparison", "d": "Compare all 12 mods: saves, UI, shortcuts, controller, storage, progress, synergy.", "k": "matrix features compare twelve"},
   {"t": "The Vault", "u": "TheVault/TheVault.html", "d": "Seasonal and special currency storage, auto-deposit, shop and door integration.", "k": "tokens keys money wallet vault","tags":["QoL","Storage"]},
   {"t": "Haven's Birthright", "u": "RacialBonuses/RacialBonuses.html", "d": "Racial bonuses and abilities for all 12 races; optional [BonusTransfers] cross-race passive grants (off by default).", "k": "races traits amari naga build bonus transfer","tags":["QoL"]},
   {"t": "Faster Races", "u": "FasterRaces/FasterRaces.html", "d": "Configurable movement speed; works with Birthright without double speed.", "k": "speed run movement walks fast","tags":["QoL"]},

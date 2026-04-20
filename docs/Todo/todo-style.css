@@ -15,9 +15,12 @@
     --paper: #fffef9;
     --paper-warm: #fdf6ec;
     --shadow: rgba(44, 35, 24, 0.2);
-    --pin-red: #d94040;
+    /* Pins: orange + cyan (not red/green) so status is distinguishable with CVD */
+    --pin-alert: #c2410c;
+    --pin-safe: #0e7490;
+    --pin-red: var(--pin-alert);
     --pin-blue: #4a7fb5;
-    --pin-green: #5a9e5a;
+    --pin-green: var(--pin-safe);
     --pin-yellow: #d4a520;
     --sticky-yellow: #fff9c4;
     --sticky-pink: #fce4ec;
@@ -136,7 +139,7 @@ body {
     border: 1px solid rgba(0, 0, 0, 0.06);
 }
 
-/* Red pushpin at top center */
+/* Pushpin at top center (orange — avoids red/green-only cues) */
 .hero::before {
     content: '';
     position: absolute;
@@ -145,7 +148,7 @@ body {
     transform: translateX(-50%);
     width: 24px;
     height: 24px;
-    background: radial-gradient(circle at 40% 35%, #ef5350, #c62828);
+    background: radial-gradient(circle at 40% 35%, #fb923c, #c2410c);
     border-radius: 50%;
     box-shadow:
         0 2px 6px rgba(0, 0, 0, 0.3),
@@ -520,9 +523,9 @@ body {
 }
 
 /* Folder label styling */
-.museum-section.gems { border-top: 3px solid #c68642; }
-.museum-section.culture { border-top: 3px solid #5b7f5b; }
-.museum-section.aquarium { border-top: 3px solid #6a8fb0; }
+.museum-section.gems { border-top: 4px solid #c68642; }
+.museum-section.culture { border-top: 5px double #0f766e; }
+.museum-section.aquarium { border-top: 3px dotted #6a8fb0; }
 
 .section-header {
     display: flex;
@@ -622,10 +625,23 @@ body {
     border-radius: 0 0 1px 1px;
 }
 
-.rarity-dot.common { background: radial-gradient(circle at 35% 30%, #b0beb0, #7a8f7a); }
-.rarity-dot.uncommon { background: radial-gradient(circle at 35% 30%, #7dcc7d, #4a8f4a); }
-.rarity-dot.epic { background: radial-gradient(circle at 35% 30%, #f0c040, #c89a20); }
-.rarity-dot.legendary { background: radial-gradient(circle at 35% 30%, #ef5350, #c62828); }
+/* Rarity: hue + border pattern (not red vs green alone) */
+.rarity-dot.common {
+    background: radial-gradient(circle at 35% 30%, #9ca3af, #6b7280);
+    border: 2px solid #4b5563;
+}
+.rarity-dot.uncommon {
+    background: radial-gradient(circle at 35% 30%, #38bdf8, #0284c7);
+    border: 2px dashed #0369a1;
+}
+.rarity-dot.epic {
+    background: radial-gradient(circle at 35% 30%, #fbbf24, #d97706);
+    border: 2px solid #b45309;
+}
+.rarity-dot.legendary {
+    background: radial-gradient(circle at 35% 30%, #a78bfa, #6d28d9);
+    border: 3px double #4c1d95;
+}
 
 .rarity-label {
     color: #3a3228;
@@ -652,8 +668,8 @@ body {
             #d6cfc4 35px,
             #d6cfc4 36px
         );
-    /* Red margin line */
-    border-left: 3px solid #e88888;
+    /* Margin line: blue (distinct from body text / “error red”) */
+    border-left: 3px solid #2563eb;
     position: relative;
 }
 
@@ -678,7 +694,7 @@ body {
 }
 
 .step-number {
-    background: radial-gradient(circle at 35% 30%, var(--pin-red), #b71c1c);
+    background: radial-gradient(circle at 35% 30%, var(--pin-blue), #2e5a8a);
     color: #fff;
     width: 36px;
     height: 36px;
@@ -926,8 +942,8 @@ tr:last-child td {
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
 }
 
-.related-card:nth-child(1)::before { background: radial-gradient(circle at 40% 35%, var(--pin-red), #b71c1c); }
-.related-card:nth-child(2)::before { background: radial-gradient(circle at 40% 35%, var(--pin-green), #2e6a2e); }
+.related-card:nth-child(1)::before { background: radial-gradient(circle at 40% 35%, var(--pin-alert), #9a3412); }
+.related-card:nth-child(2)::before { background: radial-gradient(circle at 40% 35%, var(--pin-safe), #0c4a6e); }
 .related-card:nth-child(3)::before { background: radial-gradient(circle at 40% 35%, var(--pin-yellow), #a08010); }
 
 .related-card:hover {
@@ -1011,13 +1027,13 @@ tr:last-child td {
     left: 0;
     right: 0;
     height: 2px;
-    background: var(--pin-red);
+    background: var(--pin-blue);
     transform: scaleX(0);
     transition: transform 0.3s;
 }
 
 .footer-links a:hover {
-    color: var(--pin-red);
+    color: var(--pin-blue);
 }
 
 .footer-links a:hover::after {
@@ -1197,7 +1213,7 @@ tr:last-child td {
 }
 
 [data-theme="dark"] .hero::before {
-    background: radial-gradient(circle at 40% 35%, #ef5350, #c62828);
+    background: radial-gradient(circle at 40% 35%, #fb923c, #c2410c);
 }
 
 [data-theme="dark"] .hero h1 { color: #fff; }
@@ -1205,8 +1221,8 @@ tr:last-child td {
 [data-theme="dark"] .tagline { color: rgba(255, 255, 255, 0.6); }
 
 [data-theme="dark"] .version-badge {
-    background: radial-gradient(circle at 35% 30%, #ef5350, #c62828);
-    box-shadow: 0 2px 8px rgba(198, 40, 40, 0.4);
+    background: radial-gradient(circle at 35% 30%, #fb923c, #c2410c);
+    box-shadow: 0 2px 8px rgba(194, 65, 12, 0.45);
 }
 
 /* Dark intro */
@@ -1219,7 +1235,7 @@ tr:last-child td {
         rgba(255, 255, 255, 0.05) 32px
     );
     color: rgba(255, 255, 255, 0.75);
-    border-left-color: #ef5350;
+    border-left-color: #60a5fa;
 }
 
 /* Dark section titles - chalk style */
@@ -1266,7 +1282,7 @@ tr:last-child td {
     border-right-color: #1a2a1a;
 }
 
-[data-theme="dark"] .notice-box h3 { color: #81c784; }
+[data-theme="dark"] .notice-box h3 { color: #5eead4; }
 [data-theme="dark"] .notice-box:nth-child(2) h3 { color: #ffb74d; }
 [data-theme="dark"] .notice-box p { color: rgba(255, 255, 255, 0.75); }
 
@@ -1279,7 +1295,7 @@ tr:last-child td {
 [data-theme="dark"] .feature-card:nth-child(1) { background: rgba(255, 235, 59, 0.08); }
 [data-theme="dark"] .feature-card:nth-child(2) { background: rgba(244, 143, 177, 0.08); }
 [data-theme="dark"] .feature-card:nth-child(3) { background: rgba(100, 181, 246, 0.08); }
-[data-theme="dark"] .feature-card:nth-child(4) { background: rgba(129, 199, 132, 0.08); }
+[data-theme="dark"] .feature-card:nth-child(4) { background: rgba(45, 212, 191, 0.1); }
 [data-theme="dark"] .feature-card:nth-child(5) { background: rgba(255, 183, 77, 0.08); }
 [data-theme="dark"] .feature-card:nth-child(6) { background: rgba(206, 147, 216, 0.08); }
 [data-theme="dark"] .feature-card:nth-child(7) { background: rgba(255, 235, 59, 0.08); }
@@ -1300,11 +1316,11 @@ tr:last-child td {
 }
 
 [data-theme="dark"] .museum-section.gems { border-top-color: #ffb74d; }
-[data-theme="dark"] .museum-section.culture { border-top-color: #81c784; }
+[data-theme="dark"] .museum-section.culture { border-top-color: #2dd4bf; }
 [data-theme="dark"] .museum-section.aquarium { border-top-color: #64b5f6; }
 
 [data-theme="dark"] .museum-section.gems::before { background: linear-gradient(180deg, #ffb74d, rgba(30, 30, 30, 0.8)); }
-[data-theme="dark"] .museum-section.culture::before { background: linear-gradient(180deg, #81c784, rgba(30, 30, 30, 0.8)); }
+[data-theme="dark"] .museum-section.culture::before { background: linear-gradient(180deg, #2dd4bf, rgba(30, 30, 30, 0.8)); }
 [data-theme="dark"] .museum-section.aquarium::before { background: linear-gradient(180deg, #64b5f6, rgba(30, 30, 30, 0.8)); }
 
 [data-theme="dark"] .section-header {
@@ -1337,7 +1353,7 @@ tr:last-child td {
         rgba(255, 255, 255, 0.04) 35px,
         rgba(255, 255, 255, 0.04) 36px
     );
-    border-left-color: #ef5350;
+    border-left-color: #60a5fa;
     box-shadow: 2px 3px 12px rgba(0, 0, 0, 0.3);
     border-top: 1px solid rgba(255, 255, 255, 0.06);
     border-right: 1px solid rgba(255, 255, 255, 0.06);

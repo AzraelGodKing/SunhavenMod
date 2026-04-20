@@ -38,11 +38,21 @@
         </nav>
 
         <!-- Title Page -->
-        <header class="hero">
-            <div class="hero-icon">&#x1F4D6;</div>
-            <h1>Haven's Almanac</h1>
-            <p class="tagline">Unified Mod Dashboard<span class="cursor">|</span></p>
-            <span class="version-badge">v1.2.0</span>
+        <header class="hero hero-refresh">
+            <div class="hero-inline">
+                <div class="hero-icon hero-icon-inline">&#x1F4D6;</div>
+                <div class="hero-inline-text">
+                    <h1 class="hero-title-inline">Haven's Almanac</h1>
+                    <p class="tagline hero-tagline-inline">Unified Mod Dashboard<span class="cursor">|</span></p>
+                </div>
+            </div>
+            <div class="hero-meta-row">
+                <span class="version-badge">v1.2.0</span>
+                <span class="hero-meta-item">Integration: <span class="hero-meta-value">Soft dependencies</span></span>
+                <span class="hero-meta-item">Surfaces: <span class="hero-meta-value">HUD &middot; Dashboard &middot; Briefing</span></span>
+            </div>
+            <div class="hero-corner-bl" aria-hidden="true"></div>
+            <div class="hero-corner-br" aria-hidden="true"></div>
         </header>
 
         <div class="mod-page-download-stats" role="region" aria-label="Recorded download counts">
@@ -51,8 +61,18 @@
             <span>Combined <strong><span data-stats-mod="havens-almanac" data-field="combined_total">&mdash;</span></strong></span>
         </div>
 
+        <nav class="almanac-quick-nav" aria-label="Haven's Almanac page sections">
+            <a href="#almanac-overview">Overview</a>
+            <a href="#almanac-controls">Controls</a>
+            <a href="#almanac-features">Features</a>
+            <a href="#almanac-supported">Supported mods</a>
+            <a href="#almanac-health">Mod health</a>
+            <a href="#almanac-how">How it works</a>
+            <a href="#almanac-config">Configuration</a>
+        </nav>
+
         <!-- Epigraph -->
-        <section class="intro-section">
+        <section class="intro-section intro-section-refresh" id="almanac-overview">
             <p>Haven's Almanac brings supported Sun Haven mods together in one place: a compact HUD for at-a-glance lines, a full dashboard for detail, and a daily briefing for birthdays, tasks, museum progress, and more. It <strong>soft-depends</strong> on each integration &mdash; only installed mods appear.</p>
             <p>On startup the mod can <strong>check for updates</strong> (toggle in config). <strong>HUD, dashboard, and briefing</strong> share a configurable <strong>UI scale</strong> (0.5&ndash;2.5&times;). On the <strong>main menu</strong> the Almanac hides its UI until you load into the world.</p>
         </section>
@@ -60,7 +80,7 @@
         <div class="ornamental-divider"></div>
 
         <!-- Quick Controls -->
-        <section class="keybind-section">
+        <section class="keybind-section" id="almanac-controls">
             <h2 class="section-title">Quick Controls</h2>
             <div class="keybind-grid">
                 <div class="keybind-card">
@@ -81,6 +101,7 @@
         <div class="ornamental-divider"></div>
 
         <!-- Core Features -->
+        <section id="almanac-features">
         <h2 class="section-title">Core Features</h2>
         <div class="features-grid">
             <div class="feature-card">
@@ -114,10 +135,12 @@
                 <p>Warm parchment and gold aesthetic that fits Sun Haven's cozy atmosphere. All windows are draggable and remember their position.</p>
             </div>
         </div>
+        </section>
 
         <div class="ornamental-divider"></div>
 
         <!-- Supported Mods -->
+        <section id="almanac-supported">
         <h2 class="section-title">Supported Mods</h2>
         <p class="section-desc">Haven's Almanac reads from these mods and displays their data. Install any combination.</p>
         <div class="mod-grid">
@@ -179,8 +202,10 @@
             </div>
         </div>
         <p class="section-footnote"><strong>Not integrated yet:</strong> Faster Races and Trinket Fortune do not expose Almanac panels; other mods above register automatically when their plugins are present.</p>
+        </section>
 
         <!-- Built-in telemetry -->
+        <section id="almanac-health">
         <h2 class="section-title">Built-in: Mod Health</h2>
         <p class="section-desc">Always on &mdash; no companion mod required. The Almanac's <strong>Mod Health</strong> panel aggregates <code>SunhavenMods.Shared.VersionChecker</code> telemetry across every mod in the repo.</p>
         <div class="mod-grid">
@@ -192,10 +217,12 @@
                 </div>
             </div>
         </div>
+        </section>
 
         <div class="ornamental-divider"></div>
 
         <!-- How It Works -->
+        <section id="almanac-how">
         <h2 class="section-title">How It Works</h2>
         <div class="usage-steps">
             <div class="step">
@@ -227,10 +254,12 @@
                 </div>
             </div>
         </div>
+        </section>
 
         <div class="ornamental-divider"></div>
 
         <!-- Configuration -->
+        <section id="almanac-config">
         <h2 class="section-title">Configuration</h2>
         <div class="config-table">
             <table>
@@ -291,6 +320,7 @@
             </table>
         </div>
         <p class="config-note">Configuration file: <code>BepInEx/config/HavensAlmanac.cfg</code> (auto-migrated from the legacy <code>com.azraelgodking.havensalmanac.cfg</code> on first load of <strong>1.0.5+</strong>).</p>
+        </section>
 
         <!-- Colophon / Footer -->
         <nav class="download-nav" data-mod-key="com.azraelgodking.havensalmanac" aria-label="Download links"></nav>
