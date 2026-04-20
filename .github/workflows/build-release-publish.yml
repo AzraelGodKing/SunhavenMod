@@ -786,7 +786,21 @@ jobs:
         run: |
           TAG="${{ github.event.release.tag_name }}"
           PREFIX="${TAG%-v*}"
-          DIR="$(jq -r --arg ts "$PREFIX" '.[] | select(.thunderstoreName == $ts) | .modDir' scripts/mod-matrix.json | head -n1)"
+          case "$PREFIX" in
+            HavensBirthright)           DIR="HavensBirthright" ;;
+            SMUT)                       DIR="SunHavenMuseumUtilityTracker" ;;
+            SquirrelsBirthdayReminder)  DIR="BirthdayReminder" ;;
+            SunHavenTodo)               DIR="SunhavenTodo" ;;
+            TheVault)                   DIR="TheVault" ;;
+            HavenDevTools)              DIR="HavenDevTools" ;;
+            SenpaisChest)               DIR="SenpaisChest" ;;
+            HavensAlmanac)              DIR="HavensAlmanac" ;;
+            FasterRaces)                DIR="FasterRaces" ;;
+            TrinketFortune)             DIR="TrinketFortune" ;;
+            CropOptimizer)              DIR="CropOptimizer" ;;
+            HavensRespec)               DIR="HavensRespec" ;;
+            *)                          DIR="" ;;
+          esac
           if [ -n "$DIR" ]; then
             echo "url=https://raw.githubusercontent.com/${{ github.repository }}/main/$DIR/thunderstore/icon.png" >> "$GITHUB_OUTPUT"
           fi
