@@ -104,6 +104,8 @@ namespace CropOptimizer.Patches
 
             if (patched == 0)
                 Plugin.Log?.LogError("[CropGrowthPatch] No Harmony patches applied — check game version compatibility.");
+
+            PatchLifecycleMethods(harmony, cropType);
         }
 
         private static void OnAfterCropGrowth(object __instance)
@@ -118,6 +120,7 @@ namespace CropOptimizer.Patches
                     return;
 
                 int id = unityObj.GetInstanceID();
+                CropInstanceRegistry.Register(unityObj);
                 float etaHours = TryResolveEtaHours(__instance, out bool etaResolved) ? Mathf.Max(0f, _resolvedEtaHoursCache) : 24f;
                 float qualityMultiplier = TryResolveQualityMultiplier(__instance, out bool qualityResolved) ? _resolvedQualityMultiplierCache : 1f;
                 int projectedSellGold = TryResolveProjectedSellGold(__instance, qualityMultiplier, out bool sellResolved) ? _resolvedProjectedSellGoldCache : 0;
@@ -144,6 +147,47 @@ namespace CropOptimizer.Patches
             {
                 Plugin.Log?.LogDebug($"[CropGrowthPatch] Update failed: {ex.Message}");
             }
+        }
+
+        private static void PatchLifecycleMethods(Harmony harmony, Type cropType)
+        {
+            var lifecycleNames = new[]
+            {
+                "Harvest",
+                "DestroyCrop",
+                "RemoveCrop",
+                "Die",
+                "OnDestroy"
+            };
+
+            var lifecyclePostfix = AccessTools.Method(typeof(CropGrowthPatch), nameof(OnAfterCropLifecycleEnd));
+            if (lifecyclePostfix == null)
+                return;
+
+            foreach (var methodName in lifecycleNames)
+            {
+                try
+                {
+                    var lifecycleMethod = AccessTools.Method(cropType, methodName, Type.EmptyTypes);
+                    if (lifecycleMethod == null)
+                        continue;
+                    harmony.Patch(lifecycleMethod, postfix: new HarmonyMethod(lifecyclePostfix));
+                }
+                catch (Exception ex)
+                {
+                    Plugin.Log?.LogDebug($"[CropGrowthPatch] Lifecycle patch skipped for {methodName}: {ex.Message}");
+                }
+            }
+        }
+
+        private static void OnAfterCropLifecycleEnd(object __instance)
+        {
+            if (__instance is not UnityEngine.Object unityObj)
+                return;
+
+            int instanceId = unityObj.GetInstanceID();
+            CropInstanceRegistry.UnregisterById(instanceId);
+            _forecast?.RemoveCropState(instanceId);
         }
 
         private static float _resolvedEtaHoursCache;

@@ -24,7 +24,7 @@ namespace CropOptimizer.UI
         private static float _nextHoverFullScanTime;
 
         /// <summary>How often we refresh the crop list from the scene (large farms: avoid hammering <c>FindObjectsOfType</c>).</summary>
-        private const float CropCacheRefreshSeconds = 0.45f;
+        private const float CropCacheRefreshSeconds = 1.5f;
 
         /// <summary>When the mouse is stable, skip the O(n) closest-crop scan for a short window.</summary>
         private const float HoverRescanMinInterval = 0.055f;
@@ -178,6 +178,8 @@ namespace CropOptimizer.UI
             {
                 if (o is not Component mb || mb == null)
                     continue;
+                if (!CropInstanceRegistry.IsKnownActive(mb.GetInstanceID()))
+                    continue;
                 Vector2 p = new Vector2(mb.transform.position.x, mb.transform.position.y);
                 float sq = (p - mouse2).sqrMagnitude;
                 if (sq < bestSq)
@@ -209,8 +211,10 @@ namespace CropOptimizer.UI
                 _cachedCrops = Array.Empty<UnityEngine.Object>();
                 return;
             }
-
-            _cachedCrops = UnityEngine.Object.FindObjectsOfType(ct);
+            var discovered = UnityEngine.Object.FindObjectsOfType(ct);
+            for (int i = 0; i < discovered.Length; i++)
+                CropInstanceRegistry.Register(discovered[i]);
+            _cachedCrops = discovered;
         }
 
         public static string FormatWaterGuess(object cropInstance)

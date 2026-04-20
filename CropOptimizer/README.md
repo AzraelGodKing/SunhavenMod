@@ -41,6 +41,9 @@ Crop Optimizer adds field-level harvest forecasting, a lightweight crop HUD, and
 ## Changelog
 
 ### Unreleased
+- **Correctness:** Forecast entries are now removed when crops hit lifecycle end hooks (harvest/destroy paths), preventing stale crop counts and projected gold totals from lingering after crops disappear.
+- **Safety:** `CropForecast.Snapshot()` now returns a read-only wrapper instead of the mutable backing dictionary, protecting running totals from accidental external mutation.
+- **Performance:** Hover crop lookup now prefers a live crop registry populated from growth/lifecycle hooks, with scene-wide crop discovery used as periodic reconciliation instead of the only source of truth.
 - **Nexus:** Canonical listing is [mod 500](https://www.nexusmods.com/sunhaven/mods/500) in [`docs/versions.json`](../docs/versions.json) (Haven's Almanac is [mod 501](https://www.nexusmods.com/sunhaven/mods/501)). `nexus_file_group_id` **7320911** remains for CI uploads.
 - **Thunderstore:** Package `website_url` in `thunderstore/manifest.json` now points at the [Crop Optimizer listing](https://thunderstore.io/c/sun-haven/p/AzraelGodKing/CropOptimizer/); root README lists the same canonical link. `thunderstore/README.md` version line aligned with `docs/versions.json`.
 - **Build:** `CropOptimizer.csproj` now uses a `ProjectReference` to [`TheVault.Abstractions`](../TheVault.Abstractions/TheVault.Abstractions.csproj) instead of `..\builds\TheVault\TheVault.Abstractions.dll`, so `dotnet build` succeeds on a clean clone without pre-building The Vault into `builds/`.

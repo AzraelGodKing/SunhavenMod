@@ -138,7 +138,7 @@ namespace HavensRespec.UI
             // Preflight point estimate, used only to sanity-check affordability and to word
             // the confirmation dialog. The real refund count comes from ResetProfession's
             // node-walk and is authoritative.
-            int estimatedPoints = _resetService.GetAllocatedPoints(profession);
+            int estimatedPoints = ResolveEstimatedRefund(skills, profession);
 
             if (!_costService.CanAfford(estimatedPoints, out var balance, out var cost))
             {
@@ -166,12 +166,12 @@ namespace HavensRespec.UI
                 onConfirm: () => PerformReset(skills, profession, estimatedPoints));
         }
 
-        private void PerformReset(Skills skills, ProfessionType profession, int estimatedPoints)
+        private bool PerformReset(Skills skills, ProfessionType profession, int estimatedPoints)
         {
             if (!_resetService.ResetProfession(skills, profession, out var refunded))
             {
                 _log?.LogWarning($"[Respec] Reset of {profession} failed.");
-                return;
+                return false;
             }
 
             // Cost is charged from the authoritative, post-reset refunded point count.
@@ -182,14 +182,14 @@ namespace HavensRespec.UI
                 {
                     _log?.LogWarning($"[Respec] Actual reset cost check failed for {profession}: cost={actualCost}, balance={balance}. Rolling back reset.");
                     _resetService.UndoLastReset(skills, profession, out _);
-                    return;
+                    return false;
                 }
 
                 if (!_costService.TryDeduct(refunded))
                 {
                     _log?.LogWarning($"[Respec] Cost deduction failed for {profession} (actual cost {actualCost}). Rolling back reset.");
                     _resetService.UndoLastReset(skills, profession, out _);
-                    return;
+                    return false;
                 }
 
                 _resetService.AttachUndoCharge(profession, actualCost, _config.CostMode.Value);
@@ -206,6 +206,7 @@ namespace HavensRespec.UI
             {
                 _log?.LogInfo($"[Respec] {profession} reset complete; refunded {refunded} point(s){(estimatedPoints != refunded ? $" (pre-flight estimate was {estimatedPoints})" : string.Empty)}.");
             }
+            return true;
         }
 
         private void PerformUndo(Skills skills, ProfessionType profession)
@@ -235,9 +236,15 @@ namespace HavensRespec.UI
             int totalEstimatedCost = 0;
             foreach (var profession in ProfessionUiMap.OrderedProfessions)
             {
-                int estimate = _resetService.GetAllocatedPoints(profession);
+                int estimate = ResolveEstimatedRefund(skills, profession);
                 totalEstimated += estimate;
                 totalEstimatedCost += _costService.CalculateCost(estimate);
+            }
+
+            if (totalEstimatedCost > 0 && !_costService.CanAfford(totalEstimated, out var totalBalance, out _))
+            {
+                _log?.LogWarning($"[Respec] Cannot afford Reset All preflight: total cost={totalEstimatedCost}, balance={totalBalance}.");
+                return;
             }
 
             if (!_config.RequireConfirmation.Value || bypassConfirm)
@@ -267,9 +274,20 @@ namespace HavensRespec.UI
         private void PerformResetAll(Skills skills)
         {
             int processed = 0;
+            var successful = new List<ProfessionType>();
             foreach (var profession in ProfessionUiMap.OrderedProfessions)
             {
-                PerformReset(skills, profession, _resetService.GetAllocatedPoints(profession));
+                bool ok = PerformReset(skills, profession, ResolveEstimatedRefund(skills, profession));
+                if (!ok)
+                {
+                    for (int i = successful.Count - 1; i >= 0; i--)
+                        PerformUndo(skills, successful[i]);
+
+                    _log?.LogWarning($"[Respec] Reset All aborted on {profession}; rolled back {successful.Count} profession(s).");
+                    return;
+                }
+
+                successful.Add(profession);
                 processed++;
             }
 
@@ -311,6 +329,13 @@ namespace HavensRespec.UI
         private static bool IsShiftHeld()
         {
             return Input.GetKey(KeyCode.LeftShift) || Input.GetKey(KeyCode.RightShift);
+        }
+
+        private int ResolveEstimatedRefund(Skills skills, ProfessionType profession)
+        {
+            if (_resetService.TryEstimateExactRefund(skills, profession, out int exact))
+                return Mathf.Max(0, exact);
+            return Mathf.Max(0, _resetService.GetAllocatedPoints(profession));
         }
 
         private void EnsureResetAllButton(Skills skills, SkillTree panel)

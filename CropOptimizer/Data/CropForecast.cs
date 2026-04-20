@@ -1,13 +1,20 @@
 using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 
 namespace CropOptimizer.Data
 {
     internal sealed class CropForecast
     {
         private readonly Dictionary<int, CropState> _cropStateByInstanceId = new Dictionary<int, CropState>();
+        private readonly IReadOnlyDictionary<int, CropState> _snapshotView;
         /// <summary>Running sum of <see cref="CropState.ProjectedSellGold"/> so the HUD never walks the full dict each frame.</summary>
         private int _runningProjectedSellTotal;
+
+        public CropForecast()
+        {
+            _snapshotView = new ReadOnlyDictionary<int, CropState>(_cropStateByInstanceId);
+        }
 
         internal readonly struct CropState
         {
@@ -34,7 +41,7 @@ namespace CropOptimizer.Data
 
         public IReadOnlyDictionary<int, CropState> Snapshot()
         {
-            return _cropStateByInstanceId;
+            return _snapshotView;
         }
 
         public int GetProjectedSellTotal() => _runningProjectedSellTotal;
@@ -42,6 +49,15 @@ namespace CropOptimizer.Data
         public bool TryGetState(int cropInstanceId, out CropState state)
         {
             return _cropStateByInstanceId.TryGetValue(cropInstanceId, out state);
+        }
+
+        public bool RemoveCropState(int cropInstanceId)
+        {
+            if (!_cropStateByInstanceId.TryGetValue(cropInstanceId, out CropState prev))
+                return false;
+
+            _runningProjectedSellTotal -= Math.Max(0, prev.ProjectedSellGold);
+            return _cropStateByInstanceId.Remove(cropInstanceId);
         }
 
         public void Clear()
