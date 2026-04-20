@@ -18,23 +18,25 @@
     --text-primary: #c9d1d9;
     --text-secondary: #b1bac4;
     --text-muted: #8b949e;
-    --green: #3fb950;
-    --green-bright: #56d364;
-    --green-dim: #238636;
-    --green-glow: rgba(63, 185, 80, 0.4);
+    /* “Matrix” readout: cyan primary (not pure green) + orange “alert” red role */
+    --green: #22d3ee;
+    --green-bright: #67e8f9;
+    --green-dim: #0891b2;
+    --green-glow: rgba(34, 211, 238, 0.38);
     --blue: #58a6ff;
     --blue-dim: #1f6feb;
     --purple: #a371f7;
     --yellow: #d29922;
     --orange: #f0883e;
-    --red: #f85149;
+    --red: #fb923c;
     --cyan: #39c5cf;
     --cyan-dim: rgba(57, 197, 207, 0.15);
 
     /* Traffic light dots */
     --dot-close: #ff5f56;
     --dot-minimize: #ffbd2e;
-    --dot-maximize: #27c93f;
+    /* Blue maximize dot: avoids red vs green window controls for CVD */
+    --dot-maximize: #3b82f6;
 
     /* CRT / Scanline */
     --scanline-opacity: 0.03;
@@ -57,7 +59,7 @@ body {
     font-size: 15px;
     line-height: 1.6;
     background:
-        radial-gradient(ellipse at 15% 5%, rgba(63, 185, 80, 0.07), transparent 45%),
+        radial-gradient(ellipse at 15% 5%, rgba(34, 211, 238, 0.08), transparent 45%),
         radial-gradient(ellipse at 85% 8%, rgba(88, 166, 255, 0.06), transparent 40%),
         radial-gradient(ellipse at 50% 90%, rgba(57, 197, 207, 0.04), transparent 50%),
         linear-gradient(180deg, var(--terminal-bg) 0%, var(--terminal-bg-deep) 100%);
@@ -172,10 +174,10 @@ a:hover {
     padding: 60px 20px 50px;
     margin-bottom: 40px;
     background:
-        linear-gradient(180deg, rgba(63, 185, 80, 0.06) 0%, transparent 70%),
+        linear-gradient(180deg, rgba(34, 211, 238, 0.06) 0%, transparent 70%),
         linear-gradient(135deg, rgba(22, 27, 34, 0.8) 0%, rgba(13, 17, 23, 0.9) 100%);
     border-radius: 16px;
-    border: 1px solid rgba(63, 185, 80, 0.15);
+    border: 1px solid rgba(34, 211, 238, 0.15);
     position: relative;
     overflow: hidden;
 }
@@ -358,7 +360,7 @@ a:hover {
 .keybind-card:hover {
     transform: translateY(-3px);
     border-color: var(--green);
-    box-shadow: 0 4px 20px rgba(63, 185, 80, 0.1);
+    box-shadow: 0 4px 20px rgba(34, 211, 238, 0.1);
 }
 
 .keybind-keys {
@@ -444,7 +446,7 @@ kbd {
     transform: translateY(-4px);
     border-color: var(--green);
     box-shadow:
-        0 8px 30px rgba(63, 185, 80, 0.12),
+        0 8px 30px rgba(34, 211, 238, 0.12),
         0 0 1px var(--green);
 }
 
@@ -624,7 +626,7 @@ kbd {
 .step:hover {
     border-color: var(--green);
     border-left-color: var(--green);
-    box-shadow: 0 4px 16px rgba(63, 185, 80, 0.08);
+    box-shadow: 0 4px 16px rgba(34, 211, 238, 0.08);
 }
 
 .step-number {
@@ -731,7 +733,7 @@ tr:last-child td {
 }
 
 tr:hover td {
-    background: rgba(63, 185, 80, 0.04);
+    background: rgba(34, 211, 238, 0.04);
 }
 
 code {
@@ -860,7 +862,7 @@ code {
     text-decoration: none;
     font-size: 0.9em;
     padding: 4px 0;
-    border-bottom: 1px dashed rgba(63, 185, 80, 0.3);
+    border-bottom: 1px dashed rgba(34, 211, 238, 0.3);
     transition: color 0.25s, border-color 0.25s;
 }
 .footer-links a:hover {
@@ -987,16 +989,16 @@ code {
     --text-primary: #1f2328;
     --text-secondary: #32383f;
     --text-muted: #656d76;
-    --green: #1a7f37;
-    --green-bright: #116329;
-    --green-dim: #dafbe1;
-    --green-glow: rgba(26, 127, 55, 0.2);
+    --green: #0e7490;
+    --green-bright: #0891b2;
+    --green-dim: #ccfbf1;
+    --green-glow: rgba(14, 116, 144, 0.22);
     --blue: #0969da;
     --blue-dim: #ddf4ff;
     --purple: #8250df;
     --yellow: #9a6700;
     --orange: #bc4c00;
-    --red: #cf222e;
+    --red: #c2410c;
     --cyan: #1b7c83;
     --cyan-dim: rgba(27, 124, 131, 0.1);
     --scanline-opacity: 0;
@@ -1004,7 +1006,7 @@ code {
 
 [data-theme="light"] body {
     background:
-        radial-gradient(ellipse at 15% 5%, rgba(26, 127, 55, 0.05), transparent 45%),
+        radial-gradient(ellipse at 15% 5%, rgba(14, 165, 233, 0.07), transparent 45%),
         radial-gradient(ellipse at 85% 8%, rgba(9, 105, 218, 0.04), transparent 40%),
         linear-gradient(180deg, #ffffff 0%, #f6f8fa 100%);
     color: #1f2328;
@@ -1030,9 +1032,9 @@ code {
 /* Hero */
 [data-theme="light"] .hero {
     background:
-        linear-gradient(180deg, rgba(26, 127, 55, 0.05) 0%, transparent 70%),
+        linear-gradient(180deg, rgba(14, 116, 144, 0.05) 0%, transparent 70%),
         rgba(255, 255, 255, 0.6);
-    border-color: rgba(26, 127, 55, 0.2);
+    border-color: rgba(14, 116, 144, 0.2);
 }
 [data-theme="light"] .hero::before {
     color: var(--green);
@@ -1048,9 +1050,9 @@ code {
 [data-theme="light"] .tagline { color: var(--text-muted); }
 [data-theme="light"] .tagline .cursor { color: var(--green); }
 [data-theme="light"] .version-badge {
-    background: rgba(26, 127, 55, 0.1);
+    background: rgba(14, 116, 144, 0.1);
     color: var(--green);
-    border-color: rgba(26, 127, 55, 0.3);
+    border-color: rgba(14, 116, 144, 0.3);
 }
 
 /* Intro */
@@ -1084,7 +1086,7 @@ code {
 }
 [data-theme="light"] .keybind-card:hover {
     border-color: var(--green);
-    box-shadow: 0 4px 16px rgba(26, 127, 55, 0.08);
+    box-shadow: 0 4px 16px rgba(14, 116, 144, 0.08);
 }
 [data-theme="light"] .keybind-action { color: var(--text-muted); }
 [data-theme="light"] kbd {
@@ -1139,16 +1141,16 @@ code {
 [data-theme="light"] .step {
     background: var(--terminal-card);
     border-color: var(--terminal-border);
-    border-left-color: rgba(26, 127, 55, 0.3);
+    border-left-color: rgba(14, 116, 144, 0.3);
 }
 [data-theme="light"] .step:hover {
     border-color: var(--green);
     border-left-color: var(--green);
 }
 [data-theme="light"] .step-number {
-    background: rgba(26, 127, 55, 0.1);
+    background: rgba(14, 116, 144, 0.1);
     color: var(--green);
-    border-color: rgba(26, 127, 55, 0.3);
+    border-color: rgba(14, 116, 144, 0.3);
 }
 [data-theme="light"] .step-content h4 { color: var(--text-primary); }
 [data-theme="light"] .step-content h4::before { color: var(--green); }
@@ -1175,7 +1177,7 @@ code {
     border-bottom-color: rgba(208, 215, 222, 0.5);
 }
 [data-theme="light"] tr:hover td {
-    background: rgba(26, 127, 55, 0.03);
+    background: rgba(14, 116, 144, 0.03);
 }
 [data-theme="light"] code {
     background: rgba(240, 242, 245, 0.8);
@@ -1215,7 +1217,7 @@ code {
 [data-theme="light"] .footer p { color: var(--text-muted); }
 [data-theme="light"] .footer-links a {
     color: var(--green);
-    border-bottom-color: rgba(26, 127, 55, 0.2);
+    border-bottom-color: rgba(14, 116, 144, 0.2);
 }
 [data-theme="light"] .footer-links a:hover {
     color: var(--green-bright);

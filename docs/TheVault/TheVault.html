@@ -37,18 +37,18 @@
         </nav>
 
         <!-- Bank Dashboard Hero -->
-        <header class="hero" style="border-bottom:2px solid #2d6cdf;">
-            <div style="display:flex; align-items:center; justify-content:center; gap:12px; margin-bottom:8px;">
-                <div class="hero-icon" style="margin:0; font-size:2.5em;">&#x1F512;</div>
-                <div style="text-align:left;">
-                    <h1 style="margin:0; font-size:1.8em;">The Vault</h1>
-                    <p class="tagline" style="margin:0; font-size:0.85em;">Secure Currency Storage for Sun Haven</p>
+        <header class="hero hero-refresh">
+            <div class="hero-inline">
+                <div class="hero-icon hero-icon-inline">&#x1F512;</div>
+                <div class="hero-inline-text">
+                    <h1 class="hero-title-inline">The Vault</h1>
+                    <p class="tagline hero-tagline-inline">Secure Currency Storage for Sun Haven</p>
                 </div>
             </div>
-            <div style="display:flex; gap:16px; justify-content:center; align-items:center; margin-top:12px; flex-wrap:wrap;">
+            <div class="hero-meta-row">
                 <span class="version-badge">v3.1.0</span>
-                <span style="font-size:0.8em; opacity:0.6;">Account Status: <span style="color:#3fb950;">ACTIVE</span></span>
-                <span style="font-size:0.8em; opacity:0.6;">Encryption: <span style="color:#3fb950;">AES-256</span></span>
+                <span class="hero-meta-item">Account Status: <span class="hero-meta-value">ACTIVE</span></span>
+                <span class="hero-meta-item">Encryption: <span class="hero-meta-value">AES-256</span></span>
             </div>
             <div class="hero-corner-bl" aria-hidden="true"></div>
             <div class="hero-corner-br" aria-hidden="true"></div>
@@ -59,9 +59,17 @@
             <span>Nexus Mods <strong><span data-stats-mod="the-vault" data-field="nexus_downloads">&mdash;</span></strong></span>
             <span>Combined <strong><span data-stats-mod="the-vault" data-field="combined_total">&mdash;</span></strong></span>
         </div>
+        <nav class="vault-quick-nav" aria-label="Vault page sections">
+            <a href="#vault-services">Services</a>
+            <a href="#asset-ledger">Asset Ledger</a>
+            <a href="#transaction-guide">Transaction Guide</a>
+            <a href="#system-architecture">System Architecture</a>
+            <a href="#account-setup">Setup</a>
+            <a href="#vault-parameters">Parameters</a>
+        </nav>
 
         <!-- Account summary intro -->
-        <section class="intro-section" style="border-left:3px solid #2d6cdf; padding-left:20px;">
+        <section class="intro-section intro-section-refresh">
             <p><strong>Account Summary:</strong> The Vault is a powerful quality-of-life mod that automatically stores your seasonal tokens, community tokens, and keys in a secure digital vault. No more cluttered inventories or manual currency management - your currencies are safely stored, automatically deposited when picked up, and seamlessly spent at shops and locked doors without ever touching your inventory.</p>
         </section>
 
@@ -85,7 +93,7 @@
         </section>
 
         <!-- Features as vault services -->
-        <section class="features-section">
+        <section class="features-section" id="vault-services">
             <h2 class="section-title">Vault Services</h2>
             <div class="features-grid">
                 <div class="feature-card">
@@ -137,7 +145,7 @@
         </section>
 
         <!-- Currency accounts as ledger -->
-        <section class="currencies-section">
+        <section class="currencies-section" id="asset-ledger">
             <h2 class="section-title">Asset Ledger</h2>
             <p class="section-desc">The Vault supports all major collectible currencies in Sun Haven. Each currency can have auto-deposit toggled individually.</p>
             <div class="currency-grid">
@@ -189,46 +197,46 @@
         </section>
 
         <!-- How to Use as transaction flow -->
-        <section class="usage-section">
+        <section class="usage-section" id="transaction-guide">
             <h2 class="section-title">Transaction Guide</h2>
             <div class="usage-steps">
                 <div class="step">
-                    <div class="step-number" style="background:linear-gradient(135deg, #2d6cdf, #1a4fad);">1</div>
+                    <div class="step-number">1</div>
                     <div class="step-content">
                         <h4>Check the Dashboard</h4>
                         <p>A persistent HUD bar at the top of your screen shows all your vault currencies at a glance with their actual game icons. Large values display in compact format (1K, 50K, 1M).</p>
                     </div>
                 </div>
                 <div class="step">
-                    <div class="step-number" style="background:linear-gradient(135deg, #2d6cdf, #1a4fad);">2</div>
+                    <div class="step-number">2</div>
                     <div class="step-content">
                         <h4>Access Your Vault</h4>
                         <p>Press <kbd>Ctrl</kbd> + <kbd>V</kbd> (or <kbd>F8</kbd> on Steam Deck) to open the vault interface. Press <kbd>Escape</kbd> or click Close to exit.</p>
                     </div>
                 </div>
                 <div class="step">
-                    <div class="step-number" style="background:linear-gradient(135deg, #2d6cdf, #1a4fad);">3</div>
+                    <div class="step-number">3</div>
                     <div class="step-content">
                         <h4>Review Holdings</h4>
                         <p>Switch between tabs (Seasonal, Keys, Special, ⚙ Settings) to see stored amounts or edit config. Each currency shows a toggle button to enable/disable auto-deposit. Use Sweep Inventory to move all vault currencies from your bag into the vault.</p>
                     </div>
                 </div>
                 <div class="step">
-                    <div class="step-number" style="background:linear-gradient(135deg, #2d6cdf, #1a4fad);">4</div>
+                    <div class="step-number">4</div>
                     <div class="step-content">
                         <h4>Automatic Deposits</h4>
                         <p>Just play normally! When you pick up tokens or keys, they're automatically deposited to your vault (if auto-deposit is enabled). You'll still see the pickup notification.</p>
                     </div>
                 </div>
                 <div class="step">
-                    <div class="step-number" style="background:linear-gradient(135deg, #2d6cdf, #1a4fad);">5</div>
+                    <div class="step-number">5</div>
                     <div class="step-content">
                         <h4>Spend Seamlessly</h4>
                         <p>Visit any shop or locked door - The Vault automatically uses your stored currencies. No need to withdraw first; purchases and unlocks work directly from the vault.</p>
                     </div>
                 </div>
                 <div class="step">
-                    <div class="step-number" style="background:linear-gradient(135deg, #2d6cdf, #1a4fad);">6</div>
+                    <div class="step-number">6</div>
                     <div class="step-content">
                         <h4>Make Withdrawals</h4>
                         <p>Use the quick -1, -5, or -10 buttons next to each currency, or select a row and enter a custom amount to withdraw items back to your inventory.</p>
@@ -238,7 +246,7 @@
         </section>
 
         <!-- How It Works as system architecture -->
-        <section class="integration-section">
+        <section class="integration-section" id="system-architecture">
             <h2 class="section-title">System Architecture</h2>
             <div class="integration-info">
                 <div class="integration-item" style="border-left:3px solid #4caf50; padding-left:16px;">
@@ -261,7 +269,7 @@
         </section>
 
         <!-- Installation -->
-        <section class="install-section">
+        <section class="install-section" id="account-setup">
             <h2 class="section-title">Account Setup</h2>
             <div class="install-steps">
                 <div class="install-step">
@@ -296,7 +304,7 @@
         </section>
 
         <!-- Configuration -->
-        <section class="config-section">
+        <section class="config-section" id="vault-parameters">
             <h2 class="section-title">Vault Parameters</h2>
             <div class="config-table">
                 <table>

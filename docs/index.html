@@ -12,7 +12,9 @@
     <meta name="twitter:card" content="summary_large_image">
     <meta name="twitter:title" content="Sun Haven Mod Hub">
     <meta name="twitter:description" content="Quality-of-life mods for Sun Haven by AzraelGodKing.">
-    <meta name="theme-color" content="#2f8f5b">
+    <meta name="theme-color" content="#0f766e">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link rel="canonical" href="https://azraelgodking.github.io/SunhavenMod/">
     <meta property="og:url" content="https://azraelgodking.github.io/SunhavenMod/">
     <meta property="og:image" content="https://azraelgodking.github.io/SunhavenMod/og-card.png">
@@ -40,15 +42,15 @@
     <div class="container" id="main-content" role="main">
 
         <!-- Guild Hall Header -->
-        <header class="hub-header" style="border-bottom:2px solid rgba(47,143,91,0.3); padding-bottom:28px;">
-            <div style="font-size:0.65em; text-transform:uppercase; letter-spacing:0.4em; opacity:0.4; margin-bottom:6px;">Est. Sun Haven &bull; All Adventurers Welcome</div>
-            <h1 style="letter-spacing:0.05em;">The Adventurer's Guild</h1>
-            <p class="subtitle" style="font-style:italic; opacity:0.7;">Quality Commissions by AzraelGodKing</p>
+        <header class="hub-header hub-header-refresh">
+            <p class="hub-kicker">Est. Sun Haven &bull; All Adventurers Welcome</p>
+            <h1>The Adventurer's Guild</h1>
+            <p class="subtitle hub-subtitle">Quality Commissions by AzraelGodKing</p>
             <div class="hub-download-stats" aria-live="polite">
                 <p class="hub-download-stats-primary"><strong>Total downloads (all mods combined):</strong> <span class="hub-download-grand" data-stats="total" data-field="grand_total">&mdash;</span></p>
                 <p class="hub-download-stats-detail">Thunderstore <span data-stats="total" data-field="thunderstore_site_total">&mdash;</span> &middot; Nexus Mods <span data-stats="total" data-field="nexus_site_total">&mdash;</span></p>
             </div>
-            <div style="font-size:0.75em; opacity:0.35; margin-top:10px;">&#x2694;&#xFE0F; 11 Contracts Posted &bull; 0 Expired &bull; All Ranks Welcome &#x2694;&#xFE0F;</div>
+            <p class="hub-meta">&#x2694;&#xFE0F; 12 Contracts Posted &bull; 0 Expired &bull; All Ranks Welcome &#x2694;&#xFE0F;</p>
         </header>
 
         <nav class="hub-jump-nav" aria-label="Page sections">
@@ -75,9 +77,9 @@
 
         <!-- Guild Notice Board -->
         <section class="mods-showcase">
-            <h2 class="section-title" id="guild-notice-board" style="letter-spacing:0.1em;">Guild Notice Board</h2>
+            <h2 class="section-title hub-section-title" id="guild-notice-board">Guild Notice Board</h2>
 
-            <div class="mod-filter" style="border-left:3px solid rgba(47,143,91,0.4); padding-left:16px;">
+            <div class="mod-filter mod-filter-refresh">
                 <input type="text" class="mod-search" placeholder="Search the board by name, skill, or description… ( / or s ) · All pages: Ctrl+K" id="modSearch" autocomplete="off">
                 <div class="filter-tags">
                     <button class="filter-tag active" data-tag="all">All Postings</button>
@@ -89,6 +91,11 @@
                     <button class="filter-tag" data-tag="Dev">Dev</button>
                 </div>
                 <p id="modBoardCount" class="mod-board-count" aria-live="polite" aria-atomic="true"></p>
+            </div>
+            <div class="discoverability-row" aria-label="Browse by goal">
+                <a href="#party-loadouts" class="discoverability-chip">Find a Bundle</a>
+                <a href="#arsenal-comparison" class="discoverability-chip">Compare Mods</a>
+                <a href="#guild-initiation" class="discoverability-chip">Install Guide</a>
             </div>
 
             <div class="mods-grid">
@@ -545,13 +552,15 @@
                 </div>
                 <div class="pack-card full-suite" style="border-top:3px solid #ffc332;">
                     <h3 class="pack-name">&#x2B50; Guild Master's Arsenal</h3>
-                    <p class="pack-desc">Full gameplay suite &mdash; vault, races, museum, storage, tasks, social, fishing luck, and the Almanac dashboard (HavenDevTools is separate for authors). Haven's Birthright can optionally mirror passive bonuses across races via <code>[BonusTransfers]</code> in its config.</p>
+                    <p class="pack-desc">Full gameplay suite &mdash; all twelve mods: vault, races, museum, storage, tasks, social, fishing luck, crop planning, skill respec, and the Almanac dashboard. Install <a href="HavenDevTools/HavenDevTools.html">HavenDevTools</a> separately if you need author utilities. Haven's Birthright can optionally mirror passive bonuses across races via <code>[BonusTransfers]</code> in its config.</p>
                     <div class="pack-mods">
                         <a href="HavensAlmanac/HavensAlmanac.html" class="pack-mod">Almanac</a>
                         <a href="TheVault/TheVault.html" class="pack-mod">The Vault</a>
                         <a href="RacialBonuses/RacialBonuses.html" class="pack-mod">Birthright</a>
                         <a href="FasterRaces/FasterRaces.html" class="pack-mod">Faster Races</a>
                         <a href="TrinketFortune/TrinketFortune.html" class="pack-mod">Trinket Fortune</a>
+                        <a href="CropOptimizer/CropOptimizer.html" class="pack-mod">Crop Optimizer</a>
+                        <a href="HavensRespec/HavensRespec.html" class="pack-mod">Haven's Respec</a>
                         <a href="SMUT/SMUT.html" class="pack-mod">S.M.U.T.</a>
                         <a href="SenpaisChest/SenpaisChest.html" class="pack-mod">Senpai's Chest</a>
                         <a href="Todo/todo.html" class="pack-mod">Todo</a>
@@ -577,6 +586,8 @@
                         <th>Birthright</th>
                         <th>Faster</th>
                         <th>Trinket</th>
+                        <th>Crop</th>
+                        <th>Respec</th>
                         <th>Almanac</th>
                         <th>DevTools</th>
                     </tr>
@@ -584,6 +595,8 @@
                 <tbody>
                     <tr>
                         <td>Per-Character Saves</td>
+                        <td class="cmp-yes">Yes</td>
+                        <td class="cmp-yes">Yes</td>
                         <td class="cmp-yes">Yes</td>
                         <td class="cmp-yes">Yes</td>
                         <td class="cmp-yes">Yes</td>
@@ -607,9 +620,13 @@
                         <td class="cmp-no">&mdash;</td>
                         <td class="cmp-yes">Yes</td>
                         <td class="cmp-yes">Yes</td>
+                        <td class="cmp-yes">Yes</td>
+                        <td class="cmp-yes">Yes</td>
                     </tr>
                     <tr>
                         <td>Configurable Settings</td>
+                        <td class="cmp-yes">Yes</td>
+                        <td class="cmp-yes">Yes</td>
                         <td class="cmp-yes">Yes</td>
                         <td class="cmp-yes">Yes</td>
                         <td class="cmp-yes">Yes</td>
@@ -633,12 +650,16 @@
                         <td class="cmp-no">&mdash;</td>
                         <td class="cmp-yes">Yes</td>
                         <td class="cmp-yes">Yes</td>
+                        <td class="cmp-yes">Yes</td>
+                        <td class="cmp-yes">Yes</td>
                     </tr>
                     <tr>
                         <td>Controller Support</td>
                         <td class="cmp-no">&mdash;</td>
                         <td class="cmp-no">&mdash;</td>
                         <td class="cmp-yes">Yes</td>
+                        <td class="cmp-no">&mdash;</td>
+                        <td class="cmp-no">&mdash;</td>
                         <td class="cmp-no">&mdash;</td>
                         <td class="cmp-no">&mdash;</td>
                         <td class="cmp-no">&mdash;</td>
@@ -659,6 +680,8 @@
                         <td class="cmp-no">&mdash;</td>
                         <td class="cmp-no">&mdash;</td>
                         <td class="cmp-no">&mdash;</td>
+                        <td class="cmp-no">&mdash;</td>
+                        <td class="cmp-no">&mdash;</td>
                     </tr>
                     <tr>
                         <td>Progress Tracking</td>
@@ -672,6 +695,8 @@
                         <td class="cmp-yes">Yes</td>
                         <td class="cmp-yes">Yes</td>
                         <td class="cmp-no">&mdash;</td>
+                        <td class="cmp-yes">Yes</td>
+                        <td class="cmp-no">&mdash;</td>
                     </tr>
                     <tr>
                         <td>Cross-Mod Synergy</td>
@@ -683,6 +708,8 @@
                         <td class="cmp-no">&mdash;</td>
                         <td class="cmp-yes">Yes</td>
                         <td class="cmp-yes">Yes</td>
+                        <td class="cmp-yes">Yes</td>
+                        <td class="cmp-no">&mdash;</td>
                         <td class="cmp-yes">Yes</td>
                         <td class="cmp-no">&mdash;</td>
                     </tr>
