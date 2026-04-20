@@ -121,7 +121,7 @@ jobs:
           else
             MOD_KEY="${{ github.event.inputs.mod }}"
             if [ "$MOD_KEY" == "all" ]; then
-              echo 'matrix=["havensbirthright","sunhavenmuseumutilitytracker","squirrelsbirthdayreminder","sunhaventodo","thevault","havendevtools","senpaischest","havensalmanac","fasterraces","trinketfortune","cropoptimizer","havensrespec"]' >> "$GITHUB_OUTPUT"
+              echo "matrix=$(jq -c '[.[].modKey]' scripts/mod-matrix.json)" >> "$GITHUB_OUTPUT"
             else
               echo "matrix=[\"$MOD_KEY\"]" >> "$GITHUB_OUTPUT"
             fi
@@ -158,72 +158,14 @@ jobs:
         shell: bash
         run: |
           MOD_KEY="${{ matrix.mod }}"
-          case "$MOD_KEY" in
-            "havensbirthright")
-              MOD_DIR="HavensBirthright"
-              DLL_NAME="HavensBirthright"
-              CSPROJ="HavensBirthright/HavensBirthright.csproj"
-              ;;
-            "sunhavenmuseumutilitytracker")
-              MOD_DIR="SunHavenMuseumUtilityTracker"
-              DLL_NAME="SunHavenMuseumUtilityTracker"
-              CSPROJ="SunHavenMuseumUtilityTracker/SunHavenMuseumUtilityTracker.csproj"
-              ;;
-            "squirrelsbirthdayreminder")
-              MOD_DIR="BirthdayReminder"
-              DLL_NAME="BirthdayReminder"
-              CSPROJ="BirthdayReminder/BirthdayReminder.csproj"
-              ;;
-            "sunhaventodo")
-              MOD_DIR="SunhavenTodo"
-              DLL_NAME="SunhavenTodo"
-              CSPROJ="SunhavenTodo/SunhavenTodo.csproj"
-              ;;
-            "thevault")
-              MOD_DIR="TheVault"
-              DLL_NAME="TheVault"
-              CSPROJ="TheVault/TheVault.csproj"
-              ;;
-            "havendevtools")
-              MOD_DIR="HavenDevTools"
-              DLL_NAME="HavenDevTools"
-              CSPROJ="HavenDevTools/HavenDevTools.csproj"
-              ;;
-            "senpaischest")
-              MOD_DIR="SenpaisChest"
-              DLL_NAME="SenpaisChest"
-              CSPROJ="SenpaisChest/SenpaisChest.csproj"
-              ;;
-            "havensalmanac")
-              MOD_DIR="HavensAlmanac"
-              DLL_NAME="HavensAlmanac"
-              CSPROJ="HavensAlmanac/HavensAlmanac.csproj"
-              ;;
-            "fasterraces")
-              MOD_DIR="FasterRaces"
-              DLL_NAME="FasterRaces"
-              CSPROJ="FasterRaces/FasterRaces.csproj"
-              ;;
-            "trinketfortune")
-              MOD_DIR="TrinketFortune"
-              DLL_NAME="TrinketFortune"
-              CSPROJ="TrinketFortune/TrinketFortune.csproj"
-              ;;
-            "cropoptimizer")
-              MOD_DIR="CropOptimizer"
-              DLL_NAME="CropOptimizer"
-              CSPROJ="CropOptimizer/CropOptimizer.csproj"
-              ;;
-            "havensrespec")
-              MOD_DIR="HavensRespec"
-              DLL_NAME="HavensRespec"
-              CSPROJ="HavensRespec/HavensRespec.csproj"
-              ;;
-            *)
-              echo "❌ Unknown mod: $MOD_KEY"
-              exit 1
-              ;;
-          esac
+          MOD_JSON="$(jq -c --arg key "$MOD_KEY" '.[] | select(.modKey == $key)' scripts/mod-matrix.json)"
+          if [ -z "$MOD_JSON" ]; then
+            echo "❌ Unknown mod: $MOD_KEY"
+            exit 1
+          fi
+          MOD_DIR="$(echo "$MOD_JSON" | jq -r '.modDir')"
+          DLL_NAME="$(echo "$MOD_JSON" | jq -r '.dllName')"
+          CSPROJ="$(echo "$MOD_JSON" | jq -r '.csproj')"
 
           echo "mod_dir=$MOD_DIR" >> "$GITHUB_OUTPUT"
           echo "dll_name=$DLL_NAME" >> "$GITHUB_OUTPUT"
@@ -327,85 +269,15 @@ jobs:
             exit 0
           fi
 
-          # Map input to versions.json key and project details
-          case "$MOD_KEY" in
-            "havensbirthright")
-              JSON_KEY="com.azraelgodking.havensbirthright"
-              MOD_DIR="HavensBirthright"
-              DLL_NAME="HavensBirthright"
-              THUNDERSTORE_NAME="HavensBirthright"
-              ;;
-            "sunhavenmuseumutilitytracker")
-              JSON_KEY="com.azraelgodking.sunhavenmuseumutilitytracker"
-              MOD_DIR="SunHavenMuseumUtilityTracker"
-              DLL_NAME="SunHavenMuseumUtilityTracker"
-              THUNDERSTORE_NAME="SMUT"
-              ;;
-            "squirrelsbirthdayreminder")
-              JSON_KEY="com.azraelgodking.squirrelsbirthdayreminder"
-              MOD_DIR="BirthdayReminder"
-              DLL_NAME="BirthdayReminder"
-              THUNDERSTORE_NAME="SquirrelsBirthdayReminder"
-              ;;
-            "sunhaventodo")
-              JSON_KEY="com.azraelgodking.sunhaventodo"
-              MOD_DIR="SunhavenTodo"
-              DLL_NAME="SunhavenTodo"
-              THUNDERSTORE_NAME="SunHavenTodo"
-              ;;
-            "thevault")
-              JSON_KEY="com.azraelgodking.thevault"
-              MOD_DIR="TheVault"
-              DLL_NAME="TheVault"
-              THUNDERSTORE_NAME="TheVault"
-              ;;
-            "havendevtools")
-              JSON_KEY="com.azraelgodking.havendevtools"
-              MOD_DIR="HavenDevTools"
-              DLL_NAME="HavenDevTools"
-              THUNDERSTORE_NAME="HavenDevTools"
-              ;;
-            "senpaischest")
-              JSON_KEY="com.azraelgodking.senpaischest"
-              MOD_DIR="SenpaisChest"
-              DLL_NAME="SenpaisChest"
-              THUNDERSTORE_NAME="SenpaisChest"
-              ;;
-            "havensalmanac")
-              JSON_KEY="com.azraelgodking.havensalmanac"
-              MOD_DIR="HavensAlmanac"
-              DLL_NAME="HavensAlmanac"
-              THUNDERSTORE_NAME="HavensAlmanac"
-              ;;
-            "fasterraces")
-              JSON_KEY="com.azraelgodking.fasterraces"
-              MOD_DIR="FasterRaces"
-              DLL_NAME="FasterRaces"
-              THUNDERSTORE_NAME="FasterRaces"
-              ;;
-            "trinketfortune")
-              JSON_KEY="com.azraelgodking.trinketfortune"
-              MOD_DIR="TrinketFortune"
-              DLL_NAME="TrinketFortune"
-              THUNDERSTORE_NAME="TrinketFortune"
-              ;;
-            "cropoptimizer")
-              JSON_KEY="com.azraelgodking.cropoptimizer"
-              MOD_DIR="CropOptimizer"
-              DLL_NAME="CropOptimizer"
-              THUNDERSTORE_NAME="CropOptimizer"
-              ;;
-            "havensrespec")
-              JSON_KEY="com.azraelgodking.havensrespec"
-              MOD_DIR="HavensRespec"
-              DLL_NAME="HavensRespec"
-              THUNDERSTORE_NAME="HavensRespec"
-              ;;
-            *)
-              echo "❌ Unknown mod: $MOD_KEY"
-              exit 1
-              ;;
-          esac
+          MOD_JSON="$(jq -c --arg key "$MOD_KEY" '.[] | select(.modKey == $key)' scripts/mod-matrix.json)"
+          if [ -z "$MOD_JSON" ]; then
+            echo "❌ Unknown mod: $MOD_KEY"
+            exit 1
+          fi
+          JSON_KEY="$(echo "$MOD_JSON" | jq -r '.jsonKey')"
+          MOD_DIR="$(echo "$MOD_JSON" | jq -r '.modDir')"
+          DLL_NAME="$(echo "$MOD_JSON" | jq -r '.dllName')"
+          THUNDERSTORE_NAME="$(echo "$MOD_JSON" | jq -r '.thunderstoreName')"
 
           # Read version, name, description, changelog, and links from versions.json
           VERSION=$(jq -r ".[\"$JSON_KEY\"].version" docs/versions.json)
@@ -851,20 +723,7 @@ jobs:
         if: github.event.inputs.publish_discord_only != 'true' && github.event.inputs.test_discord == 'true'
         id: test_mod
         run: |
-          MODS=(
-            "com.azraelgodking.havensbirthright:HavensBirthright"
-            "com.azraelgodking.sunhavenmuseumutilitytracker:SunHavenMuseumUtilityTracker"
-            "com.azraelgodking.squirrelsbirthdayreminder:BirthdayReminder"
-            "com.azraelgodking.sunhaventodo:SunhavenTodo"
-            "com.azraelgodking.thevault:TheVault"
-            "com.azraelgodking.havendevtools:HavenDevTools"
-            "com.azraelgodking.senpaischest:SenpaisChest"
-            "com.azraelgodking.havensalmanac:HavensAlmanac"
-            "com.azraelgodking.fasterraces:FasterRaces"
-            "com.azraelgodking.trinketfortune:TrinketFortune"
-            "com.azraelgodking.cropoptimizer:CropOptimizer"
-            "com.azraelgodking.havensrespec:HavensRespec"
-          )
+          mapfile -t MODS < <(jq -r '.[] | "\(.jsonKey):\(.modDir)"' scripts/mod-matrix.json)
           IDX=$((RANDOM % ${#MODS[@]}))
           ENTRY="${MODS[$IDX]}"
           JSON_KEY="${ENTRY%%:*}"
@@ -927,19 +786,7 @@ jobs:
         run: |
           TAG="${{ github.event.release.tag_name }}"
           PREFIX="${TAG%-v*}"
-          case "$PREFIX" in
-            HavensBirthright)           DIR="HavensBirthright" ;;
-            SMUT)                       DIR="SunHavenMuseumUtilityTracker" ;;
-            SquirrelsBirthdayReminder)  DIR="BirthdayReminder" ;;
-            SunHavenTodo)               DIR="SunhavenTodo" ;;
-            TheVault)                   DIR="TheVault" ;;
-            HavenDevTools)              DIR="HavenDevTools" ;;
-            SenpaisChest)               DIR="SenpaisChest" ;;
-            HavensAlmanac)              DIR="HavensAlmanac" ;;
-            FasterRaces)                DIR="FasterRaces" ;;
-            TrinketFortune)             DIR="TrinketFortune" ;;
-            *)                          DIR="" ;;
-          esac
+          DIR="$(jq -r --arg ts "$PREFIX" '.[] | select(.thunderstoreName == $ts) | .modDir' scripts/mod-matrix.json | head -n1)"
           if [ -n "$DIR" ]; then
             echo "url=https://raw.githubusercontent.com/${{ github.repository }}/main/$DIR/thunderstore/icon.png" >> "$GITHUB_OUTPUT"
           fi

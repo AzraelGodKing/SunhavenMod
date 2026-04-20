@@ -62,12 +62,6 @@
 
 param(
     [Parameter(Mandatory = $false)]
-    [ValidateSet(
-        "senpaischest", "havensbirthright", "sunhavenmuseumutilitytracker",
-        "squirrelsbirthdayreminder", "sunhaventodo", "thevault",
-        "havendevtools", "havensalmanac", "fasterraces", "trinketfortune",
-        "cropoptimizer", "havensrespec"
-    )]
     [string]$Mod,
 
     [Parameter(Mandatory = $false)]
@@ -88,27 +82,35 @@ $ErrorActionPreference = "Stop"
 $ScriptRoot = $PSScriptRoot
 if (-not $ScriptRoot) { $ScriptRoot = Split-Path -Parent $MyInvocation.MyCommand.Path }
 $RepoRoot = [System.IO.Path]::GetFullPath((Join-Path $ScriptRoot ".."))
+$ModMatrixPath = Join-Path $ScriptRoot "mod-matrix.json"
 $VersionsPath = Join-Path $RepoRoot "docs\versions.json"
 $ReadmePath = Join-Path $RepoRoot "README.md"
 $IndexHtmlPath = Join-Path $RepoRoot "docs\index.html"
 $DebugWindowPath = Join-Path $RepoRoot "HavenDevTools\UI\DebugWindow.cs"
 
-# Per-mod: JsonKey, ModDir, UsePluginInfo (else Plugin.cs), ReadmePath segment e.g. SenpaisChest,
-# IndexDataName (docs/index.html data-name), DocsHtml relative to docs\, ExtraCsproj paths relative repo root (optional)
-$ModDefs = [ordered]@{
-    "senpaischest"                 = @{ JsonKey = "com.azraelgodking.senpaischest"; ModDir = "SenpaisChest"; UsePluginInfo = $true; ReadmePath = "SenpaisChest"; IndexDataName = "Senpai's Chest"; DocsHtml = "SenpaisChest\SenpaisChest.html"; ExtraCsproj = @() }
-    "havensbirthright"             = @{ JsonKey = "com.azraelgodking.havensbirthright"; ModDir = "HavensBirthright"; UsePluginInfo = $false; ReadmePath = "HavensBirthright"; IndexDataName = "Haven's Birthright"; DocsHtml = $null; ExtraCsproj = @() }
-    "sunhavenmuseumutilitytracker" = @{ JsonKey = "com.azraelgodking.sunhavenmuseumutilitytracker"; ModDir = "SunHavenMuseumUtilityTracker"; UsePluginInfo = $false; ReadmePath = "SunHavenMuseumUtilityTracker"; IndexDataName = "S.M.U.T."; DocsHtml = "SMUT\SMUT.html"; ExtraCsproj = @() }
-    "squirrelsbirthdayreminder"    = @{ JsonKey = "com.azraelgodking.squirrelsbirthdayreminder"; ModDir = "BirthdayReminder"; UsePluginInfo = $true; ReadmePath = "BirthdayReminder"; IndexDataName = "A Squirrel's Birthday Reminder"; DocsHtml = "BirthdayReminder\BirthdayReminder.html"; ExtraCsproj = @() }
-    "sunhaventodo"                 = @{ JsonKey = "com.azraelgodking.sunhaventodo"; ModDir = "SunhavenTodo"; UsePluginInfo = $true; ReadmePath = "SunhavenTodo"; IndexDataName = "Sun Haven Todo"; DocsHtml = "Todo\todo.html"; ExtraCsproj = @() }
-    "thevault"                     = @{ JsonKey = "com.azraelgodking.thevault"; ModDir = "TheVault"; UsePluginInfo = $false; ReadmePath = "TheVault"; IndexDataName = "The Vault"; DocsHtml = "TheVault\TheVault.html"; ExtraCsproj = @("TheVault\TheVault.csproj", "TheVault.Abstractions\TheVault.Abstractions.csproj") }
-    "havendevtools"                = @{ JsonKey = "com.azraelgodking.havendevtools"; ModDir = "HavenDevTools"; UsePluginInfo = $false; ReadmePath = "HavenDevTools"; IndexDataName = "HavenDevTools"; DocsHtml = "HavenDevTools\HavenDevTools.html"; ExtraCsproj = @() }
-    "havensalmanac"                = @{ JsonKey = "com.azraelgodking.havensalmanac"; ModDir = "HavensAlmanac"; UsePluginInfo = $true; ReadmePath = "HavensAlmanac"; IndexDataName = "Haven's Almanac"; DocsHtml = "HavensAlmanac\HavensAlmanac.html"; ExtraCsproj = @() }
-    "fasterraces"                  = @{ JsonKey = "com.azraelgodking.fasterraces"; ModDir = "FasterRaces"; UsePluginInfo = $false; ReadmePath = "FasterRaces"; IndexDataName = "Faster Races"; DocsHtml = "FasterRaces\FasterRaces.html"; ExtraCsproj = @("FasterRaces\FasterRaces.csproj") }
-    "trinketfortune"               = @{ JsonKey = "com.azraelgodking.trinketfortune"; ModDir = "TrinketFortune"; UsePluginInfo = $false; ReadmePath = "TrinketFortune"; IndexDataName = "Trinket Fortune"; DocsHtml = "TrinketFortune\TrinketFortune.html"; ExtraCsproj = @() }
-    "cropoptimizer"                = @{ JsonKey = "com.azraelgodking.cropoptimizer"; ModDir = "CropOptimizer"; UsePluginInfo = $true; ReadmePath = "CropOptimizer"; IndexDataName = "Crop Optimizer"; DocsHtml = "CropOptimizer\CropOptimizer.html"; ExtraCsproj = @() }
-    "havensrespec"                 = @{ JsonKey = "com.azraelgodking.havensrespec"; ModDir = "HavensRespec"; UsePluginInfo = $true; ReadmePath = "HavensRespec"; IndexDataName = "Haven's Respec"; DocsHtml = "HavensRespec\HavensRespec.html"; ExtraCsproj = @() }
+function Get-ModDefinitions {
+    param([string]$MatrixPath)
+    if (-not (Test-Path $MatrixPath)) {
+        throw "mod-matrix.json not found: $MatrixPath"
+    }
+    $rows = Get-Content $MatrixPath -Raw -Encoding utf8 | ConvertFrom-Json
+    $defs = @{}
+    foreach ($row in $rows) {
+        if (-not $row.modKey) { continue }
+        $defs[$row.modKey] = @{
+            JsonKey = $row.jsonKey
+            ModDir = $row.modDir
+            PluginFile = $row.pluginFile
+            ReadmePath = $row.readmePath
+            IndexDataName = $row.indexDataName
+            DocsHtml = if ($row.docsPagePath) { [string]$row.docsPagePath -replace '/', '\' } else { $null }
+            ExtraCsproj = @($row.extraCsprojPaths)
+        }
+    }
+    return $defs
 }
+
+$ModDefs = Get-ModDefinitions -MatrixPath $ModMatrixPath
 
 function Get-VersionParts {
     param([string]$Version)
@@ -361,7 +363,7 @@ function Update-CsprojVersions {
 
 function Sync-ModVersionEverywhere {
     param(
-        [hashtable]$Def,
+        [object]$Def,
         [string]$Version,
         [bool]$UpdateVersionsJson,
         [bool]$SkipBuild
@@ -369,14 +371,13 @@ function Sync-ModVersionEverywhere {
 
     $jsonKey = $Def.JsonKey
     $modDir = $Def.ModDir
-    $usePluginInfo = $Def.UsePluginInfo
     $modPath = Join-Path $RepoRoot $modDir
 
     if ($UpdateVersionsJson) {
         Update-VersionsJson -JsonKey $jsonKey -Version $Version
     }
 
-    $versionFile = if ($usePluginInfo) { "PluginInfo.cs" } else { "Plugin.cs" }
+    $versionFile = if ($Def.PluginFile) { [string]$Def.PluginFile } else { "Plugin.cs" }
     Update-PluginVersionConst -FilePath (Join-Path $modPath $versionFile) -Version $Version
 
     Update-ThunderstoreManifest -ManifestPath (Join-Path $modPath "thunderstore\manifest.json") -Version $Version
@@ -420,7 +421,7 @@ function Sync-ModVersionEverywhere {
 
 function Invoke-ModProjectBuild {
     param(
-        [hashtable]$Def,
+        [object]$Def,
         [string]$ModPath,
         [string]$MainCsproj
     )
@@ -444,6 +445,12 @@ function Invoke-ModProjectBuild {
 
 if (-not $All -and -not $Mod) {
     Write-Error "Specify -Mod <modkey> or -All"
+    exit 1
+}
+
+if ($Mod -and -not $ModDefs.ContainsKey($Mod)) {
+    $available = ($ModDefs.Keys | Sort-Object) -join ", "
+    Write-Error "Unknown -Mod value '$Mod'. Available: $available"
     exit 1
 }
 

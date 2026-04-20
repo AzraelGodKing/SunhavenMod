@@ -14,24 +14,9 @@ from pathlib import Path
 
 REPO = Path(__file__).resolve().parent.parent
 VERSIONS_PATH = REPO / "docs" / "versions.json"
+MOD_MATRIX_PATH = REPO / "scripts" / "mod-matrix.json"
 # utf-8-sig strips UTF-8 BOM if present (some editors save JSON with BOM).
 _READ_ENCODING = "utf-8-sig"
-
-# json_key -> (mod_dir, plugin_filename relative to mod dir)
-MOD_PLUGIN_FILES: dict[str, tuple[str, str]] = {
-    "com.azraelgodking.squirrelsbirthdayreminder": ("BirthdayReminder", "PluginInfo.cs"),
-    "com.azraelgodking.havensbirthright": ("HavensBirthright", "Plugin.cs"),
-    "com.azraelgodking.sunhavenmuseumutilitytracker": ("SunHavenMuseumUtilityTracker", "Plugin.cs"),
-    "com.azraelgodking.sunhaventodo": ("SunhavenTodo", "PluginInfo.cs"),
-    "com.azraelgodking.thevault": ("TheVault", "Plugin.cs"),
-    "com.azraelgodking.havendevtools": ("HavenDevTools", "Plugin.cs"),
-    "com.azraelgodking.senpaischest": ("SenpaisChest", "PluginInfo.cs"),
-    "com.azraelgodking.havensalmanac": ("HavensAlmanac", "PluginInfo.cs"),
-    "com.azraelgodking.fasterraces": ("FasterRaces", "PluginInfo.cs"),
-    "com.azraelgodking.trinketfortune": ("TrinketFortune", "Plugin.cs"),
-    "com.azraelgodking.cropoptimizer": ("CropOptimizer", "PluginInfo.cs"),
-    "com.azraelgodking.havensrespec": ("HavensRespec", "PluginInfo.cs"),
-}
 
 PLUGIN_VER_RE = re.compile(r'PLUGIN_VERSION\s*=\s*"([^"]*)"')
 
@@ -51,13 +36,27 @@ def read_plugin_versions(plugin_path: Path) -> list[str]:
     return PLUGIN_VER_RE.findall(text)
 
 
+def load_matrix_plugin_files() -> dict[str, tuple[str, str]]:
+    matrix = json.loads(MOD_MATRIX_PATH.read_text(encoding=_READ_ENCODING))
+    out: dict[str, tuple[str, str]] = {}
+    for row in matrix:
+        json_key = row.get("jsonKey")
+        mod_dir = row.get("modDir")
+        plugin_file = row.get("pluginFile")
+        if not json_key or not mod_dir or not plugin_file:
+            continue
+        out[str(json_key)] = (str(mod_dir), str(plugin_file))
+    return out
+
+
 def main() -> int:
     data = json.loads(VERSIONS_PATH.read_text(encoding=_READ_ENCODING))
+    mod_plugin_files = load_matrix_plugin_files()
     errors: list[str] = []
 
     for key, entry in data.items():
-        if key not in MOD_PLUGIN_FILES:
-            errors.append(f"Unknown mod key in versions.json (add to MOD_PLUGIN_FILES): {key}")
+        if key not in mod_plugin_files:
+            errors.append(f"Unknown mod key in versions.json (add to scripts/mod-matrix.json): {key}")
             continue
 
         want = entry.get("version")
@@ -65,7 +64,7 @@ def main() -> int:
             errors.append(f"{key}: missing version in versions.json")
             continue
 
-        mod_dir, plugin_file = MOD_PLUGIN_FILES[key]
+        mod_dir, plugin_file = mod_plugin_files[key]
         base = REPO / mod_dir
         plugin_path = base / plugin_file
         manifest_path = base / "thunderstore" / "manifest.json"

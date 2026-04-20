@@ -7,38 +7,33 @@ $ErrorActionPreference = "Stop"
 
 $repoRoot = Split-Path -Parent $PSScriptRoot
 $versionsPath = Join-Path $repoRoot "docs\versions.json"
+$modMatrixPath = Join-Path $PSScriptRoot "mod-matrix.json"
 
 if (-not (Test-Path $versionsPath)) {
     Write-Error "versions.json not found: $versionsPath"
     exit 1
 }
 
-$modDefs = @(
-    @{ key = "com.azraelgodking.senpaischest"; dir = "SenpaisChest"; plugin = "PluginInfo.cs" },
-    @{ key = "com.azraelgodking.havensbirthright"; dir = "HavensBirthright"; plugin = "Plugin.cs" },
-    @{ key = "com.azraelgodking.sunhavenmuseumutilitytracker"; dir = "SunHavenMuseumUtilityTracker"; plugin = "Plugin.cs" },
-    @{ key = "com.azraelgodking.squirrelsbirthdayreminder"; dir = "BirthdayReminder"; plugin = "PluginInfo.cs" },
-    @{ key = "com.azraelgodking.sunhaventodo"; dir = "SunhavenTodo"; plugin = "PluginInfo.cs" },
-    @{ key = "com.azraelgodking.thevault"; dir = "TheVault"; plugin = "Plugin.cs" },
-    @{ key = "com.azraelgodking.havendevtools"; dir = "HavenDevTools"; plugin = "Plugin.cs" },
-    @{ key = "com.azraelgodking.havensalmanac"; dir = "HavensAlmanac"; plugin = "PluginInfo.cs" },
-    @{ key = "com.azraelgodking.fasterraces"; dir = "FasterRaces"; plugin = "Plugin.cs" },
-    @{ key = "com.azraelgodking.trinketfortune"; dir = "TrinketFortune"; plugin = "Plugin.cs" }
-)
+if (-not (Test-Path $modMatrixPath)) {
+    Write-Error "mod-matrix.json not found: $modMatrixPath"
+    exit 1
+}
+
+$modDefs = Get-Content $modMatrixPath -Raw -Encoding utf8 | ConvertFrom-Json
 
 $versions = Get-Content $versionsPath -Raw -Encoding utf8 | ConvertFrom-Json
 $errors = New-Object System.Collections.Generic.List[string]
 
 foreach ($m in $modDefs) {
-    $jsonEntry = $versions.PSObject.Properties[$m.key]
+    $jsonEntry = $versions.PSObject.Properties[$m.jsonKey]
     if (-not $jsonEntry) {
-        $errors.Add("Missing key in versions.json: $($m.key)")
+        $errors.Add("Missing key in versions.json: $($m.jsonKey)")
         continue
     }
 
     $expectedVersion = [string]$jsonEntry.Value.version
-    $pluginPath = Join-Path $repoRoot (Join-Path $m.dir $m.plugin)
-    $manifestPath = Join-Path $repoRoot (Join-Path $m.dir "thunderstore\manifest.json")
+    $pluginPath = Join-Path $repoRoot (Join-Path $m.modDir $m.pluginFile)
+    $manifestPath = Join-Path $repoRoot (Join-Path $m.modDir "thunderstore\manifest.json")
 
     if (-not (Test-Path $pluginPath)) {
         $errors.Add("Missing plugin file: $pluginPath")
@@ -67,7 +62,7 @@ foreach ($m in $modDefs) {
 
     if ($expectedVersion -ne $pluginVersion -or $expectedVersion -ne $manifestVersion) {
         $errors.Add(
-            "$($m.dir): versions.json=$expectedVersion, plugin=$pluginVersion, manifest=$manifestVersion"
+            "$($m.modDir): versions.json=$expectedVersion, plugin=$pluginVersion, manifest=$manifestVersion"
         )
     }
 }
