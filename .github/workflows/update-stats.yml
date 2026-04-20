@@ -2,11 +2,12 @@ name: Update Mod Download Stats
 
 on:
   schedule:
-    - cron: "0 6 * * *"
+    # Hourly at :00 UTC (paired with same-hour short-circuit in scripts/fetch-stats.js)
+    - cron: "0 * * * *"
   workflow_dispatch:
     inputs:
       force:
-        description: "Fetch even if cache was already updated today (UTC)"
+        description: "Fetch even if cache was already updated this UTC hour"
         required: false
         default: false
         type: boolean

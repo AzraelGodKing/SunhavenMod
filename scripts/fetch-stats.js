@@ -91,8 +91,9 @@ function loadModRoster() {
   }
 }
 
-function utcDateString(date) {
-  return `${date.getUTCFullYear()}-${String(date.getUTCMonth() + 1).padStart(2, "0")}-${String(date.getUTCDate()).padStart(2, "0")}`;
+/** YYYY-MM-DD-HH (UTC) — skip redundant fetches when cache was already refreshed this hour */
+function utcHourBucket(date) {
+  return `${date.getUTCFullYear()}-${String(date.getUTCMonth() + 1).padStart(2, "0")}-${String(date.getUTCDate()).padStart(2, "0")}T${String(date.getUTCHours()).padStart(2, "0")}`;
 }
 
 function ensureParentDir(filePath) {
@@ -284,13 +285,13 @@ async function main() {
   const now = new Date();
   if (!force && cache?.lastFetched) {
     const last = new Date(cache.lastFetched);
-    if (!Number.isNaN(last.valueOf()) && utcDateString(last) === utcDateString(now)) {
-      console.log("Stats already up to date (same UTC day). Use --force or STATS_FORCE=1 to refresh anyway.");
+    if (!Number.isNaN(last.valueOf()) && utcHourBucket(last) === utcHourBucket(now)) {
+      console.log("Stats already up to date (same UTC hour). Use --force or STATS_FORCE=1 to refresh anyway.");
       return;
     }
   }
   if (force) {
-    console.log("[stats] Force refresh: bypassing same-day short-circuit");
+    console.log("[stats] Force refresh: bypassing same-hour short-circuit");
   }
 
   const packageIndex = await loadSunHavenThunderstoreIndex();
