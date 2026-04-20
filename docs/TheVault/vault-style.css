@@ -25,9 +25,10 @@
     --text-primary: #e6edf3;
     --text-secondary: #8b949e;
     --text-muted: #636e7b;
-    --success: #3fb950;
-    --warning: #d29922;
-    --danger: #f85149;
+    /* Success / danger: teal vs magenta (distinguishable for most CVD; not red vs green alone) */
+    --success: #14b8a6;
+    --warning: #d97706;
+    --danger: #be185d;
     --metal-sheen: linear-gradient(
         135deg,
         rgba(88, 166, 255, 0.05) 0%,
@@ -159,6 +160,55 @@ body::before {
     border: 1px solid var(--border-steel);
     position: relative;
     overflow: hidden;
+}
+
+.hero-refresh {
+    border-bottom: 2px solid var(--accent);
+}
+
+.hero-inline {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+    margin-bottom: 8px;
+}
+
+.hero-icon-inline {
+    margin: 0;
+    font-size: 2.5em;
+}
+
+.hero-inline-text {
+    text-align: left;
+}
+
+.hero-title-inline {
+    margin: 0;
+    font-size: 1.8em;
+}
+
+.hero-tagline-inline {
+    margin: 0;
+    font-size: 0.85em;
+}
+
+.hero-meta-row {
+    display: flex;
+    gap: 16px;
+    justify-content: center;
+    align-items: center;
+    margin-top: 12px;
+    flex-wrap: wrap;
+}
+
+.hero-meta-item {
+    font-size: 0.8em;
+    opacity: 0.7;
+}
+
+.hero-meta-value {
+    color: var(--success);
 }
 
 /* Subtle corner reinforcement brackets */
@@ -309,6 +359,36 @@ body::before {
     border: 1px solid var(--border-steel);
     border-left: 4px solid var(--accent);
     position: relative;
+}
+
+.intro-section-refresh {
+    border-left: 3px solid var(--accent);
+    padding-left: 20px;
+}
+
+.vault-quick-nav {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 10px;
+    margin: 8px 0 28px;
+}
+
+.vault-quick-nav a {
+    text-decoration: none;
+    color: var(--accent-bright);
+    border: 1px solid var(--border-steel);
+    border-radius: 999px;
+    padding: 6px 12px;
+    font-size: 0.8em;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    background: rgba(45, 108, 223, 0.1);
+}
+
+.vault-quick-nav a:hover {
+    background: rgba(45, 108, 223, 0.18);
 }
 
 .intro-section::before {
@@ -1044,6 +1124,14 @@ code {
         font-size: 2.4em;
     }
 
+    .hero-inline {
+        flex-direction: column;
+    }
+
+    .hero-inline-text {
+        text-align: center;
+    }
+
     .hero-icon {
         font-size: 3em;
         width: 90px;
@@ -1226,6 +1314,20 @@ code {
     background: linear-gradient(135deg, #1a2e50 0%, #2d6cdf 50%, #1a3860 100%);
     -webkit-background-clip: text;
     background-clip: text;
+}
+
+[data-theme="light"] .hero-meta-item {
+    color: #5a6677;
+}
+
+[data-theme="light"] .hero-meta-value {
+    color: #238636;
+}
+
+[data-theme="light"] .vault-quick-nav a {
+    color: var(--accent);
+    border-color: rgba(45, 108, 223, 0.2);
+    background: rgba(45, 108, 223, 0.06);
 }
 
 [data-theme="light"] .tagline {
