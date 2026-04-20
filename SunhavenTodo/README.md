@@ -52,6 +52,12 @@ Character names are sanitized to avoid invalid filename characters.
 - The window is draggable by the header
 - The UI pauses player input while the todo list is open
 
+## Changelog
+
+### Unreleased
+
+- **Build:** Excluded `Tests/**/*.cs` from `SunhavenTodo.csproj` compile items so NUnit test sources are not compiled into the runtime mod assembly, and linked `SharedUtilities/OvernightHookUtility.cs` so `Plugin.TryHookOvernight()` compiles in normal mod builds.
+
 ## Links
 
 - [Nexus Mods](https://www.nexusmods.com/sunhaven/mods/491)

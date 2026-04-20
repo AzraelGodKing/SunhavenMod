@@ -19,3 +19,9 @@ File: `Sun Haven/BepInEx/config/FasterRaces.cfg`
 
 - This README is intentionally short for repo maintainers.
 - Player-facing details live in `thunderstore/README.md`.
+
+## Changelog
+
+### Unreleased
+
+- **Build:** Added missing `using System;` in `Plugin.cs` so `Exception` in the race-name reflection guard compiles cleanly.

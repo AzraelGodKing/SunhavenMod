@@ -21,6 +21,8 @@ File: `Sun Haven/BepInEx/config/SenpaisChest.cfg`
 
 ### Unreleased
 
+- **Changed:** "Copy Rules to All" now requires a second click confirmation within a short timeout to reduce accidental bulk overwrites.
+- **Build:** Excluded `Tests/**/*.cs` from `SenpaisChest.csproj` compile items so NUnit test sources are not compiled into the runtime mod assembly.
 - **Build:** Soft-dependency references to `SunHavenMuseumUtilityTracker` and `SunhavenTodo` now use `ProjectReference` to those sibling projects instead of `..\builds\...\*.dll`, matching other mods in the repo.
 - **Fixed:** Configs now appear in BepInEx Configuration Manager. The mod binds entries to a custom `ConfigFile` (`SenpaisChest.cfg`) rather than the default per-GUID file, and Configuration Manager only scans each plugin's inherited `BaseUnityPlugin.Config` property — so it never saw our entries. `ConfigFileHelper.ReplacePluginConfig` now rewires that inherited property to the custom file via reflection right after Awake, so the live config UI picks up every `Config.Bind(...)` call without changing the config file name or path.
 - Reworked chest-label rendering to use a screen overlay anchor so labels stay above chests.

@@ -6,18 +6,17 @@ A collection of BepInEx mods for [Sun Haven](https://store.steampowered.com/app/
 
 | Mod | Description | Version |
 |-----|-------------|---------|
-| [**Senpai's Chest**](SenpaisChest/) | Smart chests with configurable item rules for automatic storage sorting | 2.2.6 |
-| [**Sunhaven Todo**](SunhavenTodo/) | In-game todo list and journal with per-character saves | 1.1.10 |
+| [**Senpai's Chest**](SenpaisChest/) | Smart chests with configurable item rules for automatic storage sorting | 2.3.0 |
+| [**Sunhaven Todo**](SunhavenTodo/) | In-game todo list and journal with per-character saves | 1.2.0 |
 | [**Sun Haven Museum Utility Tracker**](SunHavenMuseumUtilityTracker/) | Track museum donations across all sections | 2.2.9 |
-| [**The Vault**](TheVault/) | Full rework of the vault system; classic core, single project; shop and inventory vault hooks | 3.0.7 |
+| [**The Vault**](TheVault/) | Full rework of the vault system; classic core, single project; shop and inventory vault hooks | 3.1.0 |
 | [**Haven's Birthright**](HavensBirthright/) | Unique racial bonuses and traits for each playable race; optional `[BonusTransfers]` cross-race passive grants (off by default) | 2.0.3 |
-| [**Haven's Almanac**](HavensAlmanac/) | Mod compatibility registry and info hub | 1.1.2 |
-| [**A Squirrel's Birthday Reminder**](BirthdayReminder/) | Reminds you of villagers' birthdays | 1.1.7 |
+| [**Haven's Almanac**](HavensAlmanac/) | Mod compatibility registry and info hub | 1.2.0 |
+| [**A Squirrel's Birthday Reminder**](BirthdayReminder/) | Reminds you of villagers' birthdays | 1.2.0 |
 | [**Haven Dev Tools**](HavenDevTools/) | Developer utilities and debugging tools | 1.0.11 |
 | [**Trinket Fortune**](TrinketFortune/) | Increases odds of unowned fishing trinkets dropping as you complete the aquarium | 1.0.5 |
-| [**Faster Races**](FasterRaces/) | Configurable movement speed bonus; integrates with Haven's Birthright to avoid double speed | 1.1.6 |
-| [**Justice for Harold**](JusticeForHarold/) | Quest interaction tweak for Harold's reward flow | 1.0.0 |
-| [**Crop Optimizer**](CropOptimizer/) | Crop forecast HUD with soft Todo/Birthday/Vault integrations | 1.1.0 |
+| [**Faster Races**](FasterRaces/) | Configurable movement speed bonus; integrates with Haven's Birthright to avoid double speed | 1.2.0 |
+| [**Crop Optimizer**](CropOptimizer/) | Crop forecast HUD with soft Todo/Birthday/Vault integrations | 1.2.0 |
 | [**Haven's Respec**](HavensRespec/) | Safe skill tree respec with confirmation, per-profession Undo, optional cost, hotkeys | 1.1.0 |
 
 ---
@@ -66,10 +65,6 @@ Increases the odds of unowned fishing trinkets dropping as you complete the aqua
 ### Faster Races
 
 Configurable percentage bonus to movement speed for all races. With Haven's Birthright installed, Birthright speed bonuses are suppressed only while Faster Races speed bonus is active.
-
-### Justice for Harold
-
-Small quest behavior tweak focused on Harold interaction outcomes.
 
 ### Crop Optimizer
 
@@ -124,7 +119,8 @@ SunhavenMod/
 
 ## Documentation site changelog
 
-- **2026-04-20** — **Version verifier: PowerShell parity added (no Python required locally).** Added [`scripts/verify-version-consistency.ps1`](scripts/verify-version-consistency.ps1), a PowerShell equivalent of [`scripts/verify-version-consistency.py`](scripts/verify-version-consistency.py), so local version-consistency checks can run on Windows hosts without Python. Updated [`docs/VERSION_AND_RELEASE.md`](docs/VERSION_AND_RELEASE.md) local-check instructions to include both commands. No version bump.
+- **2026-04-20** — **Post-review warning cleanup + retired-mod purge.** Removed remaining retired-mod artifacts from the repo tree; deleted dead `TheVault/UI/VaultUguiPanel.cs`; removed unused legacy IMGUI toggle plumbing from `TheVault/UI/VaultUI.cs`; restored The Vault HUD/window scale range to `0.5-3.0`; added confirmation-on-second-click for Senpai's Chest "Copy Rules to All"; tightened Birthday Reminder fuzzy-name matching for short NPC names; and cached Mod Health snapshot shape reflection in `HavensAlmanac/Integration/ModHealthDataProvider.cs`. No version bump.
+- **2026-04-20** — **PR #59 merge conflict resolution + review follow-up.** Resolved merge conflicts in [`CropOptimizer/Data/CropForecast.cs`](CropOptimizer/Data/CropForecast.cs), [`README.md`](README.md), and [`scripts/pre-push-build.ps1`](scripts/pre-push-build.ps1) by preserving master updates while keeping PR behavior (including Crop `ItemId` tracking and removing retired-mod references). Also replaced bare catches with debug logging in [`SunhavenTodo/Plugin.cs`](SunhavenTodo/Plugin.cs) (`TryHookOvernight` resolver and `OnNewDay`) and [`FasterRaces/Plugin.cs`](FasterRaces/Plugin.cs) (`GetCurrentRaceName`). No version bump.
 - **2026-04-19** — **Haven's Respec: Thunderstore `website_url`.** [`HavensRespec/thunderstore/manifest.json`](HavensRespec/thunderstore/manifest.json) `website_url` set to the [GitHub Pages doc](https://azraelgodking.github.io/SunhavenMod/HavensRespec/HavensRespec.html). No version bump.
 - **2026-04-19** — **Haven's Almanac: Nexus file group id.** [`docs/versions.json`](docs/versions.json) entry `com.azraelgodking.havensalmanac` now has `"nexus_file_group_id": "7326779"` for Release & Publish / Nexus upload steps. No version bump.
 - **2026-04-19** — **Crop Optimizer: Nexus mod id 501.** [`docs/versions.json`](docs/versions.json) `nexus` URL set to [mods/501](https://www.nexusmods.com/sunhaven/mods/501) (replacing `/mods/500`). [`scripts/fetch-stats.js`](scripts/fetch-stats.js) resolves Nexus id from this URL for download stats. No version bump.

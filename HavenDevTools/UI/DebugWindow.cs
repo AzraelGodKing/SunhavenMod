@@ -66,14 +66,14 @@ namespace HavenDevTools.UI
         private static readonly (string guid, string name, string version)[] _knownMods = new[]
         {
             ("com.azraelgodking.havendevtools", "Haven Dev Tools", "1.0.11"),
-            ("com.azraelgodking.senpaischest", "Senpai's Chest", "2.2.6"),
-            ("com.azraelgodking.squirrelsbirthdayreminder", "Birthday Reminder", "1.1.7"),
+            ("com.azraelgodking.senpaischest", "Senpai's Chest", "2.3.0"),
+            ("com.azraelgodking.squirrelsbirthdayreminder", "Birthday Reminder", "1.2.0"),
             ("com.azraelgodking.havensbirthright", "Haven's Birthright", "2.0.3"),
             ("com.azraelgodking.sunhavenmuseumutilitytracker", "S.M.U.T.", "2.2.9"),
-            ("com.azraelgodking.sunhaventodo", "Sunhaven Todo", "1.1.10"),
-            ("com.azraelgodking.thevault", "The Vault", "3.0.7"),
-            ("com.azraelgodking.havensalmanac", "Haven's Almanac", "1.1.2"),
-            ("com.azraelgodking.fasterraces", "Faster Races", "1.1.6"),
+            ("com.azraelgodking.sunhaventodo", "Sunhaven Todo", "1.2.0"),
+            ("com.azraelgodking.thevault", "The Vault", "3.1.0"),
+            ("com.azraelgodking.havensalmanac", "Haven's Almanac", "1.2.0"),
+            ("com.azraelgodking.fasterraces", "Faster Races", "1.2.0"),
         };
 
         private const string PAUSE_ID = "HavenDevTools_Debug";

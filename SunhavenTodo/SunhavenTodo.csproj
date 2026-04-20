@@ -74,12 +74,18 @@
 
   <!-- Shared Utilities (linked files) -->
   <ItemGroup>
+    <Compile Remove="Tests\**\*.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
     <Compile Include="..\SharedUtilities\ConfigFileHelper.cs" Link="Shared\ConfigFileHelper.cs" />
     <Compile Include="..\SharedUtilities\VersionChecker.cs" Link="Shared\VersionChecker.cs" />
     <Compile Include="..\SharedUtilities\SceneRootSurvivor.cs" Link="Shared\SceneRootSurvivor.cs" />
     <Compile Include="..\SharedUtilities\ReflectionHelper.cs" Link="Shared\ReflectionHelper.cs" />
+    <Compile Include="..\SharedUtilities\OvernightHookUtility.cs" Link="Shared\OvernightHookUtility.cs" />
     <Compile Include="..\SharedUtilities\IconCache.cs" Link="Shared\IconCache.cs" />
     <Compile Include="..\SharedUtilities\TextInputFocusGuard.cs" Link="Shared\TextInputFocusGuard.cs" />
+    <Compile Include="..\SharedUtilities\MinimalJsonParser.cs" Link="Shared\MinimalJsonParser.cs" />
   </ItemGroup>
 
   <!-- Copy to BepInEx plugins folder and builds folder after build -->
