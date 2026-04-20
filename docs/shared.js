@@ -245,22 +245,6 @@ document.addEventListener('DOMContentLoaded', function() {
     // 5. DYNAMIC VERSION BADGES (from versions.json)
     // -----------------------------------------------------------------
     (function() {
-        // Map mod-card data-name to versions.json key
-        var nameToKey = {
-            'The Vault': 'com.azraelgodking.thevault',
-            "Haven's Birthright": 'com.azraelgodking.havensbirthright',
-            'Faster Races': 'com.azraelgodking.fasterraces',
-            'Trinket Fortune': 'com.azraelgodking.trinketfortune',
-            'S.M.U.T.': 'com.azraelgodking.sunhavenmuseumutilitytracker',
-            'Sun Haven Todo': 'com.azraelgodking.sunhaventodo',
-            "A Squirrel's Birthday Reminder": 'com.azraelgodking.squirrelsbirthdayreminder',
-            "Senpai's Chest": 'com.azraelgodking.senpaischest',
-            "Haven's Almanac": 'com.azraelgodking.havensalmanac',
-            'HavenDevTools': 'com.azraelgodking.havendevtools',
-            'Crop Optimizer': 'com.azraelgodking.cropoptimizer',
-            "Haven's Respec": 'com.azraelgodking.havensrespec'
-        };
-
         // Determine base path for versions.json
         var scripts = document.querySelectorAll('script[src*="shared.js"]');
         var basePath = '';
@@ -269,9 +253,27 @@ document.addEventListener('DOMContentLoaded', function() {
             basePath = src.replace('shared.js', '');
         }
 
-        fetch(basePath + 'versions.json')
-            .then(function(r) { return r.json(); })
-            .then(function(data) {
+        Promise.all([
+            fetch(basePath + 'mod-matrix.json').then(function(r) { return r.json(); }),
+            fetch(basePath + 'versions.json').then(function(r) { return r.json(); })
+        ])
+            .then(function(responses) {
+                var matrix = responses[0];
+                var data = responses[1];
+                var nameToKey = {};
+                var navToKey = {};
+                matrix.forEach(function(row) {
+                    var key = row.jsonKey;
+                    if (!key) return;
+                    if (row.indexDataName) nameToKey[row.indexDataName] = key;
+                    if (Array.isArray(row.docsCardNames)) {
+                        row.docsCardNames.forEach(function(name) { nameToKey[name] = key; });
+                    }
+                    if (Array.isArray(row.docsNavNames)) {
+                        row.docsNavNames.forEach(function(name) { navToKey[name] = key; });
+                    }
+                });
+
                 // Update index page mod cards
                 var cards = document.querySelectorAll('.mod-card[data-name]');
                 cards.forEach(function(card) {
@@ -295,22 +297,6 @@ document.addEventListener('DOMContentLoaded', function() {
                     // Find which mod this page is for by checking title or nav
                     var navCurrent = document.querySelector('.nav-current');
                     var pageName = navCurrent ? navCurrent.textContent.trim() : '';
-                    // Map nav names to keys
-                    var navToKey = {
-                        'The Vault': 'com.azraelgodking.thevault',
-                        "Haven's Birthright": 'com.azraelgodking.havensbirthright',
-                        'Faster Races': 'com.azraelgodking.fasterraces',
-                        'Trinket Fortune': 'com.azraelgodking.trinketfortune',
-                        'S.M.U.T.': 'com.azraelgodking.sunhavenmuseumutilitytracker',
-                        'Todo List': 'com.azraelgodking.sunhaventodo',
-                        'Sun Haven Todo': 'com.azraelgodking.sunhaventodo',
-                        'Birthday Reminder': 'com.azraelgodking.squirrelsbirthdayreminder',
-                        "Senpai's Chest": 'com.azraelgodking.senpaischest',
-                        "Haven's Almanac": 'com.azraelgodking.havensalmanac',
-                        'HavenDevTools': 'com.azraelgodking.havendevtools',
-                        'Crop Optimizer': 'com.azraelgodking.cropoptimizer',
-                        "Haven's Respec": 'com.azraelgodking.havensrespec'
-                    };
                     var pageKey = navToKey[pageName];
                     if (pageKey && data[pageKey]) {
                         pageBadge.textContent = 'v' + data[pageKey].version;
