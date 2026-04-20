@@ -1,6 +1,6 @@
-{
+﻿{
   "name": "CropOptimizer",
-  "version_number": "1.0.2",
+  "version_number": "1.1.0",
   "website_url": "https://thunderstore.io/c/sun-haven/p/AzraelGodKing/CropOptimizer/",
   "description": "Field-level crop forecast HUD with soft Todo/Birthday/Vault integrations.",
   "dependencies": [

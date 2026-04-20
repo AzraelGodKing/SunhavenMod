@@ -69,6 +69,9 @@ correctness and UX upgrades over the prior implementation.
 
 ### Unreleased
 
+- **Cost preflight accuracy:** affordability checks now use an exact live-node refund estimate (with safe fallback), reducing false "cannot afford" blocks caused by stale point counters.
+- **Reset All hardening:** reset-all now preflights total affordability and executes as a rollback-safe sequence; if any profession reset fails, previously reset professions are automatically undone in reverse order.
+- **Undo depth:** undo now supports multi-level per-profession history (stacked snapshots) instead of only the latest reset.
 - **Release metadata:** `docs/versions.json` includes Nexus mod page `https://www.nexusmods.com/sunhaven/mods/502`, `nexus_file_group_id` **7326839** (Files tab → API / file group id) for CI Nexus uploads, and the Thunderstore URL for `download-nav` on the doc page.
 - **Copy:** Removed named references to a specific legacy skill-reset mod; docs and `RespecCostMode` comments now refer generically to other community mods.
 - **Docs:** [`docs/HavensRespec/HavensRespec.html`](../docs/HavensRespec/HavensRespec.html) now loads [`docs/HavensAlmanac/almanac-style.css`](../docs/HavensAlmanac/almanac-style.css) for the shared book / parchment layout; [`docs/HavensRespec/respec-style.css`](../docs/HavensRespec/respec-style.css) adds copper accents, fixes the configuration table (wrapper vs. `<table>`), and styles compatibility note cards and install steps.

@@ -79,6 +79,8 @@ namespace CropOptimizer
             if (_hud != null)
                 _hud.PlacementChanged -= OnCropHudPlacementChanged;
 
+            _harmony?.UnpatchSelf();
+
             if (_isVaultLoadedEventSubscribed && _vaultLoadedEventInfo != null && _vaultLoadedHandler != null)
             {
                 _vaultLoadedEventInfo.RemoveEventHandler(null, _vaultLoadedHandler);

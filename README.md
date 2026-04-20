@@ -17,8 +17,8 @@ A collection of BepInEx mods for [Sun Haven](https://store.steampowered.com/app/
 | [**Trinket Fortune**](TrinketFortune/) | Increases odds of unowned fishing trinkets dropping as you complete the aquarium | 1.0.5 |
 | [**Faster Races**](FasterRaces/) | Configurable movement speed bonus; integrates with Haven's Birthright to avoid double speed | 1.1.6 |
 | [**Justice for Harold**](JusticeForHarold/) | Quest interaction tweak for Harold's reward flow | 1.0.0 |
-| [**Crop Optimizer**](CropOptimizer/) | Crop forecast HUD with soft Todo/Birthday/Vault integrations | 1.0.2 |
-| [**Haven's Respec**](HavensRespec/) | Safe skill tree respec with confirmation, per-profession Undo, optional cost, hotkeys | 1.0.1 |
+| [**Crop Optimizer**](CropOptimizer/) | Crop forecast HUD with soft Todo/Birthday/Vault integrations | 1.1.0 |
+| [**Haven's Respec**](HavensRespec/) | Safe skill tree respec with confirmation, per-profession Undo, optional cost, hotkeys | 1.1.0 |
 
 ---
 
@@ -124,6 +124,7 @@ SunhavenMod/
 
 ## Documentation site changelog
 
+- **2026-04-20** — **Version verifier: PowerShell parity added (no Python required locally).** Added [`scripts/verify-version-consistency.ps1`](scripts/verify-version-consistency.ps1), a PowerShell equivalent of [`scripts/verify-version-consistency.py`](scripts/verify-version-consistency.py), so local version-consistency checks can run on Windows hosts without Python. Updated [`docs/VERSION_AND_RELEASE.md`](docs/VERSION_AND_RELEASE.md) local-check instructions to include both commands. No version bump.
 - **2026-04-19** — **Haven's Respec: Thunderstore `website_url`.** [`HavensRespec/thunderstore/manifest.json`](HavensRespec/thunderstore/manifest.json) `website_url` set to the [GitHub Pages doc](https://azraelgodking.github.io/SunhavenMod/HavensRespec/HavensRespec.html). No version bump.
 - **2026-04-19** — **Haven's Almanac: Nexus file group id.** [`docs/versions.json`](docs/versions.json) entry `com.azraelgodking.havensalmanac` now has `"nexus_file_group_id": "7326779"` for Release & Publish / Nexus upload steps. No version bump.
 - **2026-04-19** — **Crop Optimizer: Nexus mod id 501.** [`docs/versions.json`](docs/versions.json) `nexus` URL set to [mods/501](https://www.nexusmods.com/sunhaven/mods/501) (replacing `/mods/500`). [`scripts/fetch-stats.js`](scripts/fetch-stats.js) resolves Nexus id from this URL for download stats. No version bump.

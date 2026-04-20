@@ -21,7 +21,7 @@ namespace HavensRespec.Services
     {
         private readonly ManualLogSource _log;
         private readonly Func<bool> _isDebug;
-        private readonly Dictionary<ProfessionType, ResetSnapshot> _undoByProfession = new Dictionary<ProfessionType, ResetSnapshot>();
+        private readonly Dictionary<ProfessionType, Stack<ResetSnapshot>> _undoByProfession = new Dictionary<ProfessionType, Stack<ResetSnapshot>>();
 
         // Reflection cache — Skills has private fields we reach into for a UI refresh after reset.
         private static MethodInfo _updateProfessionMethod;
@@ -36,7 +36,10 @@ namespace HavensRespec.Services
             _isDebug = isDebug;
         }
 
-        public bool HasUndo(ProfessionType profession) => _undoByProfession.ContainsKey(profession);
+        public bool HasUndo(ProfessionType profession)
+        {
+            return _undoByProfession.TryGetValue(profession, out var stack) && stack.Count > 0;
+        }
 
         /// <summary>
         /// Once reset + charge have both succeeded, attach the charged currency metadata to the
@@ -44,18 +47,19 @@ namespace HavensRespec.Services
         /// </summary>
         public void AttachUndoCharge(ProfessionType profession, int chargedCost, RespecCostMode chargedCostMode)
         {
-            if (!_undoByProfession.TryGetValue(profession, out var snapshot))
+            if (!_undoByProfession.TryGetValue(profession, out var stack) || stack.Count == 0)
                 return;
             if (chargedCost <= 0 || chargedCostMode == RespecCostMode.None)
                 return;
 
-            _undoByProfession[profession] = new ResetSnapshot(
+            var snapshot = stack.Pop();
+            stack.Push(new ResetSnapshot(
                 snapshot.Profession,
                 snapshot.Nodes,
                 snapshot.SkillPointsUsed,
                 snapshot.NumActiveNodes,
                 chargedCost,
-                chargedCostMode);
+                chargedCostMode));
         }
 
         /// <summary>
@@ -150,7 +154,7 @@ namespace HavensRespec.Services
 
                 TryRefreshProfessionPanel(skills, profession);
 
-                _undoByProfession[profession] = snapshot;
+                PushUndoSnapshot(profession, snapshot);
 
                 if (nodeSlotsVisited > 0)
                 {
@@ -173,8 +177,9 @@ namespace HavensRespec.Services
         public bool UndoLastReset(Skills skills, ProfessionType profession, out ResetSnapshot restoredSnapshot)
         {
             restoredSnapshot = null;
-            if (!_undoByProfession.TryGetValue(profession, out var snapshot))
+            if (!_undoByProfession.TryGetValue(profession, out var stack) || stack.Count == 0)
                 return false;
+            var snapshot = stack.Pop();
 
             EnsureReflection();
 
@@ -193,7 +198,8 @@ namespace HavensRespec.Services
 
                 TryRefreshProfessionPanel(skills, profession);
 
-                _undoByProfession.Remove(profession);
+                if (stack.Count == 0)
+                    _undoByProfession.Remove(profession);
                 restoredSnapshot = snapshot;
                 _log?.LogInfo($"[Respec] Undo {profession}: restored {snapshot.Nodes.Count} node(s), {snapshot.SkillPointsUsed} point(s) used.");
                 return true;
@@ -219,6 +225,44 @@ namespace HavensRespec.Services
                 _log?.LogDebug($"[Respec] GetAllocatedPoints({profession}) failed: {ex.Message}");
             }
             return 0;
+        }
+
+        public bool TryEstimateExactRefund(Skills skills, ProfessionType profession, out int refundedPoints)
+        {
+            refundedPoints = 0;
+            if (skills == null)
+                return false;
+
+            EnsureReflection();
+
+            try
+            {
+                int slotsVisited = 0;
+                var dict = _professionNodeDictionaryField?.GetValue(skills) as IDictionary;
+                if (dict != null && dict.Contains(profession) && dict[profession] is SkillNode[] nodes)
+                {
+                    foreach (var node in nodes)
+                    {
+                        if (node == null)
+                            continue;
+                        slotsVisited++;
+                        if (node.active)
+                            refundedPoints += Mathf.Max(1, node.NodeAmount);
+                    }
+                }
+
+                if (slotsVisited > 0)
+                    return true;
+
+                refundedPoints = GetAllocatedPoints(profession);
+                return refundedPoints > 0;
+            }
+            catch (Exception ex)
+            {
+                _log?.LogDebug($"[Respec] TryEstimateExactRefund({profession}) fallback: {ex.Message}");
+                refundedPoints = GetAllocatedPoints(profession);
+                return refundedPoints >= 0;
+            }
         }
 
         // ---------------------------------------------------------------- helpers
@@ -386,6 +430,16 @@ namespace HavensRespec.Services
                 BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic);
 
             _reflectionInitialized = true;
+        }
+
+        private void PushUndoSnapshot(ProfessionType profession, ResetSnapshot snapshot)
+        {
+            if (!_undoByProfession.TryGetValue(profession, out var stack))
+            {
+                stack = new Stack<ResetSnapshot>();
+                _undoByProfession[profession] = stack;
+            }
+            stack.Push(snapshot);
         }
     }
 }
