@@ -515,9 +515,10 @@ jobs:
           test -f "$ZIP" || { echo "::error::Missing $ZIP"; exit 1; }
           ls -lh "$ZIP"
 
-      # Nexus v3 API is marked "evaluation only" and intermittently returns 201 with an empty body
-      # (action crashes with: Cannot read properties of undefined (reading 'length') on
-      # part_presigned_urls). Each attempt is continue-on-error so GitHub Release + Thunderstore
+      # Nexus v3 API is marked "evaluation only"; use latest upload-action beta with schema updates.
+      # API can still intermittently return 201 with an empty body (action crashes with:
+      # Cannot read properties of undefined (reading 'length') on part_presigned_urls).
+      # Each attempt is continue-on-error so GitHub Release + Thunderstore
       # publish are not held hostage by a Nexus flake. Backoff: 30s -> 2min -> 5min (~7.5 min worst case).
       - name: Upload to Nexus Mods (attempt 1)
         id: nexus_upload_1
@@ -529,7 +530,7 @@ jobs:
           steps.version_check.outputs.version_unchanged != 'true' &&
           steps.config.outputs.nexus_file_group_id != ''
         continue-on-error: true
-        uses: Nexus-Mods/upload-action@v1.0.0-beta.3
+        uses: Nexus-Mods/upload-action@v1.0.0-beta.4
         with:
           api_key: ${{ secrets.NEXUSMODS_API_KEY }}
           file_group_id: ${{ steps.config.outputs.nexus_file_group_id }}
@@ -572,7 +573,7 @@ jobs:
           steps.version_check.outputs.version_unchanged != 'true' &&
           steps.config.outputs.nexus_file_group_id != ''
         continue-on-error: true
-        uses: Nexus-Mods/upload-action@v1.0.0-beta.3
+        uses: Nexus-Mods/upload-action@v1.0.0-beta.4
         with:
           api_key: ${{ secrets.NEXUSMODS_API_KEY }}
           file_group_id: ${{ steps.config.outputs.nexus_file_group_id }}
@@ -617,7 +618,7 @@ jobs:
           steps.version_check.outputs.version_unchanged != 'true' &&
           steps.config.outputs.nexus_file_group_id != ''
         continue-on-error: true
-        uses: Nexus-Mods/upload-action@v1.0.0-beta.3
+        uses: Nexus-Mods/upload-action@v1.0.0-beta.4
         with:
           api_key: ${{ secrets.NEXUSMODS_API_KEY }}
           file_group_id: ${{ steps.config.outputs.nexus_file_group_id }}
@@ -664,7 +665,7 @@ jobs:
           steps.version_check.outputs.version_unchanged != 'true' &&
           steps.config.outputs.nexus_file_group_id != ''
         continue-on-error: true
-        uses: Nexus-Mods/upload-action@v1.0.0-beta.3
+        uses: Nexus-Mods/upload-action@v1.0.0-beta.4
         with:
           api_key: ${{ secrets.NEXUSMODS_API_KEY }}
           file_group_id: ${{ steps.config.outputs.nexus_file_group_id }}
