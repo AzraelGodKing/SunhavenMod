@@ -43,27 +43,27 @@ on:
           - cropoptimizer
           - havensrespec
       publish_thunderstore:
-        description: 'Publish to Thunderstore? (ignored while dry_run is true)'
+        description: 'Publish to Thunderstore?'
         required: true
         type: boolean
         default: false
       publish_nexus:
-        description: 'Upload to Nexus? (ignored while dry_run is true)'
+        description: 'Upload to Nexus?'
         required: false
         type: boolean
         default: false
       create_github_release:
-        description: 'Create GitHub Release? (ignored while dry_run is true)'
+        description: 'Create GitHub Release?'
         required: true
         type: boolean
         default: false
       test_discord:
-        description: 'Test Discord notification only (ignored while dry_run is true)'
+        description: 'Test Discord notification only'
         required: false
         type: boolean
         default: false
       publish_discord_only:
-        description: 'Discord only (ignored while dry_run is true)'
+        description: 'Discord only'
         required: false
         type: boolean
         default: false
