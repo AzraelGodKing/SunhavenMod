@@ -303,6 +303,17 @@ jobs:
           name: built-${{ matrix.mod }}
           path: builds/${{ steps.config.outputs.mod_dir }}
 
+      - name: Restore upstream version cache
+        if: >-
+          github.event.inputs.publish_discord_only != 'true' &&
+          github.event.inputs.dry_run != 'true'
+        uses: actions/cache/restore@v4
+        with:
+          path: .cache/upstream-version
+          key: upstream-version-${{ github.repository }}-${{ matrix.mod }}-${{ github.run_id }}
+          restore-keys: |
+            upstream-version-${{ github.repository }}-${{ matrix.mod }}-
+
       - name: Check version against last release
         id: version_check
         if: github.event.inputs.publish_discord_only != 'true'
@@ -320,6 +331,10 @@ jobs:
 
           THUNDERSTORE_NAME="${{ steps.config.outputs.thunderstore_name }}"
           CURRENT_VERSION="${{ steps.config.outputs.version }}"
+          NEXUS_URL="${{ steps.config.outputs.nexus_url }}"
+          CACHE_DIR=".cache/upstream-version"
+          CACHE_FILE="$CACHE_DIR/${{ matrix.mod }}.json"
+          CACHE_TTL_SECONDS=21600
 
           if [ "$THUNDERSTORE_NAME" == "TestDiscord" ]; then
             echo "Test mode: skipping version check, proceeding"
@@ -327,34 +342,108 @@ jobs:
             exit 0
           fi
 
-          LAST_RELEASE_JSON=$(curl -sSf -H "Accept: application/vnd.github+json" \
-            -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" \
-            "${{ github.api_url }}/repos/${{ github.repository }}/releases?per_page=100" | \
-            jq -r --arg prefix "${THUNDERSTORE_NAME}-v" '[.[] | select(.tag_name | startswith($prefix))] | sort_by(.published_at) | reverse | .[0] // empty')
+          mkdir -p "$CACHE_DIR"
+          NOW_EPOCH="$(date +%s)"
 
-          if [ -z "$LAST_RELEASE_JSON" ] || [ "$LAST_RELEASE_JSON" == "null" ]; then
-            echo "No previous release found for $THUNDERSTORE_NAME - proceeding"
-            echo "version_unchanged=false" >> "$GITHUB_OUTPUT"
-            exit 0
+          GH_VERSION=""
+          THUNDERSTORE_VERSION=""
+          NEXUS_VERSION=""
+          CACHE_USED=false
+
+          if [ -f "$CACHE_FILE" ]; then
+            CACHE_TS="$(jq -r '.checked_at_epoch // 0' "$CACHE_FILE" 2>/dev/null || echo 0)"
+            if [ $((NOW_EPOCH - CACHE_TS)) -lt $CACHE_TTL_SECONDS ]; then
+              GH_VERSION="$(jq -r '.github_version // ""' "$CACHE_FILE")"
+              THUNDERSTORE_VERSION="$(jq -r '.thunderstore_version // ""' "$CACHE_FILE")"
+              NEXUS_VERSION="$(jq -r '.nexus_version // ""' "$CACHE_FILE")"
+              CACHE_USED=true
+              echo "Using cached upstream versions from $CACHE_FILE"
+            fi
           fi
 
-          LAST_VERSION=$(echo "$LAST_RELEASE_JSON" | jq -r '.tag_name | split("-v")[1]')
-          echo "Last released version: $LAST_VERSION"
+          if [ "$CACHE_USED" != "true" ]; then
+            echo "Cache stale/missing; fetching upstream versions via API"
+
+            LAST_RELEASE_JSON=$(curl -sSf -H "Accept: application/vnd.github+json" \
+              -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" \
+              "${{ github.api_url }}/repos/${{ github.repository }}/releases?per_page=100" | \
+              jq -r --arg prefix "${THUNDERSTORE_NAME}-v" '[.[] | select(.tag_name | startswith($prefix))] | sort_by(.published_at) | reverse | .[0] // empty')
+            if [ -n "$LAST_RELEASE_JSON" ] && [ "$LAST_RELEASE_JSON" != "null" ]; then
+              GH_VERSION="$(echo "$LAST_RELEASE_JSON" | jq -r '.tag_name | split("-v")[1] // empty')"
+            fi
+
+            THUNDERSTORE_API="https://thunderstore.io/c/${{ env.THUNDERSTORE_COMMUNITY }}/api/v1/package/${{ env.THUNDERSTORE_NAMESPACE }}/${THUNDERSTORE_NAME}/"
+            TS_RESPONSE="$(curl -sSf "$THUNDERSTORE_API" || true)"
+            if [ -n "$TS_RESPONSE" ]; then
+              THUNDERSTORE_VERSION="$(echo "$TS_RESPONSE" | jq -r '.versions[0].version_number // empty' 2>/dev/null || true)"
+            fi
+
+            NEXUS_MOD_ID="$(echo "$NEXUS_URL" | sed -n 's|.*/mods/\([0-9][0-9]*\)$|\1|p')"
+            if [ -n "$NEXUS_MOD_ID" ] && [ -n "${{ secrets.NEXUSMODS_API_KEY }}" ]; then
+              NEXUS_RESPONSE="$(curl -sS -H "accept: application/json" -H "apikey: ${{ secrets.NEXUSMODS_API_KEY }}" \
+                "https://api.nexusmods.com/v1/games/sunhaven/mods/${NEXUS_MOD_ID}/files.json" || true)"
+              if [ -n "$NEXUS_RESPONSE" ]; then
+                NEXUS_VERSION="$(echo "$NEXUS_RESPONSE" | jq -r '[.files[]? | select((.version // "") != "")] | sort_by(.uploaded_timestamp // 0) | reverse | .[0].version // empty' 2>/dev/null || true)"
+              fi
+            fi
+
+            jq -n \
+              --argjson checked_at_epoch "$NOW_EPOCH" \
+              --arg github_version "$GH_VERSION" \
+              --arg thunderstore_version "$THUNDERSTORE_VERSION" \
+              --arg nexus_version "$NEXUS_VERSION" \
+              '{checked_at_epoch:$checked_at_epoch, github_version:$github_version, thunderstore_version:$thunderstore_version, nexus_version:$nexus_version}' \
+              > "$CACHE_FILE"
+          fi
+
           echo "Current version:       $CURRENT_VERSION"
+          echo "Latest GitHub:         ${GH_VERSION:-<none>}"
+          echo "Latest Thunderstore:   ${THUNDERSTORE_VERSION:-<none>}"
+          echo "Latest Nexus:          ${NEXUS_VERSION:-<none>}"
 
-          if [ "$LAST_VERSION" == "$CURRENT_VERSION" ]; then
-            echo "version_unchanged=true" >> "$GITHUB_OUTPUT"
-          else
-            echo "Version changed ($LAST_VERSION -> $CURRENT_VERSION) - proceeding"
-            echo "version_unchanged=false" >> "$GITHUB_OUTPUT"
+          MATCH_SOURCES=()
+          if [ -n "$GH_VERSION" ] && [ "$GH_VERSION" == "$CURRENT_VERSION" ]; then
+            MATCH_SOURCES+=("github")
           fi
+          if [ -n "$THUNDERSTORE_VERSION" ] && [ "$THUNDERSTORE_VERSION" == "$CURRENT_VERSION" ]; then
+            MATCH_SOURCES+=("thunderstore")
+          fi
+          if [ -n "$NEXUS_VERSION" ] && [ "$NEXUS_VERSION" == "$CURRENT_VERSION" ]; then
+            MATCH_SOURCES+=("nexus")
+          fi
+
+          if [ "${#MATCH_SOURCES[@]}" -gt 0 ]; then
+            SOURCE_LIST="$(IFS=,; echo "${MATCH_SOURCES[*]}")"
+            echo "version_unchanged=true" >> "$GITHUB_OUTPUT"
+            echo "version_match_sources=$SOURCE_LIST" >> "$GITHUB_OUTPUT"
+            echo "Matching upstream version found on: $SOURCE_LIST"
+          else
+            echo "version_unchanged=false" >> "$GITHUB_OUTPUT"
+            echo "version_match_sources=" >> "$GITHUB_OUTPUT"
+            echo "No upstream version matches current version; proceeding."
+          fi
+
+          echo "upstream_github_version=$GH_VERSION" >> "$GITHUB_OUTPUT"
+          echo "upstream_thunderstore_version=$THUNDERSTORE_VERSION" >> "$GITHUB_OUTPUT"
+          echo "upstream_nexus_version=$NEXUS_VERSION" >> "$GITHUB_OUTPUT"
+          echo "upstream_cache_used=$CACHE_USED" >> "$GITHUB_OUTPUT"
+
+      - name: Save upstream version cache
+        if: >-
+          github.event.inputs.publish_discord_only != 'true' &&
+          github.event.inputs.dry_run != 'true' &&
+          always()
+        uses: actions/cache/save@v4
+        with:
+          path: .cache/upstream-version
+          key: upstream-version-${{ github.repository }}-${{ matrix.mod }}-${{ github.run_id }}
 
       - name: No version change - skipping release
         if: >-
           github.event.inputs.publish_discord_only != 'true' &&
           steps.version_check.outputs.version_unchanged == 'true'
         run: |
-          echo "✅ No Version Change - ${{ steps.config.outputs.display_name }} v${{ steps.config.outputs.version }} already released, skipping"
+          echo "✅ No Version Change - ${{ steps.config.outputs.display_name }} v${{ steps.config.outputs.version }} already present upstream (sources: ${{ steps.version_check.outputs.version_match_sources || 'unknown' }}), skipping"
 
       - name: Package mod for distribution
         if: >-
@@ -804,6 +893,11 @@ jobs:
         if: ${{ always() }}
         env:
           VERSION_UNCHANGED: ${{ steps.version_check.outputs.version_unchanged }}
+          VERSION_MATCH_SOURCES: ${{ steps.version_check.outputs.version_match_sources }}
+          UPSTREAM_GITHUB_VERSION: ${{ steps.version_check.outputs.upstream_github_version }}
+          UPSTREAM_THUNDERSTORE_VERSION: ${{ steps.version_check.outputs.upstream_thunderstore_version }}
+          UPSTREAM_NEXUS_VERSION: ${{ steps.version_check.outputs.upstream_nexus_version }}
+          UPSTREAM_CACHE_USED: ${{ steps.version_check.outputs.upstream_cache_used }}
           GITHUB_RELEASE_OUTCOME: ${{ steps.create_github_release_step.outcome }}
           THUNDERSTORE_OUTCOME: ${{ steps.publish_thunderstore_step.outcome }}
           DISCORD_RELEASE_OUTCOME: ${{ steps.notify_discord_release_step.outcome }}
@@ -836,6 +930,11 @@ jobs:
             echo "- Display name: \`${{ steps.config.outputs.display_name }}\`"
             echo "- Version: \`${{ steps.config.outputs.version }}\`"
             echo "- Version unchanged gate: \`${VERSION_UNCHANGED:-n/a}\`"
+            echo "- Version match sources: \`${VERSION_MATCH_SOURCES:-none}\`"
+            echo "- Upstream latest (GitHub): \`${UPSTREAM_GITHUB_VERSION:-unknown}\`"
+            echo "- Upstream latest (Thunderstore): \`${UPSTREAM_THUNDERSTORE_VERSION:-unknown}\`"
+            echo "- Upstream latest (Nexus): \`${UPSTREAM_NEXUS_VERSION:-unknown}\`"
+            echo "- Upstream cache used: \`${UPSTREAM_CACHE_USED:-false}\`"
             echo "- GitHub Release: \`${GITHUB_RELEASE_OUTCOME:-skipped}\`"
             echo "- Thunderstore publish: \`${THUNDERSTORE_OUTCOME:-skipped}\`"
             echo "- Nexus upload: \`${NEXUS_RESULT}\`"
