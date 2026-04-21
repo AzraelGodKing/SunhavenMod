@@ -61,7 +61,7 @@ namespace SunhavenMods.Shared
                     }
                 }
 
-                if (!defer && IsQuantumConsoleActive())
+                if (!defer && IsQuantumConsoleActive(debugLog))
                     defer = true;
             }
             catch (Exception ex)
@@ -87,7 +87,7 @@ namespace SunhavenMods.Shared
             return go.GetComponent(_tmpInputFieldType) != null;
         }
 
-        private static bool IsQuantumConsoleActive()
+        private static bool IsQuantumConsoleActive(ManualLogSource debugLog)
         {
             try
             {
@@ -116,8 +116,9 @@ namespace SunhavenMods.Shared
                 if (_qcIsActiveField != null && _qcIsActiveField.FieldType == typeof(bool))
                     return (bool)_qcIsActiveField.GetValue(instance);
             }
-            catch
+            catch (Exception ex)
             {
+                debugLog?.LogDebug($"[TextInputFocusGuard] Quantum Console focus check failed: {ex.Message}");
             }
 
             return false;

@@ -21,6 +21,9 @@ namespace SunhavenMods.Shared
         private static ManualLogSource _logger;
         private static readonly Dictionary<string, ModHealthSnapshot> HealthByPluginGuid = new Dictionary<string, ModHealthSnapshot>(StringComparer.OrdinalIgnoreCase);
         private static readonly object HealthLock = new object();
+        private static readonly Dictionary<string, Regex> ModPatternCache = new Dictionary<string, Regex>(StringComparer.Ordinal);
+        private static readonly object ModPatternCacheLock = new object();
+        private static readonly Regex ExtractFieldRegex = new Regex("\"(?<key>[^\"]+)\"\\s*:\\s*(?:\"(?<value>[^\"]*)\"|null)", RegexOptions.Compiled);
 
         /// <summary>
         /// Result of a version check operation.
@@ -201,8 +204,7 @@ namespace SunhavenMods.Shared
 
                         // Simple JSON parsing without external dependencies
                         // Look for the mod's entry in the JSON
-                        var modPattern = $"\"{Regex.Escape(pluginGuid)}\"\\s*:\\s*\\{{([^}}]+)\\}}";
-                        var modMatch = Regex.Match(json, modPattern, RegexOptions.Singleline);
+                        var modMatch = GetModPattern(pluginGuid).Match(json);
 
                         if (!modMatch.Success)
                         {
@@ -261,10 +263,28 @@ namespace SunhavenMods.Shared
 
             private string ExtractJsonString(string json, string key)
             {
-                // Handle both "key": "value" and "key": null
-                var pattern = $"\"{key}\"\\s*:\\s*(?:\"([^\"]*)\"|null)";
-                var match = Regex.Match(json, pattern);
-                return match.Success ? match.Groups[1].Value : null;
+                var match = ExtractFieldRegex.Match(json);
+                while (match.Success)
+                {
+                    if (string.Equals(match.Groups["key"].Value, key, StringComparison.Ordinal))
+                        return match.Groups["value"].Value;
+                    match = match.NextMatch();
+                }
+                return null;
+            }
+        }
+
+        private static Regex GetModPattern(string pluginGuid)
+        {
+            lock (ModPatternCacheLock)
+            {
+                if (!ModPatternCache.TryGetValue(pluginGuid, out var regex))
+                {
+                    regex = new Regex($"\"{Regex.Escape(pluginGuid)}\"\\s*:\\s*\\{{([^}}]+)\\}}", RegexOptions.Singleline | RegexOptions.Compiled);
+                    ModPatternCache[pluginGuid] = regex;
+                }
+
+                return regex;
             }
         }
     }
