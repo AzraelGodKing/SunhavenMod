@@ -240,9 +240,9 @@ namespace TheVault.Vault
                         return json;
                     }
                 }
-                catch
+                catch (Exception ex)
                 {
-                    // Try next method
+                    Plugin.Log?.LogDebug($"[VaultSave] Legacy decryption attempt failed: {ex.Message}");
                 }
             }
 
@@ -258,8 +258,9 @@ namespace TheVault.Vault
             {
                 return SystemInfo.deviceUniqueIdentifier;
             }
-            catch
+            catch (Exception ex)
             {
+                Plugin.Log?.LogDebug($"[VaultSave] Could not resolve machine id for legacy decryption fallback: {ex.Message}");
                 return "unknown";
             }
         }
@@ -296,8 +297,9 @@ namespace TheVault.Vault
                     }
                 }
             }
-            catch
+            catch (Exception ex)
             {
+                Plugin.Log?.LogDebug($"[VaultSave] DecryptWithKey failed: {ex.Message}");
                 return null;
             }
         }
