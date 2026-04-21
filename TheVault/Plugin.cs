@@ -714,7 +714,7 @@ namespace TheVault
 
                 if (original == null)
                 {
-                    Log.LogWarning($"Could not find method {targetType.Name}.{methodName}");
+                    Log.LogWarning($"Could not find method {targetType.Name}.{methodName}. Available methods: {DescribeAvailableMethods(targetType)}");
                     return;
                 }
 
@@ -744,7 +744,7 @@ namespace TheVault
 
                 if (original == null)
                 {
-                    Log.LogWarning($"Could not find method {targetType.Name}.{methodName}");
+                    Log.LogWarning($"Could not find method {targetType.Name}.{methodName}. Available methods: {DescribeAvailableMethods(targetType)}");
                     return;
                 }
 
@@ -1045,6 +1045,31 @@ namespace TheVault
             else
             {
                 Log.LogWarning("Could not find Inventory.RemoveItem method");
+            }
+        }
+
+        private static string DescribeAvailableMethods(Type targetType)
+        {
+            if (targetType == null)
+                return "<no target type>";
+
+            try
+            {
+                var methods = targetType
+                    .GetMethods(System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.Static)
+                    .Select(m =>
+                    {
+                        string paramSig = string.Join(", ", m.GetParameters().Select(p => p.ParameterType.Name));
+                        return $"{m.Name}({paramSig})";
+                    })
+                    .Distinct()
+                    .OrderBy(s => s);
+
+                return string.Join("; ", methods);
+            }
+            catch (Exception ex)
+            {
+                return $"<failed to enumerate methods: {ex.Message}>";
             }
         }
 
