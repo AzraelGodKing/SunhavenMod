@@ -310,7 +310,6 @@ namespace BirthdayReminder
             }
 
             EnsureUIComponentsExist();
-            TryHookOvernightEvent();
         }
 
         /// <summary>

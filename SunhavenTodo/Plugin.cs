@@ -279,7 +279,6 @@ namespace SunhavenTodo
             }
 
             EnsureUIComponentsExist();
-            TryHookOvernight();
         }
 
         public static void EnsureUIComponentsExist()
@@ -382,7 +381,6 @@ namespace SunhavenTodo
             _isDataLoaded = true;
             _loadedCharacterName = characterName;
             Log.LogInfo($"Loaded todo list for character: {characterName}");
-            _overnightHooked = false;
             TryHookOvernight();
         }
 
