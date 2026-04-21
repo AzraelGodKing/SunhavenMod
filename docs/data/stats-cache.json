@@ -1,5 +1,5 @@
 {
-  "lastFetched": "2026-04-21T11:06:31.435Z",
+  "lastFetched": "2026-04-21T13:26:43.504Z",
   "mods": {
     "senpais-chest": {
       "name": "Senpai's Chest",
@@ -25,17 +25,17 @@
         }
       },
       "nexus": {
-        "total_downloads": 399,
-        "unique_downloads": 292
+        "total_downloads": 400,
+        "unique_downloads": 293
       },
-      "combined_total": 746
+      "combined_total": 747
     },
     "havens-birthright": {
       "name": "Haven's Birthright",
       "thunderstore": {
-        "total_downloads": 313,
+        "total_downloads": 314,
         "versions": {
-          "2.0.3": 2,
+          "2.0.3": 3,
           "2.0.0": 35,
           "1.4.3": 15,
           "1.4.1": 45,
@@ -51,10 +51,10 @@
         }
       },
       "nexus": {
-        "total_downloads": 828,
-        "unique_downloads": 542
+        "total_downloads": 829,
+        "unique_downloads": 543
       },
-      "combined_total": 1141
+      "combined_total": 1143
     },
     "museum-utility-tracker": {
       "name": "S.M.U.T.",
@@ -95,10 +95,10 @@
         }
       },
       "nexus": {
-        "total_downloads": 469,
-        "unique_downloads": 374
+        "total_downloads": 472,
+        "unique_downloads": 376
       },
-      "combined_total": 718
+      "combined_total": 721
     },
     "havens-todo": {
       "name": "Sun Haven Todo",
@@ -143,10 +143,10 @@
         }
       },
       "nexus": {
-        "total_downloads": 959,
-        "unique_downloads": 669
+        "total_downloads": 960,
+        "unique_downloads": 670
       },
-      "combined_total": 1169
+      "combined_total": 1170
     },
     "haven-dev-tools": {
       "name": "HavenDevTools",
@@ -186,26 +186,26 @@
         }
       },
       "nexus": {
-        "total_downloads": 7,
-        "unique_downloads": 7
+        "total_downloads": 8,
+        "unique_downloads": 8
       },
-      "combined_total": 196
+      "combined_total": 197
     },
     "faster-races": {
       "name": "Faster Races",
       "thunderstore": {
-        "total_downloads": 60,
+        "total_downloads": 61,
         "versions": {
-          "1.2.0": 0,
+          "1.2.0": 1,
           "1.1.6": 0,
           "1.0.0": 60
         }
       },
       "nexus": {
-        "total_downloads": 111,
-        "unique_downloads": 73
+        "total_downloads": 112,
+        "unique_downloads": 74
       },
-      "combined_total": 171
+      "combined_total": 173
     },
     "trinket-fortune": {
       "name": "Trinket Fortune",
@@ -256,9 +256,9 @@
     }
   },
   "site_total": {
-    "thunderstore": 2160,
-    "nexus_total": 3938,
-    "nexus_unique": 2887,
-    "grand_total": 6098
+    "thunderstore": 2162,
+    "nexus_total": 3946,
+    "nexus_unique": 2894,
+    "grand_total": 6108
   }
 }
