@@ -867,10 +867,8 @@ jobs:
   # --------------------------------------------------------------------
   notify_discord:
     if: >-
-      ${{
-        github.event_name == 'release' &&
-        !startsWith(github.event.release.tag_name, 'HavensAlmanac-')
-      }}
+      github.event_name == 'release' &&
+      !startsWith(github.event.release.tag_name, 'HavensAlmanac-')
     runs-on: ubuntu-latest
     steps:
       - name: Set mod icon URL
