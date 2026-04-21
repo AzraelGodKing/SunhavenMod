@@ -787,6 +787,13 @@ namespace SenpaisChest
                 return false;
 
             float now = Time.realtimeSinceStartup;
+            CleanupDiscardSuppressionMap(now);
+
+            return _sceneDiscardSuppressByHandle.TryGetValue(scene.handle, out var until) && now < until;
+        }
+
+        private static void CleanupDiscardSuppressionMap(float now)
+        {
             int[] expired = null;
             int expiredCount = 0;
 
@@ -801,8 +808,6 @@ namespace SenpaisChest
 
             for (int i = 0; i < expiredCount; i++)
                 _sceneDiscardSuppressByHandle.Remove(expired[i]);
-
-            return _sceneDiscardSuppressByHandle.TryGetValue(scene.handle, out var until) && now < until;
         }
 
         /// <summary>
@@ -812,6 +817,7 @@ namespace SenpaisChest
         {
             if (!previous.IsValid())
                 return;
+            CleanupDiscardSuppressionMap(Time.realtimeSinceStartup);
             _sceneDiscardSuppressByHandle[previous.handle] = Time.realtimeSinceStartup + SceneDiscardSuppressSeconds;
         }
 
@@ -859,6 +865,7 @@ namespace SenpaisChest
         private void Update()
         {
             Plugin.ProcessPendingChestButton();
+            CleanupDiscardSuppressionMap(Time.realtimeSinceStartup);
 
             var config = Plugin.GetConfig();
 
