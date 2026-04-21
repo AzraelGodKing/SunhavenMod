@@ -1,5 +1,5 @@
 {
-  "lastFetched": "2026-04-21T05:27:03.702Z",
+  "lastFetched": "2026-04-21T07:50:30.701Z",
   "mods": {
     "senpais-chest": {
       "name": "Senpai's Chest",
@@ -127,11 +127,11 @@
     "the-vault": {
       "name": "The Vault",
       "thunderstore": {
-        "total_downloads": 209,
+        "total_downloads": 210,
         "versions": {
           "3.1.0": 0,
           "3.0.7": 2,
-          "3.0.4": 33,
+          "3.0.4": 34,
           "3.0.2": 12,
           "3.0.1": 9,
           "2.0.8": 48,
@@ -143,8 +143,8 @@
         }
       },
       "nexus": {
-        "total_downloads": 960,
-        "unique_downloads": 670
+        "total_downloads": 959,
+        "unique_downloads": 669
       },
       "combined_total": 1169
     },
@@ -210,18 +210,18 @@
     "trinket-fortune": {
       "name": "Trinket Fortune",
       "thunderstore": {
-        "total_downloads": 97,
+        "total_downloads": 99,
         "versions": {
-          "1.0.5": 0,
-          "1.0.3": 16,
+          "1.0.5": 1,
+          "1.0.3": 17,
           "1.0.0": 81
         }
       },
       "nexus": {
-        "total_downloads": 135,
-        "unique_downloads": 110
+        "total_downloads": 134,
+        "unique_downloads": 109
       },
-      "combined_total": 232
+      "combined_total": 233
     },
     "crop-optimizer": {
       "name": "Crop Optimizer",
@@ -256,9 +256,9 @@
     }
   },
   "site_total": {
-    "thunderstore": 2156,
-    "nexus_total": 3935,
-    "nexus_unique": 2885,
-    "grand_total": 6091
+    "thunderstore": 2159,
+    "nexus_total": 3933,
+    "nexus_unique": 2883,
+    "grand_total": 6092
   }
 }
