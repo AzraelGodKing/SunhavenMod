@@ -419,17 +419,23 @@ namespace SunhavenMods.Shared
                     if (_iconCache.Count > MaxCacheSize)
                     {
                         int evictId = -1;
+                        int fallbackEvictId = -1;
                         using (var enumerator = _iconCache.Keys.GetEnumerator())
                         {
                             while (enumerator.MoveNext())
                             {
                                 int candidate = enumerator.Current;
+                                if (fallbackEvictId < 0)
+                                    fallbackEvictId = candidate;
                                 if (_loadingItems.Contains(candidate) || _failedItems.Contains(candidate))
                                     continue;
                                 evictId = candidate;
                                 break;
                             }
                         }
+
+                        if (evictId < 0)
+                            evictId = fallbackEvictId;
 
                         if (evictId >= 0 && _iconCache.TryGetValue(evictId, out Texture2D evictedTexture))
                         {
