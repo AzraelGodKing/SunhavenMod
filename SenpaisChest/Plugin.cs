@@ -865,7 +865,6 @@ namespace SenpaisChest
         private void Update()
         {
             Plugin.ProcessPendingChestButton();
-            CleanupDiscardSuppressionMap(Time.realtimeSinceStartup);
 
             var config = Plugin.GetConfig();
 
