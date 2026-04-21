@@ -15,13 +15,21 @@ namespace HavensBirthright
         private static string _cachedSeason;
         private static bool _cachedIsDaytime = true;
         private static bool _cachedIsInMine;
+        private static bool _cachedIsSpring;
+        private static bool _cachedIsSummer;
+        private static bool _cachedIsWinter;
         private static float _cachedQuickLearnerBonus;
         private static bool _cacheValid;
+        private static string _lastSceneName;
+        private static bool _lastIsInMine;
 
         public static float CachedHPRatio => _cachedHPRatio;
         public static string CachedSeason => _cachedSeason;
         public static bool CachedIsDaytime => _cachedIsDaytime;
         public static bool CachedIsInMine => _cachedIsInMine;
+        public static bool CachedIsSpring => _cachedIsSpring;
+        public static bool CachedIsSummer => _cachedIsSummer;
+        public static bool CachedIsWinter => _cachedIsWinter;
         public static float CachedQuickLearnerBonus => _cachedQuickLearnerBonus;
         public static bool IsCacheValid => _cacheValid;
 
@@ -32,7 +40,12 @@ namespace HavensBirthright
             _cachedSeason = null;
             _cachedIsDaytime = true;
             _cachedIsInMine = false;
+            _cachedIsSpring = false;
+            _cachedIsSummer = false;
+            _cachedIsWinter = false;
             _cachedQuickLearnerBonus = 0f;
+            _lastSceneName = null;
+            _lastIsInMine = false;
         }
 
         public static void Update(Race race, Type dayCycleType)
@@ -66,6 +79,9 @@ namespace HavensBirthright
                             season = ReflectionHelper.GetInstanceValue(dayCycleInstance, "CurrentSeason");
 
                         _cachedSeason = season?.ToString();
+                        _cachedIsSpring = _cachedSeason != null && _cachedSeason.IndexOf("Spring", StringComparison.OrdinalIgnoreCase) >= 0;
+                        _cachedIsSummer = _cachedSeason != null && _cachedSeason.IndexOf("Summer", StringComparison.OrdinalIgnoreCase) >= 0;
+                        _cachedIsWinter = _cachedSeason != null && _cachedSeason.IndexOf("Winter", StringComparison.OrdinalIgnoreCase) >= 0;
                     }
                 }
 
@@ -100,10 +116,14 @@ namespace HavensBirthright
 
         private static bool ComputeIsInMine()
         {
-            string scene = SceneHelpers.GetCurrentSceneName().ToLowerInvariant();
-            return scene.Contains("mine") || scene.Contains("dungeon") ||
-                   scene.Contains("cave") || scene.Contains("underground") ||
-                   scene.Contains("nelvari") || scene.Contains("withergate");
+            string scene = SceneHelpers.GetCurrentSceneName();
+            if (scene == _lastSceneName) return _lastIsInMine;
+            _lastSceneName = scene;
+            string lower = scene.ToLowerInvariant();
+            _lastIsInMine = lower.Contains("mine") || lower.Contains("dungeon") ||
+                            lower.Contains("cave") || lower.Contains("underground") ||
+                            lower.Contains("nelvari") || lower.Contains("withergate");
+            return _lastIsInMine;
         }
 
         private static float CalculateQuickLearnerBonus(Player player)

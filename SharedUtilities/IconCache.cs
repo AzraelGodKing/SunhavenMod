@@ -16,6 +16,7 @@ namespace SunhavenMods.Shared
     public static class IconCache
     {
         private static readonly Dictionary<int, Texture2D> _iconCache = new Dictionary<int, Texture2D>();
+        private const int MaxCacheSize = 200;
         private static readonly HashSet<int> _loadingItems = new HashSet<int>();
         private static readonly HashSet<int> _failedItems = new HashSet<int>();
         private static readonly Dictionary<string, int> _currencyToItemId = new Dictionary<string, int>();
@@ -415,6 +416,28 @@ namespace SunhavenMods.Shared
                 if (texture != null)
                 {
                     _iconCache[itemId] = texture;
+                    if (_iconCache.Count > MaxCacheSize)
+                    {
+                        int evictId = -1;
+                        using (var enumerator = _iconCache.Keys.GetEnumerator())
+                        {
+                            while (enumerator.MoveNext())
+                            {
+                                int candidate = enumerator.Current;
+                                if (_loadingItems.Contains(candidate) || _failedItems.Contains(candidate))
+                                    continue;
+                                evictId = candidate;
+                                break;
+                            }
+                        }
+
+                        if (evictId >= 0 && _iconCache.TryGetValue(evictId, out Texture2D evictedTexture))
+                        {
+                            if (evictedTexture != null)
+                                UnityEngine.Object.Destroy(evictedTexture);
+                            _iconCache.Remove(evictId);
+                        }
+                    }
                 }
                 else
                 {

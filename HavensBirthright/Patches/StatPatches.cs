@@ -403,9 +403,7 @@ namespace HavensBirthright.Patches
                     {
                         if (stat == StatType.FishingSkill)
                         {
-                            string season = StatFrameCache.CachedSeason;
-                            bool isWinter = season != null &&
-                                            season.IndexOf("Winter", StringComparison.OrdinalIgnoreCase) >= 0;
+                            bool isWinter = StatFrameCache.CachedIsWinter;
                             if (isWinter)
                             {
                                 float multiplier = AbilityConfig.SerpentGraceFishingMultiplier.Value;
@@ -589,12 +587,11 @@ namespace HavensBirthright.Patches
             }
 
             // === SEASON SYNERGIES ===
-            string season = StatFrameCache.CachedSeason;
-            if (season != null)
+            if (StatFrameCache.CachedSeason != null)
             {
                 // Elf - Spring Awakening: farming bonus in Spring
                 if (race == Race.Elf &&
-                    season.IndexOf("Spring", StringComparison.OrdinalIgnoreCase) >= 0)
+                    StatFrameCache.CachedIsSpring)
                 {
                     if (stat == StatType.FarmingSkill || stat == StatType.ExtraCropChance ||
                         stat == StatType.ExtraForageableChance)
@@ -605,7 +602,7 @@ namespace HavensBirthright.Patches
 
                 // Fire Elemental - Summer's Fury: combat bonus in Summer
                 if (race == Race.FireElemental &&
-                    season.IndexOf("Summer", StringComparison.OrdinalIgnoreCase) >= 0)
+                    StatFrameCache.CachedIsSummer)
                 {
                     if (stat == StatType.AttackDamage || stat == StatType.SpellDamage ||
                         stat == StatType.AttackSpeed || stat == StatType.Crit)
@@ -616,7 +613,7 @@ namespace HavensBirthright.Patches
 
                 // Water Elemental - Winter's Embrace: defense/regen bonus in Winter
                 if (race == Race.WaterElemental &&
-                    season.IndexOf("Winter", StringComparison.OrdinalIgnoreCase) >= 0)
+                    StatFrameCache.CachedIsWinter)
                 {
                     if (stat == StatType.Defense || stat == StatType.HealthRegen ||
                         stat == StatType.ManaRegen)
