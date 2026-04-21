@@ -16,6 +16,7 @@ namespace TheVault.Patches
         private static string _pendingCharacterName = null;
         private static string _lastCharacterSourceLog = null;
         private static string _lastCharacterNameLog = null;
+        private static readonly object _contextLoadLock = new object();
 
         /// <summary>
         /// Returns true if a vault is currently loaded.
@@ -49,23 +50,26 @@ namespace TheVault.Patches
 
                 Plugin.Log?.LogInfo($"Player initialized: {characterName}");
 
-                // If vault already loaded for this character, skip
-                if (_isVaultLoaded && _loadedCharacterName == characterName)
+                lock (_contextLoadLock)
                 {
-                    Plugin.Log?.LogInfo($"Vault already loaded for {characterName}");
-                    return;
-                }
+                    // If vault already loaded for this character, skip
+                    if (_isVaultLoaded && _loadedCharacterName == characterName)
+                    {
+                        Plugin.Log?.LogInfo($"Vault already loaded for {characterName}");
+                        return;
+                    }
 
-                // If vault loaded for different character, save it first
-                if (_isVaultLoaded && _loadedCharacterName != characterName)
-                {
-                    Plugin.Log?.LogInfo($"Switching from {_loadedCharacterName} to {characterName}");
-                    Plugin.SaveVault();
-                    ResetState();
-                }
+                    // If vault loaded for different character, save it first
+                    if (_isVaultLoaded && _loadedCharacterName != characterName)
+                    {
+                        Plugin.Log?.LogInfo($"Switching from {_loadedCharacterName} to {characterName}");
+                        Plugin.SaveVault();
+                        ResetState();
+                    }
 
-                // Load vault for this character
-                LoadVaultForCharacter(characterName);
+                    // Load vault for this character
+                    LoadVaultForCharacter(characterName);
+                }
             }
             catch (Exception ex)
             {
@@ -265,19 +269,22 @@ namespace TheVault.Patches
                 if (string.IsNullOrEmpty(candidate) || string.Equals(candidate, "default", StringComparison.OrdinalIgnoreCase))
                     return;
 
-                if (_isVaultLoaded && string.Equals(_loadedCharacterName, candidate, StringComparison.Ordinal))
-                    return;
-
-                Plugin.Log?.LogInfo($"[CharacterSync] Aligning vault context to '{candidate}' (currently '{_loadedCharacterName ?? "none"}')");
-                Plugin.EnsureUIComponentsExist();
-
-                if (_isVaultLoaded && !string.Equals(_loadedCharacterName, candidate, StringComparison.Ordinal))
+                lock (_contextLoadLock)
                 {
-                    Plugin.SaveVault();
-                    ResetState();
-                }
+                    if (_isVaultLoaded && string.Equals(_loadedCharacterName, candidate, StringComparison.Ordinal))
+                        return;
 
-                LoadVaultForCharacter(candidate);
+                    Plugin.Log?.LogInfo($"[CharacterSync] Aligning vault context to '{candidate}' (currently '{_loadedCharacterName ?? "none"}')");
+                    Plugin.EnsureUIComponentsExist();
+
+                    if (_isVaultLoaded && !string.Equals(_loadedCharacterName, candidate, StringComparison.Ordinal))
+                    {
+                        Plugin.SaveVault();
+                        ResetState();
+                    }
+
+                    LoadVaultForCharacter(candidate);
+                }
             }
             catch (Exception ex)
             {

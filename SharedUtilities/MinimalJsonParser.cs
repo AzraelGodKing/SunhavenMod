@@ -120,6 +120,19 @@ namespace SunhavenMods.Shared
                         case 't': sb.Append('\t'); break;
                         case 'b': sb.Append('\b'); break;
                         case 'f': sb.Append('\f'); break;
+                        case 'u':
+                            if (pos + 4 < json.Length)
+                            {
+                                string hex = json.Substring(pos + 1, 4);
+                                if (ushort.TryParse(hex, NumberStyles.HexNumber, CultureInfo.InvariantCulture, out ushort codeUnit))
+                                {
+                                    sb.Append((char)codeUnit);
+                                    pos += 4;
+                                    break;
+                                }
+                            }
+                            sb.Append('u');
+                            break;
                         default: sb.Append(json[pos]); break;
                     }
                     pos++;

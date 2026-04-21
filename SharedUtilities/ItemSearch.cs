@@ -19,11 +19,6 @@ namespace SunhavenMods.Shared
         private static object _dbInstance;
         private static FieldInfo _dictField;
 
-        // Reusable buffers for SearchItems to avoid per-call allocations (cleared and refilled each call)
-        private static readonly List<KeyValuePair<int, string>> _bufferExact = new List<KeyValuePair<int, string>>();
-        private static readonly List<KeyValuePair<int, string>> _bufferStartsWith = new List<KeyValuePair<int, string>>();
-        private static readonly List<KeyValuePair<int, string>> _bufferContains = new List<KeyValuePair<int, string>>();
-
         /// <summary>
         /// Format item for display: "Item Name (#Item ID)"
         /// </summary>
@@ -51,9 +46,9 @@ namespace SunhavenMods.Shared
                 string queryLower = query.Trim().ToLowerInvariant();
                 bool isNumeric = int.TryParse(query.Trim(), out int queryId);
 
-                _bufferExact.Clear();
-                _bufferStartsWith.Clear();
-                _bufferContains.Clear();
+                var bufferExact = new List<KeyValuePair<int, string>>();
+                var bufferStartsWith = new List<KeyValuePair<int, string>>();
+                var bufferContains = new List<KeyValuePair<int, string>>();
 
                 foreach (var kvp in dict)
                 {
@@ -66,25 +61,25 @@ namespace SunhavenMods.Shared
 
                     if (isNumeric && id == queryId)
                     {
-                        _bufferExact.Add(entry);
+                        bufferExact.Add(entry);
                         continue;
                     }
                     if (nameLower == queryLower)
-                        _bufferExact.Add(entry);
+                        bufferExact.Add(entry);
                     else if (nameLower.StartsWith(queryLower))
-                        _bufferStartsWith.Add(entry);
+                        bufferStartsWith.Add(entry);
                     else if (nameLower.Contains(queryLower))
-                        _bufferContains.Add(entry);
+                        bufferContains.Add(entry);
                     else if (isNumeric && id.ToString().Contains(query.Trim()))
-                        _bufferContains.Add(entry);
+                        bufferContains.Add(entry);
                 }
 
-                _bufferStartsWith.Sort((a, b) => string.Compare(a.Value, b.Value, StringComparison.OrdinalIgnoreCase));
-                _bufferContains.Sort((a, b) => string.Compare(a.Value, b.Value, StringComparison.OrdinalIgnoreCase));
+                bufferStartsWith.Sort((a, b) => string.Compare(a.Value, b.Value, StringComparison.OrdinalIgnoreCase));
+                bufferContains.Sort((a, b) => string.Compare(a.Value, b.Value, StringComparison.OrdinalIgnoreCase));
 
-                results.AddRange(_bufferExact);
-                results.AddRange(_bufferStartsWith);
-                results.AddRange(_bufferContains);
+                results.AddRange(bufferExact);
+                results.AddRange(bufferStartsWith);
+                results.AddRange(bufferContains);
 
                 if (results.Count > maxResults)
                     results.RemoveRange(maxResults, results.Count - maxResults);

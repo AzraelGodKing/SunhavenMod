@@ -120,6 +120,12 @@ namespace TheVault.Vault
         /// </summary>
         public bool Load(string playerName)
         {
+            if (!IsValidPlayerName(playerName))
+            {
+                Plugin.Log?.LogWarning("[VaultSave] Load skipped: player name was null/empty/invalid.");
+                return false;
+            }
+
             try
             {
                 _currentSaveFile = GetSaveFilePath(playerName);
@@ -234,9 +240,9 @@ namespace TheVault.Vault
                         return json;
                     }
                 }
-                catch
+                catch (Exception ex)
                 {
-                    // Try next method
+                    Plugin.Log?.LogDebug($"[VaultSave] Legacy decryption attempt failed: {ex.Message}");
                 }
             }
 
@@ -252,8 +258,9 @@ namespace TheVault.Vault
             {
                 return SystemInfo.deviceUniqueIdentifier;
             }
-            catch
+            catch (Exception ex)
             {
+                Plugin.Log?.LogDebug($"[VaultSave] Could not resolve machine id for legacy decryption fallback: {ex.Message}");
                 return "unknown";
             }
         }
@@ -290,8 +297,9 @@ namespace TheVault.Vault
                     }
                 }
             }
-            catch
+            catch (Exception ex)
             {
+                Plugin.Log?.LogDebug($"[VaultSave] DecryptWithKey failed: {ex.Message}");
                 return null;
             }
         }
@@ -310,6 +318,11 @@ namespace TheVault.Vault
             try
             {
                 var data = _vaultManager.GetVaultData();
+                if (!IsValidPlayerName(data?.PlayerName))
+                {
+                    Plugin.Log?.LogWarning("[VaultSave] Save skipped: current vault player name was null/empty/invalid.");
+                    return false;
+                }
                 var wrapper = VaultDataWrapper.FromVaultData(data);
                 string json = JsonUtility.ToJson(wrapper, true);
 
@@ -390,6 +403,12 @@ namespace TheVault.Vault
         /// </summary>
         public bool DeleteSave(string playerName)
         {
+            if (!IsValidPlayerName(playerName))
+            {
+                Plugin.Log?.LogWarning("[VaultSave] DeleteSave skipped: player name was null/empty/invalid.");
+                return false;
+            }
+
             try
             {
                 string saveFile = GetSaveFilePath(playerName);
@@ -496,6 +515,13 @@ namespace TheVault.Vault
         }
 
         #region Encryption
+
+        private static bool IsValidPlayerName(string playerName)
+        {
+            if (string.IsNullOrWhiteSpace(playerName))
+                return false;
+            return !string.Equals(playerName.Trim(), "null", StringComparison.OrdinalIgnoreCase);
+        }
 
         /// <summary>
         /// Attempt to get the Steam ID from Steamworks.
