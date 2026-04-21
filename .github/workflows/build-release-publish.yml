@@ -685,49 +685,6 @@ jobs:
             If Nexus displays an alphanumeric file label, the upload is still a ZIP package.
           file_category: main
 
-      - name: Nexus upload summary
-        if: >-
-          always() &&
-          github.event.inputs.dry_run != 'true' &&
-          github.event.inputs.publish_discord_only != 'true' &&
-          github.event.inputs.publish_nexus == 'true' &&
-          github.event.inputs.test_discord != 'true' &&
-          steps.version_check.outputs.version_unchanged != 'true' &&
-          steps.config.outputs.nexus_file_group_id != ''
-        env:
-          NEXUS_OUTCOME_1: ${{ steps.nexus_upload_1.outcome }}
-          NEXUS_OUTCOME_2: ${{ steps.nexus_upload_2.outcome }}
-          NEXUS_OUTCOME_3: ${{ steps.nexus_upload_3.outcome }}
-          NEXUS_OUTCOME_4: ${{ steps.nexus_upload_4.outcome }}
-        run: |
-          WHICH=""
-          for i in 1 2 3 4; do
-            VAR="NEXUS_OUTCOME_$i"
-            OUT="${!VAR:-skipped}"
-            if [ "$OUT" = "success" ]; then
-              WHICH="$i"
-              break
-            fi
-          done
-
-          {
-            echo "## Nexus upload — ${{ steps.config.outputs.display_name }} v${{ steps.config.outputs.version }}"
-            echo ""
-            if [ -n "$WHICH" ]; then
-              echo "✅ Uploaded on attempt ${WHICH}/4."
-            else
-              echo "⚠️ All 4 Nexus upload attempts failed."
-              echo ""
-              echo "Nexus v3 API is marked \`evaluation only\` and intermittently returns 201 OK with an empty body (\`part_presigned_urls\` undefined), which makes \`Nexus-Mods/upload-action\` throw \`Cannot read properties of undefined (reading 'length')\`. This is a Nexus-side issue — the rest of this release (GitHub Release + Thunderstore + Discord) completed normally."
-              echo ""
-              echo "**To retry Nexus only:**"
-              echo "1. Bump the patch version in \`docs/versions.json\` and rebuild (local \`scripts/pre-push-build.ps1\`), OR upload the zip manually via the Nexus Mods website → Files tab."
-              echo "2. If bumping, re-run **Release & Publish** with \`publish_nexus=true\`, \`publish_thunderstore=false\`, \`create_github_release=false\`."
-              echo ""
-              echo "Release zip available as a workflow artifact: \`dist/${{ steps.config.outputs.thunderstore_name }}-${{ steps.config.outputs.version }}.zip\`"
-            fi
-          } >> "$GITHUB_STEP_SUMMARY"
-
       - name: Notify Discord (release created by workflow)
         id: notify_discord_release_step
         if: >-
@@ -882,9 +839,17 @@ jobs:
             echo "- GitHub Release: \`${GITHUB_RELEASE_OUTCOME:-skipped}\`"
             echo "- Thunderstore publish: \`${THUNDERSTORE_OUTCOME:-skipped}\`"
             echo "- Nexus upload: \`${NEXUS_RESULT}\`"
+            echo "- Nexus attempts: \`1=${NEXUS_OUTCOME_1:-skipped}\`, \`2=${NEXUS_OUTCOME_2:-skipped}\`, \`3=${NEXUS_OUTCOME_3:-skipped}\`, \`4=${NEXUS_OUTCOME_4:-skipped}\`"
             echo "- Discord notify (release): \`${DISCORD_RELEASE_OUTCOME:-skipped}\`"
             echo "- Discord notify (test): \`${DISCORD_TEST_OUTCOME:-skipped}\`"
             echo "- Discord-only publish: \`${DISCORD_ONLY_OUTCOME:-skipped}\`"
+            if [ "$NEXUS_RESULT" = "failed" ]; then
+              echo ""
+              echo "### Nexus retry guidance"
+              echo "- Nexus v3 is evaluation-only and can return empty multipart payloads."
+              echo "- Retry Nexus-only with \`publish_nexus=true\`, \`publish_thunderstore=false\`, \`create_github_release=false\`."
+              echo "- Fallback: upload \`dist/${{ steps.config.outputs.thunderstore_name }}-${{ steps.config.outputs.version }}.zip\` manually in Nexus Files tab."
+            fi
           } >> "$GITHUB_STEP_SUMMARY"
   # --------------------------------------------------------------------
   # NOTIFY DISCORD — When a release is published (triggered by release event)
