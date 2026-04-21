@@ -2,7 +2,8 @@
 # Release pipeline — Self-hosted Linux runner (labels: self-hosted, Linux, X64, sunhaven)
 # =============================================================================
 # Builds, packages, and can publish to GitHub/Thunderstore/Nexus/Discord.
-# Use dry_run when you want a validation run without publishing.
+# Use dry_run for build+package artifact validation without publishing.
+# Use build_only for build artifact output only (no package/release/publish).
 #
 # Version / release: docs/VERSION_AND_RELEASE.md — verify step runs before matrix setup.
 # =============================================================================
@@ -15,6 +16,11 @@ on:
       dry_run:
         description: 'Dry run (build + package + artifact only; no GitHub/Thunderstore/Nexus/Discord)'
         required: true
+        type: boolean
+        default: false
+      build_only:
+        description: 'Build only (compile + DLL artifact upload only; skip package/release/publish)'
+        required: false
         type: boolean
         default: false
       mod:
@@ -102,12 +108,16 @@ jobs:
         mod: ${{ fromJson(needs.setup.outputs.matrix) }}
     steps:
       - name: Runner self-check
-        if: github.event.inputs.dry_run == 'true'
+        if: github.event.inputs.dry_run == 'true' || github.event.inputs.build_only == 'true'
         shell: bash
         run: |
           echo "runner.name=${{ runner.name }}"
           echo "runner.os=${{ runner.os }}"
-          echo "Dry run is ON — external publish steps will be skipped in the release job."
+          if [ "${{ github.event.inputs.build_only }}" == "true" ]; then
+            echo "Build-only mode is ON — release job will be skipped."
+          elif [ "${{ github.event.inputs.dry_run }}" == "true" ]; then
+            echo "Dry run is ON — external publish steps will be skipped in the release job."
+          fi
 
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -195,6 +205,7 @@ jobs:
           if-no-files-found: error
 
   release:
+    if: github.event.inputs.build_only != 'true'
     needs:
       - setup
       - build
