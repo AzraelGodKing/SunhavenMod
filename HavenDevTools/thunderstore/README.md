@@ -1,6 +1,6 @@
 # HavenDevTools
 
-**Version 1.0.11** — Developer utilities for mod debugging and game state inspection in Sun Haven. Not intended for typical players; may impact performance.
+**Version 1.1.0** — Developer utilities for mod debugging and game state inspection in Sun Haven. Not intended for typical players; may impact performance.
 
 **1.0.8:** Config file now uses `BepInEx/config/HavenDevTools.cfg` (auto-migrates values from the legacy GUID-named config on first load).
 
