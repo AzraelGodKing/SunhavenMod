@@ -11,6 +11,7 @@
 name: Release & Publish
 
 on:
+  pull_request:
   workflow_dispatch:
     inputs:
       dry_run:
@@ -88,7 +89,10 @@ jobs:
       - name: Set mod matrix
         id: set-matrix
         run: |
-          if [ "${{ github.event.inputs.test_discord }}" == "true" ]; then
+          if [ "${{ github.event_name }}" == "pull_request" ]; then
+            echo "PR build gate: building all mods."
+            echo "matrix=$(jq -c '[.[].modKey]' scripts/mod-matrix.json)" >> "$GITHUB_OUTPUT"
+          elif [ "${{ github.event.inputs.test_discord }}" == "true" ]; then
             echo 'matrix=["test_discord"]' >> "$GITHUB_OUTPUT"
           else
             MOD_KEY="${{ github.event.inputs.mod }}"
@@ -205,7 +209,7 @@ jobs:
           if-no-files-found: error
 
   release:
-    if: github.event.inputs.build_only != 'true'
+    if: github.event_name == 'workflow_dispatch' && github.event.inputs.build_only != 'true'
     needs:
       - setup
       - build
