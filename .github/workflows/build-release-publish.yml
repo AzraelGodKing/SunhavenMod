@@ -764,6 +764,7 @@ jobs:
           PREFLIGHT: ${{ steps.nexus_preflight.outcome }}
         run: |
           set -euo pipefail
+          mkdir -p reports
           NEXUS_RESULT="not-requested"
           for i in 1 2 3 4; do
             VAR="NEXUS_OUTCOME_$i"
@@ -790,7 +791,79 @@ jobs:
               echo "- v3 API can flake; use \`release_anyway\` to bypass the version gate if needed."
               echo "- Manual fallback: Nexus site → Files, or re-run with \`publish_nexus=true\` only."
             fi
+          } | tee "reports/${{ matrix.mod }}.md" >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Upload report for combined summary
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: release-report-${{ matrix.mod }}
+          path: reports/${{ matrix.mod }}.md
+          if-no-files-found: warn
+
+  # ---------------------------------------------------------------------------
+  # Combined report — single human-readable summary (open this job first)
+  # ---------------------------------------------------------------------------
+  release_aggregate_report:
+    name: Combined release report
+    needs: release
+    if: >-
+      always() &&
+      needs.release.result != 'skipped'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Download per-mod reports
+        id: dl
+        continue-on-error: true
+        uses: actions/download-artifact@v4
+        with:
+          pattern: release-report-*
+          path: aggregated-reports
+          merge-multiple: true
+
+      - name: Write combined summary
+        run: |
+          set -euo pipefail
+          {
+            echo "# Combined release report"
+            echo ""
+            echo "Workflow run: [\`${{ github.run_id }}\`](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}) · ref \`${{ github.ref_name }}\` · event \`${{ github.event_name }}\`"
+            echo ""
+            echo "Open this **Combined release report** job at the top of the run for all mods in one place. Individual matrix jobs still include the same section under their own summary."
+            echo ""
           } >> "$GITHUB_STEP_SUMMARY"
+
+          ROOT="aggregated-reports"
+          mapfile -t FILES < <(find "$ROOT" -type f -name '*.md' 2>/dev/null | sort)
+          if [ ! -d "$ROOT" ] || [ "${#FILES[@]}" -eq 0 ]; then
+            {
+              echo "## No report files"
+              echo ""
+              echo "No \`release-report-*\` artifacts were found (for example every \`release\` matrix job failed before the report step, or artifacts expired)."
+              echo ""
+              echo "**Release job result:** \`${{ needs.release.result }}\`"
+            } >> "$GITHUB_STEP_SUMMARY"
+            exit 0
+          fi
+
+          {
+            echo "## Mods in this report (${#FILES[@]})"
+            echo ""
+            for f in "${FILES[@]}"; do
+              base="$(basename "$f" .md)"
+              echo "- \`${base}\`"
+            done
+            echo ""
+          } >> "$GITHUB_STEP_SUMMARY"
+
+          for f in "${FILES[@]}"; do
+            {
+              echo "---"
+              echo ""
+              cat "$f"
+              echo ""
+            } >> "$GITHUB_STEP_SUMMARY"
+          done
 
   # ---------------------------------------------------------------------------
   # Discord — published GitHub Release (no checkout; tag → mod dir map)
