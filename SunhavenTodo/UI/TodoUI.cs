@@ -125,6 +125,9 @@ namespace SunhavenTodo.UI
         // Cached inline styles (to avoid GC allocations every frame)
         private GUIStyle _footerStyle;
         private GUIStyle _completedTitleStyle;
+        private GUIStyle _wrappedActiveTitleStyle;
+        private GUIStyle _wrappedCompletedTitleStyle;
+        private GUIStyle _rowStyle;
         private Dictionary<TodoPriority, GUIStyle> _priorityStyleCache;
         private Dictionary<TodoCategory, GUIStyle> _categoryStyleCache;
 
@@ -470,19 +473,12 @@ namespace SunhavenTodo.UI
         private void DrawTodoItem(TodoItem item, int index)
         {
             var bgTex = item.IsCompleted ? _itemCompleted : (index % 2 == 0 ? _itemEven : _itemOdd);
-            var itemStyle = item.IsCompleted ? _itemCompletedStyle : _itemStyle;
             var titleText = string.IsNullOrWhiteSpace(item.Title) ? "(No title)" : item.Title;
             if (item.IsRecurring)
                 titleText = $"[{GetRecurIcon(item.RecurInterval)}] {titleText}";
 
             // Wrap long titles and grow row height dynamically instead of clipping.
-            var titleBaseStyle = item.IsCompleted ? _completedTitleStyle : _labelBoldStyle;
-            var wrappedTitleStyle = new GUIStyle(titleBaseStyle)
-            {
-                wordWrap = true,
-                clipping = TextClipping.Overflow,
-                alignment = TextAnchor.UpperLeft
-            };
+            var wrappedTitleStyle = item.IsCompleted ? _wrappedCompletedTitleStyle : _wrappedActiveTitleStyle;
 
             float controlsWidth = Scaled(20 + 4 + 20 + 45 + 4 + 22 + 2 + 22 + 4); // checkbox, spaces, priority, category, edit, delete button
             if (item.IconItemId > 0)
@@ -494,13 +490,9 @@ namespace SunhavenTodo.UI
             float rowHeight = Mathf.Max(ItemHeight, titleHeight + Scaled(10));
 
             // Use a row style with background so the row stays in layout flow (avoids BeginArea + ScrollView coordinate bug that made titles appear blank)
-            var rowStyle = new GUIStyle(itemStyle)
-            {
-                normal = { background = bgTex },
-                padding = new RectOffset(8, 8, 4, 4)
-            };
+            _rowStyle.normal.background = bgTex;
 
-            GUILayout.BeginHorizontal(rowStyle, GUILayout.MinHeight(rowHeight));
+            GUILayout.BeginHorizontal(_rowStyle, GUILayout.MinHeight(rowHeight));
             // Checkbox
             var isCompleted = GUILayout.Toggle(item.IsCompleted, "", GUILayout.Width(20));
             if (isCompleted != item.IsCompleted)
@@ -836,6 +828,7 @@ namespace SunhavenTodo.UI
 
         private void CreateTextures()
         {
+            DestroyTextures();
             _windowBackground = MakeParchmentTexture(32, 128, _parchment, _parchmentLight, _borderDark, 4);
             _headerBackground = MakeGradientTex(8, 32, _parchmentDark, _parchment);
             _buttonNormal = MakeRoundedRect(8, 8, _parchmentDark, _borderDark, 2);
@@ -850,6 +843,24 @@ namespace SunhavenTodo.UI
             _goldLine = MakeGradientTex(64, 3, _goldBright, _goldRich);
             _progressBg = MakeTex(1, 1, new Color(_woodDark.r, _woodDark.g, _woodDark.b, 0.4f));
             _progressFill = MakeGradientTex(8, 8, _goldBright, _goldRich);
+        }
+
+        private void DestroyTextures()
+        {
+            if (_windowBackground != null) Destroy(_windowBackground);
+            if (_headerBackground != null) Destroy(_headerBackground);
+            if (_buttonNormal != null) Destroy(_buttonNormal);
+            if (_buttonHover != null) Destroy(_buttonHover);
+            if (_buttonActive != null) Destroy(_buttonActive);
+            if (_itemEven != null) Destroy(_itemEven);
+            if (_itemOdd != null) Destroy(_itemOdd);
+            if (_itemCompleted != null) Destroy(_itemCompleted);
+            if (_tabNormal != null) Destroy(_tabNormal);
+            if (_tabActive != null) Destroy(_tabActive);
+            if (_textFieldBg != null) Destroy(_textFieldBg);
+            if (_goldLine != null) Destroy(_goldLine);
+            if (_progressBg != null) Destroy(_progressBg);
+            if (_progressFill != null) Destroy(_progressFill);
         }
 
         private void CreateStyles()
@@ -981,6 +992,25 @@ namespace SunhavenTodo.UI
             {
                 normal = { textColor = new Color(0.5f, 0.5f, 0.5f) },
                 fontStyle = FontStyle.Italic
+            };
+
+            _wrappedActiveTitleStyle = new GUIStyle(_labelBoldStyle)
+            {
+                wordWrap = true,
+                clipping = TextClipping.Overflow,
+                alignment = TextAnchor.UpperLeft
+            };
+
+            _wrappedCompletedTitleStyle = new GUIStyle(_completedTitleStyle)
+            {
+                wordWrap = true,
+                clipping = TextClipping.Overflow,
+                alignment = TextAnchor.UpperLeft
+            };
+
+            _rowStyle = new GUIStyle(_itemStyle)
+            {
+                padding = new RectOffset(8, 8, 4, 4)
             };
 
             // Cache priority styles
