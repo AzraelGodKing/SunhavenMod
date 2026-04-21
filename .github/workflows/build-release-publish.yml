@@ -67,6 +67,11 @@ on:
         required: false
         type: boolean
         default: false
+      ignore_discord_notify:
+        description: 'Skip all Discord notifications for this workflow_dispatch run'
+        required: false
+        type: boolean
+        default: false
 
 env:
   THUNDERSTORE_NAMESPACE: "AzraelGodKing"
@@ -715,6 +720,7 @@ jobs:
         if: >-
           github.event.inputs.dry_run != 'true' &&
           github.event.inputs.publish_discord_only != 'true' &&
+          github.event.inputs.ignore_discord_notify != 'true' &&
           github.event.inputs.create_github_release == 'true' &&
           github.event.inputs.test_discord != 'true' &&
           steps.version_check.outputs.version_unchanged != 'true' &&
@@ -788,6 +794,7 @@ jobs:
         if: >-
           github.event.inputs.dry_run != 'true' &&
           github.event.inputs.publish_discord_only != 'true' &&
+          github.event.inputs.ignore_discord_notify != 'true' &&
           github.event.inputs.test_discord == 'true'
         uses: AzraelGodKing/Discord_Release@main
         with:
@@ -801,6 +808,7 @@ jobs:
         if: >-
           github.event.inputs.dry_run != 'true' &&
           github.event.inputs.publish_discord_only == 'true' &&
+          github.event.inputs.ignore_discord_notify != 'true' &&
           github.event.inputs.test_discord != 'true' &&
           steps.config.outputs.skip_discord_for_almanac != 'true'
         uses: AzraelGodKing/Discord_Release@main
