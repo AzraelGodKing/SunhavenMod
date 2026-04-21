@@ -6,18 +6,18 @@ A collection of BepInEx mods for [Sun Haven](https://store.steampowered.com/app/
 
 | Mod | Description | Version |
 |-----|-------------|---------|
-| [**Senpai's Chest**](SenpaisChest/) | Smart chests with configurable item rules for automatic storage sorting | 2.3.0 |
-| [**Sunhaven Todo**](SunhavenTodo/) | In-game todo list and journal with per-character saves | 1.2.0 |
-| [**Sun Haven Museum Utility Tracker**](SunHavenMuseumUtilityTracker/) | Track museum donations across all sections | 2.2.9 |
-| [**The Vault**](TheVault/) | Full rework of the vault system; classic core, single project; shop and inventory vault hooks | 3.1.0 |
-| [**Haven's Birthright**](HavensBirthright/) | Unique racial bonuses and traits for each playable race; optional `[BonusTransfers]` cross-race passive grants (off by default) | 2.0.3 |
-| [**Haven's Almanac**](HavensAlmanac/) | Mod compatibility registry and info hub | 1.2.0 |
-| [**A Squirrel's Birthday Reminder**](BirthdayReminder/) | Reminds you of villagers' birthdays | 1.2.0 |
-| [**Haven Dev Tools**](HavenDevTools/) | Developer utilities and debugging tools | 1.0.11 |
-| [**Trinket Fortune**](TrinketFortune/) | Increases odds of unowned fishing trinkets dropping as you complete the aquarium | 1.0.5 |
-| [**Faster Races**](FasterRaces/) | Configurable movement speed bonus; integrates with Haven's Birthright to avoid double speed | 1.2.0 |
-| [**Crop Optimizer**](CropOptimizer/) | Crop forecast HUD with soft Todo/Birthday/Vault integrations | 1.2.0 |
-| [**Haven's Respec**](HavensRespec/) | Safe skill tree respec with confirmation, per-profession Undo, optional cost, hotkeys | 1.1.0 |
+| [**Senpai's Chest**](SenpaisChest/) | Smart chests with configurable item rules for automatic storage sorting | 2.4.0 |
+| [**Sunhaven Todo**](SunhavenTodo/) | In-game todo list and journal with per-character saves | 1.3.0 |
+| [**Sun Haven Museum Utility Tracker**](SunHavenMuseumUtilityTracker/) | Track museum donations across all sections | 2.3.0 |
+| [**The Vault**](TheVault/) | Full rework of the vault system; classic core, single project; shop and inventory vault hooks | 3.2.0 |
+| [**Haven's Birthright**](HavensBirthright/) | Unique racial bonuses and traits for each playable race; optional `[BonusTransfers]` cross-race passive grants (off by default) | 2.1.0 |
+| [**Haven's Almanac**](HavensAlmanac/) | Mod compatibility registry and info hub | 1.3.0 |
+| [**A Squirrel's Birthday Reminder**](BirthdayReminder/) | Reminds you of villagers' birthdays | 1.3.0 |
+| [**Haven Dev Tools**](HavenDevTools/) | Developer utilities and debugging tools | 1.1.0 |
+| [**Trinket Fortune**](TrinketFortune/) | Increases odds of unowned fishing trinkets dropping as you complete the aquarium | 1.1.0 |
+| [**Faster Races**](FasterRaces/) | Configurable movement speed bonus; integrates with Haven's Birthright to avoid double speed | 1.3.0 |
+| [**Crop Optimizer**](CropOptimizer/) | Crop forecast HUD with soft Todo/Birthday/Vault integrations | 1.3.0 |
+| [**Haven's Respec**](HavensRespec/) | Safe skill tree respec with confirmation, per-profession Undo, optional cost, hotkeys | 1.2.0 |
 
 ---
 
@@ -119,6 +119,7 @@ SunhavenMod/
 
 ## Documentation site changelog
 
+- **2026-04-21** - **HavenDevTools mod roster sync for version checker.** Added missing `_knownMods` tuples in [`HavenDevTools/UI/DebugWindow.cs`](HavenDevTools/UI/DebugWindow.cs) for `Trinket Fortune`, `Crop Optimizer`, and `Haven's Respec` so `pre-push-build.ps1` no longer warns that those GUIDs are missing from the debug window roster. No version bump.
 - **2026-04-21** - **Overnight hook dedupe for day-start callbacks.** [`SharedUtilities/OvernightHookUtility.cs`](SharedUtilities/OvernightHookUtility.cs) now uses idempotent event attachment (`-=` before `+=`) for overnight callbacks so repeated hook attempts do not stack duplicate handlers. Removed scene-load rehook calls in [`SunhavenTodo/Plugin.cs`](SunhavenTodo/Plugin.cs), [`BirthdayReminder/Plugin.cs`](BirthdayReminder/Plugin.cs), and [`HavensAlmanac/Plugin.cs`](HavensAlmanac/Plugin.cs); player-init rehook paths remain. No version bump.
 - **2026-04-21** - **PR merge gate: mandatory build-only check.** [`.github/workflows/build-release-publish.yml`](.github/workflows/build-release-publish.yml) now runs on `pull_request` in build-only mode (all mods), while release/publish steps remain `workflow_dispatch`-only. Mark this workflow as a required status check in branch protection to block merges until build passes. No version bump.
 - **2026-04-21** - **Release workflow: `build_only` dispatch input.** [`.github/workflows/build-release-publish.yml`](.github/workflows/build-release-publish.yml) adds a `build_only` boolean so maintainers can run compile + DLL artifact upload without entering package/release/publish steps. Existing `dry_run` behavior remains available for package artifact validation. No version bump.

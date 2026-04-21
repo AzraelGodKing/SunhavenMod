@@ -4,6 +4,6 @@ namespace SunhavenTodo
     {
         public const string PLUGIN_GUID = "com.azraelgodking.sunhaventodo";
         public const string PLUGIN_NAME = "Sunhaven Todo";
-        public const string PLUGIN_VERSION = "1.2.0";
+        public const string PLUGIN_VERSION = "1.3.0";
     }
 }
