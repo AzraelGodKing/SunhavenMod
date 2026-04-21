@@ -57,6 +57,11 @@ on:
         required: true
         type: boolean
         default: false
+      release_anyway:
+        description: 'Ignore same-version gate and continue packaging/publish steps'
+        required: false
+        type: boolean
+        default: false
       test_discord:
         description: 'Test Discord notification only'
         required: false
@@ -304,6 +309,11 @@ jobs:
         run: |
           if [ "${{ github.event.inputs.dry_run }}" == "true" ]; then
             echo "Dry run: skipping GitHub API version comparison"
+            echo "version_unchanged=false" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+          if [ "${{ github.event.inputs.release_anyway }}" == "true" ]; then
+            echo "release_anyway=true: bypassing same-version gate"
             echo "version_unchanged=false" >> "$GITHUB_OUTPUT"
             exit 0
           fi
