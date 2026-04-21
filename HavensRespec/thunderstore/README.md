@@ -1,6 +1,6 @@
 # Haven's Respec
 
-**Version 1.1.0**
+**Version 1.2.0**
 
 Respec your Sun Haven skill trees safely. Adds a styled **Reset** button to every skill tab,
 with an optional confirmation dialog, a one-step **Undo** (per profession, session-only),

@@ -1,4 +1,4 @@
-[B]Haven's Respec[/B]
+[b][size=5]Haven's Respec[/size][/b] [i](v1.2.0)[/i]
 
 Respec your Sun Haven skill trees safely. A styled Reset button on every skill tab, with confirmation, undo, configurable cost, and full BepInEx Configuration Manager support.
 
