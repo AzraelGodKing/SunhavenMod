@@ -1327,6 +1327,7 @@ namespace SenpaisChest.UI
 
         private void CreateTextures()
         {
+            DestroyTextures();
             _solidBg = MakeTex(4, 4, _bgDark);
             _windowBg = MakeBorderedTex(16, 16, _bgDark, _borderGold, 2);
             _ruleBg = MakeTex(1, 1, _ruleBoxColor);
@@ -1369,6 +1370,51 @@ namespace SenpaisChest.UI
             _configCloseBtnHoverTex = MakeRoundedRect(8, 8, _woodLight, _woodMedium, 1);
             _configWindowBg = MakeBorderedTex(64, 64, _parchmentLight, _goldRich, 5);
             _configInnerBorderTex = MakeTex(1, 1, _innerBorderCrimson);
+        }
+
+        private void DestroyTextures()
+        {
+            if (_solidBg != null) Destroy(_solidBg);
+            if (_windowBg != null) Destroy(_windowBg);
+            if (_ruleBg != null) Destroy(_ruleBg);
+            if (_btnInactiveTex != null) Destroy(_btnInactiveTex);
+            if (_btnHoverTex != null) Destroy(_btnHoverTex);
+            if (_btnActiveTex != null) Destroy(_btnActiveTex);
+            if (_btnActiveHoverTex != null) Destroy(_btnActiveHoverTex);
+            if (_redBtnTex != null) Destroy(_redBtnTex);
+            if (_redBtnHoverTex != null) Destroy(_redBtnHoverTex);
+            if (_greenBtnTex != null) Destroy(_greenBtnTex);
+            if (_greenBtnHoverTex != null) Destroy(_greenBtnHoverTex);
+            if (_closeBtnTex != null) Destroy(_closeBtnTex);
+            if (_closeBtnHoverTex != null) Destroy(_closeBtnHoverTex);
+            if (_fieldBgTex != null) Destroy(_fieldBgTex);
+            if (_chestParchmentBg != null) Destroy(_chestParchmentBg);
+            if (_chestWoodBorderTex != null) Destroy(_chestWoodBorderTex);
+            if (_chestRuleBoxTex != null) Destroy(_chestRuleBoxTex);
+            if (_chestSelectorTex != null) Destroy(_chestSelectorTex);
+            if (_chestSelectorHoverTex != null) Destroy(_chestSelectorHoverTex);
+            if (_chestSelectorActiveTex != null) Destroy(_chestSelectorActiveTex);
+            if (_chestAddBtnTex != null) Destroy(_chestAddBtnTex);
+            if (_chestAddBtnHoverTex != null) Destroy(_chestAddBtnHoverTex);
+            if (_chestWoodBtnTex != null) Destroy(_chestWoodBtnTex);
+            if (_chestWoodBtnHoverTex != null) Destroy(_chestWoodBtnHoverTex);
+            if (_chestDangerBtnTex != null) Destroy(_chestDangerBtnTex);
+            if (_chestDangerBtnHoverTex != null) Destroy(_chestDangerBtnHoverTex);
+            if (_chestFieldBgTex != null) Destroy(_chestFieldBgTex);
+            if (_chestGoldLineTex != null) Destroy(_chestGoldLineTex);
+            if (_noteBannerBg != null) Destroy(_noteBannerBg);
+            if (_noteBannerBorderTex != null) Destroy(_noteBannerBorderTex);
+            if (_configTitleBarTex != null) Destroy(_configTitleBarTex);
+            if (_configContentBg != null) Destroy(_configContentBg);
+            if (_configGoldSeparatorTex != null) Destroy(_configGoldSeparatorTex);
+            if (_configSectionHeaderTex != null) Destroy(_configSectionHeaderTex);
+            if (_configSearchFieldTex != null) Destroy(_configSearchFieldTex);
+            if (_configRemoveBtnTex != null) Destroy(_configRemoveBtnTex);
+            if (_configRemoveBtnHoverTex != null) Destroy(_configRemoveBtnHoverTex);
+            if (_configCloseBtnTex != null) Destroy(_configCloseBtnTex);
+            if (_configCloseBtnHoverTex != null) Destroy(_configCloseBtnHoverTex);
+            if (_configWindowBg != null) Destroy(_configWindowBg);
+            if (_configInnerBorderTex != null) Destroy(_configInnerBorderTex);
         }
 
         private void CreateStyles()
@@ -1798,47 +1844,7 @@ namespace SenpaisChest.UI
 
         private void OnDestroy()
         {
-            if (_solidBg != null) Destroy(_solidBg);
-            if (_windowBg != null) Destroy(_windowBg);
-            if (_ruleBg != null) Destroy(_ruleBg);
-            if (_btnInactiveTex != null) Destroy(_btnInactiveTex);
-            if (_btnHoverTex != null) Destroy(_btnHoverTex);
-            if (_btnActiveTex != null) Destroy(_btnActiveTex);
-            if (_btnActiveHoverTex != null) Destroy(_btnActiveHoverTex);
-            if (_redBtnTex != null) Destroy(_redBtnTex);
-            if (_redBtnHoverTex != null) Destroy(_redBtnHoverTex);
-            if (_greenBtnTex != null) Destroy(_greenBtnTex);
-            if (_greenBtnHoverTex != null) Destroy(_greenBtnHoverTex);
-            if (_closeBtnTex != null) Destroy(_closeBtnTex);
-            if (_closeBtnHoverTex != null) Destroy(_closeBtnHoverTex);
-            if (_fieldBgTex != null) Destroy(_fieldBgTex);
-            if (_chestParchmentBg != null) Destroy(_chestParchmentBg);
-            if (_chestWoodBorderTex != null) Destroy(_chestWoodBorderTex);
-            if (_chestRuleBoxTex != null) Destroy(_chestRuleBoxTex);
-            if (_chestSelectorTex != null) Destroy(_chestSelectorTex);
-            if (_chestSelectorHoverTex != null) Destroy(_chestSelectorHoverTex);
-            if (_chestSelectorActiveTex != null) Destroy(_chestSelectorActiveTex);
-            if (_chestAddBtnTex != null) Destroy(_chestAddBtnTex);
-            if (_chestAddBtnHoverTex != null) Destroy(_chestAddBtnHoverTex);
-            if (_chestWoodBtnTex != null) Destroy(_chestWoodBtnTex);
-            if (_chestWoodBtnHoverTex != null) Destroy(_chestWoodBtnHoverTex);
-            if (_chestDangerBtnTex != null) Destroy(_chestDangerBtnTex);
-            if (_chestDangerBtnHoverTex != null) Destroy(_chestDangerBtnHoverTex);
-            if (_chestFieldBgTex != null) Destroy(_chestFieldBgTex);
-            if (_chestGoldLineTex != null) Destroy(_chestGoldLineTex);
-            if (_noteBannerBg != null) Destroy(_noteBannerBg);
-            if (_noteBannerBorderTex != null) Destroy(_noteBannerBorderTex);
-            if (_configTitleBarTex != null) Destroy(_configTitleBarTex);
-            if (_configContentBg != null) Destroy(_configContentBg);
-            if (_configGoldSeparatorTex != null) Destroy(_configGoldSeparatorTex);
-            if (_configSectionHeaderTex != null) Destroy(_configSectionHeaderTex);
-            if (_configSearchFieldTex != null) Destroy(_configSearchFieldTex);
-            if (_configRemoveBtnTex != null) Destroy(_configRemoveBtnTex);
-            if (_configRemoveBtnHoverTex != null) Destroy(_configRemoveBtnHoverTex);
-            if (_configCloseBtnTex != null) Destroy(_configCloseBtnTex);
-            if (_configCloseBtnHoverTex != null) Destroy(_configCloseBtnHoverTex);
-            if (_configWindowBg != null) Destroy(_configWindowBg);
-            if (_configInnerBorderTex != null) Destroy(_configInnerBorderTex);
+            DestroyTextures();
         }
 
         private void Awake()

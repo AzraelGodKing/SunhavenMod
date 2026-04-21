@@ -1043,75 +1043,84 @@ namespace TheVault.Patches
 
         private static void AddCurrencyToVault(VaultManager vaultManager, string currencyId, int amount)
         {
-            if (currencyId.StartsWith(VaultCurrencyIds.PrefixSeasonal))
+            if (TryStripPrefix(currencyId, VaultCurrencyIds.PrefixSeasonal, out string suffix))
             {
-                string typeName = currencyId.Substring(VaultCurrencyIds.PrefixSeasonal.Length);
-                if (Enum.TryParse<SeasonalTokenType>(typeName, out var tokenType))
+                if (Enum.TryParse<SeasonalTokenType>(suffix, out var tokenType))
                 {
                     vaultManager.AddSeasonalTokens(tokenType, amount);
                 }
             }
-            else if (currencyId.StartsWith(VaultCurrencyIds.PrefixCommunity))
+            else if (TryStripPrefix(currencyId, VaultCurrencyIds.PrefixCommunity, out suffix))
             {
-                vaultManager.AddCommunityTokens(currencyId.Substring(VaultCurrencyIds.PrefixCommunity.Length), amount);
+                vaultManager.AddCommunityTokens(suffix, amount);
             }
-            else if (currencyId.StartsWith(VaultCurrencyIds.PrefixSpecial))
+            else if (TryStripPrefix(currencyId, VaultCurrencyIds.PrefixSpecial, out suffix))
             {
-                vaultManager.AddSpecial(currencyId.Substring(VaultCurrencyIds.PrefixSpecial.Length), amount);
+                vaultManager.AddSpecial(suffix, amount);
             }
-            else if (currencyId.StartsWith(VaultCurrencyIds.PrefixKey))
+            else if (TryStripPrefix(currencyId, VaultCurrencyIds.PrefixKey, out suffix))
             {
-                vaultManager.AddKeys(currencyId.Substring(VaultCurrencyIds.PrefixKey.Length), amount);
+                vaultManager.AddKeys(suffix, amount);
             }
-            else if (currencyId.StartsWith(VaultCurrencyIds.PrefixTicket))
+            else if (TryStripPrefix(currencyId, VaultCurrencyIds.PrefixTicket, out suffix))
             {
-                vaultManager.AddTickets(currencyId.Substring(VaultCurrencyIds.PrefixTicket.Length), amount);
+                vaultManager.AddTickets(suffix, amount);
             }
-            else if (currencyId.StartsWith(VaultCurrencyIds.PrefixOrb))
+            else if (TryStripPrefix(currencyId, VaultCurrencyIds.PrefixOrb, out suffix))
             {
-                vaultManager.AddOrbs(currencyId.Substring(VaultCurrencyIds.PrefixOrb.Length), amount);
+                vaultManager.AddOrbs(suffix, amount);
             }
-            else if (currencyId.StartsWith(VaultCurrencyIds.PrefixCustom))
+            else if (TryStripPrefix(currencyId, VaultCurrencyIds.PrefixCustom, out suffix))
             {
-                vaultManager.AddCustomCurrency(currencyId.Substring(VaultCurrencyIds.PrefixCustom.Length), amount);
+                vaultManager.AddCustomCurrency(suffix, amount);
             }
         }
 
         private static bool RemoveCurrencyFromVault(VaultManager vaultManager, string currencyId, int amount)
         {
-            if (currencyId.StartsWith(VaultCurrencyIds.PrefixSeasonal))
+            if (TryStripPrefix(currencyId, VaultCurrencyIds.PrefixSeasonal, out string suffix))
             {
-                string typeName = currencyId.Substring(VaultCurrencyIds.PrefixSeasonal.Length);
-                if (Enum.TryParse<SeasonalTokenType>(typeName, out var tokenType))
+                if (Enum.TryParse<SeasonalTokenType>(suffix, out var tokenType))
                 {
                     return vaultManager.RemoveSeasonalTokens(tokenType, amount);
                 }
             }
-            else if (currencyId.StartsWith(VaultCurrencyIds.PrefixCommunity))
+            else if (TryStripPrefix(currencyId, VaultCurrencyIds.PrefixCommunity, out suffix))
             {
-                return vaultManager.RemoveCommunityTokens(currencyId.Substring(VaultCurrencyIds.PrefixCommunity.Length), amount);
+                return vaultManager.RemoveCommunityTokens(suffix, amount);
             }
-            else if (currencyId.StartsWith(VaultCurrencyIds.PrefixSpecial))
+            else if (TryStripPrefix(currencyId, VaultCurrencyIds.PrefixSpecial, out suffix))
             {
-                return vaultManager.RemoveSpecial(currencyId.Substring(VaultCurrencyIds.PrefixSpecial.Length), amount);
+                return vaultManager.RemoveSpecial(suffix, amount);
             }
-            else if (currencyId.StartsWith(VaultCurrencyIds.PrefixKey))
+            else if (TryStripPrefix(currencyId, VaultCurrencyIds.PrefixKey, out suffix))
             {
-                return vaultManager.RemoveKeys(currencyId.Substring(VaultCurrencyIds.PrefixKey.Length), amount);
+                return vaultManager.RemoveKeys(suffix, amount);
             }
-            else if (currencyId.StartsWith(VaultCurrencyIds.PrefixTicket))
+            else if (TryStripPrefix(currencyId, VaultCurrencyIds.PrefixTicket, out suffix))
             {
-                return vaultManager.RemoveTickets(currencyId.Substring(VaultCurrencyIds.PrefixTicket.Length), amount);
+                return vaultManager.RemoveTickets(suffix, amount);
             }
-            else if (currencyId.StartsWith(VaultCurrencyIds.PrefixOrb))
+            else if (TryStripPrefix(currencyId, VaultCurrencyIds.PrefixOrb, out suffix))
             {
-                return vaultManager.RemoveOrbs(currencyId.Substring(VaultCurrencyIds.PrefixOrb.Length), amount);
+                return vaultManager.RemoveOrbs(suffix, amount);
             }
-            else if (currencyId.StartsWith(VaultCurrencyIds.PrefixCustom))
+            else if (TryStripPrefix(currencyId, VaultCurrencyIds.PrefixCustom, out suffix))
             {
-                return vaultManager.RemoveCustomCurrency(currencyId.Substring(VaultCurrencyIds.PrefixCustom.Length), amount);
+                return vaultManager.RemoveCustomCurrency(suffix, amount);
             }
 
+            return false;
+        }
+
+        private static bool TryStripPrefix(string id, string prefix, out string suffix)
+        {
+            if (id.StartsWith(prefix, StringComparison.Ordinal))
+            {
+                suffix = id.Substring(prefix.Length);
+                return true;
+            }
+            suffix = null;
             return false;
         }
 
@@ -1342,6 +1351,7 @@ namespace TheVault.Patches
         /// </summary>
         private static readonly List<(int itemId, int amount)> _autoDepositNotifyQueue = new List<(int, int)>();
         private static readonly object _notifyQueueLock = new object();
+        private static readonly Dictionary<int, int> _mergeBuffer = new Dictionary<int, int>();
 
         /// <summary>Enqueue a notification to show later (keeps pickup path fast).</summary>
         public static void EnqueueAutoDepositNotification(string currencyId, int amount)
@@ -1362,17 +1372,17 @@ namespace TheVault.Patches
                 if (_autoDepositNotifyQueue.Count == 0) return;
 
                 // Merge by itemId
-                var merged = new Dictionary<int, int>();
+                _mergeBuffer.Clear();
                 foreach (var t in _autoDepositNotifyQueue)
                 {
-                    if (!merged.TryGetValue(t.itemId, out int a)) a = 0;
-                    merged[t.itemId] = a + t.amount;
+                    if (!_mergeBuffer.TryGetValue(t.itemId, out int a)) a = 0;
+                    _mergeBuffer[t.itemId] = a + t.amount;
                 }
                 _autoDepositNotifyQueue.Clear();
 
                 // Show only the first one this frame; re-queue the rest for next frame
                 bool first = true;
-                foreach (var kvp in merged)
+                foreach (var kvp in _mergeBuffer)
                 {
                     if (first)
                     {
