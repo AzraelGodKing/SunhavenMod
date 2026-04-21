@@ -339,7 +339,6 @@ namespace HavensAlmanac
             }
 
             EnsureUIComponentsExist();
-            TryHookOvernightEvent();
         }
 
         private static void WireHudPositionPersistence()
