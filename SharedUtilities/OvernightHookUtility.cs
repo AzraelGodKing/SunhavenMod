@@ -30,6 +30,8 @@ namespace SunhavenMods.Shared
 
                         if (currentAction != null)
                         {
+                            // Idempotent attach: remove old instance before adding.
+                            currentAction -= overnightCallback;
                             currentAction += overnightCallback;
                             onDayStartField.SetValue(null, currentAction);
                         }
@@ -61,6 +63,8 @@ namespace SunhavenMods.Shared
 
                 if (existingAction != null)
                 {
+                    // Idempotent attach: remove old instance before adding.
+                    existingAction -= overnightCallback;
                     existingAction += overnightCallback;
                     overnightField.SetValue(uiHandler, existingAction);
                 }
