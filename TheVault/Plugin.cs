@@ -38,6 +38,8 @@ namespace TheVault
         internal static KeyCode StaticAltToggleKey = KeyCode.F8;
         internal static KeyCode StaticHUDToggleKey = KeyCode.F7;
         internal static KeyCode StaticQuickConvertKey = KeyCode.F6;
+        private const float MinWindowScale = 0.5f;
+        private const float MaxWindowScale = 3.0f;
 
         private Harmony _harmony;
         private VaultManager _vaultManager;
@@ -113,7 +115,7 @@ namespace TheVault
                 DontDestroyOnLoad(uiObject);
                 _vaultUI = uiObject.AddComponent<VaultUI>();
                 _vaultUI.Initialize(_vaultManager);
-                _vaultUI.SetScale(Mathf.Clamp(_windowScale.Value, 0.5f, 3.0f));
+                _vaultUI.SetScale(GetValidatedWindowScale());
                 _vaultUI.SetToggleKey(_toggleKey.Value, _requireCtrlModifier.Value);
                 _vaultUI.SetAltToggleKey(_altToggleKey.Value);
                 _staticVaultUI = _vaultUI;
@@ -266,7 +268,7 @@ namespace TheVault
 
                     _staticVaultUI = uiObject.AddComponent<VaultUI>();
                     _staticVaultUI.Initialize(_staticVaultManager);
-                    float windowScale = Instance != null ? Mathf.Clamp(Instance._windowScale.Value, 0.5f, 3.0f) : 1f;
+                    float windowScale = Instance != null ? Instance.GetValidatedWindowScale() : 1f;
                     _staticVaultUI.SetScale(windowScale);
                     _staticVaultUI.SetToggleKey(StaticToggleKey, StaticRequireCtrl);
                     _staticVaultUI.SetAltToggleKey(StaticAltToggleKey);
@@ -457,6 +459,7 @@ namespace TheVault
         {
             try
             {
+                float validatedWindowScale = GetValidatedWindowScale();
                 StaticToggleKey = _toggleKey.Value;
                 StaticRequireCtrl = _requireCtrlModifier.Value;
                 StaticAltToggleKey = _altToggleKey.Value;
@@ -467,7 +470,7 @@ namespace TheVault
                 var vaultUI = GetVaultUI();
                 if (vaultUI != null)
                 {
-                    vaultUI.SetScale(Mathf.Clamp(_windowScale.Value, 0.5f, 3.0f));
+                    vaultUI.SetScale(validatedWindowScale);
                     vaultUI.SetToggleKey(StaticToggleKey, StaticRequireCtrl);
                     vaultUI.SetAltToggleKey(StaticAltToggleKey);
                 }
@@ -503,7 +506,7 @@ namespace TheVault
         /// <summary>Apply window scale to the vault UI.</summary>
         public void ApplyVaultWindowScaleToUi()
         {
-            float s = Mathf.Clamp(_windowScale?.Value ?? 1f, 0.5f, 3.0f);
+            float s = GetValidatedWindowScale();
             _staticVaultUI?.SetScale(s);
         }
 
@@ -562,8 +565,28 @@ namespace TheVault
                 return VaultHudDensity.Compact;
             return VaultHudDensity.Normal;
         }
-        public static float GetConfigWindowScale() => Instance?._windowScale?.Value ?? 1f;
-        public static void SetConfigWindowScale(float v) { if (Instance?._windowScale != null) Instance._windowScale.Value = Mathf.Clamp(v, 0.5f, 3.0f); }
+        public static float GetConfigWindowScale() => Instance?.GetValidatedWindowScale() ?? 1f;
+        public static void SetConfigWindowScale(float v)
+        {
+            if (Instance?._windowScale != null)
+                Instance._windowScale.Value = Instance.ClampWindowScaleValue(v);
+        }
+
+        private float GetValidatedWindowScale()
+        {
+            if (_windowScale == null)
+                return 1f;
+
+            float clamped = ClampWindowScaleValue(_windowScale.Value);
+            if (!Mathf.Approximately(_windowScale.Value, clamped))
+                _windowScale.Value = clamped;
+            return clamped;
+        }
+
+        private float ClampWindowScaleValue(float value)
+        {
+            return Mathf.Clamp(value, MinWindowScale, MaxWindowScale);
+        }
 
         public static bool GetConfigDebugFullVaultInspector() => _debugFullVaultInspector;
 
