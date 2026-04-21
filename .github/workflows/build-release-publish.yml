@@ -467,6 +467,7 @@ jobs:
           echo "Skipped: GitHub Release, Thunderstore, Nexus, Discord (and test_discord / publish_discord_only semantics)."
 
       - name: Create GitHub Release
+        id: create_github_release_step
         if: >-
           github.event.inputs.dry_run != 'true' &&
           github.event.inputs.publish_discord_only != 'true' &&
@@ -728,6 +729,7 @@ jobs:
           } >> "$GITHUB_STEP_SUMMARY"
 
       - name: Notify Discord (release created by workflow)
+        id: notify_discord_release_step
         if: >-
           github.event.inputs.dry_run != 'true' &&
           github.event.inputs.publish_discord_only != 'true' &&
@@ -755,6 +757,7 @@ jobs:
           thumbnail_url: "https://raw.githubusercontent.com/${{ github.repository }}/main/${{ steps.config.outputs.mod_dir }}/thunderstore/icon.png"
 
       - name: Publish to Thunderstore
+        id: publish_thunderstore_step
         if: >-
           github.event.inputs.dry_run != 'true' &&
           github.event.inputs.publish_discord_only != 'true' &&
@@ -802,6 +805,7 @@ jobs:
           echo "icon_url=https://raw.githubusercontent.com/${{ github.repository }}/main/$MOD_DIR/thunderstore/icon.png" >> "$GITHUB_OUTPUT"
 
       - name: Post test notification to Discord
+        id: post_test_discord_step
         if: >-
           github.event.inputs.dry_run != 'true' &&
           github.event.inputs.publish_discord_only != 'true' &&
@@ -816,6 +820,7 @@ jobs:
           username: "Sun Haven Mods"
 
       - name: Publish to Discord only
+        id: publish_discord_only_step
         if: >-
           github.event.inputs.dry_run != 'true' &&
           github.event.inputs.publish_discord_only == 'true' &&
@@ -837,6 +842,50 @@ jobs:
             - **Nexus Mods**: ${{ steps.config.outputs.nexus_url }}
             - **Thunderstore**: ${{ steps.config.outputs.thunderstore_url }}
           thumbnail_url: "https://raw.githubusercontent.com/${{ github.repository }}/main/${{ steps.config.outputs.mod_dir }}/thunderstore/icon.png"
+
+      - name: Release run report
+        if: ${{ always() }}
+        env:
+          VERSION_UNCHANGED: ${{ steps.version_check.outputs.version_unchanged }}
+          GITHUB_RELEASE_OUTCOME: ${{ steps.create_github_release_step.outcome }}
+          THUNDERSTORE_OUTCOME: ${{ steps.publish_thunderstore_step.outcome }}
+          DISCORD_RELEASE_OUTCOME: ${{ steps.notify_discord_release_step.outcome }}
+          DISCORD_TEST_OUTCOME: ${{ steps.post_test_discord_step.outcome }}
+          DISCORD_ONLY_OUTCOME: ${{ steps.publish_discord_only_step.outcome }}
+          NEXUS_OUTCOME_1: ${{ steps.nexus_upload_1.outcome }}
+          NEXUS_OUTCOME_2: ${{ steps.nexus_upload_2.outcome }}
+          NEXUS_OUTCOME_3: ${{ steps.nexus_upload_3.outcome }}
+          NEXUS_OUTCOME_4: ${{ steps.nexus_upload_4.outcome }}
+        run: |
+          set -euo pipefail
+
+          NEXUS_RESULT="not-requested"
+          for i in 1 2 3 4; do
+            VAR="NEXUS_OUTCOME_$i"
+            OUT="${!VAR:-skipped}"
+            if [ "$OUT" = "success" ]; then
+              NEXUS_RESULT="success-attempt-$i"
+              break
+            fi
+            if [ "$OUT" = "failure" ]; then
+              NEXUS_RESULT="failed"
+            fi
+          done
+
+          {
+            echo "## Release run report"
+            echo ""
+            echo "- Mod key: \`${{ matrix.mod }}\`"
+            echo "- Display name: \`${{ steps.config.outputs.display_name }}\`"
+            echo "- Version: \`${{ steps.config.outputs.version }}\`"
+            echo "- Version unchanged gate: \`${VERSION_UNCHANGED:-n/a}\`"
+            echo "- GitHub Release: \`${GITHUB_RELEASE_OUTCOME:-skipped}\`"
+            echo "- Thunderstore publish: \`${THUNDERSTORE_OUTCOME:-skipped}\`"
+            echo "- Nexus upload: \`${NEXUS_RESULT}\`"
+            echo "- Discord notify (release): \`${DISCORD_RELEASE_OUTCOME:-skipped}\`"
+            echo "- Discord notify (test): \`${DISCORD_TEST_OUTCOME:-skipped}\`"
+            echo "- Discord-only publish: \`${DISCORD_ONLY_OUTCOME:-skipped}\`"
+          } >> "$GITHUB_STEP_SUMMARY"
   # --------------------------------------------------------------------
   # NOTIFY DISCORD — When a release is published (triggered by release event)
   # Uses mod icon from thunderstore folder (raw GitHub URL)
