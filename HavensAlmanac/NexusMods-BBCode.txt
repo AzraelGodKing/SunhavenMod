@@ -63,5 +63,5 @@ At least [b]one[/b] supported mod must be installed for the Almanac to display c
 [size=4][b]Links[/b][/size]
 [list]
 [*][url=https://azraelgodking.github.io/SunhavenMod/HavensAlmanac/HavensAlmanac.html]Documentation[/url]
-[*][url=https://discord.gg/Vwh2y7qMXv]Discord — report bugs[/url]
+[*][url=https://discord.gg/Vwh2y7qMXv]Discord - bugs & discussion[/url]
 [/list]

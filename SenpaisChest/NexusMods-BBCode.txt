@@ -79,5 +79,5 @@ The game's ItemType [b]Crop[/b] includes flowers, vegetables, and all crop types
 [list]
 [*][url=https://www.nexusmods.com/sunhaven/mods/496]Nexus Mods[/url]
 [*][url=https://azraelgodking.github.io/SunhavenMod/SenpaisChest/SenpaisChest.html]Documentation[/url]
-[*][url=https://discord.gg/Vwh2y7qMXv]Discord — bugs & discussion[/url]
+[*][url=https://discord.gg/Vwh2y7qMXv]Discord - bugs & discussion[/url]
 [/list]

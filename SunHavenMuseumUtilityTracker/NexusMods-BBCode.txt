@@ -105,7 +105,7 @@ Backups may appear beside the primary file after failed loads.
 [*][url=https://www.nexusmods.com/sunhaven/mods/490]Nexus Mods[/url]
 [*][url=https://thunderstore.io/c/sun-haven/p/AzraelGodKing/SMUT/]Thunderstore[/url]
 [*][url=https://azraelgodking.github.io/SunhavenMod/SMUT/SMUT.html]Documentation[/url]
-[*][url=https://discord.gg/Vwh2y7qMXv]Discord — bugs & discussion[/url]
+[*][url=https://discord.gg/Vwh2y7qMXv]Discord - bugs & discussion[/url]
 [/list]
 
 [spoiler][size=3][b]Version history (recent)[/b][/size]

@@ -42,5 +42,5 @@ The mod automatically displays birthday reminders when you load into the game on
 [list]
 [*][url=https://www.nexusmods.com/sunhaven/mods/493]Nexus Mods[/url]
 [*][url=https://azraelgodking.github.io/SunhavenMod/BirthdayReminder/BirthdayReminder.html]Documentation[/url]
-[*][url=https://discord.gg/Vwh2y7qMXv]Discord — report bugs[/url]
+[*][url=https://discord.gg/Vwh2y7qMXv]Discord - bugs & discussion[/url]
 [/list]
