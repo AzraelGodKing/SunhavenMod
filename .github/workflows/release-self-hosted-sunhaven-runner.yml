@@ -192,7 +192,7 @@ jobs:
 
       - name: Upload built DLL artifact
         if: matrix.mod != 'test_discord'
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v6
         with:
           name: built-${{ matrix.mod }}
           path: builds/${{ steps.build_config.outputs.mod_dir }}/*.dll
@@ -275,7 +275,7 @@ jobs:
 
       - name: Download built DLL artifact
         if: github.event.inputs.publish_discord_only != 'true' && matrix.mod != 'test_discord'
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v7
         with:
           name: built-${{ matrix.mod }}
           path: builds/${{ steps.config.outputs.mod_dir }}
@@ -421,7 +421,7 @@ jobs:
 
       - name: Upload dry-run Thunderstore zip artifact
         if: github.event.inputs.dry_run == 'true' && github.event.inputs.publish_discord_only != 'true' && matrix.mod != 'test_discord'
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v6
         with:
           name: dry-run-${{ steps.config.outputs.thunderstore_name }}-${{ steps.config.outputs.version }}
           path: dist/${{ steps.config.outputs.thunderstore_name }}-${{ steps.config.outputs.version }}.zip

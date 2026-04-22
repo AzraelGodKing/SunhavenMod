@@ -1,5 +1,11 @@
 # Changelog
 
+## 2026-04-22
+- CI: guarded release tag context access in `.github/workflows/build-release-publish.yml` to avoid workflow validation warnings about `github.event.release`.
+- Scripts: renamed a local regex capture variable in `scripts/verify-version-consistency.ps1` to avoid assigning to PowerShell automatic variable names flagged by `PSAvoidAssignmentToAutomaticVariable`.
+- Scripts: simplified brace-heavy error-string construction in `scripts/verify-version-consistency.ps1` to avoid parser/linter false positives about missing closing `}`.
+- CI: upgraded workflow artifact actions to Node 24-ready majors (`actions/upload-artifact@v6`, `actions/download-artifact@v7`) in active and deprecated release workflows.
+
 ## 2026-04-21
 - Perf: fixed texture leaks in `SenpaisChest/UI/SmartChestUI.cs` and `SunhavenTodo/UI/TodoUI.cs` by destroying old textures before recreating.
 - Perf: removed per-frame `GUIStyle` allocations in `SunhavenTodo/UI/TodoUI.cs` by caching wrapped title styles and row style.
