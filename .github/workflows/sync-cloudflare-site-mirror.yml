@@ -90,5 +90,7 @@ jobs:
             exit 0
           fi
 
-          git commit -m "chore: sync cloudflare-site from SunhavenMod [skip ci]"
+          # Do not use [skip ci] here: Cloudflare Pages honors skip directives and will skip
+          # production builds, leaving the site stuck on an older deployment.
+          git commit -m "chore: sync cloudflare-site from SunhavenMod"
           git push origin "HEAD:${SOURCE_BRANCH}"
