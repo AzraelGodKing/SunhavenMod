@@ -74,7 +74,7 @@ Both DLLs should land next to each other under plugins. [b]Distribute both[/b] t
 [size=4][b]Links[/b][/size]
 [list]
 [*][url=https://www.nexusmods.com/sunhaven/mods/488]Nexus Mods[/url]
-[*][url=https://discord.gg/Vwh2y7qMXv]Discord — bugs & discussion[/url]
+[*][url=https://discord.gg/Vwh2y7qMXv]Discord - bugs & discussion[/url]
 [/list]
 
 [spoiler][size=3][b]Changelog — 3.0.2[/b][/size]

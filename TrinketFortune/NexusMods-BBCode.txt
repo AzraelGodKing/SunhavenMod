@@ -37,7 +37,7 @@ Increases the odds of [b]unowned fishing trinkets[/b] dropping as you complete t
 
 [line]
 
-[size=4][b]Optional[/b][/size]
+[size=4][b]Notes[/b][/size]
 [list]
 [*][b]S.M.U.T.[/b] — Aquarium donation data for missing trinket list
 [*][b]Haven Dev Tools[/b] — Trinket Fortune panel in Extensions tab (missing trinkets + probability when available)
@@ -48,5 +48,5 @@ Increases the odds of [b]unowned fishing trinkets[/b] dropping as you complete t
 [size=4][b]Links[/b][/size]
 [list]
 [*][url=https://azraelgodking.github.io/SunhavenMod/TrinketFortune/TrinketFortune.html]Documentation[/url]
-[*][url=https://discord.gg/Vwh2y7qMXv]Discord — report bugs[/url]
+[*][url=https://discord.gg/Vwh2y7qMXv]Discord - bugs & discussion[/url]
 [/list]

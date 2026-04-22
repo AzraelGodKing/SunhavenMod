@@ -1,16 +1,24 @@
 # Changelog
 
 ## 2026-04-22
-- CI: guarded release tag context access in `.github/workflows/build-release-publish.yml` to avoid workflow validation warnings about `github.event.release`.
-- Scripts: renamed a local regex capture variable in `scripts/verify-version-consistency.ps1` to avoid assigning to PowerShell automatic variable names flagged by `PSAvoidAssignmentToAutomaticVariable`.
-- Scripts: simplified brace-heavy error-string construction in `scripts/verify-version-consistency.ps1` to avoid parser/linter false positives about missing closing `}`.
-- CI: upgraded workflow artifact actions to Node 24-ready majors (`actions/upload-artifact@v6`, `actions/download-artifact@v7`) in active and deprecated release workflows.
+### CI
+- Guarded release tag context access in `.github/workflows/build-release-publish.yml` to avoid workflow validation warnings about `github.event.release`.
+- Upgraded workflow artifact actions to Node 24-ready majors (`actions/upload-artifact@v6`, `actions/download-artifact@v7`) in active and deprecated release workflows.
+
+### Scripts
+- Renamed a local regex capture variable in `scripts/verify-version-consistency.ps1` to avoid assigning to PowerShell automatic variable names flagged by `PSAvoidAssignmentToAutomaticVariable`.
+- Simplified brace-heavy error-string construction in `scripts/verify-version-consistency.ps1` to avoid parser/linter false positives about missing closing `}`.
+
+### Docs
+- Updated all mod Nexus BBCode assets to the current formatted template, synchronized versioned headers, and normalized section/link wording for consistent Nexus copy.
+- Expanded `docs/NexusMods-BBCode-Index.txt` to include `CropOptimizer` and `HavensRespec`.
 
 ## 2026-04-21
-- Perf: fixed texture leaks in `SenpaisChest/UI/SmartChestUI.cs` and `SunhavenTodo/UI/TodoUI.cs` by destroying old textures before recreating.
-- Perf: removed per-frame `GUIStyle` allocations in `SunhavenTodo/UI/TodoUI.cs` by caching wrapped title styles and row style.
-- Perf: cached season booleans and mine-scene checks in `HavensBirthright/StatFrameCache.cs`, and switched `HavensBirthright/Patches/StatPatches.cs` to use cached season flags.
-- Perf: removed per-call dictionary allocation in `TheVault/Patches/ItemPatches.cs` notification draining and refactored currency prefix parsing through a shared helper.
-- Perf: capped `SharedUtilities/IconCache.cs` texture cache size and destroy-evicted textures to prevent unbounded growth.
-- CI: promoted `.github/workflows/release-self-hosted-sunhaven-runner.yml` to be the active release pipeline at `.github/workflows/build-release-publish.yml`.
-- CI: archived the previous release workflow to `.github/workflows/deprecated/build-release-publish.yml` for rollback reference.
+### Performance
+- Fixed UI texture leaks by disposing stale textures before recreating them in chest and todo interfaces.
+- Removed recurring runtime allocations in UI and item patch paths by caching styles, scene/season checks, and helper parsing flows.
+- Added bounded eviction to `SharedUtilities/IconCache.cs` to prevent unbounded texture cache growth.
+
+### CI
+- Promoted the self-hosted release workflow to `.github/workflows/build-release-publish.yml`.
+- Archived the previous release workflow to `.github/workflows/deprecated/build-release-publish.yml` for rollback reference.

@@ -1,18 +1,51 @@
 [b][size=5]Haven's Respec[/size][/b] [i](v1.2.0)[/i]
 
-Respec your Sun Haven skill trees safely. A styled Reset button on every skill tab, with confirmation, undo, configurable cost, and full BepInEx Configuration Manager support.
+Reset Sun Haven skill trees safely with confirmation, undo, and configurable costs.
 
-[LIST]
-[*]Clean-room reset that walks the live skill tree (no hardcoded node names) — survives future Sun Haven updates.
-[*]Confirmation dialog with per-profession breakdown and cost preview.
-[*]One-step Undo per profession (session-only).
-[*]Cost model: None / Gold / Gems with configurable cost per refunded point.
-[*]Optional Shift-click to skip confirmation, plus optional hotkeys for reset and undo.
-[*]Full Configuration Manager visibility (config lives in BepInEx/config/HavensRespec.cfg).
-[/LIST]
+[line]
 
-[B]Requirements[/B]
-[LIST]
-[*]BepInEx 5.4+
+[size=4][b]Features[/b][/size]
+[list]
+[*]Styled Reset button on every profession tab
+[*]Confirmation dialog with point refund and cost preview
+[*]Per-profession undo history in the same play session
+[*]Configurable cost model: None, Gold, or Gems
+[*]Optional Reset All flow plus optional hotkeys for reset/undo
+[*]Configuration Manager-compatible settings for live in-game tuning
+[/list]
+
+[line]
+
+[size=4][b]Requirements[/b][/size]
+[list]
+[*][url=https://github.com/BepInEx/BepInEx]BepInEx 5.x[/url] for Sun Haven
 [*]Sun Haven
-[/LIST]
+[/list]
+
+[size=4][b]Installation[/b][/size]
+[list]
+[*]Place [b]HavensRespec.dll[/b] in [b]Sun Haven/BepInEx/plugins/HavensRespec/[/b]
+[*]Launch the game
+[/list]
+
+[line]
+
+[size=4][b]Configuration[/b][/size]
+[b]Sun Haven/BepInEx/config/HavensRespec.cfg[/b]
+
+[list]
+[*][b]General.Enabled[/b] - Master toggle
+[*][b]UI[/b] settings for button injection, confirmation, undo, and reset-all
+[*][b]Cost[/b] settings for mode and per-point values
+[*][b]Hotkeys[/b] settings for quick reset/undo actions
+[/list]
+
+[line]
+
+[size=4][b]Links[/b][/size]
+[list]
+[*][url=https://www.nexusmods.com/sunhaven/mods/502]Nexus Mods[/url]
+[*][url=https://thunderstore.io/c/sun-haven/p/AzraelGodKing/HavensRespec/]Thunderstore[/url]
+[*][url=https://azraelgodking.github.io/SunhavenMod/HavensRespec/HavensRespec.html]Documentation[/url]
+[*][url=https://discord.gg/Vwh2y7qMXv]Discord - bugs and discussion[/url]
+[/list]
