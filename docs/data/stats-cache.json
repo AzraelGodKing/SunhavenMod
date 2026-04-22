@@ -1,5 +1,5 @@
 {
-  "lastFetched": "2026-04-22T15:13:41.914Z",
+  "lastFetched": "2026-04-22T17:00:58.089Z",
   "mods": {
     "senpais-chest": {
       "name": "Senpai's Chest",
@@ -76,10 +76,10 @@
         }
       },
       "nexus": {
-        "total_downloads": 694,
-        "unique_downloads": 545
+        "total_downloads": 695,
+        "unique_downloads": 546
       },
-      "combined_total": 990
+      "combined_total": 991
     },
     "squirrels-birthday-reminder": {
       "name": "A Squirrel's Birthday Reminder",
@@ -202,19 +202,19 @@
     "faster-races": {
       "name": "Faster Races",
       "thunderstore": {
-        "total_downloads": 64,
+        "total_downloads": 65,
         "versions": {
           "1.3.0": 2,
           "1.2.0": 1,
           "1.1.6": 0,
-          "1.0.0": 61
+          "1.0.0": 62
         }
       },
       "nexus": {
         "total_downloads": 112,
         "unique_downloads": 74
       },
-      "combined_total": 176
+      "combined_total": 177
     },
     "trinket-fortune": {
       "name": "Trinket Fortune",
@@ -245,10 +245,10 @@
         }
       },
       "nexus": {
-        "total_downloads": 25,
-        "unique_downloads": 24
+        "total_downloads": 27,
+        "unique_downloads": 26
       },
-      "combined_total": 41
+      "combined_total": 43
     },
     "havens-respec": {
       "name": "Haven's Respec",
@@ -268,9 +268,9 @@
     }
   },
   "site_total": {
-    "thunderstore": 2208,
-    "nexus_total": 3989,
-    "nexus_unique": 2930,
-    "grand_total": 6197
+    "thunderstore": 2209,
+    "nexus_total": 3992,
+    "nexus_unique": 2933,
+    "grand_total": 6201
   }
 }
