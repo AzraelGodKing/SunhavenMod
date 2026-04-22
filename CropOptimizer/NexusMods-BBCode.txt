@@ -2,14 +2,47 @@
 
 Optimize your farm day with crop forecasting and a compact HUD.
 
-[LIST]
-[*]Per-field next-harvest ETA and projected sell value summary
-[*]Season-aware planting helper foundation
-[*]Soft integrations with Sunhaven Todo, Birthday Reminder, and The Vault
-[/LIST]
+[line]
 
-[B]Requirements[/B]
-[LIST]
-[*]BepInEx 5.x
+[size=4][b]Features[/b][/size]
+[list]
+[*]Field-level harvest forecasting with projected sell-value totals
+[*]Lightweight HUD with drag positioning and configurable scale
+[*]Growth and crop-state tracking with practical, in-session visibility
+[*]Soft integrations with Sun Haven Todo, Birthday Reminder, The Vault, and Haven's Almanac
+[/list]
+
+[line]
+
+[size=4][b]Requirements[/b][/size]
+[list]
+[*][url=https://github.com/BepInEx/BepInEx]BepInEx 5.x[/url] for Sun Haven
 [*]Sun Haven
-[/LIST]
+[/list]
+
+[size=4][b]Installation[/b][/size]
+[list]
+[*]Place [b]CropOptimizer.dll[/b] in [b]Sun Haven/BepInEx/plugins/CropOptimizer/[/b]
+[*]Launch the game
+[/list]
+
+[line]
+
+[size=4][b]Configuration[/b][/size]
+[b]Sun Haven/BepInEx/config/CropOptimizer.cfg[/b]
+
+[list]
+[*][b]Enabled[/b] - Master toggle
+[*][b]HUD.Enabled[/b], [b]HUD.Scale[/b], [b]HUD.PositionX[/b], [b]HUD.PositionY[/b], [b]HUD.ToggleKey[/b]
+[*][b]Debug.DebugLogging[/b] for troubleshooting output
+[/list]
+
+[line]
+
+[size=4][b]Links[/b][/size]
+[list]
+[*][url=https://www.nexusmods.com/sunhaven/mods/500]Nexus Mods[/url]
+[*][url=https://thunderstore.io/c/sun-haven/p/AzraelGodKing/CropOptimizer/]Thunderstore[/url]
+[*][url=https://azraelgodking.github.io/SunhavenMod/CropOptimizer/CropOptimizer.html]Documentation[/url]
+[*][url=https://discord.gg/Vwh2y7qMXv]Discord - bugs and discussion[/url]
+[/list]
