@@ -100,7 +100,7 @@ Section [b][BonusTransfers][/b]: [b]EnableBonusTransfers[/b] defaults [b]false[/
 [size=4][b]Links[/b][/size]
 [list]
 [*][url=https://www.nexusmods.com/sunhaven/mods/487]Nexus Mods[/url]
-[*][url=https://discord.gg/Vwh2y7qMXv]Discord — bugs & discussion[/url]
+[*][url=https://discord.gg/Vwh2y7qMXv]Discord - bugs & discussion[/url]
 [/list]
 
 [spoiler][size=3][b]Changelog (recent)[/b][/size]
