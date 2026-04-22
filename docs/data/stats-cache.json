@@ -1,5 +1,5 @@
 {
-  "lastFetched": "2026-04-22T07:47:05.164Z",
+  "lastFetched": "2026-04-22T09:20:38.249Z",
   "mods": {
     "senpais-chest": {
       "name": "Senpai's Chest",
@@ -53,10 +53,10 @@
         }
       },
       "nexus": {
-        "total_downloads": 830,
-        "unique_downloads": 544
+        "total_downloads": 832,
+        "unique_downloads": 545
       },
-      "combined_total": 1147
+      "combined_total": 1149
     },
     "museum-utility-tracker": {
       "name": "S.M.U.T.",
@@ -76,10 +76,10 @@
         }
       },
       "nexus": {
-        "total_downloads": 691,
-        "unique_downloads": 543
+        "total_downloads": 692,
+        "unique_downloads": 544
       },
-      "combined_total": 984
+      "combined_total": 985
     },
     "squirrels-birthday-reminder": {
       "name": "A Squirrel's Birthday Reminder",
@@ -149,10 +149,10 @@
         }
       },
       "nexus": {
-        "total_downloads": 963,
-        "unique_downloads": 673
+        "total_downloads": 964,
+        "unique_downloads": 674
       },
-      "combined_total": 1177
+      "combined_total": 1178
     },
     "haven-dev-tools": {
       "name": "HavenDevTools",
@@ -236,19 +236,19 @@
     "crop-optimizer": {
       "name": "Crop Optimizer",
       "thunderstore": {
-        "total_downloads": 14,
+        "total_downloads": 15,
         "versions": {
           "1.3.0": 3,
           "1.2.0": 2,
           "1.0.2": 1,
-          "1.0.0": 8
+          "1.0.0": 9
         }
       },
       "nexus": {
-        "total_downloads": 23,
-        "unique_downloads": 22
+        "total_downloads": 24,
+        "unique_downloads": 23
       },
-      "combined_total": 37
+      "combined_total": 39
     },
     "havens-respec": {
       "name": "Haven's Respec",
@@ -268,9 +268,9 @@
     }
   },
   "site_total": {
-    "thunderstore": 2194,
-    "nexus_total": 3964,
-    "nexus_unique": 2911,
-    "grand_total": 6158
+    "thunderstore": 2195,
+    "nexus_total": 3969,
+    "nexus_unique": 2915,
+    "grand_total": 6164
   }
 }
