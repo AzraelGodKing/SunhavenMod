@@ -19,6 +19,7 @@
 - Replaced the Cloudflare placeholder page with a structured starter homepage in `cloudflare-site/index.html` and added `cloudflare-site/styles.css` for a reusable base style system.
 - Upgraded `cloudflare-site` landing page to a more polished marketing-style hero with CTAs, stat highlights, feature framing, and improved visual styling while keeping the rollout static/simple.
 - Added `.github/workflows/sync-cloudflare-site-mirror.yml` to mirror `cloudflare-site/` (plus `wrangler.toml` / `package*.json` when present) from `SunhavenMod` to `AzraelGodKing/azrael-sunhaven-website` on pushes to `main` (uses `AZRAEL_WEBSITE_SYNC_TOKEN` when set, otherwise falls back to `ADMIN_PUSH_TOKEN`).
+- Set `wrangler.toml` `name` to `azrael-sunhaven-website` to match the Cloudflare Pages project slug.
 
 ### Docs
 - Updated branch guidance from `master` to `main` in release/version docs and repo cleanup conventions, and narrowed `.github/workflows/sync-mod-versions.yml` push trigger to `main`.
