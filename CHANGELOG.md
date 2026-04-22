@@ -16,6 +16,11 @@
 ### Web
 - Added `wrangler.toml` and `cloudflare-site/` so Cloudflare Pages work targets a separate directory instead of `docs/`, preserving existing GitHub Pages content.
 - Added npm scripts for Cloudflare Pages (`cf:pages:dev`, `cf:pages:deploy`) so deployments use `wrangler pages deploy` instead of Worker-mode `wrangler deploy`.
+- Replaced the Cloudflare placeholder page with a structured starter homepage in `cloudflare-site/index.html` and added `cloudflare-site/styles.css` for a reusable base style system.
+- Upgraded `cloudflare-site` landing page to a more polished marketing-style hero with CTAs, stat highlights, feature framing, and improved visual styling while keeping the rollout static/simple.
+
+### Docs
+- Updated branch guidance from `master` to `main` in release/version docs and repo cleanup conventions, and narrowed `.github/workflows/sync-mod-versions.yml` push trigger to `main`.
 
 ## 2026-04-21
 ### Performance

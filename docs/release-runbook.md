@@ -4,7 +4,7 @@ This runbook is for manual release operations while CI changes are staged.
 
 ## 1) Start from Fresh Branch
 
-- Branch from `master` (or `main` once adopted).
+- Branch from `main`.
 - Use naming by purpose:
   - `mod/{mod-name}-initial-release`
   - `feature/{feature-description}`
