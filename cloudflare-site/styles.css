@@ -38,6 +38,75 @@ code {
   margin: 0 auto;
 }
 
+.site-nav {
+  border-bottom: 1px solid var(--border);
+  background: rgba(6, 12, 24, 0.72);
+  backdrop-filter: blur(10px);
+}
+
+.site-nav-inner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 0.75rem 0;
+}
+
+.site-nav-brand {
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  color: var(--text);
+  text-decoration: none;
+}
+
+.site-nav-links {
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.site-nav-links a {
+  text-decoration: none;
+  color: var(--muted);
+  padding: 0.35rem 0.65rem;
+  border-radius: 0.45rem;
+  border: 1px solid transparent;
+}
+
+.site-nav-links a:hover {
+  color: var(--text);
+  border-color: var(--border);
+  background: var(--panel-2);
+}
+
+.site-nav-links a.active {
+  color: var(--text);
+  border-color: rgba(111, 224, 255, 0.45);
+  background: var(--panel);
+}
+
+.lead a {
+  color: var(--accent);
+}
+
+.cta-inline {
+  margin: 0.85rem 0 0;
+}
+
+.btn {
+  display: inline-block;
+  text-decoration: none;
+  font-weight: 700;
+  padding: 0.5rem 0.95rem;
+  border-radius: 0.5rem;
+  border: 1px solid transparent;
+}
+
+.btn-primary {
+  background: linear-gradient(120deg, var(--accent), #8fd6ff);
+  color: #061423;
+}
+
 .shell-header {
   padding: 2.2rem 0 1.5rem;
   border-bottom: 1px solid var(--border);
