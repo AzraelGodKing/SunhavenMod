@@ -57,7 +57,10 @@ function formatWhen(iso) {
 
 createApp({
   data() {
+    const raw = document.documentElement.dataset.page || "landing";
+    const page = raw === "downloads" ? "downloads" : "landing";
     return {
+      page,
       loading: true,
       error: "",
       lastFetched: null,
@@ -73,6 +76,12 @@ createApp({
     };
   },
   computed: {
+    isLanding() {
+      return this.page === "landing";
+    },
+    isDownloads() {
+      return this.page === "downloads";
+    },
     filteredMods() {
       const q = this.query.trim().toLowerCase();
       let rows = this.mods;
@@ -147,16 +156,36 @@ createApp({
   },
   template: `
     <div>
+      <nav class="site-nav">
+        <div class="container site-nav-inner">
+          <a class="site-nav-brand" href="./index.html">SunhavenMod</a>
+          <div class="site-nav-links">
+            <a href="./index.html" :class="{ active: isLanding }">Home</a>
+            <a href="./downloads.html" :class="{ active: isDownloads }">Downloads</a>
+          </div>
+        </div>
+      </nav>
+
       <header class="shell-header">
         <div class="container">
           <div class="shell-top">
             <div>
               <p class="eyebrow">SunhavenMod</p>
-              <h1>Download Pulse</h1>
-              <p class="lead">
+              <h1 v-if="isLanding">Welcome</h1>
+              <h1 v-else>Download Pulse</h1>
+              <p class="lead" v-if="isLanding">
+                New Cloudflare home for SunhavenMod. Browse download stats on the
+                <a href="./downloads.html">Downloads</a> page — same cache as the docs hub
+                (<code>docs/data/stats-cache.json</code> on GitHub Pages).
+              </p>
+              <p class="lead" v-else>
                 Pulled from the same JSON cache as the docs hub
                 (<code>docs/data/stats-cache.json</code> → GitHub Pages
-                <code>/data/stats-cache.json</code>).
+                <code>/data/stats-cache.json</code>). Back to
+                <a href="./index.html">Home</a>.
+              </p>
+              <p class="cta-inline" v-if="isLanding">
+                <a class="btn btn-primary" href="./downloads.html">View download stats</a>
               </p>
             </div>
             <div class="pill" v-if="!loading && !error">
