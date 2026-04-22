@@ -1,6 +1,6 @@
 # Version Bump Rules
 
-Version numbers are automatically bumped when PRs are merged into `main` or `master`, based on the source branch name.
+Version numbers are automatically bumped when PRs are merged into `main`, based on the source branch name.
 
 ## Branch naming
 
@@ -11,7 +11,7 @@ Version numbers are automatically bumped when PRs are merged into `main` or `mas
 | `release/*` | Major (MINOR & PATCH → 0) | 1.2.3 → 2.0.0 |
 | `major/*` | Major | 1.2.3 → 2.0.0 |
 
-Branches that do not match these prefixes (e.g. `master`, `UI_Update`) do not trigger a version bump.
+Branches that do not match these prefixes (e.g. `main`, `UI_Update`) do not trigger a version bump.
 
 ## Examples
 
