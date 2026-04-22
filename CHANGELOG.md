@@ -13,6 +13,9 @@
 - Updated all mod Nexus BBCode assets to the current formatted template, synchronized versioned headers, and normalized section/link wording for consistent Nexus copy.
 - Expanded `docs/NexusMods-BBCode-Index.txt` to include `CropOptimizer` and `HavensRespec`.
 
+### Web
+- Added `wrangler.toml` and `cloudflare-site/` so Cloudflare Pages work targets a separate directory instead of `docs/`, preserving existing GitHub Pages content.
+
 ## 2026-04-21
 ### Performance
 - Fixed UI texture leaks by disposing stale textures before recreating them in chest and todo interfaces.
