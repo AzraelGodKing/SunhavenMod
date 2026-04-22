@@ -20,6 +20,7 @@
 - Upgraded `cloudflare-site` landing page to a more polished marketing-style hero with CTAs, stat highlights, feature framing, and improved visual styling while keeping the rollout static/simple.
 - Added `.github/workflows/sync-cloudflare-site-mirror.yml` to mirror `cloudflare-site/` (plus `wrangler.toml` / `package*.json` when present) from `SunhavenMod` to `AzraelGodKing/azrael-sunhaven-website` on pushes to `main` (uses `AZRAEL_WEBSITE_SYNC_TOKEN` when set, otherwise falls back to `ADMIN_PUSH_TOKEN`).
 - Adjusted mirror commit messages to avoid `[skip ci]` so Cloudflare Pages does not skip builds after mirrored pushes.
+- Rebuilt the Cloudflare landing page as a Vue-powered “Download Pulse” dashboard that reads `docs/data/stats-cache.json` via GitHub Pages and the mod roster from `scripts/mod-matrix.json` (same stat id rules as `scripts/fetch-stats.js`).
 - Set `wrangler.toml` `name` to `azrael-sunhaven-website` to match the Cloudflare Pages project slug.
 
 ### Docs
