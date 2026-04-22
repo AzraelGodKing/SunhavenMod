@@ -202,7 +202,7 @@ jobs:
 
       - name: Upload built DLL artifact
         if: matrix.mod != 'test_discord'
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v6
         with:
           name: built-${{ matrix.mod }}
           path: builds/${{ steps.build_config.outputs.mod_dir }}/*.dll
@@ -272,7 +272,7 @@ jobs:
 
       - name: Download built DLL artifact
         if: github.event.inputs.publish_discord_only != 'true' && matrix.mod != 'test_discord'
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v7
         with:
           name: built-${{ matrix.mod }}
           path: builds/${{ steps.config.outputs.mod_dir }}
@@ -450,7 +450,7 @@ jobs:
 
       - name: Upload dry-run zip artifact
         if: github.event.inputs.dry_run == 'true' && github.event.inputs.publish_discord_only != 'true' && matrix.mod != 'test_discord'
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v6
         with:
           name: dry-run-${{ steps.config.outputs.thunderstore_name }}-${{ steps.config.outputs.version }}
           path: dist/${{ steps.config.outputs.thunderstore_name }}-${{ steps.config.outputs.version }}.zip
@@ -795,7 +795,7 @@ jobs:
 
       - name: Upload report for combined summary
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v6
         with:
           name: release-report-${{ matrix.mod }}
           path: reports/${{ matrix.mod }}.md
@@ -815,7 +815,7 @@ jobs:
       - name: Download per-mod reports
         id: dl
         continue-on-error: true
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v7
         with:
           pattern: release-report-*
           path: aggregated-reports
@@ -869,13 +869,16 @@ jobs:
   # Discord — published GitHub Release (no checkout; tag → mod dir map)
   # ---------------------------------------------------------------------------
   notify_discord:
-    if: github.event_name == 'release' && !startsWith(github.event.release.tag_name, 'HavensAlmanac-')
+    if: github.event_name == 'release' && !startsWith(github.ref_name, 'HavensAlmanac-')
     runs-on: ubuntu-latest
     steps:
       - name: Set mod icon URL from release tag
         id: icon
         run: |
-          TAG="${{ github.event.release.tag_name }}"
+          TAG="${{ github.ref_name }}"
+          if [ -z "$TAG" ]; then
+            exit 0
+          fi
           PREFIX="${TAG%-v*}"
           case "$PREFIX" in
             HavensBirthright)           DIR="HavensBirthright" ;;

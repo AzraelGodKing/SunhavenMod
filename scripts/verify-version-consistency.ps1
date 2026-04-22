@@ -48,9 +48,9 @@ function Read-ManifestVersion {
 function Read-PluginVersions {
     param([Parameter(Mandatory = $true)][string]$PluginPath)
     $text = Read-TextWithBomSupport -Path $PluginPath
-    $versionMatches = [regex]::Matches($text, $pluginVersionRegex)
+    $pluginVersionCaptures = [regex]::Matches($text, $pluginVersionRegex)
     $versions = New-Object System.Collections.Generic.List[string]
-    foreach ($m in $versionMatches) {
+    foreach ($m in $pluginVersionCaptures) {
         $versions.Add($m.Groups[1].Value)
     }
     return $versions
@@ -116,12 +116,14 @@ foreach ($prop in $data.PSObject.Properties) {
 
     $uniq = @($found | Sort-Object -Unique)
     if ($uniq.Count -ne 1) {
-        $errors.Add("${key}: PLUGIN_VERSION lines disagree in $pluginFile : {$($uniq -join ', ')}")
+        $joinedVersions = $uniq -join ", "
+        $errors.Add("${key}: PLUGIN_VERSION lines disagree in $pluginFile : [$joinedVersions]")
         continue
     }
 
     if ($uniq[0] -ne $want) {
-        $errors.Add("${key}: PLUGIN_VERSION is '$($uniq[0])' but versions.json says '$want' - run: .\scripts\pre-push-build.ps1 -Mod `<modkey`> (sync), or -Mod `<modkey`> -Bump patch|minor|major")
+        $syncHint = ".\scripts\pre-push-build.ps1 -Mod <modkey> (sync), or -Mod <modkey> -Bump patch|minor|major"
+        $errors.Add("${key}: PLUGIN_VERSION is '$($uniq[0])' but versions.json says '$want' - run: $syncHint")
     }
 
     if (Test-Path $manifestPath) {

@@ -1,0 +1,15 @@
+---
+description: Branch cleanup shorthand for this repo
+globs: "{.git/**,.github/workflows/**,scripts/**,README.md}"
+alwaysApply: false
+---
+
+# Repo Cleanup Branch Convention
+
+When the user says "clean up" for this repository, interpret it as:
+
+1. Delete all **local** branches except `master`.
+2. Ask for explicit confirmation before deleting **remote** branches.
+3. Keep remote `master` untouched.
+4. If the user explicitly says to delete `master`, do it **locally only**, then recreate/sync local `master` from `origin/master` (never delete remote `master`).
+
