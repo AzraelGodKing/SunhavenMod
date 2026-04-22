@@ -3,89 +3,20 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>SunhavenMod | Modding, Refined</title>
+    <title>SunhavenMod | Download Pulse</title>
     <meta
       name="description"
-      content="Premium landing page for the next-generation SunhavenMod website on Cloudflare Pages."
+      content="Live-ish download stats for SunhavenMod, powered by the same cache as the docs hub."
     />
     <link rel="stylesheet" href="./styles.css" />
   </head>
   <body>
-    <header class="site-header" id="top">
-      <div class="container">
-        <nav class="top-nav">
-          <p class="brand">SunhavenMod</p>
-          <div class="top-nav-links">
-            <a href="#mods">Mods</a>
-            <a href="#features">Features</a>
-            <a href="#start">Get Started</a>
-          </div>
-        </nav>
-
-        <div class="hero">
-          <p class="eyebrow">New Website Preview</p>
-          <h1>Sun Haven Mods, Crafted for Long-Term Saves</h1>
-          <p class="lead">
-            A cleaner, faster home for your mod ecosystem. Built for discoverability,
-            release clarity, and player confidence.
-          </p>
-          <div class="cta-row">
-            <a class="btn btn-primary" href="#start">Start Here</a>
-            <a class="btn btn-secondary" href="#mods">Explore Mods</a>
-          </div>
-          <ul class="stats">
-            <li><strong>12+</strong><span>Active Mods</span></li>
-            <li><strong>Cloudflare</strong><span>Global Delivery</span></li>
-            <li><strong>Zero Impact</strong><span>On existing <code>docs/</code></span></li>
-          </ul>
-        </div>
+    <noscript>
+      <div class="container noscript">
+        <p>This dashboard needs JavaScript enabled to load stats from GitHub Pages.</p>
       </div>
-    </header>
-
-    <main class="container">
-      <section id="mods" class="card">
-        <h2>Flagship Mods</h2>
-        <p class="section-lead">Your most visible experiences, front and center.</p>
-        <div class="grid">
-          <article>
-            <p class="chip">Planning</p>
-            <h3>Haven's Almanac</h3>
-            <p>Day, crop, and seasonal planning tools to keep your runs efficient.</p>
-          </article>
-          <article>
-            <p class="chip">Profit</p>
-            <h3>Crop Optimizer</h3>
-            <p>Forecast-driven suggestions to maximize crop value over time.</p>
-          </article>
-          <article>
-            <p class="chip">QoL</p>
-            <h3>The Vault</h3>
-            <p>Storage quality-of-life upgrades built for heavy inventory gameplay.</p>
-          </article>
-        </div>
-      </section>
-
-      <section id="features" class="card">
-        <h2>Why This New Site</h2>
-        <p>
-          This Cloudflare-hosted landing page is the first step toward a richer site
-          without disturbing the current GitHub Pages docs.
-        </p>
-        <div class="feature-list">
-          <p><strong>Better first impression:</strong> Hero-focused layout that feels intentional.</p>
-          <p><strong>Faster growth path:</strong> Clean section structure for future pages.</p>
-          <p><strong>Safe rollout:</strong> Existing documentation remains exactly where it is.</p>
-        </div>
-      </section>
-
-      <section id="start" class="card callout">
-        <h2>Ready for the next step?</h2>
-        <p>
-          Next iterations can add dedicated mod pages, a modern downloads hub, and better
-          release storytelling.
-        </p>
-        <a class="btn btn-primary" href="#top">Back to Top</a>
-      </section>
-    </main>
+    </noscript>
+    <div id="app"></div>
+    <script type="module" src="./app.js"></script>
   </body>
 </html>
