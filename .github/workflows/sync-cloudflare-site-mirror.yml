@@ -1,0 +1,94 @@
+# Mirror Cloudflare site assets from SunhavenMod -> azrael-sunhaven-website
+#
+# Why: keep mod work in SunhavenMod while still maintaining a dedicated website repo
+# that Cloudflare (or other tooling) can target.
+#
+# Required repo secret (SunhavenMod) — either works:
+#   AZRAEL_WEBSITE_SYNC_TOKEN (recommended: least privilege to the website repo only)
+#   ADMIN_PUSH_TOKEN (fallback: your existing PAT with repo/workflow scopes)
+#
+# The token must be able to push commits to:
+#   AzraelGodKing/azrael-sunhaven-website
+#
+name: Sync Cloudflare site mirror
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - "cloudflare-site/**"
+      - "wrangler.toml"
+      - "package.json"
+      - "package-lock.json"
+  workflow_dispatch:
+
+concurrency:
+  group: sync-cloudflare-site-mirror
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  mirror:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout SunhavenMod
+        uses: actions/checkout@v4
+
+      - name: Mirror website files into destination repo
+        env:
+          # If you ever rename the destination repo, update this string.
+          DEST_REPO: AzraelGodKing/azrael-sunhaven-website
+          SYNC_TOKEN_PRIMARY: ${{ secrets.AZRAEL_WEBSITE_SYNC_TOKEN }}
+          SYNC_TOKEN_FALLBACK: ${{ secrets.ADMIN_PUSH_TOKEN }}
+          SOURCE_BRANCH: ${{ github.ref_name }}
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          SYNC_TOKEN="${SYNC_TOKEN_PRIMARY:-}"
+          if [ -z "${SYNC_TOKEN}" ]; then
+            SYNC_TOKEN="${SYNC_TOKEN_FALLBACK:-}"
+          fi
+
+          if [ -z "${SYNC_TOKEN:-}" ]; then
+            echo "::error::Missing a usable sync token. Set AZRAEL_WEBSITE_SYNC_TOKEN (recommended) or ADMIN_PUSH_TOKEN (fallback) with push access to ${DEST_REPO}."
+            exit 1
+          fi
+
+          tmp="$(mktemp -d)"
+          trap 'rm -rf "$tmp"' EXIT
+
+          echo "Cloning destination: https://github.com/${DEST_REPO}.git (branch: ${SOURCE_BRANCH})"
+          git clone --depth 1 --branch "${SOURCE_BRANCH}" "https://x-access-token:${SYNC_TOKEN}@github.com/${DEST_REPO}.git" "$tmp/dest" || {
+            echo "::error::Could not shallow-clone ${DEST_REPO} branch '${SOURCE_BRANCH}'. Ensure the branch exists in the destination repo."
+            exit 1
+          }
+
+          mkdir -p "$tmp/dest/cloudflare-site"
+
+          echo "Syncing cloudflare-site/ ..."
+          rsync -a --delete "${GITHUB_WORKSPACE}/cloudflare-site/" "$tmp/dest/cloudflare-site/"
+
+          echo "Copying deploy helper files (if present) ..."
+          for f in wrangler.toml package.json package-lock.json; do
+            if [ -f "${GITHUB_WORKSPACE}/${f}" ]; then
+              cp "${GITHUB_WORKSPACE}/${f}" "$tmp/dest/${f}"
+            fi
+          done
+
+          cd "$tmp/dest"
+
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+
+          git add -A
+          if git diff --staged --quiet; then
+            echo "No changes to mirror."
+            exit 0
+          fi
+
+          git commit -m "chore: sync cloudflare-site from SunhavenMod [skip ci]"
+          git push origin "HEAD:${SOURCE_BRANCH}"
