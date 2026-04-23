@@ -64,6 +64,7 @@
 - Restored a simple `Type` selector (`bug` / `feature`) on the feedback page while keeping the compact form fields (`Name`, `Title`, `Description`), and mapped server-side labeling/title prefix back to type-specific behavior.
 - Fixed Cloudflare Pages route deployment wiring for feedback submissions by adding a root `functions/api/feedback.js` entrypoint that re-exports the Cloudflare-site handler, so Wrangler can discover `POST /api/feedback` without unsupported CLI flags.
 - Replaced the root feedback function re-export shim with a full standalone `functions/api/feedback.js` implementation to avoid function-bundling path issues and ensure `POST /api/feedback` is detected in Pages deployments.
+- Updated `.github/workflows/sync-cloudflare-site-mirror.yml` to also mirror root `functions/` into `azrael-sunhaven-website`, so deployed mirror builds include `/api/feedback` server routes instead of returning `405`.
 - Set `wrangler.toml` `name` to `azrael-sunhaven-website` to match the Cloudflare Pages project slug.
 - Removed the redundant `Nexus (total)` metric from the Cloudflare Download Pulse totals row so Nexus is represented only once via `Nexus (unique)`.
 
