@@ -57,6 +57,12 @@ function bad(message, status = 400) {
   });
 }
 
+function throwLinearUpstream() {
+  const err = new Error("Failed to create Linear issue");
+  err.name = "FeedbackLinearUpstreamError";
+  throw err;
+}
+
 export async function onRequestPost(context) {
   const { request, env } = context;
   if (!env.LINEAR_API_TOKEN || !env.LINEAR_TEAM_ID) {
@@ -121,9 +127,9 @@ export async function onRequestPost(context) {
     }
   `;
 
-  let linearResp;
+  let issueCreate;
   try {
-    linearResp = await fetch("https://api.linear.app/graphql", {
+    const linearResp = await fetch("https://api.linear.app/graphql", {
       method: "POST",
       headers: {
         Authorization: `Bearer ${env.LINEAR_API_TOKEN}`,
@@ -141,46 +147,55 @@ export async function onRequestPost(context) {
         },
       }),
     });
-  } catch (networkErr) {
-    console.error("[feedback] Linear fetch threw before response:", networkErr);
-    return bad("Failed to create Linear issue", 502);
-  }
 
-  const httpStatus = linearResp.status;
-  const rawText = await linearResp.text();
+    const httpStatus = linearResp.status;
+    const rawText = await linearResp.text();
 
-  let parsed = null;
-  let parseError = null;
-  try {
-    parsed = rawText ? JSON.parse(rawText) : null;
-  } catch (e) {
-    parseError = e instanceof Error ? e.message : String(e);
-  }
+    let parsed = null;
+    let parseError = null;
+    if (rawText) {
+      try {
+        parsed = JSON.parse(rawText);
+      } catch (e) {
+        parseError = e instanceof Error ? e.message : String(e);
+      }
+    }
 
-  console.error("[feedback] Linear response", {
-    httpStatus,
-    ok: linearResp.ok,
-    rawBody: rawText,
-    parseError,
-    jsonErrors: parsed?.errors ?? null,
-    jsonData: parsed?.data ?? null,
-  });
-
-  if (!linearResp.ok || (parsed && Array.isArray(parsed.errors) && parsed.errors.length)) {
-    return bad("Failed to create Linear issue", 502);
-  }
-
-  if (!parsed) {
-    return bad("Failed to create Linear issue", 502);
-  }
-
-  const issueCreate = parsed?.data?.issueCreate;
-  if (!issueCreate?.success) {
-    console.error("[feedback] Linear issueCreate unsuccessful", {
+    console.error("[feedback] Linear response", {
       httpStatus,
-      issueCreate,
-      errors: parsed?.errors ?? null,
+      ok: linearResp.ok,
+      rawBody: rawText,
     });
+
+    if (parseError !== null) {
+      console.error("[feedback] Linear body is not valid JSON; raw text:", rawText);
+    } else if (!rawText) {
+      console.error("[feedback] Linear empty response body");
+    } else {
+      console.error("[feedback] Linear GraphQL JSON", {
+        errors: parsed?.errors ?? null,
+        data: parsed?.data ?? null,
+      });
+    }
+
+    if (!linearResp.ok) throwLinearUpstream();
+    if (parseError !== null || parsed === null) throwLinearUpstream();
+    if (Array.isArray(parsed.errors) && parsed.errors.length) throwLinearUpstream();
+
+    issueCreate = parsed?.data?.issueCreate;
+    if (!issueCreate?.success) {
+      console.error("[feedback] Linear issueCreate mutation reported success=false", {
+        httpStatus,
+        issueCreate,
+        errors: parsed?.errors ?? null,
+      });
+      throwLinearUpstream();
+    }
+  } catch (err) {
+    if (err && err.name === "FeedbackLinearUpstreamError") {
+      return bad("Failed to create Linear issue", 502);
+    }
+    console.error("[feedback] Linear fetch threw before response:", err);
     return bad("Failed to create Linear issue", 502);
   }
 
