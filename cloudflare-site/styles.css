@@ -787,6 +787,57 @@ html[data-page="downloads"] .mod-card {
   font-size: 0.84rem;
 }
 
+.feedback-wrap {
+  margin: 1rem auto 3rem;
+}
+
+.feedback-card h2 {
+  margin: 0.25rem 0 0.5rem;
+}
+
+.feedback-form {
+  display: grid;
+  gap: 0.8rem;
+  margin-top: 0.8rem;
+}
+
+.feedback-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.8rem;
+}
+
+.feedback-form textarea {
+  border-radius: 0.55rem;
+  border: 1px solid var(--border);
+  background: var(--panel-2);
+  color: var(--text);
+  padding: 0.55rem 0.65rem;
+  font: inherit;
+  resize: vertical;
+  min-height: 92px;
+}
+
+.honeypot {
+  position: absolute !important;
+  left: -9999px !important;
+  width: 1px !important;
+  height: 1px !important;
+  overflow: hidden !important;
+}
+
+.feedback-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.feedback-inline {
+  margin: 0;
+  color: var(--muted);
+}
+
 .mod-head {
   position: relative;
   display: flex;
@@ -871,6 +922,10 @@ html[data-page="downloads"] .mod-card {
   }
 
   .toolbar {
+    grid-template-columns: 1fr;
+  }
+
+  .feedback-grid {
     grid-template-columns: 1fr;
   }
 
