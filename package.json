@@ -5,8 +5,8 @@
   "scripts": {
     "stats": "node scripts/fetch-stats.js",
     "stats:force": "node scripts/fetch-stats.js --force",
-    "cf:pages:dev": "npx wrangler pages dev cloudflare-site",
-    "cf:pages:deploy": "npx wrangler pages deploy cloudflare-site --project-name azrael-sunhaven-website"
+    "cf:pages:dev": "npx wrangler pages dev --project-name azrael-sunhaven-website",
+    "cf:pages:deploy": "npx wrangler pages deploy --project-name azrael-sunhaven-website"
   },
   "dependencies": {
     "dotenv": "^17.4.2"
