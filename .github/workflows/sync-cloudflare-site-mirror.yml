@@ -18,6 +18,7 @@ on:
       - main
     paths:
       - "cloudflare-site/**"
+      - "functions/**"
       - "wrangler.toml"
       - "package.json"
       - "package-lock.json"
@@ -68,9 +69,17 @@ jobs:
           }
 
           mkdir -p "$tmp/dest/cloudflare-site"
+          mkdir -p "$tmp/dest/functions"
 
           echo "Syncing cloudflare-site/ ..."
           rsync -a --delete "${GITHUB_WORKSPACE}/cloudflare-site/" "$tmp/dest/cloudflare-site/"
+
+          echo "Syncing root functions/ ..."
+          if [ -d "${GITHUB_WORKSPACE}/functions" ]; then
+            rsync -a --delete "${GITHUB_WORKSPACE}/functions/" "$tmp/dest/functions/"
+          else
+            rm -rf "$tmp/dest/functions"
+          fi
 
           echo "Copying deploy helper files (if present) ..."
           for f in wrangler.toml package.json package-lock.json; do
