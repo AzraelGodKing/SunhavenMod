@@ -34,6 +34,7 @@
 - Refined the `Sun Haven Todo` mod-page art direction with a stronger task/list identity (checklist-paper styling, dashed task cards, and list-focused purple notebook palette).
 - Refined the `Birthday Reminder` mod-page art direction with a stronger birthday feel (celebration palette, confetti-like highlights, and festive timeline card treatment).
 - Added Motion One powered entrance animations for Home/Downloads/mod pages, plus lane shape-language refinements, layout-level styling variants, and downloads result-count feedback while preserving reduced-motion safeguards.
+- Expanded `/api/feedback` Pages Function logging for Linear failures (`functions/api/feedback.js` and mirrored `cloudflare-site/functions/api/feedback.js`): log HTTP status, raw response body, JSON parse errors, and parsed GraphQL `errors`/`data` while keeping the client-facing 502 message generic.
 
 ## 2026-04-22
 ### CI
