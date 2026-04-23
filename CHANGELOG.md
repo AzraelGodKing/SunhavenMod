@@ -60,6 +60,10 @@
 - Added an inline “Report a Bug / Request a Feature” form to the Cloudflare site with conditional fields, async in-page submission states, honeypot spam protection, and a secure server-side Pages Function endpoint (`cloudflare-site/functions/api/feedback.js`) that validates input and creates Linear issues.
 - Moved feedback into its own page at `cloudflare-site/feedback.html`, updated shared navigation to Home/Downloads/Feedback, and scoped the form UI to the dedicated feedback route.
 - Updated the feedback endpoint to consume optional `LINEAR_BUG_LABEL_ID` / `LINEAR_FEATURE_LABEL_ID` env vars for issue labeling in Linear, and documented that `CLOUDFLARE_API_TOKEN` is deploy-time only (not a runtime feedback secret).
+- Simplified the feedback page to bug-report essentials only (`Name`, `Title`, `Description`) and aligned the server-side Linear payload/validation to the same minimal bug-only shape.
+- Restored a simple `Type` selector (`bug` / `feature`) on the feedback page while keeping the compact form fields (`Name`, `Title`, `Description`), and mapped server-side labeling/title prefix back to type-specific behavior.
+- Fixed Cloudflare Pages route deployment wiring for feedback submissions by adding a root `functions/api/feedback.js` entrypoint that re-exports the Cloudflare-site handler, so Wrangler can discover `POST /api/feedback` without unsupported CLI flags.
+- Replaced the root feedback function re-export shim with a full standalone `functions/api/feedback.js` implementation to avoid function-bundling path issues and ensure `POST /api/feedback` is detected in Pages deployments.
 - Set `wrangler.toml` `name` to `azrael-sunhaven-website` to match the Cloudflare Pages project slug.
 - Removed the redundant `Nexus (total)` metric from the Cloudflare Download Pulse totals row so Nexus is represented only once via `Nexus (unique)`.
 
