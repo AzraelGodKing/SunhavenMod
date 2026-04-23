@@ -94,15 +94,8 @@ createApp({
       form: {
         type: "bug",
         name: "",
-        email: "",
         title: "",
         description: "",
-        pageUrl: "",
-        steps: "",
-        expected: "",
-        actual: "",
-        problem: "",
-        outcome: "",
         website: "",
       },
       formStatus: "idle",
@@ -176,12 +169,6 @@ createApp({
         typeof window.matchMedia === "function" &&
         window.matchMedia("(prefers-reduced-motion: reduce)").matches;
     },
-    isBugForm() {
-      return this.form.type === "bug";
-    },
-    isFeatureForm() {
-      return this.form.type === "feature";
-    },
   },
   async mounted() {
     if (this.isFeedback) {
@@ -194,7 +181,6 @@ createApp({
     } catch {
       // Ignore storage failures; default stays enabled.
     }
-    this.form.pageUrl = window.location.href;
     try {
       const [matrixRes, statsRes] = await Promise.all([
         fetch(MOD_MATRIX_URL, { cache: "no-cache" }),
@@ -521,8 +507,8 @@ createApp({
 
       <section id="feedback" class="container feedback-wrap" v-if="isFeedback">
         <div class="card feedback-card">
-          <p class="section-kicker">Report a Bug / Request a Feature</p>
-          <h2>Send feedback without leaving the site</h2>
+          <p class="section-kicker">Report a Bug</p>
+          <h2>Send bug reports or feature requests without leaving the site</h2>
           <p class="meta">
             Submissions are sent in the background to our issue tracker.
             You stay on this page the whole time.
@@ -532,21 +518,15 @@ createApp({
             <label class="field">
               <span>Type</span>
               <select v-model="form.type" :disabled="formStatus === 'submitting'">
-                <option value="bug">Report a Bug</option>
-                <option value="feature">Request a Feature</option>
+                <option value="bug">Bug</option>
+                <option value="feature">Feature</option>
               </select>
             </label>
 
-            <div class="feedback-grid">
-              <label class="field">
-                <span>Name</span>
-                <input v-model.trim="form.name" autocomplete="name" required maxlength="120" :disabled="formStatus === 'submitting'" />
-              </label>
-              <label class="field">
-                <span>Email</span>
-                <input v-model.trim="form.email" type="email" autocomplete="email" required maxlength="160" :disabled="formStatus === 'submitting'" />
-              </label>
-            </div>
+            <label class="field">
+              <span>Name</span>
+              <input v-model.trim="form.name" autocomplete="name" required maxlength="120" :disabled="formStatus === 'submitting'" />
+            </label>
 
             <label class="field">
               <span>Title</span>
@@ -557,41 +537,6 @@ createApp({
               <span>Description</span>
               <textarea v-model.trim="form.description" rows="4" required maxlength="4000" :disabled="formStatus === 'submitting'"></textarea>
             </label>
-
-            <label class="field">
-              <span>Page URL</span>
-              <input v-model.trim="form.pageUrl" type="url" maxlength="1000" :disabled="formStatus === 'submitting'" />
-            </label>
-
-            <template v-if="isBugForm">
-              <label class="field">
-                <span>Steps to reproduce</span>
-                <textarea v-model.trim="form.steps" rows="3" maxlength="4000" :disabled="formStatus === 'submitting'"></textarea>
-              </label>
-              <div class="feedback-grid">
-                <label class="field">
-                  <span>Expected behavior</span>
-                  <textarea v-model.trim="form.expected" rows="3" maxlength="3000" :disabled="formStatus === 'submitting'"></textarea>
-                </label>
-                <label class="field">
-                  <span>Actual behavior</span>
-                  <textarea v-model.trim="form.actual" rows="3" maxlength="3000" :disabled="formStatus === 'submitting'"></textarea>
-                </label>
-              </div>
-            </template>
-
-            <template v-if="isFeatureForm">
-              <div class="feedback-grid">
-                <label class="field">
-                  <span>Problem to solve</span>
-                  <textarea v-model.trim="form.problem" rows="3" maxlength="3000" :disabled="formStatus === 'submitting'"></textarea>
-                </label>
-                <label class="field">
-                  <span>Desired outcome</span>
-                  <textarea v-model.trim="form.outcome" rows="3" maxlength="3000" :disabled="formStatus === 'submitting'"></textarea>
-                </label>
-              </div>
-            </template>
 
             <!-- Honeypot: should stay empty -->
             <label class="honeypot" aria-hidden="true">
@@ -652,22 +597,17 @@ createApp({
       if (this.ambientEnabled) this.runPageAnimations();
     },
     resetFeedbackForm() {
+      this.form.name = "";
       this.form.title = "";
       this.form.description = "";
-      this.form.steps = "";
-      this.form.expected = "";
-      this.form.actual = "";
-      this.form.problem = "";
-      this.form.outcome = "";
       this.form.website = "";
-      this.form.pageUrl = window.location.href;
     },
     async submitFeedback() {
       this.formNotice = "";
-      const required = [this.form.name, this.form.email, this.form.title, this.form.description];
+      const required = [this.form.name, this.form.title, this.form.description];
       if (required.some((v) => !String(v || "").trim())) {
         this.formStatus = "error";
-        this.formNotice = "Please complete name, email, title, and description.";
+        this.formNotice = "Please complete name, title, and description.";
         return;
       }
       this.formStatus = "submitting";

@@ -10,10 +10,6 @@
  * - FEEDBACK_RATE_MAX (default 5)
  * - LINEAR_BUG_LABEL_ID
  * - LINEAR_FEATURE_LABEL_ID
- *
- * Note:
- * - CLOUDFLARE_API_TOKEN is for deployment/auth tooling and is not used by
- *   this runtime feedback endpoint.
  */
 
 const rateWindowMsDefault = 10 * 60 * 1000;
@@ -70,7 +66,6 @@ export async function onRequestPost(context) {
     return bad("Invalid JSON body.");
   }
 
-  // Honeypot field must stay empty.
   const honeypot = sanitizeText(body?.website, 120);
   if (honeypot) {
     return bad("Spam detected.");
@@ -92,7 +87,6 @@ export async function onRequestPost(context) {
   const name = sanitizeText(body?.name, 120);
   const title = sanitizeText(body?.title, 160);
   const description = sanitizeText(body?.description, 4000);
-
   if (!name || !title || !description) {
     return bad("Missing required fields.");
   }
