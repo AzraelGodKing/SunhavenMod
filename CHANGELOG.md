@@ -65,6 +65,7 @@
 - Fixed Cloudflare Pages route deployment wiring for feedback submissions by adding a root `functions/api/feedback.js` entrypoint that re-exports the Cloudflare-site handler, so Wrangler can discover `POST /api/feedback` without unsupported CLI flags.
 - Replaced the root feedback function re-export shim with a full standalone `functions/api/feedback.js` implementation to avoid function-bundling path issues and ensure `POST /api/feedback` is detected in Pages deployments.
 - Updated `.github/workflows/sync-cloudflare-site-mirror.yml` to also mirror root `functions/` into `azrael-sunhaven-website`, so deployed mirror builds include `/api/feedback` server routes instead of returning `405`.
+- Updated Cloudflare npm scripts to deploy in project-root mode (`wrangler pages deploy` / `wrangler pages dev` without explicit static directory argument), so Wrangler resolves `pages_build_output_dir` from `wrangler.toml` and reliably includes root `functions/` routes.
 - Set `wrangler.toml` `name` to `azrael-sunhaven-website` to match the Cloudflare Pages project slug.
 - Removed the redundant `Nexus (total)` metric from the Cloudflare Download Pulse totals row so Nexus is represented only once via `Nexus (unique)`.
 
