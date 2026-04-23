@@ -115,9 +115,9 @@ export async function onRequestPost(context) {
     }
   `;
 
-  let linearJson;
+  let linearResp;
   try {
-    const linearResp = await fetch("https://api.linear.app/graphql", {
+    linearResp = await fetch("https://api.linear.app/graphql", {
       method: "POST",
       headers: {
         Authorization: `Bearer ${env.LINEAR_API_TOKEN}`,
@@ -135,25 +135,46 @@ export async function onRequestPost(context) {
         },
       }),
     });
-
-    const rawText = await linearResp.text();
-    try {
-      linearJson = rawText ? JSON.parse(rawText) : {};
-    } catch {
-      linearJson = { raw: rawText || null };
-    }
-
-    if (!linearResp.ok || linearJson?.errors?.length) {
-      console.error("Linear API error:", linearJson);
-      throw new Error("Failed to create Linear issue");
-    }
-  } catch (err) {
-    const msg = err instanceof Error ? err.message : "Could not create issue in Linear.";
-    return bad(msg, 502);
+  } catch (networkErr) {
+    console.error("[feedback] Linear fetch threw before response:", networkErr);
+    return bad("Failed to create Linear issue", 502);
   }
 
-  const issueCreate = linearJson?.data?.issueCreate;
+  const httpStatus = linearResp.status;
+  const rawText = await linearResp.text();
+
+  let parsed = null;
+  let parseError = null;
+  try {
+    parsed = rawText ? JSON.parse(rawText) : null;
+  } catch (e) {
+    parseError = e instanceof Error ? e.message : String(e);
+  }
+
+  console.error("[feedback] Linear response", {
+    httpStatus,
+    ok: linearResp.ok,
+    rawBody: rawText,
+    parseError,
+    jsonErrors: parsed?.errors ?? null,
+    jsonData: parsed?.data ?? null,
+  });
+
+  if (!linearResp.ok || (parsed && Array.isArray(parsed.errors) && parsed.errors.length)) {
+    return bad("Failed to create Linear issue", 502);
+  }
+
+  if (!parsed) {
+    return bad("Failed to create Linear issue", 502);
+  }
+
+  const issueCreate = parsed?.data?.issueCreate;
   if (!issueCreate?.success) {
+    console.error("[feedback] Linear issueCreate unsuccessful", {
+      httpStatus,
+      issueCreate,
+      errors: parsed?.errors ?? null,
+    });
     return bad("Failed to create Linear issue", 502);
   }
 
