@@ -74,7 +74,7 @@ function formatWhen(iso) {
 createApp({
   data() {
     const raw = document.documentElement.dataset.page || "landing";
-    const page = raw === "downloads" ? "downloads" : "landing";
+    const page = raw === "downloads" || raw === "feedback" ? raw : "landing";
     return {
       page,
       loading: true,
@@ -91,6 +91,22 @@ createApp({
       query: "",
       sortKey: "combined",
       selectedLane: "all",
+      form: {
+        type: "bug",
+        name: "",
+        email: "",
+        title: "",
+        description: "",
+        pageUrl: "",
+        steps: "",
+        expected: "",
+        actual: "",
+        problem: "",
+        outcome: "",
+        website: "",
+      },
+      formStatus: "idle",
+      formNotice: "",
     };
   },
   computed: {
@@ -99,6 +115,9 @@ createApp({
     },
     isDownloads() {
       return this.page === "downloads";
+    },
+    isFeedback() {
+      return this.page === "feedback";
     },
     rankedMods() {
       return [...this.mods].sort((a, b) => Number(b.combined ?? -1) - Number(a.combined ?? -1));
@@ -157,14 +176,25 @@ createApp({
         typeof window.matchMedia === "function" &&
         window.matchMedia("(prefers-reduced-motion: reduce)").matches;
     },
+    isBugForm() {
+      return this.form.type === "bug";
+    },
+    isFeatureForm() {
+      return this.form.type === "feature";
+    },
   },
   async mounted() {
+    if (this.isFeedback) {
+      this.loading = false;
+      return;
+    }
     try {
       const saved = localStorage.getItem("sunhavenmod-ambient-enabled");
       if (saved === "0") this.ambientEnabled = false;
     } catch {
       // Ignore storage failures; default stays enabled.
     }
+    this.form.pageUrl = window.location.href;
     try {
       const [matrixRes, statsRes] = await Promise.all([
         fetch(MOD_MATRIX_URL, { cache: "no-cache" }),
@@ -214,13 +244,14 @@ createApp({
     }
   },
   template: `
-    <div :class="{ 'landing-theme': isLanding, 'downloads-theme': isDownloads, 'no-ambient': !ambientEnabled }">
+    <div :class="{ 'landing-theme': isLanding, 'downloads-theme': isDownloads || isFeedback, 'no-ambient': !ambientEnabled }">
       <nav class="site-nav">
         <div class="container site-nav-inner">
           <a class="site-nav-brand" href="./index.html">SunhavenMod</a>
           <div class="site-nav-links">
             <a href="./index.html" :class="{ active: isLanding }">Home</a>
             <a href="./downloads.html" :class="{ active: isDownloads }">Downloads</a>
+            <a href="./feedback.html" :class="{ active: isFeedback }">Feedback</a>
             <button class="ambient-toggle" type="button" @click="toggleAmbient">
               {{ ambientEnabled ? 'Ambient: On' : 'Ambient: Off' }}
             </button>
@@ -241,14 +272,19 @@ createApp({
             <div>
               <p class="eyebrow">SunhavenMod</p>
               <h1 v-if="isLanding">The Guild Hall for your modded run</h1>
-              <h1 v-else>Operations board: live download command</h1>
+              <h1 v-else-if="isDownloads">Operations board: live download command</h1>
+              <h1 v-else>Report a Bug / Request a Feature</h1>
               <p class="lead" v-if="isLanding">
                 A handcrafted portal for every SunhavenMod project. Pick by playstyle, inspect live momentum,
                 and jump into deeply themed per-mod pages.
               </p>
-              <p class="lead" v-else>
+              <p class="lead" v-else-if="isDownloads">
                 Fast comparisons, lane grouping, and ranking snapshots powered by shared cache data.
                 Return to <a href="./index.html">Home</a> for curated discovery.
+              </p>
+              <p class="lead" v-else>
+                Share feedback directly from the site. Submissions stay in-page and are sent
+                securely to our tracker in the background.
               </p>
               <p class="cta-inline" v-if="isLanding">
                 <a class="btn btn-primary" href="./downloads.html">Open command board</a>
@@ -257,7 +293,7 @@ createApp({
             </div>
           </div>
 
-          <div class="totals" v-if="!loading && !error">
+          <div class="totals" v-if="!isFeedback && !loading && !error">
             <div class="total">
               <span class="total-label">Guild total</span>
               <span class="total-value">{{ formatInt(siteTotal.grand_total) }}</span>
@@ -410,7 +446,7 @@ createApp({
           </section>
         </template>
 
-        <template v-else>
+        <template v-else-if="isDownloads">
           <section class="downloads-hero card">
             <div>
               <p class="section-kicker">Command board</p>
@@ -471,7 +507,109 @@ createApp({
           </div>
           <p class="results-meta">Showing {{ filteredMods.length }} mod{{ filteredMods.length === 1 ? '' : 's' }}</p>
         </template>
+
+        <template v-else>
+          <section class="downloads-hero card">
+            <div>
+              <p class="section-kicker">Feedback desk</p>
+              <h2>Tell us what broke or what should exist next</h2>
+              <p class="meta">No redirects. Submit inline and keep browsing.</p>
+            </div>
+          </section>
+        </template>
       </main>
+
+      <section id="feedback" class="container feedback-wrap" v-if="isFeedback">
+        <div class="card feedback-card">
+          <p class="section-kicker">Report a Bug / Request a Feature</p>
+          <h2>Send feedback without leaving the site</h2>
+          <p class="meta">
+            Submissions are sent in the background to our issue tracker.
+            You stay on this page the whole time.
+          </p>
+
+          <form class="feedback-form" @submit.prevent="submitFeedback" novalidate>
+            <label class="field">
+              <span>Type</span>
+              <select v-model="form.type" :disabled="formStatus === 'submitting'">
+                <option value="bug">Report a Bug</option>
+                <option value="feature">Request a Feature</option>
+              </select>
+            </label>
+
+            <div class="feedback-grid">
+              <label class="field">
+                <span>Name</span>
+                <input v-model.trim="form.name" autocomplete="name" required maxlength="120" :disabled="formStatus === 'submitting'" />
+              </label>
+              <label class="field">
+                <span>Email</span>
+                <input v-model.trim="form.email" type="email" autocomplete="email" required maxlength="160" :disabled="formStatus === 'submitting'" />
+              </label>
+            </div>
+
+            <label class="field">
+              <span>Title</span>
+              <input v-model.trim="form.title" required maxlength="160" :disabled="formStatus === 'submitting'" />
+            </label>
+
+            <label class="field">
+              <span>Description</span>
+              <textarea v-model.trim="form.description" rows="4" required maxlength="4000" :disabled="formStatus === 'submitting'"></textarea>
+            </label>
+
+            <label class="field">
+              <span>Page URL</span>
+              <input v-model.trim="form.pageUrl" type="url" maxlength="1000" :disabled="formStatus === 'submitting'" />
+            </label>
+
+            <template v-if="isBugForm">
+              <label class="field">
+                <span>Steps to reproduce</span>
+                <textarea v-model.trim="form.steps" rows="3" maxlength="4000" :disabled="formStatus === 'submitting'"></textarea>
+              </label>
+              <div class="feedback-grid">
+                <label class="field">
+                  <span>Expected behavior</span>
+                  <textarea v-model.trim="form.expected" rows="3" maxlength="3000" :disabled="formStatus === 'submitting'"></textarea>
+                </label>
+                <label class="field">
+                  <span>Actual behavior</span>
+                  <textarea v-model.trim="form.actual" rows="3" maxlength="3000" :disabled="formStatus === 'submitting'"></textarea>
+                </label>
+              </div>
+            </template>
+
+            <template v-if="isFeatureForm">
+              <div class="feedback-grid">
+                <label class="field">
+                  <span>Problem to solve</span>
+                  <textarea v-model.trim="form.problem" rows="3" maxlength="3000" :disabled="formStatus === 'submitting'"></textarea>
+                </label>
+                <label class="field">
+                  <span>Desired outcome</span>
+                  <textarea v-model.trim="form.outcome" rows="3" maxlength="3000" :disabled="formStatus === 'submitting'"></textarea>
+                </label>
+              </div>
+            </template>
+
+            <!-- Honeypot: should stay empty -->
+            <label class="honeypot" aria-hidden="true">
+              <span>Leave this field empty</span>
+              <input v-model="form.website" tabindex="-1" autocomplete="off" />
+            </label>
+
+            <div class="feedback-actions">
+              <button class="btn btn-primary" type="submit" :disabled="formStatus === 'submitting'">
+                {{ formStatus === 'submitting' ? 'Submitting…' : 'Submit feedback' }}
+              </button>
+              <p class="feedback-inline" role="status" aria-live="polite" v-if="formNotice">
+                {{ formNotice }}
+              </p>
+            </div>
+          </form>
+        </div>
+      </section>
     </div>
   `,
   methods: {
@@ -512,6 +650,44 @@ createApp({
         // Ignore storage failures.
       }
       if (this.ambientEnabled) this.runPageAnimations();
+    },
+    resetFeedbackForm() {
+      this.form.title = "";
+      this.form.description = "";
+      this.form.steps = "";
+      this.form.expected = "";
+      this.form.actual = "";
+      this.form.problem = "";
+      this.form.outcome = "";
+      this.form.website = "";
+      this.form.pageUrl = window.location.href;
+    },
+    async submitFeedback() {
+      this.formNotice = "";
+      const required = [this.form.name, this.form.email, this.form.title, this.form.description];
+      if (required.some((v) => !String(v || "").trim())) {
+        this.formStatus = "error";
+        this.formNotice = "Please complete name, email, title, and description.";
+        return;
+      }
+      this.formStatus = "submitting";
+      try {
+        const res = await fetch("/api/feedback", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(this.form),
+        });
+        const payload = await res.json().catch(() => ({}));
+        if (!res.ok) {
+          throw new Error(payload?.error || `Request failed (${res.status})`);
+        }
+        this.formStatus = "success";
+        this.formNotice = "Thanks! Your feedback was submitted successfully.";
+        this.resetFeedbackForm();
+      } catch (err) {
+        this.formStatus = "error";
+        this.formNotice = err instanceof Error ? err.message : "Could not submit feedback right now.";
+      }
     },
   },
 }).mount("#app");
