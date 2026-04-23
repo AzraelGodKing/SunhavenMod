@@ -57,6 +57,9 @@
 - Adjusted mirror commit messages to avoid `[skip ci]` so Cloudflare Pages does not skip builds after mirrored pushes.
 - Rebuilt the Cloudflare landing page as a Vue-powered “Download Pulse” dashboard that reads `docs/data/stats-cache.json` via GitHub Pages and the mod roster from `scripts/mod-matrix.json` (same stat id rules as `scripts/fetch-stats.js`).
 - Added `cloudflare-site/downloads.html` and shared top navigation so Home and Downloads cross-link while reusing the same Vue app.
+- Added an inline “Report a Bug / Request a Feature” form to the Cloudflare site with conditional fields, async in-page submission states, honeypot spam protection, and a secure server-side Pages Function endpoint (`cloudflare-site/functions/api/feedback.js`) that validates input and creates Linear issues.
+- Moved feedback into its own page at `cloudflare-site/feedback.html`, updated shared navigation to Home/Downloads/Feedback, and scoped the form UI to the dedicated feedback route.
+- Updated the feedback endpoint to consume optional `LINEAR_BUG_LABEL_ID` / `LINEAR_FEATURE_LABEL_ID` env vars for issue labeling in Linear, and documented that `CLOUDFLARE_API_TOKEN` is deploy-time only (not a runtime feedback secret).
 - Set `wrangler.toml` `name` to `azrael-sunhaven-website` to match the Cloudflare Pages project slug.
 - Removed the redundant `Nexus (total)` metric from the Cloudflare Download Pulse totals row so Nexus is represented only once via `Nexus (unique)`.
 
