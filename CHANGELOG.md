@@ -35,6 +35,7 @@
 - Refined the `Birthday Reminder` mod-page art direction with a stronger birthday feel (celebration palette, confetti-like highlights, and festive timeline card treatment).
 - Added Motion One powered entrance animations for Home/Downloads/mod pages, plus lane shape-language refinements, layout-level styling variants, and downloads result-count feedback while preserving reduced-motion safeguards.
 - Expanded `/api/feedback` Pages Function logging for Linear failures (`functions/api/feedback.js` and mirrored `cloudflare-site/functions/api/feedback.js`): log HTTP status, raw response body, JSON parse errors, and parsed GraphQL `errors`/`data` while keeping the client-facing 502 message generic.
+- Set explicit `[observability] enabled = true` in `wrangler.toml` (and mirrored `azrael-sunhaven-website/wrangler.toml`) so Workers Logs / observability behavior stays consistent with Wrangler-driven deployments.
 
 ## 2026-04-22
 ### CI
