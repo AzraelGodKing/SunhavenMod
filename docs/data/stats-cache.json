@@ -1,5 +1,5 @@
 {
-  "lastFetched": "2026-04-24T21:47:22.023Z",
+  "lastFetched": "2026-04-24T22:39:04.153Z",
   "mods": {
     "senpais-chest": {
       "name": "Senpai's Chest",
@@ -53,10 +53,10 @@
         }
       },
       "nexus": {
-        "total_downloads": 853,
-        "unique_downloads": 559
+        "total_downloads": 854,
+        "unique_downloads": 560
       },
-      "combined_total": 1173
+      "combined_total": 1174
     },
     "museum-utility-tracker": {
       "name": "S.M.U.T.",
@@ -149,10 +149,10 @@
         }
       },
       "nexus": {
-        "total_downloads": 977,
-        "unique_downloads": 682
+        "total_downloads": 978,
+        "unique_downloads": 683
       },
-      "combined_total": 1194
+      "combined_total": 1195
     },
     "haven-dev-tools": {
       "name": "HavenDevTools",
@@ -211,10 +211,10 @@
         }
       },
       "nexus": {
-        "total_downloads": 113,
-        "unique_downloads": 75
+        "total_downloads": 114,
+        "unique_downloads": 76
       },
-      "combined_total": 178
+      "combined_total": 179
     },
     "trinket-fortune": {
       "name": "Trinket Fortune",
@@ -269,8 +269,8 @@
   },
   "site_total": {
     "thunderstore": 2285,
-    "nexus_total": 4105,
-    "nexus_unique": 3018,
-    "grand_total": 6390
+    "nexus_total": 4108,
+    "nexus_unique": 3021,
+    "grand_total": 6393
   }
 }
