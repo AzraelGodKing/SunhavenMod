@@ -1,14 +1,14 @@
 {
-  "lastFetched": "2026-04-24T19:51:59.636Z",
+  "lastFetched": "2026-04-24T20:48:49.795Z",
   "mods": {
     "senpais-chest": {
       "name": "Senpai's Chest",
       "thunderstore": {
-        "total_downloads": 358,
+        "total_downloads": 359,
         "versions": {
           "2.4.0": 6,
           "2.3.0": 2,
-          "2.2.6": 1,
+          "2.2.6": 2,
           "2.2.4": 18,
           "2.2.2": 58,
           "2.2.1": 11,
@@ -26,10 +26,10 @@
         }
       },
       "nexus": {
-        "total_downloads": 419,
-        "unique_downloads": 305
+        "total_downloads": 420,
+        "unique_downloads": 306
       },
-      "combined_total": 777
+      "combined_total": 779
     },
     "havens-birthright": {
       "name": "Haven's Birthright",
@@ -61,9 +61,9 @@
     "museum-utility-tracker": {
       "name": "S.M.U.T.",
       "thunderstore": {
-        "total_downloads": 306,
+        "total_downloads": 309,
         "versions": {
-          "2.3.0": 5,
+          "2.3.0": 8,
           "2.2.9": 3,
           "2.2.6": 67,
           "2.2.5": 25,
@@ -79,7 +79,7 @@
         "total_downloads": 708,
         "unique_downloads": 556
       },
-      "combined_total": 1014
+      "combined_total": 1017
     },
     "squirrels-birthday-reminder": {
       "name": "A Squirrel's Birthday Reminder",
@@ -261,16 +261,16 @@
         }
       },
       "nexus": {
-        "total_downloads": 11,
-        "unique_downloads": 10
+        "total_downloads": 12,
+        "unique_downloads": 11
       },
-      "combined_total": 36
+      "combined_total": 37
     }
   },
   "site_total": {
-    "thunderstore": 2280,
-    "nexus_total": 4102,
-    "nexus_unique": 3015,
-    "grand_total": 6382
+    "thunderstore": 2284,
+    "nexus_total": 4104,
+    "nexus_unique": 3017,
+    "grand_total": 6388
   }
 }
