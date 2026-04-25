@@ -1,5 +1,5 @@
 {
-  "lastFetched": "2026-04-25T02:26:48.550Z",
+  "lastFetched": "2026-04-25T05:11:28.420Z",
   "mods": {
     "senpais-chest": {
       "name": "Senpai's Chest",
@@ -34,9 +34,9 @@
     "havens-birthright": {
       "name": "Haven's Birthright",
       "thunderstore": {
-        "total_downloads": 321,
+        "total_downloads": 322,
         "versions": {
-          "2.1.0": 6,
+          "2.1.0": 7,
           "2.0.3": 4,
           "2.0.0": 35,
           "1.4.3": 15,
@@ -56,7 +56,7 @@
         "total_downloads": 854,
         "unique_downloads": 560
       },
-      "combined_total": 1175
+      "combined_total": 1176
     },
     "museum-utility-tracker": {
       "name": "S.M.U.T.",
@@ -157,10 +157,10 @@
     "haven-dev-tools": {
       "name": "HavenDevTools",
       "thunderstore": {
-        "total_downloads": 118,
+        "total_downloads": 119,
         "versions": {
           "1.1.0": 0,
-          "1.0.11": 1,
+          "1.0.11": 2,
           "1.0.8": 7,
           "1.0.7": 15,
           "1.0.6": 13,
@@ -174,7 +174,7 @@
         "total_downloads": 74,
         "unique_downloads": 59
       },
-      "combined_total": 192
+      "combined_total": 193
     },
     "havens-almanac": {
       "name": "Haven's Almanac",
@@ -268,9 +268,9 @@
     }
   },
   "site_total": {
-    "thunderstore": 2298,
+    "thunderstore": 2300,
     "nexus_total": 4110,
     "nexus_unique": 3023,
-    "grand_total": 6408
+    "grand_total": 6410
   }
 }
