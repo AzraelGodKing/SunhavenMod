@@ -1,5 +1,5 @@
 {
-  "lastFetched": "2026-04-25T08:52:58.298Z",
+  "lastFetched": "2026-04-25T09:52:50.227Z",
   "mods": {
     "senpais-chest": {
       "name": "Senpai's Chest",
@@ -76,10 +76,10 @@
         }
       },
       "nexus": {
-        "total_downloads": 709,
-        "unique_downloads": 557
+        "total_downloads": 710,
+        "unique_downloads": 558
       },
-      "combined_total": 1019
+      "combined_total": 1020
     },
     "squirrels-birthday-reminder": {
       "name": "A Squirrel's Birthday Reminder",
@@ -132,19 +132,19 @@
     "the-vault": {
       "name": "The Vault",
       "thunderstore": {
-        "total_downloads": 221,
+        "total_downloads": 224,
         "versions": {
           "3.2.0": 6,
-          "3.1.0": 2,
+          "3.1.0": 3,
           "3.0.7": 2,
           "3.0.4": 35,
           "3.0.2": 12,
           "3.0.1": 10,
           "2.0.8": 48,
-          "2.0.7": 14,
+          "2.0.7": 15,
           "2.0.6": 20,
           "2.0.5": 17,
-          "2.0.4": 35,
+          "2.0.4": 36,
           "2.0.3": 20
         }
       },
@@ -152,18 +152,18 @@
         "total_downloads": 978,
         "unique_downloads": 683
       },
-      "combined_total": 1199
+      "combined_total": 1202
     },
     "haven-dev-tools": {
       "name": "HavenDevTools",
       "thunderstore": {
-        "total_downloads": 120,
+        "total_downloads": 121,
         "versions": {
           "1.1.0": 1,
           "1.0.11": 2,
           "1.0.8": 7,
           "1.0.7": 15,
-          "1.0.6": 13,
+          "1.0.6": 14,
           "1.0.5": 30,
           "1.0.4": 12,
           "1.0.3": 15,
@@ -174,15 +174,15 @@
         "total_downloads": 74,
         "unique_downloads": 59
       },
-      "combined_total": 194
+      "combined_total": 195
     },
     "havens-almanac": {
       "name": "Haven's Almanac",
       "thunderstore": {
-        "total_downloads": 201,
+        "total_downloads": 202,
         "versions": {
           "1.3.0": 6,
-          "1.2.0": 5,
+          "1.2.0": 6,
           "1.1.2": 2,
           "1.0.6": 5,
           "1.0.5": 18,
@@ -197,7 +197,7 @@
         "total_downloads": 19,
         "unique_downloads": 18
       },
-      "combined_total": 220
+      "combined_total": 221
     },
     "faster-races": {
       "name": "Faster Races",
@@ -268,9 +268,9 @@
     }
   },
   "site_total": {
-    "thunderstore": 2303,
-    "nexus_total": 4112,
-    "nexus_unique": 3025,
-    "grand_total": 6415
+    "thunderstore": 2308,
+    "nexus_total": 4113,
+    "nexus_unique": 3026,
+    "grand_total": 6421
   }
 }
