@@ -1,5 +1,5 @@
 {
-  "lastFetched": "2026-04-25T18:52:57.416Z",
+  "lastFetched": "2026-04-25T19:43:22.166Z",
   "mods": {
     "senpais-chest": {
       "name": "Senpai's Chest",
@@ -53,10 +53,10 @@
         }
       },
       "nexus": {
-        "total_downloads": 858,
-        "unique_downloads": 563
+        "total_downloads": 860,
+        "unique_downloads": 565
       },
-      "combined_total": 1181
+      "combined_total": 1183
     },
     "museum-utility-tracker": {
       "name": "S.M.U.T.",
@@ -149,10 +149,10 @@
         }
       },
       "nexus": {
-        "total_downloads": 982,
+        "total_downloads": 983,
         "unique_downloads": 685
       },
-      "combined_total": 1216
+      "combined_total": 1217
     },
     "haven-dev-tools": {
       "name": "HavenDevTools",
@@ -194,10 +194,10 @@
         }
       },
       "nexus": {
-        "total_downloads": 25,
+        "total_downloads": 26,
         "unique_downloads": 23
       },
-      "combined_total": 231
+      "combined_total": 232
     },
     "faster-races": {
       "name": "Faster Races",
@@ -245,10 +245,10 @@
         }
       },
       "nexus": {
-        "total_downloads": 57,
+        "total_downloads": 59,
         "unique_downloads": 53
       },
-      "combined_total": 92
+      "combined_total": 94
     },
     "havens-respec": {
       "name": "Haven's Respec",
@@ -269,8 +269,8 @@
   },
   "site_total": {
     "thunderstore": 2339,
-    "nexus_total": 4153,
-    "nexus_unique": 3060,
-    "grand_total": 6492
+    "nexus_total": 4159,
+    "nexus_unique": 3062,
+    "grand_total": 6498
   }
 }
