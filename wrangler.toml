@@ -2,7 +2,5 @@ name = "azrael-sunhaven-website"
 compatibility_date = "2026-04-22"
 pages_build_output_dir = "cloudflare-site"
 
-# Pin Workers Logs / dashboard observability so deploys do not drift from dashboard defaults.
-# Equivalent JSONC: { "observability": { "enabled": true } }
 [observability]
 enabled = true
