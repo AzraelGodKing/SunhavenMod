@@ -39,7 +39,7 @@ document.addEventListener("DOMContentLoaded", () => {
       el.textContent = "—";
       return;
     }
-    el.textContent = `${totalText} (${uniqueText} unique)`;
+    el.textContent = `${totalText} (${uniqueText})`;
   };
 
   fetch(resolveStatsCacheUrl(), { cache: "no-cache" })
