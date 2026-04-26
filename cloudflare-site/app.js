@@ -207,7 +207,7 @@ createApp({
           const statsId = resolveStatsId(row.modKey);
           const mod = byId[statsId] || {};
           const ts = mod.thunderstore?.total_downloads;
-          const nx = mod.nexus?.total_downloads;
+          const nx = mod.nexus?.unique_downloads;
           const combined = mod.combined_total;
           return {
             modKey: row.modKey,

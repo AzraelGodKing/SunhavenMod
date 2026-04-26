@@ -1,5 +1,9 @@
 # Changelog
 
+## 2026-04-26
+### Web
+- Switched website-facing Nexus download displays to use `unique_downloads` instead of total downloads so per-mod and site-level Nexus counts on both GitHub Pages (`docs/scripts/stats-display.js`) and Cloudflare pages (`cloudflare-site/app.js`, `cloudflare-site/mod-page.js`) match the intended Unique DL metric.
+
 ## 2026-04-24
 ### Web
 - Reworked `/api/feedback` Pages Function logging into single-line JSON (`service`, `component`, `event`, `failureReason`, `linearHttpStatus`, previews, GraphQL error summaries, `cfRay`, etc.) in `functions/api/feedback.js` and `cloudflare-site/functions/api/feedback.js`, so Workers Logs queries can pinpoint Linear vs validation vs config failures without logging tokens or user-submitted copy.
