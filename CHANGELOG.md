@@ -1,5 +1,9 @@
 # Changelog
 
+## 2026-04-24
+### Web
+- Reworked `/api/feedback` Pages Function logging into single-line JSON (`service`, `component`, `event`, `failureReason`, `linearHttpStatus`, previews, GraphQL error summaries, `cfRay`, etc.) in `functions/api/feedback.js` and `cloudflare-site/functions/api/feedback.js`, so Workers Logs queries can pinpoint Linear vs validation vs config failures without logging tokens or user-submitted copy.
+
 ## 2026-04-23
 ### Web
 - Redesigned the Cloudflare landing page experience in `cloudflare-site/app.js` with a stronger hero, dual call-to-action flow, live snapshot panel, and a featured-mods showcase that highlights top projects dynamically from cached stats.
