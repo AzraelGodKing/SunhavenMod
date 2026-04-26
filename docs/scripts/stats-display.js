@@ -52,7 +52,7 @@ document.addEventListener("DOMContentLoaded", () => {
             setText(el, siteTotal.thunderstore);
             break;
           case "nexus_site_total":
-            setText(el, siteTotal.nexus_total);
+            setText(el, siteTotal.nexus_unique);
             break;
           default:
             setText(el, null);
@@ -75,7 +75,7 @@ document.addEventListener("DOMContentLoaded", () => {
             setText(el, thunderstore.total_downloads);
             break;
           case "nexus_downloads":
-            setText(el, nexus.total_downloads);
+            setText(el, nexus.unique_downloads);
             break;
           case "nexus_unique":
             setText(el, nexus.unique_downloads);
