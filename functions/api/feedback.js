@@ -10,11 +10,49 @@
  * - FEEDBACK_RATE_MAX (default 5)
  * - LINEAR_BUG_LABEL_ID
  * - LINEAR_FEATURE_LABEL_ID
+ *
+ * Logs: one JSON object per line (search in Workers Logs for `event` values
+ * like `feedback.linear_failed`). Never logs tokens or user-submitted text.
  */
 
 const rateWindowMsDefault = 10 * 60 * 1000;
 const rateLimitDefault = 5;
 const rateBuckets = new Map();
+
+const LOG_SERVICE = "sunhaven-website";
+const LOG_COMPONENT = "api.feedback";
+
+function truncate(str, maxLen) {
+  const s = String(str ?? "");
+  if (s.length <= maxLen) return s;
+  return `${s.slice(0, maxLen)}…`;
+}
+
+/**
+ * @param {"debug"|"info"|"warn"|"error"} level
+ * @param {Record<string, unknown>} fields
+ */
+function feedbackLog(level, fields) {
+  const line = JSON.stringify({
+    ts: new Date().toISOString(),
+    level,
+    service: LOG_SERVICE,
+    component: LOG_COMPONENT,
+    ...fields,
+  });
+  if (level === "error") console.error(line);
+  else if (level === "warn") console.warn(line);
+  else console.log(line);
+}
+
+function summarizeGraphQLErrors(errors) {
+  if (!Array.isArray(errors)) return null;
+  return errors.map((e) => ({
+    message: typeof e?.message === "string" ? truncate(e.message, 500) : null,
+    code: e?.extensions?.code ?? e?.extensions?.type ?? null,
+    path: e?.path ?? null,
+  }));
+}
 
 function sanitizeText(value, maxLen) {
   const text = String(value ?? "")
@@ -53,15 +91,35 @@ function bad(message, status = 400) {
   });
 }
 
-function throwLinearUpstream() {
+/** @param {Record<string, unknown>} [detail] */
+function throwLinearUpstream(detail = {}) {
   const err = new Error("Failed to create Linear issue");
   err.name = "FeedbackLinearUpstreamError";
+  err.detail = detail;
   throw err;
+}
+
+function requestDiag(request, env, extra = {}) {
+  return {
+    clientIp: getClientIp(request),
+    cfRay: request.headers.get("cf-ray") || null,
+    linearTokenConfigured: Boolean(env.LINEAR_API_TOKEN),
+    linearTeamIdConfigured: Boolean(env.LINEAR_TEAM_ID),
+    ...extra,
+  };
 }
 
 export async function onRequestPost(context) {
   const { request, env } = context;
   if (!env.LINEAR_API_TOKEN || !env.LINEAR_TEAM_ID) {
+    feedbackLog("warn", {
+      event: "feedback.config_missing",
+      missing: [
+        !env.LINEAR_API_TOKEN ? "LINEAR_API_TOKEN" : null,
+        !env.LINEAR_TEAM_ID ? "LINEAR_TEAM_ID" : null,
+      ].filter(Boolean),
+      ...requestDiag(request, env),
+    });
     return bad("Server is not configured for feedback submission.", 500);
   }
 
@@ -69,16 +127,29 @@ export async function onRequestPost(context) {
   try {
     body = await request.json();
   } catch {
+    feedbackLog("warn", {
+      event: "feedback.request_invalid_json",
+      ...requestDiag(request, env),
+    });
     return bad("Invalid JSON body.");
   }
 
   const honeypot = sanitizeText(body?.website, 120);
   if (honeypot) {
+    feedbackLog("warn", {
+      event: "feedback.spam_honeypot",
+      ...requestDiag(request, env),
+    });
     return bad("Spam detected.");
   }
 
   const type = sanitizeText(body?.type, 12).toLowerCase();
   if (type !== "bug" && type !== "feature") {
+    feedbackLog("warn", {
+      event: "feedback.invalid_type",
+      submittedType: truncate(type, 32) || null,
+      ...requestDiag(request, env),
+    });
     return bad("Invalid feedback type.");
   }
 
@@ -87,6 +158,10 @@ export async function onRequestPost(context) {
   const windowMs = Number.isFinite(windowSec) ? Math.max(30, windowSec) * 1000 : rateWindowMsDefault;
   const allowed = checkRateLimit(getClientIp(request), windowMs, maxPerWindow);
   if (!allowed) {
+    feedbackLog("warn", {
+      event: "feedback.rate_limited",
+      ...requestDiag(request, env, { feedbackType: type }),
+    });
     return bad("Too many submissions. Please try again later.", 429);
   }
 
@@ -94,6 +169,13 @@ export async function onRequestPost(context) {
   const title = sanitizeText(body?.title, 160);
   const description = sanitizeText(body?.description, 4000);
   if (!name || !title || !description) {
+    feedbackLog("warn", {
+      event: "feedback.validation_missing_fields",
+      hasName: Boolean(name),
+      hasTitle: Boolean(title),
+      hasDescription: Boolean(description),
+      ...requestDiag(request, env, { feedbackType: type }),
+    });
     return bad("Missing required fields.");
   }
 
@@ -155,43 +237,81 @@ export async function onRequestPost(context) {
       }
     }
 
-    console.error("[feedback] Linear response", {
-      httpStatus,
-      ok: linearResp.ok,
-      rawBody: rawText,
-    });
-
-    if (parseError !== null) {
-      console.error("[feedback] Linear body is not valid JSON; raw text:", rawText);
-    } else if (!rawText) {
-      console.error("[feedback] Linear empty response body");
-    } else {
-      console.error("[feedback] Linear GraphQL JSON", {
-        errors: parsed?.errors ?? null,
-        data: parsed?.data ?? null,
+    if (!linearResp.ok) {
+      throwLinearUpstream({
+        failureReason: "linear_http_not_ok",
+        linearHttpStatus: httpStatus,
+        linearBodyPreview: truncate(rawText, 1200),
       });
     }
-
-    if (!linearResp.ok) throwLinearUpstream();
-    if (parseError !== null || parsed === null) throwLinearUpstream();
-    if (Array.isArray(parsed.errors) && parsed.errors.length) throwLinearUpstream();
+    if (parseError !== null || parsed === null) {
+      if (!rawText) {
+        throwLinearUpstream({
+          failureReason: "linear_empty_body",
+          linearHttpStatus: httpStatus,
+        });
+      }
+      throwLinearUpstream({
+        failureReason: "linear_body_not_json",
+        linearHttpStatus: httpStatus,
+        jsonParseError: parseError,
+        linearBodyPreview: truncate(rawText, 800),
+      });
+    }
+    if (Array.isArray(parsed.errors) && parsed.errors.length) {
+      throwLinearUpstream({
+        failureReason: "linear_graphql_errors",
+        linearHttpStatus: httpStatus,
+        graphqlErrors: summarizeGraphQLErrors(parsed.errors),
+      });
+    }
 
     issueCreate = parsed?.data?.issueCreate;
     if (!issueCreate?.success) {
-      console.error("[feedback] Linear issueCreate mutation reported success=false", {
-        httpStatus,
-        issueCreate,
-        errors: parsed?.errors ?? null,
+      throwLinearUpstream({
+        failureReason: "issue_create_not_successful",
+        linearHttpStatus: httpStatus,
+        issueCreateSuccess: issueCreate?.success ?? null,
+        issueCreateHasIssue: Boolean(issueCreate?.issue),
+        graphqlErrors: summarizeGraphQLErrors(parsed.errors),
       });
-      throwLinearUpstream();
     }
   } catch (err) {
     if (err && err.name === "FeedbackLinearUpstreamError") {
+      feedbackLog("error", {
+        event: "feedback.linear_failed",
+        httpStatusReturned: 502,
+        ...requestDiag(request, env, {
+          feedbackType: type,
+          labelIdsCount: labelIds.length,
+        }),
+        ...(err.detail && typeof err.detail === "object" ? err.detail : {}),
+      });
       return bad("Failed to create Linear issue", 502);
     }
-    console.error("[feedback] Linear fetch threw before response:", err);
+    feedbackLog("error", {
+      event: "feedback.linear_failed",
+      failureReason: "linear_fetch_exception",
+      httpStatusReturned: 502,
+      exceptionName: err?.name ?? null,
+      exceptionMessage: err instanceof Error ? truncate(err.message, 500) : truncate(String(err), 500),
+      ...requestDiag(request, env, {
+        feedbackType: type,
+        labelIdsCount: labelIds.length,
+      }),
+    });
     return bad("Failed to create Linear issue", 502);
   }
+
+  feedbackLog("info", {
+    event: "feedback.linear_issue_created",
+    issueIdentifier: issueCreate.issue?.identifier ?? null,
+    issueId: issueCreate.issue?.id ?? null,
+    ...requestDiag(request, env, {
+      feedbackType: type,
+      labelIdsCount: labelIds.length,
+    }),
+  });
 
   return new Response(
     JSON.stringify({
