@@ -75,7 +75,7 @@ function formatTotalWithUnique(total, unique) {
   const totalText = formatInt(total);
   const uniqueText = formatInt(unique);
   if (totalText === "—" && uniqueText === "—") return "—";
-  return `${totalText} (${uniqueText} unique)`;
+  return `${totalText} (${uniqueText})`;
 }
 
 createApp({
@@ -415,7 +415,7 @@ createApp({
                   </div>
                   <div>
                     <dt>Nexus</dt>
-                    <dd>{{ formatInt(m.nx) }} <small>({{ formatInt(m.nxUnique) }} unique)</small></dd>
+                    <dd>{{ formatInt(m.nx) }} <small>({{ formatInt(m.nxUnique) }})</small></dd>
                   </div>
                 </dl>
               </article>
@@ -496,7 +496,7 @@ createApp({
                 </div>
                 <div>
                   <dt>Nexus</dt>
-                  <dd>{{ formatInt(m.nx) }} <small>({{ formatInt(m.nxUnique) }} unique)</small></dd>
+                  <dd>{{ formatInt(m.nx) }} <small>({{ formatInt(m.nxUnique) }})</small></dd>
                 </div>
               </dl>
             </article>
