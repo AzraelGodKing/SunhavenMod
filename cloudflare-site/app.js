@@ -71,6 +71,13 @@ function formatWhen(iso) {
   }
 }
 
+function formatTotalWithUnique(total, unique) {
+  const totalText = formatInt(total);
+  const uniqueText = formatInt(unique);
+  if (totalText === "—" && uniqueText === "—") return "—";
+  return `${totalText} (${uniqueText} unique)`;
+}
+
 createApp({
   data() {
     const raw = document.documentElement.dataset.page || "landing";
@@ -83,6 +90,7 @@ createApp({
       lastFetched: null,
       siteTotal: {
         thunderstore: null,
+        nexus_total: null,
         nexus_unique: null,
         grand_total: null,
       },
@@ -196,6 +204,7 @@ createApp({
       const site = stats?.site_total || {};
       this.siteTotal = {
         thunderstore: site.thunderstore ?? null,
+        nexus_total: site.nexus_total ?? null,
         nexus_unique: site.nexus_unique ?? null,
         grand_total: site.grand_total ?? null,
       };
@@ -207,7 +216,7 @@ createApp({
           const statsId = resolveStatsId(row.modKey);
           const mod = byId[statsId] || {};
           const ts = mod.thunderstore?.total_downloads;
-          const nx = mod.nexus?.unique_downloads;
+          const nx = mod.nexus?.total_downloads;
           const combined = mod.combined_total;
           return {
             modKey: row.modKey,
@@ -218,6 +227,7 @@ createApp({
             lane: MOD_META[row.modKey]?.lane || "QoL",
             ts: ts != null ? Number(ts) : null,
             nx: nx != null ? Number(nx) : null,
+            nxUnique: mod.nexus?.unique_downloads != null ? Number(mod.nexus.unique_downloads) : null,
             combined: combined != null ? Number(combined) : null,
           };
         });
@@ -289,8 +299,8 @@ createApp({
               <span class="total-value">{{ formatInt(siteTotal.thunderstore) }}</span>
             </div>
             <div class="total">
-              <span class="total-label">Nexus unique</span>
-              <span class="total-value">{{ formatInt(siteTotal.nexus_unique) }}</span>
+              <span class="total-label">Nexus total (unique)</span>
+              <span class="total-value">{{ formatTotalWithUnique(siteTotal.nexus_total, siteTotal.nexus_unique) }}</span>
             </div>
             <div class="total">
               <span class="total-label">Published mods</span>
@@ -339,8 +349,8 @@ createApp({
                   <dd>{{ formatInt(siteTotal.thunderstore) }}</dd>
                 </div>
                 <div>
-                  <dt>Nexus unique total</dt>
-                  <dd>{{ formatInt(siteTotal.nexus_unique) }}</dd>
+                  <dt>Nexus total (unique)</dt>
+                  <dd>{{ formatTotalWithUnique(siteTotal.nexus_total, siteTotal.nexus_unique) }}</dd>
                 </div>
               </dl>
               <p class="subtle">Last refresh: {{ formatWhen(lastFetched) }}</p>
@@ -405,7 +415,7 @@ createApp({
                   </div>
                   <div>
                     <dt>Nexus</dt>
-                    <dd>{{ formatInt(m.nx) }}</dd>
+                    <dd>{{ formatInt(m.nx) }} <small>({{ formatInt(m.nxUnique) }} unique)</small></dd>
                   </div>
                 </dl>
               </article>
@@ -486,7 +496,7 @@ createApp({
                 </div>
                 <div>
                   <dt>Nexus</dt>
-                  <dd>{{ formatInt(m.nx) }}</dd>
+                  <dd>{{ formatInt(m.nx) }} <small>({{ formatInt(m.nxUnique) }} unique)</small></dd>
                 </div>
               </dl>
             </article>
@@ -560,6 +570,7 @@ createApp({
   methods: {
     formatInt,
     formatWhen,
+    formatTotalWithUnique,
     relativeWidth(mod) {
       const top = Number(this.topCombinedValue || 0);
       const value = Number(mod?.combined || 0);

@@ -3,6 +3,9 @@
 ## 2026-04-26
 ### Web
 - Switched website-facing Nexus download displays to use `unique_downloads` instead of total downloads so per-mod and site-level Nexus counts on both GitHub Pages (`docs/scripts/stats-display.js`) and Cloudflare pages (`cloudflare-site/app.js`, `cloudflare-site/mod-page.js`) match the intended Unique DL metric.
+- Rebalanced Nexus metrics: restored `total_downloads` as the primary/site-total value used alongside Thunderstore (including combined/ranking contexts), while keeping `unique_downloads` explicitly called out as a separate Nexus metric on Cloudflare mod pages.
+- Updated Nexus display formatting to show both total and unique together where Nexus counts appear on the docs hub and Cloudflare downloads cards (e.g., `total (unique)`), so both metrics are visible at a glance.
+- Added aggregate Nexus totals formatting in overall summary panels so site-level Nexus now displays as `total (unique)` alongside the global totals on both docs and Cloudflare pages.
 
 ## 2026-04-24
 ### Web

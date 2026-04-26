@@ -432,7 +432,7 @@ createApp({
       this.stats = {
         combined: entry.combined_total ?? null,
         thunderstore: entry.thunderstore?.total_downloads ?? null,
-        nexusTotal: entry.nexus?.unique_downloads ?? null,
+        nexusTotal: entry.nexus?.total_downloads ?? null,
         nexusUnique: entry.nexus?.unique_downloads ?? null,
       };
     } catch (e) {
@@ -536,7 +536,7 @@ createApp({
               <p class="stat-value">{{ formatInt(stats.thunderstore) }}</p>
             </article>
             <article class="stat-card">
-              <p class="stat-label">Nexus unique downloads</p>
+              <p class="stat-label">Nexus total downloads</p>
               <p class="stat-value">{{ formatInt(stats.nexusTotal) }}</p>
             </article>
             <article class="stat-card">
@@ -658,7 +658,7 @@ createApp({
                   <dd>{{ formatInt(stats.thunderstore) }}</dd>
                 </div>
                 <div>
-                  <dt>Public branch intake (Nexus unique)</dt>
+                  <dt>Public branch intake (Nexus total)</dt>
                   <dd>{{ formatInt(stats.nexusTotal) }}</dd>
                 </div>
               </dl>

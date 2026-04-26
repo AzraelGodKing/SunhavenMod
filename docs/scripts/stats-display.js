@@ -32,6 +32,15 @@ document.addEventListener("DOMContentLoaded", () => {
   const setText = (el, value) => {
     el.textContent = formatValue(value);
   };
+  const setNexusSummary = (el, total, unique) => {
+    const totalText = formatValue(total);
+    const uniqueText = formatValue(unique);
+    if (totalText === "—" && uniqueText === "—") {
+      el.textContent = "—";
+      return;
+    }
+    el.textContent = `${totalText} (${uniqueText} unique)`;
+  };
 
   fetch(resolveStatsCacheUrl(), { cache: "no-cache" })
     .then((res) => {
@@ -52,7 +61,7 @@ document.addEventListener("DOMContentLoaded", () => {
             setText(el, siteTotal.thunderstore);
             break;
           case "nexus_site_total":
-            setText(el, siteTotal.nexus_unique);
+            setNexusSummary(el, siteTotal.nexus_total, siteTotal.nexus_unique);
             break;
           default:
             setText(el, null);
@@ -75,7 +84,7 @@ document.addEventListener("DOMContentLoaded", () => {
             setText(el, thunderstore.total_downloads);
             break;
           case "nexus_downloads":
-            setText(el, nexus.unique_downloads);
+            setNexusSummary(el, nexus.total_downloads, nexus.unique_downloads);
             break;
           case "nexus_unique":
             setText(el, nexus.unique_downloads);
