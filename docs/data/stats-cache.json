@@ -1,5 +1,5 @@
 {
-  "lastFetched": "2026-04-27T22:51:55.092Z",
+  "lastFetched": "2026-04-27T23:53:24.723Z",
   "mods": {
     "senpais-chest": {
       "name": "Senpai's Chest",
@@ -26,10 +26,10 @@
         }
       },
       "nexus": {
-        "total_downloads": 440,
+        "total_downloads": 441,
         "unique_downloads": 321
       },
-      "combined_total": 808
+      "combined_total": 809
     },
     "havens-birthright": {
       "name": "Haven's Birthright",
@@ -124,10 +124,10 @@
         }
       },
       "nexus": {
-        "total_downloads": 262,
-        "unique_downloads": 214
+        "total_downloads": 263,
+        "unique_downloads": 215
       },
-      "combined_total": 559
+      "combined_total": 560
     },
     "the-vault": {
       "name": "The Vault",
@@ -149,10 +149,10 @@
         }
       },
       "nexus": {
-        "total_downloads": 999,
-        "unique_downloads": 698
+        "total_downloads": 1000,
+        "unique_downloads": 699
       },
-      "combined_total": 1237
+      "combined_total": 1238
     },
     "haven-dev-tools": {
       "name": "HavenDevTools",
@@ -194,10 +194,10 @@
         }
       },
       "nexus": {
-        "total_downloads": 34,
-        "unique_downloads": 31
+        "total_downloads": 35,
+        "unique_downloads": 32
       },
-      "combined_total": 247
+      "combined_total": 248
     },
     "faster-races": {
       "name": "Faster Races",
@@ -245,10 +245,10 @@
         }
       },
       "nexus": {
-        "total_downloads": 78,
-        "unique_downloads": 72
+        "total_downloads": 79,
+        "unique_downloads": 73
       },
-      "combined_total": 119
+      "combined_total": 120
     },
     "havens-respec": {
       "name": "Haven's Respec",
@@ -269,8 +269,8 @@
   },
   "site_total": {
     "thunderstore": 2426,
-    "nexus_total": 4264,
-    "nexus_unique": 3151,
-    "grand_total": 6690
+    "nexus_total": 4269,
+    "nexus_unique": 3155,
+    "grand_total": 6695
   }
 }
