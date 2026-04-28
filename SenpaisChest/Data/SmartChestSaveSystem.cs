@@ -187,9 +187,10 @@ namespace SenpaisChest.Data
                         return true;
                 }
             }
-            catch
+            catch (Exception ex)
             {
                 // If we cannot inspect the existing file, do not block save behavior here.
+                Plugin.Log?.LogDebug($"[Save] FileContainsRules inspection failed for '{filePath}': {ex.Message}");
             }
 
             return false;
