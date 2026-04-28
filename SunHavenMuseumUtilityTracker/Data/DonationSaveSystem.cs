@@ -84,9 +84,9 @@ namespace SunHavenMuseumUtilityTracker.Data
                             return backupWrapper.ToData();
                         }
                     }
-                    catch
+                    catch (Exception backupEx)
                     {
-                        Plugin.Log?.LogError($"Failed to load backup for {characterName}");
+                        Plugin.Log?.LogError($"Failed to load backup for {characterName}: {backupEx.Message}");
                     }
                 }
             }

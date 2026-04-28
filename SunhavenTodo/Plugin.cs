@@ -59,6 +59,8 @@ namespace SunhavenTodo
         private static float _lastAutoSaveTime;
         private bool _isDataLoaded;
         private string _loadedCharacterName;
+        private bool _wasInMenuScene = true;
+        private static bool _applicationQuitting;
         private static bool _overnightHooked;
         private static UnityEngine.Events.UnityAction _overnightCallback;
 
@@ -270,14 +272,25 @@ namespace SunhavenTodo
 
         private void OnSceneLoaded(Scene scene, LoadSceneMode mode)
         {
-            if (scene.name == "MainMenu" || scene.name == "Bootstrap")
+            bool isMenuScene = scene.name == "MainMenu" || scene.name == "Bootstrap";
+
+            if (isMenuScene)
             {
                 // DayCycle singleton is gone on main menu — reset so we re-hook on next game load
                 _overnightHooked = false;
                 _overnightCallback = null;
+
+                if (!_wasInMenuScene)
+                {
+                    SaveData();
+                    PlayerPatches.ResetForMenu();
+                }
+
+                _wasInMenuScene = true;
                 return;
             }
 
+            _wasInMenuScene = false;
             EnsureUIComponentsExist();
         }
 
@@ -386,6 +399,8 @@ namespace SunhavenTodo
 
         public static void SaveData()
         {
+            if (_staticTodoManager == null || !_staticTodoManager.IsDirty)
+                return;
             _staticSaveSystem?.Save();
         }
 
@@ -493,7 +508,18 @@ namespace SunhavenTodo
 
         private void OnDestroy()
         {
-            Log.LogWarning("[CRITICAL] Plugin OnDestroy called!");
+            SceneManager.sceneLoaded -= OnSceneLoaded;
+            if (_todoManager != null)
+                _todoManager.OnTodosChanged -= OnTodosChanged;
+
+            string sceneName = SceneManager.GetActiveScene().name ?? string.Empty;
+            string sceneLower = sceneName.ToLowerInvariant();
+            bool expectedTeardown = _applicationQuitting || !Application.isPlaying || sceneLower.Contains("menu") || sceneLower.Contains("title");
+            if (expectedTeardown)
+                Log.LogInfo($"Plugin OnDestroy during expected teardown (scene: {sceneName})");
+            else
+                Log.LogWarning($"[CRITICAL] Plugin OnDestroy outside expected teardown (scene: {sceneName})");
+
             SaveData();
             // NOTE: Do NOT call _harmony?.UnpatchSelf() here!
             // Patches must survive plugin destruction so OnPlayerInitialized
@@ -502,6 +528,7 @@ namespace SunhavenTodo
 
         private void OnApplicationQuit()
         {
+            _applicationQuitting = true;
             SaveData();
         }
     }
@@ -661,6 +688,11 @@ namespace SunhavenTodo
         {
             _isDataLoaded = false;
             _loadedCharacterName = null;
+        }
+
+        internal static void ResetForMenu()
+        {
+            ResetState();
         }
     }
 }

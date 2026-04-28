@@ -57,6 +57,8 @@ Character names are sanitized to avoid invalid filename characters.
 ### Unreleased
 
 - **Build:** Excluded `Tests/**/*.cs` from `SunhavenTodo.csproj` compile items so NUnit test sources are not compiled into the runtime mod assembly, and linked `SharedUtilities/OvernightHookUtility.cs` so `Plugin.TryHookOvernight()` compiles in normal mod builds.
+- **Lifecycle:** Added teardown unsubscription for scene/manager handlers and changed destroy logging to treat menu/quit teardown as expected.
+- **Stability:** Added a gameplay -> menu transition save/reset path so dirty todo data is flushed once and character patch runtime state is reset cleanly between sessions.
 
 ## Links
 

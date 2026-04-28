@@ -33,6 +33,8 @@ namespace SunHavenMuseumUtilityTracker
         private DonationSaveSystem _saveSystem;
         private MuseumTrackerUI _trackerUI;
         private Harmony _harmony;
+        private bool _wasInMenuScene = true;
+        private static bool _applicationQuitting;
 
         // Configuration
         private ConfigEntry<KeyCode> _toggleKey;
@@ -294,22 +296,40 @@ namespace SunHavenMuseumUtilityTracker
             Logger.LogInfo($"[SceneChange] Scene loaded: '{scene.name}'");
 
             string sceneName = scene.name.ToLowerInvariant();
-            if (sceneName.Contains("menu") || sceneName.Contains("title") || sceneName.Contains("mainmenu"))
+            bool isMenuScene = sceneName.Contains("menu") || sceneName.Contains("title") || sceneName.Contains("mainmenu");
+            if (isMenuScene)
             {
-                Logger.LogInfo($"Menu scene detected: {scene.name}");
-                PlayerPatches.SaveAndReset();
+                if (!_wasInMenuScene)
+                {
+                    Logger.LogInfo($"Menu scene transition detected: {scene.name}");
+                    PlayerPatches.SaveAndReset();
+                }
+                _wasInMenuScene = true;
+                return;
             }
+
+            _wasInMenuScene = false;
         }
 
         private void OnApplicationQuit()
         {
+            _applicationQuitting = true;
             Logger.LogInfo("Application quitting, saving data...");
             _saveSystem?.ForceSave();
         }
 
         private void OnDestroy()
         {
-            Logger.LogWarning("[CRITICAL] Plugin OnDestroy called!");
+            SceneManager.sceneLoaded -= OnSceneLoaded;
+
+            string sceneName = SceneManager.GetActiveScene().name ?? string.Empty;
+            string sceneLower = sceneName.ToLowerInvariant();
+            bool expectedTeardown = _applicationQuitting || !Application.isPlaying || sceneLower.Contains("menu") || sceneLower.Contains("title");
+            if (expectedTeardown)
+                Logger.LogInfo($"Plugin OnDestroy during expected teardown (scene: {sceneName})");
+            else
+                Logger.LogWarning($"[CRITICAL] Plugin OnDestroy outside expected teardown (scene: {sceneName})");
+
             _saveSystem?.ForceSave();
         }
 
@@ -390,13 +410,6 @@ namespace SunHavenMuseumUtilityTracker
             {
                 Plugin.Log?.LogInfo($"[PersistentRunner] Scene changed: '{_lastScene}' -> '{currentScene}'");
                 _lastScene = currentScene;
-
-                string lower = currentScene.ToLowerInvariant();
-                if (lower.Contains("menu") || lower.Contains("title"))
-                {
-                    Plugin.Log?.LogInfo("[PersistentRunner] Menu scene detected");
-                    PlayerPatches.SaveAndReset();
-                }
             }
         }
 
@@ -453,6 +466,6 @@ namespace SunHavenMuseumUtilityTracker
     {
         public const string PLUGIN_GUID = "com.azraelgodking.sunhavenmuseumutilitytracker";
         public const string PLUGIN_NAME = "Sun Haven Museum Utility Tracker";
-        public const string PLUGIN_VERSION = "2.3.0";
+        public const string PLUGIN_VERSION = "2.4.0";
     }
 }
