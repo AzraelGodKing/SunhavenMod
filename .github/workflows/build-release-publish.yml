@@ -405,9 +405,12 @@ jobs:
         run: |
           set -euo pipefail
           mkdir -p dist/package
+          PACKAGE_ZIP="dist/${{ steps.config.outputs.thunderstore_name }}-${{ steps.config.outputs.version }}.zip"
+          rm -f "$PACKAGE_ZIP"
           if [ "${{ matrix.mod }}" == "test_discord" ]; then
             echo "test" > dist/package/readme.txt
             cd dist/package && zip -r "../TestDiscord-0.0.0-test.zip" .
+            echo "zip_path=dist/TestDiscord-0.0.0-test.zip" >> "$GITHUB_OUTPUT"
             exit 0
           fi
           DLL="builds/${{ steps.config.outputs.mod_dir }}/${{ steps.config.outputs.dll_name }}.dll"
@@ -445,16 +448,38 @@ jobs:
           fi
           cd dist/package
           sed -i "s/\"version_number\": \".*\"/\"version_number\": \"${{ steps.config.outputs.version }}\"/" manifest.json
-          zip -r "../${{ steps.config.outputs.thunderstore_name }}-${{ steps.config.outputs.version }}.zip" .
-          ls -lh "../${{ steps.config.outputs.thunderstore_name }}-${{ steps.config.outputs.version }}.zip"
+          zip -r "../$(basename "$PACKAGE_ZIP")" .
+          ls -lh "../$(basename "$PACKAGE_ZIP")"
+          test -f "../$(basename "$PACKAGE_ZIP")" || { echo "::error::Missing ../$(basename "$PACKAGE_ZIP") after packaging"; exit 1; }
+          echo "zip_path=$PACKAGE_ZIP" >> "$GITHUB_OUTPUT"
 
       - name: Upload dry-run zip artifact
         if: github.event.inputs.dry_run == 'true' && github.event.inputs.publish_discord_only != 'true' && matrix.mod != 'test_discord'
         uses: actions/upload-artifact@v6
         with:
           name: dry-run-${{ steps.config.outputs.thunderstore_name }}-${{ steps.config.outputs.version }}
-          path: dist/${{ steps.config.outputs.thunderstore_name }}-${{ steps.config.outputs.version }}.zip
+          path: ${{ steps.package_step.outputs.zip_path }}
           if-no-files-found: error
+
+      - name: Package diagnostics (zip path + SHA256)
+        if: >-
+          github.event.inputs.publish_discord_only != 'true' &&
+          steps.version_check.outputs.version_unchanged != 'true' &&
+          matrix.mod != 'test_discord'
+        run: |
+          set -euo pipefail
+          Z="${{ steps.package_step.outputs.zip_path }}"
+          test -n "$Z" || { echo "::error::package_step output zip_path is empty"; exit 1; }
+          test -f "$Z" || { echo "::error::Missing package zip at $Z"; exit 1; }
+          SHA="$(sha256sum "$Z" | awk '{print $1}')"
+          SIZE="$(stat -c%s "$Z")"
+          {
+            echo "### Package diagnostics"
+            echo "- Mod: \`${{ matrix.mod }}\`"
+            echo "- Zip: \`$Z\`"
+            echo "- Size (bytes): \`$SIZE\`"
+            echo "- SHA256: \`$SHA\`"
+          } >> "$GITHUB_STEP_SUMMARY"
 
       - name: Dry run notice
         if: github.event.inputs.dry_run == 'true'
@@ -483,7 +508,7 @@ jobs:
             - **Thunderstore**: r2modman / Thunderstore app
             - **Nexus**: zip below → BepInEx/plugins
             - **Manual**: DLL → `Sun Haven/BepInEx/plugins/`
-          files: dist/${{ steps.config.outputs.thunderstore_name }}-${{ steps.config.outputs.version }}.zip
+          files: ${{ steps.package_step.outputs.zip_path }}
           draft: false
           prerelease: false
 
@@ -507,7 +532,7 @@ jobs:
           categories: |
             ${{ env.THUNDERSTORE_CATEGORIES }}
           deps: ${{ env.THUNDERSTORE_DEPS }}
-          file: dist/${{ steps.config.outputs.thunderstore_name }}-${{ steps.config.outputs.version }}.zip
+          file: ${{ steps.package_step.outputs.zip_path }}
 
       - name: "Haven's Almanac — Nexus not used"
         if: >-
@@ -530,7 +555,7 @@ jobs:
           steps.config.outputs.nexus_file_group_id != '' &&
           matrix.mod != 'havensalmanac'
         run: |
-          Z="dist/${{ steps.config.outputs.thunderstore_name }}-${{ steps.config.outputs.version }}.zip"
+          Z="${{ steps.package_step.outputs.zip_path }}"
           test -f "$Z" || { echo "::error::Missing $Z"; exit 1; }
           ls -lh "$Z"
 
@@ -542,7 +567,7 @@ jobs:
         with:
           api_key: ${{ secrets.NEXUSMODS_API_KEY }}
           file_group_id: ${{ steps.config.outputs.nexus_file_group_id }}
-          filename: dist/${{ steps.config.outputs.thunderstore_name }}-${{ steps.config.outputs.version }}.zip
+          filename: ${{ steps.package_step.outputs.zip_path }}
           version: ${{ steps.config.outputs.version }}
           display_name: ${{ steps.config.outputs.display_name }} v${{ steps.config.outputs.version }}.zip
           description: |
@@ -567,7 +592,7 @@ jobs:
         with:
           api_key: ${{ secrets.NEXUSMODS_API_KEY }}
           file_group_id: ${{ steps.config.outputs.nexus_file_group_id }}
-          filename: dist/${{ steps.config.outputs.thunderstore_name }}-${{ steps.config.outputs.version }}.zip
+          filename: ${{ steps.package_step.outputs.zip_path }}
           version: ${{ steps.config.outputs.version }}
           display_name: ${{ steps.config.outputs.display_name }} v${{ steps.config.outputs.version }}.zip
           description: |
@@ -592,7 +617,7 @@ jobs:
         with:
           api_key: ${{ secrets.NEXUSMODS_API_KEY }}
           file_group_id: ${{ steps.config.outputs.nexus_file_group_id }}
-          filename: dist/${{ steps.config.outputs.thunderstore_name }}-${{ steps.config.outputs.version }}.zip
+          filename: ${{ steps.package_step.outputs.zip_path }}
           version: ${{ steps.config.outputs.version }}
           display_name: ${{ steps.config.outputs.display_name }} v${{ steps.config.outputs.version }}.zip
           description: |
@@ -621,7 +646,7 @@ jobs:
         with:
           api_key: ${{ secrets.NEXUSMODS_API_KEY }}
           file_group_id: ${{ steps.config.outputs.nexus_file_group_id }}
-          filename: dist/${{ steps.config.outputs.thunderstore_name }}-${{ steps.config.outputs.version }}.zip
+          filename: ${{ steps.package_step.outputs.zip_path }}
           version: ${{ steps.config.outputs.version }}
           display_name: ${{ steps.config.outputs.display_name }} v${{ steps.config.outputs.version }}.zip
           description: |
