@@ -21,6 +21,11 @@ File: `Sun Haven/BepInEx/config/SenpaisChest.cfg`
 
 ### Unreleased
 
+- **Fixed:** Added save protection in `SmartChestSaveSystem` to prevent overwriting an existing non-empty smart-chest JSON with an empty in-memory state before any successful character load in the current session.
+- **Fixed:** `Plugin` now unsubscribes from `SceneManager.sceneLoaded` / `activeSceneChanged` and disposes museum integration handlers during teardown to prevent duplicate callbacks across reloads.
+- **Fixed:** `MuseumTodoIntegration` now detaches its `OnDonationsChanged` subscription on dispose to avoid duplicate event handling and lingering references.
+- **Changed:** UI-triggered saves now honor manager dirty state, reducing unnecessary writes and lowering risk of persisting transient empty runtime state.
+- **Changed:** `[Scan] Next scan in ...` countdown logs are now optional Debug-level output, controlled by new config flag `Debug.EnableScanCountdownDebugLog`.
 - **Changed:** "Copy Rules to All" now requires a second click confirmation within a short timeout to reduce accidental bulk overwrites.
 - **Build:** Excluded `Tests/**/*.cs` from `SenpaisChest.csproj` compile items so NUnit test sources are not compiled into the runtime mod assembly.
 - **Build:** Soft-dependency references to `SunHavenMuseumUtilityTracker` and `SunhavenTodo` now use `ProjectReference` to those sibling projects instead of `..\builds\...\*.dll`, matching other mods in the repo.

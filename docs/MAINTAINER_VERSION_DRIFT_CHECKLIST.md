@@ -9,6 +9,8 @@ Use this checklist before any release prep, documentation refresh, or compatibil
 - Verify each Thunderstore manifest version matches `docs/versions.json`.
 - Verify root `README.md` mod table and per-mod summary text match current versions and hotkeys.
 - Verify each touched mod README has a changelog update entry when behavior changed.
+- Keep root `CHANGELOG.md` player-facing only (gameplay/behavior/perf-impacting changes players care about).
+- Put internal CI/build/devops/script/refactor notes in `MAINTAINER_CHANGELOG.md` instead of root `CHANGELOG.md`.
 - Verify `builds/README.md` lists the correct required artifact set for each releasable mod.
 
 ## Mod-by-Mod File Checklist
@@ -84,4 +86,5 @@ Use this checklist before any release prep, documentation refresh, or compatibil
 
 - Run `scripts/pre-push-build.ps1 -All` without version bump.
 - Ensure no version was incremented unless explicitly requested by the owner.
-- Confirm changelog text describes user-facing behavior changes, not only internal refactors.
+- Confirm root `CHANGELOG.md` entries describe user-facing behavior changes, not only internal refactors.
+- Confirm internal-only notes were recorded in `MAINTAINER_CHANGELOG.md` when applicable.
