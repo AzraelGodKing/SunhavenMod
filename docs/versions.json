@@ -62,7 +62,7 @@
     "changelog": "Config now uses BepInEx/config/HavenDevTools.cfg with first-run migration from the legacy GUID config file."
   },
   "com.azraelgodking.senpaischest": {
-    "version": "2.4.0",
+    "version": "2.5.0",
     "name": "Senpai's Chest",
     "description": "Smart chest auto-sorting with custom rules by item, type, category, property, or player groups. Manage Groups tab for custom subcategories.",
     "nexus": "https://www.nexusmods.com/sunhaven/mods/496",

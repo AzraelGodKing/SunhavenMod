@@ -204,6 +204,9 @@ namespace SenpaisChest
         {
             try
             {
+                _museumTodoIntegration?.Dispose();
+                _museumTodoIntegration = null;
+
                 var pluginInfos = BepInEx.Bootstrap.Chainloader.PluginInfos;
                 bool hasSmut = pluginInfos.ContainsKey("com.azraelgodking.sunhavenmuseumutilitytracker");
                 bool hasTodo = pluginInfos.ContainsKey("com.azraelgodking.sunhaventodo");
@@ -768,6 +771,11 @@ namespace SenpaisChest
 
         private void OnDestroy()
         {
+            SceneManager.sceneLoaded -= OnSceneLoaded;
+            SceneManager.activeSceneChanged -= OnActiveSceneChanged;
+            _museumTodoIntegration?.Dispose();
+            _museumTodoIntegration = null;
+
             // Do NOT unpatch Harmony — patches survive and enable reloads
             Log?.LogInfo("Plugin OnDestroy called — static references preserved");
             _staticSaveSystem?.Save();
@@ -901,7 +909,8 @@ namespace SenpaisChest
             if (secondsRemaining >= 1 && secondsRemaining <= 10 && secondsRemaining != _lastCountdownSecond)
             {
                 _lastCountdownSecond = secondsRemaining;
-                Plugin.Log?.LogInfo($"[Scan] Next scan in {secondsRemaining}...");
+                if (SmartChestConfig.StaticEnableScanCountdownDebug)
+                    Plugin.Log?.LogDebug($"[Scan] Next scan in {secondsRemaining}...");
             }
 
             if (_scanTimer >= scanInterval)
