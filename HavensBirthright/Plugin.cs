@@ -27,6 +27,9 @@ namespace HavensBirthright
         private ConfigEntry<bool> _checkForUpdates;
         private ConfigEntry<UnityEngine.KeyCode> _reloadConfigKey;
         private BirthrightRunner _runner;
+        private EventHandler _updateKeybindsHandler;
+        private EventHandler _rebuildCrossRaceRulesHandler;
+        private bool _applicationQuitting;
 
         private void Awake()
         {
@@ -206,22 +209,22 @@ namespace HavensBirthright
         /// </summary>
         private void SubscribeConfigChanged()
         {
-            void UpdateKeybinds(object s, EventArgs e)
+            _updateKeybindsHandler = (_, _) =>
             {
                 StaticAbilityToggleKey = AbilityConfig.ActiveAbilityToggleKey.Value;
                 StaticReloadConfigKey = _reloadConfigKey.Value;
-            }
-            AbilityConfig.ActiveAbilityToggleKey.SettingChanged += UpdateKeybinds;
-            _reloadConfigKey.SettingChanged += UpdateKeybinds;
+            };
+            AbilityConfig.ActiveAbilityToggleKey.SettingChanged += _updateKeybindsHandler;
+            _reloadConfigKey.SettingChanged += _updateKeybindsHandler;
 
-            void RebuildCrossRaceRules(object sender, EventArgs e)
+            _rebuildCrossRaceRulesHandler = (_, _) =>
             {
                 BonusTransferRules.RebuildFromConfig(
                     RacialConfig.CrossRaceBonusRules != null ? RacialConfig.CrossRaceBonusRules.Value : "");
-            }
+            };
 
-            RacialConfig.CrossRaceBonusRules.SettingChanged += RebuildCrossRaceRules;
-            RacialConfig.EnableBonusTransfers.SettingChanged += RebuildCrossRaceRules;
+            RacialConfig.CrossRaceBonusRules.SettingChanged += _rebuildCrossRaceRulesHandler;
+            RacialConfig.EnableBonusTransfers.SettingChanged += _rebuildCrossRaceRulesHandler;
         }
 
         /// <summary>
@@ -262,8 +265,39 @@ namespace HavensBirthright
             return new ConfigFile(configPath, true);
         }
 
+        private void OnApplicationQuit()
+        {
+            _applicationQuitting = true;
+        }
+
         private void OnDestroy()
         {
+            try
+            {
+                if (_updateKeybindsHandler != null)
+                {
+                    AbilityConfig.ActiveAbilityToggleKey.SettingChanged -= _updateKeybindsHandler;
+                    _reloadConfigKey.SettingChanged -= _updateKeybindsHandler;
+                }
+                if (_rebuildCrossRaceRulesHandler != null)
+                {
+                    RacialConfig.CrossRaceBonusRules.SettingChanged -= _rebuildCrossRaceRulesHandler;
+                    RacialConfig.EnableBonusTransfers.SettingChanged -= _rebuildCrossRaceRulesHandler;
+                }
+            }
+            catch (Exception ex)
+            {
+                Log?.LogDebug($"[Lifecycle] Config handler teardown encountered an issue: {ex.Message}");
+            }
+
+            string sceneName = UnityEngine.SceneManagement.SceneManager.GetActiveScene().name ?? string.Empty;
+            string sceneLower = sceneName.ToLowerInvariant();
+            bool expectedTeardown = _applicationQuitting || !Application.isPlaying || sceneLower.Contains("menu") || sceneLower.Contains("title");
+            if (expectedTeardown)
+                Log?.LogInfo($"[Lifecycle] Plugin OnDestroy during expected teardown (scene: {sceneName})");
+            else
+                Log?.LogWarning($"[Lifecycle] Plugin OnDestroy outside expected teardown (scene: {sceneName})");
+
             _harmony?.UnpatchSelf();
         }
 

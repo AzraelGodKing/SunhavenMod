@@ -1,5 +1,7 @@
 # Haven's Respec
 
+**Unreleased:** Added lifecycle diagnostics so plugin teardown is classified as expected on menu/quit unloads and flagged when destruction happens unexpectedly at runtime.
+
 **Version 1.2.0**
 
 Respec your Sun Haven skill trees safely. Adds a styled **Reset** button to every skill tab,

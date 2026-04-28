@@ -4,6 +4,8 @@ using BepInEx.Logging;
 using HarmonyLib;
 using TrinketFortune.Patches;
 using System.IO;
+using UnityEngine;
+using UnityEngine.SceneManagement;
 
 namespace TrinketFortune
 {
@@ -12,6 +14,7 @@ namespace TrinketFortune
     {
         public static ManualLogSource Log { get; private set; }
         private Harmony _harmony;
+        private bool _applicationQuitting;
 
         private void Awake()
         {
@@ -29,6 +32,24 @@ namespace TrinketFortune
                 Log.LogInfo("HavenDevTools detected. Trinket Fortune runs in standalone-safe mode (no hard API dependency).");
 
             Log.LogInfo($"{PluginInfo.PLUGIN_NAME} v{PluginInfo.PLUGIN_VERSION} loaded. Fishing loot bias active when S.M.U.T. is installed.");
+        }
+
+        private void OnApplicationQuit()
+        {
+            _applicationQuitting = true;
+        }
+
+        private void OnDestroy()
+        {
+            string sceneName = SceneManager.GetActiveScene().name ?? string.Empty;
+            string sceneLower = sceneName.ToLowerInvariant();
+            bool expectedTeardown = _applicationQuitting || !Application.isPlaying || sceneLower.Contains("menu") || sceneLower.Contains("title");
+            if (expectedTeardown)
+                Log?.LogInfo($"[Lifecycle] Plugin OnDestroy during expected teardown (scene: {sceneName})");
+            else
+                Log?.LogWarning($"[Lifecycle] Plugin OnDestroy outside expected teardown (scene: {sceneName})");
+
+            _harmony?.UnpatchSelf();
         }
 
         private static BepInEx.Configuration.ConfigFile CreateNamedConfig()

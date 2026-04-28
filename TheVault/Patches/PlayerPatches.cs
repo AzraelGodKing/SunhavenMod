@@ -17,6 +17,8 @@ namespace TheVault.Patches
         private static string _lastCharacterSourceLog = null;
         private static string _lastCharacterNameLog = null;
         private static readonly object _contextLoadLock = new object();
+        private static float _lastSaveAndResetRealtime = -100f;
+        private const float SaveAndResetDedupSeconds = 1.5f;
 
         /// <summary>
         /// Returns true if a vault is currently loaded.
@@ -233,6 +235,14 @@ namespace TheVault.Patches
         {
             try
             {
+                float now = UnityEngine.Time.realtimeSinceStartup;
+                if (now - _lastSaveAndResetRealtime < SaveAndResetDedupSeconds)
+                {
+                    Plugin.Log?.LogDebug($"SaveAndReset deduplicated (last run {now - _lastSaveAndResetRealtime:0.00}s ago)");
+                    return;
+                }
+                _lastSaveAndResetRealtime = now;
+
                 if (_isVaultLoaded)
                 {
                     Plugin.Log?.LogInfo($"Saving vault for {_loadedCharacterName} before menu");

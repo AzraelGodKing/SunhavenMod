@@ -34,6 +34,7 @@ namespace CropOptimizer
         private BirthdayIntegration _birthdayIntegration;
         private VaultIntegration _vaultIntegration;
         private bool _hudVisible = true;
+        private bool _applicationQuitting;
         private bool _isVaultLoadedEventSubscribed;
         private EventInfo _vaultLoadedEventInfo;
         private Delegate _vaultLoadedHandler;
@@ -85,6 +86,14 @@ namespace CropOptimizer
 
         private void OnDestroy()
         {
+            string sceneName = UnityEngine.SceneManagement.SceneManager.GetActiveScene().name ?? string.Empty;
+            string sceneLower = sceneName.ToLowerInvariant();
+            bool expectedTeardown = _applicationQuitting || !Application.isPlaying || sceneLower.Contains("menu") || sceneLower.Contains("title");
+            if (expectedTeardown)
+                Log?.LogInfo($"[Lifecycle] Plugin OnDestroy during expected teardown (scene: {sceneName})");
+            else
+                Log?.LogWarning($"[Lifecycle] Plugin OnDestroy outside expected teardown (scene: {sceneName})");
+
             if (_hud != null)
                 _hud.PlacementChanged -= OnCropHudPlacementChanged;
 
@@ -97,6 +106,11 @@ namespace CropOptimizer
                 _vaultLoadedEventInfo = null;
                 _vaultLoadedHandler = null;
             }
+        }
+
+        private void OnApplicationQuit()
+        {
+            _applicationQuitting = true;
         }
 
         private void OnCropHudPlacementChanged(float x, float y)
