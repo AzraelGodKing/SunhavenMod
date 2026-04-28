@@ -66,7 +66,7 @@ namespace HavenDevTools.UI
         private static readonly (string guid, string name, string version)[] _knownMods = new[]
         {
             ("com.azraelgodking.havendevtools", "Haven Dev Tools", "1.1.0"),
-            ("com.azraelgodking.senpaischest", "Senpai's Chest", "2.4.0"),
+            ("com.azraelgodking.senpaischest", "Senpai's Chest", "2.5.0"),
             ("com.azraelgodking.squirrelsbirthdayreminder", "Birthday Reminder", "1.3.0"),
             ("com.azraelgodking.havensbirthright", "Haven's Birthright", "2.1.0"),
             ("com.azraelgodking.sunhavenmuseumutilitytracker", "S.M.U.T.", "2.3.0"),

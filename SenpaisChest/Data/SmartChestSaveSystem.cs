@@ -1,5 +1,6 @@
 using System;
 using System.IO;
+using System.Collections.Generic;
 using BepInEx;
 
 namespace SenpaisChest.Data
@@ -8,6 +9,7 @@ namespace SenpaisChest.Data
     {
         private readonly SmartChestManager _manager;
         private readonly string _savePath;
+        private readonly HashSet<string> _successfulLoadsThisSession = new HashSet<string>(StringComparer.Ordinal);
 
         public SmartChestSaveSystem(SmartChestManager manager)
         {
@@ -65,6 +67,19 @@ namespace SenpaisChest.Data
             var filePath = GetSaveFilePath(data.CharacterName);
             Plugin.Log?.LogInfo($"[Save] Saving {data.Chests.Count} chest(s) with {totalRules} total rule(s) for '{data.CharacterName}' -> {filePath}");
 
+            // Protect existing non-empty save files from being overwritten by an empty runtime state
+            // when this session has not yet successfully loaded that character from disk.
+            bool hasRulesInMemory = totalRules > 0;
+            bool hasExistingRulesOnDisk = FileContainsRules(filePath) || FileContainsRules(filePath + ".bak");
+            if (!hasRulesInMemory
+                && hasExistingRulesOnDisk
+                && !HasSuccessfulLoadThisSession(data.CharacterName)
+                )
+            {
+                Plugin.Log?.LogWarning($"[Save] Skipping write for '{data.CharacterName}': in-memory rules are empty before any successful load this session. Existing non-empty file preserved.");
+                return;
+            }
+
             try
             {
                 var json = SerializeToJson(data);
@@ -116,7 +131,10 @@ namespace SenpaisChest.Data
             {
                 var result = TryLoadFromFile(filePath, characterName);
                 if (result != null)
+                {
+                    MarkSuccessfulLoad(characterName);
                     return result;
+                }
 
                 Plugin.Log?.LogWarning($"Main save file corrupted for {characterName}, trying backup...");
             }
@@ -126,6 +144,7 @@ namespace SenpaisChest.Data
                 var result = TryLoadFromFile(backupPath, characterName);
                 if (result != null)
                 {
+                    MarkSuccessfulLoad(characterName);
                     Plugin.Log?.LogInfo($"Loaded from backup for {characterName}");
                     return result;
                 }
@@ -134,6 +153,46 @@ namespace SenpaisChest.Data
 
             Plugin.Log?.LogInfo($"No save file found for {characterName}, creating new config");
             return new SmartChestSaveData(characterName);
+        }
+
+        private bool HasSuccessfulLoadThisSession(string characterName)
+        {
+            if (string.IsNullOrEmpty(characterName))
+                return false;
+            return _successfulLoadsThisSession.Contains(characterName);
+        }
+
+        private void MarkSuccessfulLoad(string characterName)
+        {
+            if (!string.IsNullOrEmpty(characterName))
+                _successfulLoadsThisSession.Add(characterName);
+        }
+
+        private static bool FileContainsRules(string filePath)
+        {
+            if (string.IsNullOrEmpty(filePath) || !File.Exists(filePath))
+                return false;
+
+            try
+            {
+                var json = File.ReadAllText(filePath);
+                var parsed = DeserializeFromJson(json);
+                if (parsed == null || parsed.Chests == null)
+                    return false;
+
+                for (int i = 0; i < parsed.Chests.Count; i++)
+                {
+                    var chest = parsed.Chests[i];
+                    if (chest?.Rules != null && chest.Rules.Count > 0)
+                        return true;
+                }
+            }
+            catch
+            {
+                // If we cannot inspect the existing file, do not block save behavior here.
+            }
+
+            return false;
         }
 
         private SmartChestSaveData TryLoadFromFile(string filePath, string characterName)

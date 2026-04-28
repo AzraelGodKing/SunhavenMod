@@ -22,12 +22,14 @@ namespace SenpaisChest.Config
         public ConfigEntry<string> LabeledChestDecorationIds { get; private set; }
         public ConfigEntry<float> UIScale { get; private set; }
         public ConfigEntry<bool> BlockInputWhenTypingInConfig { get; private set; }
+        public ConfigEntry<bool> EnableScanCountdownDebugLog { get; private set; }
         private readonly HashSet<int> _labeledChestDecorationIdSet = new HashSet<int>();
 
         // Static copies for PersistentRunner access
         internal static KeyCode StaticToggleKey = KeyCode.F9;
         internal static bool StaticRequireCtrl = false;
         internal static bool StaticBlockInputWhenTyping = true;
+        internal static bool StaticEnableScanCountdownDebug = false;
 
         public enum ChestLabelVisibility { Hidden, OnHover, Visible }
 
@@ -97,6 +99,13 @@ namespace SenpaisChest.Config
                 "Check for mod updates on startup"
             );
 
+            EnableScanCountdownDebugLog = config.Bind(
+                "Debug",
+                "EnableScanCountdownDebugLog",
+                false,
+                "When true, logs '[Scan] Next scan in ...' countdown lines at Debug level."
+            );
+
             EnableChestLabels = config.Bind(
                 "ChestLabels",
                 "EnableChestLabels",
@@ -129,12 +138,14 @@ namespace SenpaisChest.Config
             StaticToggleKey = ToggleKey.Value;
             StaticRequireCtrl = RequireCtrlModifier.Value;
             StaticBlockInputWhenTyping = BlockInputWhenTypingInConfig.Value;
+            StaticEnableScanCountdownDebug = EnableScanCountdownDebugLog.Value;
             RefreshLabeledChestDecorationIds();
 
             // Subscribe to config changes
             ToggleKey.SettingChanged += (_, _) => StaticToggleKey = ToggleKey.Value;
             RequireCtrlModifier.SettingChanged += (_, _) => StaticRequireCtrl = RequireCtrlModifier.Value;
             BlockInputWhenTypingInConfig.SettingChanged += (_, _) => StaticBlockInputWhenTyping = BlockInputWhenTypingInConfig.Value;
+            EnableScanCountdownDebugLog.SettingChanged += (_, _) => StaticEnableScanCountdownDebug = EnableScanCountdownDebugLog.Value;
             LabeledChestDecorationIds.SettingChanged += (_, _) => RefreshLabeledChestDecorationIds();
         }
 

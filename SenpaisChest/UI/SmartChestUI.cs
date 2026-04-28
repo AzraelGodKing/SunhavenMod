@@ -1255,6 +1255,9 @@ namespace SenpaisChest.UI
 
         private void SaveIfDirty()
         {
+            if (_manager == null || !_manager.IsDirty)
+                return;
+
             var saveSystem = Plugin.GetSaveSystem();
             if (saveSystem == null)
             {

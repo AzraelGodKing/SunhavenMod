@@ -19,6 +19,8 @@ namespace SenpaisChest.Integration
     /// </summary>
     public class MuseumTodoIntegration
     {
+        private DonationManager _subscribedDonationManager;
+
         // Track which museum items already have todos (game item ID → todo item ID)
         private readonly Dictionary<int, string> _museumTodoIds = new Dictionary<int, string>();
         // Track "one item short" bundle todos (bundle id -> todo id)
@@ -31,13 +33,20 @@ namespace SenpaisChest.Integration
         public MuseumTodoIntegration()
         {
             // Subscribe to SMUT's donation changes to auto-complete todos
-            var donationManager = SunHavenMuseumUtilityTracker.Plugin.GetDonationManager();
-            if (donationManager != null)
-            {
-                donationManager.OnDonationsChanged += OnDonationsChanged;
-            }
+            _subscribedDonationManager = SunHavenMuseumUtilityTracker.Plugin.GetDonationManager();
+            if (_subscribedDonationManager != null)
+                _subscribedDonationManager.OnDonationsChanged += OnDonationsChanged;
 
             Plugin.Log?.LogInfo("[MuseumTodoIntegration] Initialized - museum item todos will sync with S.M.U.T. and Todo");
+        }
+
+        public void Dispose()
+        {
+            if (_subscribedDonationManager != null)
+            {
+                _subscribedDonationManager.OnDonationsChanged -= OnDonationsChanged;
+                _subscribedDonationManager = null;
+            }
         }
 
         /// <summary>
