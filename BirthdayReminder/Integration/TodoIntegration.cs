@@ -177,8 +177,9 @@ namespace BirthdayReminder.Integration
                 {
                     return _todoGetByIdMethod.Invoke(todoManager, new object[] { todoId }) as TodoItem;
                 }
-                catch
+                catch (Exception ex)
                 {
+                    Plugin.Log?.LogDebug($"[TodoIntegration] GetTodoById reflection fallback used: {ex.Message}");
                     // Fall back to linear scan if reflective call fails.
                 }
             }
@@ -211,6 +212,12 @@ namespace BirthdayReminder.Integration
         public void Reset()
         {
             _birthdayTodoIds.Clear();
+        }
+
+        public void Dispose()
+        {
+            if (_birthdayManager != null)
+                _birthdayManager.OnBirthdaysUpdated -= OnBirthdaysUpdated;
         }
     }
 }

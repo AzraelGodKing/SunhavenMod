@@ -1,6 +1,8 @@
 # Trinket Fortune
 
-**Version 1.1.0** — Increases the odds of **unowned fishing trinkets** dropping as you complete the museum aquarium. Fishing for that last trinket becomes less frustrating.
+**Unreleased:** Improved SMUT fallback resilience (retryable binding for soft-dependency startup order), added debug diagnostics for reflection fallback paths, and added clean lifecycle unpatch handling on plugin teardown.
+
+**Version 1.2.0** — Increases the odds of **unowned fishing trinkets** dropping as you complete the museum aquarium. Fishing for that last trinket becomes less frustrating.
 
 **1.0.2:** Config file now uses `BepInEx/config/TrinketFortune.cfg` (auto-migrates values from the legacy GUID-named config on first load). Runtime load safety was hardened so Trinket Fortune no longer requires `HavenDevTools.dll` to be present at startup.
 

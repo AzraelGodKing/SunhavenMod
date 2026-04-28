@@ -9,6 +9,7 @@ using HavensRespec.Services;
 using HavensRespec.UI;
 using SunhavenMods.Shared;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 using Wish;
 
 namespace HavensRespec
@@ -25,6 +26,7 @@ namespace HavensRespec
         private SkillResetService _resetService;
         private CostService _costService;
         private RespecController _controller;
+        private bool _applicationQuitting;
 
         private void Awake()
         {
@@ -71,10 +73,23 @@ namespace HavensRespec
             }
         }
 
+        private void OnApplicationQuit()
+        {
+            _applicationQuitting = true;
+        }
+
         private void OnDestroy()
         {
             try
             {
+                string sceneName = SceneManager.GetActiveScene().name ?? string.Empty;
+                string sceneLower = sceneName.ToLowerInvariant();
+                bool expectedTeardown = _applicationQuitting || !Application.isPlaying || sceneLower.Contains("menu") || sceneLower.Contains("title");
+                if (expectedTeardown)
+                    Log?.LogInfo($"[Lifecycle] {PluginInfo.PLUGIN_NAME} OnDestroy during expected teardown (scene: {sceneName})");
+                else
+                    Log?.LogWarning($"[Lifecycle] {PluginInfo.PLUGIN_NAME} OnDestroy outside expected teardown (scene: {sceneName})");
+
                 _controller?.Uninstall();
                 _harmony?.UnpatchSelf();
             }

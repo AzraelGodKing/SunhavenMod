@@ -71,6 +71,7 @@ namespace HavenDevTools
         public static bool HasTrinketFortune { get; private set; }
 
         private Harmony _harmony;
+        private bool _applicationQuitting;
 
         private void Awake()
         {
@@ -280,10 +281,23 @@ namespace HavenDevTools
             }
         }
 
+        private void OnApplicationQuit()
+        {
+            _applicationQuitting = true;
+        }
+
         private void OnDestroy()
         {
-            Log.LogWarning("[CRITICAL] Plugin OnDestroy called!");
             SceneManager.sceneLoaded -= OnSceneLoaded;
+
+            string sceneName = SceneManager.GetActiveScene().name ?? string.Empty;
+            string sceneLower = sceneName.ToLowerInvariant();
+            bool expectedTeardown = _applicationQuitting || !Application.isPlaying || sceneLower.Contains("menu") || sceneLower.Contains("title");
+            if (expectedTeardown)
+                Log?.LogInfo($"[Lifecycle] Plugin OnDestroy during expected teardown (scene: {sceneName})");
+            else
+                Log?.LogWarning($"[Lifecycle] Plugin OnDestroy outside expected teardown (scene: {sceneName})");
+
             // NOTE: Do NOT call _harmony?.UnpatchSelf() here!
             // Patches must survive plugin destruction so OnPlayerInitialized
             // can trigger EnsureUIComponentsExist() on character reload.
@@ -544,6 +558,6 @@ namespace HavenDevTools
     {
         public const string PLUGIN_GUID = "com.azraelgodking.havendevtools";
         public const string PLUGIN_NAME = "Haven Dev Tools";
-        public const string PLUGIN_VERSION = "1.1.0";
+        public const string PLUGIN_VERSION = "1.2.0";
     }
 }

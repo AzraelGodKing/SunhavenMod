@@ -73,6 +73,7 @@ namespace TheVault
         /// Full vault inspector (zeros, Debug tab, full HUD). Controlled by Haven Dev Tools config / UI, not TheVault.cfg.
         /// </summary>
         private static bool _debugFullVaultInspector;
+        private bool _wasInMenuScene = true;
 
         // Separate persistent object that survives game's UIHandler.UnloadGame cleanup
         private static GameObject _persistentRunner;
@@ -1112,9 +1113,19 @@ namespace TheVault
 
         private void OnDisable()
         {
-            Log.LogWarning("[CRITICAL] Plugin OnDisable called! Plugin is being disabled.");
-            Log.LogWarning($"[CRITICAL] Current scene: {SceneManager.GetActiveScene().name}");
-            Log.LogWarning($"[CRITICAL] Stack trace: {Environment.StackTrace}");
+            string sceneName = SceneManager.GetActiveScene().name ?? string.Empty;
+            string sceneLower = sceneName.ToLowerInvariant();
+            bool expectedTeardown = !Application.isPlaying || sceneLower.Contains("menu") || sceneLower.Contains("title");
+            if (expectedTeardown)
+            {
+                Log.LogInfo($"[Lifecycle] Plugin OnDisable during expected teardown (scene: {sceneName})");
+            }
+            else
+            {
+                Log.LogWarning("[CRITICAL] Plugin OnDisable called outside expected teardown.");
+                Log.LogWarning($"[CRITICAL] Current scene: {sceneName}");
+                Log.LogWarning($"[CRITICAL] Stack trace: {Environment.StackTrace}");
+            }
         }
 
         private void OnDestroy()
@@ -1122,6 +1133,8 @@ namespace TheVault
             VaultModApiBridge.Instance = null;
             if (_vaultManager != null)
                 _vaultManager.OnVaultLoaded -= OnVaultDataLoaded;
+            if (ConfigFile != null)
+                ConfigFile.SettingChanged -= OnAnyConfigSettingChanged;
 
             Log.LogWarning("[CRITICAL] Plugin OnDestroy called! Plugin is being destroyed.");
             Log.LogWarning($"[CRITICAL] Current scene: {SceneManager.GetActiveScene().name}");
@@ -1163,13 +1176,15 @@ namespace TheVault
                 Log.LogInfo($"[SceneChange] Scene loaded: '{scene.name}' (mode: {mode})");
 
                 string sceneLower = scene.name.ToLowerInvariant();
+                bool isMenuScene = sceneLower.Contains("menu") || sceneLower.Contains("title");
 
                 // Detect menu/title scenes to reset vault state
-                if (sceneLower.Contains("menu") || sceneLower.Contains("title"))
+                if (isMenuScene && !_wasInMenuScene)
                 {
                     Log.LogInfo($"Menu scene detected: {scene.name}");
                     PlayerPatches.SaveAndReset();
                 }
+                _wasInMenuScene = isMenuScene;
             }
             catch (Exception ex)
             {
@@ -1403,7 +1418,7 @@ namespace TheVault
     {
         public const string PLUGIN_GUID = "com.azraelgodking.thevault";
         public const string PLUGIN_NAME = "The Vault";
-        public const string PLUGIN_VERSION = "3.2.0";
+        public const string PLUGIN_VERSION = "3.3.0";
     }
 
     /// <summary>

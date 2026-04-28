@@ -1,5 +1,6 @@
 using System;
 using System.Reflection;
+using UnityEngine;
 using Wish;
 
 namespace SunHavenMuseumUtilityTracker.Patches
@@ -13,6 +14,8 @@ namespace SunHavenMuseumUtilityTracker.Patches
         private static string _loadedCharacterName = null;
         private static string _lastCharacterSourceLog = null;
         private static string _lastCharacterNameLog = null;
+        private static float _lastSaveAndResetRealtime = -100f;
+        private const float SaveAndResetDedupSeconds = 1.5f;
 
         public static bool IsDataLoaded => _isDataLoaded;
         public static string LoadedCharacterName => _loadedCharacterName;
@@ -150,6 +153,14 @@ namespace SunHavenMuseumUtilityTracker.Patches
         {
             try
             {
+                float now = Time.realtimeSinceStartup;
+                if (now - _lastSaveAndResetRealtime < SaveAndResetDedupSeconds)
+                {
+                    Plugin.Log?.LogDebug($"SaveAndReset deduplicated (last run {now - _lastSaveAndResetRealtime:0.00}s ago)");
+                    return;
+                }
+                _lastSaveAndResetRealtime = now;
+
                 if (_isDataLoaded)
                 {
                     Plugin.Log?.LogInfo($"Saving data for {_loadedCharacterName} before menu");

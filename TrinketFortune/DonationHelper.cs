@@ -17,14 +17,35 @@ namespace TrinketFortune
 
         private static object _donationManager;
         private static MethodInfo _hasDonatedByGameId;
+        private static float _lastResolveAttemptRealtime = -100f;
+        private const float ResolveRetrySeconds = 10f;
 
-        public static bool IsAvailable => _donationManager != null && _hasDonatedByGameId != null;
+        public static bool IsAvailable
+        {
+            get
+            {
+                EnsureResolved();
+                return _donationManager != null && _hasDonatedByGameId != null;
+            }
+        }
 
         static DonationHelper()
         {
-            if (Chainloader.PluginInfos == null || !Chainloader.PluginInfos.TryGetValue(SmutGuid, out _))
+            EnsureResolved(force: true);
+        }
+
+        private static void EnsureResolved(bool force = false)
+        {
+            if (!force && _donationManager != null && _hasDonatedByGameId != null)
                 return;
 
+            float now = Time.realtimeSinceStartup;
+            if (!force && now - _lastResolveAttemptRealtime < ResolveRetrySeconds)
+                return;
+            _lastResolveAttemptRealtime = now;
+
+            if (Chainloader.PluginInfos == null || !Chainloader.PluginInfos.TryGetValue(SmutGuid, out _))
+                return;
             try
             {
                 var pluginType = Type.GetType("SunHavenMuseumUtilityTracker.Plugin, SunHavenMuseumUtilityTracker");
@@ -41,19 +62,22 @@ namespace TrinketFortune
             }
             catch (Exception ex)
             {
-                Plugin.Log?.LogDebug($"DonationHelper: SMUT not available: {ex.Message}");
+                Plugin.Log?.LogDebug($"DonationHelper: SMUT bind failed: {ex.Message}");
             }
         }
 
         public static bool HasDonatedByGameId(int gameItemId)
         {
-            if (_donationManager == null || _hasDonatedByGameId == null) return false;
+            EnsureResolved();
+            if (_donationManager == null || _hasDonatedByGameId == null)
+                return false;
             try
             {
                 return (bool)_hasDonatedByGameId.Invoke(_donationManager, new object[] { gameItemId });
             }
-            catch
+            catch (Exception ex)
             {
+                Plugin.Log?.LogDebug($"DonationHelper: HasDonatedByGameId failed for {gameItemId}: {ex.Message}");
                 return false;
             }
         }
@@ -114,8 +138,9 @@ namespace TrinketFortune
                 }
                 return total > 0 ? (donated / (float)total) * 100f : 0f; // 0-100
             }
-            catch
+            catch (Exception ex)
             {
+                Plugin.Log?.LogDebug($"DonationHelper: aquarium progress fallback used due to reflection error: {ex.Message}");
                 return 0f;
             }
         }
