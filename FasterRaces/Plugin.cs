@@ -7,6 +7,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Reflection;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 using Wish;
 
 namespace FasterRaces
@@ -31,6 +32,7 @@ namespace FasterRaces
         };
 
         private Harmony _harmony;
+        private bool _applicationQuitting;
 
         private void Awake()
         {
@@ -131,11 +133,30 @@ namespace FasterRaces
             return new ConfigFile(configPath, true);
         }
 
+        private void OnApplicationQuit()
+        {
+            _applicationQuitting = true;
+        }
+
+        private void OnDestroy()
+        {
+            string sceneName = SceneManager.GetActiveScene().name ?? string.Empty;
+            string sceneLower = sceneName.ToLowerInvariant();
+            bool expectedTeardown = _applicationQuitting || !Application.isPlaying || sceneLower.Contains("menu") || sceneLower.Contains("title");
+            if (expectedTeardown)
+                Log?.LogInfo($"[Lifecycle] Plugin OnDestroy during expected teardown (scene: {sceneName})");
+            else
+                Log?.LogWarning($"[Lifecycle] Plugin OnDestroy outside expected teardown (scene: {sceneName})");
+
+            _harmony?.UnpatchSelf();
+        }
+
         public static class SpeedPatch
         {
             // Cache the SubRace property for fast per-frame access.
             private static PropertyInfo _subRaceProp;
             private static bool _subRaceChecked;
+            private static bool _loggedRaceResolveFailure;
 
             public static void Postfix(Wish.StatType stat, ref float __result)
             {
@@ -171,7 +192,11 @@ namespace FasterRaces
                 }
                 catch (Exception ex)
                 {
-                    System.Diagnostics.Debug.WriteLine($"[FasterRaces] GetCurrentRaceName failed: {ex.Message}");
+                    if (!_loggedRaceResolveFailure)
+                    {
+                        _loggedRaceResolveFailure = true;
+                        Plugin.Log?.LogDebug($"[FasterRaces] GetCurrentRaceName failed: {ex.Message}");
+                    }
                     return null;
                 }
             }

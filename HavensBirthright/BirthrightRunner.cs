@@ -738,8 +738,9 @@ namespace HavensBirthright
                 float staticHour = ReflectionHelper.TryGetValue<float>(null, "Hour", -1f);
                 return staticHour;
             }
-            catch
+            catch (Exception ex)
             {
+                Plugin.Log?.LogDebug($"[BirthrightRunner] Failed to read current hour: {ex.Message}");
                 return -1f;
             }
         }
@@ -773,8 +774,9 @@ namespace HavensBirthright
                 }
                 return null;
             }
-            catch
+            catch (Exception ex)
             {
+                Plugin.Log?.LogDebug($"[BirthrightRunner] Failed to read current season: {ex.Message}");
                 return null;
             }
         }
@@ -817,8 +819,9 @@ namespace HavensBirthright
                 float currentHP = ReflectionHelper.TryGetValue<float>(player, "health", maxHP);
                 return currentHP / maxHP;
             }
-            catch
+            catch (Exception ex)
             {
+                Plugin.Log?.LogDebug($"[BirthrightRunner] Failed to read player HP ratio: {ex.Message}");
                 return 1f;
             }
         }

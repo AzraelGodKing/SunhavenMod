@@ -87,8 +87,9 @@ namespace CropOptimizer.UI
                 if (save == null) return false;
                 return save.characterData != null;
             }
-            catch
+            catch (Exception ex)
             {
+                Plugin.Log?.LogDebug($"[CropHUD] Failed to determine character session state: {ex.Message}");
                 return false;
             }
         }
@@ -169,7 +170,14 @@ namespace CropOptimizer.UI
             _hudView?.SetTooltipEnabled(_hoverTooltipEnabled.Value);
             // BepInEx writes config changes to disk lazily; ConfigFile.Save forces a flush so
             // the new value survives a game restart.
-            try { _hoverTooltipEnabled.ConfigFile?.Save(); } catch { /* ignore disk write errors */ }
+            try
+            {
+                _hoverTooltipEnabled.ConfigFile?.Save();
+            }
+            catch (Exception ex)
+            {
+                Plugin.Log?.LogDebug($"[CropHUD] Failed to flush hover-tooltip config change: {ex.Message}");
+            }
         }
 
         private void UpdateHoverTooltip(bool sessionLive)

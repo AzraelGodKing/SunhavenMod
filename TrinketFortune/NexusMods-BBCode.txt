@@ -1,4 +1,4 @@
-[b][size=5]Trinket Fortune[/size][/b] [i](v1.1.0)[/i]
+[b][size=5]Trinket Fortune[/size][/b] [i](v1.2.0)[/i]
 
 Increases the odds of [b]unowned fishing trinkets[/b] dropping as you complete the museum aquarium. Less frustrating fishing for that last trinket.
 

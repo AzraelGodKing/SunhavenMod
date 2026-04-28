@@ -69,6 +69,7 @@ correctness and UX upgrades over the prior implementation.
 
 ### Unreleased
 
+- **Lifecycle:** Added expected-teardown diagnostics to plugin shutdown so normal menu/quit destroys are logged as expected and unexpected runtime teardown remains visible.
 - **Cost preflight accuracy:** affordability checks now use an exact live-node refund estimate (with safe fallback), reducing false "cannot afford" blocks caused by stale point counters.
 - **Reset All hardening:** reset-all now preflights total affordability and executes as a rollback-safe sequence; if any profession reset fails, previously reset professions are automatically undone in reverse order.
 - **Undo depth:** undo now supports multi-level per-profession history (stacked snapshots) instead of only the latest reset.

@@ -55,6 +55,7 @@ namespace BirthdayReminder
         private BirthdayManager _manager;
         private BirthdayHUD _hud;
         private Harmony _harmony;
+        private bool _applicationQuitting;
 
         // Hook tracking - reset when returning to main menu
         private static bool _overnightHooked = false;
@@ -653,7 +654,24 @@ namespace BirthdayReminder
 
         private void OnDestroy()
         {
-            Log.LogWarning("[CRITICAL] Plugin OnDestroy called!");
+            SceneManager.sceneLoaded -= OnSceneLoaded;
+            _todoIntegration?.Dispose();
+            _todoIntegration = null;
+
+            string sceneName = SceneManager.GetActiveScene().name ?? string.Empty;
+            string sceneLower = sceneName.ToLowerInvariant();
+            bool expectedTeardown = _applicationQuitting || !Application.isPlaying || sceneLower.Contains("menu") || sceneLower.Contains("title");
+            if (expectedTeardown)
+                Log?.LogInfo($"[Lifecycle] Plugin OnDestroy during expected teardown (scene: {sceneName})");
+            else
+                Log?.LogWarning($"[Lifecycle] Plugin OnDestroy outside expected teardown (scene: {sceneName})");
+
+            _harmony?.UnpatchSelf();
+        }
+
+        private void OnApplicationQuit()
+        {
+            _applicationQuitting = true;
         }
     }
 

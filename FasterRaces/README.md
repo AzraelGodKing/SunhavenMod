@@ -25,3 +25,5 @@ File: `Sun Haven/BepInEx/config/FasterRaces.cfg`
 ### Unreleased
 
 - **Build:** Added missing `using System;` in `Plugin.cs` so `Exception` in the race-name reflection guard compiles cleanly.
+- **Lifecycle:** Added expected-teardown `OnDestroy` logging and Harmony cleanup for plugin unload/quit paths.
+- **Debug:** Replaced `System.Diagnostics.Debug.WriteLine` reflection fallback output with one-time BepInEx debug logging.
