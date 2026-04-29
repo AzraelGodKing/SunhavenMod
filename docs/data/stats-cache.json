@@ -1,17 +1,17 @@
 {
-  "lastFetched": "2026-04-29T02:51:05.906Z",
+  "lastFetched": "2026-04-29T05:54:40.319Z",
   "mods": {
     "senpais-chest": {
       "name": "Senpai's Chest",
       "thunderstore": {
-        "total_downloads": 391,
+        "total_downloads": 392,
         "versions": {
           "2.5.0": 3,
           "2.4.0": 16,
           "2.3.0": 4,
           "2.2.6": 3,
           "2.2.4": 19,
-          "2.2.2": 58,
+          "2.2.2": 59,
           "2.2.1": 12,
           "2.2.0": 20,
           "2.1.0": 55,
@@ -27,10 +27,10 @@
         }
       },
       "nexus": {
-        "total_downloads": 451,
-        "unique_downloads": 325
+        "total_downloads": 453,
+        "unique_downloads": 327
       },
-      "combined_total": 842
+      "combined_total": 845
     },
     "havens-birthright": {
       "name": "Haven's Birthright",
@@ -62,10 +62,10 @@
     "museum-utility-tracker": {
       "name": "S.M.U.T.",
       "thunderstore": {
-        "total_downloads": 328,
+        "total_downloads": 329,
         "versions": {
           "2.3.0": 19,
-          "2.2.9": 3,
+          "2.2.9": 4,
           "2.2.6": 67,
           "2.2.5": 27,
           "2.2.3": 66,
@@ -80,7 +80,7 @@
         "total_downloads": 733,
         "unique_downloads": 579
       },
-      "combined_total": 1061
+      "combined_total": 1062
     },
     "squirrels-birthday-reminder": {
       "name": "A Squirrel's Birthday Reminder",
@@ -220,9 +220,9 @@
     "trinket-fortune": {
       "name": "Trinket Fortune",
       "thunderstore": {
-        "total_downloads": 114,
+        "total_downloads": 115,
         "versions": {
-          "1.1.0": 9,
+          "1.1.0": 10,
           "1.0.5": 4,
           "1.0.3": 20,
           "1.0.0": 81
@@ -232,7 +232,7 @@
         "total_downloads": 146,
         "unique_downloads": 119
       },
-      "combined_total": 260
+      "combined_total": 261
     },
     "crop-optimizer": {
       "name": "Crop Optimizer",
@@ -269,9 +269,9 @@
     }
   },
   "site_total": {
-    "thunderstore": 2497,
-    "nexus_total": 4333,
-    "nexus_unique": 3208,
-    "grand_total": 6830
+    "thunderstore": 2500,
+    "nexus_total": 4335,
+    "nexus_unique": 3210,
+    "grand_total": 6835
   }
 }
