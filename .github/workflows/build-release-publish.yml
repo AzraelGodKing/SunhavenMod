@@ -534,17 +534,7 @@ jobs:
           deps: ${{ env.THUNDERSTORE_DEPS }}
           file: ${{ steps.package_step.outputs.zip_path }}
 
-      - name: "Haven's Almanac — Nexus not used"
-        if: >-
-          github.event.inputs.dry_run != 'true' &&
-          github.event.inputs.publish_discord_only != 'true' &&
-          matrix.mod == 'havensalmanac' &&
-          github.event.inputs.test_discord != 'true' &&
-          steps.version_check.outputs.version_unchanged != 'true'
-        run: |
-          echo "Haven's Almanac: Nexus upload skipped (Thunderstore/GitHub only)."
-
-      - name: Nexus — verify zip
+      - name: Nexus — resolve and verify zip
         id: nexus_preflight
         if: >-
           github.event.inputs.dry_run != 'true' &&
@@ -552,8 +542,7 @@ jobs:
           github.event.inputs.publish_nexus == 'true' &&
           github.event.inputs.test_discord != 'true' &&
           steps.version_check.outputs.version_unchanged != 'true' &&
-          steps.config.outputs.nexus_file_group_id != '' &&
-          matrix.mod != 'havensalmanac'
+          steps.config.outputs.nexus_file_group_id != ''
         run: |
           Z="${{ steps.package_step.outputs.zip_path }}"
           test -f "$Z" || { echo "::error::Missing $Z"; exit 1; }
@@ -668,7 +657,6 @@ jobs:
           github.event.inputs.test_discord != 'true' &&
           steps.version_check.outputs.version_unchanged != 'true' &&
           steps.config.outputs.nexus_file_group_id != '' &&
-          matrix.mod != 'havensalmanac' &&
           steps.nexus_preflight.outcome == 'success'
         run: |
           set -euo pipefail
