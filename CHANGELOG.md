@@ -1,5 +1,11 @@
 # Changelog
 
+## 2026-04-29
+### CI / Release
+- Hardened Nexus preflight in both release workflows to resolve the expected zip path and fall back to a single detected `dist/*.zip` artifact when naming mismatches occur.
+- Updated Nexus upload steps to reuse the resolved preflight zip path so non-Almanac mods do not fail solely on strict filename expectations.
+- Removed the Haven's Almanac Nexus skip guard in both active release workflows now that the mod has a live Nexus listing and file group configured.
+
 ## 2026-04-28
 ### Senpai's Chest
 - Hardened smart-chest persistence to avoid overwriting an existing non-empty save file with empty runtime data before a successful character load in the current session.

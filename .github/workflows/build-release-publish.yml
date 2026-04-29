@@ -509,17 +509,7 @@ jobs:
           deps: ${{ env.THUNDERSTORE_DEPS }}
           file: dist/${{ steps.config.outputs.thunderstore_name }}-${{ steps.config.outputs.version }}.zip
 
-      - name: "Haven's Almanac — Nexus not used"
-        if: >-
-          github.event.inputs.dry_run != 'true' &&
-          github.event.inputs.publish_discord_only != 'true' &&
-          matrix.mod == 'havensalmanac' &&
-          github.event.inputs.test_discord != 'true' &&
-          steps.version_check.outputs.version_unchanged != 'true'
-        run: |
-          echo "Haven's Almanac: Nexus upload skipped (Thunderstore/GitHub only)."
-
-      - name: Nexus — verify zip
+      - name: Nexus — resolve and verify zip
         id: nexus_preflight
         if: >-
           github.event.inputs.dry_run != 'true' &&
@@ -527,11 +517,26 @@ jobs:
           github.event.inputs.publish_nexus == 'true' &&
           github.event.inputs.test_discord != 'true' &&
           steps.version_check.outputs.version_unchanged != 'true' &&
-          steps.config.outputs.nexus_file_group_id != '' &&
-          matrix.mod != 'havensalmanac'
+          steps.config.outputs.nexus_file_group_id != ''
         run: |
-          Z="dist/${{ steps.config.outputs.thunderstore_name }}-${{ steps.config.outputs.version }}.zip"
-          test -f "$Z" || { echo "::error::Missing $Z"; exit 1; }
+          set -euo pipefail
+          EXPECTED="dist/${{ steps.config.outputs.thunderstore_name }}-${{ steps.config.outputs.version }}.zip"
+          Z="$EXPECTED"
+          if [ ! -f "$Z" ]; then
+            echo "::warning::Expected zip not found at $EXPECTED. Looking for fallback dist/*.zip."
+            shopt -s nullglob
+            ZIPS=(dist/*.zip)
+            shopt -u nullglob
+            if [ "${#ZIPS[@]}" -eq 1 ]; then
+              Z="${ZIPS[0]}"
+              echo "::warning::Using fallback zip: $Z"
+            else
+              echo "::error::Missing $EXPECTED and fallback did not find exactly one zip in dist/."
+              ls -lah dist || true
+              exit 1
+            fi
+          fi
+          echo "zip_path=$Z" >> "$GITHUB_OUTPUT"
           ls -lh "$Z"
 
       - name: Nexus upload (1/4)
@@ -542,7 +547,7 @@ jobs:
         with:
           api_key: ${{ secrets.NEXUSMODS_API_KEY }}
           file_group_id: ${{ steps.config.outputs.nexus_file_group_id }}
-          filename: dist/${{ steps.config.outputs.thunderstore_name }}-${{ steps.config.outputs.version }}.zip
+          filename: ${{ steps.nexus_preflight.outputs.zip_path }}
           version: ${{ steps.config.outputs.version }}
           display_name: ${{ steps.config.outputs.display_name }} v${{ steps.config.outputs.version }}.zip
           description: |
@@ -567,7 +572,7 @@ jobs:
         with:
           api_key: ${{ secrets.NEXUSMODS_API_KEY }}
           file_group_id: ${{ steps.config.outputs.nexus_file_group_id }}
-          filename: dist/${{ steps.config.outputs.thunderstore_name }}-${{ steps.config.outputs.version }}.zip
+          filename: ${{ steps.nexus_preflight.outputs.zip_path }}
           version: ${{ steps.config.outputs.version }}
           display_name: ${{ steps.config.outputs.display_name }} v${{ steps.config.outputs.version }}.zip
           description: |
@@ -592,7 +597,7 @@ jobs:
         with:
           api_key: ${{ secrets.NEXUSMODS_API_KEY }}
           file_group_id: ${{ steps.config.outputs.nexus_file_group_id }}
-          filename: dist/${{ steps.config.outputs.thunderstore_name }}-${{ steps.config.outputs.version }}.zip
+          filename: ${{ steps.nexus_preflight.outputs.zip_path }}
           version: ${{ steps.config.outputs.version }}
           display_name: ${{ steps.config.outputs.display_name }} v${{ steps.config.outputs.version }}.zip
           description: |
@@ -621,7 +626,7 @@ jobs:
         with:
           api_key: ${{ secrets.NEXUSMODS_API_KEY }}
           file_group_id: ${{ steps.config.outputs.nexus_file_group_id }}
-          filename: dist/${{ steps.config.outputs.thunderstore_name }}-${{ steps.config.outputs.version }}.zip
+          filename: ${{ steps.nexus_preflight.outputs.zip_path }}
           version: ${{ steps.config.outputs.version }}
           display_name: ${{ steps.config.outputs.display_name }} v${{ steps.config.outputs.version }}.zip
           description: |
@@ -643,7 +648,6 @@ jobs:
           github.event.inputs.test_discord != 'true' &&
           steps.version_check.outputs.version_unchanged != 'true' &&
           steps.config.outputs.nexus_file_group_id != '' &&
-          matrix.mod != 'havensalmanac' &&
           steps.nexus_preflight.outcome == 'success'
         run: |
           set -euo pipefail
