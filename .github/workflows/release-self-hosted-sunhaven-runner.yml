@@ -454,16 +454,28 @@ jobs:
           draft: false
           prerelease: false
 
-      - name: Haven's Almanac — Nexus skipped (Thunderstore & GitHub only)
-        if: github.event.inputs.dry_run != 'true' && github.event.inputs.publish_discord_only != 'true' && matrix.mod == 'havensalmanac' && github.event.inputs.test_discord != 'true' && steps.version_check.outputs.version_unchanged != 'true'
-        run: |
-          echo "⭐ Haven's Almanac is not on Nexus Mods yet — Nexus upload is intentionally skipped."
-
-      - name: Nexus upload — verify zip and ids
+      - name: Nexus upload — resolve and verify zip
+        id: nexus_preflight
         if: github.event.inputs.dry_run != 'true' && github.event.inputs.publish_discord_only != 'true' && github.event.inputs.publish_nexus == 'true' && github.event.inputs.test_discord != 'true' && steps.version_check.outputs.version_unchanged != 'true' && steps.config.outputs.nexus_file_group_id != ''
         run: |
-          ZIP="dist/${{ steps.config.outputs.thunderstore_name }}-${{ steps.config.outputs.version }}.zip"
-          test -f "$ZIP" || { echo "::error::Missing $ZIP"; exit 1; }
+          set -euo pipefail
+          EXPECTED="dist/${{ steps.config.outputs.thunderstore_name }}-${{ steps.config.outputs.version }}.zip"
+          ZIP="$EXPECTED"
+          if [ ! -f "$ZIP" ]; then
+            echo "::warning::Expected zip not found at $EXPECTED. Looking for fallback dist/*.zip."
+            shopt -s nullglob
+            ZIPS=(dist/*.zip)
+            shopt -u nullglob
+            if [ "${#ZIPS[@]}" -eq 1 ]; then
+              ZIP="${ZIPS[0]}"
+              echo "::warning::Using fallback zip: $ZIP"
+            else
+              echo "::error::Missing $EXPECTED and fallback did not find exactly one zip in dist/."
+              ls -lah dist || true
+              exit 1
+            fi
+          fi
+          echo "zip_path=$ZIP" >> "$GITHUB_OUTPUT"
           ls -lh "$ZIP"
 
       # Nexus v3 API is marked "evaluation only" and intermittently returns 201 with an empty body
@@ -478,7 +490,7 @@ jobs:
         with:
           api_key: ${{ secrets.NEXUSMODS_API_KEY }}
           file_group_id: ${{ steps.config.outputs.nexus_file_group_id }}
-          filename: dist/${{ steps.config.outputs.thunderstore_name }}-${{ steps.config.outputs.version }}.zip
+          filename: ${{ steps.nexus_preflight.outputs.zip_path }}
           version: ${{ steps.config.outputs.version }}
           display_name: ${{ steps.config.outputs.display_name }} v${{ steps.config.outputs.version }}.zip
           description: |
@@ -507,7 +519,7 @@ jobs:
         with:
           api_key: ${{ secrets.NEXUSMODS_API_KEY }}
           file_group_id: ${{ steps.config.outputs.nexus_file_group_id }}
-          filename: dist/${{ steps.config.outputs.thunderstore_name }}-${{ steps.config.outputs.version }}.zip
+          filename: ${{ steps.nexus_preflight.outputs.zip_path }}
           version: ${{ steps.config.outputs.version }}
           display_name: ${{ steps.config.outputs.display_name }} v${{ steps.config.outputs.version }}.zip
           description: |
@@ -536,7 +548,7 @@ jobs:
         with:
           api_key: ${{ secrets.NEXUSMODS_API_KEY }}
           file_group_id: ${{ steps.config.outputs.nexus_file_group_id }}
-          filename: dist/${{ steps.config.outputs.thunderstore_name }}-${{ steps.config.outputs.version }}.zip
+          filename: ${{ steps.nexus_preflight.outputs.zip_path }}
           version: ${{ steps.config.outputs.version }}
           display_name: ${{ steps.config.outputs.display_name }} v${{ steps.config.outputs.version }}.zip
           description: |
@@ -565,7 +577,7 @@ jobs:
         with:
           api_key: ${{ secrets.NEXUSMODS_API_KEY }}
           file_group_id: ${{ steps.config.outputs.nexus_file_group_id }}
-          filename: dist/${{ steps.config.outputs.thunderstore_name }}-${{ steps.config.outputs.version }}.zip
+          filename: ${{ steps.nexus_preflight.outputs.zip_path }}
           version: ${{ steps.config.outputs.version }}
           display_name: ${{ steps.config.outputs.display_name }} v${{ steps.config.outputs.version }}.zip
           description: |
