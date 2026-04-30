@@ -1,5 +1,5 @@
 {
-  "lastFetched": "2026-04-30T15:47:04.132Z",
+  "lastFetched": "2026-04-30T17:20:57.676Z",
   "mods": {
     "senpais-chest": {
       "name": "Senpai's Chest",
@@ -28,10 +28,10 @@
         }
       },
       "nexus": {
-        "total_downloads": 456,
-        "unique_downloads": 330
+        "total_downloads": 459,
+        "unique_downloads": 332
       },
-      "combined_total": 861
+      "combined_total": 864
     },
     "havens-birthright": {
       "name": "Haven's Birthright",
@@ -80,10 +80,10 @@
         }
       },
       "nexus": {
-        "total_downloads": 738,
-        "unique_downloads": 582
+        "total_downloads": 739,
+        "unique_downloads": 583
       },
-      "combined_total": 1086
+      "combined_total": 1087
     },
     "squirrels-birthday-reminder": {
       "name": "A Squirrel's Birthday Reminder",
@@ -138,13 +138,13 @@
     "the-vault": {
       "name": "The Vault",
       "thunderstore": {
-        "total_downloads": 252,
+        "total_downloads": 253,
         "versions": {
           "3.3.0": 3,
           "3.2.0": 15,
           "3.1.0": 5,
           "3.0.7": 5,
-          "3.0.4": 39,
+          "3.0.4": 40,
           "3.0.2": 15,
           "3.0.1": 11,
           "2.0.8": 49,
@@ -159,7 +159,7 @@
         "total_downloads": 1010,
         "unique_downloads": 708
       },
-      "combined_total": 1262
+      "combined_total": 1263
     },
     "haven-dev-tools": {
       "name": "HavenDevTools",
@@ -187,9 +187,9 @@
     "havens-almanac": {
       "name": "Haven's Almanac",
       "thunderstore": {
-        "total_downloads": 229,
+        "total_downloads": 230,
         "versions": {
-          "1.4.0": 1,
+          "1.4.0": 2,
           "1.3.0": 17,
           "1.2.0": 10,
           "1.1.2": 3,
@@ -206,7 +206,7 @@
         "total_downloads": 50,
         "unique_downloads": 45
       },
-      "combined_total": 279
+      "combined_total": 280
     },
     "faster-races": {
       "name": "Faster Races",
@@ -247,9 +247,9 @@
     "crop-optimizer": {
       "name": "Crop Optimizer",
       "thunderstore": {
-        "total_downloads": 55,
+        "total_downloads": 56,
         "versions": {
-          "1.4.0": 4,
+          "1.4.0": 5,
           "1.3.0": 20,
           "1.2.0": 11,
           "1.0.2": 5,
@@ -260,7 +260,7 @@
         "total_downloads": 102,
         "unique_downloads": 94
       },
-      "combined_total": 157
+      "combined_total": 158
     },
     "havens-respec": {
       "name": "Haven's Respec",
@@ -281,9 +281,9 @@
     }
   },
   "site_total": {
-    "thunderstore": 2613,
-    "nexus_total": 4402,
-    "nexus_unique": 3261,
-    "grand_total": 7015
+    "thunderstore": 2616,
+    "nexus_total": 4406,
+    "nexus_unique": 3264,
+    "grand_total": 7022
   }
 }
