@@ -3,7 +3,7 @@
 ## 2026-05-01
 ### Packaging / Release Notes
 - Removed UTF-8 BOM bytes from all `thunderstore/manifest.json` files so strict JSON parsers and CI tooling consume manifests reliably.
-- Removed player-facing `**Unreleased:**` note blocks from Thunderstore READMEs for Faster Races, Haven Dev Tools, Haven's Almanac, Haven's Birthright, and Trinket Fortune.
+- Removed player-facing `**Unreleased:**` note blocks from Thunderstore READMEs for Faster Races, Haven Dev Tools, Haven's Almanac, Haven's Birthright, Trinket Fortune, Birthday Reminder, and Haven's Respec.
 
 ### The Vault
 - Aligned `OnDestroy` lifecycle logging with expected-teardown classification (`application quit`, non-playing state, and menu/title scenes) while preserving critical diagnostics for unexpected runtime destruction.
