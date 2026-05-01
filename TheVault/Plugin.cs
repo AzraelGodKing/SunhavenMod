@@ -74,6 +74,7 @@ namespace TheVault
         /// </summary>
         private static bool _debugFullVaultInspector;
         private bool _wasInMenuScene = true;
+        private bool _applicationQuitting;
 
         // Separate persistent object that survives game's UIHandler.UnloadGame cleanup
         private static GameObject _persistentRunner;
@@ -1106,6 +1107,7 @@ namespace TheVault
 
         private void OnApplicationQuit()
         {
+            _applicationQuitting = true;
             // Save vault data on quit
             Log.LogInfo("Application quitting - saving vault data");
             _saveSystem?.ForceSave();
@@ -1136,9 +1138,19 @@ namespace TheVault
             if (ConfigFile != null)
                 ConfigFile.SettingChanged -= OnAnyConfigSettingChanged;
 
-            Log.LogWarning("[CRITICAL] Plugin OnDestroy called! Plugin is being destroyed.");
-            Log.LogWarning($"[CRITICAL] Current scene: {SceneManager.GetActiveScene().name}");
-            Log.LogWarning($"[CRITICAL] Stack trace: {Environment.StackTrace}");
+            string sceneName = SceneManager.GetActiveScene().name ?? string.Empty;
+            string sceneLower = sceneName.ToLowerInvariant();
+            bool expectedTeardown = _applicationQuitting || !Application.isPlaying || sceneLower.Contains("menu") || sceneLower.Contains("title");
+            if (expectedTeardown)
+            {
+                Log.LogInfo($"[Lifecycle] Plugin OnDestroy during expected teardown (scene: {sceneName})");
+            }
+            else
+            {
+                Log.LogWarning("[CRITICAL] Plugin OnDestroy called outside expected teardown.");
+                Log.LogWarning($"[CRITICAL] Current scene: {sceneName}");
+                Log.LogWarning($"[CRITICAL] Stack trace: {Environment.StackTrace}");
+            }
             SceneManager.sceneLoaded -= OnSceneLoaded;
 
             // IMPORTANT: Do NOT unpatch Harmony here!

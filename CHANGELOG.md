@@ -1,5 +1,16 @@
 # Changelog
 
+## 2026-05-01
+### Packaging / Release Notes
+- Removed UTF-8 BOM bytes from all `thunderstore/manifest.json` files so strict JSON parsers and CI tooling consume manifests reliably.
+- Removed player-facing `**Unreleased:**` note blocks from Thunderstore READMEs for Faster Races, Haven Dev Tools, Haven's Almanac, Haven's Birthright, and Trinket Fortune.
+
+### The Vault
+- Aligned `OnDestroy` lifecycle logging with expected-teardown classification (`application quit`, non-playing state, and menu/title scenes) while preserving critical diagnostics for unexpected runtime destruction.
+
+### Sun Haven Todo
+- Reviewed dirty-save behavior after `SaveData()` guard update; confirmed all task mutation paths (`AddTodo`, `UpdateTodo`, `RemoveTodo`, `ToggleComplete`, recurring resets, and clear-completed) set dirty state before save triggers.
+
 ## 2026-04-29
 ### CI / Release
 - Hardened Nexus preflight in both release workflows to resolve the expected zip path and fall back to a single detected `dist/*.zip` artifact when naming mismatches occur.
