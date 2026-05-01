@@ -1,5 +1,22 @@
 # Changelog
 
+## 2026-05-01
+### Packaging / Release Notes
+- Removed UTF-8 BOM bytes from all `thunderstore/manifest.json` files so strict JSON parsers and CI tooling consume manifests reliably.
+- Removed player-facing `**Unreleased:**` note blocks from Thunderstore READMEs for Faster Races, Haven Dev Tools, Haven's Almanac, Haven's Birthright, Trinket Fortune, Birthday Reminder, and Haven's Respec.
+
+### The Vault
+- Aligned `OnDestroy` lifecycle logging with expected-teardown classification (`application quit`, non-playing state, and menu/title scenes) while preserving critical diagnostics for unexpected runtime destruction.
+
+### Sun Haven Todo
+- Reviewed dirty-save behavior after `SaveData()` guard update; confirmed all task mutation paths (`AddTodo`, `UpdateTodo`, `RemoveTodo`, `ToggleComplete`, recurring resets, and clear-completed) set dirty state before save triggers.
+
+## 2026-04-29
+### CI / Release
+- Hardened Nexus preflight in both release workflows to resolve the expected zip path and fall back to a single detected `dist/*.zip` artifact when naming mismatches occur.
+- Updated Nexus upload steps to reuse the resolved preflight zip path so non-Almanac mods do not fail solely on strict filename expectations.
+- Removed the Haven's Almanac Nexus skip guard in both active release workflows now that the mod has a live Nexus listing and file group configured.
+
 ## 2026-04-28
 ### Senpai's Chest
 - Hardened smart-chest persistence to avoid overwriting an existing non-empty save file with empty runtime data before a successful character load in the current session.
