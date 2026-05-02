@@ -1,24 +1,26 @@
-[b][size=5]Trinket Fortune[/size][/b] [i](v1.2.0)[/i]
+[b][size=5]Trinket Fortune[/size][/b] [i](v1.2.1)[/i]
 
-Increases the odds of [b]unowned fishing trinkets[/b] dropping as you complete the museum aquarium. Less frustrating fishing for that last trinket.
+Increases the odds of [b]unowned fishing trinkets[/b] dropping as you donate to the museum aquarium. Fish that grant aquarium trinkets benefit — less frustrating grind for the last few catches.
 
 [line]
 
 [size=4][b]Features[/b][/size]
 [list]
-[*][b]Museum-aware[/b] — As you donate more aquarium trinkets, drop odds for trinkets you don't own yet increase
-[*][b]Configurable[/b] — Bonus strength and minimum museum progress threshold
+[*][b]Museum-aware[/b] — Bonus scales with aquarium completion; unowned trinkets get better odds as you progress
+[*][b]Configurable[/b] — Bonus strength, minimum progress gate, and a hard cap on bonus chance
+[*][b]Standalone-safe[/b] — Loads without Haven Dev Tools; optional integrations when those mods are present
 [/list]
 
 [line]
 
 [size=4][b]Configuration[/b][/size]
-[b]BepInEx/config/com.azraelgodking.trinketfortune.cfg[/b]
+[b]BepInEx/config/TrinketFortune.cfg[/b] (first run copies from legacy [b]com.azraelgodking.trinketfortune.cfg[/b] if present)
 
 [list]
-[*][b]Enabled[/b] — On/off (default: true)
-[*][b]MuseumProgressBonusPercent[/b] — Bonus to unowned trinket odds per 10% aquarium completion (default: 5)
-[*][b]MinimumMuseumProgress[/b] — No bonus below this fraction (default: 0.2 = 20%)
+[*][b]Enabled[/b] — Master toggle (default: true)
+[*][b]MuseumProgressBonusPercent[/b] — Extra chance for unowned trinkets per 10% aquarium completion (default: 5)
+[*][b]MinimumMuseumProgress[/b] — No bonus below this donation fraction (default: 0.2 = 20%)
+[*][b]MaxBonusChancePercent[/b] — Upper cap on the computed bonus (%), regardless of progress (default: 75)
 [/list]
 
 [line]
@@ -31,16 +33,16 @@ Increases the odds of [b]unowned fishing trinkets[/b] dropping as you complete t
 
 [size=4][b]Installation[/b][/size]
 [list]
-[*]Place [b]TrinketFortune.dll[/b] in [b]BepInEx/plugins/[/b]
+[*]Place [b]TrinketFortune.dll[/b] in [b]BepInEx/plugins/[/b] (subfolder optional)
 [*]Launch the game
 [/list]
 
 [line]
 
-[size=4][b]Notes[/b][/size]
+[size=4][b]Optional integrations[/b][/size]
 [list]
-[*][b]S.M.U.T.[/b] — Aquarium donation data for missing trinket list
-[*][b]Haven Dev Tools[/b] — Trinket Fortune panel in Extensions tab (missing trinkets + probability when available)
+[*][b]S.M.U.T.[/b] (Sun Haven Museum Utility Tracker) — Donation data used to drive museum progress and missing-trinket awareness
+[*][b]Haven Dev Tools[/b] — Trinket Fortune panel under Extensions (missing trinkets + probability when data is available). [i]Not required[/i] — the mod does not hard-depend on Dev Tools.
 [/list]
 
 [line]
@@ -48,5 +50,8 @@ Increases the odds of [b]unowned fishing trinkets[/b] dropping as you complete t
 [size=4][b]Links[/b][/size]
 [list]
 [*][url=https://azraelgodking.github.io/SunhavenMod/TrinketFortune/TrinketFortune.html]Documentation[/url]
-[*][url=https://discord.gg/Vwh2y7qMXv]Discord - bugs & discussion[/url]
+[*][url=https://thunderstore.io/c/sun-haven/p/AzraelGodKing/TrinketFortune/]Thunderstore[/url]
+[*][url=https://www.nexusmods.com/sunhaven/mods/498]Nexus Mods[/url]
+[*][url=https://github.com/AzraelGodKing/SunhavenMod/releases]GitHub Releases[/url]
+[*][url=https://discord.gg/Vwh2y7qMXv]Discord — bugs & discussion[/url]
 [/list]
