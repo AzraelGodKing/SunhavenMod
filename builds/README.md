@@ -1,41 +1,13 @@
-# Pre-Built DLLs for Release
+# Local / CI staging (`builds/`)
 
-Place your compiled DLLs here before running the GitHub Actions workflow.
+This directory is **ignored by git** (see root `.gitignore`). Release workflows and local scripts write compiled DLLs here for packaging **during a single run** — nothing here should be committed.
 
-## Structure
+## Typical layout (ephemeral)
 
-```
-builds/
-├── BirthdayReminder/
-│   └── BirthdayReminder.dll
-├── FasterRaces/
-│   └── FasterRaces.dll
-├── CropOptimizer/
-│   └── CropOptimizer.dll
-├── HavenDevTools/
-│   └── HavenDevTools.dll
-├── HavensAlmanac/
-│   └── HavensAlmanac.dll
-├── HavensBirthright/
-│   └── HavensBirthright.dll
-├── SenpaisChest/
-│   └── SenpaisChest.dll
-├── SunHavenMuseumUtilityTracker/
-│   └── SunHavenMuseumUtilityTracker.dll
-├── SunhavenTodo/
-│   └── SunhavenTodo.dll
-├── TheVault/
-│   ├── TheVault.dll
-│   └── TheVault.Abstractions.dll
-└── TrinketFortune/
-    └── TrinketFortune.dll
-```
+Workflows recreate `builds/<ModDir>/<dll>.dll` when building; artifacts are uploaded from this tree.
 
-## Workflow
+## Developing locally
 
-1. Build your mod locally (Visual Studio / Rider)
-2. Copy release DLLs from `bin/Release/` to the appropriate folder here
-3. For The Vault releases, include both `TheVault.dll` and `TheVault.Abstractions.dll`
-4. Commit and push: `git add builds/ && git commit -m "Update build" && git push`
-5. Go to GitHub Actions → "Release & Publish" → Run workflow
-6. Select your mod and whether to publish to Thunderstore
+After `dotnet build`, optional post-build steps may copy outputs into `builds/<YourMod>/` for Thunderstore zip scripting or runner packaging. **Do not** `git add builds/`; CI builds from source instead of relying on checked-in binaries.
+
+See [`docs/VERSION_AND_RELEASE.md`](../docs/VERSION_AND_RELEASE.md) for the release pipeline.

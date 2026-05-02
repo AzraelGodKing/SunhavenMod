@@ -119,6 +119,6 @@
     "nexus_file_group_id": "7326839",
     "thunderstore": "https://thunderstore.io/c/sun-haven/p/AzraelGodKing/HavensRespec/",
     "thunderstoreName": "HavensRespec",
-    "changelog": "Initial release of Haven's Respec v1.0.0: clean-room, tree-driven per-profession reset with confirmation dialog, session-scoped Undo, configurable cost (None/Gold/Gems), optional Shift-skip and hotkeys. Config lives in BepInEx/config/HavensRespec.cfg and is editable live via Configuration Manager."
+    "changelog": "Haven's Respec v1.3.0: tree-driven per-profession reset with confirmation dialog, session-scoped Undo, configurable cost (None/Gold/Gems), optional Shift-skip and hotkeys; live-editable via BepInEx Configuration Manager (`HavensRespec.cfg`)."
   }
 }

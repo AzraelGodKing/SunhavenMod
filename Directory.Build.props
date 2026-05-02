@@ -1,6 +1,9 @@
 <Project>
   <!-- Sun Haven and BepInEx paths - override via SUNHAVEN_PATH env var for CI/portability -->
   <PropertyGroup>
+    <LangVersion>latest</LangVersion>
+    <Deterministic>true</Deterministic>
+    <ContinuousIntegrationBuild Condition="'$(GITHUB_ACTIONS)' == 'true'">true</ContinuousIntegrationBuild>
     <SunHavenPath>F:\SteamLibrary\steamapps\common\Sun Haven</SunHavenPath>
     <SunHavenPath Condition="'$(SUNHAVEN_PATH)' != ''">$(SUNHAVEN_PATH)</SunHavenPath>
     <BepInExPath>$(SunHavenPath)\BepInEx</BepInExPath>

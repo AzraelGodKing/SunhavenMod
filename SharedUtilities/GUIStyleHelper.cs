@@ -42,6 +42,9 @@ namespace SunhavenMods.Shared
         /// <param name="bottomColor">Color at the bottom</param>
         public static Texture2D MakeGradientTexture(int height, Color topColor, Color bottomColor)
         {
+            if (height <= 1)
+                return MakeSolidTexture(1, 1, topColor);
+
             var tex = new Texture2D(1, height, TextureFormat.RGBA32, false);
             for (int y = 0; y < height; y++)
             {
