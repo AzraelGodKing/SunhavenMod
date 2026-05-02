@@ -1,5 +1,5 @@
 {
-  "lastFetched": "2026-05-02T05:37:03.984Z",
+  "lastFetched": "2026-05-02T07:43:55.817Z",
   "mods": {
     "senpais-chest": {
       "name": "Senpai's Chest",
@@ -56,10 +56,10 @@
         }
       },
       "nexus": {
-        "total_downloads": 894,
-        "unique_downloads": 593
+        "total_downloads": 895,
+        "unique_downloads": 594
       },
-      "combined_total": 1250
+      "combined_total": 1251
     },
     "museum-utility-tracker": {
       "name": "S.M.U.T.",
@@ -187,7 +187,7 @@
     "havens-almanac": {
       "name": "Haven's Almanac",
       "thunderstore": {
-        "total_downloads": 236,
+        "total_downloads": 237,
         "versions": {
           "1.4.0": 4,
           "1.3.0": 17,
@@ -196,7 +196,7 @@
           "1.0.6": 7,
           "1.0.5": 21,
           "1.0.4": 31,
-          "1.0.3": 63,
+          "1.0.3": 64,
           "1.0.2": 19,
           "1.0.1": 30,
           "1.0.0": 29
@@ -206,7 +206,7 @@
         "total_downloads": 51,
         "unique_downloads": 46
       },
-      "combined_total": 287
+      "combined_total": 288
     },
     "faster-races": {
       "name": "Faster Races",
@@ -239,10 +239,10 @@
         }
       },
       "nexus": {
-        "total_downloads": 150,
-        "unique_downloads": 121
+        "total_downloads": 151,
+        "unique_downloads": 122
       },
-      "combined_total": 273
+      "combined_total": 274
     },
     "crop-optimizer": {
       "name": "Crop Optimizer",
@@ -257,10 +257,10 @@
         }
       },
       "nexus": {
-        "total_downloads": 114,
-        "unique_downloads": 105
+        "total_downloads": 115,
+        "unique_downloads": 106
       },
-      "combined_total": 172
+      "combined_total": 173
     },
     "havens-respec": {
       "name": "Haven's Respec",
@@ -281,9 +281,9 @@
     }
   },
   "site_total": {
-    "thunderstore": 2661,
-    "nexus_total": 4465,
-    "nexus_unique": 3317,
-    "grand_total": 7126
+    "thunderstore": 2662,
+    "nexus_total": 4468,
+    "nexus_unique": 3320,
+    "grand_total": 7130
   }
 }
