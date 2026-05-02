@@ -158,7 +158,11 @@ namespace TheVault.Patches
                     return (int)idProp.GetValue(itemInfo);
                 return -1;
             }
-            catch { return -1; }
+            catch (Exception ex)
+            {
+                Plugin.Log?.LogDebug($"[ShopPatches] GetItemIdFromItemInfo: {ex.Message}");
+                return -1;
+            }
         }
 
         /// <summary>

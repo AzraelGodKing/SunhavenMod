@@ -218,8 +218,9 @@ namespace TheVault
                 }
                 return true;
             }
-            catch
+            catch (Exception ex)
             {
+                Plugin.Log?.LogDebug($"[SecretGifts] TryLoadFromFile: {ex.Message}");
                 return false;
             }
         }
@@ -430,8 +431,9 @@ namespace TheVault
 
                 return steamIdStr;
             }
-            catch
+            catch (Exception ex)
             {
+                Plugin.Log?.LogDebug($"[SecretGifts] TryGetSteamId: {ex.Message}");
                 return null;
             }
         }

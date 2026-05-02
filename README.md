@@ -40,7 +40,7 @@ Per-character saves, item icons, and bundle progress. Hotkey: **Ctrl+C**.
 
 ### The Vault
 
-**Full rework of The Vault system** (current release **3.0.5**): classic `VaultManager` / `VaultSaveSystem` stack, one codebase under `TheVault/`, Harmony integration rebased on `Wish.*` types, single build (`TheVault/TheVault.csproj`). Secure storage for seasonal tokens, keys, and special currencies; auto-deposit, HUD, shop and inventory vault hooks; **Ctrl+V** or **F8** (Steam Deck). Details: [`TheVault/README.md`]
+**Full rework of The Vault system** (current release **3.3.0**): classic `VaultManager` / `VaultSaveSystem` stack, one codebase under `TheVault/`, Harmony integration rebased on `Wish.*` types, single build (`TheVault/TheVault.csproj`). Tamper-resistant local storage for seasonal tokens, keys, and special currencies; auto-deposit, HUD, shop and inventory vault hooks; **Ctrl+V** or **F8** (Steam Deck). Details: [`TheVault/README.md`]
 
 ### Haven's Birthright
 
@@ -101,7 +101,6 @@ SunhavenMod/
 ├── SunhavenTodo/          # Todo list & journal
 ├── SunHavenMuseumUtilityTracker/  # Museum tracker
 ├── TheVault/              # Vault (current; TheVault.dll)
-├── TheVault-legacy/       # Archive notes / optional Decomplied reference (not built)
 ├── HavensBirthright/      # Racial bonuses
 ├── HavensAlmanac/         # Mod registry
 ├── BirthdayReminder/      # Birthday reminders
@@ -111,7 +110,7 @@ SunhavenMod/
 ├── CropOptimizer/         # Crop forecasting + HUD
 ├── HavensRespec/          # Skill-tree respec (confirm + undo + optional cost)
 ├── SharedUtilities/       # Shared code (VersionChecker, etc.)
-├── scripts/               # Maintainer helpers (pre-push-build.ps1, remove-stale-github-releases.ps1)
+├── scripts/               # Maintainer helpers (`pre-push-build.ps1`, version consistency scripts)
 └── docs/                  # Shared documentation
 ```
 
@@ -209,7 +208,7 @@ SunhavenMod/
 - **2026-04-15** — Added new mod scaffold [`CropOptimizer/`](CropOptimizer/) with crop-growth Harmony hook, HUD, soft integrations (SunhavenTodo/BirthdayReminder/TheVault), Almanac provider wiring, and release metadata entries.
 - **2026-04-11** — Maintainer/compat pass: added [`docs/MAINTAINER_VERSION_DRIFT_CHECKLIST.md`](docs/MAINTAINER_VERSION_DRIFT_CHECKLIST.md) and [`docs/COMPATIBILITY_CONTRACT.md`](docs/COMPATIBILITY_CONTRACT.md); aligned Sunhaven Todo + The Vault docs text drift; updated release metadata URLs (`SenpaisChest`, `HavenDevTools`, `TrinketFortune`); expanded [`builds/README.md`](builds/README.md) artifact map; added concise repo READMEs for `BirthdayReminder`, `FasterRaces`, and `SenpaisChest`.
 - **2026-04-09** — **Haven's Birthright v2.0.0:** Changing saves or characters—and Fire/Water Elemental behavior after loads and F9—is more reliable. The code was reorganized for upkeep, and the mod keeps its hidden runner alive with shared SceneRootSurvivor instead of a third-party Keep Alive mod. Docs: [`docs/RacialBonuses/RacialBonuses.html`](docs/RacialBonuses/RacialBonuses.html), [`docs/index.html`](docs/index.html); source changelog [`HavensBirthright/README.md`](HavensBirthright/README.md); [`docs/versions.json`](docs/versions.json) for live hub badges.
-- **2026-04-05** — Maintainer script [`scripts/remove-stale-github-releases.ps1`](scripts/remove-stale-github-releases.ps1): removes GitHub releases whose tags are not the current `{thunderstoreName}-v{version}` from [`docs/versions.json`](docs/versions.json). **GitHub Actions:** workflow [`.github/workflows/remove-stale-github-releases.yml`](.github/workflows/remove-stale-github-releases.yml) (manual dispatch; **dry run** default; turn off dry run + enable **confirm_delete** to delete). **Local:** set **`GITHUB_TOKEN`** (classic PAT, **repo** scope) or **`-Token`**; **`-WhatIf`** first; **`YES`** or **`-Force`**.
+- **2026-04-05** — **Stale GitHub releases cleanup:** workflow [`.github/workflows/remove-stale-github-releases.yml`](.github/workflows/remove-stale-github-releases.yml) removes releases whose tags are not the current `{thunderstoreName}-v{version}` from [`docs/versions.json`](docs/versions.json) (manual dispatch; **dry run** default; turn off dry run + enable **confirm_delete** to delete).
 - **2026-04-03** — **The Vault:** [`TheVault/README.md`](TheVault/README.md) aligned with **v3.0.4** (version + changelog **3.0.3** / **3.0.4**); removed erroneous in-repo breaking callout; HUD usage text matches cfg keys; intro links **`TheVault.Abstractions/`**.
 - **2026-03-31** — **The Vault:** HUD is draggable via the top accent strip; **`[HUD] PositionX`** / **`PositionY`** in `thevault.cfg` persist placement.
 - **2026-03-31** — **Thunderstore readmes:** [`TheVault/thunderstore/README.md`](TheVault/thunderstore/README.md) and [`TrinketFortune/thunderstore/README.md`](TrinketFortune/thunderstore/README.md) now include a `**Version X.Y.Z**` line so `pre-push-build.ps1` can keep them in sync with `docs/versions.json`.

@@ -15,7 +15,18 @@ namespace SunhavenMods.Shared
     /// </summary>
     public static class IconCache
     {
-        private static readonly Dictionary<int, Texture2D> _iconCache = new Dictionary<int, Texture2D>();
+        /// <summary>
+        /// Full-atlas sprites reference <see cref="Sprite.texture"/> directly; those assets must never be <see cref="UnityEngine.Object.Destroy"/>ed.
+        /// Only textures we allocate (<see cref="ExtractSpriteTexture"/>) are owned and safe to destroy on eviction.
+        /// </summary>
+        private struct CachedIcon
+        {
+            public Texture2D Texture;
+            /// <summary>True if this mod allocated the texture and must Destroy it on eviction/clear.</summary>
+            public bool OwnsTexture;
+        }
+
+        private static readonly Dictionary<int, CachedIcon> _iconCache = new Dictionary<int, CachedIcon>();
         private const int MaxCacheSize = 200;
         private static readonly HashSet<int> _loadingItems = new HashSet<int>();
         private static readonly HashSet<int> _failedItems = new HashSet<int>();
@@ -29,6 +40,7 @@ namespace SunhavenMods.Shared
         private static bool _reflectionInitialized;
         private static bool _initialized;
         private static bool _iconsLoaded;
+        private static int[] _pendingPreloadItemIds;
 
         /// <summary>
         /// Initialize the icon cache. Call during plugin initialization.
@@ -51,7 +63,8 @@ namespace SunhavenMods.Shared
 
             if (preloadItemIds != null && preloadItemIds.Length > 0)
             {
-                _log?.LogInfo("[IconCache] Preload item IDs registered (loading deferred until LoadAllIcons)");
+                _pendingPreloadItemIds = (int[])preloadItemIds.Clone();
+                _log?.LogInfo($"[IconCache] Preload: {_pendingPreloadItemIds.Length} item ID(s) will queue with LoadAllIcons");
             }
         }
 
@@ -87,8 +100,20 @@ namespace SunhavenMods.Shared
                 LoadIcon(kvp.Value);
             }
 
+            if (_pendingPreloadItemIds != null)
+            {
+                foreach (int pid in _pendingPreloadItemIds)
+                {
+                    if (pid > 0)
+                    {
+                        _log?.LogDebug($"[IconCache] Queuing preload item ID: {pid}");
+                        LoadIcon(pid);
+                    }
+                }
+            }
+
             _iconsLoaded = true;
-            _log?.LogInfo($"[IconCache] Queued {_currencyToItemId.Count} icons for loading");
+            _log?.LogInfo($"[IconCache] Queued {_currencyToItemId.Count} currency icon(s); preload queue processed.");
         }
 
         /// <summary>
@@ -111,9 +136,9 @@ namespace SunhavenMods.Shared
             if (itemId <= 0)
                 return GetFallbackTexture();
 
-            if (_iconCache.TryGetValue(itemId, out Texture2D cached))
+            if (_iconCache.TryGetValue(itemId, out CachedIcon cached))
             {
-                return cached;
+                return cached.Texture;
             }
 
             if (!_loadingItems.Contains(itemId) && !_failedItems.Contains(itemId))
@@ -403,19 +428,23 @@ namespace SunhavenMods.Shared
 
             try
             {
+                bool ownsTexture;
                 Texture2D texture;
                 if (sprite.rect.width == sprite.texture.width && sprite.rect.height == sprite.texture.height)
                 {
+                    // Reference to game atlas — must not Destroy on eviction.
                     texture = sprite.texture;
+                    ownsTexture = false;
                 }
                 else
                 {
                     texture = ExtractSpriteTexture(sprite);
+                    ownsTexture = texture != null;
                 }
 
                 if (texture != null)
                 {
-                    _iconCache[itemId] = texture;
+                    _iconCache[itemId] = new CachedIcon { Texture = texture, OwnsTexture = ownsTexture };
                     if (_iconCache.Count > MaxCacheSize)
                     {
                         int evictId = -1;
@@ -437,10 +466,10 @@ namespace SunhavenMods.Shared
                         if (evictId < 0)
                             evictId = fallbackEvictId;
 
-                        if (evictId >= 0 && _iconCache.TryGetValue(evictId, out Texture2D evictedTexture))
+                        if (evictId >= 0 && _iconCache.TryGetValue(evictId, out CachedIcon evicted))
                         {
-                            if (evictedTexture != null)
-                                UnityEngine.Object.Destroy(evictedTexture);
+                            if (evicted.OwnsTexture && evicted.Texture != null)
+                                UnityEngine.Object.Destroy(evicted.Texture);
                             _iconCache.Remove(evictId);
                         }
                     }
@@ -485,30 +514,35 @@ namespace SunhavenMods.Shared
 
         private static Texture2D CopyTextureViaRenderTexture(Sprite sprite)
         {
+            RenderTexture rt = null;
+            RenderTexture previousActive = RenderTexture.active;
             try
             {
                 Rect rect = sprite.rect;
                 int width = (int)rect.width;
                 int height = (int)rect.height;
 
-                RenderTexture rt = RenderTexture.GetTemporary(sprite.texture.width, sprite.texture.height, 0, RenderTextureFormat.ARGB32);
+                rt = RenderTexture.GetTemporary(sprite.texture.width, sprite.texture.height, 0, RenderTextureFormat.ARGB32);
                 Graphics.Blit(sprite.texture, rt);
 
-                RenderTexture previousRT = RenderTexture.active;
                 RenderTexture.active = rt;
 
                 Texture2D extracted = new Texture2D(width, height, TextureFormat.RGBA32, false);
                 extracted.ReadPixels(new Rect(rect.x, rect.y, width, height), 0, 0);
                 extracted.Apply();
 
-                RenderTexture.active = previousRT;
-                RenderTexture.ReleaseTemporary(rt);
                 return extracted;
             }
             catch (Exception ex)
             {
                 _log?.LogDebug($"[IconCache] Error copying texture via RenderTexture: {ex.Message}");
                 return null;
+            }
+            finally
+            {
+                RenderTexture.active = previousActive;
+                if (rt != null)
+                    RenderTexture.ReleaseTemporary(rt);
             }
         }
 
@@ -538,11 +572,17 @@ namespace SunhavenMods.Shared
         /// </summary>
         public static void Clear()
         {
+            foreach (var kvp in _iconCache)
+            {
+                if (kvp.Value.OwnsTexture && kvp.Value.Texture != null)
+                    UnityEngine.Object.Destroy(kvp.Value.Texture);
+            }
             _iconCache.Clear();
             _loadingItems.Clear();
             _failedItems.Clear();
             _initialized = false;
             _iconsLoaded = false;
+            _pendingPreloadItemIds = null;
         }
 
         /// <summary>

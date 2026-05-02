@@ -238,11 +238,11 @@ namespace TheVault.UI
 
         private void OnDestroy()
         {
-            // Make sure to re-enable input if the component is destroyed while visible
             if (_isVisible)
             {
                 Hide();
             }
+            DisposeGeneratedTextures();
         }
 
         private void Awake()
@@ -332,10 +332,66 @@ namespace TheVault.UI
             return tex;
         }
 
+        private static void DestroyTex(ref Texture2D tex)
+        {
+            if (tex != null)
+            {
+                UnityEngine.Object.Destroy(tex);
+                tex = null;
+            }
+        }
+
+        /// <summary>
+        /// Destroy IMGUI textures from the previous style build so scale rebuilds do not leak native memory.
+        /// </summary>
+        private void DisposeGeneratedTextures()
+        {
+            DestroyTex(ref _windowBackground);
+            DestroyTex(ref _rowBackground);
+            DestroyTex(ref _rowAltBackground);
+            DestroyTex(ref _buttonNormal);
+            DestroyTex(ref _buttonHover);
+            DestroyTex(ref _withdrawNormal);
+            DestroyTex(ref _withdrawHover);
+            DestroyTex(ref _tabNormal);
+            DestroyTex(ref _tabSelected);
+            DestroyTex(ref _headerBarBg);
+            DestroyTex(ref _toggleOnBg);
+            DestroyTex(ref _toggleOnHover);
+            DestroyTex(ref _toggleOffBg);
+            DestroyTex(ref _toggleOffHover);
+
+            _windowStyle = null;
+            _headerBarStyle = null;
+            _headerStyle = null;
+            _titleStyle = null;
+            _buttonStyle = null;
+            _withdrawButtonStyle = null;
+            _labelStyle = null;
+            _valueStyle = null;
+            _categoryButtonStyle = null;
+            _selectedCategoryStyle = null;
+            _rowStyle = null;
+            _closeButtonStyle = null;
+            _textFieldStyle = null;
+            _subtitleStyle = null;
+            _emptyStyle = null;
+            _toggleOnStyle = null;
+            _toggleOffStyle = null;
+            _iconFallbackStyle = null;
+            _hintStyle = null;
+            _selectedNameStyle = null;
+            _amountLabelStyle = null;
+            _statusOkStyle = null;
+            _statusErrorStyle = null;
+        }
+
         private void InitializeStyles()
         {
             if (!_stylesDirty && _windowStyle != null && _headerBarStyle != null)
                 return;
+
+            DisposeGeneratedTextures();
 
             // Create textures
             _windowBackground = MakeRoundedTex(64, 64, _windowBgColor, 8);

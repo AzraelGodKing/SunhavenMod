@@ -3,6 +3,7 @@
   "private": true,
   "version": "1.0.0",
   "scripts": {
+    "sync-mod-matrix": "node scripts/sync-docs-mod-matrix.js",
     "stats": "node scripts/fetch-stats.js",
     "stats:force": "node scripts/fetch-stats.js --force",
     "cf:pages:dev": "npx wrangler pages dev --project-name azrael-sunhaven-website",

@@ -93,6 +93,9 @@ namespace HavensBirthright.Patches
         /// </summary>
         public static void ModifyGetStat(StatType stat, ref float __result)
         {
+            if (Plugin.CriticalBirthrightHarmonyIncomplete)
+                return;
+
             // CRITICAL: prevent infinite recursion. Methods like GetPlayerHPRatio() call
             // player.MaxHealth which calls GetStat(Health) which re-enters this patch.
             if (_isApplyingBonuses)

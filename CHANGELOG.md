@@ -1,5 +1,30 @@
 # Changelog
 
+## 2026-05-02
+### SharedUtilities
+- **IconCache:** track texture ownership; only destroy mod-allocated textures on eviction/clear. Full-atlas sprites no longer `Destroy` shared game assets. `CopyTextureViaRenderTexture` always releases the temporary render target. Preload item IDs from `Initialize` are queued in `LoadAllIcons`.
+- **VersionChecker:** per-run logger held on `VersionCheckRunner` (no cross-mod static logger clobbering). `CompareVersions` ignores SemVer pre-release / `+build` suffixes for ordering. Removed unused `System.Net` import.
+- **GUIStyleHelper:** `MakeGradientTexture` avoids division by zero when `height <= 1`.
+- **MinimalJsonParser:** `\u` escapes support UTF-16 surrogate pairs.
+- **VaultCryptography / docs:** clarify tamper-resistance vs confidentiality; future KDF/cipher options noted in XML.
+
+### The Vault
+- **VaultSaveSystem:** save files use `_{steam_…|local_…}` suffix to reduce same-name collisions; legacy `{name}.vault` migrates on load. Unreadable files are **quarantined** to `*.corrupt-*.bak` before starting an empty in-memory vault; `LastLoadQuarantinedCorruptFile` property for diagnostics. `DeleteSave` removes both legacy and suffixed paths.
+- **VaultIntegration:** `IsVaultManagerAvailable` / `IsVaultDataLoadedForCurrentSession`; `IsVaultReady` documents manager-only semantics.
+- **UI / patches:** `VaultUI` disposes generated IMGUI textures on style rebuild and `OnDestroy`. `PlayerPatches.TriggerVaultLoad` uses `_contextLoadLock`. Hot-path `GetAmount` logging → Debug; `PersistentUpdateRunner` moved to `PersistentUpdateRunner.cs` with heartbeat at Debug. `ShopPatches` / `ItemPatches` / `SecretGifts` silent catches log Debug.
+
+### Haven's Birthright
+- **Fail-closed:** essential Harmony patches set `CriticalBirthrightHarmonyIncomplete`; stat/combat postfixes no-op when set.
+
+### HavenDevTools
+- Comment: Steam hash “authorization” is a client-side convenience gate only.
+
+### CI / repo
+- **Reusable workflow** `reusable-mod-matrix-setup.yml`; **concurrency** groups on release and test workflows. `verify-version-consistency.py` flags stray `manifest.json` under mod folders; root `HavenDevTools/manifest.json` removed.
+- **`scripts/mod-matrix.json`:** `statsDomId` for hub/stats; `sync-docs-mod-matrix.js` + `npm run sync-mod-matrix`; `verify-version-consistency.ps1` delegates to Python.
+- **Docs / policy:** `LICENSE` (MIT), `CONTRIBUTING.md`, `SECURITY.md`, `CODE_OF_CONDUCT.md`, `docs/SHARED_CODE_STRATEGY.md`. Root `README.md` drift fixes. `builds/README.md` = ephemeral staging only.
+- **HavensAlmanac:** remove committed decompiled `Inventory_decompiled.cs`; `.gitignore` patterns for local decompiles.
+
 ## 2026-05-01
 ### Packaging / Release Notes
 - Removed UTF-8 BOM bytes from all `thunderstore/manifest.json` files so strict JSON parsers and CI tooling consume manifests reliably.

@@ -11,6 +11,14 @@ Use this file for changes players do not need in the public changelog:
 
 Keep player-facing behavior updates in `CHANGELOG.md`.
 
+## 2026-05-02
+- Reusable **`reusable-mod-matrix-setup.yml`** + concurrency on **Release & Publish** / **Test — Self-hosted** workflows.
+- **`verify-version-consistency.py`:** stray `manifest.json` scan under each mod dir; Python verifier canonical; PowerShell wrapper delegates.
+- **`scripts/mod-matrix.json`:** `statsDomId`; **`sync-docs-mod-matrix.js`** regenerates **`docs/mod-matrix.json`**; **`fetch-stats.js`** reads `statsDomId` from matrix.
+- **`Directory.Build.props`:** `LangVersion` latest, `Deterministic`, `ContinuousIntegrationBuild` on GitHub Actions.
+- Policy files: **`LICENSE`**, **`CONTRIBUTING.md`**, **`SECURITY.md`**, **`CODE_OF_CONDUCT.md`**, **`docs/SHARED_CODE_STRATEGY.md`**.
+- Removed tracked **`HavenDevTools/manifest.json`** duplicate; **`.gitignore`** patterns for local `*_decompiled.cs`.
+
 ## 2026-04-28
 - Established changelog policy split:
   - `CHANGELOG.md` is player-facing.

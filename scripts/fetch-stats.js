@@ -46,29 +46,11 @@ function slugify(value) {
 }
 
 /**
- * Stable cache / DOM id per mod. Must match `data-stats-mod` in docs (index + mod pages)
- * and any existing committed stats-cache.json keys — not the same as `slugify(modKey)`.
- * (e.g. modKey `sunhaventodo` -> `havens-todo`, not `sunhaventodo`.)
+ * Stable cache / DOM id per mod (`statsDomId` in scripts/mod-matrix.json). Must match `data-stats-mod` in docs.
  */
-const STATS_ID_BY_MOD_KEY = {
-  senpaischest: "senpais-chest",
-  havensbirthright: "havens-birthright",
-  sunhavenmuseumutilitytracker: "museum-utility-tracker",
-  squirrelsbirthdayreminder: "squirrels-birthday-reminder",
-  sunhaventodo: "havens-todo",
-  thevault: "the-vault",
-  havendevtools: "haven-dev-tools",
-  havensalmanac: "havens-almanac",
-  fasterraces: "faster-races",
-  trinketfortune: "trinket-fortune",
-  cropoptimizer: "crop-optimizer",
-  havensrespec: "havens-respec",
-};
-
-function resolveStatsId(modKey) {
-  const k = String(modKey || "");
-  if (STATS_ID_BY_MOD_KEY[k]) return STATS_ID_BY_MOD_KEY[k];
-  return slugify(k);
+function resolveStatsId(modKey, row) {
+  if (row && row.statsDomId) return String(row.statsDomId);
+  return slugify(modKey);
 }
 
 function loadModRoster() {
@@ -81,7 +63,7 @@ function loadModRoster() {
     return rows
       .filter((row) => row && row.modKey && row.thunderstoreName)
       .map((row) => ({
-        id: resolveStatsId(row.modKey),
+        id: resolveStatsId(row.modKey, row),
         name: row.indexDataName || row.modDir || row.modKey,
         thunderstore: { namespace: "AzraelGodKing", name: row.thunderstoreName },
         nexus: { game: "sunhaven", modId: null },

@@ -126,8 +126,21 @@ namespace SunhavenMods.Shared
                                 string hex = json.Substring(pos + 1, 4);
                                 if (ushort.TryParse(hex, NumberStyles.HexNumber, CultureInfo.InvariantCulture, out ushort codeUnit))
                                 {
-                                    sb.Append((char)codeUnit);
                                     pos += 4;
+                                    // UTF-16 surrogate pair: \uD800-\uDBFF followed by \uDC00-\uDFFF
+                                    if (codeUnit >= 0xD800 && codeUnit <= 0xDBFF && pos + 5 < json.Length &&
+                                        json[pos] == '\\' && json[pos + 1] == 'u')
+                                    {
+                                        string hex2 = json.Substring(pos + 2, 4);
+                                        if (ushort.TryParse(hex2, NumberStyles.HexNumber, CultureInfo.InvariantCulture, out ushort codeUnit2) &&
+                                            codeUnit2 >= 0xDC00 && codeUnit2 <= 0xDFFF)
+                                        {
+                                            sb.Append(char.ConvertFromUtf32(char.ConvertToUtf32((char)codeUnit, (char)codeUnit2)));
+                                            pos += 6;
+                                            break;
+                                        }
+                                    }
+                                    sb.Append((char)codeUnit);
                                     break;
                                 }
                             }

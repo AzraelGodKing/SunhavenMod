@@ -1,122 +1,183 @@
 [
   {
     "modKey": "senpaischest",
+    "statsDomId": "senpais-chest",
     "jsonKey": "com.azraelgodking.senpaischest",
     "modDir": "SenpaisChest",
     "thunderstoreName": "SenpaisChest",
     "indexDataName": "Senpai's Chest",
     "docsPagePath": "SenpaisChest/SenpaisChest.html",
-    "docsNavNames": ["Senpai's Chest"],
-    "docsCardNames": ["Senpai's Chest"]
+    "docsNavNames": [
+      "Senpai's Chest"
+    ],
+    "docsCardNames": [
+      "Senpai's Chest"
+    ]
   },
   {
     "modKey": "havensbirthright",
+    "statsDomId": "havens-birthright",
     "jsonKey": "com.azraelgodking.havensbirthright",
     "modDir": "HavensBirthright",
     "thunderstoreName": "HavensBirthright",
     "indexDataName": "Haven's Birthright",
     "docsPagePath": null,
-    "docsNavNames": ["Haven's Birthright"],
-    "docsCardNames": ["Haven's Birthright"]
+    "docsNavNames": [
+      "Haven's Birthright"
+    ],
+    "docsCardNames": [
+      "Haven's Birthright"
+    ]
   },
   {
     "modKey": "sunhavenmuseumutilitytracker",
+    "statsDomId": "museum-utility-tracker",
     "jsonKey": "com.azraelgodking.sunhavenmuseumutilitytracker",
     "modDir": "SunHavenMuseumUtilityTracker",
     "thunderstoreName": "SMUT",
     "indexDataName": "S.M.U.T.",
     "docsPagePath": "SMUT/SMUT.html",
-    "docsNavNames": ["S.M.U.T."],
-    "docsCardNames": ["S.M.U.T."]
+    "docsNavNames": [
+      "S.M.U.T."
+    ],
+    "docsCardNames": [
+      "S.M.U.T."
+    ]
   },
   {
     "modKey": "squirrelsbirthdayreminder",
+    "statsDomId": "squirrels-birthday-reminder",
     "jsonKey": "com.azraelgodking.squirrelsbirthdayreminder",
     "modDir": "BirthdayReminder",
     "thunderstoreName": "SquirrelsBirthdayReminder",
     "indexDataName": "A Squirrel's Birthday Reminder",
     "docsPagePath": "BirthdayReminder/BirthdayReminder.html",
-    "docsNavNames": ["Birthday Reminder"],
-    "docsCardNames": ["A Squirrel's Birthday Reminder"]
+    "docsNavNames": [
+      "Birthday Reminder"
+    ],
+    "docsCardNames": [
+      "A Squirrel's Birthday Reminder"
+    ]
   },
   {
     "modKey": "sunhaventodo",
+    "statsDomId": "havens-todo",
     "jsonKey": "com.azraelgodking.sunhaventodo",
     "modDir": "SunhavenTodo",
     "thunderstoreName": "SunHavenTodo",
     "indexDataName": "Sun Haven Todo",
     "docsPagePath": "Todo/todo.html",
-    "docsNavNames": ["Todo List", "Sun Haven Todo"],
-    "docsCardNames": ["Sun Haven Todo"]
+    "docsNavNames": [
+      "Todo List",
+      "Sun Haven Todo"
+    ],
+    "docsCardNames": [
+      "Sun Haven Todo"
+    ]
   },
   {
     "modKey": "thevault",
+    "statsDomId": "the-vault",
     "jsonKey": "com.azraelgodking.thevault",
     "modDir": "TheVault",
     "thunderstoreName": "TheVault",
     "indexDataName": "The Vault",
     "docsPagePath": "TheVault/TheVault.html",
-    "docsNavNames": ["The Vault"],
-    "docsCardNames": ["The Vault"]
+    "docsNavNames": [
+      "The Vault"
+    ],
+    "docsCardNames": [
+      "The Vault"
+    ]
   },
   {
     "modKey": "havendevtools",
+    "statsDomId": "haven-dev-tools",
     "jsonKey": "com.azraelgodking.havendevtools",
     "modDir": "HavenDevTools",
     "thunderstoreName": "HavenDevTools",
     "indexDataName": "HavenDevTools",
     "docsPagePath": "HavenDevTools/HavenDevTools.html",
-    "docsNavNames": ["HavenDevTools"],
-    "docsCardNames": ["HavenDevTools"]
+    "docsNavNames": [
+      "HavenDevTools"
+    ],
+    "docsCardNames": [
+      "HavenDevTools"
+    ]
   },
   {
     "modKey": "havensalmanac",
+    "statsDomId": "havens-almanac",
     "jsonKey": "com.azraelgodking.havensalmanac",
     "modDir": "HavensAlmanac",
     "thunderstoreName": "HavensAlmanac",
     "indexDataName": "Haven's Almanac",
     "docsPagePath": "HavensAlmanac/HavensAlmanac.html",
-    "docsNavNames": ["Haven's Almanac"],
-    "docsCardNames": ["Haven's Almanac"]
+    "docsNavNames": [
+      "Haven's Almanac"
+    ],
+    "docsCardNames": [
+      "Haven's Almanac"
+    ]
   },
   {
     "modKey": "fasterraces",
+    "statsDomId": "faster-races",
     "jsonKey": "com.azraelgodking.fasterraces",
     "modDir": "FasterRaces",
     "thunderstoreName": "FasterRaces",
     "indexDataName": "Faster Races",
     "docsPagePath": "FasterRaces/FasterRaces.html",
-    "docsNavNames": ["Faster Races"],
-    "docsCardNames": ["Faster Races"]
+    "docsNavNames": [
+      "Faster Races"
+    ],
+    "docsCardNames": [
+      "Faster Races"
+    ]
   },
   {
     "modKey": "trinketfortune",
+    "statsDomId": "trinket-fortune",
     "jsonKey": "com.azraelgodking.trinketfortune",
     "modDir": "TrinketFortune",
     "thunderstoreName": "TrinketFortune",
     "indexDataName": "Trinket Fortune",
     "docsPagePath": "TrinketFortune/TrinketFortune.html",
-    "docsNavNames": ["Trinket Fortune"],
-    "docsCardNames": ["Trinket Fortune"]
+    "docsNavNames": [
+      "Trinket Fortune"
+    ],
+    "docsCardNames": [
+      "Trinket Fortune"
+    ]
   },
   {
     "modKey": "cropoptimizer",
+    "statsDomId": "crop-optimizer",
     "jsonKey": "com.azraelgodking.cropoptimizer",
     "modDir": "CropOptimizer",
     "thunderstoreName": "CropOptimizer",
     "indexDataName": "Crop Optimizer",
     "docsPagePath": "CropOptimizer/CropOptimizer.html",
-    "docsNavNames": ["Crop Optimizer"],
-    "docsCardNames": ["Crop Optimizer"]
+    "docsNavNames": [
+      "Crop Optimizer"
+    ],
+    "docsCardNames": [
+      "Crop Optimizer"
+    ]
   },
   {
     "modKey": "havensrespec",
+    "statsDomId": "havens-respec",
     "jsonKey": "com.azraelgodking.havensrespec",
     "modDir": "HavensRespec",
     "thunderstoreName": "HavensRespec",
     "indexDataName": "Haven's Respec",
     "docsPagePath": "HavensRespec/HavensRespec.html",
-    "docsNavNames": ["Haven's Respec"],
-    "docsCardNames": ["Haven's Respec"]
+    "docsNavNames": [
+      "Haven's Respec"
+    ],
+    "docsCardNames": [
+      "Haven's Respec"
+    ]
   }
 ]

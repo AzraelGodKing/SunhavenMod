@@ -330,9 +330,10 @@ namespace TheVault.Patches
                     _skipVaultInGetAmount = false;
                 }
             }
-            catch
+            catch (Exception ex)
             {
                 _skipVaultInGetAmount = false;
+                Plugin.Log?.LogDebug($"[ItemPatches] GetRawInventoryCount: {ex.Message}");
                 return 0;
             }
         }
@@ -1208,7 +1209,7 @@ namespace TheVault.Patches
                 {
                     int originalResult = __result;
                     __result += vaultAmount;
-                    Plugin.Log?.LogInfo($"GetAmount for item {id}: inventory={originalResult}, vault={vaultAmount}, total={__result}");
+                    Plugin.Log?.LogDebug($"GetAmount for item {id}: inventory={originalResult}, vault={vaultAmount}, total={__result}");
                 }
             }
             catch (Exception ex)

@@ -15,9 +15,19 @@ namespace TheVault.Api
         private static readonly Regex ValidId = new Regex("^[a-z0-9_]{1,64}$", RegexOptions.Compiled | RegexOptions.CultureInvariant);
 
         /// <summary>
-        /// True after The Vault has constructed <see cref="VaultManager"/> (typically right after its plugin Awake).
+        /// True once <see cref="VaultManager"/> exists (plugin Awake). Does not guarantee a character save has been loaded — use <see cref="IsVaultDataLoadedForCurrentSession"/> before reading balances.
         /// </summary>
-        public static bool IsVaultReady => Plugin.GetVaultManager() != null;
+        public static bool IsVaultManagerAvailable => Plugin.GetVaultManager() != null;
+
+        /// <summary>
+        /// Legacy alias for <see cref="IsVaultManagerAvailable"/> (manager constructed, not necessarily save data applied).
+        /// </summary>
+        public static bool IsVaultReady => IsVaultManagerAvailable;
+
+        /// <summary>
+        /// True when vault save data has been applied for the active character (in-game session).
+        /// </summary>
+        public static bool IsVaultDataLoadedForCurrentSession => PlayerPatches.IsVaultLoaded;
 
         /// <summary>
         /// Register a mod-owned currency. Vault id: <c>custom_{id}</c> (do not pass the <c>custom_</c> prefix in <paramref name="id"/>).

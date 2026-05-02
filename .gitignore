@@ -3,6 +3,9 @@
 # Decompiled source code - do not upload
 Decompiled/
 Decomplied/
+# Per-mod local dnSpy/ILSpy dumps (never commit game-derived source)
+HavensAlmanac/_refs/*_decompiled.cs
+HavensAlmanac/_refs/Inventory_decompiled.cs
 
 # Build results
 [Dd]ebug/
