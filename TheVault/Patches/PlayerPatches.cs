@@ -262,7 +262,44 @@ namespace TheVault.Patches
         // Legacy compatibility methods
         public static void ResetVaultLoaded() => ResetState();
         public static void ForceVaultReload() => ResetState();
-        public static void TriggerVaultLoad(string characterName) => LoadVaultForCharacter(characterName);
+
+        /// <summary>
+        /// External/manual vault load (e.g. integrations). Uses the same lock as <see cref="OnPlayerInitialized"/> to avoid races with sync/reload.
+        /// </summary>
+        public static void TriggerVaultLoad(string characterName)
+        {
+            try
+            {
+                string norm = NormalizeCharacterNameForVault(characterName);
+                if (string.IsNullOrEmpty(norm) || string.Equals(norm, "default", StringComparison.OrdinalIgnoreCase))
+                {
+                    Plugin.Log?.LogWarning("TriggerVaultLoad: invalid character name");
+                    return;
+                }
+
+                lock (_contextLoadLock)
+                {
+                    if (_isVaultLoaded && string.Equals(_loadedCharacterName, norm, StringComparison.Ordinal))
+                    {
+                        Plugin.Log?.LogInfo($"TriggerVaultLoad: vault already loaded for {norm}");
+                        return;
+                    }
+
+                    if (_isVaultLoaded && !string.Equals(_loadedCharacterName, norm, StringComparison.Ordinal))
+                    {
+                        Plugin.Log?.LogInfo($"TriggerVaultLoad: switching from {_loadedCharacterName} to {norm}");
+                        Plugin.SaveVault();
+                        ResetState();
+                    }
+
+                    LoadVaultForCharacter(norm);
+                }
+            }
+            catch (Exception ex)
+            {
+                Plugin.Log?.LogError($"TriggerVaultLoad: {ex.Message}");
+            }
+        }
 
         /// <summary>
         /// Fallback loop called by PersistentRunner to keep active vault aligned with active character.

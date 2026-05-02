@@ -50,7 +50,8 @@ namespace HavenDevTools
         internal static KeyCode StaticToggleKey = KeyCode.F11;
         internal static KeyCode StaticOverlayToggleKey = KeyCode.F6;
 
-        // Authorization
+        // Convenience gate only (not security): anyone can patch or rebuild the DLL.
+        // SHA-256 of Steam ID strings — when matched, dev UI/features stay enabled; otherwise some toggles are hidden.
         private static readonly HashSet<string> _authorizedSteamIdHashes = new HashSet<string>
         {
             "Tr4eyf86yKRu6fhNQjQOrO/ZnwasQaY/fgKV0PcnoGA=" // Steam ID: 76561198082062127

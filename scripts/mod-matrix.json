@@ -1,6 +1,7 @@
 [
   {
     "modKey": "senpaischest",
+    "statsDomId": "senpais-chest",
     "jsonKey": "com.azraelgodking.senpaischest",
     "modDir": "SenpaisChest",
     "pluginFile": "PluginInfo.cs",
@@ -16,6 +17,7 @@
   },
   {
     "modKey": "havensbirthright",
+    "statsDomId": "havens-birthright",
     "jsonKey": "com.azraelgodking.havensbirthright",
     "modDir": "HavensBirthright",
     "pluginFile": "Plugin.cs",
@@ -31,6 +33,7 @@
   },
   {
     "modKey": "sunhavenmuseumutilitytracker",
+    "statsDomId": "museum-utility-tracker",
     "jsonKey": "com.azraelgodking.sunhavenmuseumutilitytracker",
     "modDir": "SunHavenMuseumUtilityTracker",
     "pluginFile": "Plugin.cs",
@@ -46,6 +49,7 @@
   },
   {
     "modKey": "squirrelsbirthdayreminder",
+    "statsDomId": "squirrels-birthday-reminder",
     "jsonKey": "com.azraelgodking.squirrelsbirthdayreminder",
     "modDir": "BirthdayReminder",
     "pluginFile": "PluginInfo.cs",
@@ -61,6 +65,7 @@
   },
   {
     "modKey": "sunhaventodo",
+    "statsDomId": "havens-todo",
     "jsonKey": "com.azraelgodking.sunhaventodo",
     "modDir": "SunhavenTodo",
     "pluginFile": "PluginInfo.cs",
@@ -76,6 +81,7 @@
   },
   {
     "modKey": "thevault",
+    "statsDomId": "the-vault",
     "jsonKey": "com.azraelgodking.thevault",
     "modDir": "TheVault",
     "pluginFile": "Plugin.cs",
@@ -91,6 +97,7 @@
   },
   {
     "modKey": "havendevtools",
+    "statsDomId": "haven-dev-tools",
     "jsonKey": "com.azraelgodking.havendevtools",
     "modDir": "HavenDevTools",
     "pluginFile": "Plugin.cs",
@@ -106,6 +113,7 @@
   },
   {
     "modKey": "havensalmanac",
+    "statsDomId": "havens-almanac",
     "jsonKey": "com.azraelgodking.havensalmanac",
     "modDir": "HavensAlmanac",
     "pluginFile": "PluginInfo.cs",
@@ -121,6 +129,7 @@
   },
   {
     "modKey": "fasterraces",
+    "statsDomId": "faster-races",
     "jsonKey": "com.azraelgodking.fasterraces",
     "modDir": "FasterRaces",
     "pluginFile": "PluginInfo.cs",
@@ -136,6 +145,7 @@
   },
   {
     "modKey": "trinketfortune",
+    "statsDomId": "trinket-fortune",
     "jsonKey": "com.azraelgodking.trinketfortune",
     "modDir": "TrinketFortune",
     "pluginFile": "Plugin.cs",
@@ -151,6 +161,7 @@
   },
   {
     "modKey": "cropoptimizer",
+    "statsDomId": "crop-optimizer",
     "jsonKey": "com.azraelgodking.cropoptimizer",
     "modDir": "CropOptimizer",
     "pluginFile": "PluginInfo.cs",
@@ -166,6 +177,7 @@
   },
   {
     "modKey": "havensrespec",
+    "statsDomId": "havens-respec",
     "jsonKey": "com.azraelgodking.havensrespec",
     "modDir": "HavensRespec",
     "pluginFile": "PluginInfo.cs",

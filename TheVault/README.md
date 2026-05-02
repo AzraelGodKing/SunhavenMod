@@ -7,7 +7,7 @@
 > **If a release ever cannot keep compatibility** (unexpected game update, unavoidable format break, etc.), maintainers follow **[SAVE_COMPATIBILITY.md](./SAVE_COMPATIBILITY.md)**: a **large warning at the top of this README**, the same message in **Thunderstore/Nexus** descriptions (via `docs/versions.json`), **changelog** backup steps, and an **in-game + BepInEx log** warning when needed. Until you see that warning, you should **not** need to delete saves or expect a wiped vault from a routine mod update.
 >
 
-**The Vault 3** is a Sun Haven BepInEx mod: per-character vault, encrypted saves, HUD, auto-deposit, and shop plus inventory integration (vault counts apply when the game checks or spends currency from your bag—shops, keys, and similar). Ship **`TheVault.dll`** and **`TheVault.Abstractions.dll`** in `BepInEx/plugins/TheVault`. Sources: plugin **`TheVault/TheVault.csproj`**, API shim **[`TheVault.Abstractions/`](../TheVault.Abstractions/)** (**`TheVault.Abstractions.csproj`**).
+**The Vault 3** is a Sun Haven BepInEx mod: per-character vault, **tamper-resistant** local saves (obfuscation; not bank-grade encryption), HUD, auto-deposit, and shop plus inventory integration (vault counts apply when the game checks or spends currency from your bag—shops, keys, and similar). Ship **`TheVault.dll`** and **`TheVault.Abstractions.dll`** in `BepInEx/plugins/TheVault`. Sources: plugin **`TheVault/TheVault.csproj`**, API shim **[`TheVault.Abstractions/`](../TheVault.Abstractions/)** (**`TheVault.Abstractions.csproj`**).
 
 ## Features
 

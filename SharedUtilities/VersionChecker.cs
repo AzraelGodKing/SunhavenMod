@@ -2,7 +2,6 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
-using System.Net;
 using System.Text.RegularExpressions;
 using BepInEx.Logging;
 using UnityEngine;
@@ -18,7 +17,6 @@ namespace SunhavenMods.Shared
         // UPDATE THIS URL to your GitHub Pages URL
         private const string VersionsUrl = "https://azraelgodking.github.io/SunhavenMod/versions.json";
 
-        private static ManualLogSource _logger;
         private static readonly Dictionary<string, ModHealthSnapshot> HealthByPluginGuid = new Dictionary<string, ModHealthSnapshot>(StringComparer.OrdinalIgnoreCase);
         private static readonly object HealthLock = new object();
         private static readonly Dictionary<string, Regex> ModPatternCache = new Dictionary<string, Regex>(StringComparer.Ordinal);
@@ -57,14 +55,13 @@ namespace SunhavenMods.Shared
         /// <param name="onComplete">Callback when check completes</param>
         public static void CheckForUpdate(string pluginGuid, string currentVersion, ManualLogSource logger = null, Action<VersionCheckResult> onComplete = null)
         {
-            _logger = logger;
             TouchHealth(pluginGuid);
 
             // Use a MonoBehaviour to run the coroutine
             var runner = new GameObject("VersionChecker").AddComponent<VersionCheckRunner>();
             UnityEngine.Object.DontDestroyOnLoad(runner.gameObject);
             SceneRootSurvivor.TryRegisterPersistentRunnerGameObject(runner.gameObject);
-            runner.StartCheck(pluginGuid, currentVersion, onComplete);
+            runner.StartCheck(pluginGuid, currentVersion, logger, onComplete);
         }
 
         public static ModHealthSnapshot GetHealthSnapshot(string pluginGuid)
@@ -97,6 +94,11 @@ namespace SunhavenMods.Shared
             // Remove 'v' prefix if present
             v1 = v1.TrimStart('v', 'V');
             v2 = v2.TrimStart('v', 'V');
+            // Compare core numeric segments only (ignore SemVer pre-release / build metadata after '-' or '+').
+            int dash1 = v1.IndexOfAny(new[] { '-', '+' });
+            if (dash1 >= 0) v1 = v1.Substring(0, dash1);
+            int dash2 = v2.IndexOfAny(new[] { '-', '+' });
+            if (dash2 >= 0) v2 = v2.Substring(0, dash2);
 
             var parts1 = v1.Split('.');
             var parts2 = v2.Split('.');
@@ -113,21 +115,6 @@ namespace SunhavenMods.Shared
             }
 
             return 0;
-        }
-
-        internal static void Log(string message)
-        {
-            _logger?.LogInfo($"[VersionChecker] {message}");
-        }
-
-        internal static void LogWarning(string message)
-        {
-            _logger?.LogWarning($"[VersionChecker] {message}");
-        }
-
-        internal static void LogError(string message)
-        {
-            _logger?.LogError($"[VersionChecker] {message}");
         }
 
         private static void TouchHealth(string pluginGuid)
@@ -167,10 +154,17 @@ namespace SunhavenMods.Shared
         /// </summary>
         private class VersionCheckRunner : MonoBehaviour
         {
-            public void StartCheck(string pluginGuid, string currentVersion, Action<VersionCheckResult> onComplete)
+            private ManualLogSource _pluginLog;
+
+            public void StartCheck(string pluginGuid, string currentVersion, ManualLogSource pluginLog, Action<VersionCheckResult> onComplete)
             {
+                _pluginLog = pluginLog;
                 StartCoroutine(CheckVersionCoroutine(pluginGuid, currentVersion, onComplete));
             }
+
+            private void LogInfo(string message) => _pluginLog?.LogInfo($"[VersionChecker] {message}");
+            private void LogWarningMsg(string message) => _pluginLog?.LogWarning($"[VersionChecker] {message}");
+            private void LogErrorMsg(string message) => _pluginLog?.LogError($"[VersionChecker] {message}");
 
             private IEnumerator CheckVersionCoroutine(string pluginGuid, string currentVersion, Action<VersionCheckResult> onComplete)
             {
@@ -192,7 +186,7 @@ namespace SunhavenMods.Shared
                         result.Success = false;
                         result.ErrorMessage = $"Network error: {www.error}";
                         RecordHealthError(pluginGuid, result.ErrorMessage);
-                        LogWarning(result.ErrorMessage);
+                        LogWarningMsg(result.ErrorMessage);
                         onComplete?.Invoke(result);
                         Destroy(gameObject);
                         yield break;
@@ -211,7 +205,7 @@ namespace SunhavenMods.Shared
                             result.Success = false;
                             result.ErrorMessage = $"Mod '{pluginGuid}' not found in versions.json";
                             RecordHealthError(pluginGuid, result.ErrorMessage);
-                            LogWarning(result.ErrorMessage);
+                            LogWarningMsg(result.ErrorMessage);
                             onComplete?.Invoke(result);
                             Destroy(gameObject);
                             yield break;
@@ -230,7 +224,7 @@ namespace SunhavenMods.Shared
                             result.Success = false;
                             result.ErrorMessage = "Could not parse version from response";
                             RecordHealthError(pluginGuid, result.ErrorMessage);
-                            LogWarning(result.ErrorMessage);
+                            LogWarningMsg(result.ErrorMessage);
                             onComplete?.Invoke(result);
                             Destroy(gameObject);
                             yield break;
@@ -241,11 +235,11 @@ namespace SunhavenMods.Shared
 
                         if (result.UpdateAvailable)
                         {
-                            Log($"Update available for {result.ModName}: {currentVersion} -> {result.LatestVersion}");
+                            LogInfo($"Update available for {result.ModName}: {currentVersion} -> {result.LatestVersion}");
                         }
                         else
                         {
-                            Log($"{result.ModName} is up to date (v{currentVersion})");
+                            LogInfo($"{result.ModName} is up to date (v{currentVersion})");
                         }
                     }
                     catch (Exception ex)
@@ -253,7 +247,7 @@ namespace SunhavenMods.Shared
                         result.Success = false;
                         result.ErrorMessage = $"Parse error: {ex.Message}";
                         RecordHealthError(pluginGuid, result.ErrorMessage);
-                        LogError(result.ErrorMessage);
+                        LogErrorMsg(result.ErrorMessage);
                     }
                 }
 

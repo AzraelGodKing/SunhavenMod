@@ -1,5 +1,6 @@
 using HavensBirthright.Abilities;
 using HarmonyLib;
+using HavensBirthright;
 using SunhavenMods.Shared;
 using System;
 using UnityEngine;
@@ -22,6 +23,9 @@ namespace HavensBirthright.Patches
         /// </summary>
         public static void ModifyDamageReceived(ref DamageInfo damageInfo)
         {
+            if (Plugin.CriticalBirthrightHarmonyIncomplete)
+                return;
+
             if (!RacialConfig.EnableRacialBonuses.Value)
                 return;
 
@@ -118,6 +122,9 @@ namespace HavensBirthright.Patches
         /// </summary>
         public static void OnDamageReceivedPostfix(Player __instance)
         {
+            if (Plugin.CriticalBirthrightHarmonyIncomplete)
+                return;
+
             // Nine Lives: set HP to saved value when we procced in prefix (survived lethal damage)
             if (_nineLivesProcced)
             {

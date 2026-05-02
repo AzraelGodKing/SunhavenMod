@@ -9,7 +9,8 @@ using UnityEngine;
 namespace SunhavenMods.Shared
 {
     /// <summary>
-    /// CSVAULT2 AES crypto aligned with the **legacy** TheVault <c>VaultSaveSystem</c> (same salt, IV, PBKDF2, Steam/player key rule).
+    /// CSVAULT2 AES crypto aligned with the **legacy** TheVault <c>VaultSaveSystem</c> (same salt, fixed IV, PBKDF2 count, Steam/player key rule).
+    /// This is **tamper-resistant local storage**, not confidentiality against a motivated user with file access. For future hardening, prefer AES-GCM, random nonces, per-save salt, and a stronger KDF.
     /// V3 adds: player-name key when Steam key fails, legacy password variants, and accepting V3 JSON in legacy decrypt (not only <c>PlayerName</c>).
     /// </summary>
     public static class VaultCryptography

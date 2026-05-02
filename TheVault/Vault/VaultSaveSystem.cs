@@ -10,8 +10,9 @@ namespace TheVault.Vault
     /// <summary>
     /// Handles saving and loading vault data to/from encrypted files.
     /// Saves are stored per-player in the BepInEx config folder.
-    /// Uses AES encryption to prevent manual editing.
-    /// Supports Steam ID for cross-device portability, with fallback to player name for non-Steam versions.
+    /// Local storage is tamper-resistant (not confidentiality against a motivated local attacker); see mod README.
+    /// File names include Steam ID or a per-machine/player suffix to avoid same-name cross-character collisions.
+    /// Supports Steam ID for cross-device portability, with fallback for non-Steam versions.
     /// </summary>
     public class VaultSaveSystem
     {
@@ -32,6 +33,13 @@ namespace TheVault.Vault
         // Auto-save interval in seconds
         private float _autoSaveIntervalSeconds = 300f;
         private float _lastAutoSave;
+
+        private bool _needsReEncryption;
+
+        /// <summary>
+        /// Set when a save file could not be read and was quarantined; a new empty in-memory vault was started.
+        /// </summary>
+        public bool LastLoadQuarantinedCorruptFile { get; private set; }
 
         public VaultSaveSystem(VaultManager vaultManager)
         {
@@ -87,16 +95,81 @@ namespace TheVault.Vault
         }
 
         /// <summary>
-        /// Get the save file path for a specific player
+        /// Current canonical save path (includes Steam or local identity suffix).
         /// </summary>
         private string GetSaveFilePath(string playerName)
         {
-            // Sanitize player name for file system
             string safeName = SanitizeFileName(playerName);
             if (string.IsNullOrEmpty(safeName))
                 safeName = "default";
 
+            string suffix = GetPerPlayerFileSuffix(playerName);
+            return Path.Combine(_saveDirectory, $"{safeName}_{suffix}.vault");
+        }
+
+        /// <summary>
+        /// Legacy path: character name only (pre–Steam-suffix migration). Migrated once on successful load.
+        /// </summary>
+        private string GetLegacySaveFilePath(string playerName)
+        {
+            string safeName = SanitizeFileName(playerName);
+            if (string.IsNullOrEmpty(safeName))
+                safeName = "default";
             return Path.Combine(_saveDirectory, $"{safeName}.vault");
+        }
+
+        /// <summary>
+        /// Steam ID when available; otherwise a stable hash of device id + player name (reduces same-name collisions on one PC).
+        /// </summary>
+        private string GetPerPlayerFileSuffix(string playerName)
+        {
+            string steamId = TryGetSteamId();
+            if (!string.IsNullOrEmpty(steamId))
+                return "steam_" + SanitizeFileName(steamId);
+
+            try
+            {
+                using (var sha = SHA256.Create())
+                {
+                    string seed = SystemInfo.deviceUniqueIdentifier + "\0" + (playerName ?? "");
+                    byte[] hash = sha.ComputeHash(Encoding.UTF8.GetBytes(seed));
+                    var sb = new StringBuilder(16);
+                    for (int i = 0; i < 8; i++)
+                        sb.Append(hash[i].ToString("x2"));
+                    return "local_" + sb.ToString();
+                }
+            }
+            catch (Exception ex)
+            {
+                Plugin.Log?.LogWarning($"[VaultSave] local suffix fallback: {ex.Message}");
+                return "local_unknown";
+            }
+        }
+
+        private static bool TryQuarantineUnreadableFile(string filePath, string reason)
+        {
+            if (string.IsNullOrEmpty(filePath) || !File.Exists(filePath))
+                return false;
+            try
+            {
+                string dir = Path.GetDirectoryName(filePath) ?? "";
+                string stamp = DateTime.UtcNow.ToString("yyyyMMdd-HHmmss");
+                string dest = Path.Combine(dir, Path.GetFileNameWithoutExtension(filePath) + ".corrupt-" + stamp + ".bak");
+                int n = 0;
+                while (File.Exists(dest))
+                {
+                    n++;
+                    dest = Path.Combine(dir, Path.GetFileNameWithoutExtension(filePath) + ".corrupt-" + stamp + "-" + n + ".bak");
+                }
+                File.Move(filePath, dest);
+                Plugin.Log?.LogError($"[VaultSave] Quarantined unreadable vault to: {dest} ({reason})");
+                return true;
+            }
+            catch (Exception ex)
+            {
+                Plugin.Log?.LogError($"[VaultSave] Failed to quarantine corrupt vault file: {ex.Message}");
+                return false;
+            }
         }
 
         /// <summary>
@@ -120,6 +193,8 @@ namespace TheVault.Vault
         /// </summary>
         public bool Load(string playerName)
         {
+            LastLoadQuarantinedCorruptFile = false;
+
             if (!IsValidPlayerName(playerName))
             {
                 Plugin.Log?.LogWarning("[VaultSave] Load skipped: player name was null/empty/invalid.");
@@ -128,9 +203,23 @@ namespace TheVault.Vault
 
             try
             {
-                _currentSaveFile = GetSaveFilePath(playerName);
+                string canonicalPath = GetSaveFilePath(playerName);
+                string legacyPath = GetLegacySaveFilePath(playerName);
+                _currentSaveFile = canonicalPath;
 
-                if (!File.Exists(_currentSaveFile))
+                string pathToRead = null;
+                bool readFromLegacyNameOnly = false;
+                if (File.Exists(canonicalPath))
+                {
+                    pathToRead = canonicalPath;
+                }
+                else if (File.Exists(legacyPath))
+                {
+                    pathToRead = legacyPath;
+                    readFromLegacyNameOnly = true;
+                }
+
+                if (pathToRead == null)
                 {
                     Plugin.Log?.LogInfo($"No existing save file for player '{playerName}', creating new vault");
                     var newData = new VaultData { PlayerName = playerName };
@@ -138,13 +227,10 @@ namespace TheVault.Vault
                     return true;
                 }
 
-                // Read the encrypted file
-                byte[] encryptedData = File.ReadAllBytes(_currentSaveFile);
+                byte[] encryptedData = File.ReadAllBytes(pathToRead);
 
-                // Try to decrypt with current method (Steam ID or player name)
                 string json = Decrypt(encryptedData, playerName);
 
-                // If decryption failed, try legacy methods for migration
                 if (string.IsNullOrEmpty(json))
                 {
                     Plugin.Log?.LogInfo($"Current decryption failed, attempting legacy migration for '{playerName}'...");
@@ -153,16 +239,17 @@ namespace TheVault.Vault
                     if (!string.IsNullOrEmpty(json))
                     {
                         Plugin.Log?.LogInfo("Legacy decryption successful - will re-encrypt with new method on save");
-                        // Mark as needing re-save with new encryption
                         _needsReEncryption = true;
                     }
                 }
 
                 if (string.IsNullOrEmpty(json))
                 {
-                    Plugin.Log?.LogWarning($"Failed to decrypt vault data for '{playerName}' with all methods, creating new vault");
-                    var newData = new VaultData { PlayerName = playerName };
-                    _vaultManager.LoadVaultData(newData);
+                    TryQuarantineUnreadableFile(pathToRead, "all decryption paths failed");
+                    LastLoadQuarantinedCorruptFile = true;
+                    Plugin.Log?.LogError(
+                        $"[VaultSave] Vault file for '{playerName}' could not be decrypted. It was moved to a .corrupt-*.bak file in your Saves folder. Starting an empty vault in memory — restore the backup manually if you need the old data.");
+                    _vaultManager.LoadVaultData(new VaultData { PlayerName = playerName });
                     return true;
                 }
 
@@ -175,17 +262,17 @@ namespace TheVault.Vault
                 }
                 else
                 {
-                    Plugin.Log?.LogWarning($"Failed to deserialize vault data, creating new vault");
+                    Plugin.Log?.LogWarning("[VaultSave] Failed to deserialize vault JSON after decrypt; quarantining file.");
+                    TryQuarantineUnreadableFile(pathToRead, "JSON deserialize failed");
+                    LastLoadQuarantinedCorruptFile = true;
                     data = new VaultData { PlayerName = playerName };
                 }
 
-                // Handle version migrations if needed
                 data = MigrateData(data);
 
                 _vaultManager.LoadVaultData(data);
                 Plugin.Log?.LogInfo($"Loaded vault data for player '{playerName}'");
 
-                // If we used legacy decryption, re-save with new encryption immediately
                 if (_needsReEncryption)
                 {
                     Plugin.Log?.LogInfo("Re-encrypting vault with new method...");
@@ -194,20 +281,42 @@ namespace TheVault.Vault
                     Plugin.Log?.LogInfo("Vault successfully migrated to new encryption!");
                 }
 
+                if (readFromLegacyNameOnly && File.Exists(legacyPath))
+                {
+                    try
+                    {
+                        Plugin.Log?.LogInfo("[VaultSave] Migrating legacy save filename (Steam/local suffix)...");
+                        Save();
+                        if (File.Exists(canonicalPath))
+                        {
+                            File.Delete(legacyPath);
+                            Plugin.Log?.LogInfo($"[VaultSave] Migrated to new path and removed legacy file: {legacyPath}");
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        Plugin.Log?.LogWarning($"[VaultSave] Legacy filename migration: {ex.Message}");
+                    }
+                }
+
                 return true;
             }
             catch (Exception ex)
             {
                 Plugin.Log?.LogError($"Failed to load vault data: {ex.Message}");
-
-                // Load empty vault on error
+                string canonicalPath = GetSaveFilePath(playerName);
+                string legacyPath = GetLegacySaveFilePath(playerName);
+                _currentSaveFile = canonicalPath;
+                string pathToQuarantine = File.Exists(canonicalPath) ? canonicalPath : legacyPath;
+                if (File.Exists(pathToQuarantine))
+                {
+                    TryQuarantineUnreadableFile(pathToQuarantine, "exception during load: " + ex.Message);
+                    LastLoadQuarantinedCorruptFile = true;
+                }
                 _vaultManager.LoadVaultData(new VaultData { PlayerName = playerName });
                 return false;
             }
         }
-
-        // Flag to track if we need to re-encrypt after loading with legacy method
-        private bool _needsReEncryption = false;
 
         /// <summary>
         /// Try to decrypt using legacy encryption methods (for migration from older versions)
@@ -411,17 +520,17 @@ namespace TheVault.Vault
 
             try
             {
-                string saveFile = GetSaveFilePath(playerName);
-                if (File.Exists(saveFile))
+                foreach (string saveFile in new[] { GetSaveFilePath(playerName), GetLegacySaveFilePath(playerName) })
                 {
-                    File.Delete(saveFile);
-                    Plugin.Log?.LogInfo($"Deleted vault save for player '{playerName}'");
-                }
+                    if (File.Exists(saveFile))
+                    {
+                        File.Delete(saveFile);
+                        Plugin.Log?.LogInfo($"Deleted vault save file: {saveFile}");
+                    }
 
-                string backupFile = saveFile + ".backup";
-                if (File.Exists(backupFile))
-                {
-                    File.Delete(backupFile);
+                    string backupFile = saveFile + ".backup";
+                    if (File.Exists(backupFile))
+                        File.Delete(backupFile);
                 }
 
                 return true;

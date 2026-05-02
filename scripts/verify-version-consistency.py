@@ -49,10 +49,39 @@ def load_matrix_plugin_files() -> dict[str, tuple[str, str]]:
     return out
 
 
+def load_matrix_mod_dirs() -> set[str]:
+    matrix = json.loads(MOD_MATRIX_PATH.read_text(encoding=_READ_ENCODING))
+    return {str(r["modDir"]) for r in matrix if r.get("modDir")}
+
+
+def find_stray_mod_manifests(allowed_mod_dirs: set[str]) -> list[str]:
+    """Only <modDir>/thunderstore/manifest.json is valid for Thunderstore package metadata under each mod folder."""
+    bad: list[str] = []
+    for d in sorted(allowed_mod_dirs):
+        base = REPO / d
+        if not base.is_dir():
+            continue
+        canonical = base / "thunderstore" / "manifest.json"
+        for p in base.rglob("manifest.json"):
+            if not p.is_file():
+                continue
+            try:
+                if p.resolve() == canonical.resolve():
+                    continue
+            except OSError:
+                continue
+            rel = p.relative_to(REPO)
+            bad.append(
+                f"Unexpected manifest.json under {d}/ (only thunderstore/manifest.json): {rel.as_posix()}"
+            )
+    return bad
+
+
 def main() -> int:
     data = json.loads(VERSIONS_PATH.read_text(encoding=_READ_ENCODING))
     mod_plugin_files = load_matrix_plugin_files()
     errors: list[str] = []
+    errors.extend(find_stray_mod_manifests(load_matrix_mod_dirs()))
 
     for key, entry in data.items():
         if key not in mod_plugin_files:

@@ -65,6 +65,10 @@ on:
         type: boolean
         default: false
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}-${{ format('mod-{0}', github.event.inputs.mod) }}
+  cancel-in-progress: false
+
 env:
   THUNDERSTORE_NAMESPACE: "AzraelGodKing"
   THUNDERSTORE_COMMUNITY: "sun-haven"
@@ -73,29 +77,12 @@ env:
 
 jobs:
   setup:
-    runs-on: ubuntu-latest
-    outputs:
-      matrix: ${{ steps.set-matrix.outputs.matrix }}
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
-
-      - name: Verify version consistency (versions.json vs PLUGIN_VERSION vs manifest)
-        run: python3 scripts/verify-version-consistency.py
-
-      - name: Set mod matrix
-        id: set-matrix
-        run: |
-          if [ "${{ github.event.inputs.test_discord }}" == "true" ]; then
-            echo 'matrix=["test_discord"]' >> "$GITHUB_OUTPUT"
-          else
-            MOD_KEY="${{ github.event.inputs.mod }}"
-            if [ "$MOD_KEY" == "all" ]; then
-              echo "matrix=$(jq -c '[.[].modKey]' scripts/mod-matrix.json)" >> "$GITHUB_OUTPUT"
-            else
-              echo "matrix=[\"$MOD_KEY\"]" >> "$GITHUB_OUTPUT"
-            fi
-          fi
+    uses: ./.github/workflows/reusable-mod-matrix-setup.yml
+    with:
+      event_name: ${{ github.event_name }}
+      test_discord: ${{ github.event.inputs.test_discord == 'true' }}
+      mod: ${{ github.event.inputs.mod }}
+      pull_request_all_mods: false
 
   build:
     needs: setup

@@ -31,6 +31,11 @@ namespace HavensBirthright
         private EventHandler _rebuildCrossRaceRulesHandler;
         private bool _applicationQuitting;
 
+        /// <summary>
+        /// Set when an essential Harmony patch (player init, GetStat, or core combat/mana hooks) failed — racial gameplay patches no-op to avoid half-applied behavior.
+        /// </summary>
+        public static bool CriticalBirthrightHarmonyIncomplete { get; private set; }
+
         private void Awake()
         {
             Instance = this;
@@ -86,12 +91,12 @@ namespace HavensBirthright
 
                     // Patch InitializeAsOwner for race detection
                     PatchMethod(playerType, "InitializeAsOwner",
-                        typeof(Patches.PlayerPatches), "OnPlayerInitialized");
+                        typeof(Patches.PlayerPatches), "OnPlayerInitialized", null, essential: true);
 
                     // Patch Initialize as backup for race detection
                     PatchMethod(playerType, "Initialize",
                         typeof(Patches.PlayerPatches), "OnPlayerInitialize",
-                        Type.EmptyTypes);
+                        Type.EmptyTypes, essential: true);
 
                     // LoadCharacter — reset cached race/actives when switching save/slot (name alone is not unique)
                     var gameSaveType = AccessTools.TypeByName("Wish.GameSave");
@@ -111,15 +116,16 @@ namespace HavensBirthright
                     // Patch GetStat for stat bonuses (combat, skills, regen, abilities, drawbacks, synergies)
                     PatchMethod(playerType, "GetStat",
                         typeof(Patches.StatPatches), "ModifyGetStat",
-                        new[] { typeof(Wish.StatType) });
+                        new[] { typeof(Wish.StatType) }, essential: true);
 
                     // Patch ReceiveDamage for defense + combat abilities (prefix)
                     PatchMethodPrefix(playerType, "ReceiveDamage",
-                        typeof(Patches.CombatPatches), "ModifyDamageReceived");
+                        typeof(Patches.CombatPatches), "ModifyDamageReceived", null, essential: true);
 
                     // Patch ReceiveDamage for dodge detection + Divine Ward trigger (postfix)
                     PatchMethod(playerType, "ReceiveDamage",
-                        typeof(Patches.CombatPatches), "OnDamageReceivedPostfix");
+                        typeof(Patches.CombatPatches), "OnDamageReceivedPostfix",
+                        parameters: null, essential: true);
 
                     // Patch NPCAI.AddRelationship (game API: float increase, float romanceBonus, bool showUI)
                     var npcaiType = AccessTools.TypeByName("Wish.NPCAI");
@@ -147,7 +153,7 @@ namespace HavensBirthright
 
                     // Patch Player.AddMana to block mana regen while Infernal Forge is active
                     PatchMethodPrefix(playerType, "AddMana",
-                        typeof(Patches.AbilityPatches), "OnPlayerAddManaPrefix");
+                        typeof(Patches.AbilityPatches), "OnPlayerAddManaPrefix", null, essential: true);
 
                     // NOTE: Infernal Forge no longer uses a Harmony prefix on Inventory.AddItem.
                     // It now uses a periodic inventory scan in BirthrightRunner.UpdateInfernalForge()
@@ -178,10 +184,16 @@ namespace HavensBirthright
                         count++;
                     }
                     Log.LogInfo($"Total methods patched: {count}");
+                    if (CriticalBirthrightHarmonyIncomplete)
+                    {
+                        Log.LogError(
+                            "[Haven's Birthright] One or more essential Harmony patches failed — racial stat/combat hooks are disabled for this session. Check the log above for 'Could not find method' / patch errors.");
+                    }
                 }
                 catch (Exception patchEx)
                 {
                     Log.LogError($"Harmony patching failed: {patchEx}");
+                    CriticalBirthrightHarmonyIncomplete = true;
                 }
 
                 // Check for updates
@@ -304,7 +316,7 @@ namespace HavensBirthright
         /// <summary>
         /// Helper method to manually patch a method with a postfix
         /// </summary>
-        private void PatchMethod(Type targetType, string methodName, Type patchType, string patchMethodName, Type[] parameters = null)
+        private void PatchMethod(Type targetType, string methodName, Type patchType, string patchMethodName, Type[] parameters = null, bool essential = false)
         {
             try
             {
@@ -315,6 +327,8 @@ namespace HavensBirthright
                 if (original == null)
                 {
                     Log.LogWarning($"Could not find method {targetType.Name}.{methodName}");
+                    if (essential)
+                        CriticalBirthrightHarmonyIncomplete = true;
                     return;
                 }
 
@@ -322,6 +336,8 @@ namespace HavensBirthright
                 if (postfix == null)
                 {
                     Log.LogWarning($"Could not find patch method {patchType.Name}.{patchMethodName}");
+                    if (essential)
+                        CriticalBirthrightHarmonyIncomplete = true;
                     return;
                 }
 
@@ -331,13 +347,15 @@ namespace HavensBirthright
             catch (Exception ex)
             {
                 Log.LogError($"Failed to patch {targetType.Name}.{methodName}: {ex.Message}");
+                if (essential)
+                    CriticalBirthrightHarmonyIncomplete = true;
             }
         }
 
         /// <summary>
         /// Helper method to manually patch a method with a prefix
         /// </summary>
-        private void PatchMethodPrefix(Type targetType, string methodName, Type patchType, string patchMethodName, Type[] parameters = null)
+        private void PatchMethodPrefix(Type targetType, string methodName, Type patchType, string patchMethodName, Type[] parameters = null, bool essential = false)
         {
             try
             {
@@ -348,6 +366,8 @@ namespace HavensBirthright
                 if (original == null)
                 {
                     Log.LogWarning($"Could not find method {targetType.Name}.{methodName}");
+                    if (essential)
+                        CriticalBirthrightHarmonyIncomplete = true;
                     return;
                 }
 
@@ -355,6 +375,8 @@ namespace HavensBirthright
                 if (prefix == null)
                 {
                     Log.LogWarning($"Could not find patch method {patchType.Name}.{patchMethodName}");
+                    if (essential)
+                        CriticalBirthrightHarmonyIncomplete = true;
                     return;
                 }
 
@@ -364,6 +386,8 @@ namespace HavensBirthright
             catch (Exception ex)
             {
                 Log.LogError($"Failed to patch {targetType.Name}.{methodName}: {ex.Message}");
+                if (essential)
+                    CriticalBirthrightHarmonyIncomplete = true;
             }
         }
 

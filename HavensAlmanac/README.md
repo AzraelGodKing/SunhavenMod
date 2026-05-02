@@ -124,13 +124,9 @@ The built-in **Mod Health** provider is always on and surfaces
   a defensive re-resolve if the manager or save-data concrete type ever
   changes mid-session. Keeps the behavior identical but drops the per-tick
   reflection cost to near-zero.
-- **Repo: `Inventory_decompiled.cs` moved to `_refs/`.** The 400-line
-  dnSpy dump of `Wish.Inventory` used to sit in the mod's project root and
-  confuse anyone reading the tree (it was already excluded from compilation
-  via `<Compile Remove="Inventory_decompiled.cs" />`). It now lives in
-  `_refs/` alongside a README explaining the folder's purpose, and the
-  csproj exclusion is broadened to `_refs\**\*.cs` + `<None Include=...>`
-  so future decompiles auto-route there without more wiring.
+- **Repo: `_refs/` for local reference only.** Game-derived dnSpy/ILSpy dumps
+  are **not** committed (`.gitignore`); maintainers may place optional local
+  notes or decompiles there for editor grep. Real code uses reflection only.
 - **Docs: Haven's Almanac page + hub card + site search updated for the
   1.0.6 shipped state.** `docs/HavensAlmanac/HavensAlmanac.html` breadcrumb
   date ticked from "Updated Mar 2026" to "Updated Apr 2026"; the Daily
