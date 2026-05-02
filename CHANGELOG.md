@@ -1,102 +1,71 @@
 # Changelog
 
+Notes for **players and release readers**. Per-mod blurbs and upstream metadata are also in [`docs/versions.json`](docs/versions.json). Maintainer-only tooling and CI changes are in [`MAINTAINER_CHANGELOG.md`](MAINTAINER_CHANGELOG.md).
+
+---
+
 ## 2026-05-02
-### SharedUtilities
-- **IconCache:** track texture ownership; only destroy mod-allocated textures on eviction/clear. Full-atlas sprites no longer `Destroy` shared game assets. `CopyTextureViaRenderTexture` always releases the temporary render target. Preload item IDs from `Initialize` are queued in `LoadAllIcons`.
-- **VersionChecker:** per-run logger held on `VersionCheckRunner` (no cross-mod static logger clobbering). `CompareVersions` ignores SemVer pre-release / `+build` suffixes for ordering. Removed unused `System.Net` import.
-- **GUIStyleHelper:** `MakeGradientTexture` avoids division by zero when `height <= 1`.
-- **MinimalJsonParser:** `\u` escapes support UTF-16 surrogate pairs.
-- **VaultCryptography / docs:** clarify tamper-resistance vs confidentiality; future KDF/cipher options noted in XML.
 
-### The Vault
-- **VaultSaveSystem:** save files use `_{steam_…|local_…}` suffix to reduce same-name collisions; legacy `{name}.vault` migrates on load. Unreadable files are **quarantined** to `*.corrupt-*.bak` before starting an empty in-memory vault; `LastLoadQuarantinedCorruptFile` property for diagnostics. `DeleteSave` removes both legacy and suffixed paths.
-- **VaultIntegration:** `IsVaultManagerAvailable` / `IsVaultDataLoadedForCurrentSession`; `IsVaultReady` documents manager-only semantics.
-- **UI / patches:** `VaultUI` disposes generated IMGUI textures on style rebuild and `OnDestroy`. `PlayerPatches.TriggerVaultLoad` uses `_contextLoadLock`. Hot-path `GetAmount` logging → Debug; `PersistentUpdateRunner` moved to `PersistentUpdateRunner.cs` with heartbeat at Debug. `ShopPatches` / `ItemPatches` / `SecretGifts` silent catches log Debug.
+Cross-cutting hardening and documentation (see also maintainer log).
 
-### Haven's Birthright
-- **Fail-closed:** essential Harmony patches set `CriticalBirthrightHarmonyIncomplete`; stat/combat postfixes no-op when set.
+**Shared code**
 
-### HavenDevTools
-- Comment: Steam hash “authorization” is a client-side convenience gate only.
+- **IconCache:** Per-entry texture ownership; eviction and clear only destroy textures the mod allocated — full-atlas game sprites are never destroyed. RenderTexture copy path always releases temp RTs.
+- **VersionChecker:** Logger scoped to the check runner (no cross-mod static clobbering). Version compare ignores SemVer prerelease/`+build` tails for ordering.
+- **GUIStyleHelper / MinimalJsonParser / VaultCryptography:** Safer gradient height edge case; UTF-16 surrogate pairs in JSON escapes; docs clarify tamper-resistant local storage vs confidentiality.
 
-### CI / repo
-- **Reusable workflow** `reusable-mod-matrix-setup.yml`; **concurrency** groups on release and test workflows. `verify-version-consistency.py` flags stray `manifest.json` under mod folders; root `HavenDevTools/manifest.json` removed.
-- **`scripts/mod-matrix.json`:** `statsDomId` for hub/stats; `sync-docs-mod-matrix.js` + `npm run sync-mod-matrix`; `verify-version-consistency.ps1` delegates to Python.
-- **Docs / policy:** `LICENSE` (MIT), `CONTRIBUTING.md`, `SECURITY.md`, `CODE_OF_CONDUCT.md`, `docs/SHARED_CODE_STRATEGY.md`. Root `README.md` drift fixes. `builds/README.md` = ephemeral staging only.
-- **HavensAlmanac:** remove committed decompiled `Inventory_decompiled.cs`; `.gitignore` patterns for local decompiles.
+**The Vault**
+
+- **Saves:** Filenames use a Steam or per-machine suffix to avoid collisions; legacy bare-name files migrate on load. Unreadable vault files are **quarantined** (`.corrupt-*.bak`) before starting an empty in-memory vault; see mod logs if you need to restore.
+- **API:** `IsVaultManagerAvailable` / `IsVaultDataLoadedForCurrentSession`; `IsVaultReady` kept as a legacy alias for “manager exists.”
+- **UI / patches:** Vault UI disposes generated IMGUI textures on rebuild and destroy; vault load trigger uses the same lock as other character-load paths; noisy hot-path logging reduced to Debug where appropriate; `PersistentUpdateRunner` lives in its own file.
+
+**Haven's Birthright**
+
+- If an essential Harmony patch fails to apply, the mod sets a fail-closed flag so stat/combat postfixes do not run half-patched.
+
+**Haven Dev Tools**
+
+- Comments clarify Steam ID hashing is a client-side convenience gate, not a security boundary.
+
+**Trinket Fortune**
+
+- Nexus detailed-description BBCode refreshed ([`TrinketFortune/NexusMods-BBCode.txt`](TrinketFortune/NexusMods-BBCode.txt)): `BepInEx/config/TrinketFortune.cfg` (with legacy GUID migration), `MaxBonusChancePercent`, standalone-safe / optional S.M.U.T. and Haven Dev Tools, Thunderstore / Nexus / GitHub links.
+
+**Repository**
+
+- Reusable workflow setup; concurrency on release/test workflows. Stray `manifest.json` files under mod dirs are rejected by the version verifier. Policy files (license, security, contributing, code of conduct) and shared-code strategy doc. Almanac: no committed game decompiles — use local-only `_refs/` per `.gitignore`.
+- **Docs:** Root [`README.md`](README.md), this changelog, and [`MAINTAINER_CHANGELOG.md`](MAINTAINER_CHANGELOG.md) were rewritten — concise hub layout, versions aligned with [`docs/versions.json`](docs/versions.json), long-running docs-site diary removed from the README in favor of links.
+
+---
 
 ## 2026-05-01
-### Packaging / Release Notes
-- Removed UTF-8 BOM bytes from all `thunderstore/manifest.json` files so strict JSON parsers and CI tooling consume manifests reliably.
-- Removed player-facing `**Unreleased:**` note blocks from Thunderstore READMEs for Faster Races, Haven Dev Tools, Haven's Almanac, Haven's Birthright, Trinket Fortune, Birthday Reminder, and Haven's Respec.
 
-### The Vault
-- Aligned `OnDestroy` lifecycle logging with expected-teardown classification (`application quit`, non-playing state, and menu/title scenes) while preserving critical diagnostics for unexpected runtime destruction.
+- Thunderstore manifests normalized (no UTF-8 BOM) for strict tooling.
+- Thunderstore READMEs: removed stale “Unreleased” blocks from several mods.
+- **The Vault:** clearer destroy-path logging for expected vs unexpected teardown.
+- **Sunhaven Todo:** confirmed dirty-save flags on all task mutation paths after save guard work.
 
-### Sun Haven Todo
-- Reviewed dirty-save behavior after `SaveData()` guard update; confirmed all task mutation paths (`AddTodo`, `UpdateTodo`, `RemoveTodo`, `ToggleComplete`, recurring resets, and clear-completed) set dirty state before save triggers.
+---
 
 ## 2026-04-29
-### CI / Release
-- Hardened Nexus preflight in both release workflows to resolve the expected zip path and fall back to a single detected `dist/*.zip` artifact when naming mismatches occur.
-- Updated Nexus upload steps to reuse the resolved preflight zip path so non-Almanac mods do not fail solely on strict filename expectations.
-- Removed the Haven's Almanac Nexus skip guard in both active release workflows now that the mod has a live Nexus listing and file group configured.
+
+- Release workflows: Nexus preflight and zip path resolution hardened; Almanac Nexus skip removed where listing exists.
+
+---
 
 ## 2026-04-28
-### Senpai's Chest
-- Hardened smart-chest persistence to avoid overwriting an existing non-empty save file with empty runtime data before a successful character load in the current session.
-- Added teardown cleanup for scene/event subscriptions and museum integration hooks so reload cycles do not accumulate duplicate callbacks.
-- Reduced unnecessary write pressure by gating UI-triggered saves behind dirty-state checks.
-- Moved `[Scan] Next scan in ...` countdown output to optional Debug-level logging behind new config toggle `Debug.EnableScanCountdownDebugLog`.
 
-### The Vault
-- Reduced duplicate menu transition resets by deduplicating `SaveAndReset` and only triggering menu reset on actual non-menu -> menu transitions.
-- Added config event unsubscription during teardown to prevent duplicate config handlers after plugin recreation.
-- Reduced false critical lifecycle noise by treating expected menu/quit `OnDisable` as normal lifecycle events.
+Lifecycle and teardown pass across multiple mods: duplicate handler prevention, menu-transition deduplication, Harmony unpatch on shutdown where applicable, debug-level diagnostics for reflection fallbacks. **Senpai's Chest:** smarter persistence and scan logging toggle. **The Vault / Todo / S.M.U.T. / Crop Optimizer / Trinket Fortune / Birthright / Faster Races / Respec / Birthday / Dev Tools / Almanac:** see git history for per-file detail.
 
-### Sun Haven Todo
-- Hardened lifecycle teardown by unsubscribing scene and manager events on destroy to avoid duplicate handlers after plugin recreation.
-- Improved menu-transition behavior by saving dirty data once on gameplay -> menu transitions and resetting per-character runtime patch state.
-- Reduced false critical lifecycle noise by treating expected destroy paths as normal teardown events.
-
-### S.M.U.T.
-- Reduced duplicate menu resets by triggering character save/reset only on actual gameplay -> menu transitions.
-- Hardened plugin teardown by unsubscribing scene handlers and treating menu/quit destroy paths as expected lifecycle events.
-
-### Crop Optimizer
-- Improved lifecycle diagnostics by classifying expected quit/menu teardown in plugin destroy logs.
-- Replaced silent HUD exception handling with debug logging for character-session detection and config flush edge cases.
-
-### Trinket Fortune
-- Hardened SMUT fallback binding with periodic re-resolve attempts so late/soft dependency initialization no longer permanently disables donation-aware biasing.
-- Added debug-level diagnostics for reflection fallback failures and lifecycle teardown logging with clean Harmony unpatch on destroy.
-
-### Haven's Birthright
-- Added teardown cleanup for config setting-change handlers to avoid duplicate callbacks after plugin recreation.
-- Improved lifecycle diagnostics by classifying expected menu/quit destroy paths and keeping unexpected runtime teardown visible.
-- Added debug logging for time/season/HP fallback reads used by active ability and synergy runtime checks.
-
-### Faster Races
-- Added expected-teardown lifecycle logging and explicit Harmony unpatch cleanup on plugin destroy.
-- Switched race-name reflection fallback diagnostics to one-time BepInEx debug logging.
-
-### Haven's Respec
-- Added expected-teardown lifecycle diagnostics on plugin shutdown so menu/quit unloads are treated as normal and unexpected runtime teardown remains visible.
-
-### Birthday Reminder
-- Added lifecycle teardown cleanup for scene subscriptions and todo integration hooks to prevent duplicate callbacks after reload cycles.
-- Improved plugin destroy diagnostics by classifying expected menu/quit teardown and unpatching Harmony on shutdown.
-- Added debug-level logging when todo reflection fallbacks fail in cross-mod integration.
-
-### Haven Dev Tools
-- Reduced false critical lifecycle noise by classifying expected plugin destroy paths during menu/quit teardown.
-
-### Haven's Almanac
-- Added lifecycle teardown cleanup by unsubscribing scene hooks and unpatching Harmony on destroy, with expected/unexpected teardown diagnostics.
-- Reset overnight hook state on menu transitions so daily hook rebinding remains clean across reload cycles.
+---
 
 ## 2026-04-21
-### Performance
-- Fixed UI texture leaks by disposing stale textures before recreating them in chest and todo interfaces.
-- Removed recurring runtime allocations in UI and item patch paths by caching styles, scene/season checks, and helper parsing flows.
-- Added bounded eviction to `SharedUtilities/IconCache.cs` to prevent unbounded texture cache growth.
+
+Performance and stability: UI texture disposal in hot paths, IconCache bounded eviction, fewer allocations in patches and helpers, IconCache eviction fallback fixes, ItemSearch race fix, vault validation and player-context locking, VersionChecker regex caching, silent catches logged at Debug in shared helpers.
+
+---
+
+## Earlier releases
+
+Summaries for older shipped work (vault HUD, mod hub, Crop Optimizer, Haven's Respec, CI migration to self-hosted builds, docs site) live in git history and in each mod’s folder README / [`docs/versions.json`](docs/versions.json) changelog fields.
