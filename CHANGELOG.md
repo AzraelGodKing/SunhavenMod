@@ -6,6 +6,10 @@ Notes for **players and release readers**. Per-mod blurbs and upstream metadata 
 
 ## 2026-05-03
 
+**Senpai's Chest**
+
+- **Wildcard rules:** Wildcard/glob matching (`*` / `?`) now lives in **Manage Groups** by default (patterns stored with each group, then applied through **By Group** rules). Optional UI toggle `SeparateWildcardRuleInUI` exposes a standalone **By wildcard name** rule when explicitly enabled.
+
 **Patch release:** Every mod in the repo received a **patch** semver bump so store metadata, DLLs, and [`docs/versions.json`](docs/versions.json) stay aligned after the cross-cutting review. Current versions: The Vault **3.3.2**, Haven's Birthright **2.2.2**, Senpai's Chest **2.6.2**, S.M.U.T. **2.4.2**, Sun Haven Todo **1.4.2**, A Squirrel's Birthday Reminder **1.4.2**, Haven's Almanac **1.4.2**, Haven Dev Tools **1.2.2**, Faster Races **1.4.2**, Trinket Fortune **1.2.2**, Crop Optimizer **1.4.2**, Haven's Respec **1.3.2**.
 
 - **Maintainers:** Nexus “detailed description” BBCode sources were renamed per mod folder: [`docs/NexusMods-BBCode-Index.txt`](docs/NexusMods-BBCode-Index.txt) (`NexusMods-<ModFolder>-BBCode.txt`).

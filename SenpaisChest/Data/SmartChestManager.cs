@@ -204,6 +204,7 @@ namespace SenpaisChest.Data
             ItemTypeName = r.ItemTypeName,
             PropertyName = r.PropertyName,
             GroupName = r.GroupName,
+            NamePattern = r.NamePattern,
         };
 
         /// <returns>True if a saved entry existed and was removed.</returns>
@@ -663,6 +664,11 @@ namespace SenpaisChest.Data
                 case RuleType.ByGroup:
                     return MatchesGroup(itemId, rule.GroupName);
 
+                case RuleType.ByNamePattern:
+                    var sn = GetItemSellInfo(itemId);
+                    string displayName = sn?.name ?? ItemSearch.GetItemName(itemId) ?? "";
+                    return ItemNamePatternMatch.Matches(displayName, rule.NamePattern);
+
                 default:
                     return false;
             }
@@ -708,7 +714,23 @@ namespace SenpaisChest.Data
         {
             if (string.IsNullOrEmpty(groupName)) return false;
             var g = GetGroup(groupName);
-            return g != null && g.ItemIds != null && g.ItemIds.Contains(itemId);
+            if (g == null) return false;
+
+            if (g.ItemIds != null && g.ItemIds.Contains(itemId))
+                return true;
+
+            if (g.NamePatterns != null && g.NamePatterns.Count > 0)
+            {
+                var info = GetItemSellInfo(itemId);
+                string displayName = info?.name ?? ItemSearch.GetItemName(itemId) ?? "";
+                for (int i = 0; i < g.NamePatterns.Count; i++)
+                {
+                    if (ItemNamePatternMatch.Matches(displayName, g.NamePatterns[i]))
+                        return true;
+                }
+            }
+
+            return false;
         }
 
         /// <summary>

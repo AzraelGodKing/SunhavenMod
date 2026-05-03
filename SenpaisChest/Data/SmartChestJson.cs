@@ -53,6 +53,10 @@ namespace SenpaisChest.Data
 
                     sb.Append("          \"GroupName\": ");
                     MinimalJsonParser.WriteJsonString(sb, rule.GroupName ?? "");
+                    sb.AppendLine(",");
+
+                    sb.Append("          \"NamePattern\": ");
+                    MinimalJsonParser.WriteJsonString(sb, rule.NamePattern ?? "");
                     sb.AppendLine();
 
                     sb.Append("        }");
@@ -87,6 +91,16 @@ namespace SenpaisChest.Data
                     sb.Append("        ");
                     sb.Append(ids[j]);
                     if (j < ids.Count - 1) sb.AppendLine(",");
+                    else sb.AppendLine();
+                }
+                sb.AppendLine("      ],");
+                sb.AppendLine("      \"NamePatterns\": [");
+                var patterns = g.NamePatterns ?? new List<string>();
+                for (int j = 0; j < patterns.Count; j++)
+                {
+                    sb.Append("        ");
+                    MinimalJsonParser.WriteJsonString(sb, patterns[j] ?? "");
+                    if (j < patterns.Count - 1) sb.AppendLine(",");
                     else sb.AppendLine();
                 }
                 sb.AppendLine("      ]");
@@ -162,6 +176,8 @@ namespace SenpaisChest.Data
                                 rule.PropertyName = propVal as string ?? "";
                             if (ruleDict.TryGetValue("GroupName", out var grpVal))
                                 rule.GroupName = grpVal as string ?? "";
+                            if (ruleDict.TryGetValue("NamePattern", out var namePatVal))
+                                rule.NamePattern = namePatVal as string ?? "";
 
                             chest.Rules.Add(rule);
                         }
@@ -184,6 +200,15 @@ namespace SenpaisChest.Data
                     {
                         foreach (var idObj in idsList)
                             g.ItemIds.Add(MinimalJsonParser.ToInt(idObj));
+                    }
+                    if (groupDict.TryGetValue("NamePatterns", out var patsObj) && patsObj is List<object> patsList)
+                    {
+                        foreach (var patObj in patsList)
+                        {
+                            var pattern = patObj as string ?? "";
+                            if (!string.IsNullOrWhiteSpace(pattern))
+                                g.NamePatterns.Add(pattern);
+                        }
                     }
                     if (!string.IsNullOrWhiteSpace(g.Name))
                         data.Groups.Add(g);
