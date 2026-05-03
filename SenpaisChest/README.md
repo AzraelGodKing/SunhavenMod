@@ -19,7 +19,7 @@ File: `Sun Haven/BepInEx/config/SenpaisChest.cfg`
 
 ## Changelog
 
-### Unreleased
+### 2026-05-02 (maintainer notes)
 
 - **Fixed:** Added save protection in `SmartChestSaveSystem` to prevent overwriting an existing non-empty smart-chest JSON with an empty in-memory state before any successful character load in the current session.
 - **Fixed:** `Plugin` now unsubscribes from `SceneManager.sceneLoaded` / `activeSceneChanged` and disposes museum integration handlers during teardown to prevent duplicate callbacks across reloads.

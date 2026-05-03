@@ -4,15 +4,25 @@ Internal engineering log: **CI**, **release automation**, **scripts**, **docs in
 
 ---
 
+## 2026-05-03
+
+- **`build-release-publish.yml`:** Comments clarify that `builds/` paths are **ephemeral on the runner** (stage → upload-artifact → download → package), not a committed tree — same idea as [`builds/README.md`](builds/README.md).
+- **Version bump:** `.\scripts\pre-push-build.ps1 -All -Bump patch` — patch bump for all twelve mods (`docs/versions.json`, manifests, Nexus BBCode headers, doc badges, `HavenDevTools` `DebugWindow` tuples, rebuild).
+
+---
+
 ## 2026-05-02
 
 - **Workflows:** Added [`reusable-mod-matrix-setup.yml`](.github/workflows/reusable-mod-matrix-setup.yml); **concurrency** groups on **Release & Publish** and **Test — Self-hosted** to reduce racing publishes.
-- **Version verifier:** [`scripts/verify-version-consistency.py`](scripts/verify-version-consistency.py) scans for stray `manifest.json` under each mod directory; PowerShell script delegates to Python.
-- **Mod matrix:** [`scripts/mod-matrix.json`](scripts/mod-matrix.json) includes `statsDomId`; [`sync-docs-mod-matrix.js`](scripts/sync-docs-mod-matrix.js) regenerates [`docs/mod-matrix.json`](docs/mod-matrix.json); [`fetch-stats.js`](scripts/fetch-stats.js) resolves stats IDs from the matrix.
-- **Build:** [`Directory.Build.props`](Directory.Build.props) — `LangVersion` latest, `Deterministic`, `ContinuousIntegrationBuild` when `GITHUB_ACTIONS` is set.
+- **Version verifier:** [`scripts/verify-version-consistency.py`](scripts/verify-version-consistency.py) scans for stray `manifest.json` under each mod directory; **matrix keys** in `scripts/mod-matrix.json` must exist in `docs/versions.json`; PowerShell script delegates to Python.
+- **Mod matrix:** [`scripts/mod-matrix.json`](scripts/mod-matrix.json) includes `statsDomId`; [`sync-docs-mod-matrix.js`](scripts/sync-docs-mod-matrix.js) regenerates [`docs/mod-matrix.json`](docs/mod-matrix.json); [`fetch-stats.js`](scripts/fetch-stats.js) resolves stats IDs from the matrix; reusable matrix setup runs the generator and **`git diff --exit-code`** on `docs/mod-matrix.json`.
+- **Sync workflow:** [`sync-mod-versions.yml`](.github/workflows/sync-mod-versions.yml) stages allowlisted paths via [`scripts/stage-version-sync-files.py`](scripts/stage-version-sync-files.py) (no broad `git add -A` / full-repo `-u`).
+- **Release / mirror:** Self-hosted test workflow: Nexus **fail-closed** when publish requested but no upload succeeded; Nexus `upload-action` **v1.0.0-beta.4** aligned with main release workflow; [`sync-cloudflare-site-mirror.yml`](.github/workflows/sync-cloudflare-site-mirror.yml) uses `http.extraHeader` auth instead of token-in-URL; [`update-stats.yml`](.github/workflows/update-stats.yml) falls back to `github.token` when `ADMIN_PUSH_TOKEN` is unset.
+- **Build:** [`Directory.Build.props`](Directory.Build.props) — `Nullable` annotations, `TreatWarningsAsErrors` when `GITHUB_ACTIONS` is set; `LangVersion` latest, `Deterministic`, `ContinuousIntegrationBuild`. **Senpai's Chest** suppresses **CS0436** (linked `SceneRootSurvivor` + `SunHavenMuseumUtilityTracker` reference embeds the same type).
 - **Policy / governance:** Root [`LICENSE`](LICENSE), [`CONTRIBUTING.md`](CONTRIBUTING.md), [`SECURITY.md`](SECURITY.md), [`CODE_OF_CONDUCT.md`](CODE_OF_CONDUCT.md), [`docs/SHARED_CODE_STRATEGY.md`](docs/SHARED_CODE_STRATEGY.md).
-- **Hygiene:** Removed duplicate root `HavenDevTools/manifest.json`; `.gitignore` patterns for local `*_decompiled.cs` under Almanac `_refs/`.
-- **Docs:** Rewrote root [`README.md`](README.md), [`CHANGELOG.md`](CHANGELOG.md), and this file — scoped maintainer vs player notes, dropped obsolete README changelog dump.
+- **Hygiene:** Removed duplicate root `HavenDevTools/manifest.json`; `.gitignore` includes **`Decompiled/`** (alongside legacy typo dir); **removed** confusing duplicate `.github/workflows/deprecated/build-release-publish.yml`.
+- **Docs:** Rewrote root [`README.md`](README.md), [`CHANGELOG.md`](CHANGELOG.md), and this file — scoped maintainer vs player notes; [`docs/VERSION_AND_RELEASE.md`](docs/VERSION_AND_RELEASE.md) clarifies Python for version checks and hub matrix regen; [`docs/ATOMIC_SAVE_POLICY.md`](docs/ATOMIC_SAVE_POLICY.md) for save temp semantics.
+- **README:** Per-mod `### Unreleased` headers converted to dated maintainer sections where applicable.
 
 ---
 

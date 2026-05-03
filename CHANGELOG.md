@@ -4,6 +4,12 @@ Notes for **players and release readers**. Per-mod blurbs and upstream metadata 
 
 ---
 
+## 2026-05-03
+
+**Patch release:** Every mod in the repo received a **patch** semver bump so store metadata, DLLs, and [`docs/versions.json`](docs/versions.json) stay aligned after the cross-cutting review. Current versions: The Vault **3.3.2**, Haven's Birthright **2.2.2**, Senpai's Chest **2.6.2**, S.M.U.T. **2.4.2**, Sun Haven Todo **1.4.2**, A Squirrel's Birthday Reminder **1.4.2**, Haven's Almanac **1.4.2**, Haven Dev Tools **1.2.2**, Faster Races **1.4.2**, Trinket Fortune **1.2.2**, Crop Optimizer **1.4.2**, Haven's Respec **1.3.2**.
+
+---
+
 ## 2026-05-02
 
 Cross-cutting hardening and documentation (see also maintainer log).
@@ -16,13 +22,14 @@ Cross-cutting hardening and documentation (see also maintainer log).
 
 **The Vault**
 
-- **Saves:** Filenames use a Steam or per-machine suffix to avoid collisions; legacy bare-name files migrate on load. Unreadable vault files are **quarantined** (`.corrupt-*.bak`) before starting an empty in-memory vault; see mod logs if you need to restore.
+- **Saves:** Filenames use a Steam or per-machine suffix to avoid collisions; legacy bare-name files migrate on load. Unreadable vault files are **quarantined** (`.corrupt-*.bak`) before starting an empty in-memory vault; see mod logs if you need to restore. **Load path:** invalid character names no longer leave a prior character’s vault state “loaded” for a new save; the plugin only marks the vault loaded when load succeeds. **Quarantine UX:** the HUD and vault window surface a one-time notice when a corrupt file was quarantined.
 - **API:** `IsVaultManagerAvailable` / `IsVaultDataLoadedForCurrentSession`; `IsVaultReady` kept as a legacy alias for “manager exists.”
-- **UI / patches:** Vault UI disposes generated IMGUI textures on rebuild and destroy; vault load trigger uses the same lock as other character-load paths; noisy hot-path logging reduced to Debug where appropriate; `PersistentUpdateRunner` lives in its own file.
+- **UI / patches:** Vault UI disposes generated IMGUI textures on rebuild and destroy; vault load trigger uses the same lock as other character-load paths; noisy hot-path logging reduced to Debug where appropriate; `PersistentUpdateRunner` lives in its own file; `VaultModApiBridge` subscription contract documented for soft dependencies.
 
 **Haven's Birthright**
 
 - If an essential Harmony patch fails to apply, the mod sets a fail-closed flag so stat/combat postfixes do not run half-patched.
+- **Faster Races:** explicit Harmony priority on `Player.GetStat` (Birthright before Faster Races); coordination with movement speed no longer treats “Faster Races enabled at 0%” as an active speed bonus.
 
 **Haven Dev Tools**
 
@@ -36,6 +43,7 @@ Cross-cutting hardening and documentation (see also maintainer log).
 
 - Reusable workflow setup; concurrency on release/test workflows. Stray `manifest.json` files under mod dirs are rejected by the version verifier. Policy files (license, security, contributing, code of conduct) and shared-code strategy doc. Almanac: no committed game decompiles — use local-only `_refs/` per `.gitignore`.
 - **Docs:** Root [`README.md`](README.md), this changelog, and [`MAINTAINER_CHANGELOG.md`](MAINTAINER_CHANGELOG.md) were rewritten — concise hub layout, versions aligned with [`docs/versions.json`](docs/versions.json), long-running docs-site diary removed from the README in favor of links.
+- **Mod matrix / versions:** `verify-version-consistency.py` also requires every `jsonKey` in `scripts/mod-matrix.json` to exist in `docs/versions.json`. [`docs/ATOMIC_SAVE_POLICY.md`](docs/ATOMIC_SAVE_POLICY.md) documents temp-file behavior for competing save systems.
 
 ---
 

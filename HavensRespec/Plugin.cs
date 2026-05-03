@@ -80,22 +80,32 @@ namespace HavensRespec
 
         private void OnDestroy()
         {
+            string sceneName = SceneManager.GetActiveScene().name ?? string.Empty;
+            string sceneLower = sceneName.ToLowerInvariant();
+            bool expectedTeardown = _applicationQuitting || !Application.isPlaying || sceneLower.Contains("menu") || sceneLower.Contains("title");
+            if (expectedTeardown)
+                Log?.LogInfo($"[Lifecycle] {PluginInfo.PLUGIN_NAME} OnDestroy during expected teardown (scene: {sceneName})");
+            else
+                Log?.LogWarning($"[Lifecycle] {PluginInfo.PLUGIN_NAME} OnDestroy outside expected teardown (scene: {sceneName})");
+
             try
             {
-                string sceneName = SceneManager.GetActiveScene().name ?? string.Empty;
-                string sceneLower = sceneName.ToLowerInvariant();
-                bool expectedTeardown = _applicationQuitting || !Application.isPlaying || sceneLower.Contains("menu") || sceneLower.Contains("title");
-                if (expectedTeardown)
-                    Log?.LogInfo($"[Lifecycle] {PluginInfo.PLUGIN_NAME} OnDestroy during expected teardown (scene: {sceneName})");
-                else
-                    Log?.LogWarning($"[Lifecycle] {PluginInfo.PLUGIN_NAME} OnDestroy outside expected teardown (scene: {sceneName})");
-
                 _controller?.Uninstall();
-                _harmony?.UnpatchSelf();
             }
             catch (Exception ex)
             {
-                Log?.LogWarning($"{PluginInfo.PLUGIN_NAME} OnDestroy swallowed: {ex.Message}");
+                Log?.LogWarning($"{PluginInfo.PLUGIN_NAME} OnDestroy: Uninstall failed: {ex.Message}");
+            }
+            finally
+            {
+                try
+                {
+                    _harmony?.UnpatchSelf();
+                }
+                catch (Exception ex)
+                {
+                    Log?.LogWarning($"{PluginInfo.PLUGIN_NAME} OnDestroy: UnpatchSelf failed: {ex.Message}");
+                }
             }
         }
 

@@ -1,10 +1,10 @@
 using BepInEx.Bootstrap;
-using BepInEx.Configuration;
 using HavensBirthright.Abilities;
 using HavensBirthright;
 using System;
 using System.Collections.Generic;
 using System.Reflection;
+using HarmonyLib;
 using UnityEngine;
 using Wish;
 
@@ -65,17 +65,12 @@ namespace HavensBirthright.Patches
 
             try
             {
+                // Must match FasterRaces.Plugin.IsSpeedBonusActive (enabled + positive global bonus only).
+                // Do not fall back to EnableMod alone — that mis-detects "active" at 0% and strips HB move speed.
                 var activeProperty = pluginType.GetProperty("IsSpeedBonusActive", BindingFlags.Public | BindingFlags.Static);
                 if (activeProperty != null && activeProperty.PropertyType == typeof(bool))
                 {
                     _fasterRacesSpeedActive = (bool)activeProperty.GetValue(null, null);
-                    return _fasterRacesSpeedActive;
-                }
-
-                var enabledField = pluginType.GetField("EnableMod", BindingFlags.NonPublic | BindingFlags.Public | BindingFlags.Static);
-                if (enabledField?.GetValue(null) is ConfigEntry<bool> enabledEntry)
-                {
-                    _fasterRacesSpeedActive = enabledEntry.Value;
                     return _fasterRacesSpeedActive;
                 }
             }
@@ -90,7 +85,9 @@ namespace HavensBirthright.Patches
         /// <summary>
         /// Postfix patch for Player.GetStat - modifies stat values based on racial bonuses,
         /// active abilities, drawbacks, and conditional synergies.
+        /// Runs before Faster Races (lower Harmony priority = earlier postfix): racial bonuses apply first, then FR multiplies Movespeed.
         /// </summary>
+        [HarmonyPriority(100)]
         public static void ModifyGetStat(StatType stat, ref float __result)
         {
             if (Plugin.CriticalBirthrightHarmonyIncomplete)

@@ -71,6 +71,8 @@ namespace TheVault.UI
         private float _lastUpdateTime;
         private const float UpdateInterval = 0.5f;
 
+        private static bool _loggedQuarantineHudOnce;
+
         private readonly Dictionary<string, int> _seasonal = new Dictionary<string, int>();
         private readonly Dictionary<string, int> _keys = new Dictionary<string, int>();
         private readonly Dictionary<string, int> _special = new Dictionary<string, int>();
@@ -131,6 +133,13 @@ namespace TheVault.UI
 
         private void Update()
         {
+            if (!_loggedQuarantineHudOnce && Plugin.LastVaultLoadQuarantinedCorruptFile)
+            {
+                _loggedQuarantineHudOnce = true;
+                Plugin.Log?.LogWarning(
+                    "[The Vault] A vault file was unreadable and was quarantined (see LogOutput / BepInEx). An empty vault is in use — check TheVault/Saves for .corrupt-*.bak");
+            }
+
             if (!_isEnabled || _vaultManager == null) return;
             if (Time.time - _lastUpdateTime < UpdateInterval) return;
             RefreshCaches();

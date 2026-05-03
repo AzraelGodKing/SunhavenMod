@@ -62,13 +62,13 @@ The vault UI includes a **Custom** tab for currencies registered at runtime. Fro
 
 ## Version
 
-**Released version is `3.0.5`** (BepInEx, Thunderstore, Nexus). Source of truth: **`TheVault.csproj`** / **`docs/versions.json`**.
+**Released version is `3.3.2`** (BepInEx, Thunderstore, Nexus). Source of truth: **`TheVault.csproj`** / **`docs/versions.json`**.
 
 **Maintainer note:** Same as the [repo root README](../../README.md): do not bump **any** mod’s published version unless the owner explicitly asks for a release.
 
 ## Changelog
 
-### Unreleased
+### 2026-05-02 (maintainer notes)
 - **Changed:** Removed dead uGUI panel source (`UI/VaultUguiPanel.cs`) and unused legacy-IMGUI toggle plumbing in `VaultUI`; the active IMGUI path remains unchanged.
 - **Changed:** Restored HUD and window scale upper bound to `3.0` (from `2.5`) to avoid silently clamping existing larger user settings.
 - **Fixed:** Configs now appear in BepInEx Configuration Manager. The mod binds entries to a custom `ConfigFile` (`thevault.cfg`) rather than the default per-GUID file, and Configuration Manager only scans each plugin's inherited `BaseUnityPlugin.Config` property — so it never saw our entries. `ConfigFileHelper.ReplacePluginConfig` now rewires that inherited property to the custom file via reflection right after Awake, so the live config UI picks up every `Config.Bind(...)` call without changing the config file name or path.

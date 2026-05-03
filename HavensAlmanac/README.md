@@ -58,7 +58,7 @@ The built-in **Mod Health** provider is always on and surfaces
 
 ## Changelog
 
-### Unreleased
+### 2026-05-02 (maintainer notes — see root CHANGELOG for shipped highlights)
 
 - **Lifecycle:** Added expected-teardown plugin shutdown diagnostics, explicit scene-handler cleanup, and Harmony unpatch on destroy.
 - **Stability:** Main-menu transitions now reset overnight hook state so it re-binds cleanly on the next character load.

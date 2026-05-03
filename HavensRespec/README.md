@@ -67,7 +67,7 @@ correctness and UX upgrades over the prior implementation.
 
 ## Changelog
 
-### Unreleased
+### 2026-05-02 (maintainer notes)
 
 - **Lifecycle:** Added expected-teardown diagnostics to plugin shutdown so normal menu/quit destroys are logged as expected and unexpected runtime teardown remains visible.
 - **Cost preflight accuracy:** affordability checks now use an exact live-node refund estimate (with safe fallback), reducing false "cannot afford" blocks caused by stale point counters.
