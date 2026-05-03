@@ -314,10 +314,12 @@ jobs:
           echo "✅ No Version Change - ${{ steps.config.outputs.display_name }} v${{ steps.config.outputs.version }} already released, skipping"
 
       - name: Package mod for distribution
+        id: package_step
         if: github.event.inputs.publish_discord_only != 'true' && (github.event.inputs.dry_run == 'true' || steps.version_check.outputs.version_unchanged != 'true')
         env:
           PACKAGE_MANIFEST_DESCRIPTION: ${{ steps.config.outputs.description }}
         run: |
+          set -euo pipefail
           mkdir -p dist/package
 
           if [ "${{ matrix.mod }}" == "test_discord" ]; then
@@ -402,6 +404,7 @@ jobs:
 
           ZIP_NAME="${{ steps.config.outputs.thunderstore_name }}-${{ steps.config.outputs.version }}.zip"
           zip -r "../$ZIP_NAME" .
+          echo "zip_path=dist/$ZIP_NAME" >> "$GITHUB_OUTPUT"
 
           echo "✅ Package created: $ZIP_NAME"
           ls -lh "../$ZIP_NAME"
@@ -446,8 +449,9 @@ jobs:
         if: github.event.inputs.dry_run != 'true' && github.event.inputs.publish_discord_only != 'true' && github.event.inputs.publish_nexus == 'true' && github.event.inputs.test_discord != 'true' && steps.version_check.outputs.version_unchanged != 'true' && steps.config.outputs.nexus_file_group_id != ''
         run: |
           set -euo pipefail
+          CANDIDATE="${{ steps.package_step.outputs.zip_path }}"
           EXPECTED="dist/${{ steps.config.outputs.thunderstore_name }}-${{ steps.config.outputs.version }}.zip"
-          ZIP="$EXPECTED"
+          ZIP="${CANDIDATE:-$EXPECTED}"
           if [ ! -f "$ZIP" ]; then
             echo "::warning::Expected zip not found at $EXPECTED. Looking for fallback dist/*.zip."
             shopt -s nullglob
@@ -457,8 +461,8 @@ jobs:
               ZIP="${ZIPS[0]}"
               echo "::warning::Using fallback zip: $ZIP"
             else
-              echo "::error::Missing $EXPECTED and fallback did not find exactly one zip in dist/."
-              ls -lah dist || true
+              echo "::error::Missing package zip. package_step output='${CANDIDATE:-<empty>}' expected='$EXPECTED'."
+              if [ -d dist ]; then ls -lah dist; else echo "::warning::dist/ directory does not exist."; fi
               exit 1
             fi
           fi
