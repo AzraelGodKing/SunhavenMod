@@ -1,23 +1,20 @@
-Nexus Mods detailed descriptions (BBCode)
-==========================================
+NexusMods detailed description — BBCode source files
+====================================================
 
-Each mod folder has a NexusMods-BBCode.txt file: copy its contents into that mod's Nexus "Detailed Description" field (BBCode mode).
+Each mod folder has one file named [b]NexusMods-<ModFolder>-BBCode.txt[/b] (e.g. CropOptimizer/NexusMods-CropOptimizer-BBCode.txt): copy its full contents into that mod's Nexus "[b]Description[/b]" field ([b]BBCode[/b] mode).
 
-Paths (relative to repo root):
+After version bumps, the first line header [i](vX.Y.Z)[/i] is updated automatically by scripts/pre-push-build.ps1 together with docs/versions.json.
 
-  SenpaisChest/NexusMods-BBCode.txt
-  SunhavenTodo/NexusMods-BBCode.txt
-  SunHavenMuseumUtilityTracker/NexusMods-BBCode.txt
-  TheVault/NexusMods-BBCode.txt
-  HavensBirthright/NexusMods-BBCode.txt
-  HavensAlmanac/NexusMods-BBCode.txt
-  BirthdayReminder/NexusMods-BBCode.txt
-  HavenDevTools/NexusMods-BBCode.txt
-  TrinketFortune/NexusMods-BBCode.txt
-  FasterRaces/NexusMods-BBCode.txt
-  CropOptimizer/NexusMods-BBCode.txt
-  HavensRespec/NexusMods-BBCode.txt
-
-Keep these in sync when you edit the matching README.md / thunderstore README.
-
-Those files use Nexus BBCode tags (b, i, url, list, table, spoiler, code, quote, size, line).
+Paths (mod folder → file):
+  BirthdayReminder/NexusMods-BirthdayReminder-BBCode.txt
+  CropOptimizer/NexusMods-CropOptimizer-BBCode.txt
+  FasterRaces/NexusMods-FasterRaces-BBCode.txt
+  HavenDevTools/NexusMods-HavenDevTools-BBCode.txt
+  HavensAlmanac/NexusMods-HavensAlmanac-BBCode.txt
+  HavensBirthright/NexusMods-HavensBirthright-BBCode.txt
+  HavensRespec/NexusMods-HavensRespec-BBCode.txt
+  SenpaisChest/NexusMods-SenpaisChest-BBCode.txt
+  SunhavenTodo/NexusMods-SunhavenTodo-BBCode.txt
+  SunHavenMuseumUtilityTracker/NexusMods-SunHavenMuseumUtilityTracker-BBCode.txt
+  TheVault/NexusMods-TheVault-BBCode.txt
+  TrinketFortune/NexusMods-TrinketFortune-BBCode.txt

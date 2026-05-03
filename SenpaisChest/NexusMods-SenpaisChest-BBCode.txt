@@ -2,7 +2,7 @@
 
 Smart chests with configurable item rules for hands-free storage organization in Sun Haven. Chest labels, rules by item/category/type/property/group, per-character saves.
 
-[b]2.2.2:[/b] Rules stay when changing areas or exiting — sorts do not delete saves. Rules are removed only when a chest is actually picked up or destroyed ([b]OnDisable[/b] with skip for quit and scene unload). Scene-discard suppression tracks replaced scene handles long enough for slower transitions so area changes keep rules. No scan-time orphan wiping.
+[b]Save rules:[/b] Rules persist across area changes and normal exits — sorts do not wipe saves. Rules clear when a chest is picked up or destroyed ([b]OnDisable[/b] skips quit/unload-only teardown). Scene-discard suppression tolerates slower transitions during travel.
 
 [b]Backup:[/b] Saves are under [b]BepInEx/config/SenpaisChest/Saves/[/b]; each save keeps [b].bak[/b] — restore if the main JSON was emptied.
 
