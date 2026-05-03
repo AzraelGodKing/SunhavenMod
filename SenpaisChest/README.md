@@ -5,6 +5,7 @@ Smart chest automation and sorting rules for Sun Haven.
 ## Default Behavior
 
 - Configure smart-chest rules by item, category, type, property, or group.
+- Manage Groups now supports wildcard patterns (`*`, `?`) and can expand matches into item IDs.
 - Supports chest labels and periodic scan-based sorting.
 - Optional integration with S.M.U.T. and SunhavenTodo for museum workflows.
 
@@ -18,6 +19,12 @@ File: `Sun Haven/BepInEx/config/SenpaisChest.cfg`
 - Full player-facing documentation is in `thunderstore/README.md`.
 
 ## Changelog
+
+### 2026-05-03 (maintainer notes)
+
+- **Groups + wildcard:** Manage Groups now supports wildcard patterns (`*`, `?`, case-insensitive) in addition to explicit item IDs.
+- **Pattern expansion:** Added actions to convert pattern matches into concrete IDs in the group ("+IDs" per pattern and "Add Matches to IDs" from input).
+- **UI behavior:** Wildcards are group-managed by default via **By Group** rules; optional config `UI.SeparateWildcardRuleInUI` can expose a standalone wildcard rule UI.
 
 ### 2026-05-02 (maintainer notes)
 

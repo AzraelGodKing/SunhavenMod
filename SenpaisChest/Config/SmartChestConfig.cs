@@ -22,6 +22,7 @@ namespace SenpaisChest.Config
         public ConfigEntry<string> LabeledChestDecorationIds { get; private set; }
         public ConfigEntry<float> UIScale { get; private set; }
         public ConfigEntry<bool> BlockInputWhenTypingInConfig { get; private set; }
+        public ConfigEntry<bool> SeparateWildcardRuleInUI { get; private set; }
         public ConfigEntry<bool> EnableScanCountdownDebugLog { get; private set; }
         private readonly HashSet<int> _labeledChestDecorationIdSet = new HashSet<int>();
 
@@ -29,6 +30,7 @@ namespace SenpaisChest.Config
         internal static KeyCode StaticToggleKey = KeyCode.F9;
         internal static bool StaticRequireCtrl = false;
         internal static bool StaticBlockInputWhenTyping = true;
+        internal static bool StaticSeparateWildcardRule = false;
         internal static bool StaticEnableScanCountdownDebug = false;
 
         public enum ChestLabelVisibility { Hidden, OnHover, Visible }
@@ -92,6 +94,13 @@ namespace SenpaisChest.Config
                 true,
                 "When true, Backspace/Cancel won't close the chest while typing in the config search. Set to FALSE if the in-game chat or cheat console cannot receive input (fixes conflict with some mods).");
 
+            SeparateWildcardRuleInUI = config.Bind(
+                "UI",
+                "SeparateWildcardRuleInUI",
+                false,
+                "When true, wildcard/glob matching appears as its own rule type. Default false keeps wildcard patterns in Manage Groups."
+            );
+
             CheckForUpdates = config.Bind(
                 "Updates",
                 "CheckForUpdates",
@@ -138,6 +147,7 @@ namespace SenpaisChest.Config
             StaticToggleKey = ToggleKey.Value;
             StaticRequireCtrl = RequireCtrlModifier.Value;
             StaticBlockInputWhenTyping = BlockInputWhenTypingInConfig.Value;
+            StaticSeparateWildcardRule = SeparateWildcardRuleInUI.Value;
             StaticEnableScanCountdownDebug = EnableScanCountdownDebugLog.Value;
             RefreshLabeledChestDecorationIds();
 
@@ -145,6 +155,7 @@ namespace SenpaisChest.Config
             ToggleKey.SettingChanged += (_, _) => StaticToggleKey = ToggleKey.Value;
             RequireCtrlModifier.SettingChanged += (_, _) => StaticRequireCtrl = RequireCtrlModifier.Value;
             BlockInputWhenTypingInConfig.SettingChanged += (_, _) => StaticBlockInputWhenTyping = BlockInputWhenTypingInConfig.Value;
+            SeparateWildcardRuleInUI.SettingChanged += (_, _) => StaticSeparateWildcardRule = SeparateWildcardRuleInUI.Value;
             EnableScanCountdownDebugLog.SettingChanged += (_, _) => StaticEnableScanCountdownDebug = EnableScanCountdownDebugLog.Value;
             LabeledChestDecorationIds.SettingChanged += (_, _) => RefreshLabeledChestDecorationIds();
         }

@@ -71,13 +71,17 @@ namespace SenpaisChest.UI
         private string _newGroupName = "";
         private string _groupItemSearch = "";
         private string _groupItemSearchLast = "";
+        private string _groupPatternInput = "";
         private List<KeyValuePair<int, string>> _groupSearchResults = new List<KeyValuePair<int, string>>();
         private Vector2 _groupSearchScroll;
         private Vector2 _groupListScroll;
         private Vector2 _groupItemsScroll;
 
         // Dropdown options
-        private static readonly string[] RuleTypeNames = { "By Item", "By Category", "By Item Type", "By Property", "By Group" };
+        private static readonly string[] RuleTypeNames =
+            { "By Item", "By Category", "By Item Type", "By Property", "By Group", "By wildcard name" };
+
+        private string _wildcardPatternInput = "";
         private static readonly string[] BaseCategoryNames = { "Equip", "Use", "Craftable", "Monster", "Furniture", "Quest" };
         private static readonly string[] CategoryNamesWithMuseum = { "Equip", "Use", "Craftable", "Monster", "Furniture", "Quest", "Undonated Items" };
         private static readonly string[] ItemTypeNames = { "Normal", "Armor", "Food", "Fish", "Crop", "WateringCan", "Animal", "Pet", "Tool" };
@@ -86,6 +90,7 @@ namespace SenpaisChest.UI
         /// <summary>Control name for the item search field. Used so we only block game input (Backspace/UICancel) when the user is typing here, not when e.g. the cheat enabler chat is focused.</summary>
         internal const string SearchFieldControlName = "SmartChestItemSearch";
         internal const string GroupSearchFieldControlName = "SmartChestGroupItemSearch";
+        internal const string WildcardPatternControlName = "SmartChestWildcardPattern";
 
         // Color palette — dark navy theme with gold accents
         private readonly Color _bgDark = new Color(0.15f, 0.16f, 0.24f, 1f);
@@ -216,7 +221,8 @@ namespace SenpaisChest.UI
         {
             if (ui == null || !ui.IsVisible) return false;
             var focused = GUI.GetNameOfFocusedControl();
-            return focused == SearchFieldControlName || focused == GroupSearchFieldControlName;
+            return focused == SearchFieldControlName || focused == GroupSearchFieldControlName ||
+                   focused == WildcardPatternControlName;
         }
 
         public void Initialize(SmartChestManager manager)
@@ -339,6 +345,7 @@ namespace SenpaisChest.UI
             _selectedCategory = 0;
             _selectedItemType = 0;
             _selectedProperty = 0;
+            _wildcardPatternInput = "";
             _confirmCopyRules = false;
 
             _isVisible = true;
@@ -672,7 +679,12 @@ namespace SenpaisChest.UI
             GUILayout.BeginHorizontal();
             DrawSelectorButton(3, useParchmentTheme || compact, GUILayout.Height((useParchmentTheme || compact) ? 24 : 28));
             DrawSelectorButton(4, useParchmentTheme || compact, GUILayout.Height((useParchmentTheme || compact) ? 24 : 28));
-            if (GUILayout.Button("Manage Groups", useParchmentTheme ? _configCloseBottomStyle : _closeBottomButtonStyle, GUILayout.Height((useParchmentTheme || compact) ? 22 : 26)))
+            if (IsSeparateWildcardRuleEnabled())
+                DrawSelectorButton(5, useParchmentTheme || compact, GUILayout.Height((useParchmentTheme || compact) ? 24 : 28));
+            GUILayout.EndHorizontal();
+            GUILayout.Space(compact ? 1 : 2);
+            GUILayout.BeginHorizontal();
+            if (GUILayout.Button("Manage Groups", useParchmentTheme ? _configCloseBottomStyle : _closeBottomButtonStyle, GUILayout.ExpandWidth(true), GUILayout.Height((useParchmentTheme || compact) ? 22 : 26)))
                 _groupsWindowVisible = true;
             GUILayout.EndHorizontal();
             GUILayout.Space(compact ? 4 : 8);
@@ -797,6 +809,16 @@ namespace SenpaisChest.UI
             GUILayout.BeginVertical(_chestRuleBoxStyle);
             GUILayout.Label("• Rules filter auto-sort. Multiple = AND.", _chestRuleTextStyle, GUILayout.ExpandWidth(true));
             GUILayout.Label("• Transfer SAME/ALL applies rules.", _chestRuleTextStyle, GUILayout.ExpandWidth(true));
+            if (IsSeparateWildcardRuleEnabled())
+            {
+                GUILayout.Label("• Wildcard name rule: * = any chars, ? = one char.", _chestRuleTextStyle,
+                    GUILayout.ExpandWidth(true));
+            }
+            else
+            {
+                GUILayout.Label("• Add wildcard patterns in Manage Groups (* = any chars, ? = one char).", _chestRuleTextStyle,
+                    GUILayout.ExpandWidth(true));
+            }
             GUILayout.EndVertical();
             GUILayout.Space(8);
             if (GUILayout.Button("Remove Smart Chest", _chestDangerButtonStyle, GUILayout.Height(20), GUILayout.ExpandWidth(true)))
@@ -817,7 +839,7 @@ namespace SenpaisChest.UI
             var label = _chestLabelStyle;
             var labelDim = _chestLabelDimStyle;
 
-            GUILayout.Label("Create or edit groups. Use 'By Group' when adding rules to attach a group to a chest.", labelDim, GUILayout.ExpandWidth(true));
+            GUILayout.Label("Create or edit groups. Add item IDs and wildcard name patterns here, then use 'By Group' rules on chests.", labelDim, GUILayout.ExpandWidth(true));
             GUILayout.Space(6);
 
             GUILayout.BeginHorizontal();
@@ -889,6 +911,31 @@ namespace SenpaisChest.UI
                 {
                     GUILayout.Label("  No items. Search below to add.", labelDim);
                 }
+
+                if (_editingGroup.NamePatterns != null && _editingGroup.NamePatterns.Count > 0)
+                {
+                    GUILayout.Space(4);
+                    GUILayout.Label("Wildcard patterns:", labelBold);
+                    for (int i = _editingGroup.NamePatterns.Count - 1; i >= 0; i--)
+                    {
+                        string pattern = _editingGroup.NamePatterns[i];
+                        GUILayout.BeginHorizontal();
+                        GUILayout.Label(pattern, label, GUILayout.ExpandWidth(true));
+                        if (GUILayout.Button("+IDs", _chestAddButtonStyle, GUILayout.Width(52), GUILayout.Height(20)))
+                        {
+                            int added = ExpandPatternToItemIds(_editingGroup, pattern);
+                            Plugin.Log?.LogInfo($"[SmartChestUI] Group '{_editingGroup.Name}': pattern '{pattern}' added {added} item ID(s)");
+                        }
+                        if (GUILayout.Button("X", _chestRemoveRuleBtnStyle, GUILayout.Width(24), GUILayout.Height(20)))
+                        {
+                            _editingGroup.NamePatterns.RemoveAt(i);
+                            _manager.MarkDirty();
+                            SaveIfDirty();
+                        }
+                        GUILayout.EndHorizontal();
+                    }
+                }
+
                 GUILayout.Space(4);
                 GUILayout.Label("Add item (search):", labelBold);
                 if (_groupItemSearch != _groupItemSearchLast)
@@ -922,6 +969,43 @@ namespace SenpaisChest.UI
                     }
                     GUILayout.EndScrollView();
                 }
+
+                GUILayout.Space(6);
+                GUILayout.Label("Add wildcard pattern (* / ?):", labelBold);
+                GUI.SetNextControlName(WildcardPatternControlName);
+                _groupPatternInput = GUILayout.TextField(_groupPatternInput ?? "", _configSearchFieldStyle ?? _chestSearchFieldStyle);
+                GUILayout.BeginHorizontal();
+                GUILayout.Label("Examples: Tomato*  |  *Ore  |  Gold ???", labelDim, GUILayout.ExpandWidth(true));
+                if (GUILayout.Button("Add Pattern", _chestAddButtonStyle, GUILayout.Width(100), GUILayout.Height(22)))
+                {
+                    string pattern = (_groupPatternInput ?? "").Trim();
+                    if (!string.IsNullOrEmpty(pattern))
+                    {
+                        if (_editingGroup.NamePatterns == null)
+                            _editingGroup.NamePatterns = new List<string>();
+                        if (!_editingGroup.NamePatterns.Contains(pattern))
+                        {
+                            _editingGroup.NamePatterns.Add(pattern);
+                            _manager.MarkDirty();
+                            SaveIfDirty();
+                        }
+                        _groupPatternInput = "";
+                    }
+                }
+                if (GUILayout.Button("Add Matches to IDs", _chestAddButtonStyle, GUILayout.Width(132), GUILayout.Height(22)))
+                {
+                    string pattern = (_groupPatternInput ?? "").Trim();
+                    if (!string.IsNullOrEmpty(pattern))
+                    {
+                        int added = ExpandPatternToItemIds(_editingGroup, pattern);
+                        Plugin.Log?.LogInfo($"[SmartChestUI] Group '{_editingGroup.Name}': input pattern '{pattern}' added {added} item ID(s)");
+                    }
+                    else
+                    {
+                        Plugin.Log?.LogWarning("Enter a wildcard pattern first, then click Add Matches to IDs");
+                    }
+                }
+                GUILayout.EndHorizontal();
             }
 
             GUILayout.FlexibleSpace();
@@ -930,6 +1014,7 @@ namespace SenpaisChest.UI
                 _groupsWindowVisible = false;
                 _editingGroup = null;
                 _newGroupName = "";
+                _groupPatternInput = "";
             }
             GUI.DragWindow(new Rect(0, 0, GroupsWindowWidth, Scaled(24)));
         }
@@ -1076,6 +1161,22 @@ namespace SenpaisChest.UI
                         }
                     }
                     break;
+
+                case 5: // ByNamePattern (* and ? globs vs item display names)
+                    if (!IsSeparateWildcardRuleEnabled())
+                    {
+                        GUILayout.Label("Wildcard rules are managed via Manage Groups.", labelDim);
+                        GUILayout.Label("Add patterns to a group, then add a By Group rule.", labelDim);
+                        break;
+                    }
+
+                    GUILayout.Label("Item name pattern:", labelBold);
+                    GUI.SetNextControlName(WildcardPatternControlName);
+                    _wildcardPatternInput = GUILayout.TextField(_wildcardPatternInput ?? "", searchFieldStyle)
+                        ?? "";
+                    GUILayout.Space(2);
+                    GUILayout.Label("  Examples: Tomato*, *Ore, Gold ???  (letters match any case)", labelDim);
+                    break;
             }
         }
 
@@ -1163,6 +1264,46 @@ namespace SenpaisChest.UI
             }
         }
 
+        private int ExpandPatternToItemIds(ItemGroup group, string pattern)
+        {
+            if (group == null || string.IsNullOrWhiteSpace(pattern))
+                return 0;
+
+            if (group.ItemIds == null)
+                group.ItemIds = new List<int>();
+
+            int added = 0;
+            var allItems = ItemSearch.GetAllItems();
+            for (int i = 0; i < allItems.Count; i++)
+            {
+                var item = allItems[i];
+                if (!ItemNamePatternMatch.Matches(item.Value, pattern))
+                    continue;
+                if (group.ItemIds.Contains(item.Key))
+                    continue;
+
+                group.ItemIds.Add(item.Key);
+                added++;
+            }
+
+            if (added > 0)
+            {
+                _manager.MarkDirty();
+                SaveIfDirty();
+            }
+
+            return added;
+        }
+
+        private static bool IsSeparateWildcardRuleEnabled()
+        {
+            var cfg = Plugin.GetConfig();
+            if (cfg?.SeparateWildcardRuleInUI != null)
+                return cfg.SeparateWildcardRuleInUI.Value;
+
+            return SmartChestConfig.StaticSeparateWildcardRule;
+        }
+
         private void AddRule()
         {
             SmartChestRule rule = null;
@@ -1220,6 +1361,28 @@ namespace SenpaisChest.UI
                         Plugin.Log?.LogWarning("Select a group, or create one in Manage Groups first");
                     }
                     break;
+
+                case 5: // ByNamePattern
+                    if (!IsSeparateWildcardRuleEnabled())
+                    {
+                        Plugin.Log?.LogWarning("Separate wildcard rule is disabled. Add wildcard patterns in Manage Groups.");
+                        break;
+                    }
+
+                    {
+                        string pat = (_wildcardPatternInput ?? "").Trim();
+                        if (!string.IsNullOrEmpty(pat))
+                        {
+                            rule = new SmartChestRule { Type = RuleType.ByNamePattern, NamePattern = pat };
+                            _wildcardPatternInput = "";
+                        }
+                        else
+                        {
+                            Plugin.Log?.LogWarning("Enter a name pattern (* and ? wildcards)");
+                        }
+                    }
+
+                    break;
             }
 
             if (rule != null)
@@ -1231,7 +1394,8 @@ namespace SenpaisChest.UI
                         existing.CategoryName == rule.CategoryName &&
                         existing.ItemTypeName == rule.ItemTypeName &&
                         existing.PropertyName == rule.PropertyName &&
-                        existing.GroupName == rule.GroupName)
+                        existing.GroupName == rule.GroupName &&
+                        existing.NamePattern == rule.NamePattern)
                     {
                         Plugin.Log?.LogInfo("Rule already exists, skipping duplicate");
                         return;

@@ -1,6 +1,6 @@
 # Senpai's Chest
 
-**Version 2.6.2** — Smart chests with configurable item rules for hands-free storage organization in Sun Haven. Chest labels, rules by item/category/type/property/group, per-character saves.
+**Version 2.7.0** — Smart chests with configurable item rules for hands-free storage organization in Sun Haven. Chest labels, rules by item/category/type/property/group, per-character saves.
 
 **2.2.4:** Chest labels now anchor from chest sprite world bounds (top-center), fixing cases where labels appeared offset instead of directly above the chest. Museum-detected Todo tasks now include destination hall and item icon metadata for richer Todo/HUD display. Added a new **By Category** option: **Undonated Items** (museum-needed items via S.M.U.T), and the category now only appears when S.M.U.T. is installed. Adding a rule now auto-enables Smart Chest by default (configurable via `AutoEnableSmartChestOnRuleAdd`). Config file now uses `BepInEx/config/SenpaisChest.cfg` (auto-migrates values from the legacy GUID-named config on first load).
 
@@ -18,7 +18,7 @@
   - **By Category** — Equip, Use, Craftable, Monster, Furniture, Quest, Undonated Items
   - **By Item Type** — Normal, Armor, Food, Fish, Crop, Watering Can, Animal, Pet, Tool
   - **By Property** — Gems, Forageables, Animal Products, Meals, Fruits, Artisanry Items, Potions, Museum (Not Donated)
-  - **By Group** — Your own custom subcategories (e.g. Flowers, Vegetables). Create groups in Manage Groups, add items via search, then attach to chests with one click.
+- **By Group** — Your own custom subcategories (e.g. Flowers, Vegetables). Create groups in Manage Groups, add items via search, add wildcard patterns (`*`, `?`), then attach to chests with one click.
 - **Per-Character Saves** — Each character's Smart Chest settings are saved separately
 - **Multiplayer Safe** — Skips chests that other players are using
 
@@ -61,6 +61,10 @@ The game's ItemType "Crop" includes flowers, vegetables, and all crop types. Use
 2. Create a group (e.g. "Flowers"), search for items, and add them
 3. Use **By Group** when adding rules to attach the group to any chest with one click
 4. Reuse the same group across multiple chests—edit it once to update all of them
+
+Wildcard tips:
+- In **Manage Groups**, you can add patterns like `Tomato*`, `*Ore`, `Gold ???`.
+- Use **+IDs** / **Add Matches to IDs** to materialize current wildcard matches as fixed item IDs.
 
 ## Links
 
