@@ -270,12 +270,12 @@ namespace HavenDevTools
 
         private void OnSceneLoaded(Scene scene, LoadSceneMode mode)
         {
-            Log.LogInfo($"[SceneChange] Scene loaded: '{scene.name}'");
+            Log.LogDebug($"[SceneChange] Scene loaded: '{scene.name}'");
 
             string sceneLower = scene.name.ToLowerInvariant();
             if (sceneLower.Contains("menu") || sceneLower.Contains("title"))
             {
-                Log.LogInfo($"Menu scene detected: {scene.name}");
+                Log.LogDebug($"Menu scene detected: {scene.name}");
                 // Reset authorization state on return to menu
                 _isAuthorized = false;
                 _currentPlayerName = null;
@@ -559,6 +559,6 @@ namespace HavenDevTools
     {
         public const string PLUGIN_GUID = "com.azraelgodking.havendevtools";
         public const string PLUGIN_NAME = "Haven Dev Tools";
-        public const string PLUGIN_VERSION = "1.2.1";
+        public const string PLUGIN_VERSION = "1.2.2";
     }
 }

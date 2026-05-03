@@ -70,16 +70,24 @@ namespace SunhavenMods.Shared
         /// <summary>
         /// Gets the value of a static property or field from a type.
         /// Useful for accessing singleton instances.
+        /// If multiple static properties share a name (rare) or an indexer confuses resolution,
+        /// this returns null (or use an explicit <c>GetProperty</c> with parameter types).
         /// </summary>
         public static object GetStaticValue(Type type, string memberName)
         {
             if (type == null)
                 return null;
 
-            // Try property first
-            var prop = type.GetProperty(memberName, AllBindingFlags);
-            if (prop != null && prop.GetMethod != null)
-                return prop.GetValue(null);
+            try
+            {
+                var prop = type.GetProperty(memberName, AllBindingFlags);
+                if (prop != null && prop.GetMethod != null && prop.GetIndexParameters().Length == 0)
+                    return prop.GetValue(null);
+            }
+            catch (AmbiguousMatchException)
+            {
+                return null;
+            }
 
             // Try field
             var field = type.GetField(memberName, AllBindingFlags);

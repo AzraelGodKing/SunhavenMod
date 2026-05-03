@@ -30,15 +30,15 @@ This repo uses **one release version per mod** in [`docs/versions.json`](../docs
 
 ## Local checks
 
-If you only need to validate consistency (for example before pushing), use either verifier:
+If you only need to validate consistency (for example before pushing), use either entry point (both end up on the same Python script):
 
-PowerShell (no Python required):
+**PowerShell wrapper** (locates `python` / `py` and runs the Python script — **Python 3.6+ must be installed and on PATH**):
 
 ```powershell
 .\scripts\verify-version-consistency.ps1
 ```
 
-Python:
+**Direct Python:**
 
 ```bash
 python3 scripts/verify-version-consistency.py
@@ -54,7 +54,8 @@ When adding a new mod:
 
 1. Add one entry to `scripts/mod-matrix.json`.
 2. Add the mod's release metadata entry in [`docs/versions.json`](../docs/versions.json).
-3. Add the same docs mapping row in [`docs/mod-matrix.json`](../docs/mod-matrix.json) for hub/page version badge resolution.
+3. Regenerate the hub copy (do not hand-edit `docs/mod-matrix.json`):
+   - `npm run sync-mod-matrix` (runs `scripts/sync-docs-mod-matrix.js`). CI also checks that `docs/mod-matrix.json` matches the generator.
 
 Required matrix fields per row: `modKey`, `jsonKey`, `modDir`, `pluginFile`, `dllName`, `csproj`, `thunderstoreName`, `readmePath`, `indexDataName`, `docsPagePath`, `extraCsprojPaths`.
 
@@ -71,6 +72,8 @@ The workflow [`.github/workflows/sync-mod-versions.yml`](../.github/workflows/sy
 | `docs/versions.json` | Source of truth for semver, changelog, store links |
 | `scripts/pre-push-build.ps1` | Bump/sync version across plugin, manifests, docs (`-SyncOnly` for CI without game DLLs) |
 | `scripts/verify-version-consistency.py` | CI + local guard: JSON vs plugin vs manifest |
-| `scripts/verify-version-consistency.ps1` | PowerShell equivalent guard (no Python dependency) |
+| `scripts/verify-version-consistency.ps1` | Windows helper that invokes `verify-version-consistency.py` (Python required) |
+| `scripts/stage-version-sync-files.py` | Used by `sync-mod-versions.yml` to `git add` only paths `pre-push-build.ps1` may touch (avoids broad `git add -A`) |
 | `.github/workflows/sync-mod-versions.yml` | After merge: align tracked files with `versions.json` if needed |
 | `.github/workflows/build-release-publish.yml` | Build → package → GitHub / Thunderstore / Nexus |
+| [`docs/ATOMIC_SAVE_POLICY.md`](ATOMIC_SAVE_POLICY.md) | Documents temp-file / on-failure behavior for The Vault vs Senpai's Chest vs Todo saves |

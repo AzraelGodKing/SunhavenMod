@@ -38,6 +38,16 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
+      - name: Setup Node.js (mod-matrix doc sync check)
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      - name: docs/mod-matrix.json must match scripts/mod-matrix.json
+        run: |
+          node scripts/sync-docs-mod-matrix.js
+          git diff --exit-code docs/mod-matrix.json
+
       - name: Verify version consistency (versions.json vs PLUGIN_VERSION vs manifest)
         run: python3 scripts/verify-version-consistency.py
 

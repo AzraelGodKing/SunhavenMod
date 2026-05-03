@@ -19,11 +19,14 @@ File: `Sun Haven/BepInEx/config/FasterRaces.cfg`
 
 - This README is intentionally short for repo maintainers.
 - Player-facing details live in `thunderstore/README.md`.
+- **Harmony:** `Player.GetStat` postfix uses **HarmonyPriority 300** so it runs **after** Haven's Birthright (**100**) — racial bonuses apply first, then Faster Races multiplies movement speed.
 
 ## Changelog
 
-### Unreleased
+Shipped release notes: repo root [`CHANGELOG.md`](../CHANGELOG.md), [`docs/versions.json`](../docs/versions.json).
+
+### 2026 (maintainer backlog — shipped bits tracked in CHANGELOG)
 
 - **Build:** Added missing `using System;` in `Plugin.cs` so `Exception` in the race-name reflection guard compiles cleanly.
-- **Lifecycle:** Added expected-teardown `OnDestroy` logging and Harmony cleanup for plugin unload/quit paths.
-- **Debug:** Replaced `System.Diagnostics.Debug.WriteLine` reflection fallback output with one-time BepInEx debug logging.
+- **Lifecycle:** Expected-teardown `OnDestroy` logging and Harmony cleanup for plugin unload/quit paths.
+- **Debug:** One-time BepInEx debug logging for reflection fallbacks.
