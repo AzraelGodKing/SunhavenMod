@@ -6,6 +6,7 @@ Internal engineering log: **CI**, **release automation**, **scripts**, **docs in
 
 ## 2026-05-03
 
+- **`release-self-hosted-sunhaven-runner.yml`:** **`package_step.outputs.zip_path`** is the single source of truth for dry-run artifact upload, GitHub Release assets, Thunderstore `file`, and Nexus preflight fallback; **`test_discord`** packaging now emits `zip_path`; **preflight-success** guards all Nexus upload/retry/backoff steps; **`ignore_discord_notify`** workflow input matches **Release & Publish**; lightweight **Package diagnostics** step before dry-run completion / publishes.
 - **`build-release-publish.yml`:** Comments clarify that `builds/` paths are **ephemeral on the runner** (stage → upload-artifact → download → package), not a committed tree — same idea as [`builds/README.md`](builds/README.md).
 - **Nexus BBCode files:** Renamed from `NexusMods-BBCode.txt` to **`NexusMods-<ModFolder>-BBCode.txt`** in each project; [`scripts/pre-push-build.ps1`](scripts/pre-push-build.ps1) and [`scripts/stage-version-sync-files.py`](scripts/stage-version-sync-files.py) updated; hub list in [`docs/NexusMods-BBCode-Index.txt`](docs/NexusMods-BBCode-Index.txt).
 - **Senpai's Chest:** Glob rules on item display names (`*` / `?`), `RuleType.ByNamePattern` + JSON `NamePattern`; group data now stores `NamePatterns` and `By Group` matches item IDs or wildcard patterns. New UI config: `SeparateWildcardRuleInUI` (default false; wildcard editing in Manage Groups unless explicitly separated).
