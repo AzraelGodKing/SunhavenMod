@@ -34,7 +34,7 @@ The mod automatically displays birthday reminders when you load into the game on
 [line]
 
 [size=4][b]Configuration[/b][/size]
-[b]BepInEx/config/com.azraelgodking.squirrelsbirthdayreminder.cfg[/b]
+[b]Sun Haven/BepInEx/config/BirthdayReminder.cfg[/b] (first run migrates from the legacy GUID-named file if present)
 
 [line]
 

@@ -7,7 +7,7 @@
     - docs/versions.json
     - <Mod>/PluginInfo.cs or Plugin.cs (PLUGIN_VERSION)
     - <Mod>/thunderstore/manifest.json (version_number)
-    - <Mod>/NexusMods-BBCode.txt (first [i](vX.Y.Z)[/i] line)
+    - <Mod>/NexusMods-<ModFolder>-BBCode.txt (first [i](vX.Y.Z)[/i] line)
     - <Mod>/thunderstore/README.md (**Version X.Y.Z** line)
     - README.md mods table (pipe-separated version column for that mod)
     - docs/<mod-page>.html (version-badge span), when mapped
@@ -228,21 +228,21 @@ function Update-RootReadmeTable {
 function Update-NexusBbcodeHeader {
     param([string]$NexusPath, [string]$Version)
     if (-not (Test-Path $NexusPath)) {
-        Write-Warning "  NexusMods-BBCode.txt not found: $NexusPath"
+        Write-Warning "  Nexus BBCode file not found: $NexusPath"
         return
     }
     $c = [System.IO.File]::ReadAllText($NexusPath)
     if ($c -notmatch '\[i\]\(v[\d\.]+\)\[/i\]') {
-        Write-Warning "  NexusMods-BBCode.txt: no [i](v...) header to update"
+        Write-Warning "  Nexus BBCode file: no [i](v...) header to update"
         return
     }
     $once = [regex]::Replace($c, '\[i\]\(v[\d\.]+\)\[/i\]', "[i](v$Version)[/i]", 1)
     if ($once -ne $c) {
         [System.IO.File]::WriteAllText($NexusPath, $once)
-        Write-Host "  Updated NexusMods-BBCode.txt header -> v$Version"
+        Write-Host "  Updated Nexus BBCode header -> v$Version"
     }
     else {
-        Write-Host "  NexusMods-BBCode.txt header already v$Version"
+        Write-Host "  Nexus BBCode header already v$Version"
     }
 }
 
@@ -384,7 +384,7 @@ function Sync-ModVersionEverywhere {
 
     Update-RootReadmeTable -ReadmeSegment $Def.ReadmePath -Version $Version
 
-    Update-NexusBbcodeHeader -NexusPath (Join-Path $modPath "NexusMods-BBCode.txt") -Version $Version
+    Update-NexusBbcodeHeader -NexusPath (Join-Path $modPath "NexusMods-$modDir-BBCode.txt") -Version $Version
 
     Update-ThunderstoreReadmeVersionLine -TsReadmePath (Join-Path $modPath "thunderstore\README.md") -Version $Version
 

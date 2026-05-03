@@ -7,6 +7,7 @@ Internal engineering log: **CI**, **release automation**, **scripts**, **docs in
 ## 2026-05-03
 
 - **`build-release-publish.yml`:** Comments clarify that `builds/` paths are **ephemeral on the runner** (stage → upload-artifact → download → package), not a committed tree — same idea as [`builds/README.md`](builds/README.md).
+- **Nexus BBCode files:** Renamed from `NexusMods-BBCode.txt` to **`NexusMods-<ModFolder>-BBCode.txt`** in each project; [`scripts/pre-push-build.ps1`](scripts/pre-push-build.ps1) and [`scripts/stage-version-sync-files.py`](scripts/stage-version-sync-files.py) updated; hub list in [`docs/NexusMods-BBCode-Index.txt`](docs/NexusMods-BBCode-Index.txt).
 - **Version bump:** `.\scripts\pre-push-build.ps1 -All -Bump patch` — patch bump for all twelve mods (`docs/versions.json`, manifests, Nexus BBCode headers, doc badges, `HavenDevTools` `DebugWindow` tuples, rebuild).
 
 ---
