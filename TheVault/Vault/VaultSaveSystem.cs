@@ -314,7 +314,8 @@ namespace TheVault.Vault
                     LastLoadQuarantinedCorruptFile = true;
                 }
                 _vaultManager.LoadVaultData(new VaultData { PlayerName = playerName });
-                return false;
+                // Empty vault is now in memory; callers should treat load as applied for this character.
+                return true;
             }
         }
 

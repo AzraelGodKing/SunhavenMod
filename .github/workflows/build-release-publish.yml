@@ -8,6 +8,12 @@
 # docs/VERSION_AND_RELEASE.md — version source of truth; setup runs verify script.
 # Nexus: v3 upload API is evaluation-only; we retry with backoff and require the
 # final attempt to succeed when publish_nexus=true (no silent green on failure).
+#
+# `builds/` in this workflow = ephemeral path on the GitHub runner only: the build
+# job copies `bin/Release/...` outputs into `builds/<ModDir>/`, upload-artifact
+# stores them, the release job downloads back into the same path, then packaging
+# reads DLLs from there. Nothing is read from a committed `builds/` tree (.gitignore).
+# See builds/README.md.
 # =============================================================================
 
 name: Release & Publish
@@ -167,6 +173,7 @@ jobs:
             -p:ManagedPath="$MANAGED_PATH" \
             -p:SunhavenCopyToBepInExPlugins=false
 
+      # Stage DLLs under builds/<ModDir>/ for upload-artifact (runner-local; not from git).
       - name: Collect build outputs
         if: matrix.mod != 'test_discord'
         shell: bash

@@ -12,7 +12,9 @@ namespace TheVault.Modding
 
         /// <summary>
         /// Fired when The Vault has loaded character data and is ready for dependent registrations.
-        /// Soft dependencies can subscribe and register currencies/integrations at the right time.
+        /// Soft dependencies should subscribe in their plugin <c>Awake</c> (or after Chainloader confirms The Vault)
+        /// and <b>unsubscribe in <c>OnDestroy</c></b> if they use instance handlers, to avoid duplicate callbacks if the
+        /// plugin host reloads. The Vault raises this from the main game thread after save data is applied.
         /// </summary>
         public static event Action OnVaultLoaded;
 

@@ -40,7 +40,7 @@ Crop Optimizer adds field-level harvest forecasting, a lightweight crop HUD, and
 
 ## Changelog
 
-### Unreleased
+### 2026-05-02 (maintainer notes)
 - **Lifecycle:** Improved plugin teardown diagnostics to distinguish expected menu/quit destroys from unexpected runtime destruction.
 - **Debug:** Replaced silent HUD exception catches with debug logs for session-state probing and config flush failures.
 - **Build:** Restored `SharedUtilities/VersionChecker.cs` link in `CropOptimizer.csproj` and fixed public data-surface accessibility (`CropOptimizerDataProvider.GetTopCrops` now returns a public DTO shape). Also restored `CropForecast.RemoveCropState(...)` used by lifecycle cleanup hooks.

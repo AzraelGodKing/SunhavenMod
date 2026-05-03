@@ -54,6 +54,22 @@ def load_matrix_mod_dirs() -> set[str]:
     return {str(r["modDir"]) for r in matrix if r.get("modDir")}
 
 
+def matrix_json_keys_in_versions(data: dict) -> list[str]:
+    """Every jsonKey in scripts/mod-matrix.json must have a row in docs/versions.json."""
+    matrix = json.loads(MOD_MATRIX_PATH.read_text(encoding=_READ_ENCODING))
+    keys = set(data.keys())
+    bad: list[str] = []
+    for r in matrix:
+        jk = r.get("jsonKey")
+        if not jk:
+            continue
+        if jk not in keys:
+            bad.append(
+                f"scripts/mod-matrix.json: jsonKey {jk!r} is missing from docs/versions.json"
+            )
+    return bad
+
+
 def find_stray_mod_manifests(allowed_mod_dirs: set[str]) -> list[str]:
     """Only <modDir>/thunderstore/manifest.json is valid for Thunderstore package metadata under each mod folder."""
     bad: list[str] = []
@@ -81,6 +97,7 @@ def main() -> int:
     data = json.loads(VERSIONS_PATH.read_text(encoding=_READ_ENCODING))
     mod_plugin_files = load_matrix_plugin_files()
     errors: list[str] = []
+    errors.extend(matrix_json_keys_in_versions(data))
     errors.extend(find_stray_mod_manifests(load_matrix_mod_dirs()))
 
     for key, entry in data.items():

@@ -6,18 +6,18 @@ BepInEx plugins for [Sun Haven](https://store.steampowered.com/app/1432860/Sun_H
 
 | Mod | Folder | Version |
 |-----|--------|---------|
-| Senpai's Chest | [`SenpaisChest/`](SenpaisChest/) | 2.6.1 |
-| Sun Haven Todo | [`SunhavenTodo/`](SunhavenTodo/) | 1.4.1 |
-| Sun Haven Museum Utility Tracker (S.M.U.T.) | [`SunHavenMuseumUtilityTracker/`](SunHavenMuseumUtilityTracker/) | 2.4.1 |
-| The Vault | [`TheVault/`](TheVault/) | 3.3.1 |
-| Haven's Birthright | [`HavensBirthright/`](HavensBirthright/) | 2.2.1 |
-| Haven's Almanac | [`HavensAlmanac/`](HavensAlmanac/) | 1.4.1 |
-| A Squirrel's Birthday Reminder | [`BirthdayReminder/`](BirthdayReminder/) | 1.4.1 |
-| Haven Dev Tools | [`HavenDevTools/`](HavenDevTools/) | 1.2.1 |
-| Trinket Fortune | [`TrinketFortune/`](TrinketFortune/) | 1.2.1 |
-| Faster Races | [`FasterRaces/`](FasterRaces/) | 1.4.1 |
-| Crop Optimizer | [`CropOptimizer/`](CropOptimizer/) | 1.4.1 |
-| Haven's Respec | [`HavensRespec/`](HavensRespec/) | 1.3.1 |
+| Senpai's Chest | [`SenpaisChest/`](SenpaisChest/) | 2.6.2 |
+| Sun Haven Todo | [`SunhavenTodo/`](SunhavenTodo/) | 1.4.2 |
+| Sun Haven Museum Utility Tracker (S.M.U.T.) | [`SunHavenMuseumUtilityTracker/`](SunHavenMuseumUtilityTracker/) | 2.4.2 |
+| The Vault | [`TheVault/`](TheVault/) | 3.3.2 |
+| Haven's Birthright | [`HavensBirthright/`](HavensBirthright/) | 2.2.2 |
+| Haven's Almanac | [`HavensAlmanac/`](HavensAlmanac/) | 1.4.2 |
+| A Squirrel's Birthday Reminder | [`BirthdayReminder/`](BirthdayReminder/) | 1.4.2 |
+| Haven Dev Tools | [`HavenDevTools/`](HavenDevTools/) | 1.2.2 |
+| Trinket Fortune | [`TrinketFortune/`](TrinketFortune/) | 1.2.2 |
+| Faster Races | [`FasterRaces/`](FasterRaces/) | 1.4.2 |
+| Crop Optimizer | [`CropOptimizer/`](CropOptimizer/) | 1.4.2 |
+| Haven's Respec | [`HavensRespec/`](HavensRespec/) | 1.3.2 |
 
 Per-mod READMEs and Thunderstore packages describe features, hotkeys, and config in detail.
 

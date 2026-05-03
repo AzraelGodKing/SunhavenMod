@@ -44,12 +44,11 @@ namespace TrinketFortune
                 return;
             _lastResolveAttemptRealtime = now;
 
-            if (Chainloader.PluginInfos == null || !Chainloader.PluginInfos.TryGetValue(SmutGuid, out _))
+            if (Chainloader.PluginInfos == null || !Chainloader.PluginInfos.TryGetValue(SmutGuid, out var smutInfo) || smutInfo?.Instance == null)
                 return;
             try
             {
-                var pluginType = Type.GetType("SunHavenMuseumUtilityTracker.Plugin, SunHavenMuseumUtilityTracker");
-                if (pluginType == null) return;
+                var pluginType = smutInfo.Instance.GetType();
 
                 var getDm = pluginType.GetMethod("GetDonationManager", BindingFlags.Public | BindingFlags.Static);
                 if (getDm == null) return;

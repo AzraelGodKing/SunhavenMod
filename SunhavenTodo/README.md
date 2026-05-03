@@ -54,7 +54,7 @@ Character names are sanitized to avoid invalid filename characters.
 
 ## Changelog
 
-### Unreleased
+### 2026-05-02 (maintainer notes)
 
 - **Build:** Excluded `Tests/**/*.cs` from `SunhavenTodo.csproj` compile items so NUnit test sources are not compiled into the runtime mod assembly, and linked `SharedUtilities/OvernightHookUtility.cs` so `Plugin.TryHookOvernight()` compiles in normal mod builds.
 - **Lifecycle:** Added teardown unsubscription for scene/manager handlers and changed destroy logging to treat menu/quit teardown as expected.

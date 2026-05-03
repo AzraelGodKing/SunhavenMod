@@ -473,7 +473,7 @@ jobs:
         id: nexus_upload_1
         if: github.event.inputs.dry_run != 'true' && github.event.inputs.publish_discord_only != 'true' && github.event.inputs.publish_nexus == 'true' && github.event.inputs.test_discord != 'true' && steps.version_check.outputs.version_unchanged != 'true' && steps.config.outputs.nexus_file_group_id != ''
         continue-on-error: true
-        uses: Nexus-Mods/upload-action@v1.0.0-beta.3
+        uses: Nexus-Mods/upload-action@v1.0.0-beta.4
         with:
           api_key: ${{ secrets.NEXUSMODS_API_KEY }}
           file_group_id: ${{ steps.config.outputs.nexus_file_group_id }}
@@ -502,7 +502,7 @@ jobs:
         id: nexus_upload_2
         if: steps.nexus_upload_1.outcome == 'failure' && github.event.inputs.dry_run != 'true' && github.event.inputs.publish_discord_only != 'true' && github.event.inputs.publish_nexus == 'true' && github.event.inputs.test_discord != 'true' && steps.version_check.outputs.version_unchanged != 'true' && steps.config.outputs.nexus_file_group_id != ''
         continue-on-error: true
-        uses: Nexus-Mods/upload-action@v1.0.0-beta.3
+        uses: Nexus-Mods/upload-action@v1.0.0-beta.4
         with:
           api_key: ${{ secrets.NEXUSMODS_API_KEY }}
           file_group_id: ${{ steps.config.outputs.nexus_file_group_id }}
@@ -531,7 +531,7 @@ jobs:
         id: nexus_upload_3
         if: steps.nexus_upload_1.outcome == 'failure' && steps.nexus_upload_2.outcome == 'failure' && github.event.inputs.dry_run != 'true' && github.event.inputs.publish_discord_only != 'true' && github.event.inputs.publish_nexus == 'true' && github.event.inputs.test_discord != 'true' && steps.version_check.outputs.version_unchanged != 'true' && steps.config.outputs.nexus_file_group_id != ''
         continue-on-error: true
-        uses: Nexus-Mods/upload-action@v1.0.0-beta.3
+        uses: Nexus-Mods/upload-action@v1.0.0-beta.4
         with:
           api_key: ${{ secrets.NEXUSMODS_API_KEY }}
           file_group_id: ${{ steps.config.outputs.nexus_file_group_id }}
@@ -560,7 +560,7 @@ jobs:
         id: nexus_upload_4
         if: steps.nexus_upload_1.outcome == 'failure' && steps.nexus_upload_2.outcome == 'failure' && steps.nexus_upload_3.outcome == 'failure' && github.event.inputs.dry_run != 'true' && github.event.inputs.publish_discord_only != 'true' && github.event.inputs.publish_nexus == 'true' && github.event.inputs.test_discord != 'true' && steps.version_check.outputs.version_unchanged != 'true' && steps.config.outputs.nexus_file_group_id != ''
         continue-on-error: true
-        uses: Nexus-Mods/upload-action@v1.0.0-beta.3
+        uses: Nexus-Mods/upload-action@v1.0.0-beta.4
         with:
           api_key: ${{ secrets.NEXUSMODS_API_KEY }}
           file_group_id: ${{ steps.config.outputs.nexus_file_group_id }}
@@ -614,6 +614,24 @@ jobs:
               echo "Release zip available as a workflow artifact: \`dist/${{ steps.config.outputs.thunderstore_name }}-${{ steps.config.outputs.version }}.zip\`"
             fi
           } >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Nexus — fail if publish requested but no attempt succeeded
+        if: >-
+          always() &&
+          github.event.inputs.dry_run != 'true' &&
+          github.event.inputs.publish_discord_only != 'true' &&
+          github.event.inputs.publish_nexus == 'true' &&
+          github.event.inputs.test_discord != 'true' &&
+          steps.version_check.outputs.version_unchanged != 'true' &&
+          steps.config.outputs.nexus_file_group_id != '' &&
+          steps.nexus_preflight.outcome == 'success'
+        run: |
+          set -euo pipefail
+          for o in "${{ steps.nexus_upload_1.outcome }}" "${{ steps.nexus_upload_2.outcome }}" "${{ steps.nexus_upload_3.outcome }}" "${{ steps.nexus_upload_4.outcome }}"; do
+            [ "$o" = "success" ] && exit 0
+          done
+          echo "::error::Nexus upload failed after retries (test workflow). Check logs / Nexus API."
+          exit 1
 
       - name: Notify Discord (release created by workflow)
         if: github.event.inputs.dry_run != 'true' && github.event.inputs.publish_discord_only != 'true' && github.event.inputs.create_github_release == 'true' && github.event.inputs.test_discord != 'true' && steps.version_check.outputs.version_unchanged != 'true' && steps.config.outputs.skip_discord_for_almanac != 'true'

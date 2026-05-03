@@ -1,3 +1,3 @@
 # Haven's Almanac
 
-**Version 1.4.1** — Unified mod dashboard for Sun Haven. Aggregates data from supported installed mods: compact HUD, full dashboard (Ctrl+F5 by default), daily briefing, draggable UI, optional UI scale and update check.
+**Version 1.4.2** — Unified mod dashboard for Sun Haven. Aggregates data from supported installed mods: compact HUD, full dashboard (Ctrl+F5 by default), daily briefing, draggable UI, optional UI scale and update check.

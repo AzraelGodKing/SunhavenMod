@@ -248,7 +248,6 @@ namespace BirthdayReminder
 
             try
             {
-                // Patch player initialization
                 var playerType = AccessTools.TypeByName("Wish.Player");
                 if (playerType != null)
                 {
@@ -259,46 +258,53 @@ namespace BirthdayReminder
                         _harmony.Patch(initMethod, postfix: new HarmonyMethod(patchMethod));
                         Log.LogInfo("Applied player initialization patch");
                     }
+                    else
+                        Log.LogWarning("Could not find Player.InitializeAsOwner — birthday player hook inactive");
                 }
+                else
+                    Log.LogWarning("Could not find Wish.Player — birthday player hook inactive");
+            }
+            catch (Exception ex)
+            {
+                Log.LogWarning($"Failed to apply player init patch: {ex.Message}");
+                return;
+            }
 
-                // Patch gifting to track birthday gifts (game uses NPCAI.Gift(Item), not AddFriendship)
+            try
+            {
                 var npcAIType = AccessTools.TypeByName("Wish.NPCAI");
-                if (npcAIType != null)
+                var itemType = AccessTools.TypeByName("Wish.Item");
+                if (npcAIType != null && itemType != null)
                 {
-                    var itemType = AccessTools.TypeByName("Wish.Item");
-                    if (itemType != null)
+                    var giftMethod = AccessTools.Method(npcAIType, "Gift", new[] { itemType });
+                    if (giftMethod != null)
                     {
-                        var giftMethod = AccessTools.Method(npcAIType, "Gift", new[] { itemType });
-                        if (giftMethod != null)
-                        {
-                            var patchMethod = AccessTools.Method(typeof(GiftPatches), nameof(GiftPatches.OnGiftGiven));
-                            _harmony.Patch(giftMethod, postfix: new HarmonyMethod(patchMethod));
-                            Log.LogInfo("Applied gift tracking patch (NPCAI.Gift)");
-                        }
-                        else
-                        {
-                            Log.LogWarning("Could not find NPCAI.Gift(Item) method - gift tracking will not work");
-                        }
+                        var patchMethod = AccessTools.Method(typeof(GiftPatches), nameof(GiftPatches.OnGiftGiven));
+                        _harmony.Patch(giftMethod, postfix: new HarmonyMethod(patchMethod));
+                        Log.LogInfo("Applied gift tracking patch (NPCAI.Gift)");
                     }
                     else
                     {
-                        Log.LogWarning("Could not find Wish.Item type - gift tracking will not work");
+                        Log.LogWarning("Could not find NPCAI.Gift(Item) — gift tracking disabled");
+                        _harmony.UnpatchSelf();
                     }
                 }
                 else
                 {
-                    Log.LogWarning("Could not find NPCAI type - gift tracking will not work");
+                    Log.LogWarning("Could not find NPCAI or Wish.Item — gift tracking disabled");
+                    _harmony.UnpatchSelf();
                 }
             }
             catch (Exception ex)
             {
-                Log.LogWarning($"Failed to apply patches: {ex.Message}");
+                Log.LogWarning($"Failed to apply gift patch (rolling back Harmony): {ex.Message}");
+                _harmony.UnpatchSelf();
             }
         }
 
         private void OnSceneLoaded(Scene scene, LoadSceneMode mode)
         {
-            Log.LogInfo($"[BirthdayReminder] Scene loaded: {scene.name}");
+            Log.LogDebug($"[BirthdayReminder] Scene loaded: {scene.name}");
 
             // Check for specific main menu scene (Sun Haven uses "MainMenu")
             if (scene.name == "MainMenu" || scene.name == "Bootstrap")

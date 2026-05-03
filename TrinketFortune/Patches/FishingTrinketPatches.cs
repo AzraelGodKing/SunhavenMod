@@ -14,8 +14,31 @@ namespace TrinketFortune.Patches
     {
         public static void ApplyPatches(Harmony harmony)
         {
-            // Patch bonus museum item selection (FishingRod.fishingMuseumItems.RandomItem<int>())
-            var randomItemMethod = AccessTools.Method(typeof(Utilities), nameof(Utilities.RandomItem), new[] { typeof(IList<int>) });
+            // Patch bonus museum item selection (FishingRod.fishingMuseumItems.RandomItem<int>()).
+            // Resolve generic RandomItem<T>(IList<T>) → RandomItem<int>(IList<int>) (overload-safe vs IL2CPP / reflection).
+            MethodInfo randomItemMethod = null;
+            foreach (var mi in typeof(Utilities).GetMethods(BindingFlags.Public | BindingFlags.Static))
+            {
+                if (mi.Name != nameof(Utilities.RandomItem) || !mi.IsGenericMethodDefinition)
+                    continue;
+                var parms = mi.GetParameters();
+                if (parms.Length != 1)
+                    continue;
+                var p0 = parms[0].ParameterType;
+                if (!p0.IsGenericType || p0.GetGenericTypeDefinition() != typeof(IList<>))
+                    continue;
+                try
+                {
+                    randomItemMethod = mi.MakeGenericMethod(typeof(int));
+                }
+                catch
+                {
+                    // keep searching
+                }
+                if (randomItemMethod != null)
+                    break;
+            }
+
             if (randomItemMethod != null)
             {
                 var prefix = new HarmonyMethod(typeof(FishingTrinketPatches), nameof(RandomItem_Prefix));

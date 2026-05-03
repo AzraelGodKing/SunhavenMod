@@ -88,10 +88,14 @@ namespace TheVault.Patches
             {
                 Plugin.Log?.LogInfo($"Loading vault for: {characterName}");
 
-                // Load the vault file
-                Plugin.LoadVaultForPlayer(characterName);
+                if (!Plugin.LoadVaultForPlayer(characterName))
+                {
+                    Plugin.Log?.LogWarning(
+                        $"Vault load did not run for '{characterName}' (invalid name or save system missing). Previous vault state is unchanged — not marking as loaded.");
+                    return;
+                }
 
-                // Update state
+                // Update state (Load applied to VaultManager, including new/empty/migrated data)
                 _isVaultLoaded = true;
                 _loadedCharacterName = characterName;
                 ClearPendingCharacterName();

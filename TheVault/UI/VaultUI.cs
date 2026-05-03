@@ -79,6 +79,7 @@ namespace TheVault.UI
         private string _vaultStatusMessage;
         private bool _vaultStatusIsError;
         private float _vaultStatusUntil;
+        private static bool _shownCorruptVaultSessionNotice;
         private Texture2D _toggleOnBg;
         private Texture2D _toggleOnHover;
         private Texture2D _toggleOffBg;
@@ -198,6 +199,15 @@ namespace TheVault.UI
 
             // Check for secret gifts on first open
             SecretGifts.CheckAndGiveFirstOpenGift(PlayerPatches.LoadedCharacterName);
+
+            if (!_shownCorruptVaultSessionNotice && Plugin.LastVaultLoadQuarantinedCorruptFile)
+            {
+                _shownCorruptVaultSessionNotice = true;
+                const string msg =
+                    "Your vault file could not be read and was moved to a .corrupt-*.bak file in Saves. An empty vault is in memory — restore the backup from your config folder if needed.";
+                SetVaultStatus(msg, true);
+                Plugin.Log?.LogWarning("[VaultUI] " + msg);
+            }
         }
 
         public void Hide()

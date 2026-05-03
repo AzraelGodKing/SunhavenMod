@@ -2,8 +2,11 @@
   <!-- Sun Haven and BepInEx paths - override via SUNHAVEN_PATH env var for CI/portability -->
   <PropertyGroup>
     <LangVersion>latest</LangVersion>
+    <Nullable>annotations</Nullable>
     <Deterministic>true</Deterministic>
     <ContinuousIntegrationBuild Condition="'$(GITHUB_ACTIONS)' == 'true'">true</ContinuousIntegrationBuild>
+    <!-- CI: fail build on warnings (nullable annotations + analyzers). Local builds stay permissive. -->
+    <TreatWarningsAsErrors Condition="'$(GITHUB_ACTIONS)' == 'true'">true</TreatWarningsAsErrors>
     <SunHavenPath>F:\SteamLibrary\steamapps\common\Sun Haven</SunHavenPath>
     <SunHavenPath Condition="'$(SUNHAVEN_PATH)' != ''">$(SUNHAVEN_PATH)</SunHavenPath>
     <BepInExPath>$(SunHavenPath)\BepInEx</BepInExPath>

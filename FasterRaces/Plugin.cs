@@ -158,6 +158,8 @@ namespace FasterRaces
             private static bool _subRaceChecked;
             private static bool _loggedRaceResolveFailure;
 
+            /// <summary>Runs after Haven's Birthright StatPatches.ModifyGetStat (higher Harmony priority = later postfix).</summary>
+            [HarmonyPriority(300)]
             public static void Postfix(Wish.StatType stat, ref float __result)
             {
                 if (stat != Wish.StatType.Movespeed)

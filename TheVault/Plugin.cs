@@ -19,7 +19,7 @@ using Wish;
 namespace TheVault
 {
     [BepInPlugin(PluginInfo.PLUGIN_GUID, PluginInfo.PLUGIN_NAME, PluginInfo.PLUGIN_VERSION)]
-    public class Plugin : BaseUnityPlugin
+    public partial class Plugin : BaseUnityPlugin
     {
         public static Plugin Instance { get; private set; }
         public static ManualLogSource Log { get; private set; }
@@ -1163,47 +1163,6 @@ namespace TheVault
             _saveSystem?.ForceSave();
         }
 
-        private static void OnVaultDataLoaded()
-        {
-            try
-            {
-                VaultModApiBridge.NotifyVaultLoaded();
-            }
-            catch (Exception ex)
-            {
-                Log?.LogWarning($"[The Vault] Failed to raise OnVaultLoaded bridge event: {ex.Message}");
-            }
-        }
-
-        /// <summary>
-        /// Called when a new scene is loaded.
-        /// We only care about detecting menu scenes to reset vault state.
-        /// Actual vault loading is handled by OnPlayerInitialized.
-        /// </summary>
-        private void OnSceneLoaded(Scene scene, LoadSceneMode mode)
-        {
-            try
-            {
-                // Log ALL scene changes for debugging
-                Log.LogInfo($"[SceneChange] Scene loaded: '{scene.name}' (mode: {mode})");
-
-                string sceneLower = scene.name.ToLowerInvariant();
-                bool isMenuScene = sceneLower.Contains("menu") || sceneLower.Contains("title");
-
-                // Detect menu/title scenes to reset vault state
-                if (isMenuScene && !_wasInMenuScene)
-                {
-                    Log.LogInfo($"Menu scene detected: {scene.name}");
-                    PlayerPatches.SaveAndReset();
-                }
-                _wasInMenuScene = isMenuScene;
-            }
-            catch (Exception ex)
-            {
-                Log.LogError($"Error in OnSceneLoaded: {ex.Message}");
-            }
-        }
-
         #region Public API
 
         /// <summary>
@@ -1262,13 +1221,20 @@ namespace TheVault
         }
 
         /// <summary>
-        /// Load vault data for a player
+        /// Load vault data for a player. Returns false if the name was invalid or no save system exists — vault state is unchanged.
         /// </summary>
-        public static void LoadVaultForPlayer(string playerName)
+        public static bool LoadVaultForPlayer(string playerName)
         {
-            // Use static field which survives Plugin destruction
-            _staticSaveSystem?.Load(playerName);
+            if (_staticSaveSystem == null)
+                return false;
+            return _staticSaveSystem.Load(playerName);
         }
+
+        /// <summary>
+        /// True if the last <see cref="VaultSaveSystem.Load"/> quarantined an unreadable file (diagnostics / UI).
+        /// </summary>
+        public static bool LastVaultLoadQuarantinedCorruptFile =>
+            _staticSaveSystem != null && _staticSaveSystem.LastLoadQuarantinedCorruptFile;
 
         /// <summary>
         /// Force save vault data
@@ -1430,6 +1396,6 @@ namespace TheVault
     {
         public const string PLUGIN_GUID = "com.azraelgodking.thevault";
         public const string PLUGIN_NAME = "The Vault";
-        public const string PLUGIN_VERSION = "3.3.1";
+        public const string PLUGIN_VERSION = "3.3.2";
     }
 }
