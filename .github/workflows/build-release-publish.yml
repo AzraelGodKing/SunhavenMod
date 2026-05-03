@@ -537,8 +537,9 @@ jobs:
           steps.config.outputs.nexus_file_group_id != ''
         run: |
           set -euo pipefail
+          CANDIDATE="${{ steps.package_step.outputs.zip_path }}"
           EXPECTED="dist/${{ steps.config.outputs.thunderstore_name }}-${{ steps.config.outputs.version }}.zip"
-          Z="$EXPECTED"
+          Z="${CANDIDATE:-$EXPECTED}"
           if [ ! -f "$Z" ]; then
             echo "::warning::Expected zip not found at $EXPECTED. Looking for fallback dist/*.zip."
             shopt -s nullglob
@@ -548,8 +549,8 @@ jobs:
               Z="${ZIPS[0]}"
               echo "::warning::Using fallback zip: $Z"
             else
-              echo "::error::Missing $EXPECTED and fallback did not find exactly one zip in dist/."
-              ls -lah dist || true
+              echo "::error::Missing package zip. package_step output='${CANDIDATE:-<empty>}' expected='$EXPECTED'."
+              if [ -d dist ]; then ls -lah dist; else echo "::warning::dist/ directory does not exist."; fi
               exit 1
             fi
           fi
