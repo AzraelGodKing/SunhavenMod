@@ -9,7 +9,9 @@ namespace SenpaisChest.Data
         ByCategory,
         ByItemType,
         ByProperty,
-        ByGroup
+        ByGroup,
+        /// <summary>Match item display name against a glob (<c>*</c>, <c>?</c>).</summary>
+        ByNamePattern
     }
 
     /// <summary>
@@ -21,6 +23,7 @@ namespace SenpaisChest.Data
     {
         public string Name = "";
         public List<int> ItemIds = new List<int>();
+        public List<string> NamePatterns = new List<string>();
     }
 
     [Serializable]
@@ -32,6 +35,9 @@ namespace SenpaisChest.Data
         public string ItemTypeName = "";
         public string PropertyName = "";
         public string GroupName = "";
+
+        /// <summary>Glob pattern for <see cref="RuleType.ByNamePattern"/> (<c>*</c> / <c>?</c>).</summary>
+        public string NamePattern = "";
 
         public string GetDisplayText()
         {
@@ -47,6 +53,8 @@ namespace SenpaisChest.Data
                     return $"Property: {PropertyName}";
                 case RuleType.ByGroup:
                     return $"Group: {GroupName}";
+                case RuleType.ByNamePattern:
+                    return $"Name glob: {NamePattern}";
                 default:
                     return "Unknown Rule";
             }

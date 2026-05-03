@@ -130,6 +130,34 @@ namespace SunhavenMods.Shared
         }
 
         /// <summary>
+        /// Returns all known items as (id, name) pairs, sorted by name.
+        /// </summary>
+        public static List<KeyValuePair<int, string>> GetAllItems()
+        {
+            var results = new List<KeyValuePair<int, string>>();
+            try
+            {
+                var dict = GetItemDictionary();
+                if (dict == null) return results;
+
+                foreach (var kvp in dict)
+                {
+                    string name = kvp.Value?.name;
+                    if (string.IsNullOrEmpty(name)) continue;
+                    results.Add(new KeyValuePair<int, string>(kvp.Key, name));
+                }
+
+                results.Sort((a, b) => string.Compare(a.Value, b.Value, StringComparison.OrdinalIgnoreCase));
+            }
+            catch (Exception ex)
+            {
+                _log?.LogDebug($"[ItemSearch] GetAllItems: {ex.Message}");
+            }
+
+            return results;
+        }
+
+        /// <summary>
         /// Get the typed item dictionary from ItemInfoDatabase singleton.
         /// Mirrors SmartChestManager.GetItemSellInfo() approach exactly.
         /// </summary>

@@ -1,4 +1,4 @@
-[b][size=5]Senpai's Chest[/size][/b] [i](v2.6.2)[/i]
+[b][size=5]Senpai's Chest[/size][/b] [i](v2.7.0)[/i]
 
 Smart chests with configurable item rules for hands-free storage organization in Sun Haven. Chest labels, rules by item/category/type/property/group, per-character saves.
 
@@ -13,7 +13,7 @@ Smart chests with configurable item rules for hands-free storage organization in
 [*][b]Chest Labels[/b] — Labels above chests (Chest, Large Wooden Chest, BankChest). Configurable visibility. Excludes Hoppers and Animal Feeders.
 [*][b]Smart Chests[/b] — Mark any chest as a Smart Chest and define rules for which items it collects
 [*][b]Automatic Sorting[/b] — Smart Chests periodically scan nearby chests and pull matching items (scan interval configurable)
-[*][b]Flexible Rules[/b] — Filter by [b]Item[/b], [b]Category[/b] (Equip, Use, Craftable, Monster, Furniture, Quest), [b]Item Type[/b] (Normal, Armor, Food, Fish, Crop, etc.), [b]Property[/b] (Gems, Forageables, Museum Not Donated, etc.), or [b]Group[/b] (custom subcategories — create in Manage Groups, reuse across chests)
+[*][b]Flexible Rules[/b] — Filter by [b]Item[/b], [b]Category[/b] (Equip, Use, Craftable, Monster, Furniture, Quest), [b]Item Type[/b] (Normal, Armor, Food, Fish, Crop, etc.), [b]Property[/b] (Gems, Forageables, Museum Not Donated, etc.), or [b]Group[/b] (custom subcategories — create in Manage Groups, reuse across chests). Groups can include wildcard name patterns ([i]*[/i] / [i]?[/i], case-insensitive).
 [*][b]Per-Character Saves[/b] — Each character's Smart Chest settings are saved separately
 [*][b]Multiplayer Safe[/b] — Skips chests that other players are using
 [/list]

@@ -59,6 +59,26 @@ namespace SenpaisChest.Tests
         }
 
         [Test]
+        public void Roundtrip_ChestWithNamePatternRule_PreservesPattern()
+        {
+            var data = new SmartChestSaveData("Hero");
+            var chest = new SmartChestData("2_2_0", "Tomatoes");
+            chest.Rules.Add(new SmartChestRule
+            {
+                Type = RuleType.ByNamePattern,
+                NamePattern = "Tomato*"
+            });
+            data.Chests.Add(chest);
+
+            var json = SmartChestJson.Serialize(data);
+            var result = SmartChestJson.Deserialize(json);
+
+            var rule = result.Chests[0].Rules[0];
+            Assert.That(rule.Type, Is.EqualTo(RuleType.ByNamePattern));
+            Assert.That(rule.NamePattern, Is.EqualTo("Tomato*"));
+        }
+
+        [Test]
         public void Roundtrip_ChestWithPropertyRule_PreservesPropertyName()
         {
             var data = new SmartChestSaveData("Hero");
@@ -99,7 +119,8 @@ namespace SenpaisChest.Tests
             data.Groups.Add(new ItemGroup
             {
                 Name = "Flowers",
-                ItemIds = new List<int> { 101, 202, 303 }
+                ItemIds = new List<int> { 101, 202, 303 },
+                NamePatterns = new List<string> { "Rose*", "*Tulip" }
             });
 
             var json = SmartChestJson.Serialize(data);
@@ -109,6 +130,7 @@ namespace SenpaisChest.Tests
             var g = result.Groups[0];
             Assert.That(g.Name, Is.EqualTo("Flowers"));
             Assert.That(g.ItemIds, Is.EqualTo(new[] { 101, 202, 303 }));
+            Assert.That(g.NamePatterns, Is.EqualTo(new[] { "Rose*", "*Tulip" }));
         }
 
         [Test]
