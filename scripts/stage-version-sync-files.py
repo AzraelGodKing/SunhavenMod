@@ -27,7 +27,7 @@ def main() -> int:
         plugin = row.get("pluginFile") or "Plugin.cs"
         paths.add(REPO / mod / plugin)
         paths.add(REPO / mod / "thunderstore" / "manifest.json")
-        paths.add(REPO / mod / "NexusMods-BBCode.txt")
+        paths.add(REPO / mod / f"NexusMods-{mod}-BBCode.txt")
         paths.add(REPO / mod / "thunderstore" / "README.md")
         paths.add(REPO / row["csproj"])
         for ex in row.get("extraCsprojPaths") or []:

@@ -77,3 +77,4 @@ The workflow [`.github/workflows/sync-mod-versions.yml`](../.github/workflows/sy
 | `.github/workflows/sync-mod-versions.yml` | After merge: align tracked files with `versions.json` if needed |
 | `.github/workflows/build-release-publish.yml` | Build → package → GitHub / Thunderstore / Nexus |
 | [`docs/ATOMIC_SAVE_POLICY.md`](ATOMIC_SAVE_POLICY.md) | Documents temp-file / on-failure behavior for The Vault vs Senpai's Chest vs Todo saves |
+| [`docs/NexusMods-BBCode-Index.txt`](NexusMods-BBCode-Index.txt) | Lists each mod’s `NexusMods-<ModFolder>-BBCode.txt` for paste into Nexus (BBCode mode) |
