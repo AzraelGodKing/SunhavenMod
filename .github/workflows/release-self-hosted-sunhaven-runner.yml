@@ -64,6 +64,11 @@ on:
         required: false
         type: boolean
         default: false
+      ignore_discord_notify:
+        description: 'Skip all Discord notification steps this run'
+        required: false
+        type: boolean
+        default: false
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}-${{ format('mod-{0}', github.event.inputs.mod) }}
@@ -326,6 +331,7 @@ jobs:
             echo "Test run - no real package" > dist/package/readme.txt
             cd dist/package
             zip -r "../TestDiscord-0.0.0-test.zip" .
+            echo "zip_path=dist/TestDiscord-0.0.0-test.zip" >> "$GITHUB_OUTPUT"
             echo "Minimal test package created: TestDiscord-0.0.0-test.zip"
             exit 0
           fi
@@ -414,8 +420,20 @@ jobs:
         uses: actions/upload-artifact@v6
         with:
           name: dry-run-${{ steps.config.outputs.thunderstore_name }}-${{ steps.config.outputs.version }}
-          path: dist/${{ steps.config.outputs.thunderstore_name }}-${{ steps.config.outputs.version }}.zip
+          path: ${{ steps.package_step.outputs.zip_path }}
           if-no-files-found: error
+
+      - name: Package diagnostics (Thunderstore/GitHub/Nexus downstream)
+        if: >-
+          github.event.inputs.publish_discord_only != 'true' &&
+          (github.event.inputs.dry_run == 'true' || steps.version_check.outputs.version_unchanged != 'true') &&
+          matrix.mod != 'test_discord'
+        run: |
+          set -euo pipefail
+          Z="${{ steps.package_step.outputs.zip_path }}"
+          test -n "$Z" || { echo "::error::package_step output zip_path is empty"; exit 1; }
+          test -f "$Z" || { echo "::error::Missing package zip at $Z"; exit 1; }
+          echo "✅ Resolved package zip for publish path: $Z"
 
       - name: Dry run — publish steps skipped
         if: github.event.inputs.dry_run == 'true'
@@ -439,8 +457,7 @@ jobs:
             - **Thunderstore**: Install via r2modman or Thunderstore app
             - **Nexus**: Download the zip below and extract to your BepInEx/plugins folder
             - **Manual**: Extract the DLL to `Sun Haven/BepInEx/plugins/`
-          files: |
-            dist/${{ steps.config.outputs.thunderstore_name }}-${{ steps.config.outputs.version }}.zip
+          files: ${{ steps.package_step.outputs.zip_path }}
           draft: false
           prerelease: false
 
@@ -475,7 +492,7 @@ jobs:
       # publish are not held hostage by a Nexus flake. Backoff: 30s -> 2min -> 5min (~7.5 min worst case).
       - name: Upload to Nexus Mods (attempt 1)
         id: nexus_upload_1
-        if: github.event.inputs.dry_run != 'true' && github.event.inputs.publish_discord_only != 'true' && github.event.inputs.publish_nexus == 'true' && github.event.inputs.test_discord != 'true' && steps.version_check.outputs.version_unchanged != 'true' && steps.config.outputs.nexus_file_group_id != ''
+        if: success() && steps.nexus_preflight.outcome == 'success' && github.event.inputs.dry_run != 'true' && github.event.inputs.publish_discord_only != 'true' && github.event.inputs.publish_nexus == 'true' && github.event.inputs.test_discord != 'true' && steps.version_check.outputs.version_unchanged != 'true' && steps.config.outputs.nexus_file_group_id != ''
         continue-on-error: true
         uses: Nexus-Mods/upload-action@v1.0.0-beta.4
         with:
@@ -497,14 +514,14 @@ jobs:
           file_category: main
 
       - name: Nexus retry backoff (30s)
-        if: steps.nexus_upload_1.outcome == 'failure' && github.event.inputs.dry_run != 'true' && github.event.inputs.publish_discord_only != 'true' && github.event.inputs.publish_nexus == 'true' && github.event.inputs.test_discord != 'true' && steps.version_check.outputs.version_unchanged != 'true' && steps.config.outputs.nexus_file_group_id != ''
+        if: success() && steps.nexus_preflight.outcome == 'success' && steps.nexus_upload_1.outcome == 'failure' && github.event.inputs.dry_run != 'true' && github.event.inputs.publish_discord_only != 'true' && github.event.inputs.publish_nexus == 'true' && github.event.inputs.test_discord != 'true' && steps.version_check.outputs.version_unchanged != 'true' && steps.config.outputs.nexus_file_group_id != ''
         run: |
           echo "::warning title=Nexus upload attempt 1 failed::Nexus v3 flaked (likely 201 with empty body). Sleeping 30s before retry 1/3."
           sleep 30
 
       - name: Upload to Nexus Mods (attempt 2)
         id: nexus_upload_2
-        if: steps.nexus_upload_1.outcome == 'failure' && github.event.inputs.dry_run != 'true' && github.event.inputs.publish_discord_only != 'true' && github.event.inputs.publish_nexus == 'true' && github.event.inputs.test_discord != 'true' && steps.version_check.outputs.version_unchanged != 'true' && steps.config.outputs.nexus_file_group_id != ''
+        if: success() && steps.nexus_preflight.outcome == 'success' && steps.nexus_upload_1.outcome == 'failure' && github.event.inputs.dry_run != 'true' && github.event.inputs.publish_discord_only != 'true' && github.event.inputs.publish_nexus == 'true' && github.event.inputs.test_discord != 'true' && steps.version_check.outputs.version_unchanged != 'true' && steps.config.outputs.nexus_file_group_id != ''
         continue-on-error: true
         uses: Nexus-Mods/upload-action@v1.0.0-beta.4
         with:
@@ -526,14 +543,14 @@ jobs:
           file_category: main
 
       - name: Nexus retry backoff (2 min)
-        if: steps.nexus_upload_1.outcome == 'failure' && steps.nexus_upload_2.outcome == 'failure' && github.event.inputs.dry_run != 'true' && github.event.inputs.publish_discord_only != 'true' && github.event.inputs.publish_nexus == 'true' && github.event.inputs.test_discord != 'true' && steps.version_check.outputs.version_unchanged != 'true' && steps.config.outputs.nexus_file_group_id != ''
+        if: success() && steps.nexus_preflight.outcome == 'success' && steps.nexus_upload_1.outcome == 'failure' && steps.nexus_upload_2.outcome == 'failure' && github.event.inputs.dry_run != 'true' && github.event.inputs.publish_discord_only != 'true' && github.event.inputs.publish_nexus == 'true' && github.event.inputs.test_discord != 'true' && steps.version_check.outputs.version_unchanged != 'true' && steps.config.outputs.nexus_file_group_id != ''
         run: |
           echo "::warning title=Nexus upload attempt 2 failed::Sleeping 2 min before retry 2/3."
           sleep 120
 
       - name: Upload to Nexus Mods (attempt 3)
         id: nexus_upload_3
-        if: steps.nexus_upload_1.outcome == 'failure' && steps.nexus_upload_2.outcome == 'failure' && github.event.inputs.dry_run != 'true' && github.event.inputs.publish_discord_only != 'true' && github.event.inputs.publish_nexus == 'true' && github.event.inputs.test_discord != 'true' && steps.version_check.outputs.version_unchanged != 'true' && steps.config.outputs.nexus_file_group_id != ''
+        if: success() && steps.nexus_preflight.outcome == 'success' && steps.nexus_upload_1.outcome == 'failure' && steps.nexus_upload_2.outcome == 'failure' && github.event.inputs.dry_run != 'true' && github.event.inputs.publish_discord_only != 'true' && github.event.inputs.publish_nexus == 'true' && github.event.inputs.test_discord != 'true' && steps.version_check.outputs.version_unchanged != 'true' && steps.config.outputs.nexus_file_group_id != ''
         continue-on-error: true
         uses: Nexus-Mods/upload-action@v1.0.0-beta.4
         with:
@@ -555,14 +572,14 @@ jobs:
           file_category: main
 
       - name: Nexus retry backoff (5 min)
-        if: steps.nexus_upload_1.outcome == 'failure' && steps.nexus_upload_2.outcome == 'failure' && steps.nexus_upload_3.outcome == 'failure' && github.event.inputs.dry_run != 'true' && github.event.inputs.publish_discord_only != 'true' && github.event.inputs.publish_nexus == 'true' && github.event.inputs.test_discord != 'true' && steps.version_check.outputs.version_unchanged != 'true' && steps.config.outputs.nexus_file_group_id != ''
+        if: success() && steps.nexus_preflight.outcome == 'success' && steps.nexus_upload_1.outcome == 'failure' && steps.nexus_upload_2.outcome == 'failure' && steps.nexus_upload_3.outcome == 'failure' && github.event.inputs.dry_run != 'true' && github.event.inputs.publish_discord_only != 'true' && github.event.inputs.publish_nexus == 'true' && github.event.inputs.test_discord != 'true' && steps.version_check.outputs.version_unchanged != 'true' && steps.config.outputs.nexus_file_group_id != ''
         run: |
           echo "::warning title=Nexus upload attempt 3 failed::Sleeping 5 min before final retry 3/3."
           sleep 300
 
       - name: Upload to Nexus Mods (attempt 4 — final)
         id: nexus_upload_4
-        if: steps.nexus_upload_1.outcome == 'failure' && steps.nexus_upload_2.outcome == 'failure' && steps.nexus_upload_3.outcome == 'failure' && github.event.inputs.dry_run != 'true' && github.event.inputs.publish_discord_only != 'true' && github.event.inputs.publish_nexus == 'true' && github.event.inputs.test_discord != 'true' && steps.version_check.outputs.version_unchanged != 'true' && steps.config.outputs.nexus_file_group_id != ''
+        if: success() && steps.nexus_preflight.outcome == 'success' && steps.nexus_upload_1.outcome == 'failure' && steps.nexus_upload_2.outcome == 'failure' && steps.nexus_upload_3.outcome == 'failure' && github.event.inputs.dry_run != 'true' && github.event.inputs.publish_discord_only != 'true' && github.event.inputs.publish_nexus == 'true' && github.event.inputs.test_discord != 'true' && steps.version_check.outputs.version_unchanged != 'true' && steps.config.outputs.nexus_file_group_id != ''
         continue-on-error: true
         uses: Nexus-Mods/upload-action@v1.0.0-beta.4
         with:
@@ -584,7 +601,7 @@ jobs:
           file_category: main
 
       - name: Nexus upload summary
-        if: always() && github.event.inputs.dry_run != 'true' && github.event.inputs.publish_discord_only != 'true' && github.event.inputs.publish_nexus == 'true' && github.event.inputs.test_discord != 'true' && steps.version_check.outputs.version_unchanged != 'true' && steps.config.outputs.nexus_file_group_id != ''
+        if: always() && steps.nexus_preflight.outcome != 'skipped' && github.event.inputs.dry_run != 'true' && github.event.inputs.publish_discord_only != 'true' && github.event.inputs.publish_nexus == 'true' && github.event.inputs.test_discord != 'true' && steps.version_check.outputs.version_unchanged != 'true' && steps.config.outputs.nexus_file_group_id != ''
         env:
           NEXUS_OUTCOME_1: ${{ steps.nexus_upload_1.outcome }}
           NEXUS_OUTCOME_2: ${{ steps.nexus_upload_2.outcome }}
@@ -638,7 +655,7 @@ jobs:
           exit 1
 
       - name: Notify Discord (release created by workflow)
-        if: github.event.inputs.dry_run != 'true' && github.event.inputs.publish_discord_only != 'true' && github.event.inputs.create_github_release == 'true' && github.event.inputs.test_discord != 'true' && steps.version_check.outputs.version_unchanged != 'true' && steps.config.outputs.skip_discord_for_almanac != 'true'
+        if: github.event.inputs.dry_run != 'true' && github.event.inputs.publish_discord_only != 'true' && github.event.inputs.ignore_discord_notify != 'true' && github.event.inputs.create_github_release == 'true' && github.event.inputs.test_discord != 'true' && steps.version_check.outputs.version_unchanged != 'true' && steps.config.outputs.skip_discord_for_almanac != 'true'
         uses: AzraelGodKing/Discord_Release@main
         with:
           webhook_url: ${{ secrets.DISCORD_WEBHOOK_URL }}
@@ -658,6 +675,7 @@ jobs:
           thumbnail_url: "https://raw.githubusercontent.com/${{ github.repository }}/main/${{ steps.config.outputs.mod_dir }}/thunderstore/icon.png"
 
       - name: Publish to Thunderstore
+        id: publish_thunderstore_step
         if: github.event.inputs.dry_run != 'true' && github.event.inputs.publish_discord_only != 'true' && github.event.inputs.publish_thunderstore == 'true' && github.event.inputs.test_discord != 'true' && steps.version_check.outputs.version_unchanged != 'true'
         uses: GreenTF/upload-thunderstore-package@v4.3
         with:
@@ -671,10 +689,10 @@ jobs:
           categories: |
             ${{ env.THUNDERSTORE_CATEGORIES }}
           deps: ${{ env.THUNDERSTORE_DEPS }}
-          file: dist/${{ steps.config.outputs.thunderstore_name }}-${{ steps.config.outputs.version }}.zip
+          file: ${{ steps.package_step.outputs.zip_path }}
 
       - name: Pick random mod for test
-        if: github.event.inputs.dry_run != 'true' && github.event.inputs.publish_discord_only != 'true' && github.event.inputs.test_discord == 'true'
+        if: github.event.inputs.dry_run != 'true' && github.event.inputs.publish_discord_only != 'true' && github.event.inputs.ignore_discord_notify != 'true' && github.event.inputs.test_discord == 'true'
         id: test_mod
         run: |
           mapfile -t MODS < <(jq -r '.[] | "\(.jsonKey):\(.modDir)"' scripts/mod-matrix.json)
@@ -697,7 +715,7 @@ jobs:
           echo "icon_url=https://raw.githubusercontent.com/${{ github.repository }}/main/$MOD_DIR/thunderstore/icon.png" >> "$GITHUB_OUTPUT"
 
       - name: Post test notification to Discord
-        if: github.event.inputs.dry_run != 'true' && github.event.inputs.publish_discord_only != 'true' && github.event.inputs.test_discord == 'true'
+        if: github.event.inputs.dry_run != 'true' && github.event.inputs.publish_discord_only != 'true' && github.event.inputs.ignore_discord_notify != 'true' && github.event.inputs.test_discord == 'true'
         uses: AzraelGodKing/Discord_Release@main
         with:
           webhook_url: ${{ secrets.DISCORD_WEBHOOK_URL }}
@@ -707,7 +725,7 @@ jobs:
           username: "Sun Haven Mods"
 
       - name: Publish to Discord only
-        if: github.event.inputs.dry_run != 'true' && github.event.inputs.publish_discord_only == 'true' && github.event.inputs.test_discord != 'true' && steps.config.outputs.skip_discord_for_almanac != 'true'
+        if: github.event.inputs.dry_run != 'true' && github.event.inputs.publish_discord_only == 'true' && github.event.inputs.ignore_discord_notify != 'true' && github.event.inputs.test_discord != 'true' && steps.config.outputs.skip_discord_for_almanac != 'true'
         uses: AzraelGodKing/Discord_Release@main
         with:
           webhook_url: ${{ secrets.DISCORD_WEBHOOK_URL }}
