@@ -289,6 +289,16 @@ namespace SunhavenTodo.UI
 
             GUILayout.FlexibleSpace();
 
+            var hud = Plugin.GetTodoHUD();
+            if (Plugin.StaticHUDEnabled && hud != null && !hud.IsEnabled)
+            {
+                var stickyContent = new GUIContent("Sticky", "Show the movable sticky task panel (top tasks)");
+                if (GUILayout.Button(stickyContent, _buttonStyle, GUILayout.Width(64), GUILayout.Height(28)))
+                    Plugin.ShowHUD();
+
+                GUILayout.Space(8);
+            }
+
             // Add button
             var addContent = new GUIContent(_showAddForm ? "Cancel" : "+ Add");
             if (GUILayout.Button(addContent, _buttonStyle, GUILayout.Width(70), GUILayout.Height(28)))
