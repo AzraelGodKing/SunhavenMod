@@ -16,7 +16,7 @@ BepInEx plugins for [Sun Haven](https://store.steampowered.com/app/1432860/Sun_H
 | Haven Dev Tools | [`HavenDevTools/`](HavenDevTools/) | 1.2.2 |
 | Trinket Fortune | [`TrinketFortune/`](TrinketFortune/) | 1.2.2 |
 | Faster Races | [`FasterRaces/`](FasterRaces/) | 1.4.2 |
-| Crop Optimizer | [`CropOptimizer/`](CropOptimizer/) | 1.4.2 |
+| Crop Optimizer | [`CropOptimizer/`](CropOptimizer/) | 1.4.3 |
 | Haven's Respec | [`HavensRespec/`](HavensRespec/) | 1.3.2 |
 
 Per-mod READMEs and Thunderstore packages describe features, hotkeys, and config in detail.

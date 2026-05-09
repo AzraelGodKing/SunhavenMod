@@ -1203,3 +1203,277 @@ body .mod-page.theme-gold {
     grid-template-columns: 1fr;
   }
 }
+/* appended full theme expansions */
+
+/* theme-amber — Senpai's Chest (archive warmth) */
+.mod-page.theme-amber {
+  --mp-bg-a: #2a1f0f;
+  --mp-bg-b: #1f170a;
+  --mp-panel: #3d2e16;
+  --mp-text: #fff8ec;
+  --mp-muted: #e8d4b0;
+  --mp-border: #8b6b3d;
+  --mp-accent: #ffd166;
+  --mp-accent-2: #ff9f43;
+  --mp-overlay: radial-gradient(circle at 95% 0%, rgba(255, 209, 102, 0.22), transparent 44%);
+}
+.mod-page.theme-amber body, body .mod-page.theme-amber {
+  background: radial-gradient(circle at 14% 0%, rgba(255, 209, 102, 0.18), transparent 36%),
+    radial-gradient(circle at 88% 8%, rgba(255, 159, 67, 0.14), transparent 34%),
+    linear-gradient(180deg, #33250f 0%, #271c0a 45%, #1f1708 100%);
+}
+.mod-page.theme-amber .mod-hero,
+.mod-page.theme-amber .panel,
+.mod-page.theme-amber .stat-card {
+  background: linear-gradient(160deg, rgba(61, 46, 22, 0.95), rgba(45, 34, 16, 0.95));
+}
+.mod-page.theme-amber .eyebrow,
+.mod-page.theme-amber .experience-index { color: #ffcc66; }
+.mod-page.theme-amber .version-badge {
+  background: linear-gradient(120deg, #ffd166, #ffe08a);
+  color: #2a1f00;
+}
+.mod-page.theme-amber .hero-meta-item,
+.mod-page.theme-amber .mod-quick-nav a,
+.mod-page.theme-amber .related-mods-strip a,
+.mod-page.theme-amber .trust-item,
+.mod-page.theme-amber .install-steps article {
+  background: rgba(61, 46, 22, 0.62);
+}
+.mod-page.theme-amber .checklist-item {
+  border-color: rgba(255, 209, 102, 0.5);
+  background: linear-gradient(135deg, rgba(255, 209, 102, 0.08), rgba(255, 159, 67, 0.05)), rgba(45, 34, 16, 0.78);
+}
+.mod-page.theme-amber .checklist-item:has(input:checked) {
+  border-color: #ffcc66;
+  background: linear-gradient(135deg, rgba(255, 204, 102, 0.14), rgba(255, 159, 67, 0.1)), rgba(55, 42, 20, 0.84);
+}
+
+/* theme-cobalt — Haven's Birthright (forged power) */
+.mod-page.theme-cobalt {
+  --mp-bg-a: #0f1a2f;
+  --mp-bg-b: #0a1221;
+  --mp-panel: #132544;
+  --mp-text: #e8f4ff;
+  --mp-muted: #a8c4e0;
+  --mp-border: #2a4a6e;
+  --mp-accent: #7bc1ff;
+  --mp-accent-2: #f5c36b;
+  --mp-overlay: radial-gradient(circle at 95% 0%, rgba(123, 193, 255, 0.2), transparent 44%);
+}
+.mod-page.theme-cobalt body, body .mod-page.theme-cobalt {
+  background: radial-gradient(circle at 12% 0%, rgba(123, 193, 255, 0.18), transparent 36%),
+    radial-gradient(circle at 88% 6%, rgba(245, 195, 107, 0.14), transparent 34%),
+    linear-gradient(180deg, #101e33 0%, #0c1728 45%, #091220 100%);
+}
+.mod-page.theme-cobalt .mod-hero,
+.mod-page.theme-cobalt .panel,
+.mod-page.theme-cobalt .stat-card {
+  background: linear-gradient(160deg, rgba(19, 37, 68, 0.95), rgba(13, 25, 45, 0.95));
+}
+.mod-page.theme-cobalt .eyebrow,
+.mod-page.theme-cobalt .experience-index { color: #f5c36b; }
+.mod-page.theme-cobalt .version-badge {
+  background: linear-gradient(120deg, #7bc1ff, #a8d8ff);
+  color: #0a1a2a;
+}
+.mod-page.theme-cobalt .hero-meta-item,
+.mod-page.theme-cobalt .mod-quick-nav a,
+.mod-page.theme-cobalt .related-mods-strip a,
+.mod-page.theme-cobalt .trust-item,
+.mod-page.theme-cobalt .install-steps article {
+  background: rgba(19, 37, 68, 0.62);
+}
+
+/* theme-slate — S.M.U.T. (museum stone) */
+.mod-page.theme-slate {
+  --mp-bg-a: #1a1f24;
+  --mp-bg-b: #13171b;
+  --mp-panel: #252d35;
+  --mp-text: #eef2f5;
+  --mp-muted: #b0bcc6;
+  --mp-border: #4a5a66;
+  --mp-accent: #a5d8e8;
+  --mp-accent-2: #fde68a;
+  --mp-overlay: radial-gradient(circle at 95% 0%, rgba(165, 216, 232, 0.18), transparent 44%);
+}
+.mod-page.theme-slate body, body .mod-page.theme-slate {
+  background: radial-gradient(circle at 12% 0%, rgba(165, 216, 232, 0.16), transparent 36%),
+    radial-gradient(circle at 86% 6%, rgba(253, 230, 138, 0.12), transparent 34%),
+    linear-gradient(180deg, #1e252c 0%, #171d22 45%, #12171c 100%);
+}
+.mod-page.theme-slate .mod-hero,
+.mod-page.theme-slate .panel,
+.mod-page.theme-slate .stat-card {
+  background: linear-gradient(160deg, rgba(37, 45, 53, 0.95), rgba(26, 31, 36, 0.95));
+}
+.mod-page.theme-slate .eyebrow,
+.mod-page.theme-slate .experience-index { color: #fde68a; }
+.mod-page.theme-slate .version-badge {
+  background: linear-gradient(120deg, #a5d8e8, #d0ecf5);
+  color: #121a20;
+}
+.mod-page.theme-slate .hero-meta-item,
+.mod-page.theme-slate .mod-quick-nav a,
+.mod-page.theme-slate .related-mods-strip a,
+.mod-page.theme-slate .trust-item,
+.mod-page.theme-slate .install-steps article {
+  background: rgba(37, 45, 53, 0.62);
+}
+.mod-page.theme-slate .timeline-item {
+  border-style: dashed;
+  border-color: rgba(165, 216, 232, 0.5);
+  background: linear-gradient(135deg, rgba(165, 216, 232, 0.08), rgba(253, 230, 138, 0.05)), rgba(26, 31, 36, 0.78);
+}
+.mod-page.theme-slate .timeline-item::before {
+  background: #fde68a;
+  box-shadow: 0 0 0 3px rgba(165, 216, 232, 0.18);
+}
+
+/* theme-indigo — HavenDevTools (dev console) */
+.mod-page.theme-indigo {
+  --mp-bg-a: #16122a;
+  --mp-bg-b: #110e20;
+  --mp-panel: #221c3d;
+  --mp-text: #ece8ff;
+  --mp-muted: #b8b0d8;
+  --mp-border: #4a3f7a;
+  --mp-accent: #a5b4fc;
+  --mp-accent-2: #fcd34d;
+  --mp-overlay: radial-gradient(circle at 95% 0%, rgba(165, 180, 252, 0.2), transparent 44%);
+}
+.mod-page.theme-indigo body, body .mod-page.theme-indigo {
+  background: radial-gradient(circle at 12% 0%, rgba(165, 180, 252, 0.18), transparent 36%),
+    radial-gradient(circle at 88% 6%, rgba(252, 211, 77, 0.14), transparent 34%),
+    linear-gradient(180deg, #1a1530 0%, #141128 45%, #0f0d20 100%);
+}
+.mod-page.theme-indigo .mod-hero,
+.mod-page.theme-indigo .panel,
+.mod-page.theme-indigo .stat-card {
+  background: linear-gradient(160deg, rgba(34, 28, 61, 0.95), rgba(22, 18, 42, 0.95));
+}
+.mod-page.theme-indigo .eyebrow,
+.mod-page.theme-indigo .experience-index { color: #fcd34d; }
+.mod-page.theme-indigo .version-badge {
+  background: linear-gradient(120deg, #a5b4fc, #d4dcff);
+  color: #120e24;
+}
+.mod-page.theme-indigo .hero-meta-item,
+.mod-page.theme-indigo .mod-quick-nav a,
+.mod-page.theme-indigo .related-mods-strip a,
+.mod-page.theme-indigo .trust-item,
+.mod-page.theme-indigo .install-steps article {
+  background: rgba(34, 28, 61, 0.62);
+}
+.mod-page.theme-indigo .console-list {
+  background: rgba(12, 10, 24, 0.92);
+  border-color: #4a3f7a;
+}
+
+/* theme-greenblue — Faster Races (speed track) */
+.mod-page.theme-greenblue {
+  --mp-bg-a: #0f2420;
+  --mp-bg-b: #0a1a18;
+  --mp-panel: #163830;
+  --mp-text: #e8fff8;
+  --mp-muted: #a8d8c8;
+  --mp-border: #2a6e5a;
+  --mp-accent: #6ee7b7;
+  --mp-accent-2: #93c5fd;
+  --mp-overlay: radial-gradient(circle at 95% 0%, rgba(110, 231, 183, 0.2), transparent 44%);
+}
+.mod-page.theme-greenblue body, body .mod-page.theme-greenblue {
+  background: radial-gradient(circle at 12% 0%, rgba(110, 231, 183, 0.18), transparent 36%),
+    radial-gradient(circle at 88% 6%, rgba(147, 197, 253, 0.14), transparent 34%),
+    linear-gradient(180deg, #122a24 0%, #0d201c 45%, #091916 100%);
+}
+.mod-page.theme-greenblue .mod-hero,
+.mod-page.theme-greenblue .panel,
+.mod-page.theme-greenblue .stat-card {
+  background: linear-gradient(160deg, rgba(22, 56, 48, 0.95), rgba(15, 36, 32, 0.95));
+}
+.mod-page.theme-greenblue .eyebrow,
+.mod-page.theme-greenblue .experience-index { color: #93c5fd; }
+.mod-page.theme-greenblue .version-badge {
+  background: linear-gradient(120deg, #6ee7b7, #a5f3d5);
+  color: #051a12;
+}
+.mod-page.theme-greenblue .hero-meta-item,
+.mod-page.theme-greenblue .mod-quick-nav a,
+.mod-page.theme-greenblue .related-mods-strip a,
+.mod-page.theme-greenblue .trust-item,
+.mod-page.theme-greenblue .install-steps article {
+  background: rgba(22, 56, 48, 0.62);
+}
+
+/* theme-orchid — Trinket Fortune (lucky atelier) */
+.mod-page.theme-orchid {
+  --mp-bg-a: #24162a;
+  --mp-bg-b: #1a1020;
+  --mp-panel: #362242;
+  --mp-text: #f8efff;
+  --mp-muted: #d4b8e0;
+  --mp-border: #6b4f7a;
+  --mp-accent: #d8b4fe;
+  --mp-accent-2: #fcd34d;
+  --mp-overlay: radial-gradient(circle at 95% 0%, rgba(216, 180, 254, 0.2), transparent 44%);
+}
+.mod-page.theme-orchid body, body .mod-page.theme-orchid {
+  background: radial-gradient(circle at 12% 0%, rgba(216, 180, 254, 0.18), transparent 36%),
+    radial-gradient(circle at 88% 6%, rgba(252, 211, 77, 0.14), transparent 34%),
+    linear-gradient(180deg, #2a1a32 0%, #201228 45%, #180e1e 100%);
+}
+.mod-page.theme-orchid .mod-hero,
+.mod-page.theme-orchid .panel,
+.mod-page.theme-orchid .stat-card {
+  background: linear-gradient(160deg, rgba(54, 34, 66, 0.95), rgba(36, 22, 42, 0.95));
+}
+.mod-page.theme-orchid .eyebrow,
+.mod-page.theme-orchid .experience-index { color: #fcd34d; }
+.mod-page.theme-orchid .version-badge {
+  background: linear-gradient(120deg, #d8b4fe, #eed6ff);
+  color: #1a0e24;
+}
+.mod-page.theme-orchid .hero-meta-item,
+.mod-page.theme-orchid .mod-quick-nav a,
+.mod-page.theme-orchid .related-mods-strip a,
+.mod-page.theme-orchid .trust-item,
+.mod-page.theme-orchid .install-steps article {
+  background: rgba(54, 34, 66, 0.62);
+}
+
+/* theme-rose — Haven's Respec (reset atelier) */
+.mod-page.theme-rose {
+  --mp-bg-a: #2a181c;
+  --mp-bg-b: #201216;
+  --mp-panel: #3d242c;
+  --mp-text: #fff0f2;
+  --mp-muted: #e8b8c0;
+  --mp-border: #7a4f5a;
+  --mp-accent: #fda4af;
+  --mp-accent-2: #86efac;
+  --mp-overlay: radial-gradient(circle at 95% 0%, rgba(253, 164, 175, 0.2), transparent 44%);
+}
+.mod-page.theme-rose body, body .mod-page.theme-rose {
+  background: radial-gradient(circle at 12% 0%, rgba(253, 164, 175, 0.18), transparent 36%),
+    radial-gradient(circle at 88% 6%, rgba(134, 239, 172, 0.12), transparent 34%),
+    linear-gradient(180deg, #331c22 0%, #26141a 45%, #1e1014 100%);
+}
+.mod-page.theme-rose .mod-hero,
+.mod-page.theme-rose .panel,
+.mod-page.theme-rose .stat-card {
+  background: linear-gradient(160deg, rgba(61, 36, 44, 0.95), rgba(42, 24, 28, 0.95));
+}
+.mod-page.theme-rose .eyebrow,
+.mod-page.theme-rose .experience-index { color: #86efac; }
+.mod-page.theme-rose .version-badge {
+  background: linear-gradient(120deg, #fda4af, #ffd1d6);
+  color: #2a1016;
+}
+.mod-page.theme-rose .hero-meta-item,
+.mod-page.theme-rose .mod-quick-nav a,
+.mod-page.theme-rose .related-mods-strip a,
+.mod-page.theme-rose .trust-item,
+.mod-page.theme-rose .install-steps article {
+  background: rgba(61, 36, 44, 0.62);
+}
