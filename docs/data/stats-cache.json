@@ -1,5 +1,5 @@
 {
-  "lastFetched": "2026-05-09T16:54:47.809Z",
+  "lastFetched": "2026-05-09T17:51:16.888Z",
   "mods": {
     "senpais-chest": {
       "name": "Senpai's Chest",
@@ -109,10 +109,10 @@
         }
       },
       "nexus": {
-        "total_downloads": 581,
+        "total_downloads": 582,
         "unique_downloads": 460
       },
-      "combined_total": 890
+      "combined_total": 891
     },
     "havens-todo": {
       "name": "Sun Haven Todo",
@@ -250,10 +250,10 @@
         }
       },
       "nexus": {
-        "total_downloads": 180,
-        "unique_downloads": 143
+        "total_downloads": 181,
+        "unique_downloads": 144
       },
-      "combined_total": 318
+      "combined_total": 319
     },
     "crop-optimizer": {
       "name": "Crop Optimizer",
@@ -270,10 +270,10 @@
         }
       },
       "nexus": {
-        "total_downloads": 189,
+        "total_downloads": 190,
         "unique_downloads": 159
       },
-      "combined_total": 274
+      "combined_total": 275
     },
     "havens-respec": {
       "name": "Haven's Respec",
@@ -296,8 +296,8 @@
   },
   "site_total": {
     "thunderstore": 2976,
-    "nexus_total": 5023,
-    "nexus_unique": 3720,
-    "grand_total": 7999
+    "nexus_total": 5026,
+    "nexus_unique": 3721,
+    "grand_total": 8002
   }
 }
