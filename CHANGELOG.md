@@ -4,6 +4,15 @@ Notes for **players and release readers**. Per-mod blurbs and upstream metadata 
 
 ---
 
+## Unreleased
+
+**Sun Haven Todo**
+
+- **HUD:** The sticky task panel header includes a close (**X**) control that hides the HUD until you press the HUD toggle hotkey again (your config’s **HUDToggleKey**, often **Ctrl + H**). This does not change the **HUD → Enabled** setting in the config file.
+- **HUD:** While the full Todo window is open, a **Sticky** button appears in its header when the sticky panel is hidden so you can bring it back without closing the list. The **HUD toggle hotkey** also works while the big window is open (the main **ToggleKey** for the full list still only applies when that window is closed—use **Escape** to close it).
+
+---
+
 ## 2026-05-03
 
 **Senpai's Chest**

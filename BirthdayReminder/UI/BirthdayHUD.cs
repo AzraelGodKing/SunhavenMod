@@ -254,6 +254,11 @@ namespace BirthdayReminder.UI
         {
             if (!_isVisible) return;
 
+            // IMGUI draws above many uGUI layers; defer while vanilla blocking UI is open (journal/calendar,
+            // inventory, dialogue, etc.) so we do not corrupt calendar rendering or steal clicks.
+            if (GameModalUiGuard.ShouldSuppressBirthdayImGui())
+                return;
+
             if (!_stylesInitialized)
             {
                 InitializeStyles();

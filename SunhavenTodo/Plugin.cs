@@ -494,6 +494,17 @@ namespace SunhavenTodo
             _staticTodoHUD?.Toggle();
         }
 
+        /// <summary>
+        /// Shows the sticky HUD if HUD is enabled in config. Does not toggle off.
+        /// </summary>
+        public static void ShowHUD()
+        {
+            EnsureUIComponentsExist();
+            if (!_staticHUDEnabled || _staticTodoHUD == null)
+                return;
+            _staticTodoHUD.SetEnabled(true);
+        }
+
         internal static void TickAutoSave()
         {
             if (!_staticAutoSave || _staticTodoManager == null || !_staticTodoManager.IsDirty)
@@ -547,12 +558,8 @@ namespace SunhavenTodo
 
         private void CheckHotkeys()
         {
-            // Don't process hotkeys if UI is visible (let the UI handle input)
             var todoUI = Plugin.GetTodoUI();
-            if (todoUI != null && todoUI.IsVisible)
-            {
-                return;
-            }
+            bool todoOpen = todoUI != null && todoUI.IsVisible;
 
             if (TextInputFocusGuard.ShouldDeferModHotkeys(Plugin.Log))
                 return;
@@ -561,16 +568,13 @@ namespace SunhavenTodo
             bool togglePressed = Input.GetKeyDown(Plugin.StaticToggleKey);
             bool hudTogglePressed = Input.GetKeyDown(Plugin.StaticHUDToggleKey);
 
-            if (togglePressed && (ctrlPressed == Plugin.StaticRequireCtrl))
-            {
+            // Full-window toggle: only when the big Todo window is closed (otherwise use Escape).
+            if (!todoOpen && togglePressed && (ctrlPressed == Plugin.StaticRequireCtrl))
                 Plugin.ToggleUI();
-            }
 
-            // HUD toggle (also uses Ctrl if required)
+            // HUD toggle: always (so you can show/hide the sticky while the full list is open).
             if (hudTogglePressed && (ctrlPressed == Plugin.StaticRequireCtrl))
-            {
                 Plugin.ToggleHUD();
-            }
         }
 
         private void OnDestroy()

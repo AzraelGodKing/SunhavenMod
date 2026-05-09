@@ -92,12 +92,16 @@ namespace SunhavenTodo.UI
         private GUIStyle _categoryStyle;
         private GUIStyle _titleStyle;
         private GUIStyle _emptyStyle;
+        private GUIStyle _closeButtonStyle;
 
         // Textures
         private Texture2D _windowBackground;
         private Texture2D _headerBackground;
         private Texture2D _itemEven;
         private Texture2D _itemOdd;
+        private Texture2D _closeBtnNormal;
+        private Texture2D _closeBtnHover;
+        private Texture2D _closeBtnActive;
 
         public void Initialize(TodoManager manager)
         {
@@ -229,8 +233,9 @@ namespace SunhavenTodo.UI
 
             GUILayout.EndVertical();
 
-            // Make the entire header area draggable
-            GUI.DragWindow(new Rect(0, 0, _windowRect.width, HeaderHeight));
+            // Header drag area — exclude the close button on the right so X isn't treated as drag
+            float closeReserve = Scaled(8 + 26 + 8);
+            GUI.DragWindow(new Rect(0, 0, Mathf.Max(Scaled(48f), _windowRect.width - closeReserve), HeaderHeight));
         }
 
         private void DrawHeader()
@@ -265,6 +270,13 @@ namespace SunhavenTodo.UI
 
             // Drag hint
             GUILayout.Label("drag to move", hintStyle, GUILayout.Height(HeaderHeight));
+
+            GUILayout.Space(Scaled(4));
+            if (GUILayout.Button("X", _closeButtonStyle, GUILayout.Width(Scaled(26)), GUILayout.Height(Scaled(22))))
+            {
+                _isEnabled = false;
+                Plugin.Log?.LogInfo("TodoHUD hidden via close button (open Todo list → Sticky, or use HUD toggle hotkey)");
+            }
 
             GUILayout.Space(Scaled(8));
             GUILayout.EndHorizontal();
@@ -427,6 +439,9 @@ namespace SunhavenTodo.UI
             _headerBackground = MakeGradientTex(8, Mathf.Max(1, ScaledInt(HeaderHeight)), _parchmentDark, _parchment);
             _itemEven = MakeTex(1, 1, new Color(_parchmentLight.r, _parchmentLight.g, _parchmentLight.b, 0.3f));
             _itemOdd = MakeTex(1, 1, new Color(_parchment.r, _parchment.g, _parchment.b, 0.3f));
+            _closeBtnNormal = MakeTex(2, 2, _parchmentDark);
+            _closeBtnHover = MakeTex(2, 2, new Color(_goldRich.r * 0.85f, _goldRich.g * 0.85f, _goldRich.b * 0.85f, 1f));
+            _closeBtnActive = MakeTex(2, 2, _woodMedium);
         }
 
         private void CreateStyles()
@@ -486,6 +501,18 @@ namespace SunhavenTodo.UI
                 normal = { textColor = new Color(_textDark.r, _textDark.g, _textDark.b, 0.6f) },
                 alignment = TextAnchor.MiddleCenter,
                 padding = new RectOffset(ScaledInt(10), ScaledInt(10), ScaledInt(10), ScaledInt(10))
+            };
+
+            _closeButtonStyle = new GUIStyle
+            {
+                fontSize = ScaledFont(11),
+                fontStyle = FontStyle.Bold,
+                normal = { background = _closeBtnNormal, textColor = _textDark },
+                hover = { background = _closeBtnHover, textColor = _woodDark },
+                active = { background = _closeBtnActive, textColor = _woodDark },
+                alignment = TextAnchor.MiddleCenter,
+                padding = new RectOffset(ScaledInt(2), ScaledInt(2), ScaledInt(2), ScaledInt(2)),
+                border = new RectOffset(ScaledInt(2), ScaledInt(2), ScaledInt(2), ScaledInt(2))
             };
         }
 

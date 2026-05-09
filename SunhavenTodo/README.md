@@ -17,6 +17,9 @@ An in-game to-do list for Sun Haven with per-character saves, categories, priori
 |--------|-----|
 | Toggle Todo List | `Ctrl + T` |
 | Close Window | `Escape` |
+| Toggle HUD (sticky panel) | `Ctrl + H` (see config: `HUDToggleKey`, `RequireCtrl`) |
+| Close HUD | **X** on the HUD header |
+| Reopen HUD | HUD toggle hotkey (works even while the full Todo window is open), or **Sticky** in that window’s header when the sticky panel was hidden |
 
 ## Installation
 
@@ -53,6 +56,10 @@ Character names are sanitized to avoid invalid filename characters.
 - The UI pauses player input while the todo list is open
 
 ## Changelog
+
+### Unreleased
+
+- **HUD:** Close (**X**) on the sticky header hides the HUD; reopen with the HUD toggle hotkey or the **Sticky** button in the full Todo window when the panel is hidden.
 
 ### 2026-05-02 (maintainer notes)
 

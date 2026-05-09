@@ -30,7 +30,7 @@
     "changelog": "Config now uses BepInEx/config/SunHavenMuseumUtilityTracker.cfg with first-run migration from the legacy GUID config file."
   },
   "com.azraelgodking.sunhaventodo": {
-    "version": "1.4.2",
+    "version": "1.4.3",
     "name": "Sun Haven Todo",
     "description": "In-game task tracker for farming goals, quests, and daily tasks",
     "nexus": "https://www.nexusmods.com/sunhaven/mods/491",
