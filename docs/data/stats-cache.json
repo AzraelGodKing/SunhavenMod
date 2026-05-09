@@ -1,5 +1,5 @@
 {
-  "lastFetched": "2026-05-09T20:42:22.423Z",
+  "lastFetched": "2026-05-09T21:42:16.466Z",
   "mods": {
     "senpais-chest": {
       "name": "Senpai's Chest",
@@ -30,10 +30,10 @@
         }
       },
       "nexus": {
-        "total_downloads": 532,
+        "total_downloads": 533,
         "unique_downloads": 381
       },
-      "combined_total": 979
+      "combined_total": 980
     },
     "havens-birthright": {
       "name": "Haven's Birthright",
@@ -117,8 +117,9 @@
     "havens-todo": {
       "name": "Sun Haven Todo",
       "thunderstore": {
-        "total_downloads": 351,
+        "total_downloads": 352,
         "versions": {
+          "1.4.3": 1,
           "1.4.2": 17,
           "1.4.0": 12,
           "1.3.0": 15,
@@ -136,10 +137,10 @@
         }
       },
       "nexus": {
-        "total_downloads": 313,
+        "total_downloads": 314,
         "unique_downloads": 253
       },
-      "combined_total": 664
+      "combined_total": 666
     },
     "the-vault": {
       "name": "The Vault",
@@ -239,9 +240,9 @@
     "trinket-fortune": {
       "name": "Trinket Fortune",
       "thunderstore": {
-        "total_downloads": 138,
+        "total_downloads": 139,
         "versions": {
-          "1.2.2": 11,
+          "1.2.2": 12,
           "1.2.0": 7,
           "1.1.0": 11,
           "1.0.5": 5,
@@ -253,7 +254,7 @@
         "total_downloads": 181,
         "unique_downloads": 144
       },
-      "combined_total": 319
+      "combined_total": 320
     },
     "crop-optimizer": {
       "name": "Crop Optimizer",
@@ -270,10 +271,10 @@
         }
       },
       "nexus": {
-        "total_downloads": 194,
+        "total_downloads": 195,
         "unique_downloads": 161
       },
-      "combined_total": 281
+      "combined_total": 282
     },
     "havens-respec": {
       "name": "Haven's Respec",
@@ -295,9 +296,9 @@
     }
   },
   "site_total": {
-    "thunderstore": 2999,
-    "nexus_total": 5034,
+    "thunderstore": 3001,
+    "nexus_total": 5037,
     "nexus_unique": 3727,
-    "grand_total": 8033
+    "grand_total": 8038
   }
 }
