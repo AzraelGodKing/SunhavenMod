@@ -1,5 +1,5 @@
 {
-  "lastFetched": "2026-05-09T14:50:14.836Z",
+  "lastFetched": "2026-05-09T15:52:11.836Z",
   "mods": {
     "senpais-chest": {
       "name": "Senpai's Chest",
@@ -260,6 +260,7 @@
       "thunderstore": {
         "total_downloads": 84,
         "versions": {
+          "1.4.3": 0,
           "1.4.2": 13,
           "1.4.0": 10,
           "1.3.0": 24,
