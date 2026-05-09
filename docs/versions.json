@@ -102,7 +102,7 @@
     "changelog": "Config now uses BepInEx/config/TrinketFortune.cfg with first-run migration from the legacy GUID config file. Startup now runs in standalone-safe mode so Trinket Fortune no longer hard-requires HavenDevTools.dll to load."
   },
   "com.azraelgodking.cropoptimizer": {
-    "version": "1.4.2",
+    "version": "1.4.3",
     "name": "Crop Optimizer",
     "description": "Crop forecast HUD with seasonal planning helpers and soft Todo/Birthday/Vault integrations",
     "nexus": "https://www.nexusmods.com/sunhaven/mods/500",

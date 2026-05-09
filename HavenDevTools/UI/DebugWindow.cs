@@ -75,7 +75,7 @@ namespace HavenDevTools.UI
             ("com.azraelgodking.havensalmanac", "Haven's Almanac", "1.4.2"),
             ("com.azraelgodking.fasterraces", "Faster Races", "1.4.2"),
             ("com.azraelgodking.trinketfortune", "Trinket Fortune", "1.2.2"),
-            ("com.azraelgodking.cropoptimizer", "Crop Optimizer", "1.4.2"),
+            ("com.azraelgodking.cropoptimizer", "Crop Optimizer", "1.4.3"),
             ("com.azraelgodking.havensrespec", "Haven's Respec", "1.3.2"),
         };
 

@@ -1,5 +1,5 @@
 /**
- * Cloudflare Pages Function: POST /api/feedback
+ * Cloudflare Pages Function: POST /api/feedback  |  GET /api/feedback
  *
  * Required env vars (Pages project):
  * - LINEAR_API_TOKEN
@@ -11,12 +11,7 @@
  * - LINEAR_BUG_LABEL_ID
  * - LINEAR_FEATURE_LABEL_ID
  *
- * Note:
- * - CLOUDFLARE_API_TOKEN is for deployment/auth tooling and is not used by
- *   this runtime feedback endpoint.
- *
- * Logs: one JSON object per line (search in Workers Logs for `event` values
- * like `feedback.linear_failed`). Never logs tokens or user-submitted text.
+ * Logs: one JSON object per line. Never logs tokens or user-submitted text.
  */
 
 const rateWindowMsDefault = 10 * 60 * 1000;
@@ -32,10 +27,6 @@ function truncate(str, maxLen) {
   return `${s.slice(0, maxLen)}…`;
 }
 
-/**
- * @param {"debug"|"info"|"warn"|"error"} level
- * @param {Record<string, unknown>} fields
- */
 function feedbackLog(level, fields) {
   const line = JSON.stringify({
     ts: new Date().toISOString(),
@@ -88,14 +79,19 @@ function checkRateLimit(ip, windowMs, maxPerWindow) {
   return true;
 }
 
-function bad(message, status = 400) {
-  return new Response(JSON.stringify({ ok: false, error: message }), {
+function jsonResponse(body, status = 200) {
+  return new Response(JSON.stringify(body), {
     status,
     headers: { "content-type": "application/json; charset=utf-8" },
   });
 }
 
-/** @param {Record<string, unknown>} [detail] */
+function bad(message, status = 400, detail = null) {
+  const body = { ok: false, error: message };
+  if (detail) body.detail = detail;
+  return jsonResponse(body, status);
+}
+
 function throwLinearUpstream(detail = {}) {
   const err = new Error("Failed to create Linear issue");
   err.name = "FeedbackLinearUpstreamError";
@@ -113,8 +109,22 @@ function requestDiag(request, env, extra = {}) {
   };
 }
 
+export async function onRequestGet(context) {
+  const { request, env } = context;
+  const diag = requestDiag(request, env);
+  feedbackLog("info", { event: "feedback.health_check", ...diag });
+  return jsonResponse({
+    ok: true,
+    configured: Boolean(env.LINEAR_API_TOKEN && env.LINEAR_TEAM_ID),
+    linearTokenConfigured: Boolean(env.LINEAR_API_TOKEN),
+    linearTeamIdConfigured: Boolean(env.LINEAR_TEAM_ID),
+  });
+}
+
 export async function onRequestPost(context) {
   const { request, env } = context;
+
+  // 1) Config check
   if (!env.LINEAR_API_TOKEN || !env.LINEAR_TEAM_ID) {
     feedbackLog("warn", {
       event: "feedback.config_missing",
@@ -124,9 +134,14 @@ export async function onRequestPost(context) {
       ].filter(Boolean),
       ...requestDiag(request, env),
     });
-    return bad("Server is not configured for feedback submission.", 500);
+    return bad(
+      "Server is not configured for feedback submission. The admin needs to set LINEAR_API_TOKEN and LINEAR_TEAM_ID.",
+      500,
+      { reason: "missing_env" }
+    );
   }
 
+  // 2) Parse body
   let body;
   try {
     body = await request.json();
@@ -138,7 +153,7 @@ export async function onRequestPost(context) {
     return bad("Invalid JSON body.");
   }
 
-  // Honeypot field must stay empty.
+  // 3) Honeypot
   const honeypot = sanitizeText(body?.website, 120);
   if (honeypot) {
     feedbackLog("warn", {
@@ -148,6 +163,7 @@ export async function onRequestPost(context) {
     return bad("Spam detected.");
   }
 
+  // 4) Type validation
   const type = sanitizeText(body?.type, 12).toLowerCase();
   if (type !== "bug" && type !== "feature") {
     feedbackLog("warn", {
@@ -155,9 +171,10 @@ export async function onRequestPost(context) {
       submittedType: truncate(type, 32) || null,
       ...requestDiag(request, env),
     });
-    return bad("Invalid feedback type.");
+    return bad("Invalid feedback type. Must be 'bug' or 'feature'.");
   }
 
+  // 5) Rate limit
   const windowSec = Number(env.FEEDBACK_RATE_WINDOW_SECONDS || 600);
   const maxPerWindow = Number(env.FEEDBACK_RATE_MAX || rateLimitDefault);
   const windowMs = Number.isFinite(windowSec) ? Math.max(30, windowSec) * 1000 : rateWindowMsDefault;
@@ -170,9 +187,12 @@ export async function onRequestPost(context) {
     return bad("Too many submissions. Please try again later.", 429);
   }
 
+  // 6) Field validation
   const name = sanitizeText(body?.name, 120);
   const title = sanitizeText(body?.title, 160);
   const description = sanitizeText(body?.description, 4000);
+  const mod = sanitizeText(body?.mod, 120);
+  const priority = sanitizeText(body?.priority, 12).toLowerCase();
 
   if (!name || !title || !description) {
     feedbackLog("warn", {
@@ -182,17 +202,21 @@ export async function onRequestPost(context) {
       hasDescription: Boolean(description),
       ...requestDiag(request, env, { feedbackType: type }),
     });
-    return bad("Missing required fields.");
+    return bad("Missing required fields: name, title, and description are required.");
   }
 
+  // 7) Build Linear payload
   const issueTitle = `[${type === "bug" ? "Bug" : "Feature"}] ${title}`;
   const bugLabelId = sanitizeText(env.LINEAR_BUG_LABEL_ID, 120);
   const featureLabelId = sanitizeText(env.LINEAR_FEATURE_LABEL_ID, 120);
   const labelId = type === "bug" ? bugLabelId : featureLabelId;
   const labelIds = labelId ? [labelId] : [];
+
   const issueDescription =
-    `Submitted from website feedback form.\n` +
+    `Submitted from website ticket desk.\n` +
     asList("Type", type) +
+    (mod ? asList("Related Mod", mod) : "") +
+    (priority ? asList("Priority", priority) : "") +
     asList("Name", name) +
     asList("Description", description);
 
@@ -209,6 +233,16 @@ export async function onRequestPost(context) {
     }
   `;
 
+  const linearInput = {
+    teamId: env.LINEAR_TEAM_ID,
+    title: issueTitle,
+    description: issueDescription,
+  };
+  if (labelIds.length) {
+    linearInput.labelIds = labelIds;
+  }
+
+  // 8) Call Linear
   let issueCreate;
   try {
     const linearResp = await fetch("https://api.linear.app/graphql", {
@@ -219,14 +253,7 @@ export async function onRequestPost(context) {
       },
       body: JSON.stringify({
         query: mutation,
-        variables: {
-          input: {
-            teamId: env.LINEAR_TEAM_ID,
-            title: issueTitle,
-            description: issueDescription,
-            ...(labelIds.length ? { labelIds } : {}),
-          },
-        },
+        variables: { input: linearInput },
       }),
     });
 
@@ -284,6 +311,7 @@ export async function onRequestPost(context) {
     }
   } catch (err) {
     if (err && err.name === "FeedbackLinearUpstreamError") {
+      const detail = err.detail && typeof err.detail === "object" ? err.detail : {};
       feedbackLog("error", {
         event: "feedback.linear_failed",
         httpStatusReturned: 502,
@@ -291,9 +319,13 @@ export async function onRequestPost(context) {
           feedbackType: type,
           labelIdsCount: labelIds.length,
         }),
-        ...(err.detail && typeof err.detail === "object" ? err.detail : {}),
+        ...detail,
       });
-      return bad("Failed to create Linear issue", 502);
+      return bad(
+        "Linear returned an error. This usually means the API token is invalid, the team ID is wrong, or the token lacks issue-create permissions.",
+        502,
+        { linearReason: detail.failureReason || "unknown" }
+      );
     }
     feedbackLog("error", {
       event: "feedback.linear_failed",
@@ -306,7 +338,10 @@ export async function onRequestPost(context) {
         labelIdsCount: labelIds.length,
       }),
     });
-    return bad("Failed to create Linear issue", 502);
+    return bad(
+      "Could not reach Linear. This may be a temporary network issue. Please try again in a moment.",
+      502
+    );
   }
 
   feedbackLog("info", {
@@ -319,16 +354,10 @@ export async function onRequestPost(context) {
     }),
   });
 
-  return new Response(
-    JSON.stringify({
-      ok: true,
-      id: issueCreate.issue?.id || null,
-      identifier: issueCreate.issue?.identifier || null,
-      url: issueCreate.issue?.url || null,
-    }),
-    {
-      status: 200,
-      headers: { "content-type": "application/json; charset=utf-8" },
-    }
-  );
+  return jsonResponse({
+    ok: true,
+    id: issueCreate.issue?.id || null,
+    identifier: issueCreate.issue?.identifier || null,
+    url: issueCreate.issue?.url || null,
+  });
 }
