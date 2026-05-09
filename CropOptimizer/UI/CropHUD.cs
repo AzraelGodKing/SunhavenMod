@@ -35,6 +35,14 @@ namespace CropOptimizer.UI
         private TooltipContent _tooltipContentCache;
         private float _nextTooltipContentRebuildTime;
 
+        /// <summary>HUD label refresh — avoids TMP mesh rebuild every frame when counts are unchanged.</summary>
+        private int _lastHudTrackedCount = -1;
+
+        private long _lastHudProjectedGold = long.MinValue;
+
+        /// <summary>Matches what the HUD toggle currently shows — skip redundant TMP/sprite work until config or visibility changes.</summary>
+        private bool? _lastHudTooltipShownInUi;
+
         /// <summary>Tooltip rows use reflection and tile probes — limit rebuild rate while the pointer stays on one crop.</summary>
         private const float TooltipContentRefreshSeconds = 0.22f;
 
@@ -152,10 +160,27 @@ namespace CropOptimizer.UI
                 if (showHud)
                 {
                     var snap = _forecast.Snapshot();
-                    _hudView.UpdateStats(snap.Count, _forecast.GetProjectedSellTotal());
-                    // Keep the toggle button in sync with config (covers live edits to the cfg file
-                    // as well as our own click-driven writes).
-                    _hudView.SetTooltipEnabled(_hoverTooltipEnabled != null && _hoverTooltipEnabled.Value);
+                    int count = snap.Count;
+                    long projected = _forecast.GetProjectedSellTotal();
+                    if (count != _lastHudTrackedCount || projected != _lastHudProjectedGold)
+                    {
+                        _lastHudTrackedCount = count;
+                        _lastHudProjectedGold = projected;
+                        _hudView.UpdateStats(count, projected);
+                    }
+
+                    bool tooltipCfg = _hoverTooltipEnabled != null && _hoverTooltipEnabled.Value;
+                    if (!_lastHudTooltipShownInUi.HasValue || tooltipCfg != _lastHudTooltipShownInUi.Value)
+                    {
+                        _lastHudTooltipShownInUi = tooltipCfg;
+                        _hudView.SetTooltipEnabled(tooltipCfg);
+                    }
+                }
+                else
+                {
+                    _lastHudTrackedCount = -1;
+                    _lastHudProjectedGold = long.MinValue;
+                    _lastHudTooltipShownInUi = null;
                 }
             }
 
@@ -167,6 +192,7 @@ namespace CropOptimizer.UI
         {
             if (_hoverTooltipEnabled == null) return;
             _hoverTooltipEnabled.Value = !_hoverTooltipEnabled.Value;
+            _lastHudTooltipShownInUi = _hoverTooltipEnabled.Value;
             _hudView?.SetTooltipEnabled(_hoverTooltipEnabled.Value);
             // BepInEx writes config changes to disk lazily; ConfigFile.Save forces a flush so
             // the new value survives a game restart.
@@ -235,7 +261,10 @@ namespace CropOptimizer.UI
             }
 
             _tooltipView.SetVisible(true);
-            _tooltipView.ApplyContent(_tooltipContentCache);
+            // ApplyContent touches every visible TMP row + may ForceMeshUpdate on extras — only when
+            // data actually refreshed (crop/timer), not every frame while the mouse sits on one crop.
+            if (needRebuild)
+                _tooltipView.ApplyContent(_tooltipContentCache);
             _tooltipView.SetScreenPosition(Input.mousePosition);
         }
 
