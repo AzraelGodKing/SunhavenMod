@@ -1,5 +1,5 @@
 {
-  "lastFetched": "2026-05-10T13:17:39.183Z",
+  "lastFetched": "2026-05-10T14:52:38.132Z",
   "mods": {
     "senpais-chest": {
       "name": "Senpai's Chest",
@@ -30,10 +30,10 @@
         }
       },
       "nexus": {
-        "total_downloads": 534,
-        "unique_downloads": 382
+        "total_downloads": 535,
+        "unique_downloads": 383
       },
-      "combined_total": 982
+      "combined_total": 983
     },
     "havens-birthright": {
       "name": "Haven's Birthright",
@@ -59,10 +59,10 @@
         }
       },
       "nexus": {
-        "total_downloads": 969,
-        "unique_downloads": 646
+        "total_downloads": 970,
+        "unique_downloads": 647
       },
-      "combined_total": 1356
+      "combined_total": 1357
     },
     "museum-utility-tracker": {
       "name": "S.M.U.T.",
@@ -145,14 +145,14 @@
     "the-vault": {
       "name": "The Vault",
       "thunderstore": {
-        "total_downloads": 301,
+        "total_downloads": 302,
         "versions": {
           "3.3.2": 16,
           "3.3.0": 7,
           "3.2.0": 21,
           "3.1.0": 5,
           "3.0.7": 6,
-          "3.0.4": 49,
+          "3.0.4": 50,
           "3.0.2": 16,
           "3.0.1": 12,
           "2.0.8": 54,
@@ -167,17 +167,17 @@
         "total_downloads": 1084,
         "unique_downloads": 758
       },
-      "combined_total": 1385
+      "combined_total": 1386
     },
     "haven-dev-tools": {
       "name": "HavenDevTools",
       "thunderstore": {
-        "total_downloads": 174,
+        "total_downloads": 175,
         "versions": {
           "1.2.2": 6,
           "1.2.0": 5,
           "1.1.0": 7,
-          "1.0.11": 5,
+          "1.0.11": 6,
           "1.0.8": 12,
           "1.0.7": 19,
           "1.0.6": 20,
@@ -191,7 +191,7 @@
         "total_downloads": 82,
         "unique_downloads": 66
       },
-      "combined_total": 256
+      "combined_total": 257
     },
     "havens-almanac": {
       "name": "Haven's Almanac",
@@ -296,9 +296,9 @@
     }
   },
   "site_total": {
-    "thunderstore": 3041,
-    "nexus_total": 5060,
-    "nexus_unique": 3743,
-    "grand_total": 8101
+    "thunderstore": 3043,
+    "nexus_total": 5062,
+    "nexus_unique": 3745,
+    "grand_total": 8105
   }
 }
