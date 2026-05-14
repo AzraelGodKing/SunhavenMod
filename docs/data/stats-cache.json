@@ -1,5 +1,5 @@
 {
-  "lastFetched": "2026-05-14T10:14:03.633Z",
+  "lastFetched": "2026-05-14T12:24:23.147Z",
   "mods": {
     "senpais-chest": {
       "name": "Senpai's Chest",
@@ -59,10 +59,10 @@
         }
       },
       "nexus": {
-        "total_downloads": 995,
-        "unique_downloads": 664
+        "total_downloads": 996,
+        "unique_downloads": 665
       },
-      "combined_total": 1388
+      "combined_total": 1389
     },
     "museum-utility-tracker": {
       "name": "S.M.U.T.",
@@ -84,10 +84,10 @@
         }
       },
       "nexus": {
-        "total_downloads": 838,
-        "unique_downloads": 661
+        "total_downloads": 839,
+        "unique_downloads": 662
       },
-      "combined_total": 1241
+      "combined_total": 1242
     },
     "squirrels-birthday-reminder": {
       "name": "A Squirrel's Birthday Reminder",
@@ -109,10 +109,10 @@
         }
       },
       "nexus": {
-        "total_downloads": 603,
-        "unique_downloads": 476
+        "total_downloads": 604,
+        "unique_downloads": 477
       },
-      "combined_total": 921
+      "combined_total": 922
     },
     "havens-todo": {
       "name": "Sun Haven Todo",
@@ -164,10 +164,10 @@
         }
       },
       "nexus": {
-        "total_downloads": 1111,
-        "unique_downloads": 777
+        "total_downloads": 1112,
+        "unique_downloads": 778
       },
-      "combined_total": 1428
+      "combined_total": 1429
     },
     "haven-dev-tools": {
       "name": "HavenDevTools",
@@ -221,10 +221,10 @@
     "faster-races": {
       "name": "Faster Races",
       "thunderstore": {
-        "total_downloads": 100,
+        "total_downloads": 101,
         "versions": {
           "1.4.2": 14,
-          "1.4.0": 4,
+          "1.4.0": 5,
           "1.3.0": 11,
           "1.2.0": 4,
           "1.1.6": 3,
@@ -235,7 +235,7 @@
         "total_downloads": 135,
         "unique_downloads": 90
       },
-      "combined_total": 235
+      "combined_total": 236
     },
     "trinket-fortune": {
       "name": "Trinket Fortune",
@@ -296,9 +296,9 @@
     }
   },
   "site_total": {
-    "thunderstore": 3156,
-    "nexus_total": 5283,
-    "nexus_unique": 3920,
-    "grand_total": 8439
+    "thunderstore": 3157,
+    "nexus_total": 5287,
+    "nexus_unique": 3924,
+    "grand_total": 8444
   }
 }
