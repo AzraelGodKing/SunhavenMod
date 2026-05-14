@@ -1,5 +1,5 @@
 {
-  "lastFetched": "2026-05-14T17:49:07.616Z",
+  "lastFetched": "2026-05-14T19:45:03.842Z",
   "mods": {
     "senpais-chest": {
       "name": "Senpai's Chest",
@@ -232,10 +232,10 @@
         }
       },
       "nexus": {
-        "total_downloads": 135,
-        "unique_downloads": 90
+        "total_downloads": 136,
+        "unique_downloads": 91
       },
-      "combined_total": 236
+      "combined_total": 237
     },
     "trinket-fortune": {
       "name": "Trinket Fortune",
@@ -279,9 +279,9 @@
     "havens-respec": {
       "name": "Haven's Respec",
       "thunderstore": {
-        "total_downloads": 92,
+        "total_downloads": 93,
         "versions": {
-          "1.3.2": 25,
+          "1.3.2": 26,
           "1.3.0": 6,
           "1.2.0": 31,
           "1.1.0": 13,
@@ -292,13 +292,13 @@
         "total_downloads": 80,
         "unique_downloads": 69
       },
-      "combined_total": 172
+      "combined_total": 173
     }
   },
   "site_total": {
-    "thunderstore": 3159,
-    "nexus_total": 5299,
-    "nexus_unique": 3936,
-    "grand_total": 8458
+    "thunderstore": 3160,
+    "nexus_total": 5300,
+    "nexus_unique": 3937,
+    "grand_total": 8460
   }
 }
