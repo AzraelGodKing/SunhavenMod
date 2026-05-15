@@ -1,5 +1,5 @@
 {
-  "lastFetched": "2026-05-15T17:26:47.050Z",
+  "lastFetched": "2026-05-15T19:37:43.987Z",
   "mods": {
     "senpais-chest": {
       "name": "Senpai's Chest",
@@ -145,7 +145,7 @@
     "the-vault": {
       "name": "The Vault",
       "thunderstore": {
-        "total_downloads": 320,
+        "total_downloads": 321,
         "versions": {
           "3.3.2": 22,
           "3.3.0": 8,
@@ -154,7 +154,7 @@
           "3.0.7": 7,
           "3.0.4": 53,
           "3.0.2": 17,
-          "3.0.1": 13,
+          "3.0.1": 14,
           "2.0.8": 55,
           "2.0.7": 18,
           "2.0.6": 22,
@@ -167,7 +167,7 @@
         "total_downloads": 1116,
         "unique_downloads": 782
       },
-      "combined_total": 1436
+      "combined_total": 1437
     },
     "haven-dev-tools": {
       "name": "HavenDevTools",
@@ -259,12 +259,12 @@
     "crop-optimizer": {
       "name": "Crop Optimizer",
       "thunderstore": {
-        "total_downloads": 113,
+        "total_downloads": 114,
         "versions": {
           "1.4.3": 19,
           "1.4.2": 16,
           "1.4.0": 12,
-          "1.3.0": 27,
+          "1.3.0": 28,
           "1.2.0": 14,
           "1.0.2": 8,
           "1.0.0": 17
@@ -274,16 +274,16 @@
         "total_downloads": 247,
         "unique_downloads": 203
       },
-      "combined_total": 360
+      "combined_total": 361
     },
     "havens-respec": {
       "name": "Haven's Respec",
       "thunderstore": {
-        "total_downloads": 93,
+        "total_downloads": 94,
         "versions": {
           "1.3.2": 26,
           "1.3.0": 6,
-          "1.2.0": 31,
+          "1.2.0": 32,
           "1.1.0": 13,
           "1.0.1": 17
         }
@@ -292,13 +292,13 @@
         "total_downloads": 84,
         "unique_downloads": 73
       },
-      "combined_total": 177
+      "combined_total": 178
     }
   },
   "site_total": {
-    "thunderstore": 3189,
+    "thunderstore": 3192,
     "nexus_total": 5334,
     "nexus_unique": 3968,
-    "grand_total": 8523
+    "grand_total": 8526
   }
 }
