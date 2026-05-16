@@ -1,5 +1,5 @@
 {
-  "lastFetched": "2026-05-16T14:56:09.148Z",
+  "lastFetched": "2026-05-16T15:59:42.475Z",
   "mods": {
     "senpais-chest": {
       "name": "Senpai's Chest",
@@ -30,10 +30,10 @@
         }
       },
       "nexus": {
-        "total_downloads": 564,
-        "unique_downloads": 409
+        "total_downloads": 565,
+        "unique_downloads": 410
       },
-      "combined_total": 1029
+      "combined_total": 1030
     },
     "havens-birthright": {
       "name": "Haven's Birthright",
@@ -67,7 +67,7 @@
     "museum-utility-tracker": {
       "name": "S.M.U.T.",
       "thunderstore": {
-        "total_downloads": 409,
+        "total_downloads": 410,
         "versions": {
           "2.4.2": 38,
           "2.4.0": 16,
@@ -79,7 +79,7 @@
           "2.2.2": 29,
           "2.2.1": 36,
           "2.2.0": 46,
-          "2.1.1": 24,
+          "2.1.1": 25,
           "2.1.0": 21
         }
       },
@@ -87,7 +87,7 @@
         "total_downloads": 847,
         "unique_downloads": 669
       },
-      "combined_total": 1256
+      "combined_total": 1257
     },
     "squirrels-birthday-reminder": {
       "name": "A Squirrel's Birthday Reminder",
@@ -137,10 +137,10 @@
         }
       },
       "nexus": {
-        "total_downloads": 336,
-        "unique_downloads": 269
+        "total_downloads": 337,
+        "unique_downloads": 270
       },
-      "combined_total": 718
+      "combined_total": 719
     },
     "the-vault": {
       "name": "The Vault",
@@ -251,10 +251,10 @@
         }
       },
       "nexus": {
-        "total_downloads": 198,
-        "unique_downloads": 160
+        "total_downloads": 199,
+        "unique_downloads": 161
       },
-      "combined_total": 346
+      "combined_total": 347
     },
     "crop-optimizer": {
       "name": "Crop Optimizer",
@@ -296,9 +296,9 @@
     }
   },
   "site_total": {
-    "thunderstore": 3212,
-    "nexus_total": 5384,
-    "nexus_unique": 4010,
-    "grand_total": 8596
+    "thunderstore": 3213,
+    "nexus_total": 5387,
+    "nexus_unique": 4013,
+    "grand_total": 8600
   }
 }
