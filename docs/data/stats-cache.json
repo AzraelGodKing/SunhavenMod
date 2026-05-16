@@ -1,5 +1,5 @@
 {
-  "lastFetched": "2026-05-16T13:21:16.286Z",
+  "lastFetched": "2026-05-16T14:56:09.148Z",
   "mods": {
     "senpais-chest": {
       "name": "Senpai's Chest",
@@ -59,22 +59,22 @@
         }
       },
       "nexus": {
-        "total_downloads": 1007,
-        "unique_downloads": 675
+        "total_downloads": 1008,
+        "unique_downloads": 676
       },
-      "combined_total": 1403
+      "combined_total": 1404
     },
     "museum-utility-tracker": {
       "name": "S.M.U.T.",
       "thunderstore": {
-        "total_downloads": 406,
+        "total_downloads": 409,
         "versions": {
-          "2.4.2": 37,
+          "2.4.2": 38,
           "2.4.0": 16,
           "2.3.0": 22,
-          "2.2.9": 6,
+          "2.2.9": 7,
           "2.2.6": 70,
-          "2.2.5": 31,
+          "2.2.5": 32,
           "2.2.3": 68,
           "2.2.2": 29,
           "2.2.1": 36,
@@ -87,7 +87,7 @@
         "total_downloads": 847,
         "unique_downloads": 669
       },
-      "combined_total": 1253
+      "combined_total": 1256
     },
     "squirrels-birthday-reminder": {
       "name": "A Squirrel's Birthday Reminder",
@@ -109,20 +109,20 @@
         }
       },
       "nexus": {
-        "total_downloads": 612,
-        "unique_downloads": 484
+        "total_downloads": 613,
+        "unique_downloads": 485
       },
-      "combined_total": 932
+      "combined_total": 933
     },
     "havens-todo": {
       "name": "Sun Haven Todo",
       "thunderstore": {
-        "total_downloads": 378,
+        "total_downloads": 382,
         "versions": {
           "1.4.3": 17,
           "1.4.2": 22,
           "1.4.0": 12,
-          "1.3.0": 15,
+          "1.3.0": 16,
           "1.2.0": 7,
           "1.1.10": 7,
           "1.1.8": 20,
@@ -133,14 +133,14 @@
           "1.1.1": 33,
           "1.1.0": 28,
           "1.0.1": 20,
-          "1.0.0": 21
+          "1.0.0": 24
         }
       },
       "nexus": {
         "total_downloads": 336,
         "unique_downloads": 269
       },
-      "combined_total": 714
+      "combined_total": 718
     },
     "the-vault": {
       "name": "The Vault",
@@ -296,9 +296,9 @@
     }
   },
   "site_total": {
-    "thunderstore": 3205,
-    "nexus_total": 5382,
-    "nexus_unique": 4008,
-    "grand_total": 8587
+    "thunderstore": 3212,
+    "nexus_total": 5384,
+    "nexus_unique": 4010,
+    "grand_total": 8596
   }
 }
