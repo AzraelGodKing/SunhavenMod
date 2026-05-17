@@ -1,5 +1,5 @@
 {
-  "lastFetched": "2026-05-17T20:51:22.506Z",
+  "lastFetched": "2026-05-17T21:54:38.321Z",
   "mods": {
     "senpais-chest": {
       "name": "Senpai's Chest",
@@ -30,10 +30,10 @@
         }
       },
       "nexus": {
-        "total_downloads": 571,
-        "unique_downloads": 415
+        "total_downloads": 572,
+        "unique_downloads": 416
       },
-      "combined_total": 1042
+      "combined_total": 1043
     },
     "havens-birthright": {
       "name": "Haven's Birthright",
@@ -59,10 +59,10 @@
         }
       },
       "nexus": {
-        "total_downloads": 1019,
-        "unique_downloads": 685
+        "total_downloads": 1020,
+        "unique_downloads": 686
       },
-      "combined_total": 1421
+      "combined_total": 1422
     },
     "museum-utility-tracker": {
       "name": "S.M.U.T.",
@@ -109,10 +109,10 @@
         }
       },
       "nexus": {
-        "total_downloads": 625,
-        "unique_downloads": 496
+        "total_downloads": 626,
+        "unique_downloads": 497
       },
-      "combined_total": 950
+      "combined_total": 951
     },
     "havens-todo": {
       "name": "Sun Haven Todo",
@@ -137,10 +137,10 @@
         }
       },
       "nexus": {
-        "total_downloads": 344,
-        "unique_downloads": 276
+        "total_downloads": 345,
+        "unique_downloads": 277
       },
-      "combined_total": 735
+      "combined_total": 736
     },
     "the-vault": {
       "name": "The Vault",
@@ -164,10 +164,10 @@
         }
       },
       "nexus": {
-        "total_downloads": 1135,
-        "unique_downloads": 796
+        "total_downloads": 1136,
+        "unique_downloads": 797
       },
-      "combined_total": 1461
+      "combined_total": 1462
     },
     "haven-dev-tools": {
       "name": "HavenDevTools",
@@ -297,8 +297,8 @@
   },
   "site_total": {
     "thunderstore": 3270,
-    "nexus_total": 5478,
-    "nexus_unique": 4090,
-    "grand_total": 8748
+    "nexus_total": 5483,
+    "nexus_unique": 4095,
+    "grand_total": 8753
   }
 }
