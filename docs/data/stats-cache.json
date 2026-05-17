@@ -1,5 +1,5 @@
 {
-  "lastFetched": "2026-05-17T03:24:43.236Z",
+  "lastFetched": "2026-05-17T06:44:00.483Z",
   "mods": {
     "senpais-chest": {
       "name": "Senpai's Chest",
@@ -59,15 +59,15 @@
         }
       },
       "nexus": {
-        "total_downloads": 1010,
-        "unique_downloads": 677
+        "total_downloads": 1011,
+        "unique_downloads": 678
       },
-      "combined_total": 1409
+      "combined_total": 1410
     },
     "museum-utility-tracker": {
       "name": "S.M.U.T.",
       "thunderstore": {
-        "total_downloads": 415,
+        "total_downloads": 416,
         "versions": {
           "2.4.2": 41,
           "2.4.0": 16,
@@ -77,7 +77,7 @@
           "2.2.5": 32,
           "2.2.3": 68,
           "2.2.2": 29,
-          "2.2.1": 36,
+          "2.2.1": 37,
           "2.2.0": 46,
           "2.1.1": 25,
           "2.1.0": 22
@@ -87,7 +87,7 @@
         "total_downloads": 851,
         "unique_downloads": 671
       },
-      "combined_total": 1266
+      "combined_total": 1267
     },
     "squirrels-birthday-reminder": {
       "name": "A Squirrel's Birthday Reminder",
@@ -271,10 +271,10 @@
         }
       },
       "nexus": {
-        "total_downloads": 255,
-        "unique_downloads": 210
+        "total_downloads": 256,
+        "unique_downloads": 211
       },
-      "combined_total": 370
+      "combined_total": 371
     },
     "havens-respec": {
       "name": "Haven's Respec",
@@ -289,16 +289,16 @@
         }
       },
       "nexus": {
-        "total_downloads": 86,
-        "unique_downloads": 75
+        "total_downloads": 87,
+        "unique_downloads": 76
       },
-      "combined_total": 183
+      "combined_total": 184
     }
   },
   "site_total": {
-    "thunderstore": 3244,
-    "nexus_total": 5409,
-    "nexus_unique": 4029,
-    "grand_total": 8653
+    "thunderstore": 3245,
+    "nexus_total": 5412,
+    "nexus_unique": 4032,
+    "grand_total": 8657
   }
 }
