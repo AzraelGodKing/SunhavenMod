@@ -1,5 +1,5 @@
 {
-  "lastFetched": "2026-05-23T20:05:15.445Z",
+  "lastFetched": "2026-05-23T21:54:40.898Z",
   "mods": {
     "senpais-chest": {
       "name": "Senpai's Chest",
@@ -84,10 +84,10 @@
         }
       },
       "nexus": {
-        "total_downloads": 882,
-        "unique_downloads": 699
+        "total_downloads": 884,
+        "unique_downloads": 701
       },
-      "combined_total": 1331
+      "combined_total": 1333
     },
     "squirrels-birthday-reminder": {
       "name": "A Squirrel's Birthday Reminder",
@@ -213,10 +213,10 @@
         }
       },
       "nexus": {
-        "total_downloads": 150,
-        "unique_downloads": 123
+        "total_downloads": 151,
+        "unique_downloads": 124
       },
-      "combined_total": 433
+      "combined_total": 434
     },
     "faster-races": {
       "name": "Faster Races",
@@ -297,8 +297,8 @@
   },
   "site_total": {
     "thunderstore": 3504,
-    "nexus_total": 5664,
-    "nexus_unique": 4253,
-    "grand_total": 9168
+    "nexus_total": 5667,
+    "nexus_unique": 4256,
+    "grand_total": 9171
   }
 }
