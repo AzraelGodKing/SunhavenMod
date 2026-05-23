@@ -1,5 +1,5 @@
 {
-  "lastFetched": "2026-05-23T22:53:20.002Z",
+  "lastFetched": "2026-05-23T23:57:04.037Z",
   "mods": {
     "senpais-chest": {
       "name": "Senpai's Chest",
@@ -67,9 +67,9 @@
     "museum-utility-tracker": {
       "name": "S.M.U.T.",
       "thunderstore": {
-        "total_downloads": 449,
+        "total_downloads": 450,
         "versions": {
-          "2.4.2": 56,
+          "2.4.2": 57,
           "2.4.0": 18,
           "2.3.0": 24,
           "2.2.9": 9,
@@ -87,7 +87,7 @@
         "total_downloads": 884,
         "unique_downloads": 701
       },
-      "combined_total": 1333
+      "combined_total": 1334
     },
     "squirrels-birthday-reminder": {
       "name": "A Squirrel's Birthday Reminder",
@@ -296,9 +296,9 @@
     }
   },
   "site_total": {
-    "thunderstore": 3508,
+    "thunderstore": 3509,
     "nexus_total": 5670,
     "nexus_unique": 4257,
-    "grand_total": 9178
+    "grand_total": 9179
   }
 }
