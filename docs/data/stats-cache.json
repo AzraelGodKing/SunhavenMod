@@ -1,5 +1,5 @@
 {
-  "lastFetched": "2026-05-24T19:16:12.894Z",
+  "lastFetched": "2026-05-24T20:55:11.841Z",
   "mods": {
     "senpais-chest": {
       "name": "Senpai's Chest",
@@ -30,10 +30,10 @@
         }
       },
       "nexus": {
-        "total_downloads": 595,
-        "unique_downloads": 435
+        "total_downloads": 596,
+        "unique_downloads": 436
       },
-      "combined_total": 1116
+      "combined_total": 1117
     },
     "havens-birthright": {
       "name": "Haven's Birthright",
@@ -84,10 +84,10 @@
         }
       },
       "nexus": {
-        "total_downloads": 889,
-        "unique_downloads": 706
+        "total_downloads": 890,
+        "unique_downloads": 707
       },
-      "combined_total": 1348
+      "combined_total": 1349
     },
     "squirrels-birthday-reminder": {
       "name": "A Squirrel's Birthday Reminder",
@@ -137,10 +137,10 @@
         }
       },
       "nexus": {
-        "total_downloads": 363,
-        "unique_downloads": 293
+        "total_downloads": 365,
+        "unique_downloads": 295
       },
-      "combined_total": 802
+      "combined_total": 804
     },
     "the-vault": {
       "name": "The Vault",
@@ -164,10 +164,10 @@
         }
       },
       "nexus": {
-        "total_downloads": 1158,
-        "unique_downloads": 816
+        "total_downloads": 1159,
+        "unique_downloads": 817
       },
-      "combined_total": 1516
+      "combined_total": 1517
     },
     "haven-dev-tools": {
       "name": "HavenDevTools",
@@ -213,10 +213,10 @@
         }
       },
       "nexus": {
-        "total_downloads": 153,
-        "unique_downloads": 126
+        "total_downloads": 154,
+        "unique_downloads": 127
       },
-      "combined_total": 444
+      "combined_total": 445
     },
     "faster-races": {
       "name": "Faster Races",
@@ -289,16 +289,16 @@
         }
       },
       "nexus": {
-        "total_downloads": 107,
-        "unique_downloads": 94
+        "total_downloads": 109,
+        "unique_downloads": 96
       },
-      "combined_total": 219
+      "combined_total": 221
     }
   },
   "site_total": {
     "thunderstore": 3618,
-    "nexus_total": 5711,
-    "nexus_unique": 4292,
-    "grand_total": 9329
+    "nexus_total": 5719,
+    "nexus_unique": 4300,
+    "grand_total": 9337
   }
 }
