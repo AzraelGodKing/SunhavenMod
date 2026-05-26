@@ -1,5 +1,5 @@
 {
-  "lastFetched": "2026-05-26T20:52:39.555Z",
+  "lastFetched": "2026-05-26T22:18:58.897Z",
   "mods": {
     "senpais-chest": {
       "name": "Senpai's Chest",
@@ -59,10 +59,10 @@
         }
       },
       "nexus": {
-        "total_downloads": 1068,
-        "unique_downloads": 725
+        "total_downloads": 1069,
+        "unique_downloads": 726
       },
-      "combined_total": 1513
+      "combined_total": 1514
     },
     "museum-utility-tracker": {
       "name": "S.M.U.T.",
@@ -164,10 +164,10 @@
         }
       },
       "nexus": {
-        "total_downloads": 1166,
-        "unique_downloads": 823
+        "total_downloads": 1169,
+        "unique_downloads": 824
       },
-      "combined_total": 1527
+      "combined_total": 1530
     },
     "haven-dev-tools": {
       "name": "HavenDevTools",
@@ -271,20 +271,20 @@
         }
       },
       "nexus": {
-        "total_downloads": 307,
-        "unique_downloads": 255
+        "total_downloads": 308,
+        "unique_downloads": 256
       },
-      "combined_total": 458
+      "combined_total": 459
     },
     "havens-respec": {
       "name": "Haven's Respec",
       "thunderstore": {
-        "total_downloads": 119,
+        "total_downloads": 120,
         "versions": {
           "1.3.2": 46,
           "1.3.0": 8,
           "1.2.0": 33,
-          "1.1.0": 14,
+          "1.1.0": 15,
           "1.0.1": 18
         }
       },
@@ -292,13 +292,13 @@
         "total_downloads": 119,
         "unique_downloads": 103
       },
-      "combined_total": 238
+      "combined_total": 239
     }
   },
   "site_total": {
-    "thunderstore": 3710,
-    "nexus_total": 5821,
-    "nexus_unique": 4387,
-    "grand_total": 9531
+    "thunderstore": 3711,
+    "nexus_total": 5826,
+    "nexus_unique": 4390,
+    "grand_total": 9537
   }
 }
