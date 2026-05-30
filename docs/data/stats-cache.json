@@ -1,5 +1,5 @@
 {
-  "lastFetched": "2026-05-30T19:14:55.520Z",
+  "lastFetched": "2026-05-30T20:56:33.475Z",
   "mods": {
     "senpais-chest": {
       "name": "Senpai's Chest",
@@ -109,10 +109,10 @@
         }
       },
       "nexus": {
-        "total_downloads": 675,
-        "unique_downloads": 540
+        "total_downloads": 677,
+        "unique_downloads": 542
       },
-      "combined_total": 1065
+      "combined_total": 1067
     },
     "havens-todo": {
       "name": "Sun Haven Todo",
@@ -196,7 +196,7 @@
     "havens-almanac": {
       "name": "Haven's Almanac",
       "thunderstore": {
-        "total_downloads": 305,
+        "total_downloads": 306,
         "versions": {
           "1.4.2": 47,
           "1.4.0": 5,
@@ -208,15 +208,15 @@
           "1.0.4": 33,
           "1.0.3": 69,
           "1.0.2": 21,
-          "1.0.1": 33,
+          "1.0.1": 34,
           "1.0.0": 30
         }
       },
       "nexus": {
-        "total_downloads": 171,
-        "unique_downloads": 143
+        "total_downloads": 172,
+        "unique_downloads": 144
       },
-      "combined_total": 476
+      "combined_total": 478
     },
     "faster-races": {
       "name": "Faster Races",
@@ -240,10 +240,10 @@
     "trinket-fortune": {
       "name": "Trinket Fortune",
       "thunderstore": {
-        "total_downloads": 196,
+        "total_downloads": 197,
         "versions": {
           "1.2.2": 50,
-          "1.2.0": 12,
+          "1.2.0": 13,
           "1.1.0": 15,
           "1.0.5": 9,
           "1.0.3": 24,
@@ -254,7 +254,7 @@
         "total_downloads": 224,
         "unique_downloads": 185
       },
-      "combined_total": 420
+      "combined_total": 421
     },
     "crop-optimizer": {
       "name": "Crop Optimizer",
@@ -271,10 +271,10 @@
         }
       },
       "nexus": {
-        "total_downloads": 329,
-        "unique_downloads": 274
+        "total_downloads": 330,
+        "unique_downloads": 275
       },
-      "combined_total": 492
+      "combined_total": 493
     },
     "havens-respec": {
       "name": "Haven's Respec",
@@ -289,16 +289,16 @@
         }
       },
       "nexus": {
-        "total_downloads": 128,
+        "total_downloads": 130,
         "unique_downloads": 111
       },
-      "combined_total": 258
+      "combined_total": 260
     }
   },
   "site_total": {
-    "thunderstore": 3873,
-    "nexus_total": 5970,
-    "nexus_unique": 4507,
-    "grand_total": 9843
+    "thunderstore": 3875,
+    "nexus_total": 5976,
+    "nexus_unique": 4511,
+    "grand_total": 9851
   }
 }
