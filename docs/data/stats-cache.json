@@ -1,5 +1,5 @@
 {
-  "lastFetched": "2026-05-30T11:20:00.694Z",
+  "lastFetched": "2026-05-30T13:28:19.058Z",
   "mods": {
     "senpais-chest": {
       "name": "Senpai's Chest",
@@ -240,11 +240,11 @@
     "trinket-fortune": {
       "name": "Trinket Fortune",
       "thunderstore": {
-        "total_downloads": 194,
+        "total_downloads": 196,
         "versions": {
           "1.2.2": 50,
-          "1.2.0": 11,
-          "1.1.0": 14,
+          "1.2.0": 12,
+          "1.1.0": 15,
           "1.0.5": 9,
           "1.0.3": 24,
           "1.0.0": 86
@@ -254,7 +254,7 @@
         "total_downloads": 223,
         "unique_downloads": 184
       },
-      "combined_total": 417
+      "combined_total": 419
     },
     "crop-optimizer": {
       "name": "Crop Optimizer",
@@ -296,9 +296,9 @@
     }
   },
   "site_total": {
-    "thunderstore": 3856,
+    "thunderstore": 3858,
     "nexus_total": 5958,
     "nexus_unique": 4496,
-    "grand_total": 9814
+    "grand_total": 9816
   }
 }
