@@ -1,5 +1,5 @@
 {
-  "lastFetched": "2026-05-30T15:06:03.601Z",
+  "lastFetched": "2026-05-30T17:03:44.745Z",
   "mods": {
     "senpais-chest": {
       "name": "Senpai's Chest",
@@ -38,7 +38,7 @@
     "havens-birthright": {
       "name": "Haven's Birthright",
       "thunderstore": {
-        "total_downloads": 467,
+        "total_downloads": 470,
         "versions": {
           "2.2.2": 63,
           "2.2.0": 9,
@@ -49,11 +49,11 @@
           "1.4.1": 49,
           "1.4.0": 11,
           "1.3.3": 61,
-          "1.3.2": 22,
+          "1.3.2": 23,
           "1.3.1": 21,
-          "1.3.0": 27,
+          "1.3.0": 28,
           "1.2.3": 25,
-          "1.2.2": 26,
+          "1.2.2": 27,
           "1.2.1": 40,
           "1.2.0": 26
         }
@@ -62,7 +62,7 @@
         "total_downloads": 1083,
         "unique_downloads": 738
       },
-      "combined_total": 1550
+      "combined_total": 1553
     },
     "museum-utility-tracker": {
       "name": "S.M.U.T.",
@@ -117,9 +117,9 @@
     "havens-todo": {
       "name": "Sun Haven Todo",
       "thunderstore": {
-        "total_downloads": 467,
+        "total_downloads": 468,
         "versions": {
-          "1.4.3": 55,
+          "1.4.3": 56,
           "1.4.2": 24,
           "1.4.0": 15,
           "1.3.0": 19,
@@ -140,7 +140,7 @@
         "total_downloads": 379,
         "unique_downloads": 306
       },
-      "combined_total": 846
+      "combined_total": 847
     },
     "the-vault": {
       "name": "The Vault",
@@ -164,10 +164,10 @@
         }
       },
       "nexus": {
-        "total_downloads": 1189,
-        "unique_downloads": 839
+        "total_downloads": 1190,
+        "unique_downloads": 840
       },
-      "combined_total": 1558
+      "combined_total": 1559
     },
     "haven-dev-tools": {
       "name": "HavenDevTools",
@@ -271,10 +271,10 @@
         }
       },
       "nexus": {
-        "total_downloads": 327,
-        "unique_downloads": 272
+        "total_downloads": 328,
+        "unique_downloads": 273
       },
-      "combined_total": 489
+      "combined_total": 490
     },
     "havens-respec": {
       "name": "Haven's Respec",
@@ -296,9 +296,9 @@
     }
   },
   "site_total": {
-    "thunderstore": 3868,
-    "nexus_total": 5961,
-    "nexus_unique": 4498,
-    "grand_total": 9829
+    "thunderstore": 3872,
+    "nexus_total": 5963,
+    "nexus_unique": 4500,
+    "grand_total": 9835
   }
 }
