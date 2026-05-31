@@ -1,5 +1,5 @@
 {
-  "lastFetched": "2026-05-31T20:07:13.414Z",
+  "lastFetched": "2026-05-31T21:59:06.371Z",
   "mods": {
     "senpais-chest": {
       "name": "Senpai's Chest",
@@ -109,10 +109,10 @@
         }
       },
       "nexus": {
-        "total_downloads": 682,
-        "unique_downloads": 546
+        "total_downloads": 683,
+        "unique_downloads": 547
       },
-      "combined_total": 1075
+      "combined_total": 1076
     },
     "havens-todo": {
       "name": "Sun Haven Todo",
@@ -297,8 +297,8 @@
   },
   "site_total": {
     "thunderstore": 3891,
-    "nexus_total": 6022,
-    "nexus_unique": 4549,
-    "grand_total": 9913
+    "nexus_total": 6023,
+    "nexus_unique": 4550,
+    "grand_total": 9914
   }
 }
