@@ -1,5 +1,5 @@
 {
-  "lastFetched": "2026-05-31T10:56:37.406Z",
+  "lastFetched": "2026-05-31T12:12:40.551Z",
   "mods": {
     "senpais-chest": {
       "name": "Senpai's Chest",
@@ -271,10 +271,10 @@
         }
       },
       "nexus": {
-        "total_downloads": 332,
-        "unique_downloads": 276
+        "total_downloads": 333,
+        "unique_downloads": 277
       },
-      "combined_total": 496
+      "combined_total": 497
     },
     "havens-respec": {
       "name": "Haven's Respec",
@@ -297,8 +297,8 @@
   },
   "site_total": {
     "thunderstore": 3884,
-    "nexus_total": 5998,
-    "nexus_unique": 4528,
-    "grand_total": 9882
+    "nexus_total": 5999,
+    "nexus_unique": 4529,
+    "grand_total": 9883
   }
 }
