@@ -213,19 +213,55 @@ jobs:
           if-no-files-found: error
 
   # ---------------------------------------------------------------------------
+  # Prepare release — recompute mod matrix after build (do not read setup.outputs
+  # in the release matrix when this job also needs the build matrix; mod=all was
+  # skipping release entirely with 0 steps — see runs #124–#126).
+  # ---------------------------------------------------------------------------
+  prepare-release:
+    name: Prepare release
+    if: >-
+      always() &&
+      github.event_name == 'workflow_dispatch' &&
+      github.event.inputs.build_only != 'true' &&
+      needs.setup.result == 'success' &&
+      needs.build.result == 'success'
+    needs: [setup, build]
+    runs-on: ubuntu-latest
+    outputs:
+      matrix: ${{ steps.set-matrix.outputs.matrix }}
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set release mod matrix
+        id: set-matrix
+        shell: bash
+        env:
+          MOD_INPUT: ${{ github.event.inputs.mod }}
+        run: |
+          set -euo pipefail
+          if [ "$MOD_INPUT" == "all" ]; then
+            echo "matrix=$(jq -c '[.[].modKey]' scripts/mod-matrix.json)" >> "$GITHUB_OUTPUT"
+          else
+            echo "matrix=[\"$MOD_INPUT\"]" >> "$GITHUB_OUTPUT"
+          fi
+          COUNT="$(jq 'length' scripts/mod-matrix.json)"
+          echo "Release matrix for mod=$MOD_INPUT (${COUNT} mods in matrix file)"
+
+  # ---------------------------------------------------------------------------
   # Release — package + publish (workflow_dispatch only, unless build_only)
   # Order: package → GitHub Release → Thunderstore → Nexus → Discord → summary
   # ---------------------------------------------------------------------------
   release:
-    if: github.event_name == 'workflow_dispatch' && github.event.inputs.build_only != 'true'
-    needs: [setup, build]
+    if: needs.prepare-release.result == 'success'
+    needs: prepare-release
     runs-on: ubuntu-latest
     permissions:
       contents: write
     strategy:
       fail-fast: false
       matrix:
-        mod: ${{ fromJson(needs.setup.outputs.matrix) }}
+        mod: ${{ fromJson(needs.prepare-release.outputs.matrix) }}
 
     steps:
       - name: Checkout repository
@@ -840,9 +876,10 @@ jobs:
   # ---------------------------------------------------------------------------
   release_aggregate_report:
     name: Combined release report
-    needs: release
+    needs: [prepare-release, release]
     if: >-
       always() &&
+      needs.prepare-release.result != 'skipped' &&
       needs.release.result != 'skipped'
     runs-on: ubuntu-latest
     steps:
