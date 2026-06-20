@@ -277,6 +277,15 @@ jobs:
           ls -lh "../$(basename "$PACKAGE_ZIP")"
           test -f "../$(basename "$PACKAGE_ZIP")" || { echo "::error::Missing ../$(basename "$PACKAGE_ZIP") after packaging"; exit 1; }
           echo "zip_path=$PACKAGE_ZIP" >> "$GITHUB_OUTPUT"
+          # Stage a copy OUTSIDE the workspace. Docker-based publish actions
+          # (e.g. the Thunderstore upload action) reset the workspace and wipe
+          # the uncommitted dist/ tree, which breaks the later Nexus step
+          # (see run #142). $RUNNER_TEMP survives that reset.
+          cd "$GITHUB_WORKSPACE"
+          STAGE="$RUNNER_TEMP/release-pkg"
+          mkdir -p "$STAGE"
+          cp "$PACKAGE_ZIP" "$STAGE/"
+          echo "zip_name=$(basename "$PACKAGE_ZIP")" >> "$GITHUB_OUTPUT"
 
       - name: Upload dry-run zip artifact
         if: inputs.dry_run == 'true' && inputs.publish_discord_only != 'true' && inputs.mod != 'test_discord'
@@ -370,6 +379,15 @@ jobs:
           steps.config.outputs.nexus_file_group_id != ''
         run: |
           set -euo pipefail
+          # Docker-based publish actions (Thunderstore) can reset the workspace
+          # and wipe the uncommitted dist/ tree; restore the staged zip first.
+          STAGE="$RUNNER_TEMP/release-pkg"
+          NAME="${{ steps.package_step.outputs.zip_name }}"
+          if [ -n "$NAME" ] && [ ! -f "dist/$NAME" ] && [ -f "$STAGE/$NAME" ]; then
+            echo "::warning::dist/$NAME missing (workspace reset by a publish action); restoring from $STAGE."
+            mkdir -p dist
+            cp "$STAGE/$NAME" "dist/$NAME"
+          fi
           CANDIDATE="${{ steps.package_step.outputs.zip_path }}"
           EXPECTED="dist/${{ steps.config.outputs.thunderstore_name }}-${{ steps.config.outputs.version }}.zip"
           Z="${CANDIDATE:-$EXPECTED}"
@@ -381,9 +399,15 @@ jobs:
             if [ "${#ZIPS[@]}" -eq 1 ]; then
               Z="${ZIPS[0]}"
               echo "::warning::Using fallback zip: $Z"
+            elif [ -f "$STAGE/$NAME" ]; then
+              mkdir -p dist
+              cp "$STAGE/$NAME" "dist/$NAME"
+              Z="dist/$NAME"
+              echo "::warning::Restored staged zip: $Z"
             else
               echo "::error::Missing package zip. package_step output='${CANDIDATE:-<empty>}' expected='$EXPECTED'."
               if [ -d dist ]; then ls -lah dist; else echo "::warning::dist/ directory does not exist."; fi
+              if [ -d "$STAGE" ]; then echo "stage contents:"; ls -lah "$STAGE"; fi
               exit 1
             fi
           fi
