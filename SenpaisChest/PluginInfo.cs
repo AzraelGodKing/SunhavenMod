@@ -4,6 +4,6 @@ namespace SenpaisChest
     {
         public const string PLUGIN_GUID = "com.azraelgodking.senpaischest";
         public const string PLUGIN_NAME = "Senpai's Chest";
-        public const string PLUGIN_VERSION = "2.7.5";
+        public const string PLUGIN_VERSION = "3.0.0";
     }
 }

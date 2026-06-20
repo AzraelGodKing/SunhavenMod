@@ -1,6 +1,6 @@
 {
   "name": "TrinketFortune",
-  "version_number": "1.2.7",
+  "version_number": "2.0.0",
   "website_url": "https://www.nexusmods.com/sunhaven/mods/498",
   "description": "Increases odds of unowned fishing trinkets dropping as you complete the aquarium. Less grind for that last trinket.",
   "dependencies": ["BepInEx-BepInExPack-5.4.2100"]
