@@ -1,0 +1,658 @@
+name: Reusable — release one mod
+
+on:
+  workflow_call:
+    inputs:
+      mod:
+        type: string
+        required: true
+      ref:
+        type: string
+        required: true
+      dry_run:
+        type: string
+        default: "false"
+      publish_thunderstore:
+        type: string
+        default: "false"
+      publish_nexus:
+        type: string
+        default: "false"
+      create_github_release:
+        type: string
+        default: "false"
+      release_anyway:
+        type: string
+        default: "false"
+      test_discord:
+        type: string
+        default: "false"
+      publish_discord_only:
+        type: string
+        default: "false"
+      ignore_discord_notify:
+        type: string
+        default: "false"
+
+env:
+  THUNDERSTORE_NAMESPACE: "AzraelGodKing"
+  THUNDERSTORE_COMMUNITY: "sun-haven"
+  THUNDERSTORE_CATEGORIES: "mods"
+  THUNDERSTORE_DEPS: "BepInEx-BepInExPack@5.4.2100"
+
+jobs:
+  release-mod:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.ref }}
+
+
+      - name: Load mod metadata (matrix + versions.json)
+        id: config
+        run: |
+          MOD_KEY="${{ inputs.mod }}"
+          if [ "$MOD_KEY" == "test_discord" ]; then
+            echo "json_key=test_discord" >> "$GITHUB_OUTPUT"
+            echo "mod_dir=TestDiscord" >> "$GITHUB_OUTPUT"
+            echo "dll_name=TestDiscord" >> "$GITHUB_OUTPUT"
+            echo "thunderstore_name=TestDiscord" >> "$GITHUB_OUTPUT"
+            echo "version=0.0.0-test" >> "$GITHUB_OUTPUT"
+            echo "display_name=Test Discord Notification" >> "$GITHUB_OUTPUT"
+            echo "description=Test run" >> "$GITHUB_OUTPUT"
+            echo "changelog=Workflow test." >> "$GITHUB_OUTPUT"
+            echo "skip_discord_for_almanac=false" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+          MOD_JSON="$(jq -c --arg key "$MOD_KEY" '.[] | select(.modKey == $key)' scripts/mod-matrix.json)"
+          if [ -z "$MOD_JSON" ]; then
+            echo "❌ Unknown mod: $MOD_KEY"
+            exit 1
+          fi
+          JSON_KEY="$(echo "$MOD_JSON" | jq -r '.jsonKey')"
+          echo "json_key=$JSON_KEY" >> "$GITHUB_OUTPUT"
+          echo "mod_dir=$(echo "$MOD_JSON" | jq -r '.modDir')" >> "$GITHUB_OUTPUT"
+          echo "dll_name=$(echo "$MOD_JSON" | jq -r '.dllName')" >> "$GITHUB_OUTPUT"
+          echo "thunderstore_name=$(echo "$MOD_JSON" | jq -r '.thunderstoreName')" >> "$GITHUB_OUTPUT"
+          echo "version=$(jq -r ".[\"$JSON_KEY\"].version" docs/versions.json)" >> "$GITHUB_OUTPUT"
+          echo "display_name=$(jq -r ".[\"$JSON_KEY\"].name" docs/versions.json)" >> "$GITHUB_OUTPUT"
+          echo "description=$(jq -r ".[\"$JSON_KEY\"].description" docs/versions.json)" >> "$GITHUB_OUTPUT"
+          echo "changelog=$(jq -r ".[\"$JSON_KEY\"].changelog" docs/versions.json)" >> "$GITHUB_OUTPUT"
+          NEXUS_URL=$(jq -r ".[\"$JSON_KEY\"].nexus // \"\"" docs/versions.json)
+          NEXUS_FILE_GROUP_ID=$(jq -r ".[\"$JSON_KEY\"].nexus_file_group_id // empty" docs/versions.json)
+          echo "nexus_url=$NEXUS_URL" >> "$GITHUB_OUTPUT"
+          if [ -z "$NEXUS_FILE_GROUP_ID" ] || [ "$NEXUS_FILE_GROUP_ID" == "null" ]; then
+            NEXUS_FILE_GROUP_ID=""
+            if [ -n "$NEXUS_URL" ] && [ "$NEXUS_URL" != "null" ]; then
+              NEXUS_FILE_GROUP_ID=$(echo "$NEXUS_URL" | sed -n 's|.*/mods/\([0-9]*\)$|\1|p')
+            fi
+          fi
+          echo "nexus_file_group_id=$NEXUS_FILE_GROUP_ID" >> "$GITHUB_OUTPUT"
+          echo "thunderstore_url=$(jq -r ".[\"$JSON_KEY\"].thunderstore // \"\"" docs/versions.json)" >> "$GITHUB_OUTPUT"
+          echo "skip_discord_for_almanac=false" >> "$GITHUB_OUTPUT"
+
+      - name: Download built DLL artifact
+        if: inputs.publish_discord_only != 'true' && inputs.mod != 'test_discord'
+        uses: actions/download-artifact@v7
+        with:
+          name: built-${{ inputs.mod }}
+          path: builds/${{ steps.config.outputs.mod_dir }}
+
+      - name: Restore upstream version cache
+        if: inputs.publish_discord_only != 'true' && inputs.dry_run != 'true'
+        uses: actions/cache/restore@v4
+        with:
+          path: .cache/upstream-version
+          key: upstream-version-${{ github.repository }}-${{ inputs.mod }}-${{ github.run_id }}
+          restore-keys: |
+            upstream-version-${{ github.repository }}-${{ inputs.mod }}-
+
+      - name: Upstream version gate (GitHub + Thunderstore + Nexus APIs)
+        id: version_check
+        if: inputs.publish_discord_only != 'true'
+        env:
+          NEXUS_API_KEY: ${{ secrets.NEXUSMODS_API_KEY }}
+        run: |
+          set -euo pipefail
+          if [ "${{ inputs.dry_run }}" == "true" ]; then
+            echo "version_unchanged=false" >> "$GITHUB_OUTPUT"
+            echo "version_match_sources=" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+          if [ "${{ inputs.release_anyway }}" == "true" ]; then
+            echo "release_anyway: skipping upstream gate"
+            echo "version_unchanged=false" >> "$GITHUB_OUTPUT"
+            echo "version_match_sources=" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+
+          TS_NAME="${{ steps.config.outputs.thunderstore_name }}"
+          CUR="${{ steps.config.outputs.version }}"
+          NEXUS_URL="${{ steps.config.outputs.nexus_url }}"
+
+          if [ "$TS_NAME" == "TestDiscord" ]; then
+            echo "version_unchanged=false" >> "$GITHUB_OUTPUT"
+            echo "version_match_sources=" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+
+          CACHE_DIR=".cache/upstream-version"
+          CACHE_FILE="$CACHE_DIR/${{ inputs.mod }}.json"
+          CACHE_TTL=21600
+          mkdir -p "$CACHE_DIR"
+          NOW="$(date +%s)"
+
+          GH_V="" TS_V="" NX_V="" CACHE_USED=false
+          if [ -f "$CACHE_FILE" ]; then
+            TS_CACHE="$(jq -r '.checked_at_epoch // 0' "$CACHE_FILE" 2>/dev/null || echo 0)"
+            if [ $((NOW - TS_CACHE)) -lt $CACHE_TTL ]; then
+              GH_V="$(jq -r '.github_version // ""' "$CACHE_FILE")"
+              TS_V="$(jq -r '.thunderstore_version // ""' "$CACHE_FILE")"
+              NX_V="$(jq -r '.nexus_version // ""' "$CACHE_FILE")"
+              CACHE_USED=true
+            fi
+          fi
+
+          if [ "$CACHE_USED" != "true" ]; then
+            REL_JSON=$(curl -sSf -H "Accept: application/vnd.github+json" \
+              -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" \
+              "${{ github.api_url }}/repos/${{ github.repository }}/releases?per_page=100" | \
+              jq -r --arg p "${TS_NAME}-v" '[.[] | select(.tag_name | startswith($p))] | sort_by(.published_at) | reverse | .[0] // empty')
+            if [ -n "$REL_JSON" ] && [ "$REL_JSON" != "null" ]; then
+              GH_V="$(echo "$REL_JSON" | jq -r '.tag_name | split("-v")[1] // empty')"
+            fi
+            TS_API="https://thunderstore.io/c/${{ env.THUNDERSTORE_COMMUNITY }}/api/v1/package/${{ env.THUNDERSTORE_NAMESPACE }}/${TS_NAME}/"
+            TS_BODY="$(curl -sSf "$TS_API" || true)"
+            if [ -n "$TS_BODY" ]; then
+              TS_V="$(echo "$TS_BODY" | jq -r '.versions[0].version_number // empty' 2>/dev/null || true)"
+            fi
+            MOD_ID="$(echo "$NEXUS_URL" | sed -n 's|.*/mods/\([0-9][0-9]*\)$|\1|p')"
+            if [ -n "$MOD_ID" ] && [ -n "${NEXUS_API_KEY:-}" ]; then
+              NX_BODY="$(curl -sS -H "accept: application/json" -H "apikey: $NEXUS_API_KEY" \
+                "https://api.nexusmods.com/v1/games/sunhaven/mods/${MOD_ID}/files.json" || true)"
+              if [ -n "$NX_BODY" ]; then
+                NX_V="$(echo "$NX_BODY" | jq -r '[.files[]? | select((.version // "") != "")] | sort_by(.uploaded_timestamp // 0) | reverse | .[0].version // empty' 2>/dev/null || true)"
+              fi
+            fi
+            jq -n \
+              --argjson checked_at_epoch "$NOW" \
+              --arg github_version "$GH_V" \
+              --arg thunderstore_version "$TS_V" \
+              --arg nexus_version "$NX_V" \
+              '{checked_at_epoch:$checked_at_epoch, github_version:$github_version, thunderstore_version:$thunderstore_version, nexus_version:$nexus_version}' \
+              > "$CACHE_FILE"
+          fi
+
+          MATCH=()
+          [ -n "$GH_V" ] && [ "$GH_V" == "$CUR" ] && MATCH+=("github")
+          [ -n "$TS_V" ] && [ "$TS_V" == "$CUR" ] && MATCH+=("thunderstore")
+          [ -n "$NX_V" ] && [ "$NX_V" == "$CUR" ] && MATCH+=("nexus")
+
+          if [ "${#MATCH[@]}" -gt 0 ]; then
+            IFS=,
+            echo "version_unchanged=true" >> "$GITHUB_OUTPUT"
+            echo "version_match_sources=${MATCH[*]}" >> "$GITHUB_OUTPUT"
+            IFS=
+          else
+            echo "version_unchanged=false" >> "$GITHUB_OUTPUT"
+            echo "version_match_sources=" >> "$GITHUB_OUTPUT"
+          fi
+
+          echo "upstream_github_version=$GH_V" >> "$GITHUB_OUTPUT"
+          echo "upstream_thunderstore_version=$TS_V" >> "$GITHUB_OUTPUT"
+          echo "upstream_nexus_version=$NX_V" >> "$GITHUB_OUTPUT"
+          echo "upstream_cache_used=$CACHE_USED" >> "$GITHUB_OUTPUT"
+
+      - name: Save upstream version cache
+        if: inputs.publish_discord_only != 'true' && inputs.dry_run != 'true' && always()
+        uses: actions/cache/save@v4
+        with:
+          path: .cache/upstream-version
+          key: upstream-version-${{ github.repository }}-${{ inputs.mod }}-${{ github.run_id }}
+
+      - name: Skip — version already on upstream
+        if: inputs.publish_discord_only != 'true' && steps.version_check.outputs.version_unchanged == 'true'
+        run: |
+          SRC="${{ steps.version_check.outputs.version_match_sources }}"
+          echo "✅ Skipping: ${{ steps.config.outputs.display_name }} v${{ steps.config.outputs.version }} already on upstream (sources: ${SRC:-unknown})"
+
+      - name: Package Thunderstore-style zip
+        id: package_step
+        if: >-
+          inputs.publish_discord_only != 'true' &&
+          steps.version_check.outputs.version_unchanged != 'true'
+        env:
+          PACKAGE_MANIFEST_DESCRIPTION: ${{ steps.config.outputs.description }}
+        run: |
+          set -euo pipefail
+          mkdir -p dist/package
+          PACKAGE_ZIP="dist/${{ steps.config.outputs.thunderstore_name }}-${{ steps.config.outputs.version }}.zip"
+          rm -f "$PACKAGE_ZIP"
+          if [ "${{ inputs.mod }}" == "test_discord" ]; then
+            echo "test" > dist/package/readme.txt
+            cd dist/package && zip -r "../TestDiscord-0.0.0-test.zip" .
+            echo "zip_path=dist/TestDiscord-0.0.0-test.zip" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+          DLL="builds/${{ steps.config.outputs.mod_dir }}/${{ steps.config.outputs.dll_name }}.dll"
+          test -f "$DLL" || { echo "::error::Missing $DLL"; exit 1; }
+          cp "$DLL" dist/package/
+          if [ "${{ inputs.mod }}" = "thevault" ]; then
+            ABS="builds/${{ steps.config.outputs.mod_dir }}/TheVault.Abstractions.dll"
+            test -f "$ABS" || { echo "::error::Missing $ABS"; exit 1; }
+            cp "$ABS" dist/package/
+          fi
+          TS_DIR="${{ steps.config.outputs.mod_dir }}/thunderstore"
+          if [ -f "$TS_DIR/manifest.json" ]; then
+            cp "$TS_DIR/manifest.json" dist/package/
+          else
+            cat > dist/package/manifest.json << EOF
+          {
+            "name": "${{ steps.config.outputs.thunderstore_name }}",
+            "version_number": "${{ steps.config.outputs.version }}",
+            "website_url": "",
+            "description": "${{ steps.config.outputs.description }}",
+            "dependencies": ["BepInEx-BepInExPack-5.4.2100"]
+          }
+          EOF
+          fi
+          if [ -f "$TS_DIR/icon.png" ]; then ICON="$TS_DIR/icon.png"
+          elif [ -f "builds/${{ steps.config.outputs.mod_dir }}/icon.png" ]; then ICON="builds/${{ steps.config.outputs.mod_dir }}/icon.png"
+          else echo "::error::icon.png required"; exit 1
+          fi
+          cp "$ICON" dist/package/icon.png
+          if [ -f "$TS_DIR/README.md" ]; then cp "$TS_DIR/README.md" dist/package/
+          elif [ -f "${{ steps.config.outputs.mod_dir }}/README.md" ]; then cp "${{ steps.config.outputs.mod_dir }}/README.md" dist/package/README.md
+          fi
+          if [ -f dist/package/manifest.json ]; then
+            jq --arg d "$PACKAGE_MANIFEST_DESCRIPTION" '.description = $d' dist/package/manifest.json > dist/package/manifest.json.new && mv dist/package/manifest.json.new dist/package/manifest.json
+          fi
+          cd dist/package
+          sed -i "s/\"version_number\": \".*\"/\"version_number\": \"${{ steps.config.outputs.version }}\"/" manifest.json
+          zip -r "../$(basename "$PACKAGE_ZIP")" .
+          ls -lh "../$(basename "$PACKAGE_ZIP")"
+          test -f "../$(basename "$PACKAGE_ZIP")" || { echo "::error::Missing ../$(basename "$PACKAGE_ZIP") after packaging"; exit 1; }
+          echo "zip_path=$PACKAGE_ZIP" >> "$GITHUB_OUTPUT"
+
+      - name: Upload dry-run zip artifact
+        if: inputs.dry_run == 'true' && inputs.publish_discord_only != 'true' && inputs.mod != 'test_discord'
+        uses: actions/upload-artifact@v6
+        with:
+          name: dry-run-${{ steps.config.outputs.thunderstore_name }}-${{ steps.config.outputs.version }}
+          path: ${{ steps.package_step.outputs.zip_path }}
+          if-no-files-found: error
+
+      - name: Package diagnostics (zip path + SHA256)
+        if: >-
+          inputs.publish_discord_only != 'true' &&
+          steps.version_check.outputs.version_unchanged != 'true' &&
+          inputs.mod != 'test_discord'
+        run: |
+          set -euo pipefail
+          Z="${{ steps.package_step.outputs.zip_path }}"
+          test -n "$Z" || { echo "::error::package_step output zip_path is empty"; exit 1; }
+          test -f "$Z" || { echo "::error::Missing package zip at $Z"; exit 1; }
+          SHA="$(sha256sum "$Z" | awk '{print $1}')"
+          SIZE="$(stat -c%s "$Z")"
+          {
+            echo "### Package diagnostics"
+            echo "- Mod: \`${{ inputs.mod }}\`"
+            echo "- Zip: \`$Z\`"
+            echo "- Size (bytes): \`$SIZE\`"
+            echo "- SHA256: \`$SHA\`"
+          } >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Dry run notice
+        if: inputs.dry_run == 'true'
+        run: |
+          echo "DRY RUN: package artifact uploaded; no GitHub/Thunderstore/Nexus/Discord publish."
+
+      - name: Create GitHub Release
+        id: create_github_release_step
+        if: >-
+          inputs.dry_run != 'true' &&
+          inputs.publish_discord_only != 'true' &&
+          inputs.create_github_release == 'true' &&
+          inputs.test_discord != 'true' &&
+          steps.version_check.outputs.version_unchanged != 'true'
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: "${{ steps.config.outputs.thunderstore_name }}-v${{ steps.config.outputs.version }}"
+          name: "${{ steps.config.outputs.display_name }} v${{ steps.config.outputs.version }}"
+          body: |
+            ## ${{ steps.config.outputs.display_name }} v${{ steps.config.outputs.version }}
+
+            ### Changes
+            ${{ steps.config.outputs.changelog }}
+
+            ### Installation
+            - **Thunderstore**: r2modman / Thunderstore app
+            - **Nexus**: zip below → BepInEx/plugins
+            - **Manual**: DLL → `Sun Haven/BepInEx/plugins/`
+          files: ${{ steps.package_step.outputs.zip_path }}
+          draft: false
+          prerelease: false
+
+      - name: Publish to Thunderstore
+        id: publish_thunderstore_step
+        if: >-
+          inputs.dry_run != 'true' &&
+          inputs.publish_discord_only != 'true' &&
+          inputs.publish_thunderstore == 'true' &&
+          inputs.test_discord != 'true' &&
+          steps.version_check.outputs.version_unchanged != 'true'
+        uses: GreenTF/upload-thunderstore-package@v4.3
+        with:
+          token: ${{ secrets.THUNDERSTORE_TOKEN }}
+          namespace: ${{ env.THUNDERSTORE_NAMESPACE }}
+          name: ${{ steps.config.outputs.thunderstore_name }}
+          description: ${{ steps.config.outputs.description }}
+          version: ${{ steps.config.outputs.version }}
+          community: ${{ env.THUNDERSTORE_COMMUNITY }}
+          repo: thunderstore.io
+          categories: |
+            ${{ env.THUNDERSTORE_CATEGORIES }}
+          deps: ${{ env.THUNDERSTORE_DEPS }}
+          file: ${{ steps.package_step.outputs.zip_path }}
+
+      - name: Nexus — resolve and verify zip
+        id: nexus_preflight
+        if: >-
+          inputs.dry_run != 'true' &&
+          inputs.publish_discord_only != 'true' &&
+          inputs.publish_nexus == 'true' &&
+          inputs.test_discord != 'true' &&
+          steps.version_check.outputs.version_unchanged != 'true' &&
+          steps.config.outputs.nexus_file_group_id != ''
+        run: |
+          set -euo pipefail
+          CANDIDATE="${{ steps.package_step.outputs.zip_path }}"
+          EXPECTED="dist/${{ steps.config.outputs.thunderstore_name }}-${{ steps.config.outputs.version }}.zip"
+          Z="${CANDIDATE:-$EXPECTED}"
+          if [ ! -f "$Z" ]; then
+            echo "::warning::Expected zip not found at $EXPECTED. Looking for fallback dist/*.zip."
+            shopt -s nullglob
+            ZIPS=(dist/*.zip)
+            shopt -u nullglob
+            if [ "${#ZIPS[@]}" -eq 1 ]; then
+              Z="${ZIPS[0]}"
+              echo "::warning::Using fallback zip: $Z"
+            else
+              echo "::error::Missing package zip. package_step output='${CANDIDATE:-<empty>}' expected='$EXPECTED'."
+              if [ -d dist ]; then ls -lah dist; else echo "::warning::dist/ directory does not exist."; fi
+              exit 1
+            fi
+          fi
+          echo "zip_path=$Z" >> "$GITHUB_OUTPUT"
+          ls -lh "$Z"
+
+      - name: Nexus upload (1/4)
+        id: nexus_upload_1
+        if: success() && steps.nexus_preflight.outcome == 'success'
+        continue-on-error: true
+        uses: Nexus-Mods/upload-action@v1.0.0-beta.4
+        with:
+          api_key: ${{ secrets.NEXUSMODS_API_KEY }}
+          file_group_id: ${{ steps.config.outputs.nexus_file_group_id }}
+          filename: ${{ steps.nexus_preflight.outputs.zip_path }}
+          version: ${{ steps.config.outputs.version }}
+          display_name: ${{ steps.config.outputs.display_name }} v${{ steps.config.outputs.version }}.zip
+          description: |
+            ${{ steps.config.outputs.description }}
+
+            ### Changes
+            ${{ steps.config.outputs.changelog }}
+
+            ### Installation
+            Extract to Sun Haven `BepInEx/plugins`.
+          file_category: main
+
+      - name: Nexus backoff 30s
+        if: success() && steps.nexus_preflight.outcome == 'success' && steps.nexus_upload_1.outcome == 'failure'
+        run: sleep 30
+
+      - name: Nexus upload (2/4)
+        id: nexus_upload_2
+        if: success() && steps.nexus_preflight.outcome == 'success' && steps.nexus_upload_1.outcome == 'failure'
+        continue-on-error: true
+        uses: Nexus-Mods/upload-action@v1.0.0-beta.4
+        with:
+          api_key: ${{ secrets.NEXUSMODS_API_KEY }}
+          file_group_id: ${{ steps.config.outputs.nexus_file_group_id }}
+          filename: ${{ steps.nexus_preflight.outputs.zip_path }}
+          version: ${{ steps.config.outputs.version }}
+          display_name: ${{ steps.config.outputs.display_name }} v${{ steps.config.outputs.version }}.zip
+          description: |
+            ${{ steps.config.outputs.description }}
+
+            ### Changes
+            ${{ steps.config.outputs.changelog }}
+
+            ### Installation
+            Extract to Sun Haven `BepInEx/plugins`.
+          file_category: main
+
+      - name: Nexus backoff 2m
+        if: success() && steps.nexus_preflight.outcome == 'success' && steps.nexus_upload_1.outcome == 'failure' && steps.nexus_upload_2.outcome == 'failure'
+        run: sleep 120
+
+      - name: Nexus upload (3/4)
+        id: nexus_upload_3
+        if: success() && steps.nexus_preflight.outcome == 'success' && steps.nexus_upload_1.outcome == 'failure' && steps.nexus_upload_2.outcome == 'failure'
+        continue-on-error: true
+        uses: Nexus-Mods/upload-action@v1.0.0-beta.4
+        with:
+          api_key: ${{ secrets.NEXUSMODS_API_KEY }}
+          file_group_id: ${{ steps.config.outputs.nexus_file_group_id }}
+          filename: ${{ steps.nexus_preflight.outputs.zip_path }}
+          version: ${{ steps.config.outputs.version }}
+          display_name: ${{ steps.config.outputs.display_name }} v${{ steps.config.outputs.version }}.zip
+          description: |
+            ${{ steps.config.outputs.description }}
+
+            ### Changes
+            ${{ steps.config.outputs.changelog }}
+
+            ### Installation
+            Extract to Sun Haven `BepInEx/plugins`.
+          file_category: main
+
+      - name: Nexus backoff 5m
+        if: success() && steps.nexus_preflight.outcome == 'success' && steps.nexus_upload_1.outcome == 'failure' && steps.nexus_upload_2.outcome == 'failure' && steps.nexus_upload_3.outcome == 'failure'
+        run: sleep 300
+
+      - name: Nexus upload (4/4 — must succeed)
+        id: nexus_upload_4
+        if: >-
+          success() &&
+          steps.nexus_preflight.outcome == 'success' &&
+          steps.nexus_upload_1.outcome == 'failure' &&
+          steps.nexus_upload_2.outcome == 'failure' &&
+          steps.nexus_upload_3.outcome == 'failure'
+        uses: Nexus-Mods/upload-action@v1.0.0-beta.4
+        with:
+          api_key: ${{ secrets.NEXUSMODS_API_KEY }}
+          file_group_id: ${{ steps.config.outputs.nexus_file_group_id }}
+          filename: ${{ steps.nexus_preflight.outputs.zip_path }}
+          version: ${{ steps.config.outputs.version }}
+          display_name: ${{ steps.config.outputs.display_name }} v${{ steps.config.outputs.version }}.zip
+          description: |
+            ${{ steps.config.outputs.description }}
+
+            ### Changes
+            ${{ steps.config.outputs.changelog }}
+
+            ### Installation
+            Extract to Sun Haven `BepInEx/plugins`.
+          file_category: main
+
+      - name: Nexus — fail if publish requested but no attempt succeeded
+        if: >-
+          always() &&
+          inputs.dry_run != 'true' &&
+          inputs.publish_discord_only != 'true' &&
+          inputs.publish_nexus == 'true' &&
+          inputs.test_discord != 'true' &&
+          steps.version_check.outputs.version_unchanged != 'true' &&
+          steps.config.outputs.nexus_file_group_id != '' &&
+          steps.nexus_preflight.outcome == 'success'
+        run: |
+          set -euo pipefail
+          for o in "${{ steps.nexus_upload_1.outcome }}" "${{ steps.nexus_upload_2.outcome }}" "${{ steps.nexus_upload_3.outcome }}" "${{ steps.nexus_upload_4.outcome }}"; do
+            [ "$o" = "success" ] && exit 0
+          done
+          echo "::error::Nexus upload failed after retries. Check logs / Nexus API."
+          exit 1
+
+      - name: Notify Discord (after release created in this run)
+        id: notify_discord_release_step
+        if: >-
+          inputs.dry_run != 'true' &&
+          inputs.publish_discord_only != 'true' &&
+          inputs.ignore_discord_notify != 'true' &&
+          inputs.create_github_release == 'true' &&
+          inputs.test_discord != 'true' &&
+          steps.version_check.outputs.version_unchanged != 'true' &&
+          steps.config.outputs.skip_discord_for_almanac != 'true'
+        uses: AzraelGodKing/Discord_Release@main
+        with:
+          webhook_url: ${{ secrets.DISCORD_WEBHOOK_URL }}
+          color: "2105893"
+          username: "Sun Haven Mods"
+          reduce_headings: true
+          title: "${{ steps.config.outputs.display_name }} v${{ steps.config.outputs.version }}"
+          body: |
+            ### Changes
+            ${{ steps.config.outputs.changelog }}
+
+            ### Download
+            - **Nexus Mods**: ${{ steps.config.outputs.nexus_url }}
+            - **Thunderstore**: ${{ steps.config.outputs.thunderstore_url }}
+            - **GitHub Release**: zip in release assets
+            - **Manual**: DLL → `Sun Haven/BepInEx/plugins/`
+          thumbnail_url: "https://raw.githubusercontent.com/${{ github.repository }}/main/${{ steps.config.outputs.mod_dir }}/thunderstore/icon.png"
+
+      - name: Pick random mod for Discord test
+        if: >-
+          inputs.dry_run != 'true' &&
+          inputs.publish_discord_only != 'true' &&
+          inputs.test_discord == 'true'
+        id: test_mod
+        run: |
+          mapfile -t MODS < <(jq -r '.[] | "\(.jsonKey):\(.modDir)"' scripts/mod-matrix.json)
+          IDX=$((RANDOM % ${#MODS[@]}))
+          ENTRY="${MODS[$IDX]}"
+          JSON_KEY="${ENTRY%%:*}"
+          MOD_DIR="${ENTRY##*:}"
+          echo "title=Test – $(jq -r ".[\"$JSON_KEY\"].name" docs/versions.json) v$(jq -r ".[\"$JSON_KEY\"].version" docs/versions.json)" >> "$GITHUB_OUTPUT"
+          {
+            echo "body<<EOF"
+            echo "### Changes"
+            jq -r ".[\"$JSON_KEY\"].changelog" docs/versions.json
+            echo ""
+            echo "— *Test run.*"
+            echo "EOF"
+          } >> "$GITHUB_OUTPUT"
+          echo "icon_url=https://raw.githubusercontent.com/${{ github.repository }}/main/$MOD_DIR/thunderstore/icon.png" >> "$GITHUB_OUTPUT"
+
+      - name: Post test Discord notification
+        id: post_test_discord_step
+        if: >-
+          inputs.dry_run != 'true' &&
+          inputs.publish_discord_only != 'true' &&
+          inputs.ignore_discord_notify != 'true' &&
+          inputs.test_discord == 'true'
+        uses: AzraelGodKing/Discord_Release@main
+        with:
+          webhook_url: ${{ secrets.DISCORD_WEBHOOK_URL }}
+          title: ${{ steps.test_mod.outputs.title }}
+          body: ${{ steps.test_mod.outputs.body }}
+          thumbnail_url: ${{ steps.test_mod.outputs.icon_url }}
+          username: "Sun Haven Mods"
+
+      - name: Publish to Discord only
+        id: publish_discord_only_step
+        if: >-
+          inputs.dry_run != 'true' &&
+          inputs.publish_discord_only == 'true' &&
+          inputs.ignore_discord_notify != 'true' &&
+          inputs.test_discord != 'true' &&
+          steps.config.outputs.skip_discord_for_almanac != 'true'
+        uses: AzraelGodKing/Discord_Release@main
+        with:
+          webhook_url: ${{ secrets.DISCORD_WEBHOOK_URL }}
+          color: "2105893"
+          username: "Sun Haven Mods"
+          reduce_headings: true
+          title: "${{ steps.config.outputs.display_name }} v${{ steps.config.outputs.version }}"
+          body: |
+            ### Changes
+            ${{ steps.config.outputs.changelog }}
+
+            ### Download
+            - **Nexus Mods**: ${{ steps.config.outputs.nexus_url }}
+            - **Thunderstore**: ${{ steps.config.outputs.thunderstore_url }}
+          thumbnail_url: "https://raw.githubusercontent.com/${{ github.repository }}/main/${{ steps.config.outputs.mod_dir }}/thunderstore/icon.png"
+
+      - name: Release run report
+        if: always()
+        env:
+          VERSION_UNCHANGED: ${{ steps.version_check.outputs.version_unchanged }}
+          VERSION_MATCH_SOURCES: ${{ steps.version_check.outputs.version_match_sources }}
+          UPSTREAM_GITHUB_VERSION: ${{ steps.version_check.outputs.upstream_github_version }}
+          UPSTREAM_THUNDERSTORE_VERSION: ${{ steps.version_check.outputs.upstream_thunderstore_version }}
+          UPSTREAM_NEXUS_VERSION: ${{ steps.version_check.outputs.upstream_nexus_version }}
+          UPSTREAM_CACHE_USED: ${{ steps.version_check.outputs.upstream_cache_used }}
+          GITHUB_RELEASE_OUTCOME: ${{ steps.create_github_release_step.outcome }}
+          THUNDERSTORE_OUTCOME: ${{ steps.publish_thunderstore_step.outcome }}
+          DISCORD_RELEASE_OUTCOME: ${{ steps.notify_discord_release_step.outcome }}
+          DISCORD_TEST_OUTCOME: ${{ steps.post_test_discord_step.outcome }}
+          DISCORD_ONLY_OUTCOME: ${{ steps.publish_discord_only_step.outcome }}
+          NEXUS_OUTCOME_1: ${{ steps.nexus_upload_1.outcome }}
+          NEXUS_OUTCOME_2: ${{ steps.nexus_upload_2.outcome }}
+          NEXUS_OUTCOME_3: ${{ steps.nexus_upload_3.outcome }}
+          NEXUS_OUTCOME_4: ${{ steps.nexus_upload_4.outcome }}
+          PREFLIGHT: ${{ steps.nexus_preflight.outcome }}
+        run: |
+          set -euo pipefail
+          mkdir -p reports
+          NEXUS_RESULT="not-requested"
+          for i in 1 2 3 4; do
+            VAR="NEXUS_OUTCOME_$i"
+            OUT="${!VAR:-skipped}"
+            if [ "$OUT" = "success" ]; then NEXUS_RESULT="success-attempt-$i"; break; fi
+            if [ "$OUT" = "failure" ]; then NEXUS_RESULT="failed"; fi
+          done
+          {
+            echo "## Release run report"
+            echo ""
+            echo "- Mod: \`${{ inputs.mod }}\` — ${{ steps.config.outputs.display_name }} \`${{ steps.config.outputs.version }}\`"
+            echo "- Version gate: \`${VERSION_UNCHANGED:-n/a}\` (sources: \`${VERSION_MATCH_SOURCES:-none}\`)"
+            echo "- Upstream: GH=\`${UPSTREAM_GITHUB_VERSION:-}\` TS=\`${UPSTREAM_THUNDERSTORE_VERSION:-}\` NX=\`${UPSTREAM_NEXUS_VERSION:-}\` (cache: \`${UPSTREAM_CACHE_USED:-false}\`)"
+            echo "- GitHub Release: \`${GITHUB_RELEASE_OUTCOME:-skipped}\`"
+            echo "- Thunderstore: \`${THUNDERSTORE_OUTCOME:-skipped}\`"
+            echo "- Nexus preflight: \`${PREFLIGHT:-skipped}\`"
+            echo "- Nexus upload: \`${NEXUS_RESULT}\` (1=\`${NEXUS_OUTCOME_1:-}\` 2=\`${NEXUS_OUTCOME_2:-}\` 3=\`${NEXUS_OUTCOME_3:-}\` 4=\`${NEXUS_OUTCOME_4:-}\`)"
+            echo "- Discord (release): \`${DISCORD_RELEASE_OUTCOME:-skipped}\`"
+            echo "- Discord (test): \`${DISCORD_TEST_OUTCOME:-skipped}\`"
+            echo "- Discord-only: \`${DISCORD_ONLY_OUTCOME:-skipped}\`"
+            if [ "$NEXUS_RESULT" = "failed" ]; then
+              echo ""
+              echo "### Nexus"
+              echo "- v3 API can flake; use \`release_anyway\` to bypass the version gate if needed."
+              echo "- Manual fallback: Nexus site → Files, or re-run with \`publish_nexus=true\` only."
+            fi
+          } | tee "reports/${{ inputs.mod }}.md" >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Upload report for combined summary
+        if: always()
+        uses: actions/upload-artifact@v6
+        with:
+          name: release-report-${{ inputs.mod }}
+          path: reports/${{ inputs.mod }}.md
+          if-no-files-found: warn
+  # ---------------------------------------------------------------------------
