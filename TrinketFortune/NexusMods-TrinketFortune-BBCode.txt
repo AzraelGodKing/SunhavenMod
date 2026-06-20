@@ -1,4 +1,4 @@
-[b][size=5]Trinket Fortune[/size][/b] [i](v1.2.7)[/i]
+[b][size=5]Trinket Fortune[/size][/b] [i](v2.0.0)[/i]
 
 Increases the odds of [b]unowned fishing trinkets[/b] dropping as you donate to the museum aquarium. Fish that grant aquarium trinkets benefit — less frustrating grind for the last few catches.
 
