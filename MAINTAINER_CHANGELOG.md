@@ -27,6 +27,7 @@ Internal engineering log: **CI**, **release automation**, **scripts**, **docs in
 
 **2026-05-24**
 
+- **Release & Publish:** Replaced matrix `release` job (skipped with 0 steps on `mod=all` when chained after matrix `build` — [run #137](https://github.com/AzraelGodKing/SunhavenMod/actions/runs/27860163768)) with twelve explicit jobs calling [`.github/workflows/reusable-release-mod.yml`](.github/workflows/reusable-release-mod.yml); `release_aggregate_report` now `needs` each per-mod release job.
 - **Release & Publish:** Fixed release skipped on dispatch: boolean `build_only == false` never matched (GitHub passes `'false'` string); use `!= 'true'` for version/release gates ([run #136](https://github.com/AzraelGodKing/SunhavenMod/actions/runs/27859681812)).
 - **Hygiene:** Removed stray `HavenDevTools/manifest.json` again (canonical Thunderstore metadata is `HavenDevTools/thunderstore/manifest.json` only).
 - **Localization:** Fixed `scripts/fix-localization-format-specifiers.ps1` — PowerShell `StartsWith([char]0xFEFF)` is always true, which stripped the root `{` and broke five `strings.json` files in CI; use explicit UTF-8 read without the bogus BOM strip.
