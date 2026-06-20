@@ -1,6 +1,6 @@
 {
   "name": "TheVault",
-  "version_number": "3.3.6",
+  "version_number": "3.3.7",
   "website_url": "https://www.nexusmods.com/sunhaven/mods/488",
   "description": "Full rework of The Vault system: per-character encrypted vault, UI/HUD, auto-deposit, shop and inventory vault integration (keys/currency via bag checks)—TheVault/TheVault.csproj.",
   "dependencies": ["BepInEx-BepInExPack-5.4.2100"]

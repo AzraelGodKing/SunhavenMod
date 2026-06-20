@@ -72,7 +72,7 @@ namespace TrinketFortune
         {
             public const string PLUGIN_GUID = "com.azraelgodking.trinketfortune";
             public const string PLUGIN_NAME = "Trinket Fortune";
-            public const string PLUGIN_VERSION = "1.2.6";
+            public const string PLUGIN_VERSION = "1.2.7";
         }
     }
 }
