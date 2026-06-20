@@ -4,6 +4,21 @@ This repo uses **one release version per mod** in [`docs/versions.json`](../docs
 
 ## Order of operations (required)
 
+### One-shot release (recommended)
+
+Run **Release & Publish** on GitHub Actions with:
+
+1. **`bump_version`**: `patch`, `minor`, or `major` (or `none` to ship current `versions.json` as-is)
+2. **`release_changelog`**: optional text written to `versions.json` before the bump
+3. **`mod`**: `all` or a single mod key
+4. Publish toggles as needed
+
+The workflow runs **Version → verify → build → release** in one dispatch. The version job bumps `docs/versions.json`, syncs plugin/manifest/docs via `pre-push-build.ps1 -SyncOnly`, commits, and pushes; build/release checkout that commit.
+
+Requires `ADMIN_PUSH_TOKEN` (or a branch policy that allows `GITHUB_TOKEN` pushes) when bumping on `main`.
+
+### Manual path (still supported)
+
 1. **Edit release metadata** for the mod(s) you will ship:
    - In `docs/versions.json`: bump **`version`**, update **`changelog`** (and any `vault_save_breaking` / banner fields for The Vault when needed).
 
@@ -21,7 +36,7 @@ This repo uses **one release version per mod** in [`docs/versions.json`](../docs
 
 4. **CI check:** the **Release & Publish** and **Test — Self-hosted Sunhaven runner** workflows run [`scripts/verify-version-consistency.py`](../scripts/verify-version-consistency.py) in the setup job. If `versions.json`, `PLUGIN_VERSION`, and `thunderstore/manifest.json` disagree, the workflow fails before building.
 
-5. **Publish:** run **Release & Publish** on GitHub Actions (manual dispatch). Toggle GitHub Release / Thunderstore / Nexus as needed. The workflow builds on your self-hosted runner, then packages and uploads.
+5. **Publish:** run **Release & Publish** with **`bump_version` = `none`**. Toggle GitHub Release / Thunderstore / Nexus as needed.
 
 ## Why version must come before the release build
 
