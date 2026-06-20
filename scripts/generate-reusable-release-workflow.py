@@ -125,6 +125,8 @@ def release_job_yaml(mod: str) -> str:
       needs.build-gate.result == 'success' &&
       (github.event.inputs.mod == 'all' || github.event.inputs.mod == '{mod}')
     needs: build-gate
+    permissions:
+      contents: write
     uses: ./.github/workflows/reusable-release-mod.yml
     with:
       mod: {mod}
