@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using HavensAlmanac.Data;
 using HavensBirthright;
+using SunhavenMods.Shared;
 using UnityEngine;
 
 namespace HavensAlmanac.Integration
@@ -58,15 +59,15 @@ namespace HavensAlmanac.Integration
 
         public void DrawDashboardSection()
         {
-            GUILayout.Label($"Race: {_raceName}");
+            GUILayout.Label(ModLocalization.T("almanac.provider.birthright.race", _raceName));
 
             if (_bonusCount == 0)
             {
-                GUILayout.Label("No active bonuses.");
+                GUILayout.Label(ModLocalization.T("almanac.provider.birthright.noBonuses"));
                 return;
             }
 
-            GUILayout.Label($"Active Bonuses ({_bonusCount}):");
+            GUILayout.Label(ModLocalization.T("almanac.provider.birthright.activeBonuses", _bonusCount));
             GUILayout.Space(4);
 
             foreach (var bonus in _bonuses)

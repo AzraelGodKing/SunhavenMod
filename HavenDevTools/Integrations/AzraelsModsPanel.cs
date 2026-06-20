@@ -35,36 +35,30 @@ namespace HavenDevTools.Integrations
         private static Type _cachedHavensAlmanacPlugin;
         private static MethodInfo _cachedHavensAlmanacGetAggregator;
 
-        private static readonly string[] _subTabNames = new[]
-        {
-            "Senpai's Chest", "The Vault", "S.M.U.T.", "Birthright",
-            "Birthday", "Todo", "Almanac"
-        };
-
         public static void Draw(GUIStyle boxStyle, GUIStyle buttonStyle, GUIStyle labelStyle, GUIStyle sectionHeaderStyle)
         {
             var installedTabs = new List<string>();
             var installedIndices = new List<int>();
             int idx = 0;
-            if (Plugin.HasSenpaisChest) { installedTabs.Add("Senpai's Chest"); installedIndices.Add(idx); }
+            if (Plugin.HasSenpaisChest) { installedTabs.Add(ModLocalization.T("azrael.tab.senpais_chest")); installedIndices.Add(idx); }
             idx++;
-            if (Plugin.HasTheVault) { installedTabs.Add("The Vault"); installedIndices.Add(idx); }
+            if (Plugin.HasTheVault) { installedTabs.Add(ModLocalization.T("azrael.tab.the_vault")); installedIndices.Add(idx); }
             idx++;
-            if (Plugin.HasSMUT) { installedTabs.Add("S.M.U.T."); installedIndices.Add(idx); }
+            if (Plugin.HasSMUT) { installedTabs.Add(ModLocalization.T("azrael.tab.smut")); installedIndices.Add(idx); }
             idx++;
-            if (Plugin.HasHavensBirthright) { installedTabs.Add("Birthright"); installedIndices.Add(idx); }
+            if (Plugin.HasHavensBirthright) { installedTabs.Add(ModLocalization.T("azrael.tab.birthright")); installedIndices.Add(idx); }
             idx++;
-            if (Plugin.HasBirthdayReminder) { installedTabs.Add("Birthday"); installedIndices.Add(idx); }
+            if (Plugin.HasBirthdayReminder) { installedTabs.Add(ModLocalization.T("azrael.tab.birthday")); installedIndices.Add(idx); }
             idx++;
-            if (Plugin.HasSunhavenTodo) { installedTabs.Add("Todo"); installedIndices.Add(idx); }
+            if (Plugin.HasSunhavenTodo) { installedTabs.Add(ModLocalization.T("azrael.tab.todo")); installedIndices.Add(idx); }
             idx++;
-            if (Plugin.HasHavensAlmanac) { installedTabs.Add("Almanac"); installedIndices.Add(idx); }
+            if (Plugin.HasHavensAlmanac) { installedTabs.Add(ModLocalization.T("azrael.tab.almanac")); installedIndices.Add(idx); }
             idx++;
-            if (Plugin.HasTrinketFortune) { installedTabs.Add("Trinket Fortune"); installedIndices.Add(idx); }
+            if (Plugin.HasTrinketFortune) { installedTabs.Add(ModLocalization.T("azrael.tab.trinket_fortune")); installedIndices.Add(idx); }
 
             if (installedTabs.Count == 0)
             {
-                GUILayout.Label("No Azrael's mods detected. Install SenpaisChest, TheVault, S.M.U.T., Birthright, Birthday Reminder, Todo, Almanac, or Trinket Fortune.", labelStyle);
+                GUILayout.Label(ModLocalization.T("azrael.none_detected"), labelStyle);
                 return;
             }
 
@@ -96,7 +90,7 @@ namespace HavenDevTools.Integrations
         private static void DrawSenpaisChest(GUIStyle box, GUIStyle button, GUIStyle label, GUIStyle sectionHeader)
         {
             GUILayout.BeginVertical(box);
-            GUILayout.Label("Senpai's Chest", sectionHeader);
+            GUILayout.Label(ModLocalization.T("azrael.senpai.title"), sectionHeader);
 
             try
             {
@@ -159,7 +153,7 @@ namespace HavenDevTools.Integrations
                 }
 
                 GUILayout.Space(8);
-                if (GUILayout.Button("Trigger Manual Scan", button))
+                if (GUILayout.Button(ModLocalization.T("azrael.senpai.trigger_scan"), button))
                 {
                     var executeScan = manager.GetType().GetMethod("ExecuteScan", new[] { typeof(int), typeof(bool) });
                     executeScan?.Invoke(manager, new object[] { 999, false });
@@ -177,15 +171,15 @@ namespace HavenDevTools.Integrations
         private static void DrawTheVault(GUIStyle box, GUIStyle button, GUIStyle label, GUIStyle sectionHeader)
         {
             GUILayout.BeginVertical(box);
-            GUILayout.Label("The Vault", sectionHeader);
+            GUILayout.Label(ModLocalization.T("azrael.vault.title"), sectionHeader);
 
             var tracker = Plugin.GetCurrencyTracker();
-            if (tracker == null) { GUILayout.Label("Currency tracker not available", label); GUILayout.EndVertical(); return; }
+            if (tracker == null) { GUILayout.Label(ModLocalization.T("devtools.currency.unavailable"), label); GUILayout.EndVertical(); return; }
 
             var summary = tracker.GetSummary();
-            GUILayout.Label("Vault Currencies:", label);
+            GUILayout.Label(ModLocalization.T("azrael.vault.currencies"), label);
             if (summary.VaultCurrencies.Count == 0)
-                GUILayout.Label("  (vault empty or not loaded)", label);
+                GUILayout.Label(ModLocalization.T("azrael.vault.empty"), label);
             else
             {
                 foreach (var kvp in summary.VaultCurrencies)
@@ -196,10 +190,10 @@ namespace HavenDevTools.Integrations
             if (ModConfig.TheVaultFullVaultInspector != null)
             {
                 bool inspector = ModConfig.TheVaultFullVaultInspector.Value;
-                bool newInspector = GUILayout.Toggle(inspector, " Full vault inspector (zeros + Debug tab + full HUD)", label);
+                bool newInspector = GUILayout.Toggle(inspector, ModLocalization.T("azrael.vault.inspector_toggle"), label);
                 if (newInspector != inspector)
                     ModConfig.TheVaultFullVaultInspector.Value = newInspector;
-                GUILayout.Label("Moved from The Vault settings; persists in com.azraelgodking.havendevtools.cfg ([The Vault] section).", label);
+                GUILayout.Label(ModLocalization.T("azrael.vault.inspector_hint"), label);
             }
 
             GUILayout.EndVertical();
@@ -208,16 +202,16 @@ namespace HavenDevTools.Integrations
         private static void DrawSMUT(GUIStyle box, GUIStyle button, GUIStyle label, GUIStyle sectionHeader)
         {
             GUILayout.BeginVertical(box);
-            GUILayout.Label("S.M.U.T. - Museum Bundle Inspector", sectionHeader);
+            GUILayout.Label(ModLocalization.T("azrael.smut.title"), sectionHeader);
 
             var inspector = Plugin.GetBundleInspector();
-            if (inspector == null) { GUILayout.Label("Bundle inspector not available", label); GUILayout.EndVertical(); return; }
+            if (inspector == null) { GUILayout.Label(ModLocalization.T("devtools.museum.unavailable"), label); GUILayout.EndVertical(); return; }
 
             var stats = inspector.GetDonationStats();
             if (stats.IsLoaded)
             {
-                GUILayout.Label($"Character: {stats.CharacterName}", label);
-                GUILayout.Label($"Progress: {stats.TotalDonated}/{stats.TotalItems} ({stats.CompletionPercent:F1}%)", label);
+                GUILayout.Label(ModLocalization.T("devtools.museum.character", stats.CharacterName), label);
+                GUILayout.Label(ModLocalization.T("devtools.museum.progress", stats.TotalDonated, stats.TotalItems, stats.CompletionPercent), label);
             }
 
             var sections = inspector.GetAllSections();
@@ -225,7 +219,7 @@ namespace HavenDevTools.Integrations
 
             string[] sectionNames = sections.Select(s => s.Name).ToArray();
             if (_selectedSectionIndex >= sections.Count) _selectedSectionIndex = 0;
-            GUILayout.Label("Section:", label);
+            GUILayout.Label(ModLocalization.T("devtools.museum.section"), label);
             _selectedSectionIndex = GUILayout.SelectionGrid(_selectedSectionIndex, sectionNames, 3, button);
 
             var selectedSection = sections[_selectedSectionIndex];
@@ -233,11 +227,11 @@ namespace HavenDevTools.Integrations
             {
                 string[] bundleNames = selectedSection.Bundles.Select(b => b.Name).ToArray();
                 if (_selectedBundleIndex >= selectedSection.Bundles.Count) _selectedBundleIndex = 0;
-                GUILayout.Label("Bundle:", label);
+                GUILayout.Label(ModLocalization.T("devtools.museum.bundle"), label);
                 _selectedBundleIndex = GUILayout.SelectionGrid(_selectedBundleIndex, bundleNames, 2, button);
 
                 var selectedBundle = selectedSection.Bundles[_selectedBundleIndex];
-                GUILayout.Label($"Items in {selectedBundle.Name}:", sectionHeader);
+                GUILayout.Label(ModLocalization.T("devtools.museum.itemsIn", selectedBundle.Name), sectionHeader);
                 _bundleScrollPosition = GUILayout.BeginScrollView(_bundleScrollPosition, GUILayout.Height(120));
                 foreach (var item in selectedBundle.Items)
                 {
@@ -248,7 +242,7 @@ namespace HavenDevTools.Integrations
                     GUILayout.BeginHorizontal();
                     GUILayout.Label($"{status} {item.Name} (ID: {item.GameItemId})", label, GUILayout.Width(280));
                     GUI.enabled = canSpawn;
-                    if (GUILayout.Button(canSpawn ? $"Spawn{qty}" : "—", button, GUILayout.Width(70)))
+                    if (GUILayout.Button(canSpawn ? ModLocalization.T("devtools.museum.spawn", qty) : "—", button, GUILayout.Width(70)))
                     {
                         if (canSpawn) Plugin.GetItemInspector()?.SpawnItem(item.GameItemId, item.Quantity);
                     }
@@ -265,16 +259,16 @@ namespace HavenDevTools.Integrations
         private static void DrawBirthright(GUIStyle box, GUIStyle button, GUIStyle label, GUIStyle sectionHeader)
         {
             GUILayout.BeginVertical(box);
-            GUILayout.Label("Haven's Birthright - Race Modifier Tracker", sectionHeader);
+            GUILayout.Label(ModLocalization.T("azrael.birthright.title"), sectionHeader);
 
             var tracker = Plugin.GetRaceModifierTracker();
-            if (tracker == null) { GUILayout.Label("Race tracker not available", label); GUILayout.EndVertical(); return; }
+            if (tracker == null) { GUILayout.Label(ModLocalization.T("devtools.race.unavailable"), label); GUILayout.EndVertical(); return; }
 
-            GUILayout.Label($"Current Race: {tracker.GetCurrentRace()}", label);
+            GUILayout.Label(ModLocalization.T("devtools.race.current", tracker.GetCurrentRace()), label);
             var activeBonuses = tracker.GetActiveRaceBonuses();
             if (activeBonuses.Count > 0)
             {
-                GUILayout.Label("Active Bonuses:", label);
+                GUILayout.Label(ModLocalization.T("azrael.birthright.active_bonuses"), label);
                 foreach (var b in activeBonuses)
                 {
                     GUILayout.Label($"  {b.Type}: {b.GetFormattedValue()}", label);
@@ -301,7 +295,7 @@ namespace HavenDevTools.Integrations
         private static void DrawBirthdayReminder(GUIStyle box, GUIStyle button, GUIStyle label, GUIStyle sectionHeader)
         {
             GUILayout.BeginVertical(box);
-            GUILayout.Label("Birthday Reminder", sectionHeader);
+            GUILayout.Label(ModLocalization.T("azrael.birthday.title"), sectionHeader);
 
             try
             {
@@ -337,15 +331,15 @@ namespace HavenDevTools.Integrations
 
                 GUILayout.Space(8);
                 GUILayout.BeginHorizontal();
-                if (GUILayout.Button("Check Birthdays", button))
+                if (GUILayout.Button(ModLocalization.T("azrael.birthday.check"), button))
                 {
                     ReflectionHelper.InvokeStaticMethod(_cachedBirthdayReminderPlugin, "CheckBirthdays");
                 }
-                if (GUILayout.Button("Manual Refresh", button))
+                if (GUILayout.Button(ModLocalization.T("azrael.birthday.refresh"), button))
                 {
                     manager.GetType().GetMethod("ManualRefresh")?.Invoke(manager, null);
                 }
-                if (GUILayout.Button("Send All Test Notifications", button))
+                if (GUILayout.Button(ModLocalization.T("azrael.birthday.test_notify"), button))
                 {
                     ReflectionHelper.InvokeStaticMethod(_cachedBirthdayReminderPlugin, "SendAllBirthdayNotifications");
                 }
@@ -362,7 +356,7 @@ namespace HavenDevTools.Integrations
         private static void DrawTodo(GUIStyle box, GUIStyle button, GUIStyle label, GUIStyle sectionHeader)
         {
             GUILayout.BeginVertical(box);
-            GUILayout.Label("Sunhaven Todo", sectionHeader);
+            GUILayout.Label(ModLocalization.T("azrael.todo.title"), sectionHeader);
 
             try
             {
@@ -399,11 +393,11 @@ namespace HavenDevTools.Integrations
 
                 GUILayout.Space(8);
                 GUILayout.BeginHorizontal();
-                if (GUILayout.Button("Toggle UI", button))
+                if (GUILayout.Button(ModLocalization.T("azrael.todo.toggle_ui"), button))
                     ReflectionHelper.InvokeStaticMethod(_cachedSunhavenTodoPlugin, "ToggleUI");
-                if (GUILayout.Button("Toggle HUD", button))
+                if (GUILayout.Button(ModLocalization.T("azrael.todo.toggle_hud"), button))
                     ReflectionHelper.InvokeStaticMethod(_cachedSunhavenTodoPlugin, "ToggleHUD");
-                if (GUILayout.Button("Save Data", button))
+                if (GUILayout.Button(ModLocalization.T("azrael.todo.save"), button))
                     ReflectionHelper.InvokeStaticMethod(_cachedSunhavenTodoPlugin, "SaveData");
                 GUILayout.EndHorizontal();
             }
@@ -418,7 +412,7 @@ namespace HavenDevTools.Integrations
         private static void DrawAlmanac(GUIStyle box, GUIStyle button, GUIStyle label, GUIStyle sectionHeader)
         {
             GUILayout.BeginVertical(box);
-            GUILayout.Label("Haven's Almanac", sectionHeader);
+            GUILayout.Label(ModLocalization.T("azrael.almanac.title"), sectionHeader);
 
             try
             {
@@ -457,7 +451,7 @@ namespace HavenDevTools.Integrations
                 }
 
                 GUILayout.Space(8);
-                if (GUILayout.Button("Refresh All", button))
+                if (GUILayout.Button(ModLocalization.T("azrael.almanac.refresh"), button))
                 {
                     aggregator.GetType().GetMethod("RefreshAll")?.Invoke(aggregator, null);
                     Plugin.Log?.LogInfo("[AzraelsMods] Refreshed Almanac data");
@@ -498,8 +492,8 @@ namespace HavenDevTools.Integrations
             if (panel == null)
             {
                 GUILayout.BeginVertical(box);
-                GUILayout.Label("Trinket Fortune", sectionHeader);
-                GUILayout.Label("Trinket Fortune not loaded.", label);
+                GUILayout.Label(ModLocalization.T("azrael.tab.trinket_fortune"), sectionHeader);
+                GUILayout.Label(ModLocalization.T("azrael.trinket.not_loaded"), label);
                 GUILayout.EndVertical();
                 return;
             }

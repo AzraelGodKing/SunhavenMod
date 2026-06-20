@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Reflection;
 using BepInEx.Bootstrap;
@@ -452,7 +452,7 @@ namespace SenpaisChest.UI
                     PluginInfo.PLUGIN_GUID.GetHashCode() + 1,
                     _groupsWindowRect,
                     DrawGroupsWindow,
-                    "Manage Groups",
+                    ModLocalization.T("chest.manageGroups"),
                     _configWindowStyle);
             }
         }
@@ -551,7 +551,7 @@ namespace SenpaisChest.UI
                 GUILayout.BeginArea(new Rect(0, 0, rect.width, titleBarHeight));
                 GUILayout.BeginHorizontal();
                 GUILayout.FlexibleSpace();
-                GUILayout.Label("Senpai's Chest Config", _configTitleStyle, GUILayout.ExpandWidth(true));
+                GUILayout.Label(ModLocalization.T("chest.config.title"), _configTitleStyle, GUILayout.ExpandWidth(true));
                 GUILayout.FlexibleSpace();
                 if (GUILayout.Button("X", _closeButtonStyle, GUILayout.Width(Scaled(28)), GUILayout.Height(Scaled(24))))
                     HideConfig();
@@ -598,7 +598,7 @@ namespace SenpaisChest.UI
                 GUILayout.Space(compact ? 4 : 8);
 
             var sectionHeaderStyle = useParchmentTheme ? _configSectionHeaderBoxStyle : (compact ? _chestSectionHeaderStyle : _sectionHeaderStyle);
-            GUILayout.Label("Item Rules", sectionHeaderStyle);
+            GUILayout.Label(ModLocalization.T("chest.section.rules"), sectionHeaderStyle);
             GUILayout.Space(compact ? 2 : 4);
 
             if (useParchmentTheme && _configGoldSeparatorTex != null)
@@ -610,7 +610,7 @@ namespace SenpaisChest.UI
 
             if (_currentData.Rules.Count == 0)
             {
-                GUILayout.Label("  No rules configured. Add rules below.", useParchmentTheme ? _chestLabelDimStyle : (compact ? _chestLabelDimStyle : _labelDimStyle));
+                GUILayout.Label(ModLocalization.T("chest.rules.none"), useParchmentTheme ? _chestLabelDimStyle : (compact ? _chestLabelDimStyle : _labelDimStyle));
             }
             else
             {
@@ -649,7 +649,7 @@ namespace SenpaisChest.UI
             else
                 GUILayout.Space(compact ? 4 : 10);
 
-            GUILayout.Label("Add New Rule", sectionHeaderStyle);
+            GUILayout.Label(ModLocalization.T("chest.section.addRule"), sectionHeaderStyle);
             GUILayout.Space(compact ? 2 : 6);
 
             if (useParchmentTheme && _configGoldSeparatorTex != null)
@@ -659,13 +659,13 @@ namespace SenpaisChest.UI
                 GUILayout.Space(4);
             }
 
-            GUILayout.Label("Presets", useParchmentTheme ? _chestLabelBoldStyle : _labelBoldStyle);
+            GUILayout.Label(ModLocalization.T("chest.presets"), useParchmentTheme ? _chestLabelBoldStyle : _labelBoldStyle);
             GUILayout.BeginHorizontal();
-            if (GUILayout.Button("Equipment", useParchmentTheme ? _chestSelectorStyle : _selectorStyle, GUILayout.Height((useParchmentTheme || compact) ? 24 : 28)))
+            if (GUILayout.Button(ModLocalization.T("chest.preset.equipment"), useParchmentTheme ? _chestSelectorStyle : _selectorStyle, GUILayout.Height((useParchmentTheme || compact) ? 24 : 28)))
                 ApplyPreset("Equipment");
-            if (GUILayout.Button("Consumables", useParchmentTheme ? _chestSelectorStyle : _selectorStyle, GUILayout.Height((useParchmentTheme || compact) ? 24 : 28)))
+            if (GUILayout.Button(ModLocalization.T("chest.preset.consumables"), useParchmentTheme ? _chestSelectorStyle : _selectorStyle, GUILayout.Height((useParchmentTheme || compact) ? 24 : 28)))
                 ApplyPreset("Consumables");
-            if (GUILayout.Button("Crafting", useParchmentTheme ? _chestSelectorStyle : _selectorStyle, GUILayout.Height((useParchmentTheme || compact) ? 24 : 28)))
+            if (GUILayout.Button(ModLocalization.T("chest.preset.crafting"), useParchmentTheme ? _chestSelectorStyle : _selectorStyle, GUILayout.Height((useParchmentTheme || compact) ? 24 : 28)))
                 ApplyPreset("Crafting");
             GUILayout.EndHorizontal();
             GUILayout.Space(compact ? 4 : 6);
@@ -684,7 +684,7 @@ namespace SenpaisChest.UI
             GUILayout.EndHorizontal();
             GUILayout.Space(compact ? 1 : 2);
             GUILayout.BeginHorizontal();
-            if (GUILayout.Button("Manage Groups", useParchmentTheme ? _configCloseBottomStyle : _closeBottomButtonStyle, GUILayout.ExpandWidth(true), GUILayout.Height((useParchmentTheme || compact) ? 22 : 26)))
+            if (GUILayout.Button(ModLocalization.T("chest.manageGroups"), useParchmentTheme ? _configCloseBottomStyle : _closeBottomButtonStyle, GUILayout.ExpandWidth(true), GUILayout.Height((useParchmentTheme || compact) ? 22 : 26)))
                 _groupsWindowVisible = true;
             GUILayout.EndHorizontal();
             GUILayout.Space(compact ? 4 : 8);
@@ -707,7 +707,7 @@ namespace SenpaisChest.UI
             }
 
             var addBtnStyle = useParchmentTheme ? _chestAddButtonStyle : (compact ? _chestAddButtonStyle : _addButtonStyle);
-            if (GUILayout.Button("Add Rule", addBtnStyle, GUILayout.Height((useParchmentTheme || compact) ? 24 : 30)))
+            if (GUILayout.Button(ModLocalization.T("chest.addRule"), addBtnStyle, GUILayout.Height((useParchmentTheme || compact) ? 24 : 30)))
                 AddRule();
 
             // Bulk-apply: copy this chest's rules to all same-name smart chests
@@ -763,14 +763,14 @@ namespace SenpaisChest.UI
                 else
                     GUILayout.Space(12);
                 GUILayout.BeginHorizontal();
-                if (GUILayout.Button("Remove Smart Chest", useParchmentTheme ? _configRemoveButtonStyle : _dangerButtonStyle, GUILayout.Height(28)))
+                if (GUILayout.Button(ModLocalization.T("chest.removeSmartChest"), useParchmentTheme ? _configRemoveButtonStyle : _dangerButtonStyle, GUILayout.Height(28)))
                 {
                     _manager.RemoveSmartChest(_chestId);
                     SaveIfDirty();
                     HideConfig();
                 }
                 GUILayout.Space(8);
-                if (GUILayout.Button("Close", useParchmentTheme ? _configCloseBottomStyle : _closeBottomButtonStyle, GUILayout.Height(28)))
+                if (GUILayout.Button(ModLocalization.T("chest.close"), useParchmentTheme ? _configCloseBottomStyle : _closeBottomButtonStyle, GUILayout.Height(28)))
                     HideConfig();
                 GUILayout.EndHorizontal();
             }
@@ -792,43 +792,43 @@ namespace SenpaisChest.UI
         private void DrawEmbeddedRightColumn(bool compact)
         {
             GUILayout.Space(4);
-            GUILayout.Label("Summary", _chestSectionHeaderStyle, GUILayout.ExpandWidth(true));
+            GUILayout.Label(ModLocalization.T("chest.summary"), _chestSectionHeaderStyle, GUILayout.ExpandWidth(true));
             int ruleCount = _currentData?.Rules?.Count ?? 0;
             string status = _currentData?.IsEnabled == true ? "Active" : "Disabled";
             GUILayout.BeginVertical(_chestRuleBoxStyle);
-            GUILayout.Label($"Rules: {ruleCount} | Status: {status}", _chestLabelStyle, GUILayout.ExpandWidth(true));
+            GUILayout.Label(ModLocalization.T("chest.summary.rules", ruleCount, status), _chestLabelStyle, GUILayout.ExpandWidth(true));
             if (ruleCount > 0)
             {
-                GUILayout.Label("Accepts:", _chestLabelBoldStyle, GUILayout.ExpandWidth(true));
+                GUILayout.Label(ModLocalization.T("chest.summary.accepts"), _chestLabelBoldStyle, GUILayout.ExpandWidth(true));
                 for (int i = 0; i < ruleCount; i++)
                     GUILayout.Label($"  • {GetRuleDisplayText(_currentData.Rules[i])}", _chestLabelDimStyle, GUILayout.ExpandWidth(true));
             }
             GUILayout.EndVertical();
             GUILayout.Space(4);
-            GUILayout.Label("Tips", _chestSectionHeaderStyle, GUILayout.ExpandWidth(true));
+            GUILayout.Label(ModLocalization.T("chest.tips.header"), _chestSectionHeaderStyle, GUILayout.ExpandWidth(true));
             GUILayout.BeginVertical(_chestRuleBoxStyle);
-            GUILayout.Label("• Rules filter auto-sort. Multiple = AND.", _chestRuleTextStyle, GUILayout.ExpandWidth(true));
-            GUILayout.Label("• Transfer SAME/ALL applies rules.", _chestRuleTextStyle, GUILayout.ExpandWidth(true));
+            GUILayout.Label(ModLocalization.T("chest.tips.filter"), _chestRuleTextStyle, GUILayout.ExpandWidth(true));
+            GUILayout.Label(ModLocalization.T("chest.tips.transfer"), _chestRuleTextStyle, GUILayout.ExpandWidth(true));
             if (IsSeparateWildcardRuleEnabled())
             {
-                GUILayout.Label("• Wildcard name rule: * = any chars, ? = one char.", _chestRuleTextStyle,
+                GUILayout.Label(ModLocalization.T("chest.tips.wildcard"), _chestRuleTextStyle,
                     GUILayout.ExpandWidth(true));
             }
             else
             {
-                GUILayout.Label("• Add wildcard patterns in Manage Groups (* = any chars, ? = one char).", _chestRuleTextStyle,
+                GUILayout.Label(ModLocalization.T("chest.tips.wildcardGroups"), _chestRuleTextStyle,
                     GUILayout.ExpandWidth(true));
             }
             GUILayout.EndVertical();
             GUILayout.Space(8);
-            if (GUILayout.Button("Remove Smart Chest", _chestDangerButtonStyle, GUILayout.Height(20), GUILayout.ExpandWidth(true)))
+            if (GUILayout.Button(ModLocalization.T("chest.removeSmartChest"), _chestDangerButtonStyle, GUILayout.Height(20), GUILayout.ExpandWidth(true)))
             {
                 _manager.RemoveSmartChest(_chestId);
                 SaveIfDirty();
                 HideConfig();
             }
             GUILayout.Space(2);
-            if (GUILayout.Button("Close", _chestCloseButtonStyle, GUILayout.Height(20), GUILayout.ExpandWidth(true)))
+            if (GUILayout.Button(ModLocalization.T("chest.close"), _chestCloseButtonStyle, GUILayout.Height(20), GUILayout.ExpandWidth(true)))
                 HideConfig();
         }
 
@@ -839,12 +839,12 @@ namespace SenpaisChest.UI
             var label = _chestLabelStyle;
             var labelDim = _chestLabelDimStyle;
 
-            GUILayout.Label("Create or edit groups. Add item IDs and wildcard name patterns here, then use 'By Group' rules on chests.", labelDim, GUILayout.ExpandWidth(true));
+            GUILayout.Label(ModLocalization.T("chest.groups.intro"), labelDim, GUILayout.ExpandWidth(true));
             GUILayout.Space(6);
 
             GUILayout.BeginHorizontal();
             _newGroupName = GUILayout.TextField(_newGroupName ?? "", _configSearchFieldStyle ?? _chestSearchFieldStyle, GUILayout.ExpandWidth(true));
-            if (GUILayout.Button("New Group", _chestAddButtonStyle, GUILayout.Width(90)))
+            if (GUILayout.Button(ModLocalization.T("chest.groups.new"), _chestAddButtonStyle, GUILayout.Width(90)))
             {
                 var name = (_newGroupName ?? "").Trim();
                 if (name.Length > 0 && _manager.GetGroup(name) == null)
@@ -862,7 +862,7 @@ namespace SenpaisChest.UI
             var groups = _manager.GetGroups();
             if (groups.Count > 0)
             {
-                GUILayout.Label("Groups:", labelBold);
+                GUILayout.Label(ModLocalization.T("chest.groups.header"), labelBold);
                 _groupListScroll = GUILayout.BeginScrollView(_groupListScroll, GUILayout.Height(100));
                 for (int i = 0; i < groups.Count; i++)
                 {
@@ -887,7 +887,7 @@ namespace SenpaisChest.UI
 
             if (_editingGroup != null && _manager.GetGroup(_editingGroup.Name) != null)
             {
-                GUILayout.Label($"Editing: {_editingGroup.Name}", labelBold);
+                GUILayout.Label(ModLocalization.T("chest.groups.editing", _editingGroup.Name), labelBold);
                 if (_editingGroup.ItemIds != null && _editingGroup.ItemIds.Count > 0)
                 {
                     _groupItemsScroll = GUILayout.BeginScrollView(_groupItemsScroll, GUILayout.Height(80));
@@ -909,19 +909,19 @@ namespace SenpaisChest.UI
                 }
                 else
                 {
-                    GUILayout.Label("  No items. Search below to add.", labelDim);
+                    GUILayout.Label(ModLocalization.T("chest.groups.noItems"), labelDim);
                 }
 
                 if (_editingGroup.NamePatterns != null && _editingGroup.NamePatterns.Count > 0)
                 {
                     GUILayout.Space(4);
-                    GUILayout.Label("Wildcard patterns:", labelBold);
+                    GUILayout.Label(ModLocalization.T("chest.groups.wildcardPatterns"), labelBold);
                     for (int i = _editingGroup.NamePatterns.Count - 1; i >= 0; i--)
                     {
                         string pattern = _editingGroup.NamePatterns[i];
                         GUILayout.BeginHorizontal();
                         GUILayout.Label(pattern, label, GUILayout.ExpandWidth(true));
-                        if (GUILayout.Button("+IDs", _chestAddButtonStyle, GUILayout.Width(52), GUILayout.Height(20)))
+                        if (GUILayout.Button(ModLocalization.T("chest.groups.addIds"), _chestAddButtonStyle, GUILayout.Width(52), GUILayout.Height(20)))
                         {
                             int added = ExpandPatternToItemIds(_editingGroup, pattern);
                             Plugin.Log?.LogInfo($"[SmartChestUI] Group '{_editingGroup.Name}': pattern '{pattern}' added {added} item ID(s)");
@@ -937,7 +937,7 @@ namespace SenpaisChest.UI
                 }
 
                 GUILayout.Space(4);
-                GUILayout.Label("Add item (search):", labelBold);
+                GUILayout.Label(ModLocalization.T("chest.groups.addItemSearch"), labelBold);
                 if (_groupItemSearch != _groupItemSearchLast)
                 {
                     _groupItemSearchLast = _groupItemSearch ?? "";
@@ -971,12 +971,12 @@ namespace SenpaisChest.UI
                 }
 
                 GUILayout.Space(6);
-                GUILayout.Label("Add wildcard pattern (* / ?):", labelBold);
+                GUILayout.Label(ModLocalization.T("chest.groups.addWildcard"), labelBold);
                 GUI.SetNextControlName(WildcardPatternControlName);
                 _groupPatternInput = GUILayout.TextField(_groupPatternInput ?? "", _configSearchFieldStyle ?? _chestSearchFieldStyle);
                 GUILayout.BeginHorizontal();
-                GUILayout.Label("Examples: Tomato*  |  *Ore  |  Gold ???", labelDim, GUILayout.ExpandWidth(true));
-                if (GUILayout.Button("Add Pattern", _chestAddButtonStyle, GUILayout.Width(100), GUILayout.Height(22)))
+                GUILayout.Label(ModLocalization.T("chest.groups.wildcardExamples"), labelDim, GUILayout.ExpandWidth(true));
+                if (GUILayout.Button(ModLocalization.T("chest.groups.addPattern"), _chestAddButtonStyle, GUILayout.Width(100), GUILayout.Height(22)))
                 {
                     string pattern = (_groupPatternInput ?? "").Trim();
                     if (!string.IsNullOrEmpty(pattern))
@@ -992,7 +992,7 @@ namespace SenpaisChest.UI
                         _groupPatternInput = "";
                     }
                 }
-                if (GUILayout.Button("Add Matches to IDs", _chestAddButtonStyle, GUILayout.Width(132), GUILayout.Height(22)))
+                if (GUILayout.Button(ModLocalization.T("chest.groups.addMatchesToIds"), _chestAddButtonStyle, GUILayout.Width(132), GUILayout.Height(22)))
                 {
                     string pattern = (_groupPatternInput ?? "").Trim();
                     if (!string.IsNullOrEmpty(pattern))
@@ -1009,7 +1009,7 @@ namespace SenpaisChest.UI
             }
 
             GUILayout.FlexibleSpace();
-            if (GUILayout.Button("Close", _chestCloseButtonStyle, GUILayout.Height(28)))
+            if (GUILayout.Button(ModLocalization.T("chest.close"), _chestCloseButtonStyle, GUILayout.Height(28)))
             {
                 _groupsWindowVisible = false;
                 _editingGroup = null;
@@ -1072,7 +1072,7 @@ namespace SenpaisChest.UI
                     }
 
                     GUILayout.BeginHorizontal();
-                    GUILayout.Label("Search:", labelBold, GUILayout.Width(55));
+                    GUILayout.Label(ModLocalization.T("chest.rule.search"), labelBold, GUILayout.Width(55));
                     GUI.SetNextControlName(SearchFieldControlName);
                     _itemIdInput = GUILayout.TextField(_itemIdInput, searchFieldStyle);
                     GUILayout.EndHorizontal();
@@ -1080,7 +1080,7 @@ namespace SenpaisChest.UI
                     if (_selectedItemId > 0)
                     {
                         GUILayout.Space(2);
-                        GUILayout.Label($"Selected: {ItemSearch.FormatDisplay(_selectedItemName, _selectedItemId)}", label);
+                        GUILayout.Label(ModLocalization.T("chest.rule.selected", ItemSearch.FormatDisplay(_selectedItemName, _selectedItemId)), label);
                     }
 
                     if (_searchResults.Count > 0)
@@ -1117,13 +1117,13 @@ namespace SenpaisChest.UI
                     else if (_itemIdInput.Length >= 2)
                     {
                         GUILayout.Space(2);
-                        GUILayout.Label("  No items found.", labelDim);
+                        GUILayout.Label(ModLocalization.T("chest.rule.noItemsFound"), labelDim);
                     }
 
                     break;
 
                 case 1: // ByCategory
-                    GUILayout.Label("Category:", labelBold);
+                    GUILayout.Label(ModLocalization.T("chest.rule.category"), labelBold);
                     var categoryNames = GetCategoryNames();
                     if (_selectedCategory < 0 || _selectedCategory >= categoryNames.Length)
                         _selectedCategory = 0;
@@ -1131,21 +1131,21 @@ namespace SenpaisChest.UI
                     break;
 
                 case 2: // ByItemType
-                    GUILayout.Label("Item Type:", labelBold);
+                    GUILayout.Label(ModLocalization.T("chest.rule.itemType"), labelBold);
                     DrawOptionGrid(ItemTypeNames, ref _selectedItemType, 3, useChestStyles);
                     break;
 
                 case 3: // ByProperty
-                    GUILayout.Label("Property:", labelBold);
+                    GUILayout.Label(ModLocalization.T("chest.rule.property"), labelBold);
                     DrawOptionGrid(PropertyDisplayNames, ref _selectedProperty, useChestStyles ? 3 : 2, useChestStyles);
                     break;
 
                 case 4: // ByGroup
                     var groups = _manager.GetGroups();
-                    GUILayout.Label("Group:", labelBold);
+                    GUILayout.Label(ModLocalization.T("chest.rule.group"), labelBold);
                     if (groups.Count == 0)
                     {
-                        GUILayout.Label("  No groups yet. Click Manage Groups to create one.", labelDim);
+                        GUILayout.Label(ModLocalization.T("chest.rule.noGroups"), labelDim);
                     }
                     else
                     {
@@ -1165,17 +1165,17 @@ namespace SenpaisChest.UI
                 case 5: // ByNamePattern (* and ? globs vs item display names)
                     if (!IsSeparateWildcardRuleEnabled())
                     {
-                        GUILayout.Label("Wildcard rules are managed via Manage Groups.", labelDim);
-                        GUILayout.Label("Add patterns to a group, then add a By Group rule.", labelDim);
+                        GUILayout.Label(ModLocalization.T("chest.rule.wildcardManaged"), labelDim);
+                        GUILayout.Label(ModLocalization.T("chest.rule.wildcardByGroup"), labelDim);
                         break;
                     }
 
-                    GUILayout.Label("Item name pattern:", labelBold);
+                    GUILayout.Label(ModLocalization.T("chest.rule.namePattern"), labelBold);
                     GUI.SetNextControlName(WildcardPatternControlName);
                     _wildcardPatternInput = GUILayout.TextField(_wildcardPatternInput ?? "", searchFieldStyle)
                         ?? "";
                     GUILayout.Space(2);
-                    GUILayout.Label("  Examples: Tomato*, *Ore, Gold ???  (letters match any case)", labelDim);
+                    GUILayout.Label(ModLocalization.T("chest.rule.namePatternExamples"), labelDim);
                     break;
             }
         }

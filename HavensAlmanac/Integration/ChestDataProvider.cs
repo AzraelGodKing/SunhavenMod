@@ -133,7 +133,7 @@ namespace HavensAlmanac.Integration
 
         public void DrawDashboardSection()
         {
-            GUILayout.Label($"Configured Smart Chests: {_smartChestCount}");
+            GUILayout.Label(ModLocalization.T("almanac.provider.chest.count", _smartChestCount));
         }
 
         public bool DrawBriefingSection()

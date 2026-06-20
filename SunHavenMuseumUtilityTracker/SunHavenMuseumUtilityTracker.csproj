@@ -6,6 +6,7 @@
     <RootNamespace>SunHavenMuseumUtilityTracker</RootNamespace>
     <LangVersion>latest</LangVersion>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <SunhavenModUiProject>true</SunhavenModUiProject>
   </PropertyGroup>
 
   <!-- BepInEx References -->
@@ -80,6 +81,16 @@
     <Compile Include="..\SharedUtilities\ReflectionHelper.cs" Link="Shared\ReflectionHelper.cs" />
     <Compile Include="..\SharedUtilities\IconCache.cs" Link="Shared\IconCache.cs" />
     <Compile Include="..\SharedUtilities\TextInputFocusGuard.cs" Link="Shared\TextInputFocusGuard.cs" />
+    <Compile Include="..\SharedUtilities\MinimalJsonParser.cs" Link="Shared\MinimalJsonParser.cs" />
+    <Compile Include="..\SharedUtilities\ModLocalization.cs" Link="Shared\ModLocalization.cs" />
+    <Compile Include="..\SharedUtilities\LanguageChangeWatcher.cs" Link="Shared\LanguageChangeWatcher.cs" />
+    <Compile Include="..\SharedUtilities\LocalizationBootstrap.cs" Link="Shared\LocalizationBootstrap.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <EmbeddedResource Include="Localization\strings.json">
+      <LogicalName>com.azraelgodking.sunhavenmuseumutilitytracker.Localization.strings.json</LogicalName>
+    </EmbeddedResource>
   </ItemGroup>
 
   <!-- Copy to BepInEx plugins folder and builds folder after build -->

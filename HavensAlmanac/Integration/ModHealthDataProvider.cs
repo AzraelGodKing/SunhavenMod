@@ -5,6 +5,7 @@ using System.Linq;
 using System.Reflection;
 using BepInEx.Bootstrap;
 using HavensAlmanac.Data;
+using SunhavenMods.Shared;
 using UnityEngine;
 
 namespace HavensAlmanac.Integration
@@ -98,7 +99,7 @@ namespace HavensAlmanac.Integration
         {
             if (_lines.Count == 0)
             {
-                GUILayout.Label("No VersionChecker telemetry yet.");
+                GUILayout.Label(ModLocalization.T("almanac.provider.health.empty"));
                 return;
             }
 

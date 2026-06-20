@@ -4,6 +4,7 @@
     <AssemblyName>HavensRespec</AssemblyName>
     <RootNamespace>HavensRespec</RootNamespace>
     <LangVersion>latest</LangVersion>
+    <SunhavenModUiProject>true</SunhavenModUiProject>
   </PropertyGroup>
 
   <ItemGroup>
@@ -78,6 +79,16 @@
     <Compile Include="..\SharedUtilities\VersionChecker.cs" Link="Shared\VersionChecker.cs" />
     <Compile Include="..\SharedUtilities\SceneRootSurvivor.cs" Link="Shared\SceneRootSurvivor.cs" />
     <Compile Include="..\SharedUtilities\ReflectionHelper.cs" Link="Shared\ReflectionHelper.cs" />
+    <Compile Include="..\SharedUtilities\MinimalJsonParser.cs" Link="Shared\MinimalJsonParser.cs" />
+    <Compile Include="..\SharedUtilities\ModLocalization.cs" Link="Shared\ModLocalization.cs" />
+    <Compile Include="..\SharedUtilities\LanguageChangeWatcher.cs" Link="Shared\LanguageChangeWatcher.cs" />
+    <Compile Include="..\SharedUtilities\LocalizationBootstrap.cs" Link="Shared\LocalizationBootstrap.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <EmbeddedResource Include="Localization\strings.json">
+      <LogicalName>com.azraelgodking.havensrespec.Localization.strings.json</LogicalName>
+    </EmbeddedResource>
   </ItemGroup>
 
   <Target Name="CopyToPlugins" AfterTargets="Build">

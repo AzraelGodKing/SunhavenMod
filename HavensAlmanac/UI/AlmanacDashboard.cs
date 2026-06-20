@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using HavensAlmanac.Config;
 using HavensAlmanac.Data;
@@ -92,7 +92,7 @@ namespace HavensAlmanac.UI
         private void DrawWindow(int id)
         {
             GUILayout.BeginHorizontal();
-            GUILayout.Label("Haven's Almanac - Dashboard", _titleStyle);
+            GUILayout.Label(ModLocalization.T("almanac.dashboard.title"), _titleStyle);
             GUILayout.FlexibleSpace();
             if (GUILayout.Button("X", _closeButtonStyle, GUILayout.Width(Scaled(24)), GUILayout.Height(Scaled(24))))
                 Hide();
@@ -105,8 +105,8 @@ namespace HavensAlmanac.UI
             // provider is present (IntegrationModCount excludes Mod Health).
             if (_aggregator.IntegrationModCount == 0)
             {
-                GUILayout.Label("No supported companion mods detected.", _noModsStyle);
-                GUILayout.Label("Install any of: SunhavenTodo, Birthday Reminder, Museum Tracker, Senpai's Chest, The Vault, Haven's Birthright, Haven Dev Tools, or Crop Optimizer.", _noModsStyle);
+                GUILayout.Label(ModLocalization.T("almanac.dashboard.noMods"), _noModsStyle);
+                GUILayout.Label(ModLocalization.T("almanac.dashboard.installHint"), _noModsStyle);
                 GUI.DragWindow(new Rect(0, 0, _windowRect.width, Scaled(30)));
                 return;
             }
@@ -136,12 +136,12 @@ namespace HavensAlmanac.UI
                     try
                     {
                         if (providerError != null)
-                            GUILayout.Label($"[!] Last refresh error: {providerError}", _contentStyle);
+                            GUILayout.Label(ModLocalization.T("almanac.dashboard.refreshError", providerError), _contentStyle);
                         provider.DrawDashboardSection();
                     }
                     catch (Exception ex)
                     {
-                        GUILayout.Label($"Error: {ex.Message}");
+                        GUILayout.Label(ModLocalization.T("almanac.dashboard.error", ex.Message));
                     }
                     GUILayout.EndVertical();
                 }

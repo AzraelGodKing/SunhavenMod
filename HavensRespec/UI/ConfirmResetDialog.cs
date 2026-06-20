@@ -1,4 +1,5 @@
 using System;
+using SunhavenMods.Shared;
 using TMPro;
 using UnityEngine;
 using UnityEngine.EventSystems;
@@ -14,7 +15,13 @@ namespace HavensRespec.UI
     {
         private TextMeshProUGUI _title;
         private TextMeshProUGUI _body;
+        private TextMeshProUGUI _cancelLabel;
+        private TextMeshProUGUI _confirmLabel;
         private Action _onConfirm;
+        private string _pendingTitle;
+        private string _pendingBody;
+
+        public event Action Dismissed;
 
         /// <summary>
         /// Build the dialog GameObject tree under <paramref name="parent"/> (usually the canvas
@@ -56,8 +63,10 @@ namespace HavensRespec.UI
 
         public void Show(string title, string body, Action onConfirm)
         {
-            _title.text = title ?? "Confirm reset?";
-            _body.text = body ?? string.Empty;
+            _pendingTitle = title ?? ModLocalization.T("respec.dialog.title");
+            _pendingBody = body ?? string.Empty;
+            _title.text = _pendingTitle;
+            _body.text = _pendingBody;
             _onConfirm = onConfirm;
             gameObject.SetActive(true);
             transform.SetAsLastSibling();
@@ -67,6 +76,21 @@ namespace HavensRespec.UI
         {
             gameObject.SetActive(false);
             _onConfirm = null;
+            _pendingTitle = null;
+            _pendingBody = null;
+            Dismissed?.Invoke();
+        }
+
+        public void RefreshLocalizedLabels()
+        {
+            if (_title != null && gameObject.activeSelf && !string.IsNullOrEmpty(_pendingTitle))
+                _title.text = _pendingTitle;
+            if (_body != null && gameObject.activeSelf)
+                _body.text = _pendingBody ?? string.Empty;
+            if (_cancelLabel != null)
+                _cancelLabel.text = ModLocalization.T("respec.dialog.cancel");
+            if (_confirmLabel != null)
+                _confirmLabel.text = ModLocalization.T("respec.dialog.confirm");
         }
 
         private void BuildHierarchy()
@@ -127,7 +151,7 @@ namespace HavensRespec.UI
             _title.fontSize = 20f;
             _title.fontStyle = FontStyles.Bold;
             _title.color = RespecStyle.AccentGold;
-            _title.text = "Confirm reset?";
+            _title.text = ModLocalization.T("respec.dialog.title");
             _title.raycastTarget = false;
 
             // Body.
@@ -146,21 +170,22 @@ namespace HavensRespec.UI
             _body.raycastTarget = false;
 
             // Buttons row.
-            BuildButton(fillGo.transform, "Cancel", new Vector2(-10f, 12f), new Vector2(1f, 0f), new Vector2(1f, 0f), new Vector2(1f, 0f),
-                RespecStyle.Neutral, RespecStyle.NeutralHover, RespecStyle.NeutralPressed, Hide);
-            BuildButton(fillGo.transform, "Reset", new Vector2(-130f, 12f), new Vector2(1f, 0f), new Vector2(1f, 0f), new Vector2(1f, 0f),
+            BuildButton(fillGo.transform, ModLocalization.T("respec.dialog.cancel"), new Vector2(-10f, 12f), new Vector2(1f, 0f), new Vector2(1f, 0f), new Vector2(1f, 0f),
+                RespecStyle.Neutral, RespecStyle.NeutralHover, RespecStyle.NeutralPressed, Hide, out _cancelLabel);
+            BuildButton(fillGo.transform, ModLocalization.T("respec.dialog.confirm"), new Vector2(-130f, 12f), new Vector2(1f, 0f), new Vector2(1f, 0f), new Vector2(1f, 0f),
                 RespecStyle.Danger, RespecStyle.DangerHover, RespecStyle.DangerPressed, () =>
                 {
                     var handler = _onConfirm;
                     Hide();
                     handler?.Invoke();
-                });
+                }, out _confirmLabel);
         }
 
         private static void BuildButton(
             Transform parent, string label,
             Vector2 anchoredPos, Vector2 anchorMin, Vector2 anchorMax, Vector2 pivot,
-            Color normal, Color hover, Color pressed, Action onClick)
+            Color normal, Color hover, Color pressed, Action onClick,
+            out TextMeshProUGUI labelTmp)
         {
             var go = new GameObject($"Btn_{label}");
             go.transform.SetParent(parent, false);
@@ -207,6 +232,7 @@ namespace HavensRespec.UI
             tmp.color = Color.white;
             tmp.text = label;
             tmp.raycastTarget = false;
+            labelTmp = tmp;
         }
 
         /// <summary>Updates button tint on hover / pressed state without regenerating sprites.</summary>

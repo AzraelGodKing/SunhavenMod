@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using HavensAlmanac.Data;
+using SunhavenMods.Shared;
 using SunhavenTodo;
 using SunhavenTodo.Data;
 using UnityEngine;
@@ -59,7 +60,7 @@ namespace HavensAlmanac.Integration
 
         public void DrawDashboardSection()
         {
-            GUILayout.Label($"Total: {_totalCount}  |  Completed: {_completedCount}  |  Active: {_activeCount}");
+            GUILayout.Label(ModLocalization.T("almanac.provider.todo.stats", _totalCount, _completedCount, _activeCount));
 
             // Progress bar
             var barRect = GUILayoutUtility.GetRect(0, 16, GUILayout.ExpandWidth(true));
@@ -69,12 +70,12 @@ namespace HavensAlmanac.Integration
                 var fillRect = new Rect(barRect.x + 1, barRect.y + 1, (barRect.width - 2) * (_completionPercent / 100f), barRect.height - 2);
                 GUI.DrawTexture(fillRect, Texture2D.whiteTexture);
             }
-            GUILayout.Label($"{_completionPercent:F0}% complete");
+            GUILayout.Label(ModLocalization.T("almanac.provider.todo.percent", _completionPercent.ToString("F0")));
 
             if (_highPriorityItems.Count > 0)
             {
                 GUILayout.Space(4);
-                GUILayout.Label("High Priority Tasks:", GUI.skin.label);
+                GUILayout.Label(ModLocalization.T("almanac.provider.todo.highPriority"), GUI.skin.label);
                 foreach (var item in _highPriorityItems)
                 {
                     string priority = item.Priority == TodoPriority.Urgent ? "[!] " : "[*] ";
@@ -88,9 +89,12 @@ namespace HavensAlmanac.Integration
             if (_activeCount == 0) return false;
 
             int highCount = _highPriorityItems.Count;
-            GUILayout.Label($"You have {_activeCount} active task{(_activeCount != 1 ? "s" : "")}.");
+            string taskWord = _activeCount == 1
+                ? ModLocalization.T("almanac.provider.todo.task")
+                : ModLocalization.T("almanac.provider.todo.tasks");
+            GUILayout.Label(ModLocalization.T("almanac.provider.todo.briefing.active", _activeCount, taskWord));
             if (highCount > 0)
-                GUILayout.Label($"  {highCount} {(highCount != 1 ? "are" : "is")} high priority!");
+                GUILayout.Label(ModLocalization.T("almanac.provider.todo.briefing.high", highCount));
             return true;
         }
     }

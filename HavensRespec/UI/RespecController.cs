@@ -1,9 +1,12 @@
+using System;
 using System.Collections.Generic;
 using BepInEx.Logging;
 using HavensRespec.Config;
 using HavensRespec.Patches;
 using HavensRespec.Services;
+using TMPro;
 using HarmonyLib;
+using SunhavenMods.Shared;
 using UnityEngine;
 using UnityEngine.UI;
 using Wish;
@@ -27,6 +30,13 @@ namespace HavensRespec.UI
         private Skills _activeSkills;
         private ConfirmResetDialog _dialog;
         private GameObject _resetAllButton;
+        private TextMeshProUGUI _resetAllLabel;
+        private Skills _dialogSkills;
+        private Action _dialogOnConfirm;
+        private bool _dialogIsResetAll;
+        private ProfessionType? _dialogProfession;
+        private int _dialogEstimatedPoints;
+        private int _dialogEstimatedCost;
 
         public RespecController(ManualLogSource log, RespecConfig config, SkillResetService resetService, CostService costService)
         {
@@ -39,6 +49,15 @@ namespace HavensRespec.UI
         public void Install()
         {
             SkillsSetupProfessionPatch.OnSetup = HandleSetupProfession;
+        }
+
+        public void RefreshLocalizedUi()
+        {
+            foreach (var injector in _injectors.Values)
+                injector.RefreshLocalizedLabels();
+            RefreshResetAllLabel();
+            RefreshOpenDialog();
+            _dialog?.RefreshLocalizedLabels();
         }
 
         public void Uninstall()
@@ -159,11 +178,7 @@ namespace HavensRespec.UI
                 return;
             }
 
-            string body = BuildConfirmBody(profession, estimatedPoints, cost);
-            _dialog.Show(
-                title: $"Reset {profession}?",
-                body: body,
-                onConfirm: () => PerformReset(skills, profession, estimatedPoints));
+            ShowProfessionDialog(skills, profession, estimatedPoints, cost);
         }
 
         private bool PerformReset(Skills skills, ProfessionType profession, int estimatedPoints)
@@ -260,15 +275,7 @@ namespace HavensRespec.UI
                 return;
             }
 
-            string body =
-                $"This will reset all profession trees.\n\nEstimated total refund: {totalEstimated} point(s)." +
-                (totalEstimatedCost > 0 ? $"\nEstimated total cost: {_costService.CostLabel(totalEstimated)} (final charge uses actual refunded points)." : "\nCost: Free") +
-                (_config.EnableUndo.Value ? "\n\nUndo remains per-profession and will refund each profession's charged cost." : "\n\nUndo is disabled in config — this cannot be reversed.");
-
-            _dialog.Show(
-                title: "Reset all professions?",
-                body: body,
-                onConfirm: () => PerformResetAll(skills));
+            ShowResetAllDialog(skills, totalEstimated, totalEstimatedCost);
         }
 
         private void PerformResetAll(Skills skills)
@@ -310,20 +317,108 @@ namespace HavensRespec.UI
                 return;
 
             _dialog = ConfirmResetDialog.BuildUnder(canvas.transform);
+            _dialog.Dismissed += ClearDialogState;
+        }
+
+        private void ShowProfessionDialog(Skills skills, ProfessionType profession, int estimatedPoints, int cost)
+        {
+            _dialogSkills = skills;
+            _dialogIsResetAll = false;
+            _dialogProfession = profession;
+            _dialogEstimatedPoints = estimatedPoints;
+            _dialogEstimatedCost = cost;
+            _dialogOnConfirm = () =>
+            {
+                ClearDialogState();
+                PerformReset(skills, profession, estimatedPoints);
+            };
+            _dialog.Show(
+                ModLocalization.T("respec.dialog.title.profession", ProfessionUiMap.GetDisplayName(profession)),
+                BuildConfirmBody(profession, estimatedPoints, cost),
+                _dialogOnConfirm);
+        }
+
+        private void ShowResetAllDialog(Skills skills, int totalEstimated, int totalEstimatedCost)
+        {
+            _dialogSkills = skills;
+            _dialogIsResetAll = true;
+            _dialogProfession = null;
+            _dialogEstimatedPoints = totalEstimated;
+            _dialogEstimatedCost = totalEstimatedCost;
+            _dialogOnConfirm = () =>
+            {
+                ClearDialogState();
+                PerformResetAll(skills);
+            };
+            _dialog.Show(
+                ModLocalization.T("respec.dialog.title.reset_all"),
+                BuildResetAllBody(totalEstimated, totalEstimatedCost),
+                _dialogOnConfirm);
+        }
+
+        private void RefreshOpenDialog()
+        {
+            if (_dialog == null || !_dialog.gameObject.activeInHierarchy || _dialogOnConfirm == null || _dialogSkills == null)
+                return;
+
+            if (_dialogIsResetAll)
+            {
+                _dialog.Show(
+                    ModLocalization.T("respec.dialog.title.reset_all"),
+                    BuildResetAllBody(_dialogEstimatedPoints, _dialogEstimatedCost),
+                    _dialogOnConfirm);
+            }
+            else if (_dialogProfession.HasValue)
+            {
+                var profession = _dialogProfession.Value;
+                _dialog.Show(
+                    ModLocalization.T("respec.dialog.title.profession", ProfessionUiMap.GetDisplayName(profession)),
+                    BuildConfirmBody(profession, _dialogEstimatedPoints, _dialogEstimatedCost),
+                    _dialogOnConfirm);
+            }
+        }
+
+        private void ClearDialogState()
+        {
+            _dialogSkills = null;
+            _dialogOnConfirm = null;
+            _dialogProfession = null;
+            _dialogIsResetAll = false;
         }
 
         private string BuildConfirmBody(ProfessionType profession, int pointsRefunded, int cost)
         {
-            string line1 = pointsRefunded > 0
-                ? $"This will clear every allocated node in {profession}. Estimated refund: {pointsRefunded} skill point{(pointsRefunded == 1 ? string.Empty : "s")}."
-                : $"This will clear every allocated node in {profession}.";
+            string professionName = ProfessionUiMap.GetDisplayName(profession);
+            string line1 = pointsRefunded > 1
+                ? ModLocalization.T("respec.dialog.body.refund_points", professionName, pointsRefunded)
+                : pointsRefunded == 1
+                    ? ModLocalization.T("respec.dialog.body.refund_one", professionName)
+                    : ModLocalization.T("respec.dialog.body.no_refund", professionName);
             string costLine = cost > 0
-                ? $"\n\nEstimated cost: {_costService.CostLabel(pointsRefunded)} (final charge uses actual refunded points)."
+                ? ModLocalization.T("respec.dialog.body.cost", _costService.CostLabel(pointsRefunded))
                 : string.Empty;
             string undoLine = _config.EnableUndo.Value
-                ? "\n\nYou can press \"Undo\" to restore your previous allocation (and any charged cost) until the game closes."
-                : "\n\nUndo is disabled in config — this cannot be reversed.";
+                ? ModLocalization.T("respec.dialog.body.undo_enabled")
+                : ModLocalization.T("respec.dialog.body.undo_disabled");
             return line1 + costLine + undoLine;
+        }
+
+        private string BuildResetAllBody(int totalEstimated, int totalEstimatedCost)
+        {
+            string body = ModLocalization.T("respec.dialog.body.reset_all.intro", totalEstimated);
+            body += totalEstimatedCost > 0
+                ? ModLocalization.T("respec.dialog.body.reset_all.cost", _costService.CostLabel(totalEstimated))
+                : ModLocalization.T("respec.dialog.body.reset_all.free");
+            body += _config.EnableUndo.Value
+                ? ModLocalization.T("respec.dialog.body.reset_all.undo_per_prof")
+                : ModLocalization.T("respec.dialog.body.reset_all.undo_disabled");
+            return body;
+        }
+
+        private void RefreshResetAllLabel()
+        {
+            if (_resetAllLabel != null)
+                _resetAllLabel.text = ModLocalization.T("respec.button.reset_all");
         }
 
         private static bool IsShiftHeld()
@@ -395,9 +490,10 @@ namespace HavensRespec.UI
             label.fontStyle = TMPro.FontStyles.Bold;
             label.enableWordWrapping = false;
             label.color = RespecStyle.Parchment;
-            label.text = "RESET ALL";
+            label.text = ModLocalization.T("respec.button.reset_all");
             label.raycastTarget = false;
 
+            _resetAllLabel = label;
             _resetAllButton = go;
         }
 

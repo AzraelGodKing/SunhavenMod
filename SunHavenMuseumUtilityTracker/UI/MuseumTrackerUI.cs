@@ -1,4 +1,4 @@
-using System.Collections;
+﻿using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using SunhavenMods.Shared;
@@ -779,8 +779,8 @@ namespace SunHavenMuseumUtilityTracker.UI
             // Left side - Title and subtitle
             GUILayout.BeginVertical();
             GUILayout.Space(Scaled(12));
-            GUILayout.Label("S.M.U.T.", _titleStyle);
-            GUILayout.Label("Sun Haven Museum Utility Tracker", _subtitleStyle);
+            GUILayout.Label(ModLocalization.T("smut.title"), _titleStyle);
+            GUILayout.Label(ModLocalization.T("smut.subtitle"), _subtitleStyle);
             GUILayout.EndVertical();
 
             GUILayout.FlexibleSpace();
@@ -837,7 +837,7 @@ namespace SunHavenMuseumUtilityTracker.UI
             GUILayout.BeginHorizontal();
             GUILayout.Space(Scaled(20));
 
-            GUILayout.Label("Search", _searchLabelStyle, GUILayout.Width(Scaled(52)));
+            GUILayout.Label(ModLocalization.T("smut.search"), _searchLabelStyle, GUILayout.Width(Scaled(52)));
 
             // Search field
             _searchQuery = GUILayout.TextField(_searchQuery, _searchStyle, GUILayout.Width(Scaled(180)), GUILayout.Height(Scaled(28)));
@@ -858,7 +858,7 @@ namespace SunHavenMuseumUtilityTracker.UI
             // Clear button
             if (!string.IsNullOrEmpty(_searchQuery))
             {
-                if (GUILayout.Button("Clear", _buttonStyle, GUILayout.Width(Scaled(55)), GUILayout.Height(Scaled(28))))
+                if (GUILayout.Button(ModLocalization.T("smut.clear"), _buttonStyle, GUILayout.Width(Scaled(55)), GUILayout.Height(Scaled(28))))
                 {
                     _searchQuery = "";
                 }
@@ -866,7 +866,7 @@ namespace SunHavenMuseumUtilityTracker.UI
             }
 
             // Sync with Game button
-            if (GUILayout.Button("Sync with Game", _syncButtonStyle, GUILayout.Width(Scaled(105)), GUILayout.Height(Scaled(28))))
+            if (GUILayout.Button(ModLocalization.T("smut.sync"), _syncButtonStyle, GUILayout.Width(Scaled(105)), GUILayout.Height(Scaled(28))))
             {
                 PerformGameSync();
             }
@@ -985,9 +985,9 @@ namespace SunHavenMuseumUtilityTracker.UI
             {
                 GUILayout.Space(Scaled(60));
                 if (!string.IsNullOrEmpty(_searchQuery))
-                    GUILayout.Label($"No items match \"{_searchQuery}\"", _emptyStyle);
+                    GUILayout.Label(ModLocalization.T("smut.empty.search", _searchQuery), _emptyStyle);
                 else if (_showOnlyNeeded)
-                    GUILayout.Label("All items in this section are donated!", _emptyStyle);
+                    GUILayout.Label(ModLocalization.T("smut.empty.donated"), _emptyStyle);
             }
 
             GUILayout.EndScrollView();
@@ -1177,12 +1177,12 @@ namespace SunHavenMuseumUtilityTracker.UI
             if (isDonated)
             {
                 GUI.contentColor = _successGreen;
-                GUILayout.Label("Donated", _checkStyleCached, GUILayout.Width(Scaled(60)));
+                GUILayout.Label(ModLocalization.T("smut.item.donated"), _checkStyleCached, GUILayout.Width(Scaled(60)));
             }
             else
             {
                 GUI.contentColor = _neededOrange;
-                GUILayout.Label("Needed", _neededStyleCached, GUILayout.Width(Scaled(60)));
+                GUILayout.Label(ModLocalization.T("smut.item.needed"), _neededStyleCached, GUILayout.Width(Scaled(60)));
             }
 
             GUI.contentColor = savedColor;

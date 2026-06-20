@@ -3,6 +3,7 @@ using System.Reflection;
 using BepInEx.Logging;
 using HarmonyLib;
 using HavensRespec.Config;
+using SunhavenMods.Shared;
 using Wish;
 
 namespace HavensRespec.Services
@@ -47,12 +48,12 @@ namespace HavensRespec.Services
         {
             int cost = CalculateCost(pointsRefunded);
             if (cost <= 0)
-                return "Free";
+                return ModLocalization.T("respec.cost.free");
             return _config.CostMode.Value switch
             {
-                RespecCostMode.Gold => $"{cost:N0} gold",
-                RespecCostMode.Gems => $"{cost:N0} tickets",
-                _ => "Free",
+                RespecCostMode.Gold => ModLocalization.T("respec.cost.gold", cost),
+                RespecCostMode.Gems => ModLocalization.T("respec.cost.tickets", cost),
+                _ => ModLocalization.T("respec.cost.free"),
             };
         }
 

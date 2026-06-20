@@ -150,6 +150,7 @@ namespace TheVault
 
                 // Apply Harmony patches
                 _harmony = new Harmony(PluginInfo.PLUGIN_GUID);
+                LocalizationBootstrap.Init(PluginInfo.PLUGIN_GUID, _harmony, Log);
                 ApplyPatches();
 
                 // Patch GameSave class for character loading detection
@@ -1396,6 +1397,6 @@ namespace TheVault
     {
         public const string PLUGIN_GUID = "com.azraelgodking.thevault";
         public const string PLUGIN_NAME = "The Vault";
-        public const string PLUGIN_VERSION = "3.3.2";
+        public const string PLUGIN_VERSION = "3.3.3";
     }
 }

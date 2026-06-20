@@ -98,6 +98,17 @@ env:
   THUNDERSTORE_DEPS: "BepInEx-BepInExPack@5.4.2100"
 
 jobs:
+  validate-localization:
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Validate localization strings
+        shell: pwsh
+        run: ./scripts/validate-localization.ps1
+
   # ---------------------------------------------------------------------------
   # Setup — matrix + version consistency (Python) — shared with Test workflow
   # ---------------------------------------------------------------------------
@@ -113,7 +124,8 @@ jobs:
   # Build — self-hosted .NET compile + DLL artifacts
   # ---------------------------------------------------------------------------
   build:
-    needs: setup
+    needs: [setup, validate-localization]
+    if: always() && needs.setup.result == 'success' && (needs.validate-localization.result == 'success' || needs.validate-localization.result == 'skipped')
     runs-on: [self-hosted, Linux, X64, sunhaven]
     strategy:
       fail-fast: false

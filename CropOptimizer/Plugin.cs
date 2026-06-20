@@ -58,6 +58,8 @@ namespace CropOptimizer
             _vaultIntegration = new VaultIntegration();
 
             _harmony = new Harmony(PluginInfo.PLUGIN_GUID);
+            LocalizationBootstrap.Init(PluginInfo.PLUGIN_GUID, _harmony, Log);
+            ModLocalization.LanguageChanged += OnLanguageChanged;
             CropGrowthPatch.Apply(_harmony, _forecast);
             CharacterLoadPatch.Apply(_harmony, _forecast);
 
@@ -106,6 +108,14 @@ namespace CropOptimizer
                 _vaultLoadedEventInfo = null;
                 _vaultLoadedHandler = null;
             }
+
+            ModLocalization.LanguageChanged -= OnLanguageChanged;
+            ModLocalization.Shutdown();
+        }
+
+        private static void OnLanguageChanged(string _)
+        {
+            Instance?._hud?.RefreshLocalization();
         }
 
         private void OnApplicationQuit()
@@ -153,7 +163,13 @@ namespace CropOptimizer
 
             try
             {
-                var bridgeType = typeof(TheVault.Modding.VaultModApiBridge);
+                var bridgeType = VaultReflection.GetBridgeType();
+                if (bridgeType == null)
+                {
+                    Log?.LogDebug("[CropOptimizer] The Vault is installed but TheVault.Abstractions was not found; skipping Vault integration.");
+                    return;
+                }
+
                 var evt = bridgeType.GetEvent("OnVaultLoaded", BindingFlags.Public | BindingFlags.Static);
                 if (evt == null)
                 {
@@ -177,7 +193,8 @@ namespace CropOptimizer
                 _vaultLoadedEventInfo = evt;
                 _vaultLoadedHandler = handler;
 
-                if (TheVault.Modding.VaultModApiBridge.Instance != null && TheVault.Modding.VaultModApiBridge.Instance.IsVaultReady)
+                var instance = VaultReflection.GetBridgeInstance(bridgeType);
+                if (VaultReflection.IsVaultReady(instance))
                     _vaultIntegration.TryRegisterProjectedValueCurrency();
             }
             catch (Exception ex)

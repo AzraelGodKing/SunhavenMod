@@ -1,0 +1,12 @@
+{
+  "es": {
+    "almanac.provider.devtools.player": "Jugador: {0}",
+    "almanac.provider.vault.currencies": "monedas"
+  },
+  "de": {
+    "almanac.provider.devtools.player": "Spieler: {0}"
+  },
+  "fr": {
+    "almanac.provider.devtools.player": "Joueur : {0}"
+  }
+}

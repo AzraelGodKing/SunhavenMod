@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using BepInEx.Logging;
 using HavenDevTools.Config;
+using SunhavenMods.Shared;
 using UnityEngine;
 
 namespace HavenDevTools.UI
@@ -68,9 +69,9 @@ namespace HavenDevTools.UI
         public void Draw(GUIStyle boxStyle, GUIStyle buttonStyle, GUIStyle labelStyle)
         {
             GUILayout.BeginHorizontal();
-            GUILayout.Label("Level:", labelStyle, GUILayout.Width(40));
+            GUILayout.Label(ModLocalization.T("devtools.log.level"), labelStyle, GUILayout.Width(40));
             _levelFilterIndex = GUILayout.Toolbar(_levelFilterIndex, _levelNames, buttonStyle);
-            if (GUILayout.Button("Export", buttonStyle, GUILayout.Width(60)))
+            if (GUILayout.Button(ModLocalization.T("devtools.log.export"), buttonStyle, GUILayout.Width(60)))
                 ExportToFile();
             GUILayout.EndHorizontal();
 

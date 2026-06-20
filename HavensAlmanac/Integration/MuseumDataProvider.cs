@@ -1,5 +1,6 @@
 using System;
 using HavensAlmanac.Data;
+using SunhavenMods.Shared;
 using SunHavenMuseumUtilityTracker;
 using SunHavenMuseumUtilityTracker.Data;
 using UnityEngine;
@@ -57,7 +58,7 @@ namespace HavensAlmanac.Integration
 
         public void DrawDashboardSection()
         {
-            GUILayout.Label($"Donated: {_donated} / {_total}");
+            GUILayout.Label(ModLocalization.T("almanac.provider.museum.donated", _donated, _total));
 
             // Progress bar
             var barRect = GUILayoutUtility.GetRect(0, 16, GUILayout.ExpandWidth(true));
@@ -68,10 +69,10 @@ namespace HavensAlmanac.Integration
                 var fillRect = new Rect(barRect.x + 1, barRect.y + 1, (barRect.width - 2) * fraction, barRect.height - 2);
                 GUI.DrawTexture(fillRect, Texture2D.whiteTexture);
             }
-            GUILayout.Label($"{_completionPercent:F1}% complete");
+            GUILayout.Label(ModLocalization.T("almanac.provider.museum.percent", _completionPercent.ToString("F1")));
 
             if (_neededCount > 0)
-                GUILayout.Label($"{_neededCount} items still needed");
+                GUILayout.Label(ModLocalization.T("almanac.provider.museum.needed", _neededCount));
         }
 
         public bool DrawBriefingSection()
@@ -81,8 +82,11 @@ namespace HavensAlmanac.Integration
             if (!_isReady || _neededCount <= 0 || _neededCount > BriefingNearCompletionThreshold)
                 return false;
 
-            GUILayout.Label($"Museum: {_completionPercent:F0}% complete ({_donated}/{_total})");
-            GUILayout.Label($"  Only {_neededCount} item{(_neededCount != 1 ? "s" : "")} left!");
+            GUILayout.Label(ModLocalization.T("almanac.provider.museum.briefing.summary", _completionPercent, _donated, _total));
+            string itemWord = _neededCount == 1
+                ? ModLocalization.T("almanac.provider.museum.item")
+                : ModLocalization.T("almanac.provider.museum.items");
+            GUILayout.Label(ModLocalization.T("almanac.provider.museum.briefing.left", _neededCount, itemWord));
             return true;
         }
     }

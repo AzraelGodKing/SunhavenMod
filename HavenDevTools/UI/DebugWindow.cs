@@ -31,9 +31,15 @@ namespace HavenDevTools.UI
 
         // Tab state
         private int _selectedTab;
-        private readonly string[] _tabNames = { "Tools", "Azrael's Mods", "Extensions" };
         private int _toolsSubTab;
-        private readonly string[] _toolsSubTabNames = { "Items", "Currencies", "Console", "Log", "Perf", "Utility" };
+        private string _cachedTabLabelsLanguage;
+        private string[] _mainTabLabels;
+        private string[] _toolsSubTabLabels;
+        private List<string> _raceNamesSource;
+        private string[] _raceNamesForGrid;
+
+        private static readonly HashSet<string> AzraelsExtensionGuids =
+            new HashSet<string> { "com.azraelgodking.trinketfortune" };
 
         // Item search (Senpai's Chest style)
         private string _itemSearchText = "";
@@ -65,18 +71,18 @@ namespace HavenDevTools.UI
         // Known mod GUIDs and versions
         private static readonly (string guid, string name, string version)[] _knownMods = new[]
         {
-            ("com.azraelgodking.havendevtools", "Haven Dev Tools", "1.2.2"),
-            ("com.azraelgodking.senpaischest", "Senpai's Chest", "2.7.0"),
-            ("com.azraelgodking.squirrelsbirthdayreminder", "Birthday Reminder", "1.4.2"),
-            ("com.azraelgodking.havensbirthright", "Haven's Birthright", "2.2.2"),
-            ("com.azraelgodking.sunhavenmuseumutilitytracker", "S.M.U.T.", "2.4.2"),
-            ("com.azraelgodking.sunhaventodo", "Sunhaven Todo", "1.4.3"),
-            ("com.azraelgodking.thevault", "The Vault", "3.3.2"),
-            ("com.azraelgodking.havensalmanac", "Haven's Almanac", "1.4.2"),
-            ("com.azraelgodking.fasterraces", "Faster Races", "1.4.2"),
-            ("com.azraelgodking.trinketfortune", "Trinket Fortune", "1.2.2"),
-            ("com.azraelgodking.cropoptimizer", "Crop Optimizer", "1.4.3"),
-            ("com.azraelgodking.havensrespec", "Haven's Respec", "1.3.2"),
+            ("com.azraelgodking.havendevtools", "Haven Dev Tools", "1.2.3"),
+            ("com.azraelgodking.senpaischest", "Senpai's Chest", "2.7.1"),
+            ("com.azraelgodking.squirrelsbirthdayreminder", "Birthday Reminder", "1.4.3"),
+            ("com.azraelgodking.havensbirthright", "Haven's Birthright", "2.2.3"),
+            ("com.azraelgodking.sunhavenmuseumutilitytracker", "S.M.U.T.", "2.4.3"),
+            ("com.azraelgodking.sunhaventodo", "Sunhaven Todo", "1.4.4"),
+            ("com.azraelgodking.thevault", "The Vault", "3.3.3"),
+            ("com.azraelgodking.havensalmanac", "Haven's Almanac", "1.4.3"),
+            ("com.azraelgodking.fasterraces", "Faster Races", "1.4.3"),
+            ("com.azraelgodking.trinketfortune", "Trinket Fortune", "1.2.3"),
+            ("com.azraelgodking.cropoptimizer", "Crop Optimizer", "1.4.4"),
+            ("com.azraelgodking.havensrespec", "Haven's Respec", "1.3.3"),
         };
 
         private const string PAUSE_ID = "HavenDevTools_Debug";
@@ -161,6 +167,52 @@ namespace HavenDevTools.UI
             );
         }
 
+        private void EnsureToolbarLabels()
+        {
+            string lang = ModLocalization.CurrentLanguage;
+            if (_mainTabLabels != null && string.Equals(_cachedTabLabelsLanguage, lang, StringComparison.OrdinalIgnoreCase))
+                return;
+
+            _cachedTabLabelsLanguage = lang;
+            _mainTabLabels = new[]
+            {
+                ModLocalization.T("devtools.tab.tools"),
+                ModLocalization.T("devtools.tab.azraels_mods"),
+                ModLocalization.T("devtools.tab.extensions")
+            };
+            _toolsSubTabLabels = new[]
+            {
+                ModLocalization.T("devtools.tab.items"),
+                ModLocalization.T("devtools.tab.currencies"),
+                ModLocalization.T("devtools.tab.console"),
+                ModLocalization.T("devtools.tab.log"),
+                ModLocalization.T("devtools.tab.perf"),
+                ModLocalization.T("devtools.tab.utility")
+            };
+        }
+
+        private string[] GetRaceNamesForGrid(IReadOnlyList<string> races)
+        {
+            if (_raceNamesSource != null && _raceNamesForGrid != null && _raceNamesSource.Count == races.Count)
+            {
+                bool same = true;
+                for (int i = 0; i < races.Count; i++)
+                {
+                    if (!string.Equals(_raceNamesSource[i], races[i], StringComparison.Ordinal))
+                    {
+                        same = false;
+                        break;
+                    }
+                }
+                if (same)
+                    return _raceNamesForGrid;
+            }
+
+            _raceNamesSource = new List<string>(races);
+            _raceNamesForGrid = _raceNamesSource.ToArray();
+            return _raceNamesForGrid;
+        }
+
         private void InitializeStyles()
         {
             if (_stylesInitialized) return;
@@ -233,23 +285,26 @@ namespace HavenDevTools.UI
         private void DrawWindow(int windowId)
         {
             // Header
-            GUILayout.Label("Haven Dev Tools", _headerStyle);
-            GUILayout.Label($"Player: {Plugin.CurrentPlayerName}", _labelStyle);
+            GUILayout.Label(ModLocalization.T("devtools.title"), _headerStyle);
+            GUILayout.Label(ModLocalization.T("devtools.player", Plugin.CurrentPlayerName ?? string.Empty), _labelStyle);
             GUILayout.Space(5);
 
             // Mod status
+            string yes = ModLocalization.T("devtools.yes");
+            string no = ModLocalization.T("devtools.no");
             GUILayout.BeginHorizontal();
-            GUILayout.Label($"TheVault: {(Plugin.HasTheVault ? "Yes" : "No")}", _labelStyle, GUILayout.Width(100));
-            GUILayout.Label($"SMUT: {(Plugin.HasSMUT ? "Yes" : "No")}", _labelStyle, GUILayout.Width(80));
-            GUILayout.Label($"Birthright: {(Plugin.HasHavensBirthright ? "Yes" : "No")}", _labelStyle, GUILayout.Width(100));
-            GUILayout.Label($"Senpai: {(Plugin.HasSenpaisChest ? "Yes" : "No")}", _labelStyle, GUILayout.Width(80));
-            GUILayout.Label($"Todo: {(Plugin.HasSunhavenTodo ? "Yes" : "No")}", _labelStyle);
+            GUILayout.Label(ModLocalization.T("devtools.mod.thevault", Plugin.HasTheVault ? yes : no), _labelStyle, GUILayout.Width(100));
+            GUILayout.Label(ModLocalization.T("devtools.mod.smut", Plugin.HasSMUT ? yes : no), _labelStyle, GUILayout.Width(80));
+            GUILayout.Label(ModLocalization.T("devtools.mod.birthright", Plugin.HasHavensBirthright ? yes : no), _labelStyle, GUILayout.Width(100));
+            GUILayout.Label(ModLocalization.T("devtools.mod.senpai", Plugin.HasSenpaisChest ? yes : no), _labelStyle, GUILayout.Width(80));
+            GUILayout.Label(ModLocalization.T("devtools.mod.todo", Plugin.HasSunhavenTodo ? yes : no), _labelStyle);
             GUILayout.EndHorizontal();
 
             GUILayout.Space(10);
 
             // Tabs
-            _selectedTab = GUILayout.Toolbar(_selectedTab, _tabNames, _buttonStyle);
+            EnsureToolbarLabels();
+            _selectedTab = GUILayout.Toolbar(_selectedTab, _mainTabLabels, _buttonStyle);
             GUILayout.Space(10);
 
             // Content
@@ -267,7 +322,7 @@ namespace HavenDevTools.UI
             GUILayout.Space(10);
 
             // Close button
-            if (GUILayout.Button("Close (Esc)", _buttonStyle))
+            if (GUILayout.Button(ModLocalization.T("devtools.close"), _buttonStyle))
             {
                 Hide();
             }
@@ -281,18 +336,17 @@ namespace HavenDevTools.UI
             if (panels.Count == 0)
             {
                 GUILayout.BeginVertical(_boxStyle);
-                GUILayout.Label("Extensions", _sectionHeaderStyle);
+                GUILayout.Label(ModLocalization.T("devtools.extensions"), _sectionHeaderStyle);
                 GUILayout.Space(5);
-                GUILayout.Label("No extension panels registered. Mods can implement IDevToolsPanel and call DevToolsRegistry.Register() to add panels here.", _labelStyle);
+                GUILayout.Label(ModLocalization.T("devtools.extensions.none"), _labelStyle);
                 GUILayout.EndVertical();
                 return;
             }
 
             // Azrael's mods shown in Azrael's Mods tab - exclude from Extensions
-            var azraelsModGuids = new HashSet<string> { "com.azraelgodking.trinketfortune" };
             foreach (var panel in panels)
             {
-                if (azraelsModGuids.Contains(panel.ModGuid)) continue;
+                if (AzraelsExtensionGuids.Contains(panel.ModGuid)) continue;
                 GUILayout.BeginVertical(_boxStyle);
                 GUILayout.Label(panel.DisplayName, _sectionHeaderStyle);
                 GUILayout.Space(5);
@@ -313,7 +367,8 @@ namespace HavenDevTools.UI
 
         private void DrawToolsTab()
         {
-            _toolsSubTab = GUILayout.Toolbar(_toolsSubTab, _toolsSubTabNames, _buttonStyle);
+            EnsureToolbarLabels();
+            _toolsSubTab = GUILayout.Toolbar(_toolsSubTab, _toolsSubTabLabels, _buttonStyle);
             GUILayout.Space(8);
 
             switch (_toolsSubTab)
@@ -330,9 +385,9 @@ namespace HavenDevTools.UI
         private void DrawConsoleTab()
         {
             GUILayout.BeginVertical(_boxStyle);
-            GUILayout.Label("Command Console", _sectionHeaderStyle);
+            GUILayout.Label(ModLocalization.T("devtools.console.title"), _sectionHeaderStyle);
             GUILayout.Space(5);
-            GUILayout.Label("Type commands and press Enter. Supported: spawn, tp, time.set, reload.config", _labelStyle);
+            GUILayout.Label(ModLocalization.T("devtools.console.hint"), _labelStyle);
             var console = Plugin.GetCommandConsole();
             if (console != null)
             {
@@ -340,7 +395,7 @@ namespace HavenDevTools.UI
             }
             else
             {
-                GUILayout.Label("(Console service initializing...)", _labelStyle);
+                GUILayout.Label(ModLocalization.T("devtools.console.init"), _labelStyle);
             }
             GUILayout.EndVertical();
         }
@@ -348,7 +403,7 @@ namespace HavenDevTools.UI
         private void DrawLogViewerTab()
         {
             GUILayout.BeginVertical(_boxStyle);
-            GUILayout.Label("Log Viewer", _sectionHeaderStyle);
+            GUILayout.Label(ModLocalization.T("devtools.log.title"), _sectionHeaderStyle);
             GUILayout.Space(5);
             var logViewer = Plugin.GetLogViewer();
             if (logViewer != null)
@@ -357,7 +412,7 @@ namespace HavenDevTools.UI
             }
             else
             {
-                GUILayout.Label("(Log viewer initializing...)", _labelStyle);
+                GUILayout.Label(ModLocalization.T("devtools.log.init"), _labelStyle);
             }
             GUILayout.EndVertical();
         }
@@ -365,14 +420,14 @@ namespace HavenDevTools.UI
         private void DrawPerformanceTab()
         {
             GUILayout.BeginVertical(_boxStyle);
-            GUILayout.Label("Performance", _sectionHeaderStyle);
+            GUILayout.Label(ModLocalization.T("devtools.perf.title"), _sectionHeaderStyle);
             GUILayout.Space(5);
             float fps = 1f / Mathf.Max(0.0001f, Time.deltaTime);
             long memBytes = GC.GetTotalMemory(false);
             float memMB = memBytes / (1024f * 1024f);
-            GUILayout.Label($"FPS: {fps:F1}", _labelStyle);
-            GUILayout.Label($"Memory: {memMB:F1} MB", _labelStyle);
-            GUILayout.Label("(Also shown in overlay when ShowPerformance is enabled)", _labelStyle);
+            GUILayout.Label(ModLocalization.T("devtools.perf.fps", fps), _labelStyle);
+            GUILayout.Label(ModLocalization.T("devtools.perf.memory", memMB), _labelStyle);
+            GUILayout.Label(ModLocalization.T("devtools.perf.overlayHint"), _labelStyle);
             GUILayout.EndVertical();
         }
 
@@ -383,23 +438,23 @@ namespace HavenDevTools.UI
         private void DrawItemsTab()
         {
             GUILayout.BeginVertical(_boxStyle);
-            GUILayout.Label("Item Inspector", _sectionHeaderStyle);
+            GUILayout.Label(ModLocalization.T("devtools.items.title"), _sectionHeaderStyle);
             GUILayout.Space(5);
 
             // Held item
             var heldItem = Plugin.GetItemInspector()?.GetHeldItem();
             if (heldItem.HasValue)
-                GUILayout.Label($"Held: {heldItem.Value.name} ({heldItem.Value.id})", _labelStyle);
+                GUILayout.Label(ModLocalization.T("devtools.items.held", heldItem.Value.name, heldItem.Value.id), _labelStyle);
             else
-                GUILayout.Label("Held: None", _labelStyle);
+                GUILayout.Label(ModLocalization.T("devtools.items.heldNone"), _labelStyle);
 
             GUILayout.Space(10);
 
             // Search (Senpai's Chest style - live search, 2+ chars)
-            GUILayout.Label("Search:", _labelStyle);
+            GUILayout.Label(ModLocalization.T("devtools.search"), _labelStyle);
             GUILayout.BeginHorizontal();
             _itemSearchText = GUILayout.TextField(_itemSearchText, _textFieldStyle);
-            if (GUILayout.Button("Clear", _buttonStyle, GUILayout.Width(50)))
+            if (GUILayout.Button(ModLocalization.T("devtools.clear"), _buttonStyle, GUILayout.Width(50)))
             {
                 _itemSearchText = "";
                 _lastItemSearchQuery = "";
@@ -416,7 +471,7 @@ namespace HavenDevTools.UI
             if (_selectedItemId > 0)
             {
                 GUILayout.Space(2);
-                GUILayout.Label($"Selected: {ItemSearch.FormatDisplay(_selectedItemName, _selectedItemId)}", _labelStyle);
+                GUILayout.Label(ModLocalization.T("devtools.selected", ItemSearch.FormatDisplay(_selectedItemName, _selectedItemId)), _labelStyle);
             }
 
             if (_searchResults.Count > 0)
@@ -440,17 +495,17 @@ namespace HavenDevTools.UI
             else if (_itemSearchText.Length >= 2)
             {
                 GUILayout.Space(2);
-                GUILayout.Label("No items found.", _labelStyle);
+                GUILayout.Label(ModLocalization.T("devtools.items.notFound"), _labelStyle);
             }
 
             GUILayout.Space(10);
 
             // Spawn
-            GUILayout.Label("Spawn:", _labelStyle);
+            GUILayout.Label(ModLocalization.T("devtools.spawn"), _labelStyle);
             GUILayout.BeginHorizontal();
-            GUILayout.Label("ID:", _labelStyle, GUILayout.Width(22));
+            GUILayout.Label(ModLocalization.T("devtools.spawn.id"), _labelStyle, GUILayout.Width(22));
             _itemIdInput = GUILayout.TextField(_itemIdInput, _textFieldStyle, GUILayout.Width(70));
-            GUILayout.Label("Qty:", _labelStyle, GUILayout.Width(28));
+            GUILayout.Label(ModLocalization.T("devtools.spawn.qty"), _labelStyle, GUILayout.Width(28));
             _spawnAmount = GUILayout.TextField(_spawnAmount, _textFieldStyle, GUILayout.Width(40));
             if (GUILayout.Button("1", _buttonStyle, GUILayout.Width(22))) _spawnAmount = "1";
             if (GUILayout.Button("10", _buttonStyle, GUILayout.Width(28))) _spawnAmount = "10";
@@ -458,12 +513,12 @@ namespace HavenDevTools.UI
             GUILayout.EndHorizontal();
 
             GUILayout.BeginHorizontal();
-            if (GUILayout.Button("Spawn to Inventory", _buttonStyle))
+            if (GUILayout.Button(ModLocalization.T("devtools.spawn.toInventory"), _buttonStyle))
             {
                 if (int.TryParse(_itemIdInput, out int itemId) && int.TryParse(_spawnAmount, out int amount) && amount > 0)
                     Plugin.GetItemInspector()?.SpawnItem(itemId, amount);
             }
-            if (_selectedItemId > 0 && GUILayout.Button("Spawn 1", _buttonStyle, GUILayout.Width(70)))
+            if (_selectedItemId > 0 && GUILayout.Button(ModLocalization.T("devtools.spawn.one"), _buttonStyle, GUILayout.Width(70)))
             {
                 Plugin.GetItemInspector()?.SpawnItem(_selectedItemId, 1);
             }
@@ -479,13 +534,13 @@ namespace HavenDevTools.UI
         private void DrawCurrenciesTab()
         {
             GUILayout.BeginVertical(_boxStyle);
-            GUILayout.Label("Currency Tracker", _sectionHeaderStyle);
+            GUILayout.Label(ModLocalization.T("devtools.currency.title"), _sectionHeaderStyle);
             GUILayout.Space(5);
 
             var tracker = Plugin.GetCurrencyTracker();
             if (tracker == null)
             {
-                GUILayout.Label("Currency tracker not available", _labelStyle);
+                GUILayout.Label(ModLocalization.T("devtools.currency.unavailable"), _labelStyle);
                 GUILayout.EndVertical();
                 return;
             }
@@ -493,18 +548,18 @@ namespace HavenDevTools.UI
             var summary = tracker.GetSummary();
 
             // Basic currencies
-            GUILayout.Label($"Gold: {summary.Gold:N0}", _labelStyle);
-            GUILayout.Label($"Orbs: {summary.Orbs:N0}", _labelStyle);
-            GUILayout.Label($"Tickets: {summary.Tickets:N0}", _labelStyle);
+            GUILayout.Label(ModLocalization.T("devtools.currency.gold", summary.Gold), _labelStyle);
+            GUILayout.Label(ModLocalization.T("devtools.currency.orbs", summary.Orbs), _labelStyle);
+            GUILayout.Label(ModLocalization.T("devtools.currency.tickets", summary.Tickets), _labelStyle);
 
             GUILayout.Space(10);
 
             // Inventory currencies
-            GUILayout.Label("Inventory Currencies:", _sectionHeaderStyle);
+            GUILayout.Label(ModLocalization.T("devtools.currency.inventory"), _sectionHeaderStyle);
             _currencyScrollPosition = GUILayout.BeginScrollView(_currencyScrollPosition, GUILayout.Height(120));
             if (summary.InventoryCurrencies.Count == 0)
             {
-                GUILayout.Label("  (none)", _labelStyle);
+                GUILayout.Label(ModLocalization.T("devtools.currency.none"), _labelStyle);
             }
             else
             {
@@ -519,10 +574,10 @@ namespace HavenDevTools.UI
             if (Plugin.HasTheVault)
             {
                 GUILayout.Space(10);
-                GUILayout.Label("Vault Currencies:", _sectionHeaderStyle);
+                GUILayout.Label(ModLocalization.T("devtools.currency.vault"), _sectionHeaderStyle);
                 if (summary.VaultCurrencies.Count == 0)
                 {
-                    GUILayout.Label("  (vault empty)", _labelStyle);
+                    GUILayout.Label(ModLocalization.T("devtools.currency.vaultEmpty"), _labelStyle);
                 }
                 else
                 {
@@ -535,7 +590,7 @@ namespace HavenDevTools.UI
             else
             {
                 GUILayout.Space(5);
-                GUILayout.Label("(The Vault not installed)", _labelStyle);
+                GUILayout.Label(ModLocalization.T("devtools.currency.vaultMissing"), _labelStyle);
             }
 
             GUILayout.EndVertical();
@@ -548,12 +603,12 @@ namespace HavenDevTools.UI
         private void DrawBundlesTab()
         {
             GUILayout.BeginVertical(_boxStyle);
-            GUILayout.Label("Museum Bundle Inspector", _sectionHeaderStyle);
+            GUILayout.Label(ModLocalization.T("devtools.museum.title"), _sectionHeaderStyle);
             GUILayout.Space(5);
 
             if (!Plugin.HasSMUT)
             {
-                GUILayout.Label("S.M.U.T. not installed", _labelStyle);
+                GUILayout.Label(ModLocalization.T("devtools.museum.notInstalled"), _labelStyle);
                 GUILayout.EndVertical();
                 return;
             }
@@ -561,7 +616,7 @@ namespace HavenDevTools.UI
             var inspector = Plugin.GetBundleInspector();
             if (inspector == null)
             {
-                GUILayout.Label("Bundle inspector not available", _labelStyle);
+                GUILayout.Label(ModLocalization.T("devtools.museum.unavailable"), _labelStyle);
                 GUILayout.EndVertical();
                 return;
             }
@@ -570,12 +625,12 @@ namespace HavenDevTools.UI
             var stats = inspector.GetDonationStats();
             if (stats.IsLoaded)
             {
-                GUILayout.Label($"Character: {stats.CharacterName}", _labelStyle);
-                GUILayout.Label($"Progress: {stats.TotalDonated}/{stats.TotalItems} ({stats.CompletionPercent:F1}%)", _labelStyle);
+                GUILayout.Label(ModLocalization.T("devtools.museum.character", stats.CharacterName), _labelStyle);
+                GUILayout.Label(ModLocalization.T("devtools.museum.progress", stats.TotalDonated, stats.TotalItems, stats.CompletionPercent), _labelStyle);
             }
             else
             {
-                GUILayout.Label("Donation data not loaded", _labelStyle);
+                GUILayout.Label(ModLocalization.T("devtools.museum.notLoaded"), _labelStyle);
             }
 
             GUILayout.Space(10);
@@ -584,7 +639,7 @@ namespace HavenDevTools.UI
             var sections = inspector.GetAllSections();
             if (sections.Count == 0)
             {
-                GUILayout.Label("No museum data available", _labelStyle);
+                GUILayout.Label(ModLocalization.T("devtools.museum.noData"), _labelStyle);
                 GUILayout.EndVertical();
                 return;
             }
@@ -596,7 +651,7 @@ namespace HavenDevTools.UI
                 sectionNames[i] = sections[i].Name;
             }
 
-            GUILayout.Label("Section:", _labelStyle);
+            GUILayout.Label(ModLocalization.T("devtools.museum.section"), _labelStyle);
             _selectedSectionIndex = GUILayout.SelectionGrid(_selectedSectionIndex, sectionNames, 3, _buttonStyle);
 
             if (_selectedSectionIndex >= sections.Count) _selectedSectionIndex = 0;
@@ -615,7 +670,7 @@ namespace HavenDevTools.UI
 
                 if (_selectedBundleIndex >= selectedSection.Bundles.Count) _selectedBundleIndex = 0;
 
-                GUILayout.Label("Bundle:", _labelStyle);
+                GUILayout.Label(ModLocalization.T("devtools.museum.bundle"), _labelStyle);
                 _selectedBundleIndex = GUILayout.SelectionGrid(_selectedBundleIndex, bundleNames, 2, _buttonStyle);
 
                 var selectedBundle = selectedSection.Bundles[_selectedBundleIndex];
@@ -623,7 +678,7 @@ namespace HavenDevTools.UI
                 GUILayout.Space(5);
 
                 // Items in bundle
-                GUILayout.Label($"Items in {selectedBundle.Name}:", _sectionHeaderStyle);
+                GUILayout.Label(ModLocalization.T("devtools.museum.itemsIn", selectedBundle.Name), _sectionHeaderStyle);
                 _bundleScrollPosition = GUILayout.BeginScrollView(_bundleScrollPosition, GUILayout.Height(150));
                 foreach (var item in selectedBundle.Items)
                 {
@@ -635,12 +690,12 @@ namespace HavenDevTools.UI
                     GUILayout.Label($"{status} {item.Name} (ID: {item.GameItemId})", _labelStyle, GUILayout.Width(320));
                     var prevEnabled = GUI.enabled;
                     GUI.enabled = canSpawn;
-                    if (GUILayout.Button(canSpawn ? $"Spawn{qtyLabel}" : "—", _buttonStyle, GUILayout.Width(90)))
+                    if (GUILayout.Button(canSpawn ? ModLocalization.T("devtools.museum.spawn", qtyLabel) : "—", _buttonStyle, GUILayout.Width(90)))
                     {
                         if (canSpawn) Plugin.GetItemInspector()?.SpawnItem(item.GameItemId, item.Quantity);
                     }
                     GUI.enabled = prevEnabled;
-                    if (!canSpawn) GUILayout.Label("(ID in Unity assets)", _labelStyle, GUILayout.Width(100));
+                    if (!canSpawn) GUILayout.Label(ModLocalization.T("devtools.museum.idInAssets"), _labelStyle, GUILayout.Width(100));
                     GUILayout.EndHorizontal();
                 }
                 GUILayout.EndScrollView();
@@ -656,20 +711,20 @@ namespace HavenDevTools.UI
         private void DrawRaceBonusesTab()
         {
             GUILayout.BeginVertical(_boxStyle);
-            GUILayout.Label("Race Modifier Tracker", _sectionHeaderStyle);
+            GUILayout.Label(ModLocalization.T("devtools.race.title"), _sectionHeaderStyle);
             GUILayout.Space(5);
 
             var tracker = Plugin.GetRaceModifierTracker();
             if (tracker == null)
             {
-                GUILayout.Label("Race tracker not available", _labelStyle);
+                GUILayout.Label(ModLocalization.T("devtools.race.unavailable"), _labelStyle);
                 GUILayout.EndVertical();
                 return;
             }
 
             // Current race
             string currentRace = tracker.GetCurrentRace();
-            GUILayout.Label($"Current Race: {currentRace}", _labelStyle);
+            GUILayout.Label(ModLocalization.T("devtools.race.current", currentRace), _labelStyle);
 
             GUILayout.Space(10);
 
@@ -677,10 +732,10 @@ namespace HavenDevTools.UI
             if (Plugin.HasHavensBirthright)
             {
                 var activeBonuses = tracker.GetActiveRaceBonuses();
-                GUILayout.Label("Active Bonuses:", _sectionHeaderStyle);
+                GUILayout.Label(ModLocalization.T("devtools.race.bonuses"), _sectionHeaderStyle);
                 if (activeBonuses.Count == 0)
                 {
-                    GUILayout.Label("  (no bonuses active)", _labelStyle);
+                    GUILayout.Label(ModLocalization.T("devtools.race.noBonuses"), _labelStyle);
                 }
                 else
                 {
@@ -693,17 +748,17 @@ namespace HavenDevTools.UI
             }
             else
             {
-                GUILayout.Label("Haven's Birthright not installed", _labelStyle);
+                GUILayout.Label(ModLocalization.T("devtools.race.birthrightMissing"), _labelStyle);
             }
 
             GUILayout.Space(10);
 
             // Race browser
-            GUILayout.Label("Browse Race Bonuses:", _sectionHeaderStyle);
+            GUILayout.Label(ModLocalization.T("devtools.race.browse"), _sectionHeaderStyle);
             var races = tracker.GetAllRaces();
             if (races.Count > 0)
             {
-                string[] raceNames = races.ToArray();
+                string[] raceNames = GetRaceNamesForGrid(races);
                 if (_selectedRaceIndex >= races.Count) _selectedRaceIndex = 0;
 
                 _selectedRaceIndex = GUILayout.SelectionGrid(_selectedRaceIndex, raceNames, 4, _buttonStyle);
@@ -714,7 +769,7 @@ namespace HavenDevTools.UI
                 _raceScrollPosition = GUILayout.BeginScrollView(_raceScrollPosition, GUILayout.Height(150));
                 if (bonuses.Count == 0)
                 {
-                    GUILayout.Label("  (no bonuses defined)", _labelStyle);
+                    GUILayout.Label(ModLocalization.T("devtools.race.noDefined"), _labelStyle);
                 }
                 else
                 {
@@ -737,7 +792,7 @@ namespace HavenDevTools.UI
         private void DrawUtilityTab()
         {
             GUILayout.BeginVertical(_boxStyle);
-            GUILayout.Label("Utility", _sectionHeaderStyle);
+            GUILayout.Label(ModLocalization.T("devtools.utility"), _sectionHeaderStyle);
             GUILayout.Space(5);
 
             // Version Checker Section
@@ -746,8 +801,8 @@ namespace HavenDevTools.UI
             GUILayout.Space(10);
 
             // Config
-            GUILayout.Label("Config:", _sectionHeaderStyle);
-            if (GUILayout.Button("Reload HavenDevTools Config", _buttonStyle))
+            GUILayout.Label(ModLocalization.T("devtools.config"), _sectionHeaderStyle);
+            if (GUILayout.Button(ModLocalization.T("devtools.config.reload"), _buttonStyle))
             {
                 ConfigReloader.ReloadHavenDevToolsConfig();
             }
@@ -755,9 +810,9 @@ namespace HavenDevTools.UI
             GUILayout.Space(10);
 
             // Logging
-            GUILayout.Label("Logging:", _sectionHeaderStyle);
+            GUILayout.Label(ModLocalization.T("devtools.logging"), _sectionHeaderStyle);
 
-            if (GUILayout.Button("Log All Currency IDs", _buttonStyle))
+            if (GUILayout.Button(ModLocalization.T("devtools.logCurrencyIds"), _buttonStyle))
             {
                 Plugin.Log?.LogInfo("=== Currency Item IDs ===");
                 foreach (var kvp in CurrencyTracker.CurrencyItemIds)
@@ -766,7 +821,7 @@ namespace HavenDevTools.UI
                 }
             }
 
-            if (GUILayout.Button("Log Player Stats", _buttonStyle))
+            if (GUILayout.Button(ModLocalization.T("devtools.logPlayerStats"), _buttonStyle))
             {
                 LogPlayerStats();
             }
@@ -774,9 +829,9 @@ namespace HavenDevTools.UI
             GUILayout.Space(10);
 
             // Hash generator
-            GUILayout.Label("Authorization Hash Generator:", _sectionHeaderStyle);
-            GUILayout.Label("Use this to generate hashes for new authorized Steam IDs", _labelStyle);
-            if (GUILayout.Button("Log Current Steam ID Hash", _buttonStyle))
+            GUILayout.Label(ModLocalization.T("devtools.auth.title"), _sectionHeaderStyle);
+            GUILayout.Label(ModLocalization.T("devtools.auth.hint"), _labelStyle);
+            if (GUILayout.Button(ModLocalization.T("devtools.auth.logHash"), _buttonStyle))
             {
                 try
                 {
@@ -805,21 +860,21 @@ namespace HavenDevTools.UI
 
         private void DrawVersionCheckerSection()
         {
-            GUILayout.Label("Version Checker:", _sectionHeaderStyle);
+            GUILayout.Label(ModLocalization.T("devtools.versions.title"), _sectionHeaderStyle);
             GUILayout.Space(3);
 
             GUILayout.BeginHorizontal();
 
             // Check all button
             GUI.enabled = !_isCheckingVersions;
-            if (GUILayout.Button(_isCheckingVersions ? "Checking..." : "Check All Mod Versions", _buttonStyle))
+            if (GUILayout.Button(_isCheckingVersions ? ModLocalization.T("devtools.versions.checking") : ModLocalization.T("devtools.versions.checkAll"), _buttonStyle))
             {
                 CheckAllModVersions();
             }
             GUI.enabled = true;
 
             // Test notification button
-            if (GUILayout.Button("Test Notification", _buttonStyle, GUILayout.Width(120)))
+            if (GUILayout.Button(ModLocalization.T("devtools.versions.testNotify"), _buttonStyle, GUILayout.Width(120)))
             {
                 TestUpdateNotification();
             }
@@ -851,18 +906,18 @@ namespace HavenDevTools.UI
                     {
                         // Update available
                         var updateStyle = new GUIStyle(_labelStyle) { normal = { textColor = new Color(1f, 0.9f, 0.3f) } };
-                        GUILayout.Label($"Update: v{result.LatestVersion}", updateStyle);
+                        GUILayout.Label(ModLocalization.T("devtools.versions.update", result.LatestVersion), updateStyle);
                     }
                     else
                     {
                         // Up to date
                         var okStyle = new GUIStyle(_labelStyle) { normal = { textColor = new Color(0.5f, 1f, 0.5f) } };
-                        GUILayout.Label("Up to date", okStyle);
+                        GUILayout.Label(ModLocalization.T("devtools.versions.upToDate"), okStyle);
                     }
                 }
                 else
                 {
-                    GUILayout.Label("Not checked", _labelStyle);
+                    GUILayout.Label(ModLocalization.T("devtools.versions.notChecked"), _labelStyle);
                 }
 
                 GUILayout.EndHorizontal();

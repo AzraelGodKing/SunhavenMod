@@ -1,6 +1,7 @@
 using System;
 using System.Reflection;
 using BepInEx.Logging;
+using SunhavenMods.Shared;
 using TMPro;
 using UnityEngine;
 using UnityEngine.EventSystems;
@@ -26,6 +27,8 @@ namespace HavensRespec.UI
 
         public GameObject ResetButton { get; private set; }
         public GameObject UndoButton { get; private set; }
+        private TextMeshProUGUI _resetLabel;
+        private TextMeshProUGUI _undoLabel;
 
         public event Action OnResetClicked;
         public event Action OnUndoClicked;
@@ -61,17 +64,19 @@ namespace HavensRespec.UI
                     parent,
                     anchorRt,
                     rowIndex: 0,
-                    "Reset",
+                    ModLocalization.T("respec.button.reset"),
                     RespecStyle.Danger, RespecStyle.DangerHover, RespecStyle.DangerPressed,
-                    () => OnResetClicked?.Invoke());
+                    () => OnResetClicked?.Invoke(),
+                    out _resetLabel);
 
                 UndoButton = BuildButton(
                     parent,
                     anchorRt,
                     rowIndex: 1,
-                    "Undo",
+                    ModLocalization.T("respec.button.undo"),
                     RespecStyle.Neutral, RespecStyle.NeutralHover, RespecStyle.NeutralPressed,
-                    () => OnUndoClicked?.Invoke());
+                    () => OnUndoClicked?.Invoke(),
+                    out _undoLabel);
                 UndoButton.SetActive(false);
 
                 return true;
@@ -87,6 +92,14 @@ namespace HavensRespec.UI
         {
             if (UndoButton != null)
                 UndoButton.SetActive(visible);
+        }
+
+        public void RefreshLocalizedLabels()
+        {
+            if (_resetLabel != null)
+                _resetLabel.text = ModLocalization.T("respec.button.reset").ToUpperInvariant();
+            if (_undoLabel != null)
+                _undoLabel.text = ModLocalization.T("respec.button.undo").ToUpperInvariant();
         }
 
         public void Destroy()
@@ -133,7 +146,8 @@ namespace HavensRespec.UI
             int rowIndex,
             string label,
             Color normal, Color hover, Color pressed,
-            Action onClick)
+            Action onClick,
+            out TextMeshProUGUI labelTmp)
         {
             EnsureSprites();
 
@@ -210,6 +224,7 @@ namespace HavensRespec.UI
             tmp.color = RespecStyle.Parchment;
             tmp.text = label.ToUpperInvariant();
             tmp.raycastTarget = false;
+            labelTmp = tmp;
 
             // NOTE: we intentionally do NOT touch tmp.fontSharedMaterial / tmp.outlineColor
             // here. SetupProfession fires before TMP has resolved its font asset, so the
@@ -218,7 +233,7 @@ namespace HavensRespec.UI
             // label on the dark fill with a bold weight stays legible without an outline.
 
             // Strip any I2 Localize component the parent might auto-attach to fresh TMPs —
-            // our labels are final English and shouldn't be translation-swapped.
+            // mod-owned labels use ModLocalization and RefreshLocalizedLabels on language change.
             var localizeType = Type.GetType("I2.Loc.Localize, I2Localization") ?? Type.GetType("I2.Loc.Localize, Assembly-CSharp");
             if (localizeType != null)
             {

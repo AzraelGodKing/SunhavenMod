@@ -252,7 +252,7 @@ namespace SunhavenTodo.UI
 
             // Title with item count
             var activeCount = _manager?.GetActiveTodos().Count() ?? 0;
-            GUILayout.Label($"Todo ({activeCount})", _headerStyle, GUILayout.Height(HeaderHeight));
+            GUILayout.Label(ModLocalization.T("todo.hud.title", activeCount), _headerStyle, GUILayout.Height(HeaderHeight));
 
             GUILayout.FlexibleSpace();
 
@@ -264,12 +264,12 @@ namespace SunhavenTodo.UI
                 normal = { textColor = new Color(_textDark.r, _textDark.g, _textDark.b, 0.5f) }
             };
             var shortcut = Plugin.GetOpenListShortcutDisplay();
-            GUILayout.Label($"{shortcut} to open", hintStyle, GUILayout.Height(HeaderHeight));
+            GUILayout.Label(ModLocalization.T("todo.hud.openHint", shortcut), hintStyle, GUILayout.Height(HeaderHeight));
 
             GUILayout.FlexibleSpace();
 
             // Drag hint
-            GUILayout.Label("drag to move", hintStyle, GUILayout.Height(HeaderHeight));
+            GUILayout.Label(ModLocalization.T("todo.hud.dragHint"), hintStyle, GUILayout.Height(HeaderHeight));
 
             GUILayout.Space(Scaled(4));
             if (GUILayout.Button("X", _closeButtonStyle, GUILayout.Width(Scaled(26)), GUILayout.Height(Scaled(22))))
@@ -290,7 +290,7 @@ namespace SunhavenTodo.UI
             {
                 GUILayout.BeginHorizontal();
                 GUILayout.FlexibleSpace();
-                GUILayout.Label("No active tasks", _emptyStyle);
+                GUILayout.Label(ModLocalization.T("todo.hud.empty"), _emptyStyle);
                 GUILayout.FlexibleSpace();
                 GUILayout.EndHorizontal();
             }
@@ -308,7 +308,7 @@ namespace SunhavenTodo.UI
         private void DrawItem(TodoItem item, int index)
         {
             var bgTex = index % 2 == 0 ? _itemEven : _itemOdd;
-            var titleText = string.IsNullOrWhiteSpace(item.Title) ? "(No title)" : item.Title;
+            var titleText = string.IsNullOrWhiteSpace(item.Title) ? ModLocalization.T("todo.item.noTitle") : item.Title;
 
             var wrappedTitleStyle = new GUIStyle(_titleStyle)
             {
@@ -372,7 +372,7 @@ namespace SunhavenTodo.UI
         {
             if (item == null) return ItemHeight;
 
-            var titleText = string.IsNullOrWhiteSpace(item.Title) ? "(No title)" : item.Title;
+            var titleText = string.IsNullOrWhiteSpace(item.Title) ? ModLocalization.T("todo.item.noTitle") : item.Title;
             var wrappedTitleStyle = new GUIStyle(_titleStyle)
             {
                 wordWrap = true,

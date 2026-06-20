@@ -1,3 +1,4 @@
+using SunhavenMods.Shared;
 using Wish;
 
 namespace HavensRespec.Services
@@ -22,5 +23,8 @@ namespace HavensRespec.Services
             ProfessionType.Fishing => "_fishingPanel",
             _ => null,
         };
+
+        public static string GetDisplayName(ProfessionType profession) =>
+            ModLocalization.T($"respec.profession.{profession}");
     }
 }

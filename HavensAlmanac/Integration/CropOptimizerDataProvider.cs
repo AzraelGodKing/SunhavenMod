@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using HavensAlmanac.Data;
+using SunhavenMods.Shared;
 using UnityEngine;
 
 namespace HavensAlmanac.Integration
@@ -49,11 +50,14 @@ namespace HavensAlmanac.Integration
             if (_topCrops.Count > 0)
             {
                 GUILayout.Space(4);
-                GUILayout.Label("Top crops by projected value:");
+                GUILayout.Label(ModLocalization.T("almanac.provider.crop.topHeader"));
                 for (int i = 0; i < _topCrops.Count; i++)
                 {
                     var (name, gold, count) = _topCrops[i];
-                    GUILayout.Label($"  {i + 1}. {name} — {gold}g ({count} plant{(count == 1 ? "" : "s")})");
+                    string plantWord = count == 1
+                        ? ModLocalization.T("almanac.provider.crop.plant")
+                        : ModLocalization.T("almanac.provider.crop.plants");
+                    GUILayout.Label(ModLocalization.T("almanac.provider.crop.topRow", i + 1, name, gold, count, plantWord));
                 }
             }
         }

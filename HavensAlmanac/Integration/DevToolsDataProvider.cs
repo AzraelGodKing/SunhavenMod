@@ -1,5 +1,6 @@
 using System;
 using HavensAlmanac.Data;
+using SunhavenMods.Shared;
 using UnityEngine;
 
 namespace HavensAlmanac.Integration
@@ -39,9 +40,12 @@ namespace HavensAlmanac.Integration
 
         public void DrawDashboardSection()
         {
-            GUILayout.Label($"Status: {(_isAuthorized ? "Authorized" : "Not Authorized")}");
+            string status = _isAuthorized
+                ? ModLocalization.T("almanac.provider.devtools.authorized")
+                : ModLocalization.T("almanac.provider.devtools.notAuthorized");
+            GUILayout.Label(ModLocalization.T("almanac.provider.devtools.status", status));
             if (!string.IsNullOrEmpty(_playerName))
-                GUILayout.Label($"Player: {_playerName}");
+                GUILayout.Label(ModLocalization.T("almanac.provider.devtools.player", _playerName));
         }
 
         public bool DrawBriefingSection()

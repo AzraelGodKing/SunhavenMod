@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using HavensAlmanac.Data;
 using BirthdayReminder;
 using BirthdayReminder.Data;
+using SunhavenMods.Shared;
 using UnityEngine;
 
 namespace HavensAlmanac.Integration
@@ -54,16 +55,18 @@ namespace HavensAlmanac.Integration
         {
             if (_birthdays.Count == 0)
             {
-                GUILayout.Label("No birthdays today.");
+                GUILayout.Label(ModLocalization.T("almanac.provider.birthday.noBirthdays"));
                 return;
             }
 
-            GUILayout.Label($"Today's Birthdays ({_birthdays.Count}):");
+            GUILayout.Label(ModLocalization.T("almanac.provider.birthday.todayList", _birthdays.Count));
             GUILayout.Space(4);
 
             foreach (var birthday in _birthdays)
             {
-                string status = birthday.HasBeenGifted ? " [Gifted]" : " [Not gifted]";
+                string status = birthday.HasBeenGifted
+                    ? ModLocalization.T("almanac.provider.birthday.gifted")
+                    : ModLocalization.T("almanac.provider.birthday.notGifted");
                 GUILayout.Label($"  {birthday.NPCName}{status}");
 
                 if (!string.IsNullOrEmpty(birthday.GiftHint))
@@ -79,12 +82,14 @@ namespace HavensAlmanac.Integration
 
             foreach (var birthday in _birthdays)
             {
-                string status = birthday.HasBeenGifted ? " (gifted)" : "";
-                GUILayout.Label($"  It's {birthday.NPCName}'s birthday!{status}");
+                string status = birthday.HasBeenGifted
+                    ? ModLocalization.T("almanac.provider.birthday.giftedBriefing")
+                    : "";
+                GUILayout.Label(ModLocalization.T("almanac.provider.birthday.briefing", birthday.NPCName, status));
             }
 
             if (_ungiftedCount > 0)
-                GUILayout.Label($"  Don't forget to bring a gift!");
+                GUILayout.Label(ModLocalization.T("almanac.provider.birthday.reminder"));
 
             return true;
         }

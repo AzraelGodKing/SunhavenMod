@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using SunhavenMods.Shared;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
@@ -108,7 +109,7 @@ namespace CropOptimizer.UI
         {
             if (_panel == null) Build();
 
-            _headerTitle.text = string.IsNullOrEmpty(c.Title) ? "Crop" : c.Title;
+            _headerTitle.text = string.IsNullOrEmpty(c.Title) ? ModLocalization.T("crop.tooltip.crop") : c.Title;
             if (!string.IsNullOrEmpty(c.HeaderTag))
             {
                 _headerSubtitle.gameObject.SetActive(true);
@@ -224,7 +225,7 @@ namespace CropOptimizer.UI
             hirt.pivot = new Vector2(0f, 0.5f);
             hirt.anchoredPosition = new Vector2(10f, 0f);
 
-            _headerTitle = CreateText(header.transform, "Crop", 17f, FontStyles.Bold, UiStyle.HeaderGold, TextAlignmentOptions.MidlineLeft);
+            _headerTitle = CreateText(header.transform, ModLocalization.T("crop.tooltip.crop"), 17f, FontStyles.Bold, UiStyle.HeaderGold, TextAlignmentOptions.MidlineLeft);
             var ttrt = _headerTitle.rectTransform;
             ttrt.anchorMin = new Vector2(0f, 0f); ttrt.anchorMax = new Vector2(1f, 1f);
             ttrt.offsetMin = new Vector2(38f, 0f); ttrt.offsetMax = new Vector2(-90f, 0f);

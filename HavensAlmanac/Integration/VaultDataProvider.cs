@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using HavensAlmanac.Data;
+using SunhavenMods.Shared;
 using TheVault;
 using TheVault.Vault;
 using UnityEngine;
@@ -51,11 +52,11 @@ namespace HavensAlmanac.Integration
         {
             if (_currencyCount == 0)
             {
-                GUILayout.Label("Vault is empty.");
+                GUILayout.Label(ModLocalization.T("almanac.provider.vault.empty"));
                 return;
             }
 
-            GUILayout.Label($"Stored Currencies ({_currencyCount}):");
+            GUILayout.Label(ModLocalization.T("almanac.provider.vault.stored", _currencyCount));
             GUILayout.Space(4);
 
             int shown = 0;
@@ -63,7 +64,7 @@ namespace HavensAlmanac.Integration
             {
                 if (shown >= 10)
                 {
-                    GUILayout.Label($"  ... and {_currencyCount - 10} more");
+                    GUILayout.Label(ModLocalization.T("almanac.provider.vault.more", _currencyCount - 10));
                     break;
                 }
                 GUILayout.Label($"  {kvp.Key}: {kvp.Value}");
@@ -75,7 +76,10 @@ namespace HavensAlmanac.Integration
         {
             if (_currencyCount == 0) return false;
 
-            GUILayout.Label($"Vault holds {_currencyCount} currenc{(_currencyCount != 1 ? "ies" : "y")}.");
+            string currencyWord = _currencyCount == 1
+                ? ModLocalization.T("almanac.provider.vault.currency")
+                : ModLocalization.T("almanac.provider.vault.currencies");
+            GUILayout.Label(ModLocalization.T("almanac.provider.vault.briefing", _currencyCount, currencyWord));
             return true;
         }
     }

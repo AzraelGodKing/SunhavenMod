@@ -112,6 +112,7 @@ namespace HavenDevTools
 
                 // Apply Harmony patches for player detection
                 _harmony = new Harmony(PluginInfo.PLUGIN_GUID);
+                LocalizationBootstrap.Init(PluginInfo.PLUGIN_GUID, _harmony, Log);
                 PatchPlayerInit();
 
                 // Subscribe to scene changes
@@ -559,6 +560,6 @@ namespace HavenDevTools
     {
         public const string PLUGIN_GUID = "com.azraelgodking.havendevtools";
         public const string PLUGIN_NAME = "Haven Dev Tools";
-        public const string PLUGIN_VERSION = "1.2.2";
+        public const string PLUGIN_VERSION = "1.2.3";
     }
 }
