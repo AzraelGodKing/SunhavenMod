@@ -27,7 +27,7 @@ Internal engineering log: **CI**, **release automation**, **scripts**, **docs in
 
 **2026-05-24**
 
-- **Release & Publish:** Fixed `mod=all` dispatch skipping release (0 steps) by using a **static release matrix** (mod keys from `scripts/mod-matrix.json`) with per-mod `if` filters instead of `fromJson(needs.setup.outputs.matrix)` on the release job. Added **Version → build → release** orchestration: optional `bump_version` + `release_changelog` dispatch inputs, `version` job (`pre-push-build.ps1 -Bump -SyncOnly`, commit/push), downstream checkout via `needs.version.outputs.ref`. `-Bump -SyncOnly` enabled in `pre-push-build.ps1`; `scripts/set-versions-changelog.py` for CI changelog text.
+- **Release & Publish:** Fixed workflow validation error (`matrix.mod` is invalid in job-level `if`). Added `plan-release` job to emit the mod list; release matrix uses `fromJson(needs.plan-release.outputs.mods)`. In-flow bump via `bump_version` / `release_changelog` dispatch inputs.
 - **Hygiene:** Removed stray `HavenDevTools/manifest.json` again (canonical Thunderstore metadata is `HavenDevTools/thunderstore/manifest.json` only).
 - **Localization:** Fixed `scripts/fix-localization-format-specifiers.ps1` — PowerShell `StartsWith([char]0xFEFF)` is always true, which stripped the root `{` and broke five `strings.json` files in CI; use explicit UTF-8 read without the bogus BOM strip.
 - **Follow-up:** `DebugWindow` caches IMGUI toolbar/race arrays; localized Crop Optimizer hover tooltip and The Vault `DoorPatches` user-facing strings; `scripts/add-followup-localization-keys.ps1` helper for new keys.

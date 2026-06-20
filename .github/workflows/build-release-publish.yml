@@ -325,38 +325,63 @@ jobs:
         run: echo "Build matrix complete — release stage may proceed."
 
   # ---------------------------------------------------------------------------
-  # Release — package + publish (workflow_dispatch only, unless build_only)
-  # Static mod matrix (must match scripts/mod-matrix.json modKey list) — avoids
-  # fromJson(needs.setup.outputs.matrix) skipping the whole job for mod=all.
-  # Per-mod if filters single-mod dispatches. Order: package → publish → report.
+  # Plan release — mod list for matrix (1 or 12 mods). Job-level if cannot use
+  # matrix.mod; dynamic list avoids invalid workflow syntax and mod=all skip bugs.
   # ---------------------------------------------------------------------------
-  release:
-    name: release (${{ matrix.mod }})
+  plan-release:
+    name: Plan release matrix
     if: >-
       github.event_name == 'workflow_dispatch' &&
       github.event.inputs.build_only != 'true' &&
-      needs.build-gate.result == 'success' &&
-      (github.event.inputs.mod == 'all' || github.event.inputs.mod == matrix.mod)
+      needs.build-gate.result == 'success'
     needs: [build-gate, version]
+    runs-on: ubuntu-latest
+    outputs:
+      mods: ${{ steps.plan.outputs.mods }}
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ needs.version.outputs.ref || github.sha }}
+
+      - name: Set release mod list
+        id: plan
+        shell: bash
+        env:
+          MOD_INPUT: ${{ github.event.inputs.mod }}
+        run: |
+          set -euo pipefail
+          if [ "$MOD_INPUT" == "all" ]; then
+            MODS="$(jq -c '[.[].modKey]' scripts/mod-matrix.json)"
+          else
+            MODS="[\"$MOD_INPUT\"]"
+          fi
+          if [ -z "$MODS" ] || [ "$MODS" = "[]" ]; then
+            echo "::error::Release mod list is empty (mod=$MOD_INPUT)"
+            exit 1
+          fi
+          {
+            echo "mods<<EOF"
+            echo "$MODS"
+            echo "EOF"
+          } >> "$GITHUB_OUTPUT"
+          echo "Release mods for mod=$MOD_INPUT: $MODS"
+
+  # ---------------------------------------------------------------------------
+  # Release — package + publish (workflow_dispatch only, unless build_only)
+  # Order: package → publish → report
+  # ---------------------------------------------------------------------------
+  release:
+    name: release (${{ matrix.mod }})
+    if: needs.plan-release.result == 'success'
+    needs: [plan-release, version]
     runs-on: ubuntu-latest
     permissions:
       contents: write
     strategy:
       fail-fast: false
       matrix:
-        mod:
-          - senpaischest
-          - havensbirthright
-          - sunhavenmuseumutilitytracker
-          - squirrelsbirthdayreminder
-          - sunhaventodo
-          - thevault
-          - havendevtools
-          - havensalmanac
-          - fasterraces
-          - trinketfortune
-          - cropoptimizer
-          - havensrespec
+        mod: ${{ fromJson(needs.plan-release.outputs.mods) }}
 
     steps:
       - name: Checkout repository
@@ -973,12 +998,12 @@ jobs:
   # ---------------------------------------------------------------------------
   release_aggregate_report:
     name: Combined release report
-    needs: [build-gate, release]
+    needs: [plan-release, release]
     if: >-
       always() &&
       github.event_name == 'workflow_dispatch' &&
       github.event.inputs.build_only != 'true' &&
-      needs.build-gate.result != 'skipped' &&
+      needs.plan-release.result != 'skipped' &&
       needs.release.result != 'skipped'
     runs-on: ubuntu-latest
     steps:
