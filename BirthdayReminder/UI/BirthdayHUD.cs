@@ -1,8 +1,8 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using BirthdayReminder.Data;
 using UnityEngine;
-
+using SunhavenMods.Shared;
 namespace BirthdayReminder.UI
 {
     /// <summary>
@@ -323,8 +323,12 @@ namespace BirthdayReminder.UI
             DrawBorder(_windowRect.width, _windowRect.height, Mathf.Max(1, ScaledInt(2)));
 
             GUILayout.BeginVertical();
+            int birthdayCount = (_manager != null && _manager.TodaysBirthdays != null) ? _manager.TodaysBirthdays.Count : 0;
             string dateStr = _manager?.CurrentDateFormatted ?? "";
-            string headerTitle = string.IsNullOrEmpty(dateStr) ? "Birthday Today!" : $"Birthday Today! - {dateStr}";
+            string titleBase = birthdayCount <= 1
+                ? ModLocalization.T("birthday.hud.title.one")
+                : ModLocalization.T("birthday.hud.title.many");
+            string headerTitle = string.IsNullOrEmpty(dateStr) ? titleBase : $"{titleBase} - {dateStr}";
             DrawHeader(headerTitle, _windowRect.width);
             DrawBirthdays();
             GUILayout.EndVertical();
@@ -365,15 +369,7 @@ namespace BirthdayReminder.UI
 
             if (GUILayout.Button("X", _closeButtonStyle, GUILayout.Width(Scaled(24)), GUILayout.Height(Scaled(24))))
             {
-                if (title.Contains("Gifts"))
-                {
-                    _showGiftPopup = false;
-                    _selectedNPC = null;
-                }
-                else
-                {
-                    Hide();
-                }
+                Hide();
             }
 
             GUILayout.Space(Scaled(6));
@@ -399,7 +395,7 @@ namespace BirthdayReminder.UI
             {
                 GUILayout.BeginHorizontal();
                 GUILayout.FlexibleSpace();
-                GUILayout.Label("No birthdays today", _hintStyle);
+                GUILayout.Label(ModLocalization.T("birthday.hud.noBirthdays"), _hintStyle);
                 GUILayout.FlexibleSpace();
                 GUILayout.EndHorizontal();
             }
@@ -436,7 +432,7 @@ namespace BirthdayReminder.UI
 
             if (birthday.AllLovedGifts.Count > 0 || birthday.AllLikedGifts.Count > 0)
             {
-                if (GUILayout.Button("Gifts", _moreButtonStyle, GUILayout.Width(Scaled(50)), GUILayout.Height(Scaled(20))))
+                if (GUILayout.Button(ModLocalization.T("birthday.hud.gifts"), _moreButtonStyle, GUILayout.Width(Scaled(50)), GUILayout.Height(Scaled(20))))
                 {
                     OpenGiftPopup(birthday);
                 }
@@ -492,7 +488,7 @@ namespace BirthdayReminder.UI
 
             GUILayout.BeginHorizontal();
             GUILayout.Space(Scaled(10));
-            GUILayout.Label($"{_selectedNPC.NPCName}'s Gifts", _headerStyle, GUILayout.Height(HeaderHeight));
+            GUILayout.Label(ModLocalization.T("birthday.gift.title", _selectedNPC.NPCName), _headerStyle, GUILayout.Height(HeaderHeight));
             GUILayout.FlexibleSpace();
             if (GUILayout.Button("X", _closeButtonStyle, GUILayout.Width(Scaled(24)), GUILayout.Height(Scaled(24))))
             {
@@ -507,7 +503,7 @@ namespace BirthdayReminder.UI
 
             // === LOVED GIFTS (NPC-specific + Universal) ===
             GUILayout.Space(Scaled(6));
-            DrawSectionHeader("LOVED GIFTS", _lovedColor);
+            DrawSectionHeader(ModLocalization.T("birthday.gift.loved").ToUpperInvariant(), _lovedColor);
             GUILayout.Space(Scaled(4));
 
             // NPC's loved gifts
@@ -520,7 +516,7 @@ namespace BirthdayReminder.UI
             if (BirthdayCache.UniversalLoved.Count > 0)
             {
                 GUILayout.Space(Scaled(4));
-                DrawSubHeader("Universal Loved:", _universalColor);
+                DrawSubHeader(ModLocalization.T("birthday.gift.universal"), _universalColor);
                 foreach (var gift in BirthdayCache.UniversalLoved)
                 {
                     DrawGiftItem(gift, _universalColor);
@@ -533,7 +529,7 @@ namespace BirthdayReminder.UI
 
             // === LIKED GIFTS (NPC-specific + Universal) ===
             GUILayout.Space(Scaled(8));
-            DrawSectionHeader("LIKED GIFTS", _likedColor);
+            DrawSectionHeader(ModLocalization.T("birthday.gift.liked").ToUpperInvariant(), _likedColor);
             GUILayout.Space(Scaled(4));
 
             // NPC's liked gifts
@@ -546,7 +542,7 @@ namespace BirthdayReminder.UI
             if (BirthdayCache.UniversalLiked.Count > 0)
             {
                 GUILayout.Space(Scaled(4));
-                DrawSubHeader("Universal Liked:", _universalColor);
+                DrawSubHeader(ModLocalization.T("birthday.gift.universal"), _universalColor);
                 foreach (var gift in BirthdayCache.UniversalLiked)
                 {
                     DrawGiftItem(gift, _universalColor);

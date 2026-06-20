@@ -6,6 +6,19 @@ Notes for **players and release readers**. Per-mod blurbs and upstream metadata 
 
 ## Unreleased
 
+**Localization (UI mods)**
+
+- Shared layer: `SharedUtilities/ModLocalization.cs`, `LanguageChangeWatcher.cs`, `LocalizationBootstrap.cs`; `Directory.Build.targets` adds `I2Localization.dll` for UI projects.
+- All nine UI mods ship `Localization/strings.json` (16 languages: en, da, de, es, fr, it, ja, ko, nl, pt, pt-BR, ru, sv, zh-CN, zh-TW, uk) as embedded resources; `ModLocalization.T()` in HUD/windows; live refresh when the game language changes (Haven's Respec refreshes TMP labels explicitly).
+- PRs run `scripts/validate-localization.ps1`. Optional per-language overrides: `BepInEx/config/<ModFolder>/lang/<code>.json`.
+- Machine translation via MyMemory: run one mod and one language per invocation to avoid rate limits, e.g. `scripts/fill-localization-languages.ps1 -Translate -ForceRetranslate -Mod HavensRespec -Language fr`. Full matrix: `scripts/translate-all-localization.ps1 -ForceRetranslate` (long-running; 30s pause between passes by default). Progress audit: `scripts/audit-untranslated.ps1`.
+- **Localization fill:** Full MyMemory pass for all nine UI mods (`-ForceRetranslate`) to replace English placeholder copies with per-language strings; Senpai's Chest bullet glyphs normalized to UTF-8 `•`.
+- **Haven's Almanac:** Dashboard provider sections (birthday, vault, todo, museum, chest, birthright, crop optimizer, dev tools, mod health) now use `ModLocalization` keys.
+- **Crop Optimizer:** TMP HUD title and tooltip toggle labels refresh when the game language changes.
+- **Crop Optimizer:** Fixed startup crash when The Vault is not installed (`TheVault.Abstractions` load failure); optional Vault integration now uses reflection like Todo/Birthday integrations.
+- **Small-mod localization sweep:** Filled remaining English-copy gaps in Crop Optimizer, Senpai's Chest, The Vault, Sun Haven Todo, Haven's Respec, S.M.U.T., and Haven's Almanac; fixed Crop Optimizer Rich Text placeholders (`{0}`, `<color={n}>`) and Japanese `XPH`/`XRT` artifacts across those mods.
+- **The Vault:** Fixed `IconCache` type ambiguity in `PlayerPatches` (build blocker for Almanac dependency chain).
+
 **Sun Haven Todo**
 
 - **HUD:** The sticky task panel header includes a close (**X**) control that hides the HUD until you press the HUD toggle hotkey again (your config’s **HUDToggleKey**, often **Ctrl + H**). This does not change the **HUD → Enabled** setting in the config file.

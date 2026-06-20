@@ -1,8 +1,8 @@
-using System;
+﻿using System;
 using HavenDevTools.Config;
 using UnityEngine;
 using Wish;
-
+using SunhavenMods.Shared;
 namespace HavenDevTools.UI
 {
     /// <summary>
@@ -155,26 +155,26 @@ namespace HavenDevTools.UI
 
         private void DrawOverlayContent()
         {
-            GUILayout.Label("Haven Dev Tools", _valueStyle);
+            GUILayout.Label(ModLocalization.T("devtools.title"), _valueStyle);
             GUILayout.Space(3);
 
-            DrawRow("Player:", _playerName);
-            DrawRow("Race:", _currentRace);
-            DrawRow("Gold:", _gold.ToString("N0"));
-            DrawRow("Position:", _position);
-            DrawRow("Held:", _heldItemInfo);
+            DrawRow(ModLocalization.T("devtools.overlay.player"), _playerName);
+            DrawRow(ModLocalization.T("devtools.overlay.race"), _currentRace);
+            DrawRow(ModLocalization.T("devtools.overlay.gold"), _gold.ToString("N0"));
+            DrawRow(ModLocalization.T("devtools.overlay.position"), _position);
+            DrawRow(ModLocalization.T("devtools.overlay.held"), _heldItemInfo);
 
             if (ModConfig.ShowPerformance?.Value ?? true)
             {
                 float fps = 1f / Mathf.Max(0.0001f, Time.deltaTime);
                 long memBytes = GC.GetTotalMemory(false);
                 float memMB = memBytes / (1024f * 1024f);
-                DrawRow("FPS:", fps.ToString("F1"));
-                DrawRow("Memory:", $"{memMB:F1} MB");
+                GUILayout.Label(ModLocalization.T("devtools.perf.fps", fps), _valueStyle);
+                GUILayout.Label(ModLocalization.T("devtools.perf.memory", memMB), _valueStyle);
             }
 
             GUILayout.FlexibleSpace();
-            GUILayout.Label($"F11: Window | F6: Toggle", _labelStyle);
+            GUILayout.Label(ModLocalization.T("devtools.overlay.keys"), _labelStyle);
         }
 
         private void DrawRow(string label, string value)

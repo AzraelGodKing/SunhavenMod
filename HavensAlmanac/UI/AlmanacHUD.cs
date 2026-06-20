@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using HavensAlmanac.Config;
 using HavensAlmanac.Data;
 using SunhavenMods.Shared;
@@ -108,7 +108,7 @@ namespace HavensAlmanac.UI
         private void DrawWindow(int id)
         {
             GUILayout.BeginHorizontal();
-            GUILayout.Label("Haven's Almanac", _titleStyle);
+            GUILayout.Label(ModLocalization.T("almanac.hud.title"), _titleStyle);
             GUILayout.FlexibleSpace();
             if (GUILayout.Button("x", GUILayout.Width(Scaled(18)), GUILayout.Height(Scaled(18))))
                 Hide();
@@ -121,8 +121,8 @@ namespace HavensAlmanac.UI
             // rather than showing a lonely telemetry line.
             if (_aggregator.IntegrationModCount == 0)
             {
-                GUILayout.Label("No supported mods detected", _noModsStyle);
-                GUILayout.Label("Install SunhavenTodo, Birthday, Museum, Vault, Chests, Birthright, DevTools, or CropOptimizer", _noModsStyle);
+                GUILayout.Label(ModLocalization.T("almanac.hud.noMods"), _noModsStyle);
+                GUILayout.Label(ModLocalization.T("almanac.hud.installHint"), _noModsStyle);
             }
             else
             {

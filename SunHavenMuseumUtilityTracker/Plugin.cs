@@ -255,6 +255,7 @@ namespace SunHavenMuseumUtilityTracker
             try
             {
                 _harmony = new Harmony(PluginInfo.PLUGIN_GUID);
+                LocalizationBootstrap.Init(PluginInfo.PLUGIN_GUID, _harmony, Log);
 
                 // Patch Player.InitializeAsOwner for data loading
                 var playerType = typeof(Wish.Player);

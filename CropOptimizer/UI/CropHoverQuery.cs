@@ -3,6 +3,7 @@ using System.Reflection;
 using CropOptimizer.Data;
 using CropOptimizer.Patches;
 using HarmonyLib;
+using SunhavenMods.Shared;
 using UnityEngine;
 
 namespace CropOptimizer.UI
@@ -346,19 +347,19 @@ namespace CropOptimizer.UI
             var content = new TooltipContent();
 
             int itemId = 0;
-            string cropTitle = "Crop";
+            string cropTitle = ModLocalization.T("crop.tooltip.crop");
             if (CropGrowthPatch.TryGetTooltipHarvestItemId(inst, out itemId) && itemId > 0)
             {
                 if (CropGrowthPatch.TryGetItemDisplayName(itemId, out string name) && !string.IsNullOrWhiteSpace(name))
                     cropTitle = name;
                 else
-                    cropTitle = $"Item #{itemId}";
+                    cropTitle = ModLocalization.T("crop.tooltip.itemId", itemId);
             }
             content.Title = cropTitle;
 
             bool fullyGrown = false;
             CropGrowthPatch.TryGetTooltipFullyGrown(inst, out fullyGrown);
-            if (fullyGrown) content.HeaderTag = "ready to harvest";
+            if (fullyGrown) content.HeaderTag = ModLocalization.T("crop.tooltip.headerTag.ready");
 
             // Rich-text accent colors are tuned to read on the dark panel fill:
             //   #F7D982 = warm gold (numbers / emphasis), #B8A078 = muted cream (secondary notes).
@@ -369,18 +370,20 @@ namespace CropOptimizer.UI
             {
                 content.QualityColor = QualityColorFor(qualityLabel);
                 content.Rows.Add(RowSpec.Make(UiStyle.IconKind.Quality, content.QualityColor,
-                    $"Quality: <b>{qualityLabel}</b> <color={mutedCream}>(×{qMul:0.##})</color>"));
+                    ModLocalization.T("crop.tooltip.quality", qualityLabel, mutedCream, qMul)));
             }
 
             if (CropGrowthPatch.TryGetTooltipGrowthStageInfo(inst, out string stageText, out _) && !string.IsNullOrEmpty(stageText))
-                content.Rows.Add(RowSpec.Make(UiStyle.IconKind.Sprout, UiStyle.Sprout, $"Growth: <b>{stageText}</b>"));
+                content.Rows.Add(RowSpec.Make(UiStyle.IconKind.Sprout, UiStyle.Sprout, ModLocalization.T("crop.tooltip.growth", stageText)));
 
             if (fullyGrown)
                 content.Rows.Add(RowSpec.Make(UiStyle.IconKind.Ready, UiStyle.Fertilizer, "<b><color=" + accentGold + ">Ready now</color></b>"));
             else if (CropGrowthPatch.TryGetTooltipEtaHours(inst, out float liveEta, out bool reflOk) && reflOk)
-                content.Rows.Add(RowSpec.Make(UiStyle.IconKind.Clock, UiStyle.Clock, $"Ready in <b><color={accentGold}>~{Mathf.Max(0f, liveEta):0.#} h</color></b>"));
+                content.Rows.Add(RowSpec.Make(UiStyle.IconKind.Clock, UiStyle.Clock,
+                    ModLocalization.T("crop.tooltip.readyIn", accentGold, Mathf.Max(0f, liveEta))));
             else if (forecast != null && forecast.TryGetState(crop.GetInstanceID(), out CropForecast.CropState st))
-                content.Rows.Add(RowSpec.Make(UiStyle.IconKind.Clock, UiStyle.Clock, $"Ready in <b><color={accentGold}>~{Mathf.Max(0f, st.NextHarvestEtaHours):0.#} h</color></b> <color={mutedCream}>(cached)</color>"));
+                content.Rows.Add(RowSpec.Make(UiStyle.IconKind.Clock, UiStyle.Clock,
+                    ModLocalization.T("crop.tooltip.readyInCached", accentGold, Mathf.Max(0f, st.NextHarvestEtaHours), mutedCream)));
             else
                 content.Rows.Add(RowSpec.Make(UiStyle.IconKind.Clock, UiStyle.Clock, $"<color={mutedCream}>ETA unknown — grow once to calibrate</color>"));
 
@@ -402,7 +405,7 @@ namespace CropOptimizer.UI
 
             if (CropGrowthPatch.TryGetTooltipFertilized(inst, out bool fertilized))
             {
-                string label = fertilized ? "<b>Fertilized</b>" : "Not fertilized";
+                string label = fertilized ? ModLocalization.T("crop.tooltip.fertilized") : ModLocalization.T("crop.tooltip.notFertilized");
                 content.Rows.Add(RowSpec.Make(UiStyle.IconKind.Fertilizer,
                     fertilized ? UiStyle.Fertilizer : (Color32)new Color32(0x9A, 0x88, 0x60, 0xFF), label));
             }
@@ -437,13 +440,13 @@ namespace CropOptimizer.UI
         private static (string text, Color32 color) DescribeWaterState(string raw)
         {
             if (string.IsNullOrEmpty(raw))
-                return ("Water: <color=#B8A078>unknown</color>", UiStyle.Water);
+                return (ModLocalization.T("crop.water.unknown"), UiStyle.Water);
             string r = raw.ToLowerInvariant();
             if (r.Contains("water"))
                 return ("<b><color=#8AD4FF>Watered</color></b>", UiStyle.Water);
             if (r.Contains("hoed"))
-                return ("Hoed <color=#B8A078>(dry — needs water)</color>", new Color32(0xC9, 0xA0, 0x70, 0xFF));
-            return ($"Water: {raw}", UiStyle.Water);
+                return (ModLocalization.T("crop.water.hoedDry"), new Color32(0xC9, 0xA0, 0x70, 0xFF));
+            return (ModLocalization.T("crop.water.label", raw), UiStyle.Water);
         }
     }
 }

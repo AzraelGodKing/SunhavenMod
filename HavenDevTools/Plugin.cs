@@ -112,6 +112,7 @@ namespace HavenDevTools
 
                 // Apply Harmony patches for player detection
                 _harmony = new Harmony(PluginInfo.PLUGIN_GUID);
+                LocalizationBootstrap.Init(PluginInfo.PLUGIN_GUID, _harmony, Log);
                 PatchPlayerInit();
 
                 // Subscribe to scene changes

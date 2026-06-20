@@ -150,6 +150,7 @@ namespace TheVault
 
                 // Apply Harmony patches
                 _harmony = new Harmony(PluginInfo.PLUGIN_GUID);
+                LocalizationBootstrap.Init(PluginInfo.PLUGIN_GUID, _harmony, Log);
                 ApplyPatches();
 
                 // Patch GameSave class for character loading detection
