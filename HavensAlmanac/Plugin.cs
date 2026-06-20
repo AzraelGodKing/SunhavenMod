@@ -249,6 +249,7 @@ namespace HavensAlmanac
         private void ApplyPatches()
         {
             _harmony = new Harmony(PluginInfo.PLUGIN_GUID);
+            LocalizationBootstrap.Init(PluginInfo.PLUGIN_GUID, _harmony, Log);
 
             try
             {

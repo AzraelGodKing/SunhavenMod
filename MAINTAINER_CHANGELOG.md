@@ -24,6 +24,12 @@ Internal engineering log: **CI**, **release automation**, **scripts**, **docs in
 - **Build:** [`Directory.Build.props`](Directory.Build.props) — `Nullable` annotations, `TreatWarningsAsErrors` when `GITHUB_ACTIONS` is set; `LangVersion` latest, `Deterministic`, `ContinuousIntegrationBuild`. **Senpai's Chest** suppresses **CS0436** (linked `SceneRootSurvivor` + `SunHavenMuseumUtilityTracker` reference embeds the same type).
 - **Policy / governance:** Root [`LICENSE`](LICENSE), [`CONTRIBUTING.md`](CONTRIBUTING.md), [`SECURITY.md`](SECURITY.md), [`CODE_OF_CONDUCT.md`](CODE_OF_CONDUCT.md), [`docs/SHARED_CODE_STRATEGY.md`](docs/SHARED_CODE_STRATEGY.md).
 - **Hygiene:** Removed duplicate root `HavenDevTools/manifest.json`; `.gitignore` includes **`Decompiled/`** (alongside legacy typo dir); **removed** confusing duplicate `.github/workflows/deprecated/build-release-publish.yml`.
+
+**2026-05-24**
+
+- **Hygiene:** Removed stray `HavenDevTools/manifest.json` again (canonical Thunderstore metadata is `HavenDevTools/thunderstore/manifest.json` only).
+- **Localization:** Fixed `scripts/fix-localization-format-specifiers.ps1` — PowerShell `StartsWith([char]0xFEFF)` is always true, which stripped the root `{` and broke five `strings.json` files in CI; use explicit UTF-8 read without the bogus BOM strip.
+- **Follow-up:** `DebugWindow` caches IMGUI toolbar/race arrays; localized Crop Optimizer hover tooltip and The Vault `DoorPatches` user-facing strings; `scripts/add-followup-localization-keys.ps1` helper for new keys.
 - **Docs:** Rewrote root [`README.md`](README.md), [`CHANGELOG.md`](CHANGELOG.md), and this file — scoped maintainer vs player notes; [`docs/VERSION_AND_RELEASE.md`](docs/VERSION_AND_RELEASE.md) clarifies Python for version checks and hub matrix regen; [`docs/ATOMIC_SAVE_POLICY.md`](docs/ATOMIC_SAVE_POLICY.md) for save temp semantics.
 - **README:** Per-mod `### Unreleased` headers converted to dated maintainer sections where applicable.
 

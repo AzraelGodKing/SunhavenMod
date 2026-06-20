@@ -1,4 +1,5 @@
 using System;
+using System.Reflection;
 using BepInEx;
 using BepInEx.Configuration;
 using BepInEx.Logging;
@@ -54,6 +55,8 @@ namespace HavensRespec
                 _controller.Install();
 
                 _harmony = new Harmony(PluginInfo.PLUGIN_GUID);
+                LocalizationBootstrap.Init(PluginInfo.PLUGIN_GUID, _harmony, Log, Assembly.GetExecutingAssembly());
+                ModLocalization.LanguageChanged += OnLanguageChanged;
                 _harmony.PatchAll(typeof(SkillsSetupProfessionPatch));
 
                 try
@@ -88,6 +91,7 @@ namespace HavensRespec
             else
                 Log?.LogWarning($"[Lifecycle] {PluginInfo.PLUGIN_NAME} OnDestroy outside expected teardown (scene: {sceneName})");
 
+            ModLocalization.Shutdown();
             try
             {
                 _controller?.Uninstall();
@@ -107,6 +111,11 @@ namespace HavensRespec
                     Log?.LogWarning($"{PluginInfo.PLUGIN_NAME} OnDestroy: UnpatchSelf failed: {ex.Message}");
                 }
             }
+        }
+
+        private static void OnLanguageChanged(string _)
+        {
+            Instance?._controller?.RefreshLocalizedUi();
         }
 
         private void Update()

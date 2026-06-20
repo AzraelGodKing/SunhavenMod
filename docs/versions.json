@@ -1,6 +1,6 @@
 ﻿{
   "com.azraelgodking.squirrelsbirthdayreminder": {
-    "version": "1.4.2",
+    "version": "1.4.3",
     "name": "A Squirrel's Birthday Reminder",
     "description": "Never miss an NPC birthday - get reminders and gift suggestions",
     "nexus": "https://www.nexusmods.com/sunhaven/mods/493",
@@ -10,7 +10,7 @@
     "changelog": "Normalized duplicate composite NPC names (e.g. Darius+Darius -> Darius), aligned gift tracking with normalized names, and removed the no-op Plugin.Update path so runtime stays in the persistent runner. Config now uses BepInEx/config/BirthdayReminder.cfg with first-run migration from the legacy GUID config file."
   },
   "com.azraelgodking.havensbirthright": {
-    "version": "2.2.2",
+    "version": "2.2.3",
     "name": "Haven's Birthright",
     "description": "Unique racial bonuses and abilities for all 12 playable races",
     "nexus": "https://www.nexusmods.com/sunhaven/mods/487",
@@ -20,7 +20,7 @@
     "changelog": "Config now uses BepInEx/config/HavensBirthright.cfg with first-run migration from the legacy GUID config file."
   },
   "com.azraelgodking.sunhavenmuseumutilitytracker": {
-    "version": "2.4.2",
+    "version": "2.4.3",
     "name": "Sunhaven Museum Utility Tracker",
     "description": "Track museum donation progress across all three halls",
     "nexus": "https://www.nexusmods.com/sunhaven/mods/490",
@@ -30,7 +30,7 @@
     "changelog": "Config now uses BepInEx/config/SunHavenMuseumUtilityTracker.cfg with first-run migration from the legacy GUID config file."
   },
   "com.azraelgodking.sunhaventodo": {
-    "version": "1.4.3",
+    "version": "1.4.4",
     "name": "Sun Haven Todo",
     "description": "In-game task tracker for farming goals, quests, and daily tasks",
     "nexus": "https://www.nexusmods.com/sunhaven/mods/491",
@@ -40,7 +40,7 @@
     "changelog": "Museum-detected tasks now show destination hall and item icons in both Todo UI and HUD, long task titles wrap in both views, and runtime autosave now runs from the hidden persistent keepalive runner. Config now uses BepInEx/config/SunhavenTodo.cfg with first-run migration from the legacy GUID config file."
   },
   "com.azraelgodking.thevault": {
-    "version": "3.3.2",
+    "version": "3.3.3",
     "name": "The Vault",
     "description": "The Vault 3 — per-character vault, encrypted saves, HUD, auto-deposit, shop and inventory vault integration, Custom tab & mod API.",
     "vault_save_breaking": false,
@@ -52,7 +52,7 @@
     "changelog": "Hardened character-switch survival by patching all GameSave.LoadCharacter overloads, queueing selected character identity, and adding persistent runtime sync fallback; autosave now runs only from the keepalive runner, AutoSaveInterval is wired, and legacy stale UI config was removed. Also fixed the character-switch regression where only HUD stayed visible and migrated config to BepInEx/config/TheVault.cfg with first-run migration from the legacy GUID config file."
   },
   "com.azraelgodking.havendevtools": {
-    "version": "1.2.2",
+    "version": "1.2.3",
     "name": "HavenDevTools",
     "description": "Developer utilities for mod debugging and game state inspection",
     "nexus": "https://www.nexusmods.com/sunhaven/mods/495",
@@ -62,7 +62,7 @@
     "changelog": "Config now uses BepInEx/config/HavenDevTools.cfg with first-run migration from the legacy GUID config file."
   },
   "com.azraelgodking.senpaischest": {
-    "version": "2.7.0",
+    "version": "2.7.1",
     "name": "Senpai's Chest",
     "description": "Smart chest auto-sorting with custom rules by item, type, category, property, or player groups. Manage Groups tab for custom subcategories.",
     "nexus": "https://www.nexusmods.com/sunhaven/mods/496",
@@ -72,7 +72,7 @@
     "changelog": "Chest labels now anchor to chest sprite world bounds, museum Todo tasks include destination and icon metadata, Undonated Items category was added and now only appears when S.M.U.T. is installed, and adding a rule can auto-enable Smart Chest (configurable). Config now uses BepInEx/config/SenpaisChest.cfg with first-run migration from the legacy GUID config file."
   },
   "com.azraelgodking.havensalmanac": {
-    "version": "1.4.2",
+    "version": "1.4.3",
     "name": "Haven's Almanac",
     "description": "Unified mod dashboard - HUD, full dashboard, and daily morning briefing aggregating data from all installed mods",
     "nexus": "https://www.nexusmods.com/sunhaven/mods/501",
@@ -82,7 +82,7 @@
     "changelog": "Config now uses BepInEx/config/HavensAlmanac.cfg with first-run migration from the legacy GUID config file."
   },
   "com.azraelgodking.fasterraces": {
-    "version": "1.4.2",
+    "version": "1.4.3",
     "name": "Faster Races",
     "description": "Configurable movement speed bonus for all races; disables Haven's Birthright speed buffs when both are installed",
     "nexus": "https://www.nexusmods.com/sunhaven/mods/497",
@@ -92,7 +92,7 @@
     "changelog": "Fixed: Faster Races settings now appear in the in-game BepInEx Configuration Manager UI. The mod binds to FasterRaces.cfg (not the default per-GUID file), but Configuration Manager only scans each plugin's inherited BaseUnityPlugin.Config. Faster Races now rewires that inherited property to the custom file via reflection right after Awake so toggles are editable live, without changing the config file path."
   },
   "com.azraelgodking.trinketfortune": {
-    "version": "1.2.2",
+    "version": "1.2.3",
     "name": "Trinket Fortune",
     "description": "Increases odds of unowned fishing trinkets dropping as you complete the aquarium",
     "nexus": "https://www.nexusmods.com/sunhaven/mods/498",
@@ -102,7 +102,7 @@
     "changelog": "Config now uses BepInEx/config/TrinketFortune.cfg with first-run migration from the legacy GUID config file. Startup now runs in standalone-safe mode so Trinket Fortune no longer hard-requires HavenDevTools.dll to load."
   },
   "com.azraelgodking.cropoptimizer": {
-    "version": "1.4.3",
+    "version": "1.4.4",
     "name": "Crop Optimizer",
     "description": "Crop forecast HUD with seasonal planning helpers and soft Todo/Birthday/Vault integrations",
     "nexus": "https://www.nexusmods.com/sunhaven/mods/500",
@@ -112,7 +112,7 @@
     "changelog": "Initial release scaffold: crop growth patch, forecast cache, HUD, and soft integrations for SunhavenTodo, BirthdayReminder, TheVault, and HavensAlmanac."
   },
   "com.azraelgodking.havensrespec": {
-    "version": "1.3.2",
+    "version": "1.3.3",
     "name": "Haven's Respec",
     "description": "Safe skill respec — Reset button on every skill tab, confirmation dialog, one-step Undo, configurable cost, and full Configuration Manager support",
     "nexus": "https://www.nexusmods.com/sunhaven/mods/502",

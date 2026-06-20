@@ -23,7 +23,7 @@ namespace HavenDevTools.Services
         public void Draw(GUIStyle boxStyle, GUIStyle buttonStyle, GUIStyle labelStyle, GUIStyle textFieldStyle)
         {
             // Output area
-            GUILayout.Label("Output:", labelStyle);
+            GUILayout.Label(ModLocalization.T("devtools.console.output"), labelStyle);
             float outHeight = Mathf.Min(120, 20 + _output.Count * 18);
             _outputScroll = GUILayout.BeginScrollView(_outputScroll, GUILayout.Height(outHeight));
             foreach (var line in _output)
@@ -37,14 +37,14 @@ namespace HavenDevTools.Services
             GUILayout.Label(">", labelStyle, GUILayout.Width(12));
             GUI.SetNextControlName("ConsoleInput");
             _input = GUILayout.TextField(_input, textFieldStyle);
-            if (GUILayout.Button("Execute", buttonStyle, GUILayout.Width(70)))
+            if (GUILayout.Button(ModLocalization.T("devtools.console.execute"), buttonStyle, GUILayout.Width(70)))
             {
                 Execute(_input);
                 _input = "";
             }
             GUILayout.EndHorizontal();
 
-            GUILayout.Label("Commands: spawn &lt;id&gt; [qty] | tp &lt;scene&gt; | time.set &lt;hour&gt; | reload.config", labelStyle);
+            GUILayout.Label(ModLocalization.T("devtools.console.commands"), labelStyle);
         }
 
         public void Execute(string command)

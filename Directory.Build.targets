@@ -1,0 +1,9 @@
+<Project>
+  <!-- I2 Localization (Sun Haven game DLL) — UI mods that link ModLocalization / LanguageChangeWatcher -->
+  <ItemGroup Condition="'$(SunhavenModUsesLocalization)' == 'true' Or '$(SunhavenModUiProject)' == 'true'">
+    <Reference Include="I2Localization">
+      <HintPath>$(ManagedPath)\I2Localization.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
+  </ItemGroup>
+</Project>

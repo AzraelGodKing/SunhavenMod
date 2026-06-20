@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using HavensAlmanac.Config;
 using HavensAlmanac.Data;
 using SunhavenMods.Shared;
@@ -130,7 +130,7 @@ namespace HavensAlmanac.UI
 
         private void DrawWindow(int id)
         {
-            GUILayout.Label("Good Morning!", _titleStyle);
+            GUILayout.Label(ModLocalization.T("almanac.briefing.title"), _titleStyle);
             GUILayout.Space(Scaled(6));
 
             bool anyContent = false;
@@ -156,14 +156,14 @@ namespace HavensAlmanac.UI
                 // prevents us from reaching here, but if a provider's content
                 // evaporated between the gate and the draw pass we still want
                 // a graceful fallback rather than a blank window.
-                GUILayout.Label("Nothing noteworthy today. Have a great day!", _contentStyle);
+                GUILayout.Label(ModLocalization.T("almanac.briefing.empty"), _contentStyle);
             }
 
             GUILayout.Space(Scaled(10));
 
             GUILayout.BeginHorizontal();
             GUILayout.FlexibleSpace();
-            if (GUILayout.Button("Dismiss", _dismissButtonStyle, GUILayout.Width(Scaled(120)), GUILayout.Height(Scaled(30))))
+            if (GUILayout.Button(ModLocalization.T("almanac.briefing.dismiss"), _dismissButtonStyle, GUILayout.Width(Scaled(120)), GUILayout.Height(Scaled(30))))
                 Hide();
             GUILayout.FlexibleSpace();
             GUILayout.EndHorizontal();

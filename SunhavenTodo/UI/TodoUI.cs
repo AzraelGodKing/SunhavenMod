@@ -285,14 +285,16 @@ namespace SunhavenTodo.UI
         {
             GUILayout.BeginHorizontal();
 
-            GUILayout.Label("Todo List", _titleStyle);
+            GUILayout.Label(ModLocalization.T("todo.header.title"), _titleStyle);
 
             GUILayout.FlexibleSpace();
 
             var hud = Plugin.GetTodoHUD();
             if (Plugin.StaticHUDEnabled && hud != null && !hud.IsEnabled)
             {
-                var stickyContent = new GUIContent("Sticky", "Show the movable sticky task panel (top tasks)");
+                var stickyContent = new GUIContent(
+                    ModLocalization.T("todo.button.sticky"),
+                    ModLocalization.T("todo.button.sticky.tooltip"));
                 if (GUILayout.Button(stickyContent, _buttonStyle, GUILayout.Width(64), GUILayout.Height(28)))
                     Plugin.ShowHUD();
 
@@ -300,7 +302,7 @@ namespace SunhavenTodo.UI
             }
 
             // Add button
-            var addContent = new GUIContent(_showAddForm ? "Cancel" : "+ Add");
+            var addContent = new GUIContent(_showAddForm ? ModLocalization.T("todo.button.cancel") : ModLocalization.T("todo.button.add"));
             if (GUILayout.Button(addContent, _buttonStyle, GUILayout.Width(70), GUILayout.Height(28)))
             {
                 _showAddForm = !_showAddForm;
@@ -340,11 +342,11 @@ namespace SunhavenTodo.UI
             GUILayout.BeginHorizontal();
             GUILayout.FlexibleSpace();
 
-            GUILayout.Label($"Active: {active}", _statsStyle);
+            GUILayout.Label(ModLocalization.T("todo.stats.active", active), _statsStyle);
             GUILayout.Space(20);
-            GUILayout.Label($"Completed: {completed}", _statsStyle);
+            GUILayout.Label(ModLocalization.T("todo.stats.completed", completed), _statsStyle);
             GUILayout.Space(20);
-            GUILayout.Label($"Total: {total}", _statsStyle);
+            GUILayout.Label(ModLocalization.T("todo.stats.total", total), _statsStyle);
 
             GUILayout.FlexibleSpace();
             GUILayout.EndHorizontal();
@@ -376,13 +378,15 @@ namespace SunhavenTodo.UI
             GUILayout.BeginHorizontal();
 
             // Search field
-            GUILayout.Label("Search:", _labelStyle, GUILayout.Width(50));
+            GUILayout.Label(ModLocalization.T("todo.filter.search"), _labelStyle, GUILayout.Width(50));
             _searchQuery = GUILayout.TextField(_searchQuery, _textFieldStyle, GUILayout.Width(150), GUILayout.Height(24));
 
             GUILayout.Space(10);
 
             // Show completed toggle
-            var showCompletedContent = new GUIContent(_showCompletedItems ? "[v] Show Done" : "[ ] Show Done");
+            var showCompletedContent = new GUIContent(_showCompletedItems
+                ? ModLocalization.T("todo.filter.showDone.on")
+                : ModLocalization.T("todo.filter.showDone.off"));
             if (GUILayout.Button(showCompletedContent, _buttonStyle, GUILayout.Width(100), GUILayout.Height(24)))
             {
                 _showCompletedItems = !_showCompletedItems;
@@ -393,7 +397,7 @@ namespace SunhavenTodo.UI
             // Clear completed button
             if (_manager.GetCompletedTodos().Any())
             {
-                if (GUILayout.Button("Clear Done", _buttonStyle, GUILayout.Width(80), GUILayout.Height(24)))
+                if (GUILayout.Button(ModLocalization.T("todo.filter.clearDone"), _buttonStyle, GUILayout.Width(80), GUILayout.Height(24)))
                 {
                     _manager.ClearCompleted();
                 }
@@ -409,7 +413,7 @@ namespace SunhavenTodo.UI
 
             // "All" tab
             var allStyle = _selectedCategoryFilter == -1 ? _tabActiveStyle : _tabStyle;
-            if (GUILayout.Button("All", allStyle, GUILayout.Height(26)))
+            if (GUILayout.Button(ModLocalization.T("todo.tab.all"), allStyle, GUILayout.Height(26)))
             {
                 _selectedCategoryFilter = -1;
             }
@@ -420,7 +424,8 @@ namespace SunhavenTodo.UI
             {
                 var count = categoryCounts.TryGetValue(cat, out var c) ? c : 0;
                 var style = (int)cat == _selectedCategoryFilter ? _tabActiveStyle : _tabStyle;
-                var label = count > 0 ? $"{cat} ({count})" : cat.ToString();
+                var catName = ModLocalization.T($"todo.category.{cat}");
+                var label = count > 0 ? $"{catName} ({count})" : catName;
 
                 if (GUILayout.Button(label, style, GUILayout.Height(26)))
                 {
@@ -464,7 +469,7 @@ namespace SunhavenTodo.UI
                 GUILayout.Space(20);
                 GUILayout.BeginHorizontal();
                 GUILayout.FlexibleSpace();
-                GUILayout.Label("No tasks to show", _labelStyle);
+                GUILayout.Label(ModLocalization.T("todo.list.empty"), _labelStyle);
                 GUILayout.FlexibleSpace();
                 GUILayout.EndHorizontal();
                 GUILayout.Space(20);
@@ -483,7 +488,7 @@ namespace SunhavenTodo.UI
         private void DrawTodoItem(TodoItem item, int index)
         {
             var bgTex = item.IsCompleted ? _itemCompleted : (index % 2 == 0 ? _itemEven : _itemOdd);
-            var titleText = string.IsNullOrWhiteSpace(item.Title) ? "(No title)" : item.Title;
+            var titleText = string.IsNullOrWhiteSpace(item.Title) ? ModLocalization.T("todo.item.noTitle") : item.Title;
             if (item.IsRecurring)
                 titleText = $"[{GetRecurIcon(item.RecurInterval)}] {titleText}";
 
@@ -576,29 +581,29 @@ namespace SunhavenTodo.UI
             // Form background
             GUILayout.BeginVertical(_windowStyle);
 
-            GUILayout.Label(_editingItemId != null ? "Edit Task" : "Add New Task", _headerStyle);
+            GUILayout.Label(_editingItemId != null ? ModLocalization.T("todo.form.editTitle") : ModLocalization.T("todo.form.addTitle"), _headerStyle);
             GUILayout.Space(8);
 
             // Title
-            GUILayout.Label("Title:", _labelStyle);
+            GUILayout.Label(ModLocalization.T("todo.form.titleLabel"), _labelStyle);
             _newTodoTitle = GUILayout.TextField(_newTodoTitle, _textFieldStyle, GUILayout.Height(26));
 
             GUILayout.Space(6);
 
             // Description
-            GUILayout.Label("Description (optional):", _labelStyle);
+            GUILayout.Label(ModLocalization.T("todo.form.descLabel"), _labelStyle);
             _newTodoDescription = GUILayout.TextArea(_newTodoDescription, _textAreaStyle, GUILayout.Height(50));
 
             GUILayout.Space(6);
 
             // Priority
             GUILayout.BeginHorizontal();
-            GUILayout.Label("Priority:", _labelStyle, GUILayout.Width(60));
+            GUILayout.Label(ModLocalization.T("todo.form.priorityLabel"), _labelStyle, GUILayout.Width(60));
             var priorities = Enum.GetNames(typeof(TodoPriority));
             for (int i = 0; i < priorities.Length; i++)
             {
                 var style = i == _selectedPriority ? _tabActiveStyle : _tabStyle;
-                if (GUILayout.Button(priorities[i], style, GUILayout.Height(24)))
+                if (GUILayout.Button(ModLocalization.T($"todo.priority.{priorities[i]}"), style, GUILayout.Height(24)))
                 {
                     _selectedPriority = i;
                 }
@@ -609,7 +614,7 @@ namespace SunhavenTodo.UI
             GUILayout.Space(6);
 
             // Category (one style per button so the selected category is clearly highlighted)
-            GUILayout.Label("Category:", _labelStyle);
+            GUILayout.Label(ModLocalization.T("todo.form.categoryLabel"), _labelStyle);
             var categories = Enum.GetNames(typeof(TodoCategory));
             const int categoryCols = 5;
             for (int rowStart = 0; rowStart < categories.Length; rowStart += categoryCols)
@@ -619,7 +624,7 @@ namespace SunhavenTodo.UI
                 {
                     int i = rowStart + col;
                     var style = i == _selectedCategory ? _tabActiveStyle : _tabStyle;
-                    if (GUILayout.Button(categories[i], style, GUILayout.Height(24)))
+                    if (GUILayout.Button(ModLocalization.T($"todo.category.{categories[i]}"), style, GUILayout.Height(24)))
                         _selectedCategory = i;
                 }
                 GUILayout.FlexibleSpace();
@@ -630,7 +635,7 @@ namespace SunhavenTodo.UI
 
             // Recurring toggle
             GUILayout.BeginHorizontal();
-            _newTodoIsRecurring = GUILayout.Toggle(_newTodoIsRecurring, " Recurring task", _labelStyle);
+            _newTodoIsRecurring = GUILayout.Toggle(_newTodoIsRecurring, ModLocalization.T("todo.form.recurring"), _labelStyle);
             GUILayout.FlexibleSpace();
             GUILayout.EndHorizontal();
 
@@ -638,12 +643,12 @@ namespace SunhavenTodo.UI
             {
                 GUILayout.Space(4);
                 GUILayout.BeginHorizontal();
-                GUILayout.Label("Resets:", _labelStyle, GUILayout.Width(50));
+                GUILayout.Label(ModLocalization.T("todo.form.resets"), _labelStyle, GUILayout.Width(50));
                 var intervals = Enum.GetNames(typeof(Data.RecurInterval));
                 for (int i = 0; i < intervals.Length; i++)
                 {
                     var style = i == _newTodoRecurInterval ? _tabActiveStyle : _tabStyle;
-                    if (GUILayout.Button(intervals[i], style, GUILayout.Height(24)))
+                    if (GUILayout.Button(ModLocalization.T($"todo.recur.{intervals[i]}"), style, GUILayout.Height(24)))
                         _newTodoRecurInterval = i;
                 }
                 GUILayout.FlexibleSpace();
@@ -656,7 +661,7 @@ namespace SunhavenTodo.UI
             GUILayout.BeginHorizontal();
             GUILayout.FlexibleSpace();
 
-            if (GUILayout.Button("Cancel", _buttonStyle, GUILayout.Width(80), GUILayout.Height(28)))
+            if (GUILayout.Button(ModLocalization.T("todo.button.cancel"), _buttonStyle, GUILayout.Width(80), GUILayout.Height(28)))
             {
                 _showAddForm = false;
                 ResetAddForm();
@@ -666,7 +671,7 @@ namespace SunhavenTodo.UI
 
             var canSave = !string.IsNullOrWhiteSpace(_newTodoTitle);
             GUI.enabled = canSave;
-            if (GUILayout.Button(_editingItemId != null ? "Update" : "Add Task", _buttonStyle, GUILayout.Width(100), GUILayout.Height(28)))
+            if (GUILayout.Button(_editingItemId != null ? ModLocalization.T("todo.form.update") : ModLocalization.T("todo.form.addTask"), _buttonStyle, GUILayout.Width(100), GUILayout.Height(28)))
             {
                 SaveNewTodo();
             }
@@ -687,7 +692,7 @@ namespace SunhavenTodo.UI
             GUILayout.FlexibleSpace();
 
             // Using cached footer style
-            GUILayout.Label("Press ESC to close | Drag header to move", _footerStyle);
+            GUILayout.Label(ModLocalization.T("todo.footer.hint"), _footerStyle);
 
             GUILayout.FlexibleSpace();
             GUILayout.EndHorizontal();

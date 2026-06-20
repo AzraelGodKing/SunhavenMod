@@ -1,6 +1,6 @@
 using System;
-using SunhavenMods.Shared;
 using TheVault.UI;
+using VaultIconCache = TheVault.UI.IconCache;
 using Wish;
 
 namespace TheVault.Patches
@@ -112,7 +112,7 @@ namespace TheVault.Patches
                 }
 
                 // Load UI icons
-                IconCache.LoadAllIcons();
+                VaultIconCache.LoadAllIcons();
 
                 Plugin.Log?.LogInfo($"Vault loaded successfully for {characterName}");
             }
@@ -229,7 +229,7 @@ namespace TheVault.Patches
             ClearPendingCharacterName();
             GameSavePatches.ResetLastLoadedSlot(); // Reset slot tracker so next character gets fresh data
             ItemPatches.ResetState();
-            IconCache.Clear();
+            VaultIconCache.Clear();
         }
 
         /// <summary>

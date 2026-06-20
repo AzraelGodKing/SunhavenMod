@@ -1,18 +1,21 @@
-using BepInEx.Bootstrap;
-using TheVault.Modding;
-
 namespace CropOptimizer.Integration
 {
     internal sealed class VaultIntegration
     {
-        public bool IsAvailable => Chainloader.PluginInfos.ContainsKey("com.azraelgodking.thevault");
+        public bool IsAvailable => VaultReflection.IsVaultPluginPresent;
 
         public bool TryRegisterProjectedValueCurrency()
         {
-            if (!IsAvailable || VaultModApiBridge.Instance == null || !VaultModApiBridge.Instance.IsVaultReady)
+            if (!IsAvailable)
                 return false;
 
-            return VaultModApiBridge.Instance.RegisterCustomCurrency(
+            var bridgeType = VaultReflection.GetBridgeType();
+            var instance = VaultReflection.GetBridgeInstance(bridgeType);
+            if (!VaultReflection.IsVaultReady(instance))
+                return false;
+
+            return VaultReflection.TryRegisterCustomCurrency(
+                instance,
                 id: "crop_projected_value",
                 displayName: "Projected Crop Value",
                 gameItemId: -1,

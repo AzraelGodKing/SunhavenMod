@@ -1,6 +1,6 @@
-{
+﻿{
   "name": "SMUT",
-  "version_number": "2.4.2",
+  "version_number": "2.4.3",
   "website_url": "https://www.nexusmods.com/sunhaven/mods/490",
   "description": "Track museum donation progress across all three halls",
   "dependencies": ["BepInEx-BepInExPack-5.4.2100"]

@@ -1,6 +1,6 @@
-{
+﻿{
   "name": "HavensBirthright",
-  "version_number": "2.2.2",
+  "version_number": "2.2.3",
   "website_url": "https://www.nexusmods.com/sunhaven/mods/487",
   "description": "Unique racial bonuses and abilities for all 12 playable races",
   "dependencies": ["BepInEx-BepInExPack-5.4.2100"]

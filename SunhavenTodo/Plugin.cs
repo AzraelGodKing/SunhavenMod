@@ -1,5 +1,6 @@
 using System;
 using System.IO;
+using System.Reflection;
 using BepInEx;
 using BepInEx.Configuration;
 using BepInEx.Logging;
@@ -88,6 +89,8 @@ namespace SunhavenTodo
             IconCache.Initialize(Log);
 
             BindConfiguration();
+            _harmony = new Harmony(PluginInfo.PLUGIN_GUID);
+            InitLocalization();
             CreatePersistentRunner();
             InitializeManagers();
             ApplyPatches();
@@ -245,10 +248,13 @@ namespace SunhavenTodo
             _todoManager.OnTodosChanged += OnTodosChanged;
         }
 
+        private void InitLocalization()
+        {
+            LocalizationBootstrap.Init(PluginInfo.PLUGIN_GUID, _harmony, Log, Assembly.GetExecutingAssembly());
+        }
+
         private void ApplyPatches()
         {
-            _harmony = new Harmony(PluginInfo.PLUGIN_GUID);
-
             try
             {
                 // Patch player initialization to load data per character
@@ -522,6 +528,7 @@ namespace SunhavenTodo
             SceneManager.sceneLoaded -= OnSceneLoaded;
             if (_todoManager != null)
                 _todoManager.OnTodosChanged -= OnTodosChanged;
+            ModLocalization.Shutdown();
 
             string sceneName = SceneManager.GetActiveScene().name ?? string.Empty;
             string sceneLower = sceneName.ToLowerInvariant();

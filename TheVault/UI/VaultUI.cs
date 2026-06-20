@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using SunhavenMods.Shared;
 using TheVault;
@@ -649,11 +649,11 @@ namespace TheVault.UI
                 GUILayout.Space(Scaled(4));
                 GUILayout.BeginHorizontal();
                 GUILayout.FlexibleSpace();
-                GUILayout.Label("\u2727  The Vault  \u2727", _titleStyle);
+                GUILayout.Label(ModLocalization.T("vault.title"), _titleStyle);
                 GUILayout.FlexibleSpace();
                 GUILayout.EndHorizontal();
                 GUILayout.Space(Scaled(2));
-                GUILayout.Label("Currency Storage System", _subtitleStyle);
+                GUILayout.Label(ModLocalization.T("vault.subtitle"), _subtitleStyle);
                 GUILayout.Space(Scaled(10));
                 DrawCategoryTabs();
                 GUILayout.Space(Scaled(4));
@@ -677,7 +677,7 @@ namespace TheVault.UI
                 GUILayout.Space(Scaled(8));
                 DrawHorizontalLine(_accentColor, 1);
                 GUILayout.Space(Scaled(8));
-                GUILayout.Label("Withdraw / sweep are disabled in Debug view. Turn off Debug in Settings to use them.", _hintStyle);
+                GUILayout.Label(ModLocalization.T("vault.debug.disabledHint"), _hintStyle);
             }
             else
             {
@@ -698,7 +698,7 @@ namespace TheVault.UI
             GUILayout.Space(10);
             GUILayout.BeginHorizontal();
             GUILayout.FlexibleSpace();
-            if (GUILayout.Button("Close", _closeButtonStyle, GUILayout.Width(Scaled(120)), GUILayout.Height(Scaled(35))))
+            if (GUILayout.Button(ModLocalization.T("vault.close"), _closeButtonStyle, GUILayout.Width(Scaled(120)), GUILayout.Height(Scaled(35))))
             {
                 Hide();
             }
@@ -763,7 +763,7 @@ namespace TheVault.UI
             if (Plugin.GetConfigDebugFullVaultInspector())
             {
                 var dbgStyle = _showDebugVaultDump ? _selectedCategoryStyle : _categoryButtonStyle;
-                if (GUILayout.Button("\u205C Debug", dbgStyle, GUILayout.MinWidth(72)))
+                if (GUILayout.Button(ModLocalization.T("vault.tab.debug"), dbgStyle, GUILayout.MinWidth(72)))
                 {
                     _showSettings = false;
                     _showDebugVaultDump = true;
@@ -773,7 +773,7 @@ namespace TheVault.UI
 
             // Settings tab - always visible as part of the Vault UI
             var settingsStyle = _showSettings && !_showDebugVaultDump ? _selectedCategoryStyle : _categoryButtonStyle;
-            if (GUILayout.Button("\u2699 Settings", settingsStyle, GUILayout.MinWidth(88)))
+            if (GUILayout.Button(ModLocalization.T("vault.tab.settings"), settingsStyle, GUILayout.MinWidth(88)))
             {
                 _showSettings = true;
                 _showDebugVaultDump = false;
@@ -815,11 +815,11 @@ namespace TheVault.UI
         {
             if (_vaultManager == null)
             {
-                GUILayout.Label("(Vault not initialized)", _emptyStyle);
+                GUILayout.Label(ModLocalization.T("vault.notInitialized"), _emptyStyle);
                 return;
             }
 
-            GUILayout.Label("Raw snapshot of all vault dictionaries (Seasonal, Community, Keys, Tickets, Orbs, Custom).", _hintStyle);
+            GUILayout.Label(ModLocalization.T("vault.debug.intro"), _hintStyle);
             GUILayout.Space(Scaled(6));
 
             List<string> lines = _vaultManager.BuildDebugVaultReport();
@@ -836,33 +836,33 @@ namespace TheVault.UI
                 GUILayout.Space(20);
                 if (_selectedCategory == CurrencyCategory.Custom)
                 {
-                    GUILayout.Label("No custom currencies yet.", _emptyStyle);
+                    GUILayout.Label(ModLocalization.T("vault.empty.custom"), _emptyStyle);
                     GUILayout.Space(6);
-                    GUILayout.Label("Other mods register entries with TheVault.Api.VaultIntegration.RegisterCustomCurrency (after The Vault loads).", _hintStyle);
+                    GUILayout.Label(ModLocalization.T("vault.hint.custom"), _hintStyle);
                     GUILayout.Space(4);
-                    GUILayout.Label("Use a short id (a-z, 0-9, underscore) and optional Sun Haven item id for withdraw / auto-deposit.", _hintStyle);
+                    GUILayout.Label(ModLocalization.T("vault.hint.customId"), _hintStyle);
                 }
                 else if (_selectedCategory == CurrencyCategory.SeasonalToken)
                 {
-                    GUILayout.Label("No seasonal tokens in the vault.", _emptyStyle);
+                    GUILayout.Label(ModLocalization.T("vault.empty.seasonal"), _emptyStyle);
                     GUILayout.Space(6);
-                    GUILayout.Label("Deposit festival tokens from your inventory, or enable auto-deposit for those items.", _hintStyle);
+                    GUILayout.Label(ModLocalization.T("vault.hint.seasonal"), _hintStyle);
                 }
                 else if (_selectedCategory == CurrencyCategory.Key)
                 {
-                    GUILayout.Label("No keys stored in the vault.", _emptyStyle);
+                    GUILayout.Label(ModLocalization.T("vault.empty.keys"), _emptyStyle);
                     GUILayout.Space(6);
-                    GUILayout.Label("Keys you move into the vault appear here. Use Sweep or per-item auto-deposit to add them.", _hintStyle);
+                    GUILayout.Label(ModLocalization.T("vault.hint.keys"), _hintStyle);
                 }
                 else if (_selectedCategory == CurrencyCategory.Special)
                 {
-                    GUILayout.Label("No special currencies in the vault.", _emptyStyle);
+                    GUILayout.Label(ModLocalization.T("vault.empty.special"), _emptyStyle);
                     GUILayout.Space(6);
-                    GUILayout.Label("Doubloons, tickets, shards, and similar currencies show here once deposited.", _hintStyle);
+                    GUILayout.Label(ModLocalization.T("vault.hint.special"), _hintStyle);
                 }
                 else
                 {
-                    GUILayout.Label("No items in this category", _emptyStyle);
+                    GUILayout.Label(ModLocalization.T("vault.empty.category"), _emptyStyle);
                 }
                 return;
             }
@@ -983,15 +983,15 @@ namespace TheVault.UI
         private void DrawSettingsPanel()
         {
             GUILayout.Space(Scaled(4));
-            GUILayout.Label("\u2699  Settings (saved to config file)", _subtitleStyle);
+            GUILayout.Label(ModLocalization.T("vault.settings.title"), _subtitleStyle);
             GUILayout.Space(Scaled(6));
             float settingsScrollHeight = Mathf.Min(SettingsContentHeight, MaxContentHeight);
             _settingsScroll = GUILayout.BeginScrollView(_settingsScroll, false, false, GUIStyle.none, GUI.skin.verticalScrollbar, GUILayout.Height(settingsScrollHeight));
 
             // Window scale
-            GUILayout.Label("Display", _labelStyle);
+            GUILayout.Label(ModLocalization.T("vault.settings.display"), _labelStyle);
             GUILayout.BeginHorizontal();
-            GUILayout.Label("Window scale:", _labelStyle, GUILayout.Width(Scaled(90)));
+            GUILayout.Label(ModLocalization.T("vault.settings.windowScale"), _labelStyle, GUILayout.Width(Scaled(90)));
             float winScale = Plugin.GetConfigWindowScale();
             float newWinScale = GUILayout.HorizontalSlider(winScale, 0.5f, 3f, GUILayout.Width(Scaled(120)));
             if (Math.Abs(newWinScale - winScale) > 0.01f) Plugin.SetConfigWindowScale(newWinScale);
@@ -1000,21 +1000,21 @@ namespace TheVault.UI
             GUILayout.Space(Scaled(6));
 
             // HUD
-            GUILayout.Label("HUD", _labelStyle);
-            GUILayout.Label("Drag the currency bar by its top strip to move it; position saves to config (like Sun Haven Todo). Changing [HUD] Position resets a custom placement.", _hintStyle);
+            GUILayout.Label(ModLocalization.T("vault.settings.hud"), _labelStyle);
+            GUILayout.Label(ModLocalization.T("vault.settings.hudDragHint"), _hintStyle);
             bool hudOn = Plugin.GetConfigHUDEnabled();
             bool newHudOn = GUILayout.Toggle(hudOn, " Show vault currency bar", _labelStyle);
             if (newHudOn != hudOn) Plugin.SetConfigHUDEnabled(newHudOn);
 
             GUILayout.BeginHorizontal();
-            GUILayout.Label("HUD scale:", _labelStyle, GUILayout.Width(Scaled(80)));
+            GUILayout.Label(ModLocalization.T("vault.settings.hudScale"), _labelStyle, GUILayout.Width(Scaled(80)));
             float scale = Plugin.GetConfigHUDScale();
             float newScale = GUILayout.HorizontalSlider(scale, 0.5f, 3f, GUILayout.Width(Scaled(120)));
             if (Math.Abs(newScale - scale) > 0.01f) Plugin.SetConfigHUDScale(newScale);
             GUILayout.Label($"{newScale:F1}", _labelStyle, GUILayout.Width(Scaled(28)));
             GUILayout.EndHorizontal();
 
-            GUILayout.Label("HUD density:", _labelStyle);
+            GUILayout.Label(ModLocalization.T("vault.settings.hudDensity"), _labelStyle);
             string density = Plugin.GetConfigHudDensity();
             string[] densityOpts = { "Normal", "Compact", "Minimal" };
             int dIdx = Array.IndexOf(densityOpts, density);
@@ -1028,7 +1028,7 @@ namespace TheVault.UI
 
             GUILayout.Space(Scaled(6));
 
-            GUILayout.Label("Debug (full vault inspector)", _labelStyle);
+            GUILayout.Label(ModLocalization.T("vault.settings.debug"), _labelStyle);
             bool dbgOn = Plugin.GetConfigDebugFullVaultInspector();
             GUILayout.Label(
                 dbgOn
@@ -1038,9 +1038,9 @@ namespace TheVault.UI
             GUILayout.Space(Scaled(6));
 
             // Open vault keys
-            GUILayout.Label("Open Vault", _labelStyle);
+            GUILayout.Label(ModLocalization.T("vault.settings.openVault"), _labelStyle);
             GUILayout.BeginHorizontal();
-            GUILayout.Label("Key:", _labelStyle, GUILayout.Width(Scaled(50)));
+            GUILayout.Label(ModLocalization.T("vault.settings.key"), _labelStyle, GUILayout.Width(Scaled(50)));
             int toggleIdx = IndexOfKey(Plugin.GetConfigToggleKey());
             int newToggleIdx = GUILayout.SelectionGrid(toggleIdx, SettingsKeyNames, 6, _buttonStyle);
             if (newToggleIdx != toggleIdx && newToggleIdx >= 0) Plugin.SetConfigToggleKey(SettingsKeyOptions[newToggleIdx]);
@@ -1051,14 +1051,14 @@ namespace TheVault.UI
             if (newReqCtrl != reqCtrl) Plugin.SetConfigRequireCtrl(newReqCtrl);
 
             GUILayout.BeginHorizontal();
-            GUILayout.Label("Alt key:", _labelStyle, GUILayout.Width(Scaled(50)));
+            GUILayout.Label(ModLocalization.T("vault.settings.altKey"), _labelStyle, GUILayout.Width(Scaled(50)));
             int altIdx = IndexOfKey(Plugin.GetConfigAltToggleKey());
             int newAltIdx = GUILayout.SelectionGrid(altIdx, SettingsKeyNames, 6, _buttonStyle);
             if (newAltIdx != altIdx && newAltIdx >= 0) Plugin.SetConfigAltToggleKey(SettingsKeyOptions[newAltIdx]);
             GUILayout.EndHorizontal();
 
             GUILayout.Space(Scaled(8));
-            GUILayout.Label("Changes save automatically.", _hintStyle);
+            GUILayout.Label(ModLocalization.T("vault.settings.autoSave"), _hintStyle);
             GUILayout.EndScrollView();
         }
 
@@ -1080,7 +1080,7 @@ namespace TheVault.UI
 
             if (string.IsNullOrEmpty(_selectedCurrencyId))
             {
-                GUILayout.Label("Click a row to select, or use quick withdraw / deposit buttons", _hintStyle);
+                GUILayout.Label(ModLocalization.T("vault.row.hint"), _hintStyle);
             }
             else
             {
@@ -1091,12 +1091,12 @@ namespace TheVault.UI
 
                 GUILayout.Space(Scaled(15));
 
-                GUILayout.Label("Qty:", _amountLabelStyle, GUILayout.Width(Scaled(30)));
+                GUILayout.Label(ModLocalization.T("vault.qty"), _amountLabelStyle, GUILayout.Width(Scaled(30)));
                 _depositAmount = GUILayout.TextField(_depositAmount, 6, _textFieldStyle, GUILayout.Width(Scaled(55)));
 
                 GUILayout.Space(Scaled(8));
 
-                if (GUILayout.Button("Withdraw", _buttonStyle, GUILayout.Width(Scaled(86))))
+                if (GUILayout.Button(ModLocalization.T("vault.withdraw"), _buttonStyle, GUILayout.Width(Scaled(86))))
                 {
                     if (!int.TryParse(_depositAmount, out int wAmt) || wAmt <= 0)
                         SetVaultStatus("Enter a positive number for quantity.", true);
@@ -1104,7 +1104,7 @@ namespace TheVault.UI
                         WithdrawToInventory(_selectedCurrencyId, wAmt);
                 }
 
-                if (GUILayout.Button("Deposit", _buttonStyle, GUILayout.Width(Scaled(86))))
+                if (GUILayout.Button(ModLocalization.T("vault.deposit"), _buttonStyle, GUILayout.Width(Scaled(86))))
                 {
                     if (!int.TryParse(_depositAmount, out int dAmt) || dAmt <= 0)
                         SetVaultStatus("Enter a positive number for quantity.", true);
@@ -1119,11 +1119,11 @@ namespace TheVault.UI
                 if (mapId > 0)
                 {
                     int inBag = ItemPatches.GetRawInventoryCount(mapId);
-                    GUILayout.Label($"In inventory (bag): {inBag}", _hintStyle);
+                    GUILayout.Label(ModLocalization.T("vault.inBag", inBag), _hintStyle);
                 }
                 else
                 {
-                    GUILayout.Label("No matching inventory item for this row — deposit is unavailable.", _hintStyle);
+                    GUILayout.Label(ModLocalization.T("vault.noDeposit"), _hintStyle);
                 }
             }
 
@@ -1131,7 +1131,7 @@ namespace TheVault.UI
             GUILayout.Space(Scaled(6));
             GUILayout.BeginHorizontal();
             GUILayout.FlexibleSpace();
-            if (GUILayout.Button("Sweep Inventory (Auto-Deposit Now)", _buttonStyle, GUILayout.Width(Scaled(260)), GUILayout.Height(Scaled(32))))
+            if (GUILayout.Button(ModLocalization.T("vault.sweep"), _buttonStyle, GUILayout.Width(Scaled(260)), GUILayout.Height(Scaled(32))))
             {
                 Plugin.Log?.LogInfo("[Vault UI] Sweep button clicked");
                 ItemPatches.ForceAutoDepositAll();
