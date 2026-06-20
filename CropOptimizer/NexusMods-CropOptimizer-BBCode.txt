@@ -1,4 +1,4 @@
-[b][size=5]Crop Optimizer[/size][/b] [i](v1.4.6)[/i]
+[b][size=5]Crop Optimizer[/size][/b] [i](v1.4.7)[/i]
 
 Optimize your farm day with crop forecasting and a compact HUD.
 
