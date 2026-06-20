@@ -167,7 +167,7 @@ jobs:
           MOD_INPUT: ${{ github.event.inputs.mod }}
           BUMP: ${{ github.event.inputs.bump_version }}
         run: |
-          set -euo pipefail
+          $ErrorActionPreference = 'Stop'
           if ($env:MOD_INPUT -eq 'all') {
             ./scripts/pre-push-build.ps1 -All -Bump $env:BUMP -SyncOnly
           } else {
