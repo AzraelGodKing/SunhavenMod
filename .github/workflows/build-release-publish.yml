@@ -213,9 +213,21 @@ jobs:
           if-no-files-found: error
 
   # ---------------------------------------------------------------------------
-  # Prepare release — recompute mod matrix after build (do not read setup.outputs
-  # in the release matrix when this job also needs the build matrix; mod=all was
-  # skipping release entirely with 0 steps — see runs #124–#126).
+  # Build complete — non-matrix gate after matrix build (jobs that need matrix
+  # build directly can lose downstream job outputs; mod=all release was skipped
+  # with 0 steps — runs #124–#126, #27858724862).
+  # ---------------------------------------------------------------------------
+  build-gate:
+    name: Build complete
+    needs: build
+    if: always() && !cancelled() && needs.build.result == 'success'
+    runs-on: ubuntu-latest
+    steps:
+      - name: All matrix builds succeeded
+        run: echo "Build matrix complete — release stage may proceed."
+
+  # ---------------------------------------------------------------------------
+  # Prepare release — mod list for release matrix (from repo file, not setup.outputs)
   # ---------------------------------------------------------------------------
   prepare-release:
     name: Prepare release
@@ -223,12 +235,11 @@ jobs:
       always() &&
       github.event_name == 'workflow_dispatch' &&
       github.event.inputs.build_only != 'true' &&
-      needs.setup.result == 'success' &&
-      needs.build.result == 'success'
-    needs: [setup, build]
+      needs.build-gate.result == 'success'
+    needs: build-gate
     runs-on: ubuntu-latest
     outputs:
-      matrix: ${{ steps.set-matrix.outputs.matrix }}
+      mod_keys: ${{ steps.set-matrix.outputs.mod_keys }}
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -241,19 +252,35 @@ jobs:
         run: |
           set -euo pipefail
           if [ "$MOD_INPUT" == "all" ]; then
-            echo "matrix=$(jq -c '[.[].modKey]' scripts/mod-matrix.json)" >> "$GITHUB_OUTPUT"
+            MOD_KEYS="$(jq -c '[.[].modKey]' scripts/mod-matrix.json)"
           else
-            echo "matrix=[\"$MOD_INPUT\"]" >> "$GITHUB_OUTPUT"
+            MOD_KEYS="[\"$MOD_INPUT\"]"
           fi
+          if [ -z "$MOD_KEYS" ] || [ "$MOD_KEYS" = "[]" ]; then
+            echo "::error::Release mod matrix is empty (mod=$MOD_INPUT)"
+            exit 1
+          fi
+          echo "mod_keys=$MOD_KEYS" >> "$GITHUB_OUTPUT"
           COUNT="$(jq 'length' scripts/mod-matrix.json)"
-          echo "Release matrix for mod=$MOD_INPUT (${COUNT} mods in matrix file)"
+          echo "Release mod_keys for mod=$MOD_INPUT (${COUNT} mods in matrix file): $MOD_KEYS"
+          {
+            echo "### Release mod matrix"
+            echo '```json'
+            echo "$MOD_KEYS"
+            echo '```'
+          } >> "$GITHUB_STEP_SUMMARY"
 
   # ---------------------------------------------------------------------------
   # Release — package + publish (workflow_dispatch only, unless build_only)
   # Order: package → GitHub Release → Thunderstore → Nexus → Discord → summary
   # ---------------------------------------------------------------------------
   release:
-    if: needs.prepare-release.result == 'success'
+    if: >-
+      github.event_name == 'workflow_dispatch' &&
+      github.event.inputs.build_only != 'true' &&
+      needs.prepare-release.result == 'success' &&
+      needs.prepare-release.outputs.mod_keys != '' &&
+      needs.prepare-release.outputs.mod_keys != '[]'
     needs: prepare-release
     runs-on: ubuntu-latest
     permissions:
@@ -261,7 +288,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        mod: ${{ fromJson(needs.prepare-release.outputs.matrix) }}
+        mod: ${{ fromJson(needs.prepare-release.outputs.mod_keys) }}
 
     steps:
       - name: Checkout repository
