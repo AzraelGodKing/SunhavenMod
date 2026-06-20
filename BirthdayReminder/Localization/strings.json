@@ -1,4 +1,4 @@
-
+{
     "birthday.gift.liked":  {
                                 "en":  "Liked Gifts",
                                 "da":  "Syntes godt om gaver",
@@ -42,7 +42,7 @@
                                 "es":  "Regalos de {0}",
                                 "fr":  "Cadeaux de {0}",
                                 "it":  "I regali di {0}",
-                                "ja": "{0}のギフト",
+                                "ja":  "{0}のギフト",
                                 "ko":  "{0}의 선물",
                                 "nl":  "Geschenken van {0}",
                                 "pt":  "Presentes da {0}",
@@ -162,4 +162,3 @@
                                    "uk":  "День народження сьогодні!"
                                }
 }
-

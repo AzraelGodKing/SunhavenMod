@@ -1,4 +1,4 @@
-
+{
     "crop.hud.projected": {
         "en": "Projected sell: <color=#F7D982><b>{0:N0}g</b></color>",
         "da": "Forventet salg: <color=#F7D982><b>{0:N0}g</b></color>",
@@ -306,4 +306,3 @@
         "uk": "Вода: <color=#B8A078>невідомо</color>"
     }
 }
-

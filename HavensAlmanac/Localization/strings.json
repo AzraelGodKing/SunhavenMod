@@ -1,4 +1,4 @@
-
+{
     "almanac.briefing.dismiss": {
         "en": "Dismiss",
         "da": "Afvis",
@@ -582,7 +582,7 @@
         "es": "Museo: {0:F0}% completo ({1}/{2})",
         "fr": "Musée : {0:F0}% achevé ({1}/{2})",
         "it": "Museo: {0:F0}% completato ({1}/{2})",
-        "ja": "ミュージアム：{0:F0}%完了（{1}/{2}）",
+        "ja": "ミュージアム：{0:F0}%完了（ {1}/{2} ）",
         "ko": "박물관: {0:F0} % 완료 ({1}/{2})",
         "nl": "Museum: {0:F0}% voltooid ({1}/{2})",
         "pt": "Museu: {0:F0}% concluído ({1}/{2})",
@@ -918,4 +918,3 @@
         "uk": "Збережені валюти ({0}):"
     }
 }
-

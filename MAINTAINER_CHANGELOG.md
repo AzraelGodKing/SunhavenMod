@@ -28,6 +28,7 @@ Internal engineering log: **CI**, **release automation**, **scripts**, **docs in
 **2026-05-24**
 
 - **Hygiene:** Removed stray `HavenDevTools/manifest.json` again (canonical Thunderstore metadata is `HavenDevTools/thunderstore/manifest.json` only).
+- **Localization:** Fixed `scripts/fix-localization-format-specifiers.ps1` — PowerShell `StartsWith([char]0xFEFF)` is always true, which stripped the root `{` and broke five `strings.json` files in CI; use explicit UTF-8 read without the bogus BOM strip.
 - **Docs:** Rewrote root [`README.md`](README.md), [`CHANGELOG.md`](CHANGELOG.md), and this file — scoped maintainer vs player notes; [`docs/VERSION_AND_RELEASE.md`](docs/VERSION_AND_RELEASE.md) clarifies Python for version checks and hub matrix regen; [`docs/ATOMIC_SAVE_POLICY.md`](docs/ATOMIC_SAVE_POLICY.md) for save temp semantics.
 - **README:** Per-mod `### Unreleased` headers converted to dated maintainer sections where applicable.
 
