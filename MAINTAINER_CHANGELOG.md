@@ -27,7 +27,7 @@ Internal engineering log: **CI**, **release automation**, **scripts**, **docs in
 
 **2026-05-24**
 
-- **Release & Publish:** Fixed workflow validation error (`matrix.mod` is invalid in job-level `if`). Added `plan-release` job to emit the mod list; release matrix uses `fromJson(needs.plan-release.outputs.mods)`. In-flow bump via `bump_version` / `release_changelog` dispatch inputs.
+- **Release & Publish:** Fixed version job PowerShell step (`set -euo pipefail` is bash-only; use `$ErrorActionPreference = 'Stop'` under `shell: pwsh`).
 - **Hygiene:** Removed stray `HavenDevTools/manifest.json` again (canonical Thunderstore metadata is `HavenDevTools/thunderstore/manifest.json` only).
 - **Localization:** Fixed `scripts/fix-localization-format-specifiers.ps1` — PowerShell `StartsWith([char]0xFEFF)` is always true, which stripped the root `{` and broke five `strings.json` files in CI; use explicit UTF-8 read without the bogus BOM strip.
 - **Follow-up:** `DebugWindow` caches IMGUI toolbar/race arrays; localized Crop Optimizer hover tooltip and The Vault `DoorPatches` user-facing strings; `scripts/add-followup-localization-keys.ps1` helper for new keys.
