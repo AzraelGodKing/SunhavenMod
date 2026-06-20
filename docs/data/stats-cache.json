@@ -1,5 +1,5 @@
 {
-  "lastFetched": "2026-06-19T22:56:51.490Z",
+  "lastFetched": "2026-06-20T00:12:54.521Z",
   "mods": {
     "senpais-chest": {
       "name": "Senpai's Chest",
@@ -59,10 +59,10 @@
         }
       },
       "nexus": {
-        "total_downloads": 1172,
-        "unique_downloads": 807
+        "total_downloads": 1173,
+        "unique_downloads": 808
       },
-      "combined_total": 1745
+      "combined_total": 1746
     },
     "museum-utility-tracker": {
       "name": "S.M.U.T.",
@@ -164,10 +164,10 @@
         }
       },
       "nexus": {
-        "total_downloads": 1352,
-        "unique_downloads": 974
+        "total_downloads": 1354,
+        "unique_downloads": 976
       },
-      "combined_total": 1795
+      "combined_total": 1797
     },
     "haven-dev-tools": {
       "name": "HavenDevTools",
@@ -297,8 +297,8 @@
   },
   "site_total": {
     "thunderstore": 4743,
-    "nexus_total": 6872,
-    "nexus_unique": 5258,
-    "grand_total": 11615
+    "nexus_total": 6875,
+    "nexus_unique": 5261,
+    "grand_total": 11618
   }
 }
