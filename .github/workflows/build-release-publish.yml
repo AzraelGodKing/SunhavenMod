@@ -131,7 +131,7 @@ jobs:
     name: Version bump & sync
     if: >-
       github.event_name == 'workflow_dispatch' &&
-      github.event.inputs.build_only != 'true'
+      github.event.inputs.build_only == false
     runs-on: ubuntu-latest
     permissions:
       contents: write
@@ -317,79 +317,68 @@ jobs:
   # ---------------------------------------------------------------------------
   build-gate:
     name: Build complete
-    needs: build
-    if: always() && !cancelled() && needs.build.result == 'success'
+    needs: [build, version]
+    if: >-
+      always() &&
+      !cancelled() &&
+      needs.build.result == 'success' &&
+      (needs.version.result == 'success' || needs.version.result == 'skipped')
     runs-on: ubuntu-latest
+    outputs:
+      ref: ${{ needs.version.outputs.ref || github.sha }}
     steps:
       - name: All matrix builds succeeded
         run: echo "Build matrix complete — release stage may proceed."
 
   # ---------------------------------------------------------------------------
-  # Plan release — mod list for matrix (1 or 12 mods). Job-level if cannot use
-  # matrix.mod; dynamic list avoids invalid workflow syntax and mod=all skip bugs.
-  # ---------------------------------------------------------------------------
-  plan-release:
-    name: Plan release matrix
-    if: >-
-      github.event_name == 'workflow_dispatch' &&
-      github.event.inputs.build_only != 'true' &&
-      needs.build-gate.result == 'success'
-    needs: [build-gate, version]
-    runs-on: ubuntu-latest
-    outputs:
-      mods: ${{ steps.plan.outputs.mods }}
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
-        with:
-          ref: ${{ needs.version.outputs.ref || github.sha }}
-
-      - name: Set release mod list
-        id: plan
-        shell: bash
-        env:
-          MOD_INPUT: ${{ github.event.inputs.mod }}
-        run: |
-          set -euo pipefail
-          if [ "$MOD_INPUT" == "all" ]; then
-            MODS="$(jq -c '[.[].modKey]' scripts/mod-matrix.json)"
-          else
-            MODS="[\"$MOD_INPUT\"]"
-          fi
-          if [ -z "$MODS" ] || [ "$MODS" = "[]" ]; then
-            echo "::error::Release mod list is empty (mod=$MOD_INPUT)"
-            exit 1
-          fi
-          {
-            echo "mods<<EOF"
-            echo "$MODS"
-            echo "EOF"
-          } >> "$GITHUB_OUTPUT"
-          echo "Release mods for mod=$MOD_INPUT: $MODS"
-
-  # ---------------------------------------------------------------------------
-  # Release — package + publish (workflow_dispatch only, unless build_only)
-  # Order: package → publish → report
+  # Release — static mod matrix (must match scripts/mod-matrix.json modKey list).
+  # plan-release/fromJson was skipped on mod=all; per-matrix pick filters single-mod runs.
   # ---------------------------------------------------------------------------
   release:
     name: release (${{ matrix.mod }})
-    if: needs.plan-release.result == 'success'
-    needs: [plan-release, version]
+    if: >-
+      github.event_name == 'workflow_dispatch' &&
+      github.event.inputs.build_only == false &&
+      needs.build-gate.result == 'success'
+    needs: build-gate
     runs-on: ubuntu-latest
     permissions:
       contents: write
     strategy:
       fail-fast: false
       matrix:
-        mod: ${{ fromJson(needs.plan-release.outputs.mods) }}
+        mod:
+          - senpaischest
+          - havensbirthright
+          - sunhavenmuseumutilitytracker
+          - squirrelsbirthdayreminder
+          - sunhaventodo
+          - thevault
+          - havendevtools
+          - havensalmanac
+          - fasterraces
+          - trinketfortune
+          - cropoptimizer
+          - havensrespec
 
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
         with:
-          ref: ${{ needs.version.outputs.ref || github.sha }}
+          ref: ${{ needs.build-gate.outputs.ref }}
+
+      - name: Select mod for this matrix row
+        id: pick
+        run: |
+          if [ "${{ github.event.inputs.mod }}" != "all" ] && [ "${{ github.event.inputs.mod }}" != "${{ matrix.mod }}" ]; then
+            echo "selected=false" >> "$GITHUB_OUTPUT"
+            echo "Skipping ${{ matrix.mod }} (dispatch mod=${{ github.event.inputs.mod }})"
+          else
+            echo "selected=true" >> "$GITHUB_OUTPUT"
+          fi
 
       - name: Load mod metadata (matrix + versions.json)
+        if: steps.pick.outputs.selected == 'true'
         id: config
         run: |
           MOD_KEY="${{ matrix.mod }}"
@@ -433,14 +422,14 @@ jobs:
           echo "skip_discord_for_almanac=false" >> "$GITHUB_OUTPUT"
 
       - name: Download built DLL artifact
-        if: github.event.inputs.publish_discord_only != 'true' && matrix.mod != 'test_discord'
+        if: steps.pick.outputs.selected == 'true' && github.event.inputs.publish_discord_only != 'true' && matrix.mod != 'test_discord'
         uses: actions/download-artifact@v7
         with:
           name: built-${{ matrix.mod }}
           path: builds/${{ steps.config.outputs.mod_dir }}
 
       - name: Restore upstream version cache
-        if: github.event.inputs.publish_discord_only != 'true' && github.event.inputs.dry_run != 'true'
+        if: steps.pick.outputs.selected == 'true' && github.event.inputs.publish_discord_only != 'true' && github.event.inputs.dry_run != 'true'
         uses: actions/cache/restore@v4
         with:
           path: .cache/upstream-version
@@ -450,7 +439,7 @@ jobs:
 
       - name: Upstream version gate (GitHub + Thunderstore + Nexus APIs)
         id: version_check
-        if: github.event.inputs.publish_discord_only != 'true'
+        if: steps.pick.outputs.selected == 'true' && github.event.inputs.publish_discord_only != 'true'
         env:
           NEXUS_API_KEY: ${{ secrets.NEXUSMODS_API_KEY }}
         run: |
@@ -545,14 +534,14 @@ jobs:
           echo "upstream_cache_used=$CACHE_USED" >> "$GITHUB_OUTPUT"
 
       - name: Save upstream version cache
-        if: github.event.inputs.publish_discord_only != 'true' && github.event.inputs.dry_run != 'true' && always()
+        if: steps.pick.outputs.selected == 'true' && github.event.inputs.publish_discord_only != 'true' && github.event.inputs.dry_run != 'true' && always()
         uses: actions/cache/save@v4
         with:
           path: .cache/upstream-version
           key: upstream-version-${{ github.repository }}-${{ matrix.mod }}-${{ github.run_id }}
 
       - name: Skip — version already on upstream
-        if: github.event.inputs.publish_discord_only != 'true' && steps.version_check.outputs.version_unchanged == 'true'
+        if: steps.pick.outputs.selected == 'true' && github.event.inputs.publish_discord_only != 'true' && steps.version_check.outputs.version_unchanged == 'true'
         run: |
           SRC="${{ steps.version_check.outputs.version_match_sources }}"
           echo "✅ Skipping: ${{ steps.config.outputs.display_name }} v${{ steps.config.outputs.version }} already on upstream (sources: ${SRC:-unknown})"
@@ -560,6 +549,7 @@ jobs:
       - name: Package Thunderstore-style zip
         id: package_step
         if: >-
+          steps.pick.outputs.selected == 'true' &&
           github.event.inputs.publish_discord_only != 'true' &&
           steps.version_check.outputs.version_unchanged != 'true'
         env:
@@ -616,7 +606,7 @@ jobs:
           echo "zip_path=$PACKAGE_ZIP" >> "$GITHUB_OUTPUT"
 
       - name: Upload dry-run zip artifact
-        if: github.event.inputs.dry_run == 'true' && github.event.inputs.publish_discord_only != 'true' && matrix.mod != 'test_discord'
+        if: steps.pick.outputs.selected == 'true' && github.event.inputs.dry_run == 'true' && github.event.inputs.publish_discord_only != 'true' && matrix.mod != 'test_discord'
         uses: actions/upload-artifact@v6
         with:
           name: dry-run-${{ steps.config.outputs.thunderstore_name }}-${{ steps.config.outputs.version }}
@@ -625,6 +615,7 @@ jobs:
 
       - name: Package diagnostics (zip path + SHA256)
         if: >-
+          steps.pick.outputs.selected == 'true' &&
           github.event.inputs.publish_discord_only != 'true' &&
           steps.version_check.outputs.version_unchanged != 'true' &&
           matrix.mod != 'test_discord'
@@ -644,13 +635,14 @@ jobs:
           } >> "$GITHUB_STEP_SUMMARY"
 
       - name: Dry run notice
-        if: github.event.inputs.dry_run == 'true'
+        if: steps.pick.outputs.selected == 'true' && github.event.inputs.dry_run == 'true'
         run: |
           echo "DRY RUN: package artifact uploaded; no GitHub/Thunderstore/Nexus/Discord publish."
 
       - name: Create GitHub Release
         id: create_github_release_step
         if: >-
+          steps.pick.outputs.selected == 'true' &&
           github.event.inputs.dry_run != 'true' &&
           github.event.inputs.publish_discord_only != 'true' &&
           github.event.inputs.create_github_release == 'true' &&
@@ -677,6 +669,7 @@ jobs:
       - name: Publish to Thunderstore
         id: publish_thunderstore_step
         if: >-
+          steps.pick.outputs.selected == 'true' &&
           github.event.inputs.dry_run != 'true' &&
           github.event.inputs.publish_discord_only != 'true' &&
           github.event.inputs.publish_thunderstore == 'true' &&
@@ -699,6 +692,7 @@ jobs:
       - name: Nexus — resolve and verify zip
         id: nexus_preflight
         if: >-
+          steps.pick.outputs.selected == 'true' &&
           github.event.inputs.dry_run != 'true' &&
           github.event.inputs.publish_discord_only != 'true' &&
           github.event.inputs.publish_nexus == 'true' &&
@@ -729,7 +723,7 @@ jobs:
 
       - name: Nexus upload (1/4)
         id: nexus_upload_1
-        if: success() && steps.nexus_preflight.outcome == 'success'
+        if: steps.pick.outputs.selected == 'true' && success() && steps.nexus_preflight.outcome == 'success'
         continue-on-error: true
         uses: Nexus-Mods/upload-action@v1.0.0-beta.4
         with:
@@ -749,12 +743,12 @@ jobs:
           file_category: main
 
       - name: Nexus backoff 30s
-        if: success() && steps.nexus_preflight.outcome == 'success' && steps.nexus_upload_1.outcome == 'failure'
+        if: steps.pick.outputs.selected == 'true' && success() && steps.nexus_preflight.outcome == 'success' && steps.nexus_upload_1.outcome == 'failure'
         run: sleep 30
 
       - name: Nexus upload (2/4)
         id: nexus_upload_2
-        if: success() && steps.nexus_preflight.outcome == 'success' && steps.nexus_upload_1.outcome == 'failure'
+        if: steps.pick.outputs.selected == 'true' && success() && steps.nexus_preflight.outcome == 'success' && steps.nexus_upload_1.outcome == 'failure'
         continue-on-error: true
         uses: Nexus-Mods/upload-action@v1.0.0-beta.4
         with:
@@ -774,12 +768,12 @@ jobs:
           file_category: main
 
       - name: Nexus backoff 2m
-        if: success() && steps.nexus_preflight.outcome == 'success' && steps.nexus_upload_1.outcome == 'failure' && steps.nexus_upload_2.outcome == 'failure'
+        if: steps.pick.outputs.selected == 'true' && success() && steps.nexus_preflight.outcome == 'success' && steps.nexus_upload_1.outcome == 'failure' && steps.nexus_upload_2.outcome == 'failure'
         run: sleep 120
 
       - name: Nexus upload (3/4)
         id: nexus_upload_3
-        if: success() && steps.nexus_preflight.outcome == 'success' && steps.nexus_upload_1.outcome == 'failure' && steps.nexus_upload_2.outcome == 'failure'
+        if: steps.pick.outputs.selected == 'true' && success() && steps.nexus_preflight.outcome == 'success' && steps.nexus_upload_1.outcome == 'failure' && steps.nexus_upload_2.outcome == 'failure'
         continue-on-error: true
         uses: Nexus-Mods/upload-action@v1.0.0-beta.4
         with:
@@ -799,12 +793,13 @@ jobs:
           file_category: main
 
       - name: Nexus backoff 5m
-        if: success() && steps.nexus_preflight.outcome == 'success' && steps.nexus_upload_1.outcome == 'failure' && steps.nexus_upload_2.outcome == 'failure' && steps.nexus_upload_3.outcome == 'failure'
+        if: steps.pick.outputs.selected == 'true' && success() && steps.nexus_preflight.outcome == 'success' && steps.nexus_upload_1.outcome == 'failure' && steps.nexus_upload_2.outcome == 'failure' && steps.nexus_upload_3.outcome == 'failure'
         run: sleep 300
 
       - name: Nexus upload (4/4 — must succeed)
         id: nexus_upload_4
         if: >-
+          steps.pick.outputs.selected == 'true' &&
           success() &&
           steps.nexus_preflight.outcome == 'success' &&
           steps.nexus_upload_1.outcome == 'failure' &&
@@ -830,6 +825,7 @@ jobs:
       - name: Nexus — fail if publish requested but no attempt succeeded
         if: >-
           always() &&
+          steps.pick.outputs.selected == 'true' &&
           github.event.inputs.dry_run != 'true' &&
           github.event.inputs.publish_discord_only != 'true' &&
           github.event.inputs.publish_nexus == 'true' &&
@@ -848,6 +844,7 @@ jobs:
       - name: Notify Discord (after release created in this run)
         id: notify_discord_release_step
         if: >-
+          steps.pick.outputs.selected == 'true' &&
           github.event.inputs.dry_run != 'true' &&
           github.event.inputs.publish_discord_only != 'true' &&
           github.event.inputs.ignore_discord_notify != 'true' &&
@@ -875,6 +872,7 @@ jobs:
 
       - name: Pick random mod for Discord test
         if: >-
+          steps.pick.outputs.selected == 'true' &&
           github.event.inputs.dry_run != 'true' &&
           github.event.inputs.publish_discord_only != 'true' &&
           github.event.inputs.test_discord == 'true'
@@ -899,6 +897,7 @@ jobs:
       - name: Post test Discord notification
         id: post_test_discord_step
         if: >-
+          steps.pick.outputs.selected == 'true' &&
           github.event.inputs.dry_run != 'true' &&
           github.event.inputs.publish_discord_only != 'true' &&
           github.event.inputs.ignore_discord_notify != 'true' &&
@@ -914,6 +913,7 @@ jobs:
       - name: Publish to Discord only
         id: publish_discord_only_step
         if: >-
+          steps.pick.outputs.selected == 'true' &&
           github.event.inputs.dry_run != 'true' &&
           github.event.inputs.publish_discord_only == 'true' &&
           github.event.inputs.ignore_discord_notify != 'true' &&
@@ -936,7 +936,7 @@ jobs:
           thumbnail_url: "https://raw.githubusercontent.com/${{ github.repository }}/main/${{ steps.config.outputs.mod_dir }}/thunderstore/icon.png"
 
       - name: Release run report
-        if: always()
+        if: steps.pick.outputs.selected == 'true' && always()
         env:
           VERSION_UNCHANGED: ${{ steps.version_check.outputs.version_unchanged }}
           VERSION_MATCH_SOURCES: ${{ steps.version_check.outputs.version_match_sources }}
@@ -986,7 +986,7 @@ jobs:
           } | tee "reports/${{ matrix.mod }}.md" >> "$GITHUB_STEP_SUMMARY"
 
       - name: Upload report for combined summary
-        if: always()
+        if: steps.pick.outputs.selected == 'true' && always()
         uses: actions/upload-artifact@v6
         with:
           name: release-report-${{ matrix.mod }}
@@ -998,12 +998,12 @@ jobs:
   # ---------------------------------------------------------------------------
   release_aggregate_report:
     name: Combined release report
-    needs: [plan-release, release]
+    needs: [build-gate, release]
     if: >-
       always() &&
       github.event_name == 'workflow_dispatch' &&
-      github.event.inputs.build_only != 'true' &&
-      needs.plan-release.result != 'skipped' &&
+      github.event.inputs.build_only == false &&
+      needs.build-gate.result != 'skipped' &&
       needs.release.result != 'skipped'
     runs-on: ubuntu-latest
     steps:

@@ -27,7 +27,7 @@ Internal engineering log: **CI**, **release automation**, **scripts**, **docs in
 
 **2026-05-24**
 
-- **Release & Publish:** Fixed version job PowerShell step (`set -euo pipefail` is bash-only; use `$ErrorActionPreference = 'Stop'` under `shell: pwsh`).
+- **Release & Publish:** Dropped `plan-release`/`fromJson` (plan job was skipped on [run #134](https://github.com/AzraelGodKing/SunhavenMod/actions/runs/27859289447)). Release uses a static 12-mod matrix + `pick` step; `build-gate` carries `ref` from `version`.
 - **Hygiene:** Removed stray `HavenDevTools/manifest.json` again (canonical Thunderstore metadata is `HavenDevTools/thunderstore/manifest.json` only).
 - **Localization:** Fixed `scripts/fix-localization-format-specifiers.ps1` — PowerShell `StartsWith([char]0xFEFF)` is always true, which stripped the root `{` and broke five `strings.json` files in CI; use explicit UTF-8 read without the bogus BOM strip.
 - **Follow-up:** `DebugWindow` caches IMGUI toolbar/race arrays; localized Crop Optimizer hover tooltip and The Vault `DoorPatches` user-facing strings; `scripts/add-followup-localization-keys.ps1` helper for new keys.
