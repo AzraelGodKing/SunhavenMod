@@ -1,6 +1,6 @@
 {
   "name": "SunHavenTodo",
-  "version_number": "1.4.5",
+  "version_number": "1.4.6",
   "website_url": "https://www.nexusmods.com/sunhaven/mods/491",
   "description": "In-game task tracker for farming goals, quests, and daily tasks",
   "dependencies": ["BepInEx-BepInExPack-5.4.2100"]
