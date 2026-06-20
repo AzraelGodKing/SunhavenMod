@@ -1,6 +1,6 @@
 {
   "name": "HavenDevTools",
-  "version_number": "1.2.4",
+  "version_number": "1.2.5",
   "website_url": "https://www.nexusmods.com/sunhaven/mods/495",
   "description": "Developer utilities for mod debugging and game state inspection",
   "dependencies": ["BepInEx-BepInExPack-5.4.2100"]
