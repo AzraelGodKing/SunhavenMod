@@ -516,7 +516,7 @@ namespace BirthdayReminder.UI
             if (BirthdayCache.UniversalLoved.Count > 0)
             {
                 GUILayout.Space(Scaled(4));
-                DrawSubHeader(ModLocalization.T("birthday.gift.universal"), _universalColor);
+                DrawSubHeader(ModLocalization.T("birthday.gift.universalLoved"), _universalColor);
                 foreach (var gift in BirthdayCache.UniversalLoved)
                 {
                     DrawGiftItem(gift, _universalColor);
@@ -542,7 +542,7 @@ namespace BirthdayReminder.UI
             if (BirthdayCache.UniversalLiked.Count > 0)
             {
                 GUILayout.Space(Scaled(4));
-                DrawSubHeader(ModLocalization.T("birthday.gift.universal"), _universalColor);
+                DrawSubHeader(ModLocalization.T("birthday.gift.universalLiked"), _universalColor);
                 foreach (var gift in BirthdayCache.UniversalLiked)
                 {
                     DrawGiftItem(gift, _universalColor);

@@ -1,10 +1,10 @@
-{
+
     "crop.hud.projected": {
         "en": "Projected sell: <color=#F7D982><b>{0:N0}g</b></color>",
         "da": "Forventet salg: <color=#F7D982><b>{0:N0}g</b></color>",
         "de": "Erwarteter Verkauf: <color=#F7D982><b>{0:N0}g</b></color>",
         "es": "Venta proyectada: <color=#F7D982><b>{0:N0}g</b></color>",
-        "fr": "Vente projetée : <color=#F7D982><b>{0 :N0}g</b></color>",
+        "fr": "Vente projetée : <color=#F7D982><b>{0:N0}g</b></color>",
         "it": "Vendita prevista: <color=#F7D982><b>{0:N0}g</b></color>",
         "ja": "売却予定: <color=#F7D982><b>{0:N0}g</b></color>",
         "ko": "예상 판매: <color=#F7D982><b>{0:N0}g</b></color>",
@@ -306,3 +306,4 @@
         "uk": "Вода: <color=#B8A078>невідомо</color>"
     }
 }
+

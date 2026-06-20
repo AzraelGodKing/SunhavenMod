@@ -1,4 +1,4 @@
-{
+
     "respec.button.reset": {
         "en": "Reset",
         "da": "Nulstil",
@@ -76,17 +76,17 @@
         "da": "{0:N0} guld",
         "de": "{0:N0} Goldmünzen",
         "es": "{0:N0} oro",
-        "fr": "{0 :N0} or",
+        "fr": "{0:N0} or",
         "it": "{0:N0} oro",
         "ja": "ゴールド{0:n0}",
-        "ko": "{0: N0} 골드",
+        "ko": "{0:N0} 골드",
         "nl": "{0:N0} goud",
         "pt": "{0:N0} ouro",
         "pt-BR": "{0:N0} ouro",
         "ru": "{0:N0} золота",
         "sv": "{0:N0} guld",
-        "zh-CN": "{0: N0}金币",
-        "zh-TW": "{0: N0}金幣",
+        "zh-CN": "{0:N0}金币",
+        "zh-TW": "{0:N0}金幣",
         "uk": "{0:N0} золота"
     },
     "respec.cost.tickets": {
@@ -94,17 +94,17 @@
         "da": "{0:N0} billetter",
         "de": "{0:N0} Eintrittskarten",
         "es": "{0:N0} boletos",
-        "fr": "{0 :N0} billets",
+        "fr": "{0:N0} billets",
         "it": "{0:N0} biglietti",
-        "ja": "チケット{0:N 0}枚",
-        "ko": "티켓 {0: N0} 장",
+        "ja": "チケット{0:N0}枚",
+        "ko": "티켓 {0:N0} 장",
         "nl": "{0:N0} kaartjes",
         "pt": "{0:N0} bilhetes",
         "pt-BR": "{0:N0} ingressos",
         "ru": "Билетов: {0:N0}",
         "sv": "{0:N0} biljetter",
-        "zh-CN": "{0: N0}工单",
-        "zh-TW": "{0: N0}工單",
+        "zh-CN": "{0:N0}工单",
+        "zh-TW": "{0:N0}工單",
         "uk": "Квитки: {0:N0}"
     },
     "respec.dialog.body.cost": {
@@ -486,3 +486,4 @@
         "uk": "Гірські роботи"
     }
 }
+

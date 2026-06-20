@@ -1,4 +1,4 @@
-{
+
     "almanac.briefing.dismiss": {
         "en": "Dismiss",
         "da": "Afvis",
@@ -577,20 +577,20 @@
     },
     "almanac.provider.museum.briefing.summary": {
         "en": "Museum: {0:F0}% complete ({1}/{2})",
-        "da": "Museum: {0 :F0}% gennemført ({1}/{2})",
+        "da": "Museum: {0:F0}% gennemført ({1}/{2})",
         "de": "Museum: {0:F0}% abgeschlossen ({1}/{2})",
         "es": "Museo: {0:F0}% completo ({1}/{2})",
-        "fr": "Musée : {0 :F0}% achevé ({1}/{2})",
+        "fr": "Musée : {0:F0}% achevé ({1}/{2})",
         "it": "Museo: {0:F0}% completato ({1}/{2})",
-        "ja": "ミュージアム：{0:F 0}%完了（ {0}/{1} ）",
-        "ko": "박물관: {0: F0} % 완료 ({1}/{2})",
+        "ja": "ミュージアム：{0:F0}%完了（{1}/{2}）",
+        "ko": "박물관: {0:F0} % 완료 ({1}/{2})",
         "nl": "Museum: {0:F0}% voltooid ({1}/{2})",
         "pt": "Museu: {0:F0}% concluído ({1}/{2})",
         "pt-BR": "Museu: {0:F0}% concluído ({1}/{2})",
         "ru": "Музей: {0:F0}% завершено ({1}/{2})",
         "sv": "Museum: {0:F0}% klart ({1}/{2})",
-        "zh-CN": "博物馆：完成{0: F0} % ({1}/{2})",
-        "zh-TW": "博物馆：完成{0: F0} % ({1}/{2})",
+        "zh-CN": "博物馆：完成{0:F0} % ({1}/{2})",
+        "zh-TW": "博物馆：完成{0:F0} % ({1}/{2})",
         "uk": "Музей: {0:F0}% завершено ({1}/{2})"
     },
     "almanac.provider.museum.donated": {
@@ -670,17 +670,17 @@
         "da": "{0:F1}% fuldført",
         "de": "{0:F1}% abgeschlossen",
         "es": "{0:F1}% completo",
-        "fr": "{0 :F1}% terminé",
+        "fr": "{0:F1}% terminé",
         "it": "{0:F1}% completato",
-        "ja": "{0:F 1}%完了",
-        "ko": "{0: F1} % 완료",
+        "ja": "{0:F1}%完了",
+        "ko": "{0:F1} % 완료",
         "nl": "{0:F1}% voltooid",
         "pt": "{0:F1}% concluído",
         "pt-BR": "{0:F1}% concluído",
         "ru": "{0:F1}% выполнено",
         "sv": "{0:F1}% slutfört",
-        "zh-CN": "已完成{0: F1} %",
-        "zh-TW": "已完成{0: F1} %",
+        "zh-CN": "已完成{0:F1} %",
+        "zh-TW": "已完成{0:F1} %",
         "uk": "{0:F1}% завершено"
     },
     "almanac.provider.todo.briefing.active": {
@@ -918,3 +918,4 @@
         "uk": "Збережені валюти ({0}):"
     }
 }
+
