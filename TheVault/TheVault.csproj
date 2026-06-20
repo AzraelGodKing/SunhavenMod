@@ -7,10 +7,10 @@
     <LangVersion>latest</LangVersion>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <EnableDefaultCompileItems>false</EnableDefaultCompileItems>
-    <Version>3.3.2</Version>
-    <AssemblyVersion>3.3.2.0</AssemblyVersion>
-    <FileVersion>3.3.2.0</FileVersion>
-    <InformationalVersion>3.3.2</InformationalVersion>
+    <Version>3.3.3</Version>
+    <AssemblyVersion>3.3.3.0</AssemblyVersion>
+    <FileVersion>3.3.3.0</FileVersion>
+    <InformationalVersion>3.3.3</InformationalVersion>
     <SunhavenModUiProject>true</SunhavenModUiProject>
   </PropertyGroup>
 
