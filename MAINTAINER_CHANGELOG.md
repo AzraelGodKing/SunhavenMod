@@ -27,7 +27,7 @@ Internal engineering log: **CI**, **release automation**, **scripts**, **docs in
 
 **2026-05-24**
 
-- **Release & Publish:** Fixed `mod=all` dispatch skipping the entire `release` job (0 steps, only `built-*` artifacts). Added `build-gate` + `prepare-release` so release reads `mod_keys` from a non-matrix job after build; jobs that `needs:` the matrix `build` job directly were dropping outputs so `fromJson(needs.*.outputs.matrix)` expanded to nothing (runs #124–#126, #27858724862).
+- **Release & Publish:** Fixed `mod=all` dispatch skipping the entire `release` job (0 steps, only `built-*` artifacts). Root cause: `release` must not `needs:` the matrix `build` job — that drops matrix expansion even when mod list JSON is correct. Added `build-gate` for ordering; release matrix reads `needs.setup.outputs.matrix` (same reusable output the build job uses). Removed ineffective `prepare-release` hop (runs #124–#126, #27858724862, #27858956105).
 - **Hygiene:** Removed stray `HavenDevTools/manifest.json` again (canonical Thunderstore metadata is `HavenDevTools/thunderstore/manifest.json` only).
 - **Localization:** Fixed `scripts/fix-localization-format-specifiers.ps1` — PowerShell `StartsWith([char]0xFEFF)` is always true, which stripped the root `{` and broke five `strings.json` files in CI; use explicit UTF-8 read without the bogus BOM strip.
 - **Follow-up:** `DebugWindow` caches IMGUI toolbar/race arrays; localized Crop Optimizer hover tooltip and The Vault `DoorPatches` user-facing strings; `scripts/add-followup-localization-keys.ps1` helper for new keys.
