@@ -1,4 +1,4 @@
-[b][size=5]Senpai's Chest[/size][/b] [i](v2.7.1)[/i]
+[b][size=5]Senpai's Chest[/size][/b] [i](v2.7.2)[/i]
 
 Smart chests with configurable item rules for hands-free storage organization in Sun Haven. Chest labels, rules by item/category/type/property/group, per-character saves.
 

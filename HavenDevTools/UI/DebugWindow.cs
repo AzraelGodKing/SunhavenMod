@@ -71,18 +71,18 @@ namespace HavenDevTools.UI
         // Known mod GUIDs and versions
         private static readonly (string guid, string name, string version)[] _knownMods = new[]
         {
-            ("com.azraelgodking.havendevtools", "Haven Dev Tools", "1.2.3"),
-            ("com.azraelgodking.senpaischest", "Senpai's Chest", "2.7.1"),
-            ("com.azraelgodking.squirrelsbirthdayreminder", "Birthday Reminder", "1.4.3"),
-            ("com.azraelgodking.havensbirthright", "Haven's Birthright", "2.2.3"),
-            ("com.azraelgodking.sunhavenmuseumutilitytracker", "S.M.U.T.", "2.4.3"),
-            ("com.azraelgodking.sunhaventodo", "Sunhaven Todo", "1.4.4"),
-            ("com.azraelgodking.thevault", "The Vault", "3.3.3"),
-            ("com.azraelgodking.havensalmanac", "Haven's Almanac", "1.4.3"),
-            ("com.azraelgodking.fasterraces", "Faster Races", "1.4.3"),
-            ("com.azraelgodking.trinketfortune", "Trinket Fortune", "1.2.3"),
-            ("com.azraelgodking.cropoptimizer", "Crop Optimizer", "1.4.4"),
-            ("com.azraelgodking.havensrespec", "Haven's Respec", "1.3.3"),
+            ("com.azraelgodking.havendevtools", "Haven Dev Tools", "1.2.4"),
+            ("com.azraelgodking.senpaischest", "Senpai's Chest", "2.7.2"),
+            ("com.azraelgodking.squirrelsbirthdayreminder", "Birthday Reminder", "1.4.4"),
+            ("com.azraelgodking.havensbirthright", "Haven's Birthright", "2.2.4"),
+            ("com.azraelgodking.sunhavenmuseumutilitytracker", "S.M.U.T.", "2.4.4"),
+            ("com.azraelgodking.sunhaventodo", "Sunhaven Todo", "1.4.5"),
+            ("com.azraelgodking.thevault", "The Vault", "3.3.4"),
+            ("com.azraelgodking.havensalmanac", "Haven's Almanac", "1.4.4"),
+            ("com.azraelgodking.fasterraces", "Faster Races", "1.4.4"),
+            ("com.azraelgodking.trinketfortune", "Trinket Fortune", "1.2.4"),
+            ("com.azraelgodking.cropoptimizer", "Crop Optimizer", "1.4.5"),
+            ("com.azraelgodking.havensrespec", "Haven's Respec", "1.3.4"),
         };
 
         private const string PAUSE_ID = "HavenDevTools_Debug";
