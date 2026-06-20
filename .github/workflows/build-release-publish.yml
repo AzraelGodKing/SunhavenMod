@@ -2,8 +2,7 @@
 # Release & Publish — SunhavenMod
 # =============================================================================
 # - PR: build all mods on self-hosted runner (compile gate only).
-# - workflow_dispatch: build → package → optional GitHub Release / Thunderstore /
-#   Nexus / Discord.
+# - workflow_dispatch: version (optional bump) → build → package → optional publish.
 #
 # docs/VERSION_AND_RELEASE.md — version source of truth; setup runs verify script.
 # Nexus: v3 upload API is evaluation-only; we retry with backoff and require the
@@ -32,6 +31,21 @@ on:
         required: false
         type: boolean
         default: false
+      bump_version:
+        description: 'Bump semver in versions.json before build (none = use branch as-is)'
+        required: false
+        type: choice
+        options:
+          - none
+          - patch
+          - minor
+          - major
+        default: none
+      release_changelog:
+        description: 'Optional changelog written to versions.json before bump (mod or all)'
+        required: false
+        type: string
+        default: ''
       mod:
         description: 'Which mod to release'
         required: true
@@ -110,22 +124,105 @@ jobs:
         run: ./scripts/validate-localization.ps1
 
   # ---------------------------------------------------------------------------
+  # Version — optional bump + sync before build (dispatch only)
+  # Order: Version → setup/verify → build → release
+  # ---------------------------------------------------------------------------
+  version:
+    name: Version bump & sync
+    if: >-
+      github.event_name == 'workflow_dispatch' &&
+      github.event.inputs.build_only != 'true'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    outputs:
+      ref: ${{ steps.meta.outputs.ref }}
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          token: ${{ secrets.ADMIN_PUSH_TOKEN || github.token }}
+
+      - name: Apply release changelog text
+        if: >-
+          github.event.inputs.bump_version != 'none' &&
+          github.event.inputs.release_changelog != ''
+        shell: bash
+        env:
+          CHANGELOG: ${{ github.event.inputs.release_changelog }}
+          MOD_INPUT: ${{ github.event.inputs.mod }}
+        run: |
+          set -euo pipefail
+          if [ "$MOD_INPUT" == "all" ]; then
+            python3 scripts/set-versions-changelog.py --all --text "$CHANGELOG"
+          else
+            python3 scripts/set-versions-changelog.py --mod "$MOD_INPUT" --text "$CHANGELOG"
+          fi
+
+      - name: Bump and sync version strings
+        if: github.event.inputs.bump_version != 'none'
+        shell: pwsh
+        env:
+          MOD_INPUT: ${{ github.event.inputs.mod }}
+          BUMP: ${{ github.event.inputs.bump_version }}
+        run: |
+          set -euo pipefail
+          if ($env:MOD_INPUT -eq 'all') {
+            ./scripts/pre-push-build.ps1 -All -Bump $env:BUMP -SyncOnly
+          } else {
+            ./scripts/pre-push-build.ps1 -Mod $env:MOD_INPUT -Bump $env:BUMP -SyncOnly
+          }
+
+      - name: Verify version consistency
+        if: github.event.inputs.bump_version != 'none'
+        run: python3 scripts/verify-version-consistency.py
+
+      - name: Commit and push version bump
+        if: github.event.inputs.bump_version != 'none'
+        env:
+          MOD_INPUT: ${{ github.event.inputs.mod }}
+          BUMP: ${{ github.event.inputs.bump_version }}
+        run: |
+          set -euo pipefail
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          python3 scripts/stage-version-sync-files.py
+          if git diff --staged --quiet; then
+            echo "::error::Bump produced no file changes — check bump_version and mod selection"
+            exit 1
+          fi
+          git commit -m "chore(release): bump ${{ github.event.inputs.mod }} ${BUMP} [skip ci]"
+          git push origin "HEAD:${GITHUB_REF_NAME}"
+
+      - name: Record commit ref for downstream jobs
+        id: meta
+        run: echo "ref=$(git rev-parse HEAD)" >> "$GITHUB_OUTPUT"
+
+  # ---------------------------------------------------------------------------
   # Setup — matrix + version consistency (Python) — shared with Test workflow
   # ---------------------------------------------------------------------------
   setup:
+    needs: version
+    if: always() && (needs.version.result == 'success' || needs.version.result == 'skipped')
     uses: ./.github/workflows/reusable-mod-matrix-setup.yml
     with:
       event_name: ${{ github.event_name }}
       test_discord: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.test_discord == 'true' || false }}
       mod: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.mod || 'all' }}
       pull_request_all_mods: ${{ github.event_name == 'pull_request' }}
+      ref: ${{ needs.version.outputs.ref || github.sha }}
 
   # ---------------------------------------------------------------------------
   # Build — self-hosted .NET compile + DLL artifacts
   # ---------------------------------------------------------------------------
   build:
-    needs: [setup, validate-localization]
-    if: always() && needs.setup.result == 'success' && (needs.validate-localization.result == 'success' || needs.validate-localization.result == 'skipped')
+    needs: [setup, validate-localization, version]
+    if: >-
+      always() &&
+      needs.setup.result == 'success' &&
+      (needs.validate-localization.result == 'success' || needs.validate-localization.result == 'skipped') &&
+      (needs.version.result == 'success' || needs.version.result == 'skipped')
     runs-on: [self-hosted, Linux, X64, sunhaven]
     strategy:
       fail-fast: false
@@ -146,6 +243,8 @@ jobs:
 
       - name: Checkout repository
         uses: actions/checkout@v4
+        with:
+          ref: ${{ needs.version.outputs.ref || github.sha }}
 
       - name: Setup .NET SDK
         if: matrix.mod != 'test_discord'
@@ -227,27 +326,43 @@ jobs:
 
   # ---------------------------------------------------------------------------
   # Release — package + publish (workflow_dispatch only, unless build_only)
-  # Matrix from reusable setup outputs (same JSON build uses). Do not `needs: build`
-  # here — only build-gate for ordering after artifacts exist.
-  # Order: package → GitHub Release → Thunderstore → Nexus → Discord → summary
+  # Static mod matrix (must match scripts/mod-matrix.json modKey list) — avoids
+  # fromJson(needs.setup.outputs.matrix) skipping the whole job for mod=all.
+  # Per-mod if filters single-mod dispatches. Order: package → publish → report.
   # ---------------------------------------------------------------------------
   release:
+    name: release (${{ matrix.mod }})
     if: >-
       github.event_name == 'workflow_dispatch' &&
       github.event.inputs.build_only != 'true' &&
-      needs.build-gate.result == 'success'
-    needs: [setup, build-gate]
+      needs.build-gate.result == 'success' &&
+      (github.event.inputs.mod == 'all' || github.event.inputs.mod == matrix.mod)
+    needs: [build-gate, version]
     runs-on: ubuntu-latest
     permissions:
       contents: write
     strategy:
       fail-fast: false
       matrix:
-        mod: ${{ fromJson(needs.setup.outputs.matrix) }}
+        mod:
+          - senpaischest
+          - havensbirthright
+          - sunhavenmuseumutilitytracker
+          - squirrelsbirthdayreminder
+          - sunhaventodo
+          - thevault
+          - havendevtools
+          - havensalmanac
+          - fasterraces
+          - trinketfortune
+          - cropoptimizer
+          - havensrespec
 
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
+        with:
+          ref: ${{ needs.version.outputs.ref || github.sha }}
 
       - name: Load mod metadata (matrix + versions.json)
         id: config
