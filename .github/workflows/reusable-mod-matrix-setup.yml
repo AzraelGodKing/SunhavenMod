@@ -24,6 +24,11 @@ on:
         type: boolean
         required: false
         default: false
+      ref:
+        description: 'Git ref to checkout (empty = workflow default SHA)'
+        type: string
+        required: false
+        default: ''
     outputs:
       matrix:
         description: 'JSON array string for strategy.matrix.mod'
@@ -37,6 +42,8 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.ref != '' && inputs.ref || github.sha }}
 
       - name: Setup Node.js (mod-matrix doc sync check)
         uses: actions/setup-node@v4

@@ -18,6 +18,7 @@
     Then dotnet build for the mod's main .csproj (skipped when -SyncOnly).
     Use -BuildOnly with -Mod or -All to run builds only (no version edits).
     Use -SyncOnly with -Mod or -All to propagate versions without dotnet (for CI).
+    Use -Bump with -SyncOnly in CI to bump docs/versions.json and sync without dotnet.
 
 .PARAMETER Mod
     Mod key (e.g. senpaischest, havensbirthright). Required unless -All is used.
@@ -464,10 +465,6 @@ if ($SyncOnly -and $BuildOnly) {
     exit 1
 }
 
-if ($SyncOnly -and $Bump) {
-    Write-Error "-SyncOnly cannot be used with -Bump (sync reads versions.json only)"
-    exit 1
-}
 
 $modsToProcess = if ($All) { @($ModDefs.Keys | Sort-Object) } else { @($Mod) }
 
