@@ -312,305 +312,34 @@ jobs:
           if-no-files-found: error
 
   # ---------------------------------------------------------------------------
-  # Build complete — wait for matrix build without being a direct `needs: build`
-  # on release (that pairing skips the release matrix for mod=all — runs #124+).
+  # Release — single matrix caller of the reusable per-mod release workflow.
+  #
+  # `always()` in the `if` is REQUIRED: every job that transitively depends on
+  # the matrix `build` job is auto-skipped without it (observed across runs
+  # #124–#139 — the release jobs showed "skipped / 0 steps" while build-gate and
+  # the always() aggregate ran). The explicit needs.*.result checks still gate
+  # correctly. The matrix is the same fromJson(setup) the build job uses, so
+  # mod=all fans out to all mods and a single-mod dispatch fans out to one.
   # ---------------------------------------------------------------------------
-  build-gate:
-    name: Build complete
-    needs: [build, version]
+  release:
+    name: release (${{ matrix.mod }})
+    needs: [setup, build, version]
     if: >-
       always() &&
-      !cancelled() &&
+      github.event_name == 'workflow_dispatch' &&
+      github.event.inputs.build_only != 'true' &&
       needs.build.result == 'success' &&
       (needs.version.result == 'success' || needs.version.result == 'skipped')
-    runs-on: ubuntu-latest
-    outputs:
+    permissions:
+      contents: write
+    strategy:
+      fail-fast: false
+      matrix:
+        mod: ${{ fromJson(needs.setup.outputs.matrix) }}
+    uses: ./.github/workflows/reusable-release-mod.yml
+    with:
+      mod: ${{ matrix.mod }}
       ref: ${{ needs.version.outputs.ref || github.sha }}
-    steps:
-      - name: All matrix builds succeeded
-        run: echo "Build matrix complete — release stage may proceed."
-
-  # ---------------------------------------------------------------------------
-  # Release — one reusable workflow job per mod (avoids matrix+needs(build) skip bug).
-  # ---------------------------------------------------------------------------
-  release-senpaischest:
-    name: release (senpaischest)
-    if: >-
-      github.event_name == 'workflow_dispatch' &&
-      github.event.inputs.build_only != 'true' &&
-      needs.build-gate.result == 'success' &&
-      (github.event.inputs.mod == 'all' || github.event.inputs.mod == 'senpaischest')
-    needs: build-gate
-    permissions:
-      contents: write
-    uses: ./.github/workflows/reusable-release-mod.yml
-    with:
-      mod: senpaischest
-      ref: ${{ needs.build-gate.outputs.ref }}
-      dry_run: ${{ github.event.inputs.dry_run }}
-      publish_thunderstore: ${{ github.event.inputs.publish_thunderstore }}
-      publish_nexus: ${{ github.event.inputs.publish_nexus }}
-      create_github_release: ${{ github.event.inputs.create_github_release }}
-      release_anyway: ${{ github.event.inputs.release_anyway }}
-      test_discord: ${{ github.event.inputs.test_discord }}
-      publish_discord_only: ${{ github.event.inputs.publish_discord_only }}
-      ignore_discord_notify: ${{ github.event.inputs.ignore_discord_notify }}
-    secrets: inherit
-
-  release-havensbirthright:
-    name: release (havensbirthright)
-    if: >-
-      github.event_name == 'workflow_dispatch' &&
-      github.event.inputs.build_only != 'true' &&
-      needs.build-gate.result == 'success' &&
-      (github.event.inputs.mod == 'all' || github.event.inputs.mod == 'havensbirthright')
-    needs: build-gate
-    permissions:
-      contents: write
-    uses: ./.github/workflows/reusable-release-mod.yml
-    with:
-      mod: havensbirthright
-      ref: ${{ needs.build-gate.outputs.ref }}
-      dry_run: ${{ github.event.inputs.dry_run }}
-      publish_thunderstore: ${{ github.event.inputs.publish_thunderstore }}
-      publish_nexus: ${{ github.event.inputs.publish_nexus }}
-      create_github_release: ${{ github.event.inputs.create_github_release }}
-      release_anyway: ${{ github.event.inputs.release_anyway }}
-      test_discord: ${{ github.event.inputs.test_discord }}
-      publish_discord_only: ${{ github.event.inputs.publish_discord_only }}
-      ignore_discord_notify: ${{ github.event.inputs.ignore_discord_notify }}
-    secrets: inherit
-
-  release-sunhavenmuseumutilitytracker:
-    name: release (sunhavenmuseumutilitytracker)
-    if: >-
-      github.event_name == 'workflow_dispatch' &&
-      github.event.inputs.build_only != 'true' &&
-      needs.build-gate.result == 'success' &&
-      (github.event.inputs.mod == 'all' || github.event.inputs.mod == 'sunhavenmuseumutilitytracker')
-    needs: build-gate
-    permissions:
-      contents: write
-    uses: ./.github/workflows/reusable-release-mod.yml
-    with:
-      mod: sunhavenmuseumutilitytracker
-      ref: ${{ needs.build-gate.outputs.ref }}
-      dry_run: ${{ github.event.inputs.dry_run }}
-      publish_thunderstore: ${{ github.event.inputs.publish_thunderstore }}
-      publish_nexus: ${{ github.event.inputs.publish_nexus }}
-      create_github_release: ${{ github.event.inputs.create_github_release }}
-      release_anyway: ${{ github.event.inputs.release_anyway }}
-      test_discord: ${{ github.event.inputs.test_discord }}
-      publish_discord_only: ${{ github.event.inputs.publish_discord_only }}
-      ignore_discord_notify: ${{ github.event.inputs.ignore_discord_notify }}
-    secrets: inherit
-
-  release-squirrelsbirthdayreminder:
-    name: release (squirrelsbirthdayreminder)
-    if: >-
-      github.event_name == 'workflow_dispatch' &&
-      github.event.inputs.build_only != 'true' &&
-      needs.build-gate.result == 'success' &&
-      (github.event.inputs.mod == 'all' || github.event.inputs.mod == 'squirrelsbirthdayreminder')
-    needs: build-gate
-    permissions:
-      contents: write
-    uses: ./.github/workflows/reusable-release-mod.yml
-    with:
-      mod: squirrelsbirthdayreminder
-      ref: ${{ needs.build-gate.outputs.ref }}
-      dry_run: ${{ github.event.inputs.dry_run }}
-      publish_thunderstore: ${{ github.event.inputs.publish_thunderstore }}
-      publish_nexus: ${{ github.event.inputs.publish_nexus }}
-      create_github_release: ${{ github.event.inputs.create_github_release }}
-      release_anyway: ${{ github.event.inputs.release_anyway }}
-      test_discord: ${{ github.event.inputs.test_discord }}
-      publish_discord_only: ${{ github.event.inputs.publish_discord_only }}
-      ignore_discord_notify: ${{ github.event.inputs.ignore_discord_notify }}
-    secrets: inherit
-
-  release-sunhaventodo:
-    name: release (sunhaventodo)
-    if: >-
-      github.event_name == 'workflow_dispatch' &&
-      github.event.inputs.build_only != 'true' &&
-      needs.build-gate.result == 'success' &&
-      (github.event.inputs.mod == 'all' || github.event.inputs.mod == 'sunhaventodo')
-    needs: build-gate
-    permissions:
-      contents: write
-    uses: ./.github/workflows/reusable-release-mod.yml
-    with:
-      mod: sunhaventodo
-      ref: ${{ needs.build-gate.outputs.ref }}
-      dry_run: ${{ github.event.inputs.dry_run }}
-      publish_thunderstore: ${{ github.event.inputs.publish_thunderstore }}
-      publish_nexus: ${{ github.event.inputs.publish_nexus }}
-      create_github_release: ${{ github.event.inputs.create_github_release }}
-      release_anyway: ${{ github.event.inputs.release_anyway }}
-      test_discord: ${{ github.event.inputs.test_discord }}
-      publish_discord_only: ${{ github.event.inputs.publish_discord_only }}
-      ignore_discord_notify: ${{ github.event.inputs.ignore_discord_notify }}
-    secrets: inherit
-
-  release-thevault:
-    name: release (thevault)
-    if: >-
-      github.event_name == 'workflow_dispatch' &&
-      github.event.inputs.build_only != 'true' &&
-      needs.build-gate.result == 'success' &&
-      (github.event.inputs.mod == 'all' || github.event.inputs.mod == 'thevault')
-    needs: build-gate
-    permissions:
-      contents: write
-    uses: ./.github/workflows/reusable-release-mod.yml
-    with:
-      mod: thevault
-      ref: ${{ needs.build-gate.outputs.ref }}
-      dry_run: ${{ github.event.inputs.dry_run }}
-      publish_thunderstore: ${{ github.event.inputs.publish_thunderstore }}
-      publish_nexus: ${{ github.event.inputs.publish_nexus }}
-      create_github_release: ${{ github.event.inputs.create_github_release }}
-      release_anyway: ${{ github.event.inputs.release_anyway }}
-      test_discord: ${{ github.event.inputs.test_discord }}
-      publish_discord_only: ${{ github.event.inputs.publish_discord_only }}
-      ignore_discord_notify: ${{ github.event.inputs.ignore_discord_notify }}
-    secrets: inherit
-
-  release-havendevtools:
-    name: release (havendevtools)
-    if: >-
-      github.event_name == 'workflow_dispatch' &&
-      github.event.inputs.build_only != 'true' &&
-      needs.build-gate.result == 'success' &&
-      (github.event.inputs.mod == 'all' || github.event.inputs.mod == 'havendevtools')
-    needs: build-gate
-    permissions:
-      contents: write
-    uses: ./.github/workflows/reusable-release-mod.yml
-    with:
-      mod: havendevtools
-      ref: ${{ needs.build-gate.outputs.ref }}
-      dry_run: ${{ github.event.inputs.dry_run }}
-      publish_thunderstore: ${{ github.event.inputs.publish_thunderstore }}
-      publish_nexus: ${{ github.event.inputs.publish_nexus }}
-      create_github_release: ${{ github.event.inputs.create_github_release }}
-      release_anyway: ${{ github.event.inputs.release_anyway }}
-      test_discord: ${{ github.event.inputs.test_discord }}
-      publish_discord_only: ${{ github.event.inputs.publish_discord_only }}
-      ignore_discord_notify: ${{ github.event.inputs.ignore_discord_notify }}
-    secrets: inherit
-
-  release-havensalmanac:
-    name: release (havensalmanac)
-    if: >-
-      github.event_name == 'workflow_dispatch' &&
-      github.event.inputs.build_only != 'true' &&
-      needs.build-gate.result == 'success' &&
-      (github.event.inputs.mod == 'all' || github.event.inputs.mod == 'havensalmanac')
-    needs: build-gate
-    permissions:
-      contents: write
-    uses: ./.github/workflows/reusable-release-mod.yml
-    with:
-      mod: havensalmanac
-      ref: ${{ needs.build-gate.outputs.ref }}
-      dry_run: ${{ github.event.inputs.dry_run }}
-      publish_thunderstore: ${{ github.event.inputs.publish_thunderstore }}
-      publish_nexus: ${{ github.event.inputs.publish_nexus }}
-      create_github_release: ${{ github.event.inputs.create_github_release }}
-      release_anyway: ${{ github.event.inputs.release_anyway }}
-      test_discord: ${{ github.event.inputs.test_discord }}
-      publish_discord_only: ${{ github.event.inputs.publish_discord_only }}
-      ignore_discord_notify: ${{ github.event.inputs.ignore_discord_notify }}
-    secrets: inherit
-
-  release-fasterraces:
-    name: release (fasterraces)
-    if: >-
-      github.event_name == 'workflow_dispatch' &&
-      github.event.inputs.build_only != 'true' &&
-      needs.build-gate.result == 'success' &&
-      (github.event.inputs.mod == 'all' || github.event.inputs.mod == 'fasterraces')
-    needs: build-gate
-    permissions:
-      contents: write
-    uses: ./.github/workflows/reusable-release-mod.yml
-    with:
-      mod: fasterraces
-      ref: ${{ needs.build-gate.outputs.ref }}
-      dry_run: ${{ github.event.inputs.dry_run }}
-      publish_thunderstore: ${{ github.event.inputs.publish_thunderstore }}
-      publish_nexus: ${{ github.event.inputs.publish_nexus }}
-      create_github_release: ${{ github.event.inputs.create_github_release }}
-      release_anyway: ${{ github.event.inputs.release_anyway }}
-      test_discord: ${{ github.event.inputs.test_discord }}
-      publish_discord_only: ${{ github.event.inputs.publish_discord_only }}
-      ignore_discord_notify: ${{ github.event.inputs.ignore_discord_notify }}
-    secrets: inherit
-
-  release-trinketfortune:
-    name: release (trinketfortune)
-    if: >-
-      github.event_name == 'workflow_dispatch' &&
-      github.event.inputs.build_only != 'true' &&
-      needs.build-gate.result == 'success' &&
-      (github.event.inputs.mod == 'all' || github.event.inputs.mod == 'trinketfortune')
-    needs: build-gate
-    permissions:
-      contents: write
-    uses: ./.github/workflows/reusable-release-mod.yml
-    with:
-      mod: trinketfortune
-      ref: ${{ needs.build-gate.outputs.ref }}
-      dry_run: ${{ github.event.inputs.dry_run }}
-      publish_thunderstore: ${{ github.event.inputs.publish_thunderstore }}
-      publish_nexus: ${{ github.event.inputs.publish_nexus }}
-      create_github_release: ${{ github.event.inputs.create_github_release }}
-      release_anyway: ${{ github.event.inputs.release_anyway }}
-      test_discord: ${{ github.event.inputs.test_discord }}
-      publish_discord_only: ${{ github.event.inputs.publish_discord_only }}
-      ignore_discord_notify: ${{ github.event.inputs.ignore_discord_notify }}
-    secrets: inherit
-
-  release-cropoptimizer:
-    name: release (cropoptimizer)
-    if: >-
-      github.event_name == 'workflow_dispatch' &&
-      github.event.inputs.build_only != 'true' &&
-      needs.build-gate.result == 'success' &&
-      (github.event.inputs.mod == 'all' || github.event.inputs.mod == 'cropoptimizer')
-    needs: build-gate
-    permissions:
-      contents: write
-    uses: ./.github/workflows/reusable-release-mod.yml
-    with:
-      mod: cropoptimizer
-      ref: ${{ needs.build-gate.outputs.ref }}
-      dry_run: ${{ github.event.inputs.dry_run }}
-      publish_thunderstore: ${{ github.event.inputs.publish_thunderstore }}
-      publish_nexus: ${{ github.event.inputs.publish_nexus }}
-      create_github_release: ${{ github.event.inputs.create_github_release }}
-      release_anyway: ${{ github.event.inputs.release_anyway }}
-      test_discord: ${{ github.event.inputs.test_discord }}
-      publish_discord_only: ${{ github.event.inputs.publish_discord_only }}
-      ignore_discord_notify: ${{ github.event.inputs.ignore_discord_notify }}
-    secrets: inherit
-
-  release-havensrespec:
-    name: release (havensrespec)
-    if: >-
-      github.event_name == 'workflow_dispatch' &&
-      github.event.inputs.build_only != 'true' &&
-      needs.build-gate.result == 'success' &&
-      (github.event.inputs.mod == 'all' || github.event.inputs.mod == 'havensrespec')
-    needs: build-gate
-    permissions:
-      contents: write
-    uses: ./.github/workflows/reusable-release-mod.yml
-    with:
-      mod: havensrespec
-      ref: ${{ needs.build-gate.outputs.ref }}
       dry_run: ${{ github.event.inputs.dry_run }}
       publish_thunderstore: ${{ github.event.inputs.publish_thunderstore }}
       publish_nexus: ${{ github.event.inputs.publish_nexus }}
@@ -626,25 +355,12 @@ jobs:
   # ---------------------------------------------------------------------------
   release_aggregate_report:
     name: Combined release report
-    needs:
-      - build-gate
-      - release-senpaischest
-      - release-havensbirthright
-      - release-sunhavenmuseumutilitytracker
-      - release-squirrelsbirthdayreminder
-      - release-sunhaventodo
-      - release-thevault
-      - release-havendevtools
-      - release-havensalmanac
-      - release-fasterraces
-      - release-trinketfortune
-      - release-cropoptimizer
-      - release-havensrespec
+    needs: [release]
     if: >-
       always() &&
       github.event_name == 'workflow_dispatch' &&
       github.event.inputs.build_only != 'true' &&
-      needs.build-gate.result != 'skipped'
+      needs.release.result != 'skipped'
     runs-on: ubuntu-latest
     steps:
       - name: Download per-mod reports
@@ -676,7 +392,7 @@ jobs:
               echo ""
               echo "No \`release-report-*\` artifacts were found (for example every release job failed before the report step, or artifacts expired)."
               echo ""
-              echo "**Release job result:** \`${{ needs.build-gate.result }}\`"
+              echo "**Release job result:** \`${{ needs.release.result }}\`"
             } >> "$GITHUB_STEP_SUMMARY"
             exit 0
           fi
