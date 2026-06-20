@@ -18,6 +18,7 @@ Notes for **players and release readers**. Per-mod blurbs and upstream metadata 
 - **Crop Optimizer:** Fixed startup crash when The Vault is not installed (`TheVault.Abstractions` load failure); optional Vault integration now uses reflection like Todo/Birthday integrations.
 - **Small-mod localization sweep:** Filled remaining English-copy gaps in Crop Optimizer, Senpai's Chest, The Vault, Sun Haven Todo, Haven's Respec, S.M.U.T., and Haven's Almanac; fixed Crop Optimizer Rich Text placeholders (`{0}`, `<color={n}>`) and Japanese `XPH`/`XRT` artifacts across those mods.
 - **PR #72 review fixes:** Removed stray `HavenDevTools/manifest.json` and root translation scratch files; normalized broken `{0}` format tokens (Japanese `XPH`/`XRT`, French NBSP-in-specifier); split Birthday Reminder `birthday.gift.universal` into `universalLoved` / `universalLiked`.
+- **Follow-up polish:** Haven Dev Tools debug window caches IMGUI toolbar/race label arrays (no per-frame allocations); Crop Optimizer hover tooltip and The Vault door patches use `ModLocalization` for remaining hardcoded English strings.
 - **The Vault:** Fixed `IconCache` type ambiguity in `PlayerPatches` (build blocker for Almanac dependency chain).
 
 **Sun Haven Todo**

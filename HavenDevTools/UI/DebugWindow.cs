@@ -32,6 +32,14 @@ namespace HavenDevTools.UI
         // Tab state
         private int _selectedTab;
         private int _toolsSubTab;
+        private string _cachedTabLabelsLanguage;
+        private string[] _mainTabLabels;
+        private string[] _toolsSubTabLabels;
+        private List<string> _raceNamesSource;
+        private string[] _raceNamesForGrid;
+
+        private static readonly HashSet<string> AzraelsExtensionGuids =
+            new HashSet<string> { "com.azraelgodking.trinketfortune" };
 
         // Item search (Senpai's Chest style)
         private string _itemSearchText = "";
@@ -159,6 +167,52 @@ namespace HavenDevTools.UI
             );
         }
 
+        private void EnsureToolbarLabels()
+        {
+            string lang = ModLocalization.CurrentLanguage;
+            if (_mainTabLabels != null && string.Equals(_cachedTabLabelsLanguage, lang, StringComparison.OrdinalIgnoreCase))
+                return;
+
+            _cachedTabLabelsLanguage = lang;
+            _mainTabLabels = new[]
+            {
+                ModLocalization.T("devtools.tab.tools"),
+                ModLocalization.T("devtools.tab.azraels_mods"),
+                ModLocalization.T("devtools.tab.extensions")
+            };
+            _toolsSubTabLabels = new[]
+            {
+                ModLocalization.T("devtools.tab.items"),
+                ModLocalization.T("devtools.tab.currencies"),
+                ModLocalization.T("devtools.tab.console"),
+                ModLocalization.T("devtools.tab.log"),
+                ModLocalization.T("devtools.tab.perf"),
+                ModLocalization.T("devtools.tab.utility")
+            };
+        }
+
+        private string[] GetRaceNamesForGrid(IReadOnlyList<string> races)
+        {
+            if (_raceNamesSource != null && _raceNamesForGrid != null && _raceNamesSource.Count == races.Count)
+            {
+                bool same = true;
+                for (int i = 0; i < races.Count; i++)
+                {
+                    if (!string.Equals(_raceNamesSource[i], races[i], StringComparison.Ordinal))
+                    {
+                        same = false;
+                        break;
+                    }
+                }
+                if (same)
+                    return _raceNamesForGrid;
+            }
+
+            _raceNamesSource = new List<string>(races);
+            _raceNamesForGrid = _raceNamesSource.ToArray();
+            return _raceNamesForGrid;
+        }
+
         private void InitializeStyles()
         {
             if (_stylesInitialized) return;
@@ -249,12 +303,8 @@ namespace HavenDevTools.UI
             GUILayout.Space(10);
 
             // Tabs
-            _selectedTab = GUILayout.Toolbar(_selectedTab, new[]
-            {
-                ModLocalization.T("devtools.tab.tools"),
-                ModLocalization.T("devtools.tab.azraels_mods"),
-                ModLocalization.T("devtools.tab.extensions")
-            }, _buttonStyle);
+            EnsureToolbarLabels();
+            _selectedTab = GUILayout.Toolbar(_selectedTab, _mainTabLabels, _buttonStyle);
             GUILayout.Space(10);
 
             // Content
@@ -294,10 +344,9 @@ namespace HavenDevTools.UI
             }
 
             // Azrael's mods shown in Azrael's Mods tab - exclude from Extensions
-            var azraelsModGuids = new HashSet<string> { "com.azraelgodking.trinketfortune" };
             foreach (var panel in panels)
             {
-                if (azraelsModGuids.Contains(panel.ModGuid)) continue;
+                if (AzraelsExtensionGuids.Contains(panel.ModGuid)) continue;
                 GUILayout.BeginVertical(_boxStyle);
                 GUILayout.Label(panel.DisplayName, _sectionHeaderStyle);
                 GUILayout.Space(5);
@@ -318,15 +367,8 @@ namespace HavenDevTools.UI
 
         private void DrawToolsTab()
         {
-            _toolsSubTab = GUILayout.Toolbar(_toolsSubTab, new[]
-            {
-                ModLocalization.T("devtools.tab.items"),
-                ModLocalization.T("devtools.tab.currencies"),
-                ModLocalization.T("devtools.tab.console"),
-                ModLocalization.T("devtools.tab.log"),
-                ModLocalization.T("devtools.tab.perf"),
-                ModLocalization.T("devtools.tab.utility")
-            }, _buttonStyle);
+            EnsureToolbarLabels();
+            _toolsSubTab = GUILayout.Toolbar(_toolsSubTab, _toolsSubTabLabels, _buttonStyle);
             GUILayout.Space(8);
 
             switch (_toolsSubTab)
@@ -716,7 +758,7 @@ namespace HavenDevTools.UI
             var races = tracker.GetAllRaces();
             if (races.Count > 0)
             {
-                string[] raceNames = races.ToArray();
+                string[] raceNames = GetRaceNamesForGrid(races);
                 if (_selectedRaceIndex >= races.Count) _selectedRaceIndex = 0;
 
                 _selectedRaceIndex = GUILayout.SelectionGrid(_selectedRaceIndex, raceNames, 4, _buttonStyle);

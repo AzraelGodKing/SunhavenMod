@@ -320,13 +320,13 @@ namespace CropOptimizer.UI
         private static string FormatPrimitiveGuess(object raw)
         {
             if (raw is bool b)
-                return b ? "yes" : "no";
+                return b ? ModLocalization.T("crop.guess.yes") : ModLocalization.T("crop.guess.no");
             if (raw is int i)
-                return i != 0 ? $"yes ({i})" : "no";
+                return i != 0 ? ModLocalization.T("crop.guess.yesValue", i) : ModLocalization.T("crop.guess.no");
             if (raw is float f)
-                return Math.Abs(f) > 0.0001f ? $"yes ({f:0.##})" : "no";
+                return Math.Abs(f) > 0.0001f ? ModLocalization.T("crop.guess.yesValue", f.ToString("0.##")) : ModLocalization.T("crop.guess.no");
             if (raw is double d)
-                return Math.Abs(d) > 0.0001 ? $"yes ({d:0.##})" : "no";
+                return Math.Abs(d) > 0.0001 ? ModLocalization.T("crop.guess.yesValue", d.ToString("0.##")) : ModLocalization.T("crop.guess.no");
 
             string s = raw.ToString();
             if (string.IsNullOrWhiteSpace(s))
@@ -377,7 +377,8 @@ namespace CropOptimizer.UI
                 content.Rows.Add(RowSpec.Make(UiStyle.IconKind.Sprout, UiStyle.Sprout, ModLocalization.T("crop.tooltip.growth", stageText)));
 
             if (fullyGrown)
-                content.Rows.Add(RowSpec.Make(UiStyle.IconKind.Ready, UiStyle.Fertilizer, "<b><color=" + accentGold + ">Ready now</color></b>"));
+                content.Rows.Add(RowSpec.Make(UiStyle.IconKind.Ready, UiStyle.Fertilizer,
+                    ModLocalization.T("crop.tooltip.readyNow", accentGold)));
             else if (CropGrowthPatch.TryGetTooltipEtaHours(inst, out float liveEta, out bool reflOk) && reflOk)
                 content.Rows.Add(RowSpec.Make(UiStyle.IconKind.Clock, UiStyle.Clock,
                     ModLocalization.T("crop.tooltip.readyIn", accentGold, Mathf.Max(0f, liveEta))));
@@ -385,10 +386,12 @@ namespace CropOptimizer.UI
                 content.Rows.Add(RowSpec.Make(UiStyle.IconKind.Clock, UiStyle.Clock,
                     ModLocalization.T("crop.tooltip.readyInCached", accentGold, Mathf.Max(0f, st.NextHarvestEtaHours), mutedCream)));
             else
-                content.Rows.Add(RowSpec.Make(UiStyle.IconKind.Clock, UiStyle.Clock, $"<color={mutedCream}>ETA unknown — grow once to calibrate</color>"));
+                content.Rows.Add(RowSpec.Make(UiStyle.IconKind.Clock, UiStyle.Clock,
+                    ModLocalization.T("crop.tooltip.etaUnknown", mutedCream)));
 
             if (CropGrowthPatch.TryGetTooltipProjectedGold(inst, out int gold, out _) && gold > 0)
-                content.Rows.Add(RowSpec.Make(UiStyle.IconKind.Coin, UiStyle.Coin, $"<b><color={accentGold}>~{gold:N0}g</color></b> at shop"));
+                content.Rows.Add(RowSpec.Make(UiStyle.IconKind.Coin, UiStyle.Coin,
+                    ModLocalization.T("crop.tooltip.projectedGold", accentGold, gold)));
 
             // Water (from the water tilemap; fallback to "?" if nothing resolves).
             Vector2Int tile = default;
@@ -411,11 +414,11 @@ namespace CropOptimizer.UI
             }
 
             if (CropGrowthPatch.TryGetTooltipManaInfused(inst, out bool manaInfused) && manaInfused)
-                content.Rows.Add(RowSpec.Make(UiStyle.IconKind.Mana, UiStyle.Mana, "<b>Mana infused</b>"));
+                content.Rows.Add(RowSpec.Make(UiStyle.IconKind.Mana, UiStyle.Mana, ModLocalization.T("crop.tooltip.manaInfused")));
 
             if (haveTile)
                 content.Rows.Add(RowSpec.Make(UiStyle.IconKind.Tile, UiStyle.Tile,
-                    $"<color={mutedCream}>Tile ({tile.x}, {tile.y})</color>"));
+                    ModLocalization.T("crop.tooltip.tile", mutedCream, tile.x, tile.y)));
 
             if (itemId > 0)
             {
@@ -443,7 +446,7 @@ namespace CropOptimizer.UI
                 return (ModLocalization.T("crop.water.unknown"), UiStyle.Water);
             string r = raw.ToLowerInvariant();
             if (r.Contains("water"))
-                return ("<b><color=#8AD4FF>Watered</color></b>", UiStyle.Water);
+                return (ModLocalization.T("crop.water.watered"), UiStyle.Water);
             if (r.Contains("hoed"))
                 return (ModLocalization.T("crop.water.hoedDry"), new Color32(0xC9, 0xA0, 0x70, 0xFF));
             return (ModLocalization.T("crop.water.label", raw), UiStyle.Water);

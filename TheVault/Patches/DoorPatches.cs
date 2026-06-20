@@ -1,6 +1,7 @@
 using HarmonyLib;
 using System;
 using System.Collections.Generic;
+using SunhavenMods.Shared;
 using TheVault.Vault;
 
 namespace TheVault.Patches
@@ -71,7 +72,7 @@ namespace TheVault.Patches
             if (!vaultManager.HasCurrency(requirement.currencyId, requirement.amount))
             {
                 string currencyName = GetCurrencyDisplayName(requirement.currencyId);
-                failureReason = $"Requires {requirement.amount} {currencyName}";
+                failureReason = ModLocalization.T("vault.door.requires", requirement.amount, currencyName);
                 return false;
             }
 
@@ -239,7 +240,7 @@ namespace TheVault.Patches
                         var sendMethod = AccessTools.Method(notificationType, "SendNotification", new[] { typeof(string) });
                         if (sendMethod != null && instance != null)
                         {
-                            sendMethod.Invoke(instance, new object[] { $"Locked: {reason}" });
+                            sendMethod.Invoke(instance, new object[] { ModLocalization.T("vault.door.locked", reason) });
                             return;
                         }
                     }
@@ -259,11 +260,11 @@ namespace TheVault.Patches
         private static string GetCurrencyDisplayName(string currencyId)
         {
             if (currencyId.StartsWith("seasonal_"))
-                return currencyId.Substring("seasonal_".Length) + " Tokens";
+                return ModLocalization.T("vault.door.currency.seasonalTokens", currencyId.Substring("seasonal_".Length));
             if (currencyId.StartsWith("community_"))
-                return "Community Tokens";
+                return ModLocalization.T("vault.door.currency.communityTokens");
             if (currencyId.StartsWith("key_"))
-                return currencyId.Substring("key_".Length) + " Keys";
+                return ModLocalization.T("vault.door.currency.keys", currencyId.Substring("key_".Length));
             if (currencyId.StartsWith("special_"))
                 return FormatSpecialName(currencyId.Substring("special_".Length));
 
@@ -274,11 +275,11 @@ namespace TheVault.Patches
         {
             return specialName switch
             {
-                "doubloon" => "Doubloons",
-                "blackbottlecap" => "Black Bottle Caps",
-                "redcarnivalticket" => "Red Carnival Tickets",
-                "candycornpieces" => "Candy Corn Pieces",
-                "manashard" => "Mana Shards",
+                "doubloon" => ModLocalization.T("vault.door.currency.doubloon"),
+                "blackbottlecap" => ModLocalization.T("vault.door.currency.blackbottlecap"),
+                "redcarnivalticket" => ModLocalization.T("vault.door.currency.redcarnivalticket"),
+                "candycornpieces" => ModLocalization.T("vault.door.currency.candycornpieces"),
+                "manashard" => ModLocalization.T("vault.door.currency.manashard"),
                 _ => specialName
             };
         }
