@@ -255,6 +255,7 @@ namespace SunHavenMuseumUtilityTracker
             try
             {
                 _harmony = new Harmony(PluginInfo.PLUGIN_GUID);
+                LocalizationBootstrap.Init(PluginInfo.PLUGIN_GUID, _harmony, Log);
 
                 // Patch Player.InitializeAsOwner for data loading
                 var playerType = typeof(Wish.Player);
@@ -466,6 +467,6 @@ namespace SunHavenMuseumUtilityTracker
     {
         public const string PLUGIN_GUID = "com.azraelgodking.sunhavenmuseumutilitytracker";
         public const string PLUGIN_NAME = "Sun Haven Museum Utility Tracker";
-        public const string PLUGIN_VERSION = "2.4.2";
+        public const string PLUGIN_VERSION = "2.4.3";
     }
 }

@@ -1,8 +1,9 @@
-using System;
+﻿using System;
 using TMPro;
 using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.UI;
+using SunhavenMods.Shared;
 
 namespace CropOptimizer.UI
 {
@@ -15,6 +16,7 @@ namespace CropOptimizer.UI
         private readonly Transform _canvasRoot;
         private GameObject _panel;
         private RectTransform _panelRt;
+        private TMP_Text _titleLabel;
         private TMP_Text _trackedLabel;
         private TMP_Text _valueLabel;
         private DragHandle _dragHandle;
@@ -56,8 +58,15 @@ namespace CropOptimizer.UI
         public void UpdateStats(int trackedCount, long projectedGold)
         {
             if (_trackedLabel == null) return;
-            _trackedLabel.text = $"Tracked crops: <b>{trackedCount}</b>";
-            _valueLabel.text = $"Projected sell: <color=#F7D982><b>{projectedGold:N0}g</b></color>";
+            _trackedLabel.text = ModLocalization.T("crop.hud.tracked", trackedCount);
+            _valueLabel.text = ModLocalization.T("crop.hud.projected", projectedGold);
+        }
+
+        public void RefreshLocalization(bool tooltipEnabled)
+        {
+            if (_titleLabel != null)
+                _titleLabel.text = ModLocalization.T("crop.hud.title");
+            SetTooltipEnabled(tooltipEnabled);
         }
 
         /// <summary>Reflects the tooltip-enabled config value on the toggle button (icon + color + hover label).</summary>
@@ -68,8 +77,8 @@ namespace CropOptimizer.UI
             _tooltipToggleIcon.color = enabled ? UiStyle.HeaderGold : UiStyle.TextSub;
             if (_tooltipToggle != null)
                 _tooltipToggle.SetTooltipLabel(enabled
-                    ? "Toggle Crop Tooltips <color=#B8A078>(on)</color>"
-                    : "Toggle Crop Tooltips <color=#B8A078>(off)</color>");
+                    ? ModLocalization.T("crop.hud.tooltipToggle.on")
+                    : ModLocalization.T("crop.hud.tooltipToggle.off"));
         }
 
         public void Destroy()
@@ -79,6 +88,7 @@ namespace CropOptimizer.UI
                 UnityEngine.Object.Destroy(_panel);
                 _panel = null;
                 _panelRt = null;
+                _titleLabel = null;
                 _trackedLabel = null;
                 _valueLabel = null;
                 _dragHandle = null;
@@ -156,8 +166,8 @@ namespace CropOptimizer.UI
             hicRt.pivot = new Vector2(0f, 0.5f);
             hicRt.anchoredPosition = new Vector2(10f, 0f);
 
-            var title = CreateText(header.transform, "Crop Optimizer", 16f, FontStyles.Bold, UiStyle.HeaderGold, TextAlignmentOptions.MidlineLeft);
-            var trt = title.rectTransform;
+            _titleLabel = CreateText(header.transform, ModLocalization.T("crop.hud.title"), 16f, FontStyles.Bold, UiStyle.HeaderGold, TextAlignmentOptions.MidlineLeft);
+            var trt = _titleLabel.rectTransform;
             trt.anchorMin = new Vector2(0f, 0f); trt.anchorMax = new Vector2(1f, 1f);
             trt.offsetMin = new Vector2(36f, 0f); trt.offsetMax = new Vector2(-36f, 0f);
 

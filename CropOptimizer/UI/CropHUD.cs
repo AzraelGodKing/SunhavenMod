@@ -83,6 +83,15 @@ namespace CropOptimizer.UI
             _hudView?.SetVisible(visible && IsCharacterSessionActive());
         }
 
+        public void RefreshLocalization()
+        {
+            if (_hudView == null)
+                return;
+            bool tooltipCfg = _hoverTooltipEnabled != null && _hoverTooltipEnabled.Value;
+            _hudView.RefreshLocalization(tooltipCfg);
+            _lastHudTooltipShownInUi = null;
+        }
+
         private static bool IsCharacterSessionActive()
         {
             if (!SceneHelpers.IsInGame())

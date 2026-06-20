@@ -4,6 +4,7 @@
     <AssemblyName>CropOptimizer</AssemblyName>
     <RootNamespace>CropOptimizer</RootNamespace>
     <LangVersion>latest</LangVersion>
+    <SunhavenModUiProject>true</SunhavenModUiProject>
   </PropertyGroup>
 
   <ItemGroup>
@@ -71,13 +72,6 @@
     </Reference>
   </ItemGroup>
 
-  <!-- TheVault.Abstractions: compile-time types for VaultModApiBridge (VaultIntegration). ProjectReference builds the ref assembly when `builds/` is empty. -->
-  <ItemGroup>
-    <ProjectReference Include="..\TheVault.Abstractions\TheVault.Abstractions.csproj">
-      <Private>false</Private>
-    </ProjectReference>
-  </ItemGroup>
-
   <ItemGroup>
     <Compile Include="..\SharedUtilities\ConfigFileHelper.cs" Link="Shared\ConfigFileHelper.cs" />
     <Compile Include="..\SharedUtilities\PersistentRunnerBase.cs" Link="Shared\PersistentRunnerBase.cs" />
@@ -85,6 +79,16 @@
     <Compile Include="..\SharedUtilities\SceneHelpers.cs" Link="Shared\SceneHelpers.cs" />
     <Compile Include="..\SharedUtilities\SceneRootSurvivor.cs" Link="Shared\SceneRootSurvivor.cs" />
     <Compile Include="..\SharedUtilities\ReflectionHelper.cs" Link="Shared\ReflectionHelper.cs" />
+    <Compile Include="..\SharedUtilities\MinimalJsonParser.cs" Link="Shared\MinimalJsonParser.cs" />
+    <Compile Include="..\SharedUtilities\ModLocalization.cs" Link="Shared\ModLocalization.cs" />
+    <Compile Include="..\SharedUtilities\LanguageChangeWatcher.cs" Link="Shared\LanguageChangeWatcher.cs" />
+    <Compile Include="..\SharedUtilities\LocalizationBootstrap.cs" Link="Shared\LocalizationBootstrap.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <EmbeddedResource Include="Localization\strings.json">
+      <LogicalName>com.azraelgodking.cropoptimizer.Localization.strings.json</LogicalName>
+    </EmbeddedResource>
   </ItemGroup>
 
   <Target Name="CopyToPlugins" AfterTargets="Build">
