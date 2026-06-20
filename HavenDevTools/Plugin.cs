@@ -560,6 +560,6 @@ namespace HavenDevTools
     {
         public const string PLUGIN_GUID = "com.azraelgodking.havendevtools";
         public const string PLUGIN_NAME = "Haven Dev Tools";
-        public const string PLUGIN_VERSION = "1.2.6";
+        public const string PLUGIN_VERSION = "1.2.7";
     }
 }

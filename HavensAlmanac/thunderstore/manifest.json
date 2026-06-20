@@ -1,6 +1,6 @@
 {
   "name": "HavensAlmanac",
-  "version_number": "1.4.6",
+  "version_number": "1.4.7",
   "website_url": "",
   "description": "Unified mod dashboard - aggregates data from all installed Sun Haven mods into a compact HUD, full dashboard, and daily morning briefing.",
   "dependencies": ["BepInEx-BepInExPack-5.4.2100"]
