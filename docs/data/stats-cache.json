@@ -1,5 +1,5 @@
 {
-  "lastFetched": "2026-06-23T17:54:01.687Z",
+  "lastFetched": "2026-06-23T20:04:06.547Z",
   "mods": {
     "senpais-chest": {
       "name": "Senpai's Chest",
@@ -31,10 +31,10 @@
         }
       },
       "nexus": {
-        "total_downloads": 732,
-        "unique_downloads": 540
+        "total_downloads": 733,
+        "unique_downloads": 541
       },
-      "combined_total": 1475
+      "combined_total": 1476
     },
     "havens-birthright": {
       "name": "Haven's Birthright",
@@ -87,10 +87,10 @@
         }
       },
       "nexus": {
-        "total_downloads": 1065,
-        "unique_downloads": 844
+        "total_downloads": 1066,
+        "unique_downloads": 845
       },
-      "combined_total": 1676
+      "combined_total": 1677
     },
     "squirrels-birthday-reminder": {
       "name": "A Squirrel's Birthday Reminder",
@@ -142,10 +142,10 @@
         }
       },
       "nexus": {
-        "total_downloads": 440,
-        "unique_downloads": 354
+        "total_downloads": 441,
+        "unique_downloads": 355
       },
-      "combined_total": 1014
+      "combined_total": 1015
     },
     "the-vault": {
       "name": "The Vault",
@@ -170,10 +170,10 @@
         }
       },
       "nexus": {
-        "total_downloads": 1409,
-        "unique_downloads": 1013
+        "total_downloads": 1410,
+        "unique_downloads": 1014
       },
-      "combined_total": 1889
+      "combined_total": 1890
     },
     "haven-dev-tools": {
       "name": "HavenDevTools",
@@ -282,10 +282,10 @@
         }
       },
       "nexus": {
-        "total_downloads": 496,
-        "unique_downloads": 408
+        "total_downloads": 497,
+        "unique_downloads": 409
       },
-      "combined_total": 747
+      "combined_total": 748
     },
     "havens-respec": {
       "name": "Haven's Respec",
@@ -309,8 +309,8 @@
   },
   "site_total": {
     "thunderstore": 5105,
-    "nexus_total": 7170,
-    "nexus_unique": 5440,
-    "grand_total": 12275
+    "nexus_total": 7175,
+    "nexus_unique": 5445,
+    "grand_total": 12280
   }
 }
