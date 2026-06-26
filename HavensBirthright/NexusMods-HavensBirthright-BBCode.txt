@@ -1,4 +1,4 @@
-[b][size=5]Haven's Birthright[/size][/b] [i](v3.0.0)[/i]
+[b][size=5]Haven's Birthright[/size][/b] [i](v3.0.1)[/i]
 
 A Sun Haven mod that adds unique racial bonuses, active abilities, drawbacks, and conditional synergies for each playable race.
 

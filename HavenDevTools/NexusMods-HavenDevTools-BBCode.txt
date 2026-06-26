@@ -1,4 +1,4 @@
-[b][size=5]Haven Dev Tools[/size][/b] [i](v2.0.0)[/i]
+[b][size=5]Haven Dev Tools[/size][/b] [i](v2.0.1)[/i]
 
 Developer utilities for mod debugging and game state inspection in Sun Haven. [b]Not intended for typical players[/b]; may impact performance.
 

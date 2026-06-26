@@ -32,11 +32,13 @@ namespace SunhavenMods.Shared
             }
         }
 
-        private static void OnSetLanguageAndCode(string languageName, string languageCode)
+        // Parameter names must match the original method signature exactly
+        // (HarmonyX injects by name): SetLanguageAndCode(string LanguageName, string LanguageCode, ...).
+        private static void OnSetLanguageAndCode(string LanguageName, string LanguageCode)
         {
-            string code = string.IsNullOrWhiteSpace(languageCode)
+            string code = string.IsNullOrWhiteSpace(LanguageCode)
                 ? LocalizationManager.CurrentLanguageCode
-                : languageCode;
+                : LanguageCode;
 
             string normalized = ModLocalization.NormalizeLanguageCode(code);
             ModLocalization.OnGameLanguageChanged(normalized);
