@@ -1,6 +1,6 @@
-{
+﻿{
   "name": "FasterRaces",
-  "version_number": "2.0.0",
+  "version_number": "2.0.1",
   "website_url": "https://www.nexusmods.com/sunhaven/mods",
   "description": "Configurable movement speed bonus for all races. When installed with Haven's Birthright, disables HB's speed buffs so speed is not doubled.",
   "dependencies": ["BepInEx-BepInExPack-5.4.2100"]
