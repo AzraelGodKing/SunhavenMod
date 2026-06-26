@@ -31,5 +31,13 @@ namespace CropOptimizer.Data
         {
             return ActiveCropIds.Contains(instanceId);
         }
+
+        // Unity reuses GetInstanceID() values after objects are destroyed/recreated
+        // (e.g. switching save files), so stale IDs must be dropped on character load
+        // to avoid colliding with unrelated new crops.
+        public static void Clear()
+        {
+            ActiveCropIds.Clear();
+        }
     }
 }

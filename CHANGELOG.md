@@ -33,6 +33,7 @@ Notes for **players and release readers**. Per-mod blurbs and upstream metadata 
 **Bugfix release:** Every mod received a **patch** semver bump so store metadata, DLLs, and [`docs/versions.json`](docs/versions.json) stay aligned. Current versions: The Vault **4.0.1**, Haven's Birthright **3.0.1**, Senpai's Chest **3.0.1**, S.M.U.T. **3.0.1**, Sun Haven Todo **2.0.1**, A Squirrel's Birthday Reminder **2.0.1**, Haven's Almanac **2.0.1**, Haven Dev Tools **2.0.1**, Faster Races **2.0.1**, Trinket Fortune **2.0.1**, Crop Optimizer **2.0.1**, Haven's Respec **2.0.1**.
 
 - **Live language refresh:** Fixed a startup error (`Parameter "languageName" not found`) that prevented the shared `LanguageChangeWatcher` from patching the game's `SetLanguageAndCode`. The Harmony postfix parameter names now match the original method's casing, so the language-change hook registers and mod UIs re-localize correctly when you switch the in-game language.
+- **Crop Optimizer:** Fixed stale crop instance IDs surviving across character/save loads. The crop instance registry is now cleared on character load, so reused Unity instance IDs from a previous save can no longer collide with unrelated new crops and report wrong growth state.
 
 ---
 

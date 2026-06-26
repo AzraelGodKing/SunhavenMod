@@ -52,6 +52,8 @@ namespace CropOptimizer.Patches
         {
             try
             {
+                CropInstanceRegistry.Clear();
+
                 if (_forecast != null)
                 {
                     _forecast.Clear();

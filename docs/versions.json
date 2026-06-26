@@ -109,7 +109,7 @@
     "nexus_file_group_id": "7320911",
     "thunderstore": "https://thunderstore.io/c/sun-haven/p/AzraelGodKing/CropOptimizer/",
     "thunderstoreName": "CropOptimizer",
-    "changelog": "Patch release: fixes a startup error in the shared localization layer that prevented the in-game language-change refresh from registering (HarmonyX could not patch LocalizationManager.SetLanguageAndCode because the postfix parameter names did not match the original method casing)."
+    "changelog": "Patch release: fixes a startup error in the shared localization layer that prevented the in-game language-change refresh from registering (HarmonyX could not patch LocalizationManager.SetLanguageAndCode because the postfix parameter names did not match the original method casing). Also fixed stale crop instance IDs surviving across character/save loads: the crop instance registry is now cleared on character load so reused Unity instance IDs can no longer collide with unrelated new crops."
   },
   "com.azraelgodking.havensrespec": {
     "version": "2.0.1",
