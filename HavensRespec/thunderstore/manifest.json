@@ -1,6 +1,6 @@
-{
+﻿{
   "name": "HavensRespec",
-  "version_number": "2.0.0",
+  "version_number": "2.0.1",
   "website_url": "https://azraelgodking.github.io/SunhavenMod/HavensRespec/HavensRespec.html",
   "description": "Respec skills on any tab with a confirmation dialog, one-step undo, optional cost, and full Configuration Manager support.",
   "dependencies": [
