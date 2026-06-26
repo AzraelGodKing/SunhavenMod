@@ -1,10 +1,10 @@
 {
-  "lastFetched": "2026-06-26T00:08:06.675Z",
+  "lastFetched": "2026-06-26T05:07:55.893Z",
   "mods": {
     "senpais-chest": {
       "name": "Senpai's Chest",
       "thunderstore": {
-        "total_downloads": 760,
+        "total_downloads": 761,
         "versions": {
           "3.0.0": 16,
           "2.7.0": 102,
@@ -15,7 +15,7 @@
           "2.3.0": 13,
           "2.2.6": 14,
           "2.2.4": 28,
-          "2.2.2": 73,
+          "2.2.2": 74,
           "2.2.1": 25,
           "2.2.0": 34,
           "2.1.0": 71,
@@ -31,10 +31,10 @@
         }
       },
       "nexus": {
-        "total_downloads": 756,
-        "unique_downloads": 559
+        "total_downloads": 757,
+        "unique_downloads": 560
       },
-      "combined_total": 1516
+      "combined_total": 1518
     },
     "havens-birthright": {
       "name": "Haven's Birthright",
@@ -69,14 +69,14 @@
     "museum-utility-tracker": {
       "name": "S.M.U.T.",
       "thunderstore": {
-        "total_downloads": 620,
+        "total_downloads": 621,
         "versions": {
           "3.0.0": 25,
           "2.4.2": 118,
           "2.4.0": 25,
           "2.3.0": 30,
           "2.2.9": 20,
-          "2.2.6": 81,
+          "2.2.6": 82,
           "2.2.5": 44,
           "2.2.3": 79,
           "2.2.2": 37,
@@ -87,10 +87,10 @@
         }
       },
       "nexus": {
-        "total_downloads": 1093,
-        "unique_downloads": 866
+        "total_downloads": 1094,
+        "unique_downloads": 867
       },
-      "combined_total": 1713
+      "combined_total": 1715
     },
     "squirrels-birthday-reminder": {
       "name": "A Squirrel's Birthday Reminder",
@@ -113,15 +113,15 @@
         }
       },
       "nexus": {
-        "total_downloads": 814,
-        "unique_downloads": 646
+        "total_downloads": 815,
+        "unique_downloads": 647
       },
-      "combined_total": 1335
+      "combined_total": 1336
     },
     "havens-todo": {
       "name": "Sun Haven Todo",
       "thunderstore": {
-        "total_downloads": 592,
+        "total_downloads": 594,
         "versions": {
           "2.0.0": 13,
           "1.4.3": 90,
@@ -134,7 +134,7 @@
           "1.1.5": 111,
           "1.1.4": 32,
           "1.1.3": 42,
-          "1.1.2": 33,
+          "1.1.2": 35,
           "1.1.1": 40,
           "1.1.0": 35,
           "1.0.1": 27,
@@ -145,7 +145,7 @@
         "total_downloads": 453,
         "unique_downloads": 364
       },
-      "combined_total": 1045
+      "combined_total": 1047
     },
     "the-vault": {
       "name": "The Vault",
@@ -203,10 +203,10 @@
     "havens-almanac": {
       "name": "Haven's Almanac",
       "thunderstore": {
-        "total_downloads": 392,
+        "total_downloads": 393,
         "versions": {
           "2.0.0": 14,
-          "1.4.2": 68,
+          "1.4.2": 69,
           "1.4.0": 7,
           "1.3.0": 25,
           "1.2.0": 12,
@@ -221,10 +221,10 @@
         }
       },
       "nexus": {
-        "total_downloads": 288,
-        "unique_downloads": 235
+        "total_downloads": 289,
+        "unique_downloads": 236
       },
-      "combined_total": 680
+      "combined_total": 682
     },
     "faster-races": {
       "name": "Faster Races",
@@ -261,10 +261,10 @@
         }
       },
       "nexus": {
-        "total_downloads": 300,
-        "unique_downloads": 240
+        "total_downloads": 301,
+        "unique_downloads": 241
       },
-      "combined_total": 581
+      "combined_total": 582
     },
     "crop-optimizer": {
       "name": "Crop Optimizer",
@@ -301,16 +301,16 @@
         }
       },
       "nexus": {
-        "total_downloads": 209,
-        "unique_downloads": 175
+        "total_downloads": 211,
+        "unique_downloads": 177
       },
-      "combined_total": 409
+      "combined_total": 411
     }
   },
   "site_total": {
-    "thunderstore": 5259,
-    "nexus_total": 7414,
-    "nexus_unique": 5620,
-    "grand_total": 12673
+    "thunderstore": 5264,
+    "nexus_total": 7421,
+    "nexus_unique": 5627,
+    "grand_total": 12685
   }
 }
