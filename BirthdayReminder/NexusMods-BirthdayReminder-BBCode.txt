@@ -1,4 +1,4 @@
-[b][size=5]A Squirrel's Birthday Reminder[/size][/b] [i](v2.0.0)[/i]
+[b][size=5]A Squirrel's Birthday Reminder[/size][/b] [i](v2.0.1)[/i]
 
 Never miss an NPC birthday in Sun Haven. Auto reminders, gift suggestions, gift tracking, draggable HUD.
 
