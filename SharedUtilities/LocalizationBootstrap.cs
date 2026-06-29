@@ -29,7 +29,7 @@ namespace SunhavenMods.Shared
 
         public static void Init(string pluginGuid, Harmony harmony, ManualLogSource log, Assembly assembly = null)
         {
-            assembly ??= Assembly.GetCallingAssembly();
+            assembly ??= Assembly.GetExecutingAssembly();
             var json = ModLocalization.LoadEmbeddedStrings(
                 assembly,
                 $"{pluginGuid}.Localization.strings.json",
