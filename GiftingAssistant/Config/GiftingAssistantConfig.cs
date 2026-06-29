@@ -44,10 +44,16 @@ namespace GiftingAssistant.Config
                 false,
                 "[Deprecated] Replaced by ReminderMode. If ReminderMode is missing, true migrates to PushToTodo on first load.").Value;
 
+            bool hasReminderMode = config.TryGetEntry("Integrations", "ReminderMode", out ConfigEntry<GiftReminderMode> _);
+            bool hasLegacyTodo = config.TryGetEntry("Integrations", "UseTodoIntegration", out ConfigEntry<bool> _);
+            GiftReminderMode reminderDefault = GiftReminderMode.PushToTodo;
+            if (!hasReminderMode && hasLegacyTodo)
+                reminderDefault = legacyPushTodo ? GiftReminderMode.PushToTodo : GiftReminderMode.RosterOnly;
+
             ReminderMode = config.Bind(
                 "Integrations",
                 "ReminderMode",
-                legacyPushTodo ? GiftReminderMode.PushToTodo : GiftReminderMode.PushToTodo,
+                reminderDefault,
                 "RosterOnly = track gifts in this mod's daily roster (priorities, gifted-today flags). PushToTodo = same roster plus a +Todo button on each row to push reminders into Sun Haven Todo when that mod is installed (default; falls back to roster-only when Sun Haven Todo is not installed).");
 
             UseAlmanacIntegration = config.Bind("Integrations", "UseAlmanacIntegration", true,

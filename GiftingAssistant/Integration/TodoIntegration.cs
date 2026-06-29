@@ -5,6 +5,7 @@ using BepInEx.Bootstrap;
 using GiftingAssistant.Data;
 using GiftingAssistant.Game;
 using HarmonyLib;
+using SunhavenMods.Shared;
 
 namespace GiftingAssistant.Integration
 {
@@ -624,7 +625,9 @@ namespace GiftingAssistant.Integration
 
             string characterName = Plugin.GetManager()?.CurrentCharacter;
             if (string.IsNullOrEmpty(characterName))
-                characterName = TryGetCharacterNameFromGameSave();
+                characterName = GameSaveCharacterName.TryGetCurrent(
+                    null,
+                    msg => Plugin.Log?.LogWarning($"[GiftingAssistant] Todo integration: character lookup failed: {msg}"));
 
             if (string.IsNullOrEmpty(characterName))
             {
@@ -697,48 +700,6 @@ namespace GiftingAssistant.Integration
             {
                 Plugin.Log?.LogWarning($"[GiftingAssistant] Todo integration: SaveData failed: {ex.Message}");
             }
-        }
-
-        private static string TryGetCharacterNameFromGameSave()
-        {
-            try
-            {
-                var gameSaveType = AccessTools.TypeByName("Wish.GameSave");
-                if (gameSaveType == null)
-                    return null;
-
-                var currentCharProp = AccessTools.Property(gameSaveType, "CurrentCharacter");
-                var currentChar = currentCharProp?.GetValue(null);
-                if (currentChar != null)
-                {
-                    var nameProp = AccessTools.Property(currentChar.GetType(), "characterName");
-                    var name = nameProp?.GetValue(currentChar) as string;
-                    if (!string.IsNullOrEmpty(name))
-                        return name;
-                }
-
-                var instance = AccessTools.Property(gameSaveType, "Instance")?.GetValue(null);
-                if (instance != null)
-                {
-                    var currentSave = AccessTools.Property(gameSaveType, "CurrentSave")?.GetValue(instance);
-                    if (currentSave != null)
-                    {
-                        var charData = AccessTools.Property(currentSave.GetType(), "characterData")?.GetValue(currentSave);
-                        if (charData != null)
-                        {
-                            var name = AccessTools.Property(charData.GetType(), "characterName")?.GetValue(charData) as string;
-                            if (!string.IsNullOrEmpty(name))
-                                return name;
-                        }
-                    }
-                }
-            }
-            catch (Exception ex)
-            {
-                Plugin.Log?.LogWarning($"[GiftingAssistant] Todo integration: character lookup failed: {ex.Message}");
-            }
-
-            return null;
         }
     }
 }

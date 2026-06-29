@@ -72,7 +72,7 @@ namespace TheVault.UI
         private const float UpdateInterval = 0.5f;
 
         private bool _layoutDirty = true;
-        private string _cacheFingerprint = "";
+        private int _cacheFingerprint = 0;
         private int _lastScreenW;
         private int _lastScreenH;
 
@@ -155,7 +155,7 @@ namespace TheVault.UI
         private void RefreshCaches()
         {
             bool debugAll = Plugin.GetConfigDebugFullVaultInspector();
-            string before = _cacheFingerprint;
+            int before = _cacheFingerprint;
 
             _seasonal.Clear();
             foreach (var id in VaultCurrencyIds.AllSeasonalFullIds)
@@ -196,22 +196,31 @@ namespace TheVault.UI
                 _layoutDirty = true;
         }
 
-        private string ComputeCacheFingerprint()
+        private int ComputeCacheFingerprint()
         {
-            return $"{FingerprintDict(_seasonal)}|{FingerprintDict(_keys)}|{FingerprintDict(_special)}|{FingerprintDict(_custom)}";
+            unchecked
+            {
+                int hash = 17;
+                hash = (hash * 31) + HashCurrencyDict(_seasonal);
+                hash = (hash * 31) + HashCurrencyDict(_keys);
+                hash = (hash * 31) + HashCurrencyDict(_special);
+                hash = (hash * 31) + HashCurrencyDict(_custom);
+                return hash;
+            }
         }
 
-        private static string FingerprintDict(Dictionary<string, int> dict)
+        private static int HashCurrencyDict(Dictionary<string, int> dict)
         {
-            if (dict.Count == 0)
-                return "";
-
-            var keys = new List<string>(dict.Keys);
-            keys.Sort(StringComparer.Ordinal);
-            var parts = new List<string>(keys.Count);
-            foreach (var key in keys)
-                parts.Add($"{key}:{dict[key]}");
-            return string.Join(",", parts);
+            unchecked
+            {
+                int hash = dict.Count;
+                foreach (var pair in dict)
+                {
+                    hash = (hash * 31) + pair.Key.GetHashCode();
+                    hash = (hash * 31) + pair.Value;
+                }
+                return hash;
+            }
         }
 
         private float DensityMul() => _hudDensity switch

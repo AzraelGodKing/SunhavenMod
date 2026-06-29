@@ -48,7 +48,8 @@ namespace GiftingAssistant
         private static bool _applicationQuitting;
         private static bool _wasInMenuScene = true;
         private static float _lastAutoSaveTime;
-        private const float AutoSaveInterval = 30f;
+        private static float _staticAutoSaveInterval = 60f;
+        private static bool _staticAutoSave = true;
 
         private GiftingAssistantConfig _config;
         private Harmony _harmony;
@@ -141,6 +142,13 @@ namespace GiftingAssistant
 
             _config.UseAlmanacIntegration.SettingChanged += (_, _) =>
                 _staticAlmanacIntegrationEnabled = _config.UseAlmanacIntegration.Value;
+
+            _staticAutoSaveInterval = Mathf.Max(5f, _config.AutoSaveInterval.Value);
+            _config.AutoSaveInterval.SettingChanged += (_, _) =>
+                _staticAutoSaveInterval = Mathf.Max(5f, _config.AutoSaveInterval.Value);
+
+            _staticAutoSave = _config.AutoSave.Value;
+            _config.AutoSave.SettingChanged += (_, _) => _staticAutoSave = _config.AutoSave.Value;
         }
 
         private static ConfigFile CreateNamedConfig()
@@ -500,7 +508,9 @@ namespace GiftingAssistant
         {
             if (_staticManager == null || !_staticManager.IsDirty)
                 return;
-            if (Time.unscaledTime - _lastAutoSaveTime < AutoSaveInterval)
+            if (!_staticAutoSave)
+                return;
+            if (Time.unscaledTime - _lastAutoSaveTime < _staticAutoSaveInterval)
                 return;
             SaveData();
             _lastAutoSaveTime = Time.unscaledTime;

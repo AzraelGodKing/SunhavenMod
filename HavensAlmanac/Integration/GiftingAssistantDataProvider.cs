@@ -96,11 +96,8 @@ namespace HavensAlmanac.Integration
             GUILayout.Label(ModLocalization.T("almanac.provider.gifting.pendingHeader"), GUI.skin.label);
             foreach (var entry in _pendingEntries)
             {
-                string status = entry.IsGiftedToday
-                    ? ModLocalization.T("almanac.provider.gifting.gifted")
-                    : ModLocalization.T("almanac.provider.gifting.notGifted");
                 GUILayout.Label(ModLocalization.T("almanac.provider.gifting.priorityRow",
-                    entry.Priority, entry.NpcName, status));
+                    entry.Priority, entry.NpcName, ModLocalization.T("almanac.provider.gifting.notGifted")));
             }
         }
 

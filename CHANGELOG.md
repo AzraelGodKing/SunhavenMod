@@ -22,6 +22,7 @@ Notes for **players and release readers**. Per-mod blurbs and upstream metadata 
 
 **Gifting Assistant**
 
+- **PR #74 review fixes:** ReminderMode legacy migration (`UseTodoIntegration` false → RosterOnly); autosave uses `Saving > AutoSaveInterval` from config (60s default); sort guard uses try/finally; shared `GameSaveCharacterName` helper; Almanac dashboard drops unreachable gifted branch; `GiftSuggestionResolver` formatting; pt-BR **Normal** priority translation.
 - **Gifted toggle:** The row **Gifted** checkbox no longer adds or updates Sun Haven Todo tasks — only **+Todo** pushes reminders. In-game gifts still auto-complete matching todos when you give the gift in the world.
 - **Hotkey toggle:** **Ctrl + G** (or configured toggle) now closes the gifting window when it is already open; previously the hotkey only opened it and Escape was required to dismiss. Added full `Localization/strings.json` coverage for all 16 supported game languages (da, de, es, fr, it, ja, ko, nl, pt, pt-BR, ru, sv, zh-CN, zh-TW, uk). Shared terminology aligned with Sun Haven Todo (Cancel, priority labels), Birthday Reminder (Gifts), and repo-wide UI strings where keys overlap.
 - **Gift icon display split:** Roster rows show **all** selected preferred gift icons (capped at four with a +N overflow). Sun Haven Todo tasks pick **one random** icon from preferred gifts (or random loved/liked when none are set); the pick refreshes on **+Todo**, a new in-game day, or when the window reopens. Todo descriptions still list all suggested gift names.
@@ -47,7 +48,7 @@ Notes for **players and release readers**. Per-mod blurbs and upstream metadata 
 **The Vault**
 
 - **Fix:** Vault UI and HUD icons display again — removed duplicate `TheVault/UI/IconCache.cs`; C# namespace shadowing had `VaultUI`/`VaultHUD` read the legacy cache while `Plugin`/`PlayerPatches` loaded and registered the shared `SunhavenMods.Shared.IconCache`.
-- **Performance:** Player icon load now routes through shared `SunhavenMods.Shared.IconCache` only (removed duplicate legacy load path). Vault HUD skips layout rebuild when currency values and scale are unchanged (still handles drag). Character-sync fallback throttled to ~0.75s; repeated `CurrentCharacter` fallback warning logs once per session.
+- **Performance:** Player icon load now routes through shared `SunhavenMods.Shared.IconCache` only (removed duplicate legacy load path). Vault HUD rebuilds row layout only when currency totals or HUD scale/density change (integer hash fingerprint instead of per-refresh string join). Character-sync fallback throttled to ~0.75s; repeated `CurrentCharacter` fallback warning logs once per session.
 
 **Senpai's Chest**
 

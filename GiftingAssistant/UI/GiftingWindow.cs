@@ -243,8 +243,14 @@ namespace GiftingAssistant.UI
             if (_sortDirty && !_sortProcessing)
             {
                 _sortProcessing = true;
-                EnsureSorted();
-                _sortProcessing = false;
+                try
+                {
+                    EnsureSorted();
+                }
+                finally
+                {
+                    _sortProcessing = false;
+                }
             }
 
             if (_showPicker && _pickerListDirty)

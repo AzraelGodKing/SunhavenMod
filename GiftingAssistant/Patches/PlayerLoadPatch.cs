@@ -1,6 +1,7 @@
 using System;
 using GiftingAssistant.Game;
 using HarmonyLib;
+using SunhavenMods.Shared;
 
 namespace GiftingAssistant.Patches
 {
@@ -19,7 +20,9 @@ namespace GiftingAssistant.Patches
                 Plugin.EnsureUIComponentsExist();
                 GiftGameData.InvalidateCache();
 
-                string characterName = GetCurrentCharacterName();
+                string characterName = GameSaveCharacterName.TryGetCurrent(
+                    _loadedCharacterName,
+                    msg => Plugin.Log?.LogWarning($"[GiftingAssistant] Failed to get character name: {msg}"));
                 if (string.IsNullOrEmpty(characterName))
                 {
                     Plugin.Log?.LogWarning("[GiftingAssistant] Character name unavailable; skipping roster load.");
@@ -43,48 +46,6 @@ namespace GiftingAssistant.Patches
         internal static void ResetForMenu()
         {
             _loadedCharacterName = null;
-        }
-
-        private static string GetCurrentCharacterName()
-        {
-            try
-            {
-                var gameSaveType = AccessTools.TypeByName("Wish.GameSave");
-                if (gameSaveType == null)
-                    return null;
-
-                var currentCharProp = AccessTools.Property(gameSaveType, "CurrentCharacter");
-                var currentChar = currentCharProp?.GetValue(null);
-                if (currentChar != null)
-                {
-                    var nameProp = AccessTools.Property(currentChar.GetType(), "characterName");
-                    var name = nameProp?.GetValue(currentChar) as string;
-                    if (!string.IsNullOrEmpty(name))
-                        return name;
-                }
-
-                var instance = AccessTools.Property(gameSaveType, "Instance")?.GetValue(null);
-                if (instance != null)
-                {
-                    var currentSave = AccessTools.Property(gameSaveType, "CurrentSave")?.GetValue(instance);
-                    if (currentSave != null)
-                    {
-                        var charData = AccessTools.Property(currentSave.GetType(), "characterData")?.GetValue(currentSave);
-                        if (charData != null)
-                        {
-                            var name = AccessTools.Property(charData.GetType(), "characterName")?.GetValue(charData) as string;
-                            if (!string.IsNullOrEmpty(name))
-                                return name;
-                        }
-                    }
-                }
-            }
-            catch (Exception ex)
-            {
-                Plugin.Log?.LogWarning($"[GiftingAssistant] Failed to get character name: {ex.Message}");
-            }
-
-            return _loadedCharacterName;
         }
     }
 }

@@ -153,6 +153,7 @@ namespace GiftingAssistant.Game
         }
 
         /// <summary>Drops the cached NPC list so the next call re-reads from the game (e.g. on character load).</summary>
+        /// <remarks>Reflection handles are initialized once per process and intentionally retained here.</remarks>
         public static void InvalidateCache()
         {
             _cachedNpcs = null;

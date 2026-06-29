@@ -79,6 +79,7 @@
     <Compile Include="..\SharedUtilities\SceneHelpers.cs" Link="Shared\SceneHelpers.cs" />
     <Compile Include="..\SharedUtilities\SceneRootSurvivor.cs" Link="Shared\SceneRootSurvivor.cs" />
     <Compile Include="..\SharedUtilities\ReflectionHelper.cs" Link="Shared\ReflectionHelper.cs" />
+    <Compile Include="..\SharedUtilities\GameSaveCharacterName.cs" Link="Shared\GameSaveCharacterName.cs" />
     <Compile Include="..\SharedUtilities\MinimalJsonParser.cs" Link="Shared\MinimalJsonParser.cs" />
     <Compile Include="..\SharedUtilities\ItemSearch.cs" Link="Shared\ItemSearch.cs" />
     <Compile Include="..\SharedUtilities\IconCache.cs" Link="Shared\IconCache.cs" />
