@@ -1,5 +1,8 @@
 # Gifting Assistant
 
+- **Thunderstore:** [GiftingAssistant](https://thunderstore.io/c/sun-haven/p/AzraelGodKing/GiftingAssistant/)
+- **Nexus Mods:** [Gifting Assistant](https://www.nexusmods.com/sunhaven/mods/507) ([files tab](https://www.nexusmods.com/sunhaven/mods/507?tab=files); CI `nexus_file_group_id` **7597922**)
+
 Daily gift routine planner for Sun Haven — pick NPCs, see loved/liked gift options with icons, track who you've already gifted today, and sort your roster by priority.
 
 ## Features
@@ -58,4 +61,11 @@ Initial release — daily gift routine planner (**Ctrl + G** by default):
 - Gifted-today tracking (game flag + manual toggle); gifted NPCs sink to the bottom; resets each new day
 - Localized UI (16 languages) plus optional `[Localization] ForceEnglish`
 - Optional integrations: Birthday Reminder (birthday badge), Sun Haven Todo (**PushToTodo** default — +Todo per row, daily refresh, in-game gift auto-complete; Gifted checkbox does not touch todos), Haven's Almanac (roster progress on HUD / dashboard / briefing when `UseAlmanacIntegration` is on)
+
+## Links
+
+- [Thunderstore](https://thunderstore.io/c/sun-haven/p/AzraelGodKing/GiftingAssistant/)
+- [Nexus Mods](https://www.nexusmods.com/sunhaven/mods/507)
+- [Documentation](https://azraelgodking.github.io/SunhavenMod/GiftingAssistant/GiftingAssistant.html)
+- [Discord — bugs & discussion](https://discord.gg/Vwh2y7qMXv)
 
