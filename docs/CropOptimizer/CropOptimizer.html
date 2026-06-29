@@ -165,11 +165,23 @@
                 <span class="mod-card-icon">&#x1F4D6;</span>
                 <div>
                     <h4>Haven&rsquo;s Almanac</h4>
-                    <p>Registers an Almanac panel so the unified dashboard and daily briefing can show crop counts, next-ready ETAs, and projected gold from Crop Optimizer.</p>
+                    <p>Feeds crop count and projected sell value into the Almanac HUD and dashboard (top crops by gold). See <a href="#almanac-integration">Integration with Haven&rsquo;s Almanac</a> below.</p>
                 </div>
             </div>
         </div>
         <p class="section-footnote"><strong>Stand-alone ready:</strong> install just Crop Optimizer and the HUD + hover tooltip work on their own. Add any of the integrations above and data flows into them automatically &mdash; no configuration needed.</p>
+
+        <section class="notice-section" id="almanac-integration">
+            <div class="notice-box" style="border-left:3px solid #c9982e;">
+                <h3>&#x1F4D6; Integration with Haven&rsquo;s Almanac</h3>
+                <p>Crop Optimizer exposes a lightweight data provider that <a href="../HavensAlmanac/HavensAlmanac.html">Haven&rsquo;s Almanac</a> picks up automatically when both mods are loaded:</p>
+                <ul style="margin: 10px 0 0 1.25em; line-height: 1.75;">
+                    <li><strong>HUD line</strong> &mdash; planted crop count and total projected sell value (e.g. <code>Crops: 12, Value: 4800g</code>).</li>
+                    <li><strong>Dashboard panel</strong> &mdash; the same summary plus top five crop types ranked by projected gold, with plant counts per type.</li>
+                    <li><strong>Daily briefing</strong> &mdash; not included; Crop Optimizer already has its own farm HUD and hover tooltip for day-to-day farming.</li>
+                </ul>
+            </div>
+        </section>
 
         <div class="ornamental-divider"></div>
 

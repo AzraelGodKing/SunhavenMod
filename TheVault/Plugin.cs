@@ -150,6 +150,7 @@ namespace TheVault
 
                 // Apply Harmony patches
                 _harmony = new Harmony(PluginInfo.PLUGIN_GUID);
+                LocalizationBootstrap.BindForceEnglish(ConfigFile);
                 LocalizationBootstrap.Init(PluginInfo.PLUGIN_GUID, _harmony, Log);
                 ApplyPatches();
 

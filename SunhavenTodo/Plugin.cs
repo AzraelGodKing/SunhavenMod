@@ -250,6 +250,7 @@ namespace SunhavenTodo
 
         private void InitLocalization()
         {
+            LocalizationBootstrap.BindForceEnglish(ConfigFile);
             LocalizationBootstrap.Init(PluginInfo.PLUGIN_GUID, _harmony, Log, Assembly.GetExecutingAssembly());
         }
 
@@ -304,6 +305,12 @@ namespace SunhavenTodo
         {
             try
             {
+                LocalizationBootstrap.EnsureInitialized(
+                    PluginInfo.PLUGIN_GUID,
+                    Instance?._harmony,
+                    Log,
+                    typeof(Plugin).Assembly);
+
                 // Recreate PersistentRunner if destroyed
                 if (_persistentRunner == null || _persistentRunnerComponent == null)
                 {

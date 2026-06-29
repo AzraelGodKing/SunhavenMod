@@ -575,6 +575,20 @@ h1 {
     border-color: rgba(13, 148, 136, 0.7);
 }
 
+.mod-card.gifting-theme {
+    border-color: rgba(155, 77, 147, 0.4);
+    background: linear-gradient(135deg, rgba(155, 77, 147, 0.12) 0%, rgba(224, 179, 65, 0.04) 100%);
+}
+
+.mod-card.gifting-theme:hover {
+    border-color: rgba(155, 77, 147, 0.7);
+}
+
+.mod-cta-button.gifting-btn {
+    background: linear-gradient(135deg, #9b4d93, #7a3a73);
+    color: #fff;
+}
+
 .mod-cta-button.trinket-btn {
     background: linear-gradient(135deg, #14b8a6, #0d9488);
     color: #fff;
