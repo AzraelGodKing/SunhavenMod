@@ -124,7 +124,7 @@
   "com.azraelgodking.giftingassistant": {
     "version": "1.0.0",
     "name": "Gifting Assistant",
-    "description": "Daily gift routine planner — per-character NPC roster, loved/liked gift suggestions with icons and bag counts, per-NPC preferred gifts, gifted-today tracking, priority sorting, and optional Birthday Reminder, Sun Haven Todo, and Haven's Almanac integrations",
+    "description": "Initial release: per-character gift roster, loved/liked suggestions with icons, preferred gifts, heart bars, gifted-today tracking, priority sort, Ctrl+G UI, 16 languages. Optional Birthday Reminder, Sun Haven Todo, and Haven's Almanac.",
     "nexus": "https://www.nexusmods.com/sunhaven/mods/507",
     "nexus_file_group_id": "7597922",
     "thunderstore": "https://thunderstore.io/c/sun-haven/p/AzraelGodKing/GiftingAssistant/",
