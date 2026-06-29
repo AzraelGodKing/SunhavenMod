@@ -30,7 +30,7 @@ Requires `ADMIN_PUSH_TOKEN` (or a branch policy that allows `GITHUB_TOKEN` pushe
      - **Sync only** (version already edited in `versions.json`):  
        `.\scripts\pre-push-build.ps1 -Mod <modkey>`  
 
-   Mod keys match the workflow picker: `senpaischest`, `havensbirthright`, `sunhavenmuseumutilitytracker`, `squirrelsbirthdayreminder`, `sunhaventodo`, `thevault`, `havendevtools`, `havensalmanac`, `fasterraces`, `trinketfortune`, `cropoptimizer`, etc. Use `-All` for every mod (see script help).
+   Mod keys match the workflow picker: `senpaischest`, `havensbirthright`, `sunhavenmuseumutilitytracker`, `squirrelsbirthdayreminder`, `sunhaventodo`, `thevault`, `havendevtools`, `havensalmanac`, `fasterraces`, `trinketfortune`, `cropoptimizer`, `havensrespec`, `giftingassistant`, etc. Use `-All` for every mod (see script help).
 
 3. **Commit and push** to the branch your workflows use (usually `main`).
 

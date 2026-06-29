@@ -39,6 +39,7 @@ on:
           - trinketfortune
           - cropoptimizer
           - havensrespec
+          - giftingassistant
       publish_thunderstore:
         description: 'Publish to Thunderstore? (ignored while dry_run is true)'
         required: true
