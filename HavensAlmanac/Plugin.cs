@@ -23,6 +23,7 @@ namespace HavensAlmanac
     [BepInDependency("com.azraelgodking.havensbirthright", BepInDependency.DependencyFlags.SoftDependency)]
     [BepInDependency("com.azraelgodking.havendevtools", BepInDependency.DependencyFlags.SoftDependency)]
     [BepInDependency("com.azraelgodking.cropoptimizer", BepInDependency.DependencyFlags.SoftDependency)]
+    [BepInDependency("com.azraelgodking.giftingassistant", BepInDependency.DependencyFlags.SoftDependency)]
     public class Plugin : BaseUnityPlugin
     {
         public static Plugin Instance { get; private set; }
@@ -56,6 +57,7 @@ namespace HavensAlmanac
             Log.LogInfo($"Loading {PluginInfo.PLUGIN_NAME} v{PluginInfo.PLUGIN_VERSION}");
 
             AlmanacConfig.Initialize(ConfigFile);
+            LocalizationBootstrap.BindForceEnglish(ConfigFile);
             CreatePersistentRunner();
 
             _staticAggregator = new AlmanacDataAggregator();
@@ -78,7 +80,7 @@ namespace HavensAlmanac
             // provider, so this fires only when the user really has none of
             // the supported companion mods installed.
             if (integrationCount == 0)
-                Log.LogWarning("No supported companion mods detected. Haven's Almanac is most useful alongside SunhavenTodo, Birthday Reminder, Museum Tracker, Senpai's Chest, The Vault, Haven's Birthright, Haven Dev Tools, or Crop Optimizer.");
+                Log.LogWarning("No supported companion mods detected. Haven's Almanac is most useful alongside SunhavenTodo, Birthday Reminder, Museum Tracker, Senpai's Chest, The Vault, Haven's Birthright, Haven Dev Tools, Crop Optimizer, or Gifting Assistant.");
         }
 
         private static ConfigFile CreateNamedConfig()
@@ -132,6 +134,9 @@ namespace HavensAlmanac
 
             TryRegisterProvider(pluginInfos, "com.azraelgodking.cropoptimizer",
                 () => new Integration.CropOptimizerDataProvider(), "CropOptimizer");
+
+            TryRegisterProvider(pluginInfos, "com.azraelgodking.giftingassistant",
+                () => new Integration.GiftingAssistantDataProvider(), "GiftingAssistant");
         }
 
         private void TryRegisterProvider(

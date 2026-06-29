@@ -2,6 +2,10 @@
 
 A Sun Haven mod that adds unique racial bonuses, active abilities, drawbacks, and conditional synergies for each playable race.
 
+## Version
+
+**3.0.1** — published in [`docs/versions.json`](../docs/versions.json). Player-facing store text: [`thunderstore/README.md`](thunderstore/README.md).
+
 ## Features
 
 Each race receives thematic passive bonuses, and select races gain powerful active abilities that can be toggled during gameplay.

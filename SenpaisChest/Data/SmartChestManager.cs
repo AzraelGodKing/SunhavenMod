@@ -361,7 +361,7 @@ namespace SenpaisChest.Data
                 return;
             }
 
-            Plugin.Log?.LogInfo($"[Scan] Starting scan: {_smartChests.Count} smart chest(s), {associatedChests.Count} associated chest(s)");
+            Plugin.Log?.LogDebug($"[Scan] Starting scan: {_smartChests.Count} smart chest(s), {associatedChests.Count} associated chest(s)");
 
             int totalMoved = 0;
             var modifiedChests = new HashSet<Chest>();
@@ -410,7 +410,7 @@ namespace SenpaisChest.Data
                     continue;
                 }
 
-                Plugin.Log?.LogInfo($"[Scan] Scanning for items matching '{smartData.ChestName}' ({smartData.Rules.Count} rules)");
+                Plugin.Log?.LogDebug($"[Scan] Scanning for items matching '{smartData.ChestName}' ({smartData.Rules.Count} rules)");
 
                 int sourcesScanned = 0;
                 foreach (var sourceEntry in chestLookup)
@@ -561,7 +561,7 @@ namespace SenpaisChest.Data
             }
             else
             {
-                Plugin.Log?.LogInfo("[Scan] Complete: no items to sort");
+                Plugin.Log?.LogDebug("[Scan] Complete: no items to sort");
             }
         }
 

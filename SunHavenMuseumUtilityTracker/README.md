@@ -1,6 +1,6 @@
 # Sun Haven Museum Utility Tracker (S.M.U.T.)
 
-**Version 2.2.7**
+**Version 3.0.1**
 
 Track museum donations across **Hall of Gems**, **Hall of Culture**, and the **Aquarium** in [Sun Haven](https://store.steampowered.com/app/1432860/Sun_Haven/). Lists use the game’s real item IDs (from `Wish.ItemID` and official bundle layouts), so icons, search, and cross-mod features stay aligned with your save.
 
@@ -130,6 +130,7 @@ Backups may appear beside the primary file after failed loads. Keep these if you
 
 ## Version history
 
+- **3.0.1** — Repo release alignment (`docs/versions.json`). Patch release: shared localization language-change refresh fix (Harmony postfix parameter casing on `SetLanguageAndCode`).
 - **2026-05-02 (maintainer notes)** — Lifecycle hardening pass: menu transition reset now runs once per actual gameplay → menu transition, duplicate reset paths were deduplicated, and plugin teardown logging now treats menu/quit shutdown as expected while unsubscribing scene handlers on destroy.
 - **2.2.7** — Co-op freshness: switched to a Senpai's Chest-style background refresh loop that syncs world museum progress every few seconds, so each player's tracker stays aligned even if the window is closed. Runtime autosave now runs solely from the hidden keepalive runner (no `Plugin.Update` dependency). Config file now uses `SunHavenMuseumUtilityTracker.cfg` with first-run migration from the legacy GUID-based filename.
 - **2.2.5** — Hall of Culture: full static lists with real `Wish.ItemID` + wiki ordering; bundle-scoped lookup and `HasDonatedByGameId` across duplicate rows (e.g. Pepper in Spring and Summer). Aquarium: all tanks use static fish data; removed runtime `AquariumFishResolver`. **Note:** older saves may use placeholder culture row IDs — re-check or Sync.  

@@ -19,10 +19,12 @@ namespace TheVault
         private bool _wasInMenuScene = true;
         private float _sceneCheckTimer = 0f;
         private float _heartbeatTimer = 0f;
+        private float _characterSyncTimer = 0f;
         private int _heartbeatCount = 0;
 
         private const float SCENE_CHECK_INTERVAL = 0.5f;
         private const float HEARTBEAT_INTERVAL = 30f;
+        private const float CHARACTER_SYNC_INTERVAL = 0.75f;
 
         private void Awake()
         {
@@ -61,7 +63,12 @@ namespace TheVault
                 ItemPatches.DrainAutoDepositNotifications();
 
             // Character-switch survival fallback: if any hook missed, detect and correct active vault.
-            PlayerPatches.TrySynchronizeCharacterContext();
+            _characterSyncTimer += Time.deltaTime;
+            if (_characterSyncTimer >= CHARACTER_SYNC_INTERVAL)
+            {
+                _characterSyncTimer = 0f;
+                PlayerPatches.TrySynchronizeCharacterContext();
+            }
         }
 
         private void CheckHotkeys()

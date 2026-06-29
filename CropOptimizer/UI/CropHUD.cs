@@ -289,8 +289,14 @@ namespace CropOptimizer.UI
             CropHoverQuery.InvalidateGameplayCameraCache();
             CropHoverQuery.InvalidateHoverAssist();
             ClearTooltipContentState();
+            LocalizationBootstrap.EnsureInitialized(
+                PluginInfo.PLUGIN_GUID,
+                null,
+                Plugin.Log,
+                typeof(Plugin).Assembly);
             // Canvas + TMP font should be live now; recreate the UI to pick up fresh styles.
             RebuildCanvas();
+            RefreshLocalization();
         }
 
         protected override void OnMenuTransition()

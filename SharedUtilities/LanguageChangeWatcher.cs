@@ -44,5 +44,11 @@ namespace SunhavenMods.Shared
             ModLocalization.OnGameLanguageChanged(normalized);
             LanguageChanged?.Invoke(normalized);
         }
+
+        internal static void RaiseLanguageChanged(string languageCode)
+        {
+            string normalized = ModLocalization.NormalizeLanguageCode(languageCode);
+            LanguageChanged?.Invoke(normalized);
+        }
     }
 }

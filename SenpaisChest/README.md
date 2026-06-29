@@ -2,6 +2,10 @@
 
 Smart chest automation and sorting rules for Sun Haven.
 
+## Version
+
+**3.0.1** — published in [`docs/versions.json`](../docs/versions.json). Player-facing store text: [`thunderstore/README.md`](thunderstore/README.md).
+
 ## Default Behavior
 
 - Configure smart-chest rules by item, category, type, property, or group.

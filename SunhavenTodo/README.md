@@ -2,6 +2,10 @@
 
 An in-game to-do list for Sun Haven with per-character saves, categories, priorities, and a parchment-styled UI.
 
+## Version
+
+**2.0.1** — published in [`docs/versions.json`](../docs/versions.json). Player-facing store text: [`thunderstore/README.md`](thunderstore/README.md).
+
 ## Features
 
 - **In-Game Todo List**: Add, edit, complete, and delete tasks without leaving the game
@@ -57,7 +61,7 @@ Character names are sanitized to avoid invalid filename characters.
 
 ## Changelog
 
-### Unreleased
+### 2.0.1
 
 - **HUD:** Close (**X**) on the sticky header hides the HUD; reopen with the HUD toggle hotkey or the **Sticky** button in the full Todo window when the panel is hidden.
 
