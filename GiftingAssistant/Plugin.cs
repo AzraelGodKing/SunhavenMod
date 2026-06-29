@@ -142,6 +142,7 @@ namespace GiftingAssistant
 
             _config.UseAlmanacIntegration.SettingChanged += (_, _) =>
                 _staticAlmanacIntegrationEnabled = _config.UseAlmanacIntegration.Value;
+
             _staticAutoSaveInterval = Mathf.Max(5f, _config.AutoSaveInterval.Value);
             _config.AutoSaveInterval.SettingChanged += (_, _) =>
                 _staticAutoSaveInterval = Mathf.Max(5f, _config.AutoSaveInterval.Value);
