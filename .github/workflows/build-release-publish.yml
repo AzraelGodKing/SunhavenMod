@@ -64,6 +64,7 @@ on:
           - trinketfortune
           - cropoptimizer
           - havensrespec
+          - giftingassistant
       publish_thunderstore:
         description: 'Publish to Thunderstore?'
         required: true
