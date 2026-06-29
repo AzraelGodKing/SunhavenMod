@@ -1,0 +1,401 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gifting Assistant - Daily Gift Routine Planner for Sun Haven</title>
+    <meta name="description" content="Plan your daily NPC gifting in Sun Haven. Build a per-character gift roster with loved/liked suggestions and icons, inventory hints, priorities, gifted-today tracking, and Sun Haven Todo integration.">
+    <meta property="og:title" content="Gifting Assistant - Daily Gift Routine Planner">
+    <meta property="og:description" content="Build a per-character gift roster with loved/liked suggestions, priorities, gifted tracking, and Sun Haven Todo integration.">
+    <meta property="og:type" content="website">
+    <link rel="canonical" href="https://azraelgodking.github.io/SunhavenMod/GiftingAssistant/GiftingAssistant.html">
+    <meta property="og:url" content="https://azraelgodking.github.io/SunhavenMod/GiftingAssistant/GiftingAssistant.html">
+    <meta property="og:image" content="https://azraelgodking.github.io/SunhavenMod/og-card.png">
+    <meta name="theme-color" content="#9b4d93">
+    <link rel="icon" type="image/svg+xml" href="../favicon.svg">
+    <link rel="stylesheet" href="giftingassistant-style.css">
+    <link rel="stylesheet" href="../shared-styles.css">
+    <script src="../shared.js" defer></script>
+    <script src="../scripts/stats-display.js" defer></script>
+</head>
+<body>
+    <a href="#main-content" class="skip-to-content">Skip to content</a>
+    <nav class="top-nav" role="navigation" aria-label="Breadcrumb">
+        <a href="../index.html" class="nav-home">Mod Hub</a>
+        <span class="nav-divider">/</span>
+        <span class="nav-current">Gifting Assistant</span>
+        <span class="breadcrumb-date">Updated Jun 2026</span>
+    </nav>
+
+    <div class="container" id="main-content" role="main">
+
+        <nav class="related-mods-strip" aria-label="Related mods">
+            <span class="related-mods-label">Also see</span>
+            <a href="../BirthdayReminder/BirthdayReminder.html">Birthday Reminder</a>
+            <a href="../Todo/todo.html">Sun Haven Todo</a>
+            <a href="../HavensAlmanac/HavensAlmanac.html">Haven&rsquo;s Almanac</a>
+        </nav>
+
+        <!-- Gift Box Hero -->
+        <header class="hero">
+            <div class="hero-icon">&#x1F381;</div>
+            <p style="font-size:0.85em; text-transform:uppercase; letter-spacing:0.25em; opacity:0.7; margin:0;">A Daily Gifting Routine</p>
+            <h1>Gifting Assistant<span class="full-name">Plan Your Daily Gift Run</span></h1>
+            <p class="tagline">Pick your NPCs, see the perfect gift, never miss a day</p>
+            <span class="version-badge">v1.0.0</span>
+        </header>
+
+        <div class="mod-page-download-stats" role="region" aria-label="Recorded download counts">
+            <span>Thunderstore <strong><span data-stats-mod="gifting-assistant" data-field="thunderstore_downloads">&mdash;</span></strong></span>
+            <span>Nexus Mods <strong><span data-stats-mod="gifting-assistant" data-field="nexus_downloads">&mdash;</span></strong></span>
+            <span>Combined <strong><span data-stats-mod="gifting-assistant" data-field="combined_total">&mdash;</span></strong></span>
+        </div>
+
+        <!-- Intro -->
+        <section class="intro-section">
+            <p>Gifting Assistant turns daily gift-giving into a simple routine. Add the NPCs you care about to a per-character roster, and the in-game window shows each one's loved and liked gifts with item icons, how many you're carrying, and a priority you choose. Mark people gifted as you go &mdash; gifted NPCs sink to the bottom and the list resets each new day, so you always know who's left.</p>
+        </section>
+
+        <!-- Quick Controls -->
+        <section class="keybind-section">
+            <h2 class="section-title">Quick Controls</h2>
+            <div class="keybind-grid">
+                <div class="keybind-card">
+                    <div class="keybind-keys"><kbd>Ctrl</kbd> + <kbd>G</kbd></div>
+                    <div class="keybind-action">Open / Close the Gifting window</div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Integration notices -->
+        <section class="notice-section">
+            <div class="notice-box">
+                <h3>&#x1F4DD; Sun Haven Todo Integration</h3>
+                <p>When <strong>Sun Haven Todo</strong> is installed, Gifting Assistant defaults to <strong>Push to Todo</strong> mode. Use the per-row <strong>+Todo</strong> button to push a <strong>&ldquo;Gift {NPC} today&rdquo;</strong> task (gift icon and suggested gifts in the description). Tasks <strong>auto-complete</strong> when you gift that NPC in-game; the row <strong>Gifted</strong> checkbox tracks your roster only and does not add todos. Every new in-game day, gift tasks from the daily refresh are cleared and re-added for the current roster.</p>
+                <p>No Sun Haven Todo? Gifting Assistant falls back to its own internal daily roster &mdash; everything still works, just inside the Gifting window.</p>
+            </div>
+            <div class="notice-box">
+                <h3>&#x1F382; Birthday Reminder</h3>
+                <p>With <strong>Birthday Reminder</strong> installed, NPCs celebrating a birthday today are highlighted on your roster so you can prioritize them.</p>
+            </div>
+        </section>
+
+        <section class="notice-section" id="almanac-integration">
+            <div class="notice-box" style="border-left:3px solid #c9982e;">
+                <h3>&#x1F4D6; Integration with Haven&rsquo;s Almanac</h3>
+                <p>When <a href="../HavensAlmanac/HavensAlmanac.html">Haven&rsquo;s Almanac</a> is installed, Gifting Assistant can share roster progress (enabled by default via <code>Integrations &gt; UseAlmanacIntegration</code> in <code>GiftingAssistant.cfg</code>):</p>
+                <ul style="margin: 10px 0 0 1.25em; line-height: 1.75;">
+                    <li><strong>HUD line</strong> &mdash; pending vs roster count (e.g. <code>3 pending / 8 roster</code>), or &ldquo;Integration disabled&rdquo; when opted out.</li>
+                    <li><strong>Dashboard panel</strong> &mdash; roster and pending counts; each not-yet-gifted NPC with priority and gifted status.</li>
+                    <li><strong>Daily briefing</strong> &mdash; when NPCs are still waiting, how many remain plus high- and urgent-priority breakdowns.</li>
+                </ul>
+            </div>
+        </section>
+
+        <!-- Features -->
+        <section class="features-section">
+            <h2 class="section-title">What&rsquo;s Inside</h2>
+            <div class="features-grid">
+                <div class="feature-card">
+                    <div class="feature-icon">&#x1F4CB;</div>
+                    <h3>Daily Gift Roster</h3>
+                    <p>Add any NPC to a per-character routine list. Open the window each day to see exactly who you planned to gift.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">&#x1F381;</div>
+                    <h3>Loved &amp; Liked Suggestions</h3>
+                    <p>Shows each NPC's loved and liked gifts pulled from live game data, each with its item icon so you know what to look for.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">&#x1F392;</div>
+                    <h3>Inventory Hints</h3>
+                    <p>Optionally shows how many of each suggested gift you're currently carrying, so you can tell at a glance what you can deliver right now.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">&#x2B50;</div>
+                    <h3>Preferred Gift Picks</h3>
+                    <p>Use the <strong>Gifts</strong> button on a row to choose preferred gifts per NPC. Your picks drive both the icons in the window and the gift shown on the Todo task &mdash; less clutter, more focus.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">&#x1F525;</div>
+                    <h3>Priority Sorting</h3>
+                    <p>Mark each NPC Low, Normal, High, or Urgent. The roster sorts by priority and gifted NPCs drop to the bottom.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">&#x2705;</div>
+                    <h3>Gifted-Today Tracking</h3>
+                    <p>Reads the game's own "gave a gift today" flag and lets you mark gifts manually. Everything resets cleanly on a new day.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">&#x1F464;</div>
+                    <h3>Per-Character Saves</h3>
+                    <p>Each character keeps its own roster, priorities, and preferred-gift picks. Switch characters and your routine is always saved correctly.</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- How the roster reads -->
+        <section class="museum-section-list">
+            <h2 class="section-title">How the Roster Works</h2>
+            <div class="museum-grid">
+                <div class="museum-section gifts">
+                    <div class="section-header">
+                        <span class="section-icon">&#x1F381;</span>
+                        <h3>Suggestions</h3>
+                    </div>
+                    <p class="section-desc">Each row shows what the NPC wants.</p>
+                    <ul class="bundle-list">
+                        <li><span class="bundle-icon">&#x1F495;</span> Loved gifts &mdash; the biggest friendship boost</li>
+                        <li><span class="bundle-icon">&#x1F44D;</span> Liked gifts &mdash; solid alternatives</li>
+                        <li><span class="bundle-icon">&#x1F5BC;</span> Item icons for quick recognition</li>
+                        <li><span class="bundle-icon">&#x2B50;</span> Your preferred picks shown first</li>
+                    </ul>
+                </div>
+
+                <div class="museum-section priority">
+                    <div class="section-header">
+                        <span class="section-icon">&#x1F525;</span>
+                        <h3>Order &amp; Status</h3>
+                    </div>
+                    <p class="section-desc">Stay on top of the day's plan.</p>
+                    <ul class="bundle-list">
+                        <li><span class="bundle-icon">&#x1F53C;</span> Priority drives the sort order</li>
+                        <li><span class="bundle-icon">&#x1F392;</span> Bag counts for suggested gifts</li>
+                        <li><span class="bundle-icon">&#x2705;</span> Gifted NPCs sink to the bottom</li>
+                        <li><span class="bundle-icon">&#x1F305;</span> Roster resets each new day</li>
+                    </ul>
+                </div>
+
+                <div class="museum-section sync">
+                    <div class="section-header">
+                        <span class="section-icon">&#x1F517;</span>
+                        <h3>Stays in Sync</h3>
+                    </div>
+                    <p class="section-desc">Works with your other mods.</p>
+                    <ul class="bundle-list">
+                        <li><span class="bundle-icon">&#x1F4DD;</span> Pushes daily tasks to Sun Haven Todo</li>
+                        <li><span class="bundle-icon">&#x267B;</span> Todo tasks auto-complete when you gift in-game (+Todo to add reminders)</li>
+                        <li><span class="bundle-icon">&#x1F382;</span> Birthday NPCs highlighted today</li>
+                        <li><span class="bundle-icon">&#x1F4D6;</span> Progress shared with Haven's Almanac</li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+
+        <!-- Gift Preference Levels -->
+        <section class="rarity-section">
+            <h2 class="section-title">Gift Preference Levels</h2>
+            <div class="rarity-grid">
+                <div class="rarity-item">
+                    <span class="rarity-dot loved"></span>
+                    <span class="rarity-label">Loved</span>
+                </div>
+                <div class="rarity-item">
+                    <span class="rarity-dot liked"></span>
+                    <span class="rarity-label">Liked</span>
+                </div>
+            </div>
+        </section>
+
+        <!-- Priority Levels -->
+        <section class="rarity-section">
+            <h2 class="section-title">Priority Levels</h2>
+            <div class="rarity-grid">
+                <div class="rarity-item">
+                    <span class="rarity-dot low"></span>
+                    <span class="rarity-label">Low</span>
+                </div>
+                <div class="rarity-item">
+                    <span class="rarity-dot normal"></span>
+                    <span class="rarity-label">Normal</span>
+                </div>
+                <div class="rarity-item">
+                    <span class="rarity-dot high"></span>
+                    <span class="rarity-label">High</span>
+                </div>
+                <div class="rarity-item">
+                    <span class="rarity-dot urgent"></span>
+                    <span class="rarity-label">Urgent</span>
+                </div>
+            </div>
+        </section>
+
+        <!-- How to Use -->
+        <section class="usage-section">
+            <h2 class="section-title">Your Daily Gifting Routine</h2>
+            <div class="usage-steps">
+                <div class="step">
+                    <div class="step-number">1</div>
+                    <div class="step-content">
+                        <h4>Open the Window</h4>
+                        <p>Press <kbd>Ctrl</kbd> + <kbd>G</kbd> to open the Gifting Assistant window at any time.</p>
+                    </div>
+                </div>
+                <div class="step">
+                    <div class="step-number">2</div>
+                    <div class="step-content">
+                        <h4>Build Your Roster</h4>
+                        <p>Add the NPCs you want to gift regularly. Each row shows their loved and liked gifts with icons, and (optionally) how many you're carrying.</p>
+                    </div>
+                </div>
+                <div class="step">
+                    <div class="step-number">3</div>
+                    <div class="step-content">
+                        <h4>Set Priorities &amp; Picks</h4>
+                        <p>Choose a priority (Low / Normal / High / Urgent) for each NPC, and use the <strong>Gifts</strong> button to pick preferred gifts so the row and Todo task show only what you care about.</p>
+                    </div>
+                </div>
+                <div class="step">
+                    <div class="step-number">4</div>
+                    <div class="step-content">
+                        <h4>Deliver &amp; Mark Gifted</h4>
+                        <p>Give an NPC one of their preferred gifts in-game, or click <strong>Mark Gifted</strong> in the window. Gifted NPCs drop to the bottom &mdash; and any matching Sun Haven Todo task completes automatically.</p>
+                    </div>
+                </div>
+                <div class="step">
+                    <div class="step-number">5</div>
+                    <div class="step-content">
+                        <h4>Start Fresh Tomorrow</h4>
+                        <p>Each new in-game day the roster resets and (with Sun Haven Todo) the gift tasks are cleared and re-added for the current roster.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Installation -->
+        <section class="install-section">
+            <h2 class="section-title">Installation</h2>
+            <div class="install-steps">
+                <div class="install-step">
+                    <div class="step-icon">&#x1F4E6;</div>
+                    <div class="step-info">
+                        <h4>1. Install BepInEx</h4>
+                        <p>Download and install BepInEx 5.x for Unity games if you haven't already.</p>
+                    </div>
+                </div>
+                <div class="install-step">
+                    <div class="step-icon">&#x1F4E5;</div>
+                    <div class="step-info">
+                        <h4>2. Download Gifting Assistant</h4>
+                        <p>Get GiftingAssistant.dll from the releases page.</p>
+                    </div>
+                </div>
+                <div class="install-step">
+                    <div class="step-icon">&#x1F4C1;</div>
+                    <div class="step-info">
+                        <h4>3. Install the Mod</h4>
+                        <p>Place the DLL in your <code>BepInEx/plugins/</code> folder.</p>
+                    </div>
+                </div>
+                <div class="install-step">
+                    <div class="step-icon">&#x1F3AE;</div>
+                    <div class="step-info">
+                        <h4>4. Start Gifting!</h4>
+                        <p>Launch Sun Haven and press <kbd>Ctrl</kbd>+<kbd>G</kbd> to build your roster.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Configuration -->
+        <section class="config-section">
+            <h2 class="section-title">Settings</h2>
+            <div class="config-table">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Setting</th>
+                            <th>Default</th>
+                            <th>Description</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>Enabled</td>
+                            <td>true</td>
+                            <td>Enable the mod</td>
+                        </tr>
+                        <tr>
+                            <td>ToggleKey</td>
+                            <td><kbd>G</kbd></td>
+                            <td>Key to open/close the Gifting window</td>
+                        </tr>
+                        <tr>
+                            <td>RequireCtrl</td>
+                            <td>true</td>
+                            <td>Require Ctrl with the toggle key</td>
+                        </tr>
+                        <tr>
+                            <td>ShowInventoryPossession</td>
+                            <td>true</td>
+                            <td>Show bag counts for suggested gifts</td>
+                        </tr>
+                        <tr>
+                            <td>UIScale</td>
+                            <td>1.0</td>
+                            <td>Window scale</td>
+                        </tr>
+                        <tr>
+                            <td>AutoSave</td>
+                            <td>true</td>
+                            <td>Periodically save changes</td>
+                        </tr>
+                        <tr>
+                            <td>AutoSaveInterval</td>
+                            <td>60</td>
+                            <td>Auto-save interval in seconds</td>
+                        </tr>
+                        <tr>
+                            <td>ReminderMode</td>
+                            <td>PushToTodo*</td>
+                            <td>RosterOnly = built-in daily roster only. PushToTodo = roster plus per-row +Todo when Sun Haven Todo is installed.</td>
+                        </tr>
+                        <tr>
+                            <td>UseAlmanacIntegration</td>
+                            <td>true</td>
+                            <td>Share gift roster progress with Haven's Almanac when installed</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+            <p class="config-note">*ReminderMode defaults to <strong>PushToTodo</strong> when Sun Haven Todo is installed, otherwise the roster runs on its own. Configuration file: <code>BepInEx/config/GiftingAssistant.cfg</code> &middot; per-character rosters save to <code>BepInEx/config/com.azraelgodking.giftingassistant/</code></p>
+        </section>
+
+        <!-- Related Mods -->
+        <section class="related-mods">
+            <h2 class="section-title">Pairs Well With</h2>
+            <div class="related-grid">
+                <a href="../Todo/todo.html" class="related-card">
+                    <span class="related-icon">&#x1F4DD;</span>
+                    <div class="related-info">
+                        <h4>Sun Haven Todo</h4>
+                        <p>Direct integration &mdash; daily "Gift {NPC} today" tasks that auto-complete when you give the gift</p>
+                    </div>
+                </a>
+                <a href="../BirthdayReminder/BirthdayReminder.html" class="related-card">
+                    <span class="related-icon">&#x1F382;</span>
+                    <div class="related-info">
+                        <h4>Birthday Reminder</h4>
+                        <p>Highlights NPCs whose birthday is today right on your gift roster</p>
+                    </div>
+                </a>
+                <a href="../HavensAlmanac/HavensAlmanac.html" class="related-card">
+                    <span class="related-icon">&#x1F4D6;</span>
+                    <div class="related-info">
+                        <h4>Haven's Almanac</h4>
+                        <p>Surfaces your gift roster progress in the HUD, dashboard, and daily briefing</p>
+                    </div>
+                </a>
+            </div>
+        </section>
+
+        <nav class="download-nav" data-mod-key="com.azraelgodking.giftingassistant" aria-label="Download links"></nav>
+        <footer class="footer">
+            <p>Gifting Assistant - A Sun Haven Mod by AzraelGodking</p>
+            <div class="footer-links">
+                <a href="../index.html">Back to Mod Hub</a>
+            </div>
+        </footer>
+    </div>
+</body>
+</html>

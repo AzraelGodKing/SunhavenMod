@@ -20,13 +20,16 @@ namespace HavensRespec
     {
         public static ManualLogSource Log { get; private set; }
         public static Plugin Instance { get; private set; }
-        public static bool IsDebugLoggingEnabled => Instance?._config?.DebugLogging?.Value == true;
+        public static bool IsDebugLoggingEnabled => _staticConfig?.DebugLogging?.Value == true;
 
-        private Harmony _harmony;
-        private RespecConfig _config;
-        private SkillResetService _resetService;
-        private CostService _costService;
-        private RespecController _controller;
+        private static Harmony _staticHarmony;
+        private static RespecConfig _staticConfig;
+        private static SkillResetService _staticResetService;
+        private static CostService _staticCostService;
+        private static RespecController _staticController;
+        private static GameObject _persistentRunner;
+        private static RespecPersistentRunner _persistentRunnerComponent;
+
         private bool _applicationQuitting;
 
         private void Awake()
@@ -41,23 +44,20 @@ namespace HavensRespec
                     "HavensRespec.cfg",
                     Log.LogWarning);
                 ConfigFileHelper.ReplacePluginConfig(this, namedConfig, Log.LogWarning);
-                _config = new RespecConfig(namedConfig);
+                _staticConfig = new RespecConfig(namedConfig);
+                LocalizationBootstrap.BindForceEnglish(namedConfig);
 
-                if (!_config.Enabled.Value)
+                if (!_staticConfig.Enabled.Value)
                 {
                     Log.LogInfo($"{PluginInfo.PLUGIN_NAME} disabled in config.");
                     return;
                 }
 
-                _resetService = new SkillResetService(Log, () => IsDebugLoggingEnabled);
-                _costService = new CostService(Log, _config);
-                _controller = new RespecController(Log, _config, _resetService, _costService);
-                _controller.Install();
+                EnsureModServices();
+                EnsureHarmonyPatched();
+                CreatePersistentRunner();
 
-                _harmony = new Harmony(PluginInfo.PLUGIN_GUID);
-                LocalizationBootstrap.Init(PluginInfo.PLUGIN_GUID, _harmony, Log, Assembly.GetExecutingAssembly());
-                ModLocalization.LanguageChanged += OnLanguageChanged;
-                _harmony.PatchAll(typeof(SkillsSetupProfessionPatch));
+                SceneManager.sceneLoaded += OnSceneLoaded;
 
                 try
                 {
@@ -79,10 +79,13 @@ namespace HavensRespec
         private void OnApplicationQuit()
         {
             _applicationQuitting = true;
+            TeardownMod(fullShutdown: true);
         }
 
         private void OnDestroy()
         {
+            SceneManager.sceneLoaded -= OnSceneLoaded;
+
             string sceneName = SceneManager.GetActiveScene().name ?? string.Empty;
             string sceneLower = sceneName.ToLowerInvariant();
             bool expectedTeardown = _applicationQuitting || !Application.isPlaying || sceneLower.Contains("menu") || sceneLower.Contains("title");
@@ -91,53 +94,171 @@ namespace HavensRespec
             else
                 Log?.LogWarning($"[Lifecycle] {PluginInfo.PLUGIN_NAME} OnDestroy outside expected teardown (scene: {sceneName})");
 
-            ModLocalization.Shutdown();
+            if (_applicationQuitting)
+            {
+                TeardownMod(fullShutdown: true);
+                return;
+            }
+
+            // Scene transition: keep Harmony patches, controller hooks, and localization alive.
+        }
+
+        private static void OnSceneLoaded(Scene scene, LoadSceneMode mode)
+        {
+            Log?.LogDebug($"[Respec] Scene loaded: {scene.name}");
+
+            if (scene.name == "MainMenu" || scene.name == "Bootstrap")
+                return;
+
+            EnsureModReady();
+        }
+
+        /// <summary>
+        /// Re-wire hooks and the persistent runner after the BepInEx plugin MonoBehaviour is destroyed on scene load.
+        /// </summary>
+        public static void EnsureModReady()
+        {
+            if (_staticConfig == null || !_staticConfig.Enabled.Value)
+                return;
+
             try
             {
-                _controller?.Uninstall();
+                EnsureModServices();
+                EnsureHarmonyPatched();
+                CreatePersistentRunner();
+
+                if (_staticController != null && SkillsSetupProfessionPatch.OnSetup == null)
+                {
+                    Log?.LogInfo("[EnsureMod] Re-installing RespecController hooks after plugin recreation.");
+                    _staticController.Install();
+                }
             }
             catch (Exception ex)
             {
-                Log?.LogWarning($"{PluginInfo.PLUGIN_NAME} OnDestroy: Uninstall failed: {ex.Message}");
+                Log?.LogError($"[EnsureMod] Error: {ex.Message}");
             }
-            finally
+        }
+
+        private static void EnsureModServices()
+        {
+            if (_staticResetService == null)
+                _staticResetService = new SkillResetService(Log, () => IsDebugLoggingEnabled);
+
+            if (_staticCostService == null)
+                _staticCostService = new CostService(Log, _staticConfig);
+
+            if (_staticController == null)
+            {
+                _staticController = new RespecController(Log, _staticConfig, _staticResetService, _staticCostService);
+                _staticController.Install();
+            }
+        }
+
+        private static void EnsureHarmonyPatched()
+        {
+            if (_staticHarmony != null)
+                return;
+
+            _staticHarmony = new Harmony(PluginInfo.PLUGIN_GUID);
+            LocalizationBootstrap.Init(PluginInfo.PLUGIN_GUID, _staticHarmony, Log, Assembly.GetExecutingAssembly());
+            ModLocalization.LanguageChanged += OnLanguageChanged;
+            _staticHarmony.PatchAll(typeof(SkillsSetupProfessionPatch));
+            Log?.LogInfo("[Respec] Harmony patches applied.");
+        }
+
+        private static void CreatePersistentRunner()
+        {
+            if (_persistentRunner != null && _persistentRunnerComponent != null)
+                return;
+
+            _persistentRunner = new GameObject("HavensRespec_PersistentRunner");
+            UnityEngine.Object.DontDestroyOnLoad(_persistentRunner);
+            _persistentRunner.hideFlags = HideFlags.HideAndDontSave;
+            SceneRootSurvivor.TryRegisterPersistentRunnerGameObject(_persistentRunner);
+            _persistentRunnerComponent = _persistentRunner.AddComponent<RespecPersistentRunner>();
+            Log?.LogInfo("[PersistentRunner] Created");
+        }
+
+        private static void TeardownMod(bool fullShutdown)
+        {
+            ModLocalization.Shutdown();
+            ModLocalization.LanguageChanged -= OnLanguageChanged;
+
+            if (fullShutdown)
             {
                 try
                 {
-                    _harmony?.UnpatchSelf();
+                    _staticController?.Uninstall();
                 }
                 catch (Exception ex)
                 {
-                    Log?.LogWarning($"{PluginInfo.PLUGIN_NAME} OnDestroy: UnpatchSelf failed: {ex.Message}");
+                    Log?.LogWarning($"{PluginInfo.PLUGIN_NAME} teardown: Uninstall failed: {ex.Message}");
                 }
+
+                _staticController = null;
+                _staticResetService = null;
+                _staticCostService = null;
+
+                try
+                {
+                    _staticHarmony?.UnpatchSelf();
+                }
+                catch (Exception ex)
+                {
+                    Log?.LogWarning($"{PluginInfo.PLUGIN_NAME} teardown: UnpatchSelf failed: {ex.Message}");
+                }
+
+                _staticHarmony = null;
             }
         }
 
         private static void OnLanguageChanged(string _)
         {
-            Instance?._controller?.RefreshLocalizedUi();
+            _staticController?.RefreshLocalizedUi();
         }
 
-        private void Update()
+        internal static void TickHotkeys()
         {
-            if (_controller == null || _config == null)
+            if (_staticController == null || _staticConfig == null)
                 return;
 
-            var resetKey = _config.ResetCurrentTabHotkey.Value;
+            var resetKey = _staticConfig.ResetCurrentTabHotkey.Value;
             if (resetKey != KeyCode.None && Input.GetKeyDown(resetKey))
             {
-                var profession = _controller.TryGetActiveProfessionTab();
+                var profession = _staticController.TryGetActiveProfessionTab();
                 if (profession.HasValue)
-                    _controller.TryResetCurrentTab(profession.Value, bypassConfirm: false);
+                    _staticController.TryResetCurrentTab(profession.Value, bypassConfirm: false);
             }
 
-            var undoKey = _config.UndoHotkey.Value;
+            var undoKey = _staticConfig.UndoHotkey.Value;
             if (undoKey != KeyCode.None && Input.GetKeyDown(undoKey))
             {
-                var profession = _controller.TryGetActiveProfessionTab();
+                var profession = _staticController.TryGetActiveProfessionTab();
                 if (profession.HasValue)
-                    _controller.TryUndoCurrentTab(profession.Value);
+                    _staticController.TryUndoCurrentTab(profession.Value);
             }
+        }
+    }
+
+    /// <summary>
+    /// Survives scene transitions so hotkeys keep working when the BepInEx plugin MonoBehaviour is destroyed.
+    /// </summary>
+    public class RespecPersistentRunner : MonoBehaviour
+    {
+        private void Update()
+        {
+            Plugin.TickHotkeys();
+        }
+
+        private void OnDestroy()
+        {
+            string sceneName = SceneManager.GetActiveScene().name ?? string.Empty;
+            string sceneLower = sceneName.ToLowerInvariant();
+            bool expectedTeardown = !Application.isPlaying || sceneLower.Contains("menu") || sceneLower.Contains("title");
+            if (expectedTeardown)
+                Plugin.Log?.LogInfo("[PersistentRunner] OnDestroy during app quit/menu unload (expected).");
+            else
+                Plugin.Log?.LogWarning("[PersistentRunner] OnDestroy outside quit/menu (unexpected).");
         }
     }
 }

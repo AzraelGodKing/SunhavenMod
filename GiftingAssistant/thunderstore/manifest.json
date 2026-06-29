@@ -1,0 +1,7 @@
+{
+  "name": "GiftingAssistant",
+  "version_number": "1.0.0",
+  "website_url": "",
+  "description": "Daily gift routine planner — NPC roster, loved/liked gift suggestions with icons, gifted-today tracking, and priority sorting",
+  "dependencies": ["BepInEx-BepInExPack-5.4.2100"]
+}

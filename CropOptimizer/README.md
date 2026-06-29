@@ -5,6 +5,10 @@
 
 Crop Optimizer adds field-level harvest forecasting, a lightweight crop HUD, and soft integrations with Sunhaven Todo, Birthday Reminder, and The Vault.
 
+## Version
+
+**2.0.1** — published in [`docs/versions.json`](../docs/versions.json). Player-facing store text: [`thunderstore/README.md`](thunderstore/README.md).
+
 ## Features
 
 - Tracks crop growth updates through a single Harmony patch on crop growth.

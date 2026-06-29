@@ -8,6 +8,10 @@ AzraelGodKing mods are telling you today. It ships a compact always-on HUD,
 an expandable dashboard, and a morning briefing that pops up after you wake
 up so you don't forget today's tasks, birthdays, or museum windows.
 
+## Version
+
+**2.0.1** — published in [`docs/versions.json`](../docs/versions.json). Player-facing store text: [`thunderstore/README.md`](thunderstore/README.md).
+
 ## Features
 
 - **Compact HUD (`F4`)** — one-line summary per installed companion mod,
@@ -40,6 +44,7 @@ up so you don't forget today's tasks, birthdays, or museum windows.
 | Haven's Birthright | Current race and active racial bonuses |
 | Haven Dev Tools | Authorization status + player name |
 | Crop Optimizer | Live crop forecast summary |
+| Gifting Assistant | Daily gift roster progress, pending NPCs, and priority breakdown |
 
 The built-in **Mod Health** provider is always on and surfaces
 `SunhavenMods.Shared.VersionChecker` telemetry in the dashboard.

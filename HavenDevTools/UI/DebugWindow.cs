@@ -83,6 +83,7 @@ namespace HavenDevTools.UI
             ("com.azraelgodking.trinketfortune", "Trinket Fortune", "2.0.1"),
             ("com.azraelgodking.cropoptimizer", "Crop Optimizer", "2.0.1"),
             ("com.azraelgodking.havensrespec", "Haven's Respec", "2.0.1"),
+            ("com.azraelgodking.giftingassistant", "Gifting Assistant", "1.0.0"),
         };
 
         private const string PAUSE_ID = "HavenDevTools_Debug";

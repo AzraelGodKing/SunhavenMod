@@ -190,5 +190,21 @@
     "extraCsprojPaths": [],
     "docsNavNames": ["Haven's Respec"],
     "docsCardNames": ["Haven's Respec"]
+  },
+  {
+    "modKey": "giftingassistant",
+    "statsDomId": "gifting-assistant",
+    "jsonKey": "com.azraelgodking.giftingassistant",
+    "modDir": "GiftingAssistant",
+    "pluginFile": "PluginInfo.cs",
+    "dllName": "GiftingAssistant",
+    "csproj": "GiftingAssistant/GiftingAssistant.csproj",
+    "thunderstoreName": "GiftingAssistant",
+    "readmePath": "GiftingAssistant",
+    "indexDataName": "Gifting Assistant",
+    "docsPagePath": "GiftingAssistant/GiftingAssistant.html",
+    "extraCsprojPaths": [],
+    "docsNavNames": ["Gifting Assistant"],
+    "docsCardNames": ["Gifting Assistant"]
   }
 ]

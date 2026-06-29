@@ -193,6 +193,8 @@ namespace BirthdayReminder
                 _staticUIScale = Mathf.Clamp(_uiScale.Value, 0.5f, 2.5f);
                 _staticHUD?.SetScale(_staticUIScale);
             };
+
+            LocalizationBootstrap.BindForceEnglish(ConfigFile);
         }
 
         private static ConfigFile CreateNamedConfig()

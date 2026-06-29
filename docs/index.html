@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Sun Haven Mods - by AzraelGodKing</title>
-    <meta name="description" content="Quality-of-life mods for Sun Haven by AzraelGodKing. Museum tracker, smart chest sorting, currency vault, todo list, birthday reminders, racial bonuses, and dev tools.">
+    <meta name="description" content="Quality-of-life mods for Sun Haven by AzraelGodKing. Museum tracker, smart chest sorting, currency vault, todo list, birthday reminders, gifting assistant, racial bonuses, and dev tools.">
     <meta property="og:title" content="Sun Haven Mod Hub">
     <meta property="og:description" content="Quality-of-life mods for Sun Haven by AzraelGodKing. Museum tracker, smart chests, currency vault, and more.">
     <meta property="og:type" content="website">
@@ -32,10 +32,10 @@
     <a href="#main-content" class="skip-to-content">Skip to content</a>
 
     <!-- Town Crier's Notice -->
-    <div class="announcement-banner" id="announcementBanner" data-dismiss-key="announce-almanac-v110-review">
-        <span class="announcement-icon">&#x1F4D6;</span>
-        <span class="announcement-text"><strong>Hear ye!</strong> Haven's Almanac v1.1.0 &mdash; Crop Optimizer integration, edit-form recurring fixes, weekly/seasonal task resets, and shared JSON parser.</span>
-        <a href="HavensAlmanac/HavensAlmanac.html" class="announcement-link">Read the Proclamation &rarr;</a>
+    <div class="announcement-banner" id="announcementBanner" data-dismiss-key="announce-gifting-assistant-v100">
+        <span class="announcement-icon">&#x1F381;</span>
+        <span class="announcement-text"><strong>Hear ye!</strong> Gifting Assistant v1.0.0 &mdash; daily gift roster, loved/liked icons with bag counts, Todo auto-complete sync, and Almanac progress.</span>
+        <a href="GiftingAssistant/GiftingAssistant.html" class="announcement-link">View the Contract &rarr;</a>
         <button class="announcement-dismiss" aria-label="Dismiss announcement">&times;</button>
     </div>
 
@@ -50,7 +50,7 @@
                 <p class="hub-download-stats-primary"><strong>Total downloads (all mods combined):</strong> <span class="hub-download-grand" data-stats="total" data-field="grand_total">&mdash;</span></p>
                 <p class="hub-download-stats-detail">Thunderstore <span data-stats="total" data-field="thunderstore_site_total">&mdash;</span> &middot; Nexus Mods <span data-stats="total" data-field="nexus_site_total">&mdash;</span></p>
             </div>
-            <p class="hub-meta">&#x2694;&#xFE0F; 12 Contracts Posted &bull; 0 Expired &bull; All Ranks Welcome &#x2694;&#xFE0F;</p>
+            <p class="hub-meta">&#x2694;&#xFE0F; 13 Contracts Posted &bull; 0 Expired &bull; All Ranks Welcome &#x2694;&#xFE0F;</p>
         </header>
 
         <nav class="hub-jump-nav" aria-label="Page sections">
@@ -294,6 +294,34 @@
                     <a href="BirthdayReminder/BirthdayReminder.html" class="mod-cta-button birthday-btn">Accept Contract &rarr;</a>
                 </div>
 
+                <!-- Gifting Assistant -->
+                <div class="mod-card gifting-theme" data-tags="Social,QoL" data-name="Gifting Assistant">
+                    <div class="mod-card-header">
+                        <span class="mod-icon-large">&#x1F381;</span>
+                        <div class="mod-title-area">
+                            <h3>Gifting Assistant</h3>
+                            <p class="mod-tagline">Daily Gift Routine Planner</p>
+                            <span class="mod-version">v1.0.0</span>
+                        </div>
+                    </div>
+                    <p class="mod-description">Build a per-character daily gift roster with loved and liked suggestions, item icons, and priority sorting. Mark NPCs gifted as you go; syncs with Sun Haven Todo, highlights birthdays, and shares progress with Haven's Almanac.</p>
+                    <div class="mod-features-list">
+                        <span class="mod-feature">Gift Roster</span>
+                        <span class="mod-feature">Loved / Liked Icons</span>
+                        <span class="mod-feature">Todo Sync</span>
+                        <span class="mod-feature">Per-Character Saves</span>
+                    </div>
+                    <div class="mod-card-downloads" aria-label="Recorded downloads">
+                        <div class="mod-card-downloads-row">
+                            <span>Thunderstore <strong><span data-stats-mod="gifting-assistant" data-field="thunderstore_downloads">&mdash;</span></strong></span>
+                            <span>Nexus <strong><span data-stats-mod="gifting-assistant" data-field="nexus_downloads">&mdash;</span></strong></span>
+                            <span>Total <strong><span data-stats-mod="gifting-assistant" data-field="combined_total">&mdash;</span></strong></span>
+                        </div>
+                    </div>
+                    <span class="mod-status-badge status-new">New</span>
+                    <a href="GiftingAssistant/GiftingAssistant.html" class="mod-cta-button gifting-btn">Accept Contract &rarr;</a>
+                </div>
+
                 <!-- Senpai's Chest -->
                 <div class="mod-card chest-theme" data-tags="QoL,Storage" data-name="Senpai's Chest">
                     <div class="mod-card-header">
@@ -337,7 +365,7 @@
                         <span class="mod-feature">Compact HUD</span>
                         <span class="mod-feature">Full Dashboard</span>
                         <span class="mod-feature">Smart Daily Briefing</span>
-                        <span class="mod-feature">8 Mod Integrations</span>
+                        <span class="mod-feature">9 Mod Integrations</span>
                     </div>
                     <div class="mod-card-downloads" aria-label="Recorded downloads">
                         <div class="mod-card-downloads-row">
@@ -496,6 +524,8 @@
                         <ul style="margin: 8px 0 0 20px; line-height: 1.8;">
                             <li><strong>Senpai's Chest + S.M.U.T.</strong> &mdash; Auto-excludes already-donated museum items from sorting</li>
                             <li><strong>Birthday Reminder + Todo</strong> &mdash; Birthday gift reminders auto-create todo tasks that complete when you give the gift</li>
+                            <li><strong>Gifting Assistant + Todo</strong> &mdash; Daily gift roster pushes &ldquo;Gift {NPC} today&rdquo; tasks that auto-complete when you gift in-game or mark gifted in the window</li>
+                            <li><strong>Gifting Assistant + Birthday Reminder + Almanac</strong> &mdash; Birthday NPCs surface in the gift roster; roster progress appears on the Almanac dashboard</li>
                             <li><strong>Senpai's Chest + S.M.U.T. + Todo</strong> &mdash; Undonated museum items found in chests auto-create todo reminders that complete on donation</li>
                         </ul>
                         <p style="margin-top: 8px;">All combinations are optional &mdash; each enchantment works perfectly on its own!</p>
@@ -532,9 +562,10 @@
                 </div>
                 <div class="pack-card" style="border-top:3px solid #e87ba4;">
                     <h3 class="pack-name">&#x1F495; The Diplomat's Kit</h3>
-                    <p class="pack-desc">Build relationships and never miss a birthday</p>
+                    <p class="pack-desc">Build relationships and never miss a birthday or daily gift</p>
                     <div class="pack-mods">
                         <a href="BirthdayReminder/BirthdayReminder.html" class="pack-mod">Birthday Reminder</a>
+                        <a href="GiftingAssistant/GiftingAssistant.html" class="pack-mod">Gifting Assistant</a>
                         <a href="RacialBonuses/RacialBonuses.html" class="pack-mod">Haven's Birthright</a>
                     </div>
                 </div>
@@ -549,7 +580,7 @@
                 </div>
                 <div class="pack-card full-suite" style="border-top:3px solid #ffc332;">
                     <h3 class="pack-name">&#x2B50; Guild Master's Arsenal</h3>
-                    <p class="pack-desc">Full gameplay suite &mdash; all twelve mods: vault, races, museum, storage, tasks, social, fishing luck, crop planning, skill respec, and the Almanac dashboard. Install <a href="HavenDevTools/HavenDevTools.html">HavenDevTools</a> separately if you need author utilities. Haven's Birthright can optionally mirror passive bonuses across races via <code>[BonusTransfers]</code> in its config.</p>
+                    <p class="pack-desc">Full gameplay suite &mdash; all thirteen mods: vault, races, museum, storage, tasks, social, gifting, fishing luck, crop planning, skill respec, and the Almanac dashboard. Install <a href="HavenDevTools/HavenDevTools.html">HavenDevTools</a> separately if you need author utilities. Haven's Birthright can optionally mirror passive bonuses across races via <code>[BonusTransfers]</code> in its config.</p>
                     <div class="pack-mods">
                         <a href="HavensAlmanac/HavensAlmanac.html" class="pack-mod">Almanac</a>
                         <a href="TheVault/TheVault.html" class="pack-mod">The Vault</a>
@@ -562,6 +593,7 @@
                         <a href="SenpaisChest/SenpaisChest.html" class="pack-mod">Senpai's Chest</a>
                         <a href="Todo/todo.html" class="pack-mod">Todo</a>
                         <a href="BirthdayReminder/BirthdayReminder.html" class="pack-mod">Birthday</a>
+                        <a href="GiftingAssistant/GiftingAssistant.html" class="pack-mod">Gifting</a>
                     </div>
                 </div>
             </div>
@@ -580,6 +612,7 @@
                         <th>Chest</th>
                         <th>Todo</th>
                         <th>Birthday</th>
+                        <th>Gifting</th>
                         <th>Birthright</th>
                         <th>Faster</th>
                         <th>Trinket</th>
@@ -602,11 +635,13 @@
                         <td class="cmp-yes">Yes</td>
                         <td class="cmp-yes">Yes</td>
                         <td class="cmp-yes">Yes</td>
-                        <td class="cmp-no">&mdash;</td>
+                        <td class="cmp-yes">Yes</td>
+                        <td class="cmp-yes">Yes</td>
                         <td class="cmp-no">&mdash;</td>
                     </tr>
                     <tr>
                         <td>In-Game UI</td>
+                        <td class="cmp-yes">Yes</td>
                         <td class="cmp-yes">Yes</td>
                         <td class="cmp-yes">Yes</td>
                         <td class="cmp-yes">Yes</td>
@@ -634,9 +669,11 @@
                         <td class="cmp-yes">Yes</td>
                         <td class="cmp-yes">Yes</td>
                         <td class="cmp-yes">Yes</td>
+                        <td class="cmp-yes">Yes</td>
                     </tr>
                     <tr>
                         <td>Keyboard Shortcuts</td>
+                        <td class="cmp-yes">Yes</td>
                         <td class="cmp-yes">Yes</td>
                         <td class="cmp-yes">Yes</td>
                         <td class="cmp-yes">Yes</td>
@@ -664,12 +701,14 @@
                         <td class="cmp-no">&mdash;</td>
                         <td class="cmp-no">&mdash;</td>
                         <td class="cmp-no">&mdash;</td>
+                        <td class="cmp-no">&mdash;</td>
                     </tr>
                     <tr>
                         <td>Auto Storage/Sorting</td>
                         <td class="cmp-yes">Yes</td>
                         <td class="cmp-no">&mdash;</td>
                         <td class="cmp-yes">Yes</td>
+                        <td class="cmp-no">&mdash;</td>
                         <td class="cmp-no">&mdash;</td>
                         <td class="cmp-no">&mdash;</td>
                         <td class="cmp-no">&mdash;</td>
@@ -687,7 +726,7 @@
                         <td class="cmp-no">&mdash;</td>
                         <td class="cmp-yes">Yes</td>
                         <td class="cmp-yes">Yes</td>
-                        <td class="cmp-no">&mdash;</td>
+                        <td class="cmp-yes">Yes</td>
                         <td class="cmp-no">&mdash;</td>
                         <td class="cmp-yes">Yes</td>
                         <td class="cmp-yes">Yes</td>
@@ -698,6 +737,7 @@
                     <tr>
                         <td>Cross-Mod Synergy</td>
                         <td class="cmp-no">&mdash;</td>
+                        <td class="cmp-yes">Yes</td>
                         <td class="cmp-yes">Yes</td>
                         <td class="cmp-yes">Yes</td>
                         <td class="cmp-yes">Yes</td>

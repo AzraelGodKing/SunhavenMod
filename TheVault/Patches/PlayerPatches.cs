@@ -1,6 +1,5 @@
 using System;
-using TheVault.UI;
-using VaultIconCache = TheVault.UI.IconCache;
+using SunhavenMods.Shared;
 using Wish;
 
 namespace TheVault.Patches
@@ -16,6 +15,7 @@ namespace TheVault.Patches
         private static string _pendingCharacterName = null;
         private static string _lastCharacterSourceLog = null;
         private static string _lastCharacterNameLog = null;
+        private static bool _warnedCurrentCharacterFallback;
         private static readonly object _contextLoadLock = new object();
         private static float _lastSaveAndResetRealtime = -100f;
         private const float SaveAndResetDedupSeconds = 1.5f;
@@ -111,8 +111,8 @@ namespace TheVault.Patches
                     vaultManager.SetPlayerName(characterName);
                 }
 
-                // Load UI icons
-                VaultIconCache.LoadAllIcons();
+                // Load UI icons (shared cache — VaultUI/VaultHUD use the same instance)
+                IconCache.LoadAllIcons();
 
                 Plugin.Log?.LogInfo($"Vault loaded successfully for {characterName}");
             }
@@ -160,7 +160,15 @@ namespace TheVault.Patches
                 if (currentChar != null && !string.IsNullOrEmpty(currentChar.characterName))
                 {
                     string nameFromCurrent = NormalizeCharacterNameForVault(currentChar.characterName);
-                    Plugin.Log?.LogWarning($"GetCurrentCharacterName: FALLBACK to CurrentCharacter = '{nameFromCurrent}' (LastLoadedCharacterName was null)");
+                    if (!_warnedCurrentCharacterFallback)
+                    {
+                        Plugin.Log?.LogWarning($"GetCurrentCharacterName: FALLBACK to CurrentCharacter = '{nameFromCurrent}' (LastLoadedCharacterName was null)");
+                        _warnedCurrentCharacterFallback = true;
+                    }
+                    else
+                    {
+                        Plugin.Log?.LogDebug($"GetCurrentCharacterName: FALLBACK to CurrentCharacter = '{nameFromCurrent}'");
+                    }
                     return nameFromCurrent;
                 }
 
@@ -226,10 +234,11 @@ namespace TheVault.Patches
             _loadedCharacterName = null;
             _lastCharacterSourceLog = null;
             _lastCharacterNameLog = null;
+            _warnedCurrentCharacterFallback = false;
             ClearPendingCharacterName();
             GameSavePatches.ResetLastLoadedSlot(); // Reset slot tracker so next character gets fresh data
             ItemPatches.ResetState();
-            VaultIconCache.Clear();
+            IconCache.Clear();
         }
 
         /// <summary>

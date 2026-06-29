@@ -71,6 +71,11 @@ namespace TheVault.UI
         private float _lastUpdateTime;
         private const float UpdateInterval = 0.5f;
 
+        private bool _layoutDirty = true;
+        private int _cacheFingerprint = 0;
+        private int _lastScreenW;
+        private int _lastScreenH;
+
         private static bool _loggedQuarantineHudOnce;
 
         private readonly Dictionary<string, int> _seasonal = new Dictionary<string, int>();
@@ -119,13 +124,14 @@ namespace TheVault.UI
             _windowRect.y = y;
             _useCustomHudPlacement = true;
         }
-        public void SetScale(float scale) { _scale = Mathf.Clamp(scale, 0.5f, 3.0f); _stylesForMul = -1f; }
-        public void SetHudDensity(VaultHudDensity density) { _hudDensity = density; _stylesForMul = -1f; }
+        public void SetScale(float scale) { _scale = Mathf.Clamp(scale, 0.5f, 3.0f); _stylesForMul = -1f; _layoutDirty = true; }
+        public void SetHudDensity(VaultHudDensity density) { _hudDensity = density; _stylesForMul = -1f; _layoutDirty = true; }
         public void SetOpacity(float opacity)
         {
             _opacity = Mathf.Clamp01(opacity);
             _stylesForMul = -1f;
             _texturesForOpacity = -1f;
+            _layoutDirty = true;
         }
 
         public bool IsEnabled => _isEnabled;
@@ -149,6 +155,7 @@ namespace TheVault.UI
         private void RefreshCaches()
         {
             bool debugAll = Plugin.GetConfigDebugFullVaultInspector();
+            int before = _cacheFingerprint;
 
             _seasonal.Clear();
             foreach (var id in VaultCurrencyIds.AllSeasonalFullIds)
@@ -182,6 +189,37 @@ namespace TheVault.UI
                     int v = _vaultManager.GetCurrency(full);
                     if (v != 0) _custom[full] = v;
                 }
+            }
+
+            _cacheFingerprint = ComputeCacheFingerprint();
+            if (before != _cacheFingerprint)
+                _layoutDirty = true;
+        }
+
+        private int ComputeCacheFingerprint()
+        {
+            unchecked
+            {
+                int hash = 17;
+                hash = (hash * 31) + HashCurrencyDict(_seasonal);
+                hash = (hash * 31) + HashCurrencyDict(_keys);
+                hash = (hash * 31) + HashCurrencyDict(_special);
+                hash = (hash * 31) + HashCurrencyDict(_custom);
+                return hash;
+            }
+        }
+
+        private static int HashCurrencyDict(Dictionary<string, int> dict)
+        {
+            unchecked
+            {
+                int hash = dict.Count;
+                foreach (var pair in dict)
+                {
+                    hash = (hash * 31) + pair.Key.GetHashCode();
+                    hash = (hash * 31) + pair.Value;
+                }
+                return hash;
             }
         }
 
@@ -405,6 +443,22 @@ namespace TheVault.UI
                 _lastUpdateTime = Time.time;
             }
 
+            if (Screen.width != _lastScreenW || Screen.height != _lastScreenH)
+            {
+                _lastScreenW = Screen.width;
+                _lastScreenH = Screen.height;
+                _layoutDirty = true;
+            }
+
+            if (!_layoutDirty)
+            {
+                if (_cells.Count == 0)
+                    return;
+
+                DrawHudWindowFrame();
+                return;
+            }
+
             BuildCells();
             if (_cells.Count == 0) return;
 
@@ -459,12 +513,20 @@ namespace TheVault.UI
             float accentH = Mathf.Max(2f, 2.5f * _stylesForMul);
             _hudDragBandHeight = Mathf.Max(22f, pad + accentH + 8f);
 
-            _windowRect.width = outerW;
-            _windowRect.height = outerH;
+            DrawHudWindowFrame();
+            _layoutDirty = false;
+        }
+
+        private void DrawHudWindowFrame()
+        {
+            EnsureStyles(_scale * DensityMul());
+
+            _windowRect.width = _layoutOuterW;
+            _windowRect.height = _layoutOuterH;
 
             if (!_useCustomHudPlacement)
             {
-                Rect placed = PlaceRect(outerW, outerH);
+                Rect placed = PlaceRect(_layoutOuterW, _layoutOuterH);
                 _windowRect.x = placed.x;
                 _windowRect.y = placed.y;
             }

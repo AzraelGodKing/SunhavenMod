@@ -9,6 +9,10 @@ dialog summarising how many points you'll get back and how much (if anything) th
 costs, and on confirm the full tree is cleared and your points are returned. The most
 recent reset can be undone per-profession during the same session.
 
+## Version
+
+**2.0.1** — published in [`docs/versions.json`](../docs/versions.json). Player-facing store text: [`thunderstore/README.md`](thunderstore/README.md).
+
 ## Features
 
 - **Clean-room reset.** Walks the live `SkillNode` instances the game placed in
@@ -69,7 +73,7 @@ correctness and UX upgrades over the prior implementation.
 
 ### 2026-05-02 (maintainer notes)
 
-- **Lifecycle:** Added expected-teardown diagnostics to plugin shutdown so normal menu/quit destroys are logged as expected and unexpected runtime teardown remains visible.
+- **Lifecycle:** Harmony patches and controller hooks survive scene transitions (main menu ↔ game); a persistent runner keeps hotkeys alive when the BepInEx plugin MonoBehaviour is destroyed. Full unpatch only on application quit.
 - **Cost preflight accuracy:** affordability checks now use an exact live-node refund estimate (with safe fallback), reducing false "cannot afford" blocks caused by stale point counters.
 - **Reset All hardening:** reset-all now preflights total affordability and executes as a rollback-safe sequence; if any profession reset fails, previously reset professions are automatically undone in reverse order.
 - **Undo depth:** undo now supports multi-level per-profession history (stacked snapshots) instead of only the latest reset.

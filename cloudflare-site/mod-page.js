@@ -21,6 +21,7 @@ const STATS_ID_BY_MOD_KEY = {
   trinketfortune: "trinket-fortune",
   cropoptimizer: "crop-optimizer",
   havensrespec: "havens-respec",
+  giftingassistant: "gifting-assistant",
 };
 
 const MOD_PRESENTATION = {
@@ -96,6 +97,12 @@ const MOD_PRESENTATION = {
     tags: ["Skills", "QoL", "UI"],
     related: ["havensbirthright", "fasterraces", "havensalmanac"],
   },
+  giftingassistant: {
+    icon: "🎁",
+    status: "New",
+    tags: ["Social", "QoL", "Planning"],
+    related: ["squirrelsbirthdayreminder", "sunhaventodo", "havensalmanac"],
+  },
 };
 
 const MOD_SCENES = {
@@ -111,6 +118,7 @@ const MOD_SCENES = {
   trinketfortune: ["Bias rewards toward unmet goals", "Pair chance with museum progress", "Make fishing outcomes feel fairer"],
   cropoptimizer: ["Forecast value before harvest", "Prioritize plots by projected yield", "Act on ETA and quality context"],
   havensrespec: ["Rebuild trees with confidence", "Preview cost before commitment", "Keep resets safe and controlled"],
+  giftingassistant: ["Plan the day's gift run", "See loved/liked gifts with icons", "Mark gifted and stay in sync"],
 };
 
 const MOD_LAYOUTS = {
@@ -125,6 +133,7 @@ const MOD_LAYOUTS = {
   fasterraces: "spotlight",
   trinketfortune: "spotlight",
   havensrespec: "spotlight",
+  giftingassistant: "checklist",
   thevault: "vault",
 };
 
@@ -188,7 +197,7 @@ const MOD_PROFILES = {
     context:
       "Sun Haven Todo brings in-game planning structure for daily priorities, recurring chores, and cross-mod task tracking.",
     bestFor: "Players who like explicit goals and visible progress.",
-    synergy: "Integrates smoothly with Birthday Reminder, S.M.U.T., and Almanac flows.",
+    synergy: "Integrates smoothly with Birthday Reminder, Gifting Assistant, S.M.U.T., and Almanac flows.",
     story:
       "Checklist-forward design language mirrors the mod's planning flow, with explicit labels and strong visual hierarchy.",
     panelTitle: "Todo highlights",
@@ -287,6 +296,19 @@ const MOD_PROFILES = {
       "A reset-and-rebuild narrative style with explicit cost visibility, reinforcing confidence before large progression changes.",
     panelTitle: "Respec highlights",
     highlights: ["Respec controls", "Cost previews", "Safer reset flow"],
+  },
+  giftingassistant: {
+    themeClass: "theme-orchid",
+    tagline: "A daily gift routine that keeps friendships on track.",
+    motif: "Gift Desk",
+    context:
+      "Gifting Assistant turns daily gift-giving into a per-character routine with loved/liked suggestions, item icons, priorities, and gifted-today tracking.",
+    bestFor: "Relationship-focused players who want a repeatable daily gift plan.",
+    synergy: "Pairs with Sun Haven Todo (daily gift tasks), Birthday Reminder, and Almanac progress.",
+    story:
+      "Checklist-forward profile built around a daily roster, mirroring how the mod plans, prioritizes, and checks off each gift.",
+    panelTitle: "Gifting highlights",
+    highlights: ["Daily gift roster", "Loved/liked suggestions", "Todo auto-complete sync"],
   },
 };
 

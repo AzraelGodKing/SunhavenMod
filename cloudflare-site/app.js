@@ -32,6 +32,7 @@ const STATS_ID_BY_MOD_KEY = {
   trinketfortune: "trinket-fortune",
   cropoptimizer: "crop-optimizer",
   havensrespec: "havens-respec",
+  giftingassistant: "gifting-assistant",
 };
 
 const MOD_META = {
@@ -47,6 +48,7 @@ const MOD_META = {
   trinketfortune: { icon: "🎣", lane: "Fishing" },
   cropoptimizer: { icon: "🌱", lane: "Farming" },
   havensrespec: { icon: "📜", lane: "Skills" },
+  giftingassistant: { icon: "🎁", lane: "Social" },
 };
 
 function resolveStatsId(modKey) {

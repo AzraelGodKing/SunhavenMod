@@ -93,6 +93,9 @@
     <ProjectReference Include="..\CropOptimizer\CropOptimizer.csproj">
       <Private>false</Private>
     </ProjectReference>
+    <ProjectReference Include="..\GiftingAssistant\GiftingAssistant.csproj">
+      <Private>false</Private>
+    </ProjectReference>
   </ItemGroup>
 
   <!-- Exclude decompiled reference files: kept in _refs/ as dnSpy dumps for -->

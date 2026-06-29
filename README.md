@@ -18,6 +18,7 @@ BepInEx plugins for [Sun Haven](https://store.steampowered.com/app/1432860/Sun_H
 | Faster Races | [`FasterRaces/`](FasterRaces/) | 2.0.1 |
 | Crop Optimizer | [`CropOptimizer/`](CropOptimizer/) | 2.0.1 |
 | Haven's Respec | [`HavensRespec/`](HavensRespec/) | 2.0.1 |
+| Gifting Assistant | [`GiftingAssistant/`](GiftingAssistant/) | 1.0.0 |
 
 Per-mod READMEs and Thunderstore packages describe features, hotkeys, and config in detail.
 

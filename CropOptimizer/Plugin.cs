@@ -57,8 +57,9 @@ namespace CropOptimizer
             _birthdayIntegration = new BirthdayIntegration();
             _vaultIntegration = new VaultIntegration();
 
+            LocalizationBootstrap.BindForceEnglish(namedConfig);
             _harmony = new Harmony(PluginInfo.PLUGIN_GUID);
-            LocalizationBootstrap.Init(PluginInfo.PLUGIN_GUID, _harmony, Log);
+            LocalizationBootstrap.Init(PluginInfo.PLUGIN_GUID, _harmony, Log, Assembly.GetExecutingAssembly());
             ModLocalization.LanguageChanged += OnLanguageChanged;
             CropGrowthPatch.Apply(_harmony, _forecast);
             CharacterLoadPatch.Apply(_harmony, _forecast);

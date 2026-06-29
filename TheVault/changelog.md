@@ -1,5 +1,10 @@
 # The Vault - Changelog
 
+## Version 4.0.1
+
+- **Fix:** Vault UI and HUD icons display again — `VaultUI`/`VaultHUD` now resolve `IconCache` to `SunhavenMods.Shared.IconCache` (C# namespace shadowing had them reading the removed legacy cache while load/register used shared). Removed duplicate `TheVault/UI/IconCache.cs`.
+- **Performance:** Icon loading on character enter uses shared `SunhavenMods.Shared.IconCache` only (no duplicate legacy cache load). Vault HUD rebuilds row layout only when currency totals or HUD scale/density change. Character-context sync fallback runs ~0.75s instead of every frame; repeated `CurrentCharacter` fallback warning logs once per session.
+
 ## Version 2.0.0
 - Added item icons from the game to Vault UI and HUD
 - Icons are loaded from the game's database and cached for performance
