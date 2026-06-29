@@ -4,6 +4,12 @@ Internal engineering log: **CI**, **release automation**, **scripts**, **docs in
 
 ---
 
+## 2026-06-28
+
+- **Release workflows:** Added `giftingassistant` to the mod `options` list in [`build-release-publish.yml`](.github/workflows/build-release-publish.yml) and [`release-self-hosted-sunhaven-runner.yml`](.github/workflows/release-self-hosted-sunhaven-runner.yml) so single-mod dispatches can target Gifting Assistant (matrix / `mod=all` already included it via `scripts/mod-matrix.json`).
+
+---
+
 ## 2026-05-03
 
 - **`release-self-hosted-sunhaven-runner.yml`:** **`package_step.outputs.zip_path`** is the single source of truth for dry-run artifact upload, GitHub Release assets, Thunderstore `file`, and Nexus preflight fallback; **`test_discord`** packaging now emits `zip_path`; **preflight-success** guards all Nexus upload/retry/backoff steps; **`ignore_discord_notify`** workflow input matches **Release & Publish**; lightweight **Package diagnostics** step before dry-run completion / publishes.
