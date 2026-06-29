@@ -35,8 +35,15 @@ namespace SunhavenMods.Shared
         private static Dictionary<string, Dictionary<string, string>> _tables;
         private static ManualLogSource _log;
         private static bool _initialized;
+        private static bool _forceEnglish;
 
         public static string CurrentLanguage { get; private set; } = "en";
+
+        /// <summary>When true, mod UI stays in English regardless of Sun Haven's language setting.</summary>
+        public static bool ForceEnglish => _forceEnglish;
+
+        /// <summary>True when embedded strings were loaded and at least one key is available.</summary>
+        public static bool IsReady => _initialized && _tables != null && _tables.Count > 0;
 
         /// <summary>Raised when the player changes language in Sun Haven settings.</summary>
         public static event Action<string> LanguageChanged
@@ -56,9 +63,18 @@ namespace SunhavenMods.Shared
             LanguageChangeWatcher.EnsurePatched(harmony);
         }
 
+        public static void SetForceEnglish(bool forceEnglish)
+        {
+            _forceEnglish = forceEnglish;
+            ApplyEffectiveLanguage();
+        }
+
         internal static void OnGameLanguageChanged(string languageCode)
         {
-            if (!_initialized)
+            if (_tables == null)
+                return;
+
+            if (_forceEnglish)
                 return;
 
             string normalized = NormalizeLanguageCode(languageCode);
@@ -70,6 +86,22 @@ namespace SunhavenMods.Shared
         }
 
         public static void RefreshCurrentLanguage()
+        {
+            ApplyEffectiveLanguage();
+        }
+
+        private static void ApplyEffectiveLanguage()
+        {
+            if (_forceEnglish)
+            {
+                CurrentLanguage = "en";
+                return;
+            }
+
+            RefreshCurrentLanguageFromGame();
+        }
+
+        private static void RefreshCurrentLanguageFromGame()
         {
             try
             {
@@ -225,11 +257,9 @@ namespace SunhavenMods.Shared
 
         public static void Shutdown()
         {
-            _initialized = false;
-            _tables = null;
-            _modId = null;
+            // Do not clear _tables — persistent HUD/runner components may outlive plugin teardown
+            // in Sun Haven while still calling T() (e.g. Sunhaven Todo sticky HUD, Crop Optimizer runner).
             _log = null;
-            CurrentLanguage = "en";
         }
     }
 }

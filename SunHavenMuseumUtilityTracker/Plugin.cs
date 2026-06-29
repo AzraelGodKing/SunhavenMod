@@ -159,6 +159,8 @@ namespace SunHavenMuseumUtilityTracker
                 StaticUIScale = Mathf.Clamp(_uiScale.Value, 0.5f, 2.5f);
                 _trackerUI?.SetScale(StaticUIScale);
             };
+
+            LocalizationBootstrap.BindForceEnglish(ConfigFile);
         }
 
         private static ConfigFile CreateNamedConfig()
