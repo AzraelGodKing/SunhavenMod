@@ -23,6 +23,7 @@ Notes for **players and release readers**. Per-mod blurbs and upstream metadata 
 
 **Gifting Assistant**
 
+- **Thunderstore publish:** Shortened `docs/versions.json` description to 236 characters (Thunderstore manifest limit is 256; the previous text was 257).
 - **PR #74 review fixes:** ReminderMode legacy migration (`UseTodoIntegration` false → RosterOnly); autosave uses `Saving > AutoSaveInterval` from config (60s default); sort guard uses try/finally; shared `GameSaveCharacterName` helper; Almanac dashboard drops unreachable gifted branch; `GiftSuggestionResolver` formatting; pt-BR **Normal** priority translation.
 - **Gifted toggle:** The row **Gifted** checkbox no longer adds or updates Sun Haven Todo tasks — only **+Todo** pushes reminders. In-game gifts still auto-complete matching todos when you give the gift in the world.
 - **Hotkey toggle:** **Ctrl + G** (or configured toggle) now closes the gifting window when it is already open; previously the hotkey only opened it and Escape was required to dismiss. Added full `Localization/strings.json` coverage for all 16 supported game languages (da, de, es, fr, it, ja, ko, nl, pt, pt-BR, ru, sv, zh-CN, zh-TW, uk). Shared terminology aligned with Sun Haven Todo (Cancel, priority labels), Birthday Reminder (Gifts), and repo-wide UI strings where keys overlap.
