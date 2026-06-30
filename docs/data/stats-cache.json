@@ -1,5 +1,5 @@
 {
-  "lastFetched": "2026-06-29T22:57:00.068Z",
+  "lastFetched": "2026-06-30T00:09:05.551Z",
   "mods": {
     "senpais-chest": {
       "name": "Senpai's Chest",
@@ -63,10 +63,10 @@
         }
       },
       "nexus": {
-        "total_downloads": 1277,
-        "unique_downloads": 865
+        "total_downloads": 1279,
+        "unique_downloads": 866
       },
-      "combined_total": 1956
+      "combined_total": 1958
     },
     "museum-utility-tracker": {
       "name": "S.M.U.T.",
@@ -90,10 +90,10 @@
         }
       },
       "nexus": {
-        "total_downloads": 1152,
-        "unique_downloads": 900
+        "total_downloads": 1154,
+        "unique_downloads": 902
       },
-      "combined_total": 1808
+      "combined_total": 1810
     },
     "squirrels-birthday-reminder": {
       "name": "A Squirrel's Birthday Reminder",
@@ -117,10 +117,10 @@
         }
       },
       "nexus": {
-        "total_downloads": 868,
+        "total_downloads": 869,
         "unique_downloads": 678
       },
-      "combined_total": 1435
+      "combined_total": 1436
     },
     "havens-todo": {
       "name": "Sun Haven Todo",
@@ -250,10 +250,10 @@
         }
       },
       "nexus": {
-        "total_downloads": 208,
-        "unique_downloads": 149
+        "total_downloads": 209,
+        "unique_downloads": 150
       },
-      "combined_total": 429
+      "combined_total": 430
     },
     "trinket-fortune": {
       "name": "Trinket Fortune",
@@ -322,19 +322,21 @@
       "name": "Gifting Assistant",
       "thunderstore": {
         "total_downloads": 0,
-        "versions": {}
+        "versions": {
+          "1.0.0": 0
+        }
       },
       "nexus": {
-        "total_downloads": 4,
-        "unique_downloads": 4
+        "total_downloads": 5,
+        "unique_downloads": 5
       },
-      "combined_total": 4
+      "combined_total": 5
     }
   },
   "site_total": {
     "thunderstore": 5674,
-    "nexus_total": 7933,
-    "nexus_unique": 5903,
-    "grand_total": 13607
+    "nexus_total": 7940,
+    "nexus_unique": 5908,
+    "grand_total": 13614
   }
 }
