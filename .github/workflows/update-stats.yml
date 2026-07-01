@@ -2,7 +2,7 @@ name: Update Mod Download Stats
 
 on:
   schedule:
-    # Hourly at :00 UTC (paired with same-hour short-circuit in scripts/fetch-stats.js)
+    # Hourly at :00 UTC (paired with same-hour short-circuit in scripts/stats/fetch-stats.js)
     - cron: "0 * * * *"
   workflow_dispatch:
     inputs:

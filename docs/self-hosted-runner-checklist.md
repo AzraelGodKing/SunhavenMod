@@ -50,14 +50,14 @@ Minimum required DLLs:
 - Start: `docker compose -f .github/self-hosted-runner/docker-compose.windows-runner.yml up -d --build`
 - Confirm runner is Online in GitHub Actions Runners page.
 - Run preflight check:
-  - `pwsh ./scripts/check-sunhaven-refs.ps1 -SunHavenPath "C:\ci\sunhaven-refs"`
+  - `pwsh ./scripts/build/check-sunhaven-refs.ps1 -SunHavenPath "C:\ci\sunhaven-refs"`
 
 ## Pre-Release Validation
 
 - Run version drift check:
-  - `pwsh ./scripts/check-version-drift.ps1`
+  - `pwsh ./scripts/version/check-version-drift.ps1`
 - Run build script for one mod:
-  - `pwsh ./scripts/pre-push-build.ps1 -Mod senpaischest -BuildOnly`
+  - `pwsh ./scripts/version/pre-push-build.ps1 -Mod senpaischest -BuildOnly`
 - Confirm output DLL exists in expected build output location.
 
 ## Ongoing Maintenance

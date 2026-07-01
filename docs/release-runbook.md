@@ -15,7 +15,7 @@ This runbook is for manual release operations while CI changes are staged.
 ## 2) Update Version + Metadata
 
 - Use build/version script when bumping:
-  - `pwsh ./scripts/pre-push-build.ps1 -Mod <modkey> -Bump patch`
+  - `pwsh ./scripts/version/pre-push-build.ps1 -Mod <modkey> -Bump patch`
 - Confirm updates in:
   - `docs/versions.json`
   - `<Mod>/Plugin.cs` or `<Mod>/PluginInfo.cs`
@@ -23,13 +23,13 @@ This runbook is for manual release operations while CI changes are staged.
 
 ## 3) Validate References + Drift
 
-- `pwsh ./scripts/check-sunhaven-refs.ps1 -SunHavenPath "<path>"`
-- `pwsh ./scripts/check-version-drift.ps1`
+- `pwsh ./scripts/build/check-sunhaven-refs.ps1 -SunHavenPath "<path>"`
+- `pwsh ./scripts/version/check-version-drift.ps1`
 
 ## 4) Build Verification
 
 - Build mod:
-  - `pwsh ./scripts/pre-push-build.ps1 -Mod <modkey> -BuildOnly`
+  - `pwsh ./scripts/version/pre-push-build.ps1 -Mod <modkey> -BuildOnly`
 - Confirm mod loads in local Sun Haven test profile.
 
 ## 5) Prepare Commit

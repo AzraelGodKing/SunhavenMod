@@ -5,7 +5,7 @@ import { animate, stagger } from "https://esm.sh/motion@12.23.24";
 const STATS_CACHE_URL =
   "https://azraelgodking.github.io/SunhavenMod/data/stats-cache.json";
 const MOD_MATRIX_URL =
-  "https://raw.githubusercontent.com/AzraelGodKing/SunhavenMod/main/scripts/mod-matrix.json";
+  "https://raw.githubusercontent.com/AzraelGodKing/SunhavenMod/main/scripts/matrix/mod-matrix.json";
 
 function slugify(value) {
   return String(value || "")
@@ -16,7 +16,7 @@ function slugify(value) {
 }
 
 /**
- * Stable cache key per mod — must stay aligned with `scripts/fetch-stats.js`
+ * Stable cache key per mod — must stay aligned with `scripts/stats/fetch-stats.js`
  * (`STATS_ID_BY_MOD_KEY` + `slugify` fallback).
  */
 const STATS_ID_BY_MOD_KEY = {

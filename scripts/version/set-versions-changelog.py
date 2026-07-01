@@ -7,9 +7,9 @@ import argparse
 import json
 from pathlib import Path
 
-REPO = Path(__file__).resolve().parents[1]
+REPO = Path(__file__).resolve().parents[2]
 VERSIONS_PATH = REPO / "docs" / "versions.json"
-MATRIX_PATH = REPO / "scripts" / "mod-matrix.json"
+MATRIX_PATH = REPO / "scripts" / "matrix" / "mod-matrix.json"
 
 
 def json_keys_for_mod(mod_key: str | None, all_mods: bool) -> list[str]:
@@ -22,7 +22,7 @@ def json_keys_for_mod(mod_key: str | None, all_mods: bool) -> list[str]:
             if not jk:
                 raise SystemExit(f"mod-matrix.json row {mod_key!r} missing jsonKey")
             return [jk]
-    raise SystemExit(f"Unknown mod key {mod_key!r} (see scripts/mod-matrix.json)")
+    raise SystemExit(f"Unknown mod key {mod_key!r} (see scripts/matrix/mod-matrix.json)")
 
 
 def main() -> None:
