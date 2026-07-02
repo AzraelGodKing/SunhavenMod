@@ -242,10 +242,10 @@ namespace TheVault.Vault
                 var candidatePaths = new System.Collections.Generic.List<(string path, bool readFromLegacyNameOnly)>();
                 if (File.Exists(canonicalPath))
                     candidatePaths.Add((canonicalPath, false));
-                if (File.Exists(legacyPath))
-                    candidatePaths.Add((legacyPath, true));
                 if (File.Exists(backupPath))
                     candidatePaths.Add((backupPath, false));
+                if (File.Exists(legacyPath))
+                    candidatePaths.Add((legacyPath, true));
 
                 if (candidatePaths.Count == 0)
                 {
@@ -260,6 +260,7 @@ namespace TheVault.Vault
 
                 foreach (var candidate in candidatePaths)
                 {
+                    _needsReEncryption = false;
                     try
                     {
                         data = TryParseVaultFile(candidate.path, playerName);
@@ -275,6 +276,19 @@ namespace TheVault.Vault
                         loadedPath = candidate.path;
                         readFromLegacyNameOnly = candidate.readFromLegacyNameOnly;
                         break;
+                    }
+                }
+
+                if (data != null && loadedPath != canonicalPath)
+                {
+                    foreach (var candidate in candidatePaths)
+                    {
+                        if (candidate.path == loadedPath)
+                            break;
+                        if (candidate.path == backupPath)
+                            continue;
+                        if (TryQuarantineUnreadableFile(candidate.path, "loaded from later candidate: " + loadedPath))
+                            LastLoadQuarantinedCorruptFile = true;
                     }
                 }
 

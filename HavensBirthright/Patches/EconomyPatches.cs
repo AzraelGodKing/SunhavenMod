@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using HarmonyLib;
 using HavensBirthright.Abilities;
@@ -104,6 +105,16 @@ namespace HavensBirthright.Patches
         public static void OnAfterShopBuyItemSingle(object __0)
         {
             RestoreShopItemPrice(__0);
+        }
+
+        /// <summary>
+        /// Restores discounted price if BuyItem throws (Harmony skips postfixes on exception).
+        /// </summary>
+        public static Exception OnBuyItemFinalizer(object __0, Exception __exception)
+        {
+            if (__exception != null)
+                RestoreShopItemPrice(__0);
+            return __exception;
         }
 
         /// <summary>

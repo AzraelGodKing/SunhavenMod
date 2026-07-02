@@ -144,7 +144,7 @@ namespace HavensRespec.UI
         // _skillPointsTMP is the big count ("91"); below it the panel renders the
         // "Skill Points" caption, the "{Profession} EXP" label, and the EXP bar.
         private const float FirstRowCenterOffset = 142f;
-        private const float RowSpacing = 32f;
+        private const float RowSpacing = 35f;
         // Extra nudge so Reset All sits clearly below Reset without crowding the EXP bar.
         private const float ResetAllExtraYOffset = 6f;
         // _skillPointsTMP is centred on its own RectTransform but the sidebar column itself
