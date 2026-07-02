@@ -17,6 +17,7 @@ namespace HavensRespec.UI
         private TextMeshProUGUI _body;
         private TextMeshProUGUI _cancelLabel;
         private TextMeshProUGUI _confirmLabel;
+        private RectTransform _cardRt;
         private Action _onConfirm;
         private string _pendingTitle;
         private string _pendingBody;
@@ -67,6 +68,7 @@ namespace HavensRespec.UI
             _pendingBody = body ?? string.Empty;
             _title.text = _pendingTitle;
             _body.text = _pendingBody;
+            LayoutCardForBody(_pendingBody);
             _onConfirm = onConfirm;
             gameObject.SetActive(true);
             transform.SetAsLastSibling();
@@ -86,7 +88,10 @@ namespace HavensRespec.UI
             if (_title != null && gameObject.activeSelf && !string.IsNullOrEmpty(_pendingTitle))
                 _title.text = _pendingTitle;
             if (_body != null && gameObject.activeSelf)
+            {
                 _body.text = _pendingBody ?? string.Empty;
+                LayoutCardForBody(_pendingBody ?? string.Empty);
+            }
             if (_cancelLabel != null)
                 _cancelLabel.text = ModLocalization.T("respec.dialog.cancel");
             if (_confirmLabel != null)
@@ -119,7 +124,8 @@ namespace HavensRespec.UI
             cardRt.anchorMin = new Vector2(0.5f, 0.5f);
             cardRt.anchorMax = new Vector2(0.5f, 0.5f);
             cardRt.pivot = new Vector2(0.5f, 0.5f);
-            cardRt.sizeDelta = new Vector2(420f, 200f);
+            cardRt.sizeDelta = new Vector2(CardWidth, DefaultCardHeight);
+            _cardRt = cardRt;
             var cardBorder = cardGo.AddComponent<Image>();
             cardBorder.sprite = RespecStyle.SolidRounded(RespecStyle.Wood, RespecStyle.WoodShadow, 28, 3, 8);
             cardBorder.type = Image.Type.Sliced;
@@ -160,25 +166,47 @@ namespace HavensRespec.UI
             var bodyRt = bodyGo.AddComponent<RectTransform>();
             bodyRt.anchorMin = new Vector2(0f, 0f);
             bodyRt.anchorMax = new Vector2(1f, 1f);
-            bodyRt.offsetMin = new Vector2(18f, 60f);
-            bodyRt.offsetMax = new Vector2(-18f, -52f);
+            bodyRt.offsetMin = new Vector2(18f, ButtonFooterHeight);
+            bodyRt.offsetMax = new Vector2(-18f, -TitleAreaHeight);
             _body = bodyGo.AddComponent<TextMeshProUGUI>();
             _body.alignment = TextAlignmentOptions.TopLeft;
             _body.fontSize = 15f;
+            _body.lineSpacing = 2f;
+            _body.enableWordWrapping = true;
             _body.color = new Color(0.95f, 0.92f, 0.83f, 1f);
             _body.text = string.Empty;
             _body.raycastTarget = false;
 
-            // Buttons row.
-            BuildButton(fillGo.transform, ModLocalization.T("respec.dialog.cancel"), new Vector2(-10f, 12f), new Vector2(1f, 0f), new Vector2(1f, 0f), new Vector2(1f, 0f),
+            // Buttons row — pinned to card footer with clear separation from body text.
+            BuildButton(fillGo.transform, ModLocalization.T("respec.dialog.cancel"), new Vector2(-14f, 14f), new Vector2(1f, 0f), new Vector2(1f, 0f), new Vector2(1f, 0f),
                 RespecStyle.Neutral, RespecStyle.NeutralHover, RespecStyle.NeutralPressed, Hide, out _cancelLabel);
-            BuildButton(fillGo.transform, ModLocalization.T("respec.dialog.confirm"), new Vector2(-130f, 12f), new Vector2(1f, 0f), new Vector2(1f, 0f), new Vector2(1f, 0f),
+            BuildButton(fillGo.transform, ModLocalization.T("respec.dialog.confirm"), new Vector2(-134f, 14f), new Vector2(1f, 0f), new Vector2(1f, 0f), new Vector2(1f, 0f),
                 RespecStyle.Danger, RespecStyle.DangerHover, RespecStyle.DangerPressed, () =>
                 {
                     var handler = _onConfirm;
                     Hide();
                     handler?.Invoke();
                 }, out _confirmLabel);
+        }
+
+        private const float CardWidth = 420f;
+        private const float DefaultCardHeight = 210f;
+        private const float TitleAreaHeight = 52f;
+        private const float ButtonFooterHeight = 72f;
+        private const float MaxCardHeight = 340f;
+
+        private void LayoutCardForBody(string bodyText)
+        {
+            if (_cardRt == null || _body == null)
+                return;
+
+            float textWidth = CardWidth - 36f;
+            var preferred = _body.GetPreferredValues(bodyText ?? string.Empty, textWidth, 0f);
+            float cardHeight = Mathf.Clamp(
+                TitleAreaHeight + preferred.y + ButtonFooterHeight + 12f,
+                DefaultCardHeight,
+                MaxCardHeight);
+            _cardRt.sizeDelta = new Vector2(CardWidth, cardHeight);
         }
 
         private static void BuildButton(
