@@ -24,6 +24,10 @@ File: `Sun Haven/BepInEx/config/SenpaisChest.cfg`
 
 ## Changelog
 
+### 2026-07-02 (maintainer notes)
+
+- **Fixed:** Smart-chest rules no longer deleted on area change. `Chest.OnDisable` no longer removes rules (only the **Remove Smart Chest** UI does). `InitializeAsOwner` skips disk reload when the same character is already active. Save will not overwrite a non-empty JSON with empty runtime state after a successful load unless the user cleared all rules via UI.
+
 ### 2026-05-03 (maintainer notes)
 
 - **Groups + wildcard:** Manage Groups now supports wildcard patterns (`*`, `?`, case-insensitive) in addition to explicit item IDs.

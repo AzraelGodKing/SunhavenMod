@@ -80,6 +80,15 @@ namespace SenpaisChest.Data
                 return;
             }
 
+            if (!hasRulesInMemory
+                && hasExistingRulesOnDisk
+                && HasSuccessfulLoadThisSession(data.CharacterName)
+                && !_manager.UserClearedAllRulesThisSession)
+            {
+                Plugin.Log?.LogWarning($"[Save] Skipping write for '{data.CharacterName}': in-memory rules are empty after load but disk still has rules (likely area transition). Existing file preserved.");
+                return;
+            }
+
             try
             {
                 var json = SerializeToJson(data);

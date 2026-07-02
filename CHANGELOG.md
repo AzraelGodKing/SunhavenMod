@@ -4,6 +4,14 @@ Notes for **players and release readers**. Per-mod blurbs and upstream metadata 
 
 ---
 
+## 2026-07-02
+
+**Senpai's Chest**
+
+- **Fix:** Smart-chest rules are no longer deleted when traveling between areas. Rules are not removed on `Chest.OnDisable` (Sun Haven fires that during every area change). Removal is only via the **Remove Smart Chest** UI button. `InitializeAsOwner` no longer reloads from disk on every map load, and save refuses to overwrite a non-empty file with empty in-memory state after a successful load unless you cleared all rules yourself.
+
+---
+
 ## 2026-06-29
 
 **The Vault**
