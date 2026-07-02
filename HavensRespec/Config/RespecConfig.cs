@@ -22,6 +22,7 @@ namespace HavensRespec.Config
         public ConfigEntry<bool> RequireConfirmation { get; }
         public ConfigEntry<bool> ShiftSkipsConfirmation { get; }
         public ConfigEntry<bool> EnableUndo { get; }
+        public ConfigEntry<bool> EnableResetAll { get; }
         public ConfigEntry<RespecCostMode> CostMode { get; }
         public ConfigEntry<int> GoldPerPoint { get; }
         public ConfigEntry<int> GemsPerPoint { get; }
@@ -60,6 +61,12 @@ namespace HavensRespec.Config
                 "EnableUndo",
                 true,
                 "Keep a one-step in-memory snapshot of the most recent reset per profession and show an Undo button next to the Reset button. Snapshots do not survive a game restart.");
+
+            EnableResetAll = config.Bind(
+                "UI",
+                "EnableResetAll",
+                true,
+                "Show a \"Reset All\" button below Reset on each skill tab. Confirms once, then resets every profession in sequence.");
 
             CostMode = config.Bind(
                 "Cost",

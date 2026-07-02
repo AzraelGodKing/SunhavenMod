@@ -21,7 +21,7 @@
     Use -Bump with -SyncOnly in CI to bump docs/versions.json and sync without dotnet.
 
 .PARAMETER Mod
-    Mod key (e.g. senpaischest, havensbirthright). Required unless -All is used.
+    Mod key (e.g. senpaischest, havensrespec) or project folder (e.g. HavensRespec, .\HavensRespec\). Required unless -All is used.
 
 .PARAMETER Bump
     Bump type: major, minor, or patch. Omit for sync-only (single mod or -All). Incompatible with -BuildOnly.
@@ -109,6 +109,36 @@ function Get-ModDefinitions {
         }
     }
     return $defs
+}
+
+function Resolve-ModKey {
+    param(
+        [string]$ModInput,
+        [hashtable]$Defs
+    )
+    if ([string]::IsNullOrWhiteSpace($ModInput)) { return $ModInput }
+
+    $candidate = $ModInput.Trim().TrimEnd('\', '/')
+    if ($candidate -match '[\\/]|^\.\.?') {
+        $leaf = Split-Path -Leaf $candidate
+        if (-not [string]::IsNullOrWhiteSpace($leaf)) {
+            $candidate = $leaf
+        }
+    }
+
+    if ($Defs.ContainsKey($candidate)) { return $candidate }
+
+    foreach ($key in $Defs.Keys) {
+        if ($key.Equals($candidate, [System.StringComparison]::OrdinalIgnoreCase)) {
+            return $key
+        }
+        $modDir = [string]$Defs[$key].ModDir
+        if ($modDir.Equals($candidate, [System.StringComparison]::OrdinalIgnoreCase)) {
+            return $key
+        }
+    }
+
+    return $candidate
 }
 
 $ModDefs = Get-ModDefinitions -MatrixPath $ModMatrixPath
@@ -449,9 +479,13 @@ if (-not $All -and -not $Mod) {
     exit 1
 }
 
+if ($Mod) {
+    $Mod = Resolve-ModKey -ModInput $Mod -Defs $ModDefs
+}
+
 if ($Mod -and -not $ModDefs.ContainsKey($Mod)) {
     $available = ($ModDefs.Keys | Sort-Object) -join ", "
-    Write-Error "Unknown -Mod value '$Mod'. Available: $available"
+    Write-Error "Unknown -Mod value '$Mod'. Use a mod key or folder name. Available keys: $available"
     exit 1
 }
 
