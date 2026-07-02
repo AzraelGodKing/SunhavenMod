@@ -2249,6 +2249,24 @@
                                          "zh-TW":  " 未勾選",
                                          "uk":  "Не перевірено"
                                      },
+    "devtools.versions.notInstalled":  {
+                                           "en":  "not installed",
+                                           "da":  "ikke installeret",
+                                           "de":  "nicht installiert",
+                                           "es":  "no instalado",
+                                           "fr":  "non installé",
+                                           "it":  "non installato",
+                                           "ja":  "未インストール",
+                                           "ko":  "설치되지 않음",
+                                           "nl":  "niet geïnstalleerd",
+                                           "pt":  "não instalado",
+                                           "pt-BR":  "não instalado",
+                                           "ru":  "не установлен",
+                                           "sv":  "inte installerad",
+                                           "zh-CN":  "未安装",
+                                           "zh-TW":  "未安裝",
+                                           "uk":  "не встановлено"
+                                       },
     "devtools.versions.testNotify":  {
                                          "en":  "Test Notification",
                                          "da":  "Testmeddelelse",

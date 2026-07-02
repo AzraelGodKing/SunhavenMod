@@ -1,5 +1,9 @@
 # The Vault - Changelog
 
+## Unreleased
+
+- **Fix:** Load restores from `.backup` when the primary save file is missing or unreadable (crash during atomic save), instead of silently starting an empty vault.
+
 ## Version 4.0.1
 
 - **Fix:** Vault UI and HUD icons display again — `VaultUI`/`VaultHUD` now resolve `IconCache` to `SunhavenMods.Shared.IconCache` (C# namespace shadowing had them reading the removed legacy cache while load/register used shared). Removed duplicate `TheVault/UI/IconCache.cs`.
