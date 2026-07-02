@@ -10,4 +10,4 @@ Workflows recreate `builds/<ModDir>/<dll>.dll` when building; artifacts are uplo
 
 After `dotnet build`, optional post-build steps may copy outputs into `builds/<YourMod>/` for Thunderstore zip scripting or runner packaging. **Do not** `git add builds/`; CI builds from source instead of relying on checked-in binaries.
 
-See [`docs/VERSION_AND_RELEASE.md`](../docs/VERSION_AND_RELEASE.md) for the release pipeline.
+See [`maintainer-docs/VERSION_AND_RELEASE.md`](../maintainer-docs/VERSION_AND_RELEASE.md) for the release pipeline.
