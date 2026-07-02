@@ -26,11 +26,14 @@ namespace HavensRespec.UI
         private static FieldInfo _skillPointsTmpField;
 
         public GameObject ResetButton { get; private set; }
+        public GameObject ResetAllButton { get; private set; }
         public GameObject UndoButton { get; private set; }
         private TextMeshProUGUI _resetLabel;
+        private TextMeshProUGUI _resetAllLabel;
         private TextMeshProUGUI _undoLabel;
 
         public event Action OnResetClicked;
+        public event Action OnResetAllClicked;
         public event Action OnUndoClicked;
 
         public RespecButtonInjector(ManualLogSource log)
@@ -38,7 +41,7 @@ namespace HavensRespec.UI
             _log = log;
         }
 
-        public bool TryAttach(SkillTree panel)
+        public bool TryAttach(SkillTree panel, bool enableResetAll)
         {
             if (panel == null)
                 return false;
@@ -60,20 +63,38 @@ namespace HavensRespec.UI
                 var parent = pointsTmp.transform.parent;
                 var anchorRt = pointsTmp.GetComponent<RectTransform>();
 
+                int undoRowIndex = enableResetAll ? 2 : 1;
+
                 ResetButton = BuildButton(
                     parent,
                     anchorRt,
                     rowIndex: 0,
                     ModLocalization.T("respec.button.reset"),
+                    ButtonWidth,
                     RespecStyle.Danger, RespecStyle.DangerHover, RespecStyle.DangerPressed,
                     () => OnResetClicked?.Invoke(),
                     out _resetLabel);
 
+                if (enableResetAll)
+                {
+                    ResetAllButton = BuildButton(
+                        parent,
+                        anchorRt,
+                        rowIndex: 1,
+                        ModLocalization.T("respec.button.reset_all"),
+                        ResetAllButtonWidth,
+                        RespecStyle.Danger, RespecStyle.DangerHover, RespecStyle.DangerPressed,
+                        () => OnResetAllClicked?.Invoke(),
+                        out _resetAllLabel,
+                        ResetAllExtraYOffset);
+                }
+
                 UndoButton = BuildButton(
                     parent,
                     anchorRt,
-                    rowIndex: 1,
+                    rowIndex: undoRowIndex,
                     ModLocalization.T("respec.button.undo"),
+                    ButtonWidth,
                     RespecStyle.Neutral, RespecStyle.NeutralHover, RespecStyle.NeutralPressed,
                     () => OnUndoClicked?.Invoke(),
                     out _undoLabel);
@@ -98,6 +119,8 @@ namespace HavensRespec.UI
         {
             if (_resetLabel != null)
                 _resetLabel.text = ModLocalization.T("respec.button.reset").ToUpperInvariant();
+            if (_resetAllLabel != null)
+                _resetAllLabel.text = ModLocalization.T("respec.button.reset_all").ToUpperInvariant();
             if (_undoLabel != null)
                 _undoLabel.text = ModLocalization.T("respec.button.undo").ToUpperInvariant();
         }
@@ -105,25 +128,29 @@ namespace HavensRespec.UI
         public void Destroy()
         {
             if (ResetButton != null) UnityEngine.Object.Destroy(ResetButton);
+            if (ResetAllButton != null) UnityEngine.Object.Destroy(ResetAllButton);
             if (UndoButton != null) UnityEngine.Object.Destroy(UndoButton);
             ResetButton = null;
+            ResetAllButton = null;
             UndoButton = null;
         }
 
         // --- Layout constants ----------------------------------------------------------
         // Compact pill sized to sit in the empty sidebar space below the EXP bar.
         private const float ButtonWidth = 96f;
+        private const float ResetAllButtonWidth = 118f;
         private const float ButtonHeight = 26f;
         // Distance from _skillPointsTMP's localPosition down to the center of the first row.
         // _skillPointsTMP is the big count ("91"); below it the panel renders the
-        // "Skill Points" caption, the "{Profession} EXP" label, and the EXP bar. 135
-        // places our button cleanly in the empty space under all of that.
-        private const float FirstRowCenterOffset = 135f;
-        private const float RowSpacing = 30f;
+        // "Skill Points" caption, the "{Profession} EXP" label, and the EXP bar.
+        private const float FirstRowCenterOffset = 142f;
+        private const float RowSpacing = 32f;
+        // Extra nudge so Reset All sits clearly below Reset without crowding the EXP bar.
+        private const float ResetAllExtraYOffset = 6f;
         // _skillPointsTMP is centred on its own RectTransform but the sidebar column itself
-        // sits slightly right-of-centre inside the skill panel. -14 nudges our button away
-        // from the tree rail on the right and visually balances it under the EXP bar.
-        private const float HorizontalOffset = -14f;
+        // sits slightly right-of-centre inside the skill panel. -18 nudges the stack left
+        // so the wider Reset All pill aligns cleanly under Reset.
+        private const float HorizontalOffset = -18f;
 
         // Reusable sprites — baked once, tinted via Image.color per button.
         private static Sprite _plaqueFillSprite;
@@ -145,9 +172,11 @@ namespace HavensRespec.UI
             RectTransform anchorRt,
             int rowIndex,
             string label,
+            float buttonWidth,
             Color normal, Color hover, Color pressed,
             Action onClick,
-            out TextMeshProUGUI labelTmp)
+            out TextMeshProUGUI labelTmp,
+            float extraYOffset = 0f)
         {
             EnsureSprites();
 
@@ -161,12 +190,12 @@ namespace HavensRespec.UI
             // balloon to fill the entire sidebar).
             rt.anchorMin = rt.anchorMax = new Vector2(0.5f, 0.5f);
             rt.pivot = new Vector2(0.5f, 0.5f);
-            rt.sizeDelta = new Vector2(ButtonWidth, ButtonHeight);
+            rt.sizeDelta = new Vector2(buttonWidth, ButtonHeight);
             rt.localScale = Vector3.one;
 
             // Anchor TMP's localPosition is always valid (even pre-layout, before
             // GetWorldCorners has any real data to return), so we offset from it.
-            float yOffset = -(FirstRowCenterOffset + rowIndex * RowSpacing);
+            float yOffset = -(FirstRowCenterOffset + rowIndex * RowSpacing + extraYOffset);
             rt.localPosition = anchorRt.localPosition + new Vector3(HorizontalOffset, yOffset, 0f);
 
             // Invisible raycast target on the root — catches clicks for the whole pill.
@@ -220,7 +249,7 @@ namespace HavensRespec.UI
             tmp.fontStyle = FontStyles.Bold;
             tmp.enableWordWrapping = false;
             tmp.overflowMode = TextOverflowModes.Overflow;
-            tmp.characterSpacing = 8f;
+            tmp.characterSpacing = buttonWidth > ButtonWidth ? 4f : 8f;
             tmp.color = RespecStyle.Parchment;
             tmp.text = label.ToUpperInvariant();
             tmp.raycastTarget = false;

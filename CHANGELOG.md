@@ -24,7 +24,7 @@ Notes for **players and release readers**. Per-mod blurbs and upstream metadata 
 
 **Haven's Respec**
 
-- **Fix:** Removed the top-center **RESET ALL** button from the skill tree UI. Per-profession **Reset** and **Undo** on each tab remain unchanged.
+- **Fix:** **RESET ALL** now sits in the left sidebar directly under **Reset** (same styled button stack as Undo), instead of overlapping the skill tier headers. Toggle with `UI.EnableResetAll` (default on).
 
 **Maintainer tooling**
 

@@ -40,6 +40,7 @@ recent reset can be undone per-profession during the same session.
 | `UI` | `RequireConfirmation` | `true` | Show a confirmation dialog. |
 | `UI` | `ShiftSkipsConfirmation` | `true` | Hold Shift to bypass the dialog. |
 | `UI` | `EnableUndo` | `true` | Show an Undo button after a reset. |
+| `UI` | `EnableResetAll` | `true` | Show **Reset All** below **Reset** on each skill tab; one confirm resets every profession. |
 | `Cost` | `Mode` | `None` | `None` / `Gold` / `Gems`. |
 | `Cost` | `GoldPerPoint` | `100` | Used when `Mode = Gold`. |
 | `Cost` | `GemsPerPoint` | `1` | Used when `Mode = Gems`. |
@@ -72,7 +73,7 @@ correctness and UX upgrades over the prior implementation.
 
 ### Unreleased
 
-- **UI:** Removed the top-center **RESET ALL** button from the skill tree (it overlapped tier headers). Per-tab **Reset** / **Undo** are unchanged.
+- **UI:** **RESET ALL** sits below **Reset** in the left sidebar (Undo moves down when shown). Removes the old top-center placement that overlapped tier headers. Reset-all confirm dialog grows with longer copy so footer buttons no longer cover the undo note.
 
 ### 2026-05-02 (maintainer notes)
 
