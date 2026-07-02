@@ -46,15 +46,8 @@ namespace SenpaisChest
         /// </summary>
         private static string _gameplaySessionCharacter;
 
-        /// <summary>True after <see cref="OnApplicationQuit"/> — skip treating <see cref="Chest.OnDisable"/> as removal.</summary>
+        /// <summary>True after <see cref="OnApplicationQuit"/>.</summary>
         private static bool _applicationQuitting;
-
-        /// <summary>
-        /// During scene replacement, chests in outgoing scenes all get OnDisable.
-        /// Track each discarded scene handle with an expiry so long transitions do not purge saved rules.
-        /// </summary>
-        private static readonly Dictionary<int, float> _sceneDiscardSuppressByHandle = new Dictionary<int, float>();
-        private const float SceneDiscardSuppressSeconds = 20f;
 
         private Harmony _harmony;
         private SmartChestManager _manager;
@@ -117,9 +110,6 @@ namespace SenpaisChest
 
                 // Subscribe to scene loading
                 SceneManager.sceneLoaded += OnSceneLoaded;
-                // When the active scene is replaced (Single load), `prev` is torn down after this callback;
-                // chests there will OnDisable — must not delete rules. Pickup/removal does not change active scene.
-                SceneManager.activeSceneChanged += OnActiveSceneChanged;
 
                 // Check for updates
                 if (_config.CheckForUpdates.Value)
@@ -420,6 +410,14 @@ namespace SenpaisChest
                 _staticManager?.SetCharacterName(characterName);
                 _museumTodoIntegration?.Reset();
 
+                // Sun Haven may call InitializeAsOwner on every map load — do not reload from disk
+                // or we overwrite in-memory rules (same guard as OnSceneLoaded).
+                if (string.Equals(_gameplaySessionCharacter, characterName, StringComparison.Ordinal))
+                {
+                    Log?.LogDebug($"[SenpaisChest] Skip disk reload on InitializeAsOwner — '{characterName}' already active");
+                    return;
+                }
+
                 var data = _staticSaveSystem?.Load(characterName);
                 _staticManager?.LoadData(data);
                 _gameplaySessionCharacter = characterName;
@@ -457,9 +455,9 @@ namespace SenpaisChest
         }
 
         /// <summary>
-        /// Remove saved rules only when this chest actually leaves the world (picked up, destroyed).
-        /// Scene changes and quitting disable every chest in the outgoing scene — those are ignored via
-        /// <see cref="_applicationQuitting"/> and <see cref="_sceneBeingDiscardedHandle"/>.
+        /// Chest.OnDisable fires when the player opens a UI, during area changes, and on pickup.
+        /// Sun Haven does not use SceneManager unload hooks we can rely on, so we never delete rules here —
+        /// only the UI "Remove Smart Chest" action (or clearing all rules) removes saved config.
         /// </summary>
         private static void OnChestOnDisable_Postfix(Chest __instance)
         {
@@ -470,26 +468,11 @@ namespace SenpaisChest
                 if (__instance == null)
                     return;
 
-                var go = __instance.gameObject;
-                if (go == null)
-                    return;
-
-                var scene = go.scene;
-                if (!scene.IsValid())
-                    return;
-
-                if (IsDiscardedSceneSuppressed(scene))
-                {
-                    Log?.LogDebug($"[SenpaisChest] OnDisable: skip rule removal (scene '{scene.name}' discarded)");
-                    return;
-                }
-
                 var id = SmartChestManager.GetChestId(__instance);
-                if (string.IsNullOrEmpty(id) || _staticManager == null)
+                if (string.IsNullOrEmpty(id))
                     return;
 
-                if (_staticManager.RemoveSmartChest(id))
-                    Log?.LogInfo($"[SenpaisChest] Removed smart chest rules (chest left world): {id}");
+                Log?.LogDebug($"[SenpaisChest] OnDisable for chest {id} — rules kept (not treated as removal)");
             }
             catch (Exception ex)
             {
@@ -774,7 +757,6 @@ namespace SenpaisChest
         private void OnDestroy()
         {
             SceneManager.sceneLoaded -= OnSceneLoaded;
-            SceneManager.activeSceneChanged -= OnActiveSceneChanged;
             _museumTodoIntegration?.Dispose();
             _museumTodoIntegration = null;
 
@@ -788,47 +770,6 @@ namespace SenpaisChest
             _applicationQuitting = true;
             Log?.LogInfo("Application quitting — saving data");
             _staticSaveSystem?.Save();
-        }
-
-        /// <summary>Returns true while the given scene is inside discard suppression window.</summary>
-        private static bool IsDiscardedSceneSuppressed(Scene scene)
-        {
-            if (!scene.IsValid())
-                return false;
-
-            float now = Time.realtimeSinceStartup;
-            CleanupDiscardSuppressionMap(now);
-
-            return _sceneDiscardSuppressByHandle.TryGetValue(scene.handle, out var until) && now < until;
-        }
-
-        private static void CleanupDiscardSuppressionMap(float now)
-        {
-            int[] expired = null;
-            int expiredCount = 0;
-
-            foreach (var kvp in _sceneDiscardSuppressByHandle)
-            {
-                if (kvp.Value > now)
-                    continue;
-                if (expired == null)
-                    expired = new int[_sceneDiscardSuppressByHandle.Count];
-                expired[expiredCount++] = kvp.Key;
-            }
-
-            for (int i = 0; i < expiredCount; i++)
-                _sceneDiscardSuppressByHandle.Remove(expired[i]);
-        }
-
-        /// <summary>
-        /// Tracks the scene that was replaced so chest <see cref="Chest.OnDisable"/> during teardown does not remove rules.
-        /// </summary>
-        private static void OnActiveSceneChanged(Scene previous, Scene next)
-        {
-            if (!previous.IsValid())
-                return;
-            CleanupDiscardSuppressionMap(Time.realtimeSinceStartup);
-            _sceneDiscardSuppressByHandle[previous.handle] = Time.realtimeSinceStartup + SceneDiscardSuppressSeconds;
         }
 
         #endregion
