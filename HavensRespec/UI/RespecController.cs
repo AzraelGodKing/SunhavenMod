@@ -4,13 +4,10 @@ using BepInEx.Logging;
 using HavensRespec.Config;
 using HavensRespec.Patches;
 using HavensRespec.Services;
-using TMPro;
 using HarmonyLib;
 using SunhavenMods.Shared;
 using UnityEngine;
-using UnityEngine.UI;
 using Wish;
-using UIButton = UnityEngine.UI.Button;
 
 namespace HavensRespec.UI
 {
@@ -29,11 +26,8 @@ namespace HavensRespec.UI
         private readonly Dictionary<ProfessionType, RespecButtonInjector> _injectors = new Dictionary<ProfessionType, RespecButtonInjector>();
         private Skills _activeSkills;
         private ConfirmResetDialog _dialog;
-        private GameObject _resetAllButton;
-        private TextMeshProUGUI _resetAllLabel;
         private Skills _dialogSkills;
         private Action _dialogOnConfirm;
-        private bool _dialogIsResetAll;
         private ProfessionType? _dialogProfession;
         private int _dialogEstimatedPoints;
         private int _dialogEstimatedCost;
@@ -55,7 +49,6 @@ namespace HavensRespec.UI
         {
             foreach (var injector in _injectors.Values)
                 injector.RefreshLocalizedLabels();
-            RefreshResetAllLabel();
             RefreshOpenDialog();
             _dialog?.RefreshLocalizedLabels();
         }
@@ -70,11 +63,6 @@ namespace HavensRespec.UI
             {
                 UnityEngine.Object.Destroy(_dialog.gameObject);
                 _dialog = null;
-            }
-            if (_resetAllButton != null)
-            {
-                UnityEngine.Object.Destroy(_resetAllButton);
-                _resetAllButton = null;
             }
         }
 
@@ -149,7 +137,6 @@ namespace HavensRespec.UI
             _injectors[profession] = injector;
 
             EnsureDialog(panel);
-            EnsureResetAllButton(skills, panel);
         }
 
         private void BeginResetFlow(Skills skills, ProfessionType profession, bool bypassConfirm)
@@ -245,62 +232,6 @@ namespace HavensRespec.UI
                 injector.SetUndoVisible(_config.EnableUndo.Value && _resetService.HasUndo(profession));
         }
 
-        private void BeginResetAllFlow(Skills skills, bool bypassConfirm)
-        {
-            int totalEstimated = 0;
-            int totalEstimatedCost = 0;
-            foreach (var profession in ProfessionUiMap.OrderedProfessions)
-            {
-                int estimate = ResolveEstimatedRefund(skills, profession);
-                totalEstimated += estimate;
-                totalEstimatedCost += _costService.CalculateCost(estimate);
-            }
-
-            if (totalEstimatedCost > 0 && !_costService.CanAfford(totalEstimated, out var totalBalance, out _))
-            {
-                _log?.LogWarning($"[Respec] Cannot afford Reset All preflight: total cost={totalEstimatedCost}, balance={totalBalance}.");
-                return;
-            }
-
-            if (!_config.RequireConfirmation.Value || bypassConfirm)
-            {
-                PerformResetAll(skills);
-                return;
-            }
-
-            EnsureDialog(skills);
-            if (_dialog == null)
-            {
-                PerformResetAll(skills);
-                return;
-            }
-
-            ShowResetAllDialog(skills, totalEstimated, totalEstimatedCost);
-        }
-
-        private void PerformResetAll(Skills skills)
-        {
-            int processed = 0;
-            var successful = new List<ProfessionType>();
-            foreach (var profession in ProfessionUiMap.OrderedProfessions)
-            {
-                bool ok = PerformReset(skills, profession, ResolveEstimatedRefund(skills, profession));
-                if (!ok)
-                {
-                    for (int i = successful.Count - 1; i >= 0; i--)
-                        PerformUndo(skills, successful[i]);
-
-                    _log?.LogWarning($"[Respec] Reset All aborted on {profession}; rolled back {successful.Count} profession(s).");
-                    return;
-                }
-
-                successful.Add(profession);
-                processed++;
-            }
-
-            _log?.LogInfo($"[Respec] Reset All complete: processed {processed} profession(s).");
-        }
-
         private void EnsureDialog(Component sceneAnchor)
         {
             if (_dialog != null)
@@ -323,7 +254,6 @@ namespace HavensRespec.UI
         private void ShowProfessionDialog(Skills skills, ProfessionType profession, int estimatedPoints, int cost)
         {
             _dialogSkills = skills;
-            _dialogIsResetAll = false;
             _dialogProfession = profession;
             _dialogEstimatedPoints = estimatedPoints;
             _dialogEstimatedCost = cost;
@@ -338,44 +268,19 @@ namespace HavensRespec.UI
                 _dialogOnConfirm);
         }
 
-        private void ShowResetAllDialog(Skills skills, int totalEstimated, int totalEstimatedCost)
-        {
-            _dialogSkills = skills;
-            _dialogIsResetAll = true;
-            _dialogProfession = null;
-            _dialogEstimatedPoints = totalEstimated;
-            _dialogEstimatedCost = totalEstimatedCost;
-            _dialogOnConfirm = () =>
-            {
-                ClearDialogState();
-                PerformResetAll(skills);
-            };
-            _dialog.Show(
-                ModLocalization.T("respec.dialog.title.reset_all"),
-                BuildResetAllBody(totalEstimated, totalEstimatedCost),
-                _dialogOnConfirm);
-        }
-
         private void RefreshOpenDialog()
         {
             if (_dialog == null || !_dialog.gameObject.activeInHierarchy || _dialogOnConfirm == null || _dialogSkills == null)
                 return;
 
-            if (_dialogIsResetAll)
-            {
-                _dialog.Show(
-                    ModLocalization.T("respec.dialog.title.reset_all"),
-                    BuildResetAllBody(_dialogEstimatedPoints, _dialogEstimatedCost),
-                    _dialogOnConfirm);
-            }
-            else if (_dialogProfession.HasValue)
-            {
-                var profession = _dialogProfession.Value;
-                _dialog.Show(
-                    ModLocalization.T("respec.dialog.title.profession", ProfessionUiMap.GetDisplayName(profession)),
-                    BuildConfirmBody(profession, _dialogEstimatedPoints, _dialogEstimatedCost),
-                    _dialogOnConfirm);
-            }
+            if (!_dialogProfession.HasValue)
+                return;
+
+            var profession = _dialogProfession.Value;
+            _dialog.Show(
+                ModLocalization.T("respec.dialog.title.profession", ProfessionUiMap.GetDisplayName(profession)),
+                BuildConfirmBody(profession, _dialogEstimatedPoints, _dialogEstimatedCost),
+                _dialogOnConfirm);
         }
 
         private void ClearDialogState()
@@ -383,7 +288,6 @@ namespace HavensRespec.UI
             _dialogSkills = null;
             _dialogOnConfirm = null;
             _dialogProfession = null;
-            _dialogIsResetAll = false;
         }
 
         private string BuildConfirmBody(ProfessionType profession, int pointsRefunded, int cost)
@@ -403,24 +307,6 @@ namespace HavensRespec.UI
             return line1 + costLine + undoLine;
         }
 
-        private string BuildResetAllBody(int totalEstimated, int totalEstimatedCost)
-        {
-            string body = ModLocalization.T("respec.dialog.body.reset_all.intro", totalEstimated);
-            body += totalEstimatedCost > 0
-                ? ModLocalization.T("respec.dialog.body.reset_all.cost", _costService.CostLabel(totalEstimated))
-                : ModLocalization.T("respec.dialog.body.reset_all.free");
-            body += _config.EnableUndo.Value
-                ? ModLocalization.T("respec.dialog.body.reset_all.undo_per_prof")
-                : ModLocalization.T("respec.dialog.body.reset_all.undo_disabled");
-            return body;
-        }
-
-        private void RefreshResetAllLabel()
-        {
-            if (_resetAllLabel != null)
-                _resetAllLabel.text = ModLocalization.T("respec.button.reset_all");
-        }
-
         private static bool IsShiftHeld()
         {
             return Input.GetKey(KeyCode.LeftShift) || Input.GetKey(KeyCode.RightShift);
@@ -431,91 +317,6 @@ namespace HavensRespec.UI
             if (_resetService.TryEstimateExactRefund(skills, profession, out int exact))
                 return Mathf.Max(0, exact);
             return Mathf.Max(0, _resetService.GetAllocatedPoints(profession));
-        }
-
-        private void EnsureResetAllButton(Skills skills, SkillTree panel)
-        {
-            if (!_config.EnableResetAll.Value || !_config.InjectButtons.Value || panel == null)
-            {
-                if (_resetAllButton != null)
-                {
-                    UnityEngine.Object.Destroy(_resetAllButton);
-                    _resetAllButton = null;
-                }
-                return;
-            }
-
-            if (_resetAllButton != null)
-                return;
-
-            var parent = panel.transform.parent;
-            if (parent == null)
-                return;
-
-            var go = new GameObject("HavensRespec_ResetAllButton");
-            go.transform.SetParent(parent, false);
-
-            var rt = go.AddComponent<RectTransform>();
-            rt.anchorMin = rt.anchorMax = new Vector2(0.5f, 1f);
-            rt.pivot = new Vector2(0.5f, 1f);
-            rt.sizeDelta = new Vector2(130f, 28f);
-            rt.anchoredPosition = new Vector2(0f, -8f);
-            rt.localScale = Vector3.one;
-
-            var image = go.AddComponent<Image>();
-            image.sprite = RespecStyle.SolidRounded(Color.white, new Color(0f, 0f, 0f, 0f), 32, 0, 8);
-            image.type = Image.Type.Sliced;
-            image.color = RespecStyle.Danger;
-
-            var button = go.AddComponent<UIButton>();
-            button.transition = Selectable.Transition.None;
-            button.onClick.AddListener(() => BeginResetAllFlow(skills, _config.ShiftSkipsConfirmation.Value && IsShiftHeld()));
-
-            var tint = go.AddComponent<HoverTint>();
-            tint.Target = image;
-            tint.Normal = RespecStyle.Danger;
-            tint.Hover = RespecStyle.DangerHover;
-            tint.Pressed = RespecStyle.DangerPressed;
-
-            var labelGo = new GameObject("Label");
-            labelGo.transform.SetParent(go.transform, false);
-            var labelRt = labelGo.AddComponent<RectTransform>();
-            labelRt.anchorMin = Vector2.zero;
-            labelRt.anchorMax = Vector2.one;
-            labelRt.offsetMin = Vector2.zero;
-            labelRt.offsetMax = Vector2.zero;
-            var label = labelGo.AddComponent<TMPro.TextMeshProUGUI>();
-            label.alignment = TMPro.TextAlignmentOptions.Center;
-            label.fontSize = 12f;
-            label.fontStyle = TMPro.FontStyles.Bold;
-            label.enableWordWrapping = false;
-            label.color = RespecStyle.Parchment;
-            label.text = ModLocalization.T("respec.button.reset_all");
-            label.raycastTarget = false;
-
-            _resetAllLabel = label;
-            _resetAllButton = go;
-        }
-
-        private sealed class HoverTint : MonoBehaviour, UnityEngine.EventSystems.IPointerEnterHandler, UnityEngine.EventSystems.IPointerExitHandler, UnityEngine.EventSystems.IPointerDownHandler, UnityEngine.EventSystems.IPointerUpHandler
-        {
-            public Image Target;
-            public Color Normal;
-            public Color Hover;
-            public Color Pressed;
-
-            private bool _isOver;
-
-            public void OnPointerEnter(UnityEngine.EventSystems.PointerEventData _) { _isOver = true; Apply(Hover); }
-            public void OnPointerExit(UnityEngine.EventSystems.PointerEventData _) { _isOver = false; Apply(Normal); }
-            public void OnPointerDown(UnityEngine.EventSystems.PointerEventData _) { Apply(Pressed); }
-            public void OnPointerUp(UnityEngine.EventSystems.PointerEventData _) { Apply(_isOver ? Hover : Normal); }
-
-            private void Apply(Color fill)
-            {
-                if (Target == null) return;
-                Target.color = fill;
-            }
         }
     }
 }

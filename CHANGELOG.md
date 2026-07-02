@@ -6,6 +6,26 @@ Notes for **players and release readers**. Per-mod blurbs and upstream metadata 
 
 ## 2026-06-29
 
+**The Vault**
+
+- **Fix:** Vault load now restores from `.backup` when the primary save is missing or unreadable (e.g. after a crash during save), matching the atomic-save policy used by other mods.
+
+**S.M.U.T. (Sun Haven Museum Utility Tracker)**
+
+- **Fix:** Donation save load now checks `.bak` even when the primary file is missing, preventing silent data loss after an interrupted save.
+
+**Haven's Birthright**
+
+- **Fix:** Shop racial discount restores the original listing price after each purchase so repeated buys from the same shop row cannot stack discounts.
+
+**Haven Dev Tools**
+
+- **Fix:** Mod update checker reads each mod's installed version from BepInEx at runtime instead of a hardcoded table, so update reports stay accurate between releases.
+
+**Haven's Respec**
+
+- **Fix:** Removed the top-center **RESET ALL** button from the skill tree UI. Per-profession **Reset** and **Undo** on each tab remain unchanged.
+
 **Maintainer tooling**
 
 - **Scripts:** Reorganized under `scripts/` into `matrix/`, `stats/`, `version/`, `build/`, `localization/`, and `archive/` with shared helpers. CI and docs paths updated; see [`scripts/README.md`](scripts/README.md) and [`MAINTAINER_CHANGELOG.md`](MAINTAINER_CHANGELOG.md).

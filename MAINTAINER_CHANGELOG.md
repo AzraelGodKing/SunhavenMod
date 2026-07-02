@@ -6,6 +6,8 @@ Internal engineering log: **CI**, **release automation**, **scripts**, **docs in
 
 ## 2026-06-29
 
+- **Mod review fixes (save + compat):** The Vault `VaultSaveSystem.Load()` tries `.backup` when primary/legacy saves are missing or unreadable; SMUT `DonationSaveSystem.Load()` matches SenpaisChest/Todo backup-first pattern; HavensBirthright shop discount restores listing price in `BuyItem` postfixes; HavenDevTools version checker uses `Chainloader.PluginInfos` instead of compiled-in version tuples. See [`mod-review-2026-07-02.md`](mod-review-2026-07-02.md).
+- **Haven's Respec:** Removed the skill-tree **RESET ALL** button (overlapped tier headers); per-tab Reset/Undo unchanged. Dropped `UI.EnableResetAll` config entry.
 - **Cloudflare mirror:** [`sync-cloudflare-site-mirror.yml`](.github/workflows/sync-cloudflare-site-mirror.yml) authenticates git clone/push with host-scoped `Authorization: Basic` (`x-access-token`) instead of `Bearer`, which GitHub’s git HTTPS rejects and caused `could not read Username for 'https://github.com'` in CI.
 - **Version verifier:** [`scripts/version/verify-version-consistency.py`](scripts/version/verify-version-consistency.py) uses [`scripts/lib/Resolve-Python.ps1`](scripts/lib/Resolve-Python.ps1) in the PowerShell wrapper so local dev skips broken `py` launcher entries (e.g. stale self-hosted Actions tool cache) while CI still picks up `setup-python` / runner `python3`.
 
