@@ -84,7 +84,7 @@ Use this checklist before any release prep, documentation refresh, or compatibil
 
 ## Final Sanity Pass
 
-- Run `scripts/pre-push-build.ps1 -All` without version bump.
+- Run `scripts/version/pre-push-build.ps1 -All` without version bump.
 - Ensure no version was incremented unless explicitly requested by the owner.
 - Confirm root `CHANGELOG.md` entries describe user-facing behavior changes, not only internal refactors.
 - Confirm internal-only notes were recorded in `MAINTAINER_CHANGELOG.md` when applicable.

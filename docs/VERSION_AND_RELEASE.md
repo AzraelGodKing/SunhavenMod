@@ -34,7 +34,7 @@ Requires `ADMIN_PUSH_TOKEN` (or a branch policy that allows `GITHUB_TOKEN` pushe
 
 3. **Commit and push** to the branch your workflows use (usually `main`).
 
-4. **CI check:** the **Release & Publish** and **Test — Self-hosted Sunhaven runner** workflows run [`scripts/verify-version-consistency.py`](../scripts/verify-version-consistency.py) in the setup job. If `versions.json`, `PLUGIN_VERSION`, and `thunderstore/manifest.json` disagree, the workflow fails before building.
+4. **CI check:** the **Release & Publish** and **Test — Self-hosted Sunhaven runner** workflows run [`scripts/version/verify-version-consistency.py`](../scripts/version/verify-version-consistency.py) in the setup job. If `versions.json`, `PLUGIN_VERSION`, and `thunderstore/manifest.json` disagree, the workflow fails before building.
 
 5. **Publish:** run **Release & Publish** with **`bump_version` = `none`**. Toggle GitHub Release / Thunderstore / Nexus as needed.
 
@@ -56,27 +56,27 @@ If you only need to validate consistency (for example before pushing), use eithe
 **Direct Python:**
 
 ```bash
-python3 scripts/verify-version-consistency.py
+python3 scripts/version/verify-version-consistency.py
 ```
 
 The Python verifier requires Python 3.6+.
 
 ## Mod matrix ownership
 
-Structural mod metadata now lives in [`scripts/mod-matrix.json`](../scripts/mod-matrix.json). This is the single source of truth for mod wiring used by scripts and workflows (mod keys, directories, plugin file path, csproj path, Thunderstore package name, docs page path, docs label aliases).
+Structural mod metadata now lives in [`scripts/matrix/mod-matrix.json`](../scripts/matrix/mod-matrix.json). This is the single source of truth for mod wiring used by scripts and workflows (mod keys, directories, plugin file path, csproj path, Thunderstore package name, docs page path, docs label aliases).
 
 When adding a new mod:
 
-1. Add one entry to `scripts/mod-matrix.json`.
+1. Add one entry to `scripts/matrix/mod-matrix.json`.
 2. Add the mod's release metadata entry in [`docs/versions.json`](../docs/versions.json).
 3. Regenerate the hub copy (do not hand-edit `docs/mod-matrix.json`):
-   - `npm run sync-mod-matrix` (runs `scripts/sync-docs-mod-matrix.js`). CI also checks that `docs/mod-matrix.json` matches the generator.
+   - `npm run sync-mod-matrix` (runs `scripts/matrix/sync-docs-mod-matrix.js`). CI also checks that `docs/mod-matrix.json` matches the generator.
 
 Required matrix fields per row: `modKey`, `jsonKey`, `modDir`, `pluginFile`, `dllName`, `csproj`, `thunderstoreName`, `readmePath`, `indexDataName`, `docsPagePath`, `extraCsprojPaths`.
 
 ## Automatic sync on merge (optional drift repair)
 
-The workflow [`.github/workflows/sync-mod-versions.yml`](../.github/workflows/sync-mod-versions.yml) runs on every push to `main`. It executes `.\scripts\pre-push-build.ps1 -All -SyncOnly` (no `dotnet build`), then `python3 scripts/verify-version-consistency.py`. If any tracked file was behind `docs/versions.json`, it commits and pushes with message `chore: sync mod versions from versions.json [skip ci]` so the job does not re-trigger in a loop.
+The workflow [`.github/workflows/sync-mod-versions.yml`](../.github/workflows/sync-mod-versions.yml) runs on every push to `main`. It executes `.\scripts\pre-push-build.ps1 -All -SyncOnly` (no `dotnet build`), then `python3 scripts/version/verify-version-consistency.py`. If any tracked file was behind `docs/versions.json`, it commits and pushes with message `chore: sync mod versions from versions.json [skip ci]` so the job does not re-trigger in a loop.
 
 **Source of truth remains `docs/versions.json`.** The workflow only copies those values into plugin sources and store metadata; it does not invent new semver bumps.
 
@@ -85,10 +85,10 @@ The workflow [`.github/workflows/sync-mod-versions.yml`](../.github/workflows/sy
 | Piece | Role |
 |--------|------|
 | `docs/versions.json` | Source of truth for semver, changelog, store links |
-| `scripts/pre-push-build.ps1` | Bump/sync version across plugin, manifests, docs (`-SyncOnly` for CI without game DLLs) |
-| `scripts/verify-version-consistency.py` | CI + local guard: JSON vs plugin vs manifest |
-| `scripts/verify-version-consistency.ps1` | Windows helper that invokes `verify-version-consistency.py` (Python required) |
-| `scripts/stage-version-sync-files.py` | Used by `sync-mod-versions.yml` to `git add` only paths `pre-push-build.ps1` may touch (avoids broad `git add -A`) |
+| `scripts/version/pre-push-build.ps1` | Bump/sync version across plugin, manifests, docs (`-SyncOnly` for CI without game DLLs) |
+| `scripts/version/verify-version-consistency.py` | CI + local guard: JSON vs plugin vs manifest |
+| `scripts/version/verify-version-consistency.ps1` | Windows helper that invokes `verify-version-consistency.py` (Python required) |
+| `scripts/version/stage-version-sync-files.py` | Used by `sync-mod-versions.yml` to `git add` only paths `pre-push-build.ps1` may touch (avoids broad `git add -A`) |
 | `.github/workflows/sync-mod-versions.yml` | After merge: align tracked files with `versions.json` if needed |
 | `.github/workflows/build-release-publish.yml` | Build → package → GitHub / Thunderstore / Nexus |
 | [`docs/ATOMIC_SAVE_POLICY.md`](ATOMIC_SAVE_POLICY.md) | Documents temp-file / on-failure behavior for The Vault vs Senpai's Chest vs Todo saves |

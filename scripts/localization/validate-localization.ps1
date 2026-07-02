@@ -1,26 +1,23 @@
-# Validates Localization/strings.json under each mod: all keys have en + all 16 game languages.
+# Validates Localization/strings.json for every mod in mod-matrix that ships strings.json.
 param(
-    [string]$RepoRoot = (Resolve-Path (Join-Path $PSScriptRoot "..")).Path,
+    [string]$RepoRoot,
     [switch]$WarnLongStrings
 )
 
-$ErrorActionPreference = "Stop"
+$ErrorActionPreference = 'Stop'
+. (Join-Path $PSScriptRoot '..\lib\RepoPaths.ps1')
 
-$RequiredLangs = @(
-    "en", "da", "de", "es", "fr", "it", "ja", "ko", "nl", "pt", "pt-BR", "ru", "sv", "zh-CN", "zh-TW", "uk"
-)
+if ([string]::IsNullOrWhiteSpace($RepoRoot)) {
+    $RepoRoot = Get-RepoRoot -StartPath $PSScriptRoot
+}
 
-$ModPaths = @(
-    "SunhavenTodo",
-    "BirthdayReminder",
-    "CropOptimizer",
-    "SenpaisChest",
-    "TheVault",
-    "HavensAlmanac",
-    "SunHavenMuseumUtilityTracker",
-    "HavenDevTools",
-    "HavensRespec"
-)
+$RequiredLangs = Get-LocalizationLangs
+$ModPaths = Get-LocalizedModDirs -StartPath $PSScriptRoot -RepoRoot $RepoRoot
+
+if ($ModPaths.Count -eq 0) {
+    Write-Error 'No localized mods found (expected Localization/strings.json under mod-matrix modDir folders).'
+    exit 1
+}
 
 $exitCode = 0
 $issues = New-Object System.Collections.Generic.List[string]
@@ -81,7 +78,7 @@ function Test-StringsFile {
 
         if ($WarnLongStrings -and -not [string]::IsNullOrWhiteSpace($en)) {
             foreach ($lang in $RequiredLangs) {
-                if ($lang -eq "en") { continue }
+                if ($lang -eq 'en') { continue }
                 $val = [string]$entry.$lang
                 if ($val.Length -gt ($en.Length * 2.5)) {
                     Write-Warning "$ModName : key '$key' lang '$lang' is much longer than English ($($val.Length) vs $($en.Length))"
@@ -93,15 +90,15 @@ function Test-StringsFile {
     Write-Host "OK $ModName : $($keys.Count) keys" -ForegroundColor Green
 }
 
-Write-Host "Validating localization under $RepoRoot"
+Write-Host "Validating localization under $RepoRoot ($($ModPaths.Count) mod(s))"
 foreach ($mod in $ModPaths) {
-    $file = Join-Path (Join-Path $RepoRoot $mod) "Localization\strings.json"
+    $file = Join-Path (Join-Path $RepoRoot $mod) 'Localization\strings.json'
     Test-StringsFile -Path $file -ModName $mod
 }
 
 if ($issues.Count -gt 0) {
-    Write-Host ""
-    Write-Host "Failures:" -ForegroundColor Red
+    Write-Host ''
+    Write-Host 'Failures:' -ForegroundColor Red
     foreach ($i in $issues) { Write-Host "  $i" -ForegroundColor Red }
 }
 

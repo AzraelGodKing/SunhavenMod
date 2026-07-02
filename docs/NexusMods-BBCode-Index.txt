@@ -3,7 +3,7 @@ NexusMods detailed description — BBCode source files
 
 Each mod folder has one file named [b]NexusMods-<ModFolder>-BBCode.txt[/b] (e.g. CropOptimizer/NexusMods-CropOptimizer-BBCode.txt): copy its full contents into that mod's Nexus "[b]Description[/b]" field ([b]BBCode[/b] mode).
 
-After version bumps, the first line header [i](vX.Y.Z)[/i] is updated automatically by scripts/pre-push-build.ps1 together with docs/versions.json.
+After version bumps, the first line header [i](vX.Y.Z)[/i] is updated automatically by scripts/version/pre-push-build.ps1 together with docs/versions.json.
 
 Paths (mod folder → file):
   BirthdayReminder/NexusMods-BirthdayReminder-BBCode.txt

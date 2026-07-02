@@ -31,16 +31,16 @@ jobs:
         env:
           SUNHAVEN_PATH: C:\sunhaven-refs
         run: |
-          ./scripts/check-sunhaven-refs.ps1
+          ./scripts/build/check-sunhaven-refs.ps1
 
       - name: Verify version alignment
         shell: pwsh
         run: |
-          ./scripts/check-version-drift.ps1
+          ./scripts/version/check-version-drift.ps1
 
       - name: Build selected mod only
         shell: pwsh
         env:
           SUNHAVEN_PATH: C:\sunhaven-refs
         run: |
-          ./scripts/pre-push-build.ps1 -Mod "${{ github.event.inputs.mod }}" -BuildOnly
+          ./scripts/version/pre-push-build.ps1 -Mod "${{ github.event.inputs.mod }}" -BuildOnly

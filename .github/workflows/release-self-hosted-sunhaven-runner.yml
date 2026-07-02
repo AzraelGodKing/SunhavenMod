@@ -125,7 +125,7 @@ jobs:
         shell: bash
         run: |
           MOD_KEY="${{ matrix.mod }}"
-          MOD_JSON="$(jq -c --arg key "$MOD_KEY" '.[] | select(.modKey == $key)' scripts/mod-matrix.json)"
+          MOD_JSON="$(jq -c --arg key "$MOD_KEY" '.[] | select(.modKey == $key)' scripts/matrix/mod-matrix.json)"
           if [ -z "$MOD_JSON" ]; then
             echo "❌ Unknown mod: $MOD_KEY"
             exit 1
@@ -226,7 +226,7 @@ jobs:
             exit 0
           fi
 
-          MOD_JSON="$(jq -c --arg key "$MOD_KEY" '.[] | select(.modKey == $key)' scripts/mod-matrix.json)"
+          MOD_JSON="$(jq -c --arg key "$MOD_KEY" '.[] | select(.modKey == $key)' scripts/matrix/mod-matrix.json)"
           if [ -z "$MOD_JSON" ]; then
             echo "❌ Unknown mod: $MOD_KEY"
             exit 1
@@ -630,7 +630,7 @@ jobs:
               echo "Nexus v3 API is marked \`evaluation only\` and intermittently returns 201 OK with an empty body (\`part_presigned_urls\` undefined), which makes \`Nexus-Mods/upload-action\` throw \`Cannot read properties of undefined (reading 'length')\`. This is a Nexus-side issue — the rest of this release (GitHub Release + Thunderstore + Discord) completed normally."
               echo ""
               echo "**To retry Nexus only:**"
-              echo "1. Bump the patch version in \`docs/versions.json\` and rebuild (local \`scripts/pre-push-build.ps1\`), OR upload the zip manually via the Nexus Mods website → Files tab."
+              echo "1. Bump the patch version in \`docs/versions.json\` and rebuild (local \`scripts/version/pre-push-build.ps1\`), OR upload the zip manually via the Nexus Mods website → Files tab."
               echo "2. If bumping, re-run **Release & Publish** with \`publish_nexus=true\`, \`publish_thunderstore=false\`, \`create_github_release=false\`."
               echo ""
               echo "Release zip available as a workflow artifact: \`dist/${{ steps.config.outputs.thunderstore_name }}-${{ steps.config.outputs.version }}.zip\`"
@@ -696,7 +696,7 @@ jobs:
         if: github.event.inputs.dry_run != 'true' && github.event.inputs.publish_discord_only != 'true' && github.event.inputs.ignore_discord_notify != 'true' && github.event.inputs.test_discord == 'true'
         id: test_mod
         run: |
-          mapfile -t MODS < <(jq -r '.[] | "\(.jsonKey):\(.modDir)"' scripts/mod-matrix.json)
+          mapfile -t MODS < <(jq -r '.[] | "\(.jsonKey):\(.modDir)"' scripts/matrix/mod-matrix.json)
           IDX=$((RANDOM % ${#MODS[@]}))
           ENTRY="${MODS[$IDX]}"
           JSON_KEY="${ENTRY%%:*}"

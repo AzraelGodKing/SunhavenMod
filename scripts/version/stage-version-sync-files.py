@@ -10,8 +10,8 @@ import subprocess
 import sys
 from pathlib import Path
 
-REPO = Path(__file__).resolve().parent.parent
-MATRIX = REPO / "scripts" / "mod-matrix.json"
+REPO = Path(__file__).resolve().parents[2]
+MATRIX = REPO / "scripts" / "matrix" / "mod-matrix.json"
 
 
 def main() -> int:

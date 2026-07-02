@@ -3,9 +3,10 @@
   "private": true,
   "version": "1.0.0",
   "scripts": {
-    "sync-mod-matrix": "node scripts/sync-docs-mod-matrix.js",
-    "stats": "node scripts/fetch-stats.js",
-    "stats:force": "node scripts/fetch-stats.js --force",
+    "sync-mod-matrix": "node scripts/matrix/sync-docs-mod-matrix.js",
+    "stats": "node scripts/stats/fetch-stats.js",
+    "stats:force": "node scripts/stats/fetch-stats.js --force",
+    "verify-versions": "python scripts/version/verify-version-consistency.py",
     "cf:pages:dev": "npx wrangler pages dev --project-name azrael-sunhaven-website",
     "cf:pages:deploy": "npx wrangler pages deploy --project-name azrael-sunhaven-website"
   },

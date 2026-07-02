@@ -12,9 +12,9 @@ import re
 import sys
 from pathlib import Path
 
-REPO = Path(__file__).resolve().parent.parent
+REPO = Path(__file__).resolve().parents[2]
 VERSIONS_PATH = REPO / "docs" / "versions.json"
-MOD_MATRIX_PATH = REPO / "scripts" / "mod-matrix.json"
+MOD_MATRIX_PATH = REPO / "scripts" / "matrix" / "mod-matrix.json"
 # utf-8-sig strips UTF-8 BOM if present (some editors save JSON with BOM).
 _READ_ENCODING = "utf-8-sig"
 
@@ -55,7 +55,7 @@ def load_matrix_mod_dirs() -> set[str]:
 
 
 def matrix_json_keys_in_versions(data: dict) -> list[str]:
-    """Every jsonKey in scripts/mod-matrix.json must have a row in docs/versions.json."""
+    """Every jsonKey in scripts/matrix/mod-matrix.json must have a row in docs/versions.json."""
     matrix = json.loads(MOD_MATRIX_PATH.read_text(encoding=_READ_ENCODING))
     keys = set(data.keys())
     bad: list[str] = []
@@ -65,7 +65,7 @@ def matrix_json_keys_in_versions(data: dict) -> list[str]:
             continue
         if jk not in keys:
             bad.append(
-                f"scripts/mod-matrix.json: jsonKey {jk!r} is missing from docs/versions.json"
+                f"scripts/matrix/mod-matrix.json: jsonKey {jk!r} is missing from docs/versions.json"
             )
     return bad
 
@@ -102,7 +102,7 @@ def main() -> int:
 
     for key, entry in data.items():
         if key not in mod_plugin_files:
-            errors.append(f"Unknown mod key in versions.json (add to scripts/mod-matrix.json): {key}")
+            errors.append(f"Unknown mod key in versions.json (add to scripts/matrix/mod-matrix.json): {key}")
             continue
 
         want = entry.get("version")
@@ -134,7 +134,7 @@ def main() -> int:
         if found[0] != want:
             errors.append(
                 f"{key}: PLUGIN_VERSION is {found[0]!r} but versions.json says {want!r} "
-                f"— run: .\\scripts\\pre-push-build.ps1 -Mod <modkey> (sync), or -Mod <modkey> -Bump patch|minor|major"
+                f"— run: .\\scripts\\version\\pre-push-build.ps1 -Mod <modkey> (sync), or -Mod <modkey> -Bump patch|minor|major"
             )
 
         mv = read_manifest_version(manifest_path)

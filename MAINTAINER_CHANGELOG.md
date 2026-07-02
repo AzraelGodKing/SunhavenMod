@@ -4,9 +4,15 @@ Internal engineering log: **CI**, **release automation**, **scripts**, **docs in
 
 ---
 
+## 2026-06-29
+
+- **Version verifier:** [`scripts/version/verify-version-consistency.py`](scripts/version/verify-version-consistency.py) uses [`scripts/lib/Resolve-Python.ps1`](scripts/lib/Resolve-Python.ps1) in the PowerShell wrapper so local dev skips broken `py` launcher entries (e.g. stale self-hosted Actions tool cache) while CI still picks up `setup-python` / runner `python3`.
+
+---
+
 ## 2026-06-28
 
-- **Release workflows:** Added `giftingassistant` to the mod `options` list in [`build-release-publish.yml`](.github/workflows/build-release-publish.yml) and [`release-self-hosted-sunhaven-runner.yml`](.github/workflows/release-self-hosted-sunhaven-runner.yml) so single-mod dispatches can target Gifting Assistant (matrix / `mod=all` already included it via `scripts/mod-matrix.json`).
+- **Release workflows:** Added `giftingassistant` to the mod `options` list in [`build-release-publish.yml`](.github/workflows/build-release-publish.yml) and [`release-self-hosted-sunhaven-runner.yml`](.github/workflows/release-self-hosted-sunhaven-runner.yml) so single-mod dispatches can target Gifting Assistant (matrix / `mod=all` already included it via `scripts/matrix/mod-matrix.json`).
 
 ---
 
@@ -14,7 +20,7 @@ Internal engineering log: **CI**, **release automation**, **scripts**, **docs in
 
 - **`release-self-hosted-sunhaven-runner.yml`:** **`package_step.outputs.zip_path`** is the single source of truth for dry-run artifact upload, GitHub Release assets, Thunderstore `file`, and Nexus preflight fallback; **`test_discord`** packaging now emits `zip_path`; **preflight-success** guards all Nexus upload/retry/backoff steps; **`ignore_discord_notify`** workflow input matches **Release & Publish**; lightweight **Package diagnostics** step before dry-run completion / publishes.
 - **`build-release-publish.yml`:** Comments clarify that `builds/` paths are **ephemeral on the runner** (stage → upload-artifact → download → package), not a committed tree — same idea as [`builds/README.md`](builds/README.md).
-- **Nexus BBCode files:** Renamed from `NexusMods-BBCode.txt` to **`NexusMods-<ModFolder>-BBCode.txt`** in each project; [`scripts/pre-push-build.ps1`](scripts/pre-push-build.ps1) and [`scripts/stage-version-sync-files.py`](scripts/stage-version-sync-files.py) updated; hub list in [`docs/NexusMods-BBCode-Index.txt`](docs/NexusMods-BBCode-Index.txt).
+- **Nexus BBCode files:** Renamed from `NexusMods-BBCode.txt` to **`NexusMods-<ModFolder>-BBCode.txt`** in each project; [`scripts/version/pre-push-build.ps1`](scripts/version/pre-push-build.ps1) and [`scripts/version/stage-version-sync-files.py`](scripts/version/stage-version-sync-files.py) updated; hub list in [`docs/NexusMods-BBCode-Index.txt`](docs/NexusMods-BBCode-Index.txt).
 - **Senpai's Chest:** Glob rules on item display names (`*` / `?`), `RuleType.ByNamePattern` + JSON `NamePattern`; group data now stores `NamePatterns` and `By Group` matches item IDs or wildcard patterns. New UI config: `SeparateWildcardRuleInUI` (default false; wildcard editing in Manage Groups unless explicitly separated).
 - **Version bump:** `.\scripts\pre-push-build.ps1 -All -Bump patch` — patch bump for all twelve mods (`docs/versions.json`, manifests, Nexus BBCode headers, doc badges, `HavenDevTools` `DebugWindow` tuples, rebuild).
 
@@ -23,9 +29,9 @@ Internal engineering log: **CI**, **release automation**, **scripts**, **docs in
 ## 2026-05-02
 
 - **Workflows:** Added [`reusable-mod-matrix-setup.yml`](.github/workflows/reusable-mod-matrix-setup.yml); **concurrency** groups on **Release & Publish** and **Test — Self-hosted** to reduce racing publishes.
-- **Version verifier:** [`scripts/verify-version-consistency.py`](scripts/verify-version-consistency.py) scans for stray `manifest.json` under each mod directory; **matrix keys** in `scripts/mod-matrix.json` must exist in `docs/versions.json`; PowerShell script delegates to Python.
-- **Mod matrix:** [`scripts/mod-matrix.json`](scripts/mod-matrix.json) includes `statsDomId`; [`sync-docs-mod-matrix.js`](scripts/sync-docs-mod-matrix.js) regenerates [`docs/mod-matrix.json`](docs/mod-matrix.json); [`fetch-stats.js`](scripts/fetch-stats.js) resolves stats IDs from the matrix; reusable matrix setup runs the generator and **`git diff --exit-code`** on `docs/mod-matrix.json`.
-- **Sync workflow:** [`sync-mod-versions.yml`](.github/workflows/sync-mod-versions.yml) stages allowlisted paths via [`scripts/stage-version-sync-files.py`](scripts/stage-version-sync-files.py) (no broad `git add -A` / full-repo `-u`).
+- **Version verifier:** [`scripts/version/verify-version-consistency.py`](scripts/version/verify-version-consistency.py) scans for stray `manifest.json` under each mod directory; **matrix keys** in `scripts/matrix/mod-matrix.json` must exist in `docs/versions.json`; PowerShell script delegates to Python.
+- **Mod matrix:** [`scripts/matrix/mod-matrix.json`](scripts/matrix/mod-matrix.json) includes `statsDomId`; [`sync-docs-mod-matrix.js`](scripts/matrix/sync-docs-mod-matrix.js) regenerates [`docs/mod-matrix.json`](docs/mod-matrix.json); [`fetch-stats.js`](scripts/stats/fetch-stats.js) resolves stats IDs from the matrix; reusable matrix setup runs the generator and **`git diff --exit-code`** on `docs/mod-matrix.json`.
+- **Sync workflow:** [`sync-mod-versions.yml`](.github/workflows/sync-mod-versions.yml) stages allowlisted paths via [`scripts/version/stage-version-sync-files.py`](scripts/version/stage-version-sync-files.py) (no broad `git add -A` / full-repo `-u`).
 - **Release / mirror:** Self-hosted test workflow: Nexus **fail-closed** when publish requested but no upload succeeded; Nexus `upload-action` **v1.0.0-beta.4** aligned with main release workflow; [`sync-cloudflare-site-mirror.yml`](.github/workflows/sync-cloudflare-site-mirror.yml) uses `http.extraHeader` auth instead of token-in-URL; [`update-stats.yml`](.github/workflows/update-stats.yml) falls back to `github.token` when `ADMIN_PUSH_TOKEN` is unset.
 - **Build:** [`Directory.Build.props`](Directory.Build.props) — `Nullable` annotations, `TreatWarningsAsErrors` when `GITHUB_ACTIONS` is set; `LangVersion` latest, `Deterministic`, `ContinuousIntegrationBuild`. **Senpai's Chest** suppresses **CS0436** (linked `SceneRootSurvivor` + `SunHavenMuseumUtilityTracker` reference embeds the same type).
 - **Policy / governance:** Root [`LICENSE`](LICENSE), [`CONTRIBUTING.md`](CONTRIBUTING.md), [`SECURITY.md`](SECURITY.md), [`CODE_OF_CONDUCT.md`](CODE_OF_CONDUCT.md), [`docs/SHARED_CODE_STRATEGY.md`](docs/SHARED_CODE_STRATEGY.md).

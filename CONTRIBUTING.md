@@ -3,7 +3,7 @@
 ## Workflow
 
 - Use feature branches; keep PRs focused.
-- Run **`python scripts/verify-version-consistency.py`** (or `npm run sync-mod-matrix` after editing [`scripts/mod-matrix.json`](scripts/mod-matrix.json)) before pushing.
+- Run **`python scripts/version/verify-version-consistency.py`** (or `npm run sync-mod-matrix` after editing [`scripts/matrix/mod-matrix.json`](scripts/matrix/mod-matrix.json)) before pushing.
 - Follow [`docs/VERSION_AND_RELEASE.md`](docs/VERSION_AND_RELEASE.md) for version bumps — **do not bump versions unless the maintainer requests it.**
 
 ## Shared utilities

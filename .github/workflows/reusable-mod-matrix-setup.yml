@@ -50,13 +50,13 @@ jobs:
         with:
           node-version: "20"
 
-      - name: docs/mod-matrix.json must match scripts/mod-matrix.json
+      - name: docs/mod-matrix.json must match scripts/matrix/mod-matrix.json
         run: |
-          node scripts/sync-docs-mod-matrix.js
+          node scripts/matrix/sync-docs-mod-matrix.js
           git diff --exit-code docs/mod-matrix.json
 
       - name: Verify version consistency (versions.json vs PLUGIN_VERSION vs manifest)
-        run: python3 scripts/verify-version-consistency.py
+        run: python3 scripts/version/verify-version-consistency.py
 
       - name: Set mod matrix
         id: set-matrix
@@ -70,13 +70,13 @@ jobs:
           set -euo pipefail
           if [ "$EVENT_NAME" == "pull_request" ] || [ "$PR_ALL" == "true" ]; then
             echo "PR / gate build: all mods."
-            echo "matrix=$(jq -c '[.[].modKey]' scripts/mod-matrix.json)" >> "$GITHUB_OUTPUT"
+            echo "matrix=$(jq -c '[.[].modKey]' scripts/matrix/mod-matrix.json)" >> "$GITHUB_OUTPUT"
           elif [ "$TEST_DISCORD" == "true" ]; then
             echo 'matrix=["test_discord"]' >> "$GITHUB_OUTPUT"
           else
             MOD_KEY="$MOD_INPUT"
             if [ "$MOD_KEY" == "all" ]; then
-              echo "matrix=$(jq -c '[.[].modKey]' scripts/mod-matrix.json)" >> "$GITHUB_OUTPUT"
+              echo "matrix=$(jq -c '[.[].modKey]' scripts/matrix/mod-matrix.json)" >> "$GITHUB_OUTPUT"
             else
               echo "matrix=[\"$MOD_KEY\"]" >> "$GITHUB_OUTPUT"
             fi

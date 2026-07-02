@@ -1,13 +1,17 @@
 # Copies zh-CN into zh-TW when zh-TW still matches English.
-param([string]$RepoRoot = (Resolve-Path (Join-Path $PSScriptRoot "..")).Path)
+param([string]$RepoRoot)
 
-$mods = @(
-    "SunhavenTodo", "BirthdayReminder", "CropOptimizer", "SenpaisChest", "TheVault",
-    "HavensAlmanac", "SunHavenMuseumUtilityTracker", "HavenDevTools", "HavensRespec"
-)
+$ErrorActionPreference = 'Stop'
+. (Join-Path $PSScriptRoot '..\lib\RepoPaths.ps1')
+
+if ([string]::IsNullOrWhiteSpace($RepoRoot)) {
+    $RepoRoot = Get-RepoRoot -StartPath $PSScriptRoot
+}
+
+$mods = Get-LocalizedModDirs -StartPath $PSScriptRoot -RepoRoot $RepoRoot
 
 foreach ($mod in $mods) {
-    $path = Join-Path (Join-Path $RepoRoot $mod) "Localization\strings.json"
+    $path = Join-Path (Join-Path $RepoRoot $mod) 'Localization\strings.json'
     if (-not (Test-Path $path)) { continue }
     $json = Get-Content -Raw -Encoding UTF8 $path | ConvertFrom-Json
     $out = [ordered]@{}
@@ -18,16 +22,15 @@ foreach ($mod in $mods) {
             $entry[$lang.Name] = [string]$lang.Value
         }
         $en = [string]$entry.en
-        $tw = [string]$entry["zh-TW"]
-        $cn = [string]$entry["zh-CN"]
-        if ($tw.Trim() -eq $en.Trim() -and $cn.Trim() -ne $en.Trim()) {
-            $entry["zh-TW"] = $cn
+        $tw = [string]$entry.'zh-TW'
+        if ($tw.Trim() -eq $en.Trim() -and -not [string]::IsNullOrWhiteSpace([string]$entry.'zh-CN')) {
+            $entry.'zh-TW' = [string]$entry.'zh-CN'
             $fixed++
         }
         $out[$prop.Name] = $entry
     }
     if ($fixed -gt 0) {
         ($out | ConvertTo-Json -Depth 6) | Set-Content -Path $path -Encoding UTF8
-        Write-Host "$mod : $fixed zh-TW cells from zh-CN"
+        Write-Host "$mod : updated $fixed zh-TW entries from zh-CN"
     }
 }

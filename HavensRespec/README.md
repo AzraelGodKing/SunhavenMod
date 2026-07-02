@@ -128,7 +128,7 @@ correctness and UX upgrades over the prior implementation.
   - Optional `ResetCurrentTabHotkey` / `UndoHotkey` KeyCode bindings (unbound by default) are
     wired in `Plugin.Update` and resolve the active tab by asking which profession panel
     GameObject is currently active.
-  - Build + publish plumbing: GitHub Actions matrix entry, `scripts/pre-push-build.ps1`
+  - Build + publish plumbing: GitHub Actions matrix entry, `scripts/version/pre-push-build.ps1`
     tracking, `docs/versions.json` entry, mod card on the Sun Haven docs hub, and a dedicated
     `docs/HavensRespec/HavensRespec.html` page.
   - Repo hygiene: root `.gitignore` now ignores `builds/` staging outputs. CI workflows still

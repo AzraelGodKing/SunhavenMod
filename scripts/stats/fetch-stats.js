@@ -1,23 +1,24 @@
 const fs = require("fs");
 const path = require("path");
+const { repoRoot, modMatrix, versionsJson, statsCache } = require("../lib/paths");
 
 try {
-  require("dotenv").config();
+  require("dotenv").config({ path: path.join(repoRoot, ".env") });
 } catch (e) {
   if (e && e.code !== "MODULE_NOT_FOUND") throw e;
 }
 
-const ROOT = path.resolve(__dirname, "..");
-const MOD_MATRIX_PATH = path.join(ROOT, "scripts", "mod-matrix.json");
+const ROOT = repoRoot;
+const MOD_MATRIX_PATH = modMatrix;
 /** Served as /data/stats-cache.json on GitHub Pages when publishing from /docs */
-const CACHE_PATH = path.join(ROOT, "docs", "data", "stats-cache.json");
+const CACHE_PATH = statsCache;
 const TMP_PATH = `${CACHE_PATH}.tmp`;
 
 const THUNDERSTORE_SUN_HAVEN_COMMUNITY = "sun-haven";
 
 /** Nexus mod ids from `docs/versions.json` (`nexus` URL …/mods/{id}); used when `nexus.modId` is omitted in the roster. */
 function loadNexusModIdByThunderstoreName() {
-  const versionsPath = path.join(ROOT, "docs", "versions.json");
+  const versionsPath = versionsJson;
   const map = new Map();
   try {
     const text = fs.readFileSync(versionsPath, "utf8").replace(/^\uFEFF/, "");
@@ -46,7 +47,7 @@ function slugify(value) {
 }
 
 /**
- * Stable cache / DOM id per mod (`statsDomId` in scripts/mod-matrix.json). Must match `data-stats-mod` in docs.
+ * Stable cache / DOM id per mod (`statsDomId` in scripts/matrix/mod-matrix.json). Must match `data-stats-mod` in docs.
  */
 function resolveStatsId(modKey, row) {
   if (row && row.statsDomId) return String(row.statsDomId);
@@ -69,7 +70,7 @@ function loadModRoster() {
         nexus: { game: "sunhaven", modId: null },
       }));
   } catch (e) {
-    throw new Error(`[stats] Could not read mod roster from scripts/mod-matrix.json: ${e.message}`);
+    throw new Error(`[stats] Could not read mod roster from scripts/matrix/mod-matrix.json: ${e.message}`);
   }
 }
 

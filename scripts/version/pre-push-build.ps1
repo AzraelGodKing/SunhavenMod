@@ -82,8 +82,8 @@ param(
 $ErrorActionPreference = "Stop"
 $ScriptRoot = $PSScriptRoot
 if (-not $ScriptRoot) { $ScriptRoot = Split-Path -Parent $MyInvocation.MyCommand.Path }
-$RepoRoot = [System.IO.Path]::GetFullPath((Join-Path $ScriptRoot ".."))
-$ModMatrixPath = Join-Path $ScriptRoot "mod-matrix.json"
+$RepoRoot = [System.IO.Path]::GetFullPath((Join-Path $ScriptRoot "..\.."))
+$ModMatrixPath = Join-Path $ScriptRoot "..\matrix\mod-matrix.json"
 $VersionsPath = Join-Path $RepoRoot "docs\versions.json"
 $ReadmePath = Join-Path $RepoRoot "README.md"
 $IndexHtmlPath = Join-Path $RepoRoot "docs\index.html"

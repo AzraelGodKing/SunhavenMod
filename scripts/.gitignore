@@ -1,0 +1,4 @@
+.cache/
+*.log
+translate-run.log
+translate-phase1.log

@@ -68,7 +68,7 @@ jobs:
             echo "skip_discord_for_almanac=false" >> "$GITHUB_OUTPUT"
             exit 0
           fi
-          MOD_JSON="$(jq -c --arg key "$MOD_KEY" '.[] | select(.modKey == $key)' scripts/mod-matrix.json)"
+          MOD_JSON="$(jq -c --arg key "$MOD_KEY" '.[] | select(.modKey == $key)' scripts/matrix/mod-matrix.json)"
           if [ -z "$MOD_JSON" ]; then
             echo "❌ Unknown mod: $MOD_KEY"
             exit 1
@@ -567,7 +567,7 @@ jobs:
           inputs.test_discord == 'true'
         id: test_mod
         run: |
-          mapfile -t MODS < <(jq -r '.[] | "\(.jsonKey):\(.modDir)"' scripts/mod-matrix.json)
+          mapfile -t MODS < <(jq -r '.[] | "\(.jsonKey):\(.modDir)"' scripts/matrix/mod-matrix.json)
           IDX=$((RANDOM % ${#MODS[@]}))
           ENTRY="${MODS[$IDX]}"
           JSON_KEY="${ENTRY%%:*}"

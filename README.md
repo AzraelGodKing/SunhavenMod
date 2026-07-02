@@ -47,7 +47,7 @@ Multi-mod solution (subset of mods): [`HavensBirthright/HavensBirthright.sln`](H
 | `<ModName>/` | One folder per mod + `thunderstore/` packaging |
 | [`SharedUtilities/`](SharedUtilities/) | Shared source linked into mods (VersionChecker, IconCache, etc.) |
 | [`TheVault.Abstractions/`](TheVault.Abstractions/) | Compile-time API surface for soft-dependent mods |
-| [`scripts/`](scripts/) | Version checks, mod matrix, stats fetch, pre-push helpers |
+| [`scripts/`](scripts/) | Maintainer tooling: mod matrix, version sync, stats, build checks, localization (see [`scripts/README.md`](scripts/README.md)) |
 | [`docs/`](docs/) | GitHub Pages site, `versions.json`, mod HTML guides |
 | [`.github/workflows/`](.github/workflows/) | CI, release, stats, site mirror |
 

@@ -4,6 +4,14 @@ Notes for **players and release readers**. Per-mod blurbs and upstream metadata 
 
 ---
 
+## 2026-06-29
+
+**Maintainer tooling**
+
+- **Scripts:** Reorganized under `scripts/` into `matrix/`, `stats/`, `version/`, `build/`, `localization/`, and `archive/` with shared helpers. CI and docs paths updated; see [`scripts/README.md`](scripts/README.md) and [`MAINTAINER_CHANGELOG.md`](MAINTAINER_CHANGELOG.md).
+
+---
+
 ## 2026-06-28
 
 **Current versions** ([`docs/versions.json`](docs/versions.json)): The Vault **4.0.1**, Haven's Birthright / Senpai's Chest / S.M.U.T. **3.0.1**, Sun Haven Todo / Birthday Reminder / Haven's Almanac / Haven Dev Tools / Faster Races / Trinket Fortune / Crop Optimizer / Haven's Respec **2.0.1**, Gifting Assistant **1.0.0**.
@@ -61,8 +69,8 @@ Notes for **players and release readers**. Per-mod blurbs and upstream metadata 
 - Shared layer: `SharedUtilities/ModLocalization.cs`, `LanguageChangeWatcher.cs`, `LocalizationBootstrap.cs`; `Directory.Build.targets` adds `I2Localization.dll` for UI projects.
 - **`[Localization] ForceEnglish`** (default `false`) on every localized mod — keep mod UI in English and ignore Sun Haven's in-game language. Toggle live in BepInEx Configuration Manager.
 - All nine UI mods ship `Localization/strings.json` (16 languages: en, da, de, es, fr, it, ja, ko, nl, pt, pt-BR, ru, sv, zh-CN, zh-TW, uk) as embedded resources; `ModLocalization.T()` in HUD/windows; live refresh when the game language changes (Haven's Respec refreshes TMP labels explicitly).
-- PRs run `scripts/validate-localization.ps1`. Optional per-language overrides: `BepInEx/config/<ModFolder>/lang/<code>.json`.
-- Machine translation via MyMemory: run one mod and one language per invocation to avoid rate limits, e.g. `scripts/fill-localization-languages.ps1 -Translate -ForceRetranslate -Mod HavensRespec -Language fr`. Full matrix: `scripts/translate-all-localization.ps1 -ForceRetranslate` (long-running; 30s pause between passes by default). Progress audit: `scripts/audit-untranslated.ps1`.
+- PRs run `scripts/localization/validate-localization.ps1`. Optional per-language overrides: `BepInEx/config/<ModFolder>/lang/<code>.json`.
+- Machine translation via MyMemory: run one mod and one language per invocation to avoid rate limits, e.g. `scripts/localization/fill-localization-languages.ps1 -Translate -ForceRetranslate -Mod HavensRespec -Language fr`. Full matrix: `scripts/localization/translate-all-localization.ps1 -ForceRetranslate` (long-running; 30s pause between passes by default). Progress audit: `scripts/localization/audit-untranslated.ps1`.
 - **Localization fill:** Full MyMemory pass for all nine UI mods (`-ForceRetranslate`) to replace English placeholder copies with per-language strings; Senpai's Chest bullet glyphs normalized to UTF-8 `•`.
 - **Haven's Almanac:** Dashboard provider sections (birthday, vault, todo, museum, chest, birthright, crop optimizer, dev tools, mod health) now use `ModLocalization` keys.
 - **Crop Optimizer:** TMP HUD title and tooltip toggle labels refresh when the game language changes.
@@ -142,7 +150,7 @@ Cross-cutting hardening and documentation (see also maintainer log).
 
 - Reusable workflow setup; concurrency on release/test workflows. Stray `manifest.json` files under mod dirs are rejected by the version verifier. Policy files (license, security, contributing, code of conduct) and shared-code strategy doc. Almanac: no committed game decompiles — use local-only `_refs/` per `.gitignore`.
 - **Docs:** Root [`README.md`](README.md), this changelog, and [`MAINTAINER_CHANGELOG.md`](MAINTAINER_CHANGELOG.md) were rewritten — concise hub layout, versions aligned with [`docs/versions.json`](docs/versions.json), long-running docs-site diary removed from the README in favor of links.
-- **Mod matrix / versions:** `verify-version-consistency.py` also requires every `jsonKey` in `scripts/mod-matrix.json` to exist in `docs/versions.json`. [`docs/ATOMIC_SAVE_POLICY.md`](docs/ATOMIC_SAVE_POLICY.md) documents temp-file behavior for competing save systems.
+- **Mod matrix / versions:** `verify-version-consistency.py` also requires every `jsonKey` in `scripts/matrix/mod-matrix.json` to exist in `docs/versions.json`. [`docs/ATOMIC_SAVE_POLICY.md`](docs/ATOMIC_SAVE_POLICY.md) documents temp-file behavior for competing save systems.
 
 ---
 
