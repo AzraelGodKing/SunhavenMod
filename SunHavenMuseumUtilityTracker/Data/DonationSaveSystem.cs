@@ -70,7 +70,7 @@ namespace SunHavenMuseumUtilityTracker.Data
                 Plugin.Log?.LogWarning($"Backup file also corrupted for {characterName}");
             }
 
-            Plugin.Log?.LogInfo($"No save file found for {characterName}, creating new data");
+            Plugin.Log?.LogInfo($"No usable save data for {characterName}, creating new data");
             return new DonationData(characterName);
         }
 
