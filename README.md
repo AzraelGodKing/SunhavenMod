@@ -48,7 +48,8 @@ Multi-mod solution (subset of mods): [`HavensBirthright/HavensBirthright.sln`](H
 | [`SharedUtilities/`](SharedUtilities/) | Shared source linked into mods (VersionChecker, IconCache, etc.) |
 | [`TheVault.Abstractions/`](TheVault.Abstractions/) | Compile-time API surface for soft-dependent mods |
 | [`scripts/`](scripts/) | Maintainer tooling: mod matrix, version sync, stats, build checks, localization (see [`scripts/README.md`](scripts/README.md)) |
-| [`docs/`](docs/) | GitHub Pages site, `versions.json`, mod HTML guides |
+| [`docs/`](docs/) | GitHub Pages site (public), `versions.json`, mod HTML guides |
+| [`maintainer-docs/`](maintainer-docs/) | Internal engineering docs (not published) — release process, compatibility contract, lifecycle/save policies |
 | [`.github/workflows/`](.github/workflows/) | CI, release, stats, site mirror |
 
 The `builds/` directory is **ephemeral** (CI/local staging); do not commit it — see [`builds/README.md`](builds/README.md).
@@ -63,5 +64,5 @@ The `builds/` directory is **ephemeral** (CI/local staging); do not commit it �
 ## Links
 
 - [Documentation hub](https://azraelgodking.github.io/SunhavenMod/)
-- [Version & release process](docs/VERSION_AND_RELEASE.md)
+- [Version & release process](maintainer-docs/VERSION_AND_RELEASE.md)
 - [Discord](https://discord.gg/Vwh2y7qMXv)
