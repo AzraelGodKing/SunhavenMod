@@ -6,6 +6,7 @@ Internal engineering log: **CI**, **release automation**, **scripts**, **docs in
 
 ## 2026-06-29
 
+- **Cloudflare mirror:** [`sync-cloudflare-site-mirror.yml`](.github/workflows/sync-cloudflare-site-mirror.yml) authenticates git clone/push with host-scoped `Authorization: Basic` (`x-access-token`) instead of `Bearer`, which GitHub’s git HTTPS rejects and caused `could not read Username for 'https://github.com'` in CI.
 - **Version verifier:** [`scripts/version/verify-version-consistency.py`](scripts/version/verify-version-consistency.py) uses [`scripts/lib/Resolve-Python.ps1`](scripts/lib/Resolve-Python.ps1) in the PowerShell wrapper so local dev skips broken `py` launcher entries (e.g. stale self-hosted Actions tool cache) while CI still picks up `setup-python` / runner `python3`.
 
 ---

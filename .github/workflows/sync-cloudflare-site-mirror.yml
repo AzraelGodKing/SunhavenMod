@@ -59,14 +59,20 @@ jobs:
             exit 1
           fi
 
+          # GitHub git HTTPS expects Basic auth (x-access-token), not Bearer — otherwise
+          # git falls back to an interactive username prompt and fails in CI.
+          SYNC_TOKEN="$(printf '%s' "${SYNC_TOKEN}" | tr -d '\r\n')"
+          GIT_AUTH_B64="$(printf 'x-access-token:%s' "${SYNC_TOKEN}" | base64 -w 0)"
+          GIT_AUTH_CONFIG=(-c "http.https://github.com/.extraHeader=Authorization: Basic ${GIT_AUTH_B64}")
+          export GIT_TERMINAL_PROMPT=0
+
           tmp="$(mktemp -d)"
           trap 'rm -rf "$tmp"' EXIT
 
           echo "Cloning destination: https://github.com/${DEST_REPO}.git (branch: ${SOURCE_BRANCH})"
-          git \
-            -c "http.extraHeader=Authorization: Bearer ${SYNC_TOKEN}" \
+          git "${GIT_AUTH_CONFIG[@]}" \
             clone --depth 1 --branch "${SOURCE_BRANCH}" "https://github.com/${DEST_REPO}.git" "$tmp/dest" || {
-            echo "::error::Could not shallow-clone ${DEST_REPO} branch '${SOURCE_BRANCH}'. Ensure the branch exists in the destination repo."
+            echo "::error::Could not shallow-clone ${DEST_REPO} branch '${SOURCE_BRANCH}'. Ensure the branch exists in the destination repo and the sync token has read access."
             exit 1
           }
 
@@ -104,6 +110,4 @@ jobs:
           # Do not use [skip ci] here: Cloudflare Pages honors skip directives and will skip
           # production builds, leaving the site stuck on an older deployment.
           git commit -m "chore: sync cloudflare-site from SunhavenMod"
-          GIT_TERMINAL_PROMPT=0 git \
-            -c "http.extraHeader=Authorization: Bearer ${SYNC_TOKEN}" \
-            push origin "HEAD:${SOURCE_BRANCH}"
+          git "${GIT_AUTH_CONFIG[@]}" push origin "HEAD:${SOURCE_BRANCH}"
