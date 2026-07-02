@@ -37,11 +37,14 @@ namespace SenpaisChest.Data
 
         public bool IsDirty => _isDirty;
 
+        public bool UserClearedAllRulesThisSession { get; private set; }
+
         public void LoadData(SmartChestSaveData data)
         {
             _smartChests.Clear();
             _groups.Clear();
             _categoryCache.Clear();
+            UserClearedAllRulesThisSession = false;
 
             if (data == null)
                 return;
@@ -208,11 +211,13 @@ namespace SenpaisChest.Data
         };
 
         /// <returns>True if a saved entry existed and was removed.</returns>
-        public bool RemoveSmartChest(string chestId)
+        public bool RemoveSmartChest(string chestId, bool userInitiated = false)
         {
             if (_smartChests.Remove(chestId))
             {
                 _isDirty = true;
+                if (userInitiated && _smartChests.Count == 0)
+                    UserClearedAllRulesThisSession = true;
                 return true;
             }
 
@@ -379,9 +384,8 @@ namespace SenpaisChest.Data
 
             Plugin.Log?.LogDebug($"[Scan] Built chest lookup: {chestLookup.Count} unique chests");
 
-            // Rule removal is only in Plugin.OnChestOnDisable_Postfix when a chest actually leaves the world
-            // (not scene change or quit). Scan-time "orphan" deletion used ChestManager snapshots and
-            // repeatedly wiped saves during area transitions.
+            // Rule removal is via SmartChestUI "Remove Smart Chest" only. Chest.OnDisable fires on area
+            // changes and cannot be used to detect pickup reliably in Sun Haven.
 
             foreach (var smartChestEntry in _smartChests)
             {
