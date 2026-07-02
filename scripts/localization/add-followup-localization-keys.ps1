@@ -1,6 +1,7 @@
 $ErrorActionPreference = "Stop"
-$Repo = Resolve-Path (Join-Path $PSScriptRoot "..")
-$Langs = @("en","da","de","es","fr","it","ja","ko","nl","pt","pt-BR","ru","sv","zh-CN","zh-TW","uk")
+. (Join-Path $PSScriptRoot '..\lib\RepoPaths.ps1')
+$Repo = Get-RepoRoot -StartPath $PSScriptRoot
+$Langs = Get-LocalizationLangs
 
 function New-LangEntry([string]$English) {
     $entry = [ordered]@{}

@@ -122,7 +122,7 @@ jobs:
 
       - name: Validate localization strings
         shell: pwsh
-        run: ./scripts/validate-localization.ps1
+        run: ./scripts/localization/validate-localization.ps1
 
   # ---------------------------------------------------------------------------
   # Version — optional bump + sync before build (dispatch only)
@@ -156,9 +156,9 @@ jobs:
         run: |
           set -euo pipefail
           if [ "$MOD_INPUT" == "all" ]; then
-            python3 scripts/set-versions-changelog.py --all --text "$CHANGELOG"
+            python3 scripts/version/set-versions-changelog.py --all --text "$CHANGELOG"
           else
-            python3 scripts/set-versions-changelog.py --mod "$MOD_INPUT" --text "$CHANGELOG"
+            python3 scripts/version/set-versions-changelog.py --mod "$MOD_INPUT" --text "$CHANGELOG"
           fi
 
       - name: Bump and sync version strings
@@ -170,14 +170,14 @@ jobs:
         run: |
           $ErrorActionPreference = 'Stop'
           if ($env:MOD_INPUT -eq 'all') {
-            ./scripts/pre-push-build.ps1 -All -Bump $env:BUMP -SyncOnly
+            ./scripts/version/pre-push-build.ps1 -All -Bump $env:BUMP -SyncOnly
           } else {
-            ./scripts/pre-push-build.ps1 -Mod $env:MOD_INPUT -Bump $env:BUMP -SyncOnly
+            ./scripts/version/pre-push-build.ps1 -Mod $env:MOD_INPUT -Bump $env:BUMP -SyncOnly
           }
 
       - name: Verify version consistency
         if: github.event.inputs.bump_version != 'none'
-        run: python3 scripts/verify-version-consistency.py
+        run: python3 scripts/version/verify-version-consistency.py
 
       - name: Commit and push version bump
         if: github.event.inputs.bump_version != 'none'
@@ -188,7 +188,7 @@ jobs:
           set -euo pipefail
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          python3 scripts/stage-version-sync-files.py
+          python3 scripts/version/stage-version-sync-files.py
           if git diff --staged --quiet; then
             echo "::error::Bump produced no file changes — check bump_version and mod selection"
             exit 1
@@ -262,7 +262,7 @@ jobs:
         shell: bash
         run: |
           MOD_KEY="${{ matrix.mod }}"
-          MOD_JSON="$(jq -c --arg key "$MOD_KEY" '.[] | select(.modKey == $key)' scripts/mod-matrix.json)"
+          MOD_JSON="$(jq -c --arg key "$MOD_KEY" '.[] | select(.modKey == $key)' scripts/matrix/mod-matrix.json)"
           if [ -z "$MOD_JSON" ]; then
             echo "❌ Unknown mod: $MOD_KEY"
             exit 1

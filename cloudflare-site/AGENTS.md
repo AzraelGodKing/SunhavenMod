@@ -69,13 +69,13 @@ All stats and metadata are fetched client-side from GitHub-hosted files. These a
 
 | URL | Purpose | Used By |
 |-----|---------|---------|
-| `https://raw.githubusercontent.com/AzraelGodKing/SunhavenMod/main/scripts/mod-matrix.json` | Canonical list of all mods with keys, names, Thunderstore slugs, docs paths | `app.js`, `mod-page.js` |
+| `https://raw.githubusercontent.com/AzraelGodKing/SunhavenMod/main/scripts/matrix/mod-matrix.json` | Canonical list of all mods with keys, names, Thunderstore slugs, docs paths | `app.js`, `mod-page.js` |
 | `https://azraelgodking.github.io/SunhavenMod/data/stats-cache.json` | Download stats (Thunderstore + Nexus totals, unique counts, combined totals, site aggregates) | `app.js`, `mod-page.js` |
 | `https://raw.githubusercontent.com/AzraelGodKing/SunhavenMod/main/docs/versions.json` | Version numbers and Nexus URLs per mod | `mod-page.js` |
 
 ### Important: `STATS_ID_BY_MOD_KEY`
 
-Both `app.js` and `mod-page.js` contain a hardcoded mapping `STATS_ID_BY_MOD_KEY` that translates internal `modKey` values (e.g., `sunhaventodo`) into the stats-cache IDs (e.g., `havens-todo`). **This must stay aligned with `scripts/fetch-stats.js` in the parent repo.** If a new mod is added or a stats ID changes, update this mapping in both JS files.
+Both `app.js` and `mod-page.js` contain a hardcoded mapping `STATS_ID_BY_MOD_KEY` that translates internal `modKey` values (e.g., `sunhaventodo`) into the stats-cache IDs (e.g., `havens-todo`). **This must stay aligned with `scripts/stats/fetch-stats.js` in the parent repo.** If a new mod is added or a stats ID changes, update this mapping in both JS files.
 
 ## Mod System Conventions
 
@@ -230,7 +230,7 @@ Manual test checklist when making changes:
      </body>
    </html>
    ```
-2. Add the mod to `scripts/mod-matrix.json` in the parent repo.
+2. Add the mod to `scripts/matrix/mod-matrix.json` in the parent repo.
 3. Add entries to `STATS_ID_BY_MOD_KEY` in **both** `app.js` and `mod-page.js`.
 4. Add entries to `MOD_META` in `app.js` (icon + lane).
 5. Add entries to `MOD_PRESENTATION`, `MOD_PROFILES`, `MOD_SCENES`, and `MOD_LAYOUTS` in `mod-page.js`.

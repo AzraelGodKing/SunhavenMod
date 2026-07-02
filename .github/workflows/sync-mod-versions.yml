@@ -30,16 +30,16 @@ jobs:
 
       - name: Sync from versions.json (no build)
         shell: pwsh
-        run: ./scripts/pre-push-build.ps1 -All -SyncOnly
+        run: ./scripts/version/pre-push-build.ps1 -All -SyncOnly
 
       - name: Verify version consistency
-        run: python3 scripts/verify-version-consistency.py
+        run: python3 scripts/version/verify-version-consistency.py
 
       - name: Commit and push if changed
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          python3 scripts/stage-version-sync-files.py
+          python3 scripts/version/stage-version-sync-files.py
           if git diff --staged --quiet; then
             echo "No version drift — nothing to commit."
             exit 0
