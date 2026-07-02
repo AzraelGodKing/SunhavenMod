@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using BepInEx;
 using HavenDevTools.API;
 using HavenDevTools.Config;
 using HavenDevTools.Integrations;
@@ -68,23 +69,30 @@ namespace HavenDevTools.UI
         private static bool _isCheckingVersions;
         private Vector2 _versionScrollPosition;
 
-        // Known mod GUIDs and versions
-        private static readonly (string guid, string name, string version)[] _knownMods = new[]
+        // Known mod GUIDs for version checks (installed version read from Chainloader at runtime).
+        private static readonly (string guid, string name)[] _knownMods = new[]
         {
-            ("com.azraelgodking.havendevtools", "Haven Dev Tools", "2.0.1"),
-            ("com.azraelgodking.senpaischest", "Senpai's Chest", "3.0.1"),
-            ("com.azraelgodking.squirrelsbirthdayreminder", "Birthday Reminder", "2.0.1"),
-            ("com.azraelgodking.havensbirthright", "Haven's Birthright", "3.0.1"),
-            ("com.azraelgodking.sunhavenmuseumutilitytracker", "S.M.U.T.", "3.0.1"),
-            ("com.azraelgodking.sunhaventodo", "Sunhaven Todo", "2.0.1"),
-            ("com.azraelgodking.thevault", "The Vault", "4.0.1"),
-            ("com.azraelgodking.havensalmanac", "Haven's Almanac", "2.0.1"),
-            ("com.azraelgodking.fasterraces", "Faster Races", "2.0.1"),
-            ("com.azraelgodking.trinketfortune", "Trinket Fortune", "2.0.1"),
-            ("com.azraelgodking.cropoptimizer", "Crop Optimizer", "2.0.1"),
-            ("com.azraelgodking.havensrespec", "Haven's Respec", "2.0.1"),
-            ("com.azraelgodking.giftingassistant", "Gifting Assistant", "1.0.0"),
+            ("com.azraelgodking.havendevtools", "Haven Dev Tools"),
+            ("com.azraelgodking.senpaischest", "Senpai's Chest"),
+            ("com.azraelgodking.squirrelsbirthdayreminder", "Birthday Reminder"),
+            ("com.azraelgodking.havensbirthright", "Haven's Birthright"),
+            ("com.azraelgodking.sunhavenmuseumutilitytracker", "S.M.U.T."),
+            ("com.azraelgodking.sunhaventodo", "Sunhaven Todo"),
+            ("com.azraelgodking.thevault", "The Vault"),
+            ("com.azraelgodking.havensalmanac", "Haven's Almanac"),
+            ("com.azraelgodking.fasterraces", "Faster Races"),
+            ("com.azraelgodking.trinketfortune", "Trinket Fortune"),
+            ("com.azraelgodking.cropoptimizer", "Crop Optimizer"),
+            ("com.azraelgodking.havensrespec", "Haven's Respec"),
+            ("com.azraelgodking.giftingassistant", "Gifting Assistant"),
         };
+
+        private static string GetInstalledModVersion(string guid)
+        {
+            if (BepInEx.Bootstrap.Chainloader.PluginInfos.TryGetValue(guid, out var info))
+                return info.Metadata.Version.ToString();
+            return null;
+        }
 
         private const string PAUSE_ID = "HavenDevTools_Debug";
 
@@ -891,8 +899,11 @@ namespace HavenDevTools.UI
             {
                 GUILayout.BeginHorizontal();
 
-                // Mod name and current version
-                GUILayout.Label($"{mod.name} v{mod.version}", _labelStyle, GUILayout.Width(200));
+                var installedVersion = GetInstalledModVersion(mod.guid);
+                string versionLabel = installedVersion != null
+                    ? $"{mod.name} v{installedVersion}"
+                    : $"{mod.name} ({ModLocalization.T("devtools.versions.notInstalled")})";
+                GUILayout.Label(versionLabel, _labelStyle, GUILayout.Width(200));
 
                 // Status
                 if (_versionResults.TryGetValue(mod.guid, out var result))
@@ -935,7 +946,16 @@ namespace HavenDevTools.UI
 
             foreach (var mod in _knownMods)
             {
-                VersionChecker.CheckForUpdate(mod.guid, mod.version, Plugin.Log, result =>
+                var installedVersion = GetInstalledModVersion(mod.guid);
+                if (installedVersion == null)
+                {
+                    pendingChecks--;
+                    if (pendingChecks <= 0)
+                        _isCheckingVersions = false;
+                    continue;
+                }
+
+                VersionChecker.CheckForUpdate(mod.guid, installedVersion, Plugin.Log, result =>
                 {
                     _versionResults[mod.guid] = result;
                     pendingChecks--;
@@ -950,7 +970,7 @@ namespace HavenDevTools.UI
                         if (result.UpdateAvailable)
                             Plugin.Log?.LogInfo($"[VersionChecker] {mod.name}: Update available v{result.LatestVersion}");
                         else
-                            Plugin.Log?.LogInfo($"[VersionChecker] {mod.name}: Up to date (v{mod.version})");
+                            Plugin.Log?.LogInfo($"[VersionChecker] {mod.name}: Up to date (v{installedVersion})");
                     }
                     else
                     {

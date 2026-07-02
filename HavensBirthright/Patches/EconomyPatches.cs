@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using HarmonyLib;
 using HavensBirthright.Abilities;
 using UnityEngine;
@@ -9,6 +10,7 @@ namespace HavensBirthright.Patches
     /// </summary>
     public static class EconomyPatches
     {
+        private static readonly Dictionary<object, int> PendingPriceRestores = new Dictionary<object, int>();
         /// <summary>
         /// Adjusts the relationship gain value before the game applies it (hooked into NPCAI.AddRelationship).
         /// If racial bonuses are on: multiplies gain by (1 + RelationshipGain bonus %). If drawbacks are on and
@@ -89,6 +91,22 @@ namespace HavensBirthright.Patches
         }
 
         /// <summary>
+        /// Restores the original shop item price after BuyItem so shared listing objects are not left discounted.
+        /// </summary>
+        public static void OnAfterShopBuyItem(object __0, int __1)
+        {
+            RestoreShopItemPrice(__0);
+        }
+
+        /// <summary>
+        /// Restores the original shop item price after the single-arg BuyItem overload.
+        /// </summary>
+        public static void OnAfterShopBuyItemSingle(object __0)
+        {
+            RestoreShopItemPrice(__0);
+        }
+
+        /// <summary>
         /// Uses reflection to read the "price" field from the given shop item object, runs ModifyBuyPrice on it,
         /// then writes the new price back so the game uses the discounted value.
         /// </summary>
@@ -98,9 +116,26 @@ namespace HavensBirthright.Patches
             var t = itemInfo.GetType();
             var priceField = AccessTools.Field(t, "price");
             if (priceField == null) return;
-            int price = (int)priceField.GetValue(itemInfo);
+            int originalPrice = (int)priceField.GetValue(itemInfo);
+            int price = originalPrice;
             ModifyBuyPrice(ref price);
+            if (price == originalPrice)
+                return;
+
+            PendingPriceRestores[itemInfo] = originalPrice;
             priceField.SetValue(itemInfo, price);
+        }
+
+        private static void RestoreShopItemPrice(object itemInfo)
+        {
+            if (itemInfo == null || !PendingPriceRestores.TryGetValue(itemInfo, out int originalPrice))
+                return;
+
+            var priceField = AccessTools.Field(itemInfo.GetType(), "price");
+            if (priceField != null)
+                priceField.SetValue(itemInfo, originalPrice);
+
+            PendingPriceRestores.Remove(itemInfo);
         }
     }
 }

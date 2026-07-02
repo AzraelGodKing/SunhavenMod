@@ -47,13 +47,35 @@ namespace SunHavenMuseumUtilityTracker.Data
         public DonationData Load(string characterName)
         {
             string filePath = GetSaveFilePath(characterName);
+            string backupPath = filePath + ".bak";
 
-            if (!File.Exists(filePath))
+            if (File.Exists(filePath))
             {
-                Plugin.Log?.LogInfo($"No save file found for {characterName}, creating new data");
-                return new DonationData(characterName);
+                var result = TryLoadFromFile(filePath, characterName);
+                if (result != null)
+                    return result;
+
+                Plugin.Log?.LogWarning($"Main save file corrupted for {characterName}, trying backup...");
             }
 
+            if (File.Exists(backupPath))
+            {
+                var result = TryLoadFromFile(backupPath, characterName);
+                if (result != null)
+                {
+                    Plugin.Log?.LogInfo($"Loaded from backup for {characterName}");
+                    return result;
+                }
+
+                Plugin.Log?.LogWarning($"Backup file also corrupted for {characterName}");
+            }
+
+            Plugin.Log?.LogInfo($"No save file found for {characterName}, creating new data");
+            return new DonationData(characterName);
+        }
+
+        private DonationData TryLoadFromFile(string filePath, string characterName)
+        {
             try
             {
                 string json = File.ReadAllText(filePath);
@@ -68,30 +90,10 @@ namespace SunHavenMuseumUtilityTracker.Data
             }
             catch (Exception ex)
             {
-                Plugin.Log?.LogError($"Failed to load donation data for {characterName}: {ex.Message}");
-
-                // Try to load from backup
-                string backupPath = filePath + ".bak";
-                if (File.Exists(backupPath))
-                {
-                    try
-                    {
-                        string backupJson = File.ReadAllText(backupPath);
-                        var backupWrapper = JsonUtility.FromJson<DonationDataWrapper>(backupJson);
-                        if (backupWrapper != null)
-                        {
-                            Plugin.Log?.LogInfo($"Restored from backup for {characterName}");
-                            return backupWrapper.ToData();
-                        }
-                    }
-                    catch (Exception backupEx)
-                    {
-                        Plugin.Log?.LogError($"Failed to load backup for {characterName}: {backupEx.Message}");
-                    }
-                }
+                Plugin.Log?.LogError($"Failed to load donation data for {characterName} from {Path.GetFileName(filePath)}: {ex.Message}");
             }
 
-            return new DonationData(characterName);
+            return null;
         }
 
         /// <summary>

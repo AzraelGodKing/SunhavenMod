@@ -189,6 +189,37 @@ namespace TheVault.Vault
         }
 
         /// <summary>
+        /// Decrypt and deserialize vault data from a file path. Returns null when the file cannot be read.
+        /// </summary>
+        private VaultData TryParseVaultFile(string pathToRead, string playerName)
+        {
+            byte[] encryptedData = File.ReadAllBytes(pathToRead);
+
+            string json = Decrypt(encryptedData, playerName);
+
+            if (string.IsNullOrEmpty(json))
+            {
+                Plugin.Log?.LogInfo($"Current decryption failed, attempting legacy migration for '{playerName}'...");
+                json = TryLegacyDecryption(encryptedData, playerName);
+
+                if (!string.IsNullOrEmpty(json))
+                {
+                    Plugin.Log?.LogInfo("Legacy decryption successful - will re-encrypt with new method on save");
+                    _needsReEncryption = true;
+                }
+            }
+
+            if (string.IsNullOrEmpty(json))
+                return null;
+
+            var wrapper = JsonUtility.FromJson<VaultDataWrapper>(json);
+            if (wrapper == null)
+                return null;
+
+            return MigrateData(wrapper.ToVaultData());
+        }
+
+        /// <summary>
         /// Load vault data for a player
         /// </summary>
         public bool Load(string playerName)
@@ -205,70 +236,67 @@ namespace TheVault.Vault
             {
                 string canonicalPath = GetSaveFilePath(playerName);
                 string legacyPath = GetLegacySaveFilePath(playerName);
+                string backupPath = canonicalPath + ".backup";
                 _currentSaveFile = canonicalPath;
 
-                string pathToRead = null;
-                bool readFromLegacyNameOnly = false;
+                var candidatePaths = new System.Collections.Generic.List<(string path, bool readFromLegacyNameOnly)>();
                 if (File.Exists(canonicalPath))
-                {
-                    pathToRead = canonicalPath;
-                }
-                else if (File.Exists(legacyPath))
-                {
-                    pathToRead = legacyPath;
-                    readFromLegacyNameOnly = true;
-                }
+                    candidatePaths.Add((canonicalPath, false));
+                if (File.Exists(legacyPath))
+                    candidatePaths.Add((legacyPath, true));
+                if (File.Exists(backupPath))
+                    candidatePaths.Add((backupPath, false));
 
-                if (pathToRead == null)
+                if (candidatePaths.Count == 0)
                 {
                     Plugin.Log?.LogInfo($"No existing save file for player '{playerName}', creating new vault");
-                    var newData = new VaultData { PlayerName = playerName };
-                    _vaultManager.LoadVaultData(newData);
-                    return true;
-                }
-
-                byte[] encryptedData = File.ReadAllBytes(pathToRead);
-
-                string json = Decrypt(encryptedData, playerName);
-
-                if (string.IsNullOrEmpty(json))
-                {
-                    Plugin.Log?.LogInfo($"Current decryption failed, attempting legacy migration for '{playerName}'...");
-                    json = TryLegacyDecryption(encryptedData, playerName);
-
-                    if (!string.IsNullOrEmpty(json))
-                    {
-                        Plugin.Log?.LogInfo("Legacy decryption successful - will re-encrypt with new method on save");
-                        _needsReEncryption = true;
-                    }
-                }
-
-                if (string.IsNullOrEmpty(json))
-                {
-                    TryQuarantineUnreadableFile(pathToRead, "all decryption paths failed");
-                    LastLoadQuarantinedCorruptFile = true;
-                    Plugin.Log?.LogError(
-                        $"[VaultSave] Vault file for '{playerName}' could not be decrypted. It was moved to a .corrupt-*.bak file in your Saves folder. Starting an empty vault in memory — restore the backup manually if you need the old data.");
                     _vaultManager.LoadVaultData(new VaultData { PlayerName = playerName });
                     return true;
                 }
 
-                var wrapper = JsonUtility.FromJson<VaultDataWrapper>(json);
+                VaultData data = null;
+                bool readFromLegacyNameOnly = false;
+                string loadedPath = null;
 
-                VaultData data;
-                if (wrapper != null)
+                foreach (var candidate in candidatePaths)
                 {
-                    data = wrapper.ToVaultData();
-                }
-                else
-                {
-                    Plugin.Log?.LogWarning("[VaultSave] Failed to deserialize vault JSON after decrypt; quarantining file.");
-                    TryQuarantineUnreadableFile(pathToRead, "JSON deserialize failed");
-                    LastLoadQuarantinedCorruptFile = true;
-                    data = new VaultData { PlayerName = playerName };
+                    try
+                    {
+                        data = TryParseVaultFile(candidate.path, playerName);
+                    }
+                    catch (Exception ex)
+                    {
+                        Plugin.Log?.LogWarning($"[VaultSave] Failed to read {candidate.path}: {ex.Message}");
+                        data = null;
+                    }
+
+                    if (data != null)
+                    {
+                        loadedPath = candidate.path;
+                        readFromLegacyNameOnly = candidate.readFromLegacyNameOnly;
+                        break;
+                    }
                 }
 
-                data = MigrateData(data);
+                if (data == null)
+                {
+                    foreach (var candidate in candidatePaths)
+                    {
+                        if (candidate.path == backupPath)
+                            continue;
+
+                        if (TryQuarantineUnreadableFile(candidate.path, "all decryption paths failed"))
+                            LastLoadQuarantinedCorruptFile = true;
+                    }
+
+                    Plugin.Log?.LogError(
+                        $"[VaultSave] Vault file for '{playerName}' could not be loaded from primary, legacy, or backup paths. Starting an empty vault in memory.");
+                    _vaultManager.LoadVaultData(new VaultData { PlayerName = playerName });
+                    return true;
+                }
+
+                if (loadedPath == backupPath)
+                    Plugin.Log?.LogInfo($"[VaultSave] Loaded vault from backup for player '{playerName}'");
 
                 _vaultManager.LoadVaultData(data);
                 Plugin.Log?.LogInfo($"Loaded vault data for player '{playerName}'");
