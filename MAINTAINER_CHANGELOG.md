@@ -4,6 +4,12 @@ Internal engineering log: **CI**, **release automation**, **scripts**, **docs in
 
 ---
 
+## 2026-07-02
+
+- **Senpai's Chest:** Stopped deleting rules on `Chest.OnDisable` (area changes always disable chests; SceneManager hooks did not run in Sun Haven). Rules removed only via UI. `InitializeAsOwner` uses same session guard as `OnSceneLoaded`. Save skips empty overwrite after successful load unless user cleared all rules in UI.
+
+---
+
 ## 2026-06-29
 
 - **Mod review fixes (save + compat):** The Vault `VaultSaveSystem.Load()` tries `.backup` when primary/legacy saves are missing or unreadable; SMUT `DonationSaveSystem.Load()` matches SenpaisChest/Todo backup-first pattern; HavensBirthright shop discount restores listing price in `BuyItem` postfixes; HavenDevTools version checker uses `Chainloader.PluginInfos` instead of compiled-in version tuples. See [`mod-review-2026-07-02.md`](mod-review-2026-07-02.md).

@@ -765,7 +765,7 @@ namespace SenpaisChest.UI
                 GUILayout.BeginHorizontal();
                 if (GUILayout.Button(ModLocalization.T("chest.removeSmartChest"), useParchmentTheme ? _configRemoveButtonStyle : _dangerButtonStyle, GUILayout.Height(28)))
                 {
-                    _manager.RemoveSmartChest(_chestId);
+                    _manager.RemoveSmartChest(_chestId, userInitiated: true);
                     SaveIfDirty();
                     HideConfig();
                 }
@@ -823,7 +823,7 @@ namespace SenpaisChest.UI
             GUILayout.Space(8);
             if (GUILayout.Button(ModLocalization.T("chest.removeSmartChest"), _chestDangerButtonStyle, GUILayout.Height(20), GUILayout.ExpandWidth(true)))
             {
-                _manager.RemoveSmartChest(_chestId);
+                _manager.RemoveSmartChest(_chestId, userInitiated: true);
                 SaveIfDirty();
                 HideConfig();
             }
