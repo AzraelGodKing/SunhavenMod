@@ -5,9 +5,9 @@
 #
 # Rate-limit friendly: processes one language at a time per mod and saves strings.json after
 # each language pass. Use -Mod and -Language to run a single mod/language pair, e.g.:
-#   .\scripts\fill-localization-languages.ps1 -Translate -ForceRetranslate -Mod HavensRespec -Language fr
+#   .\scripts\localization\fill-localization-languages.ps1 -Translate -ForceRetranslate -Mod HavensRespec -Language fr
 param(
-    [string]$RepoRoot = (Resolve-Path (Join-Path $PSScriptRoot "..")).Path,
+    [string]$RepoRoot,
     [switch]$Translate,
     [switch]$ForceRetranslate,
     [string]$Mod,
@@ -15,15 +15,23 @@ param(
     [int]$DelayMs = 0,
     [int]$DelayBetweenLanguagesMs = 5000,
     [int]$RateLimitBackoffSeconds = 60,
-    [string]$CachePath = (Join-Path $PSScriptRoot ".translation-cache.json")
+    [string]$CachePath
 )
 
 $ErrorActionPreference = "Stop"
 [Console]::OutputEncoding = [System.Text.Encoding]::UTF8
+. (Join-Path $PSScriptRoot '..\lib\RepoPaths.ps1')
 
-$RequiredLangs = @(
-    "en", "da", "de", "es", "fr", "it", "ja", "ko", "nl", "pt", "pt-BR", "ru", "sv", "zh-CN", "zh-TW", "uk"
-)
+if ([string]::IsNullOrWhiteSpace($RepoRoot)) {
+    $RepoRoot = Get-RepoRoot -StartPath $PSScriptRoot
+}
+if ([string]::IsNullOrWhiteSpace($CachePath)) {
+    $cacheDir = Join-Path (Get-ScriptsRoot -StartPath $PSScriptRoot) '.cache'
+    if (-not (Test-Path $cacheDir)) { New-Item -ItemType Directory -Path $cacheDir | Out-Null }
+    $CachePath = Join-Path $cacheDir 'translation-cache.json'
+}
+
+$RequiredLangs = Get-LocalizationLangs
 
 # MyMemory langpair target codes (en|TARGET)
 $MyMemoryTarget = @{
@@ -191,19 +199,16 @@ function Get-LanguageFallback {
     return $null
 }
 
-$ModPaths = @(
-    "SunhavenTodo", "BirthdayReminder", "CropOptimizer", "SenpaisChest", "TheVault",
-    "HavensAlmanac", "SunHavenMuseumUtilityTracker", "HavenDevTools", "HavensRespec"
-)
+$ModPaths = @(Get-LocalizedModDirs -StartPath $PSScriptRoot -RepoRoot $RepoRoot)
 
 if ($DelayMs -le 0) {
     $DelayMs = if ($Translate) { 8000 } else { 0 }
 }
 
-$modsToProcess = if ([string]::IsNullOrWhiteSpace($Mod)) { $ModPaths } else { @($Mod.Trim()) }
+$modsToProcess = if ([string]::IsNullOrWhiteSpace($Mod)) { $ModPaths } else { @(Resolve-ModDir -Mod $Mod -StartPath $PSScriptRoot) }
 foreach ($m in $modsToProcess) {
     if ($ModPaths -notcontains $m) {
-        throw "Unknown mod '$m'. Valid: $($ModPaths -join ', ')"
+        throw "Unknown or non-localized mod '$m'. Localized mods: $($ModPaths -join ', ')"
     }
 }
 
