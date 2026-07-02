@@ -4,7 +4,7 @@
 # - PR: build all mods on self-hosted runner (compile gate only).
 # - workflow_dispatch: version (optional bump) → build → package → optional publish.
 #
-# docs/VERSION_AND_RELEASE.md — version source of truth; setup runs verify script.
+# maintainer-docs/VERSION_AND_RELEASE.md — version source of truth; setup runs verify script.
 # Nexus: v3 upload API is evaluation-only; we retry with backoff and require the
 # final attempt to succeed when publish_nexus=true (no silent green on failure).
 #
@@ -445,6 +445,7 @@ jobs:
             TrinketFortune)             DIR="TrinketFortune" ;;
             CropOptimizer)              DIR="CropOptimizer" ;;
             HavensRespec)               DIR="HavensRespec" ;;
+            GiftingAssistant)           DIR="GiftingAssistant" ;;
             *)                          DIR="" ;;
           esac
           if [ -n "$DIR" ]; then

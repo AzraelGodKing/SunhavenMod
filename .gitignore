@@ -35,3 +35,6 @@ builds/
 
 # Local secrets for tooling
 .env
+
+# Local script run logs (never commit ad hoc transcripts)
+*.log

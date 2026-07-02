@@ -3,7 +3,7 @@
 Ensure docs/versions.json "version" matches PLUGIN_VERSION and thunderstore/manifest.json
 for every mod. Run in CI (setup job) before build; run locally after editing versions or plugins.
 
-See docs/VERSION_AND_RELEASE.md
+See maintainer-docs/VERSION_AND_RELEASE.md
 """
 from __future__ import annotations
 

@@ -8,7 +8,7 @@
 # Use this until you trust the runner, then set dry_run=false and match the
 # publish toggles to the production workflow.
 #
-# Version / release: docs/VERSION_AND_RELEASE.md — verify step runs before matrix setup.
+# Version / release: maintainer-docs/VERSION_AND_RELEASE.md — verify step runs before matrix setup.
 # =============================================================================
 
 name: Test — Self-hosted Sunhaven runner
@@ -416,6 +416,19 @@ jobs:
           echo "✅ Package created: $ZIP_NAME"
           ls -lh "../$ZIP_NAME"
 
+          # Stage a copy OUTSIDE the workspace. Docker-based publish actions
+          # (e.g. the Thunderstore upload action) reset the workspace and wipe
+          # the uncommitted dist/ tree, which breaks a later step that still
+          # needs the zip (see reusable-release-mod.yml, run #142). This
+          # workflow currently runs Nexus before Thunderstore so it hasn't hit
+          # that ordering, but staging to $RUNNER_TEMP removes the dependency
+          # on step order entirely.
+          cd "$GITHUB_WORKSPACE"
+          STAGE="$RUNNER_TEMP/release-pkg"
+          mkdir -p "$STAGE"
+          cp "dist/$ZIP_NAME" "$STAGE/"
+          echo "zip_name=$ZIP_NAME" >> "$GITHUB_OUTPUT"
+
       - name: Upload dry-run Thunderstore zip artifact
         if: github.event.inputs.dry_run == 'true' && github.event.inputs.publish_discord_only != 'true' && matrix.mod != 'test_discord'
         uses: actions/upload-artifact@v6
@@ -467,6 +480,15 @@ jobs:
         if: github.event.inputs.dry_run != 'true' && github.event.inputs.publish_discord_only != 'true' && github.event.inputs.publish_nexus == 'true' && github.event.inputs.test_discord != 'true' && steps.version_check.outputs.version_unchanged != 'true' && steps.config.outputs.nexus_file_group_id != ''
         run: |
           set -euo pipefail
+          # Docker-based publish actions can reset the workspace and wipe the
+          # uncommitted dist/ tree; restore the staged zip first if needed.
+          STAGE="$RUNNER_TEMP/release-pkg"
+          NAME="${{ steps.package_step.outputs.zip_name }}"
+          if [ -n "$NAME" ] && [ ! -f "dist/$NAME" ] && [ -f "$STAGE/$NAME" ]; then
+            echo "::warning::dist/$NAME missing (workspace reset by a publish action); restoring from $STAGE."
+            mkdir -p dist
+            cp "$STAGE/$NAME" "dist/$NAME"
+          fi
           CANDIDATE="${{ steps.package_step.outputs.zip_path }}"
           EXPECTED="dist/${{ steps.config.outputs.thunderstore_name }}-${{ steps.config.outputs.version }}.zip"
           ZIP="${CANDIDATE:-$EXPECTED}"

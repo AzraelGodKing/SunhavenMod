@@ -12,6 +12,10 @@ on:
         default: false
         type: boolean
 
+concurrency:
+  group: update-stats-${{ github.ref }}
+  cancel-in-progress: false
+
 jobs:
   update-stats:
     runs-on: ubuntu-latest
