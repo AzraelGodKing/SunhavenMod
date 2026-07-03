@@ -64,9 +64,6 @@ namespace CropOptimizer.UI
             for (int i = 0; i < targetCount; i++)
             {
                 CropHighlightTarget target = targets[i];
-                if (target.Tile == default)
-                    continue;
-
                 Marker marker = _pool[visible];
                 marker.Root.SetActive(true);
                 int frameIndex = FrameIndexForKind(target.Kind);

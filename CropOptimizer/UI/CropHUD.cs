@@ -157,6 +157,9 @@ namespace CropOptimizer.UI
 
         private void RebuildCanvas()
         {
+            _fieldHighlights?.Destroy();
+            _fieldHighlights = null;
+
             if (_canvasGo != null)
             {
                 UnityEngine.Object.Destroy(_canvasGo);

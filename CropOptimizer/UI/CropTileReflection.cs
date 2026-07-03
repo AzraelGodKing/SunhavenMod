@@ -126,7 +126,7 @@ namespace CropOptimizer.UI
                 if (_gridCellToWorldMethod != null && _farmingGrid != null)
                 {
                     world = (Vector3)_gridCellToWorldMethod.Invoke(_farmingGrid, new object[] { cell });
-                    world += new Vector3(_gridCellSize.x * 0.5f, _gridCellSize.y * 0.5f, world.z);
+                    world += new Vector3(_gridCellSize.x * 0.5f, _gridCellSize.y * 0.5f, _gridCellSize.z * 0.5f);
                     return true;
                 }
             }

@@ -10,6 +10,7 @@ namespace CropOptimizer.UI
     {
         private static UnityEngine.Object[] _cachedCrops = System.Array.Empty<UnityEngine.Object>();
         private static float _nextRefreshTime;
+        private static System.Type _cropType;
 
         public static void Invalidate()
         {
@@ -25,14 +26,15 @@ namespace CropOptimizer.UI
 
             _nextRefreshTime = now + Mathf.Max(0.1f, refreshIntervalSeconds);
 
-            var cropType = AccessTools.TypeByName("Wish.Crop");
-            if (cropType == null)
+            if (_cropType == null)
+                _cropType = AccessTools.TypeByName("Wish.Crop");
+            if (_cropType == null)
             {
                 _cachedCrops = System.Array.Empty<UnityEngine.Object>();
                 return _cachedCrops;
             }
 
-            var discovered = Object.FindObjectsOfType(cropType);
+            var discovered = Object.FindObjectsOfType(_cropType);
             var liveIds = new HashSet<int>();
             var presentCrops = new List<Object>(discovered.Length);
 

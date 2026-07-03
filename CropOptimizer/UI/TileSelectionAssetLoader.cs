@@ -43,7 +43,10 @@ namespace CropOptimizer.UI
             {
                 string path = ResolveSheetPath();
                 if (string.IsNullOrEmpty(path) || !File.Exists(path))
+                {
+                    ReleaseSheetTexture();
                     return false;
+                }
 
                 byte[] bytes = File.ReadAllBytes(path);
                 _sheetTexture = new Texture2D(2, 2, TextureFormat.RGBA32, false)
@@ -53,10 +56,16 @@ namespace CropOptimizer.UI
                 };
 
                 if (!ImageConversion.LoadImage(_sheetTexture, bytes))
+                {
+                    ReleaseSheetTexture();
                     return false;
+                }
 
                 if (_sheetTexture.width < SpriteSizePx * SpriteCount || _sheetTexture.height < SpriteSizePx)
+                {
+                    ReleaseSheetTexture();
                     return false;
+                }
 
                 _sprites = new Sprite[SpriteCount];
                 _sprites[FrameYellowCorners] = CreateSlicedSprite(FrameYellowCorners);
@@ -72,8 +81,18 @@ namespace CropOptimizer.UI
             {
                 Plugin.Log?.LogDebug($"[TileSelectionAssetLoader] Load failed: {ex.Message}");
                 _sprites = null;
+                ReleaseSheetTexture();
                 return false;
             }
+        }
+
+        private static void ReleaseSheetTexture()
+        {
+            if (_sheetTexture == null)
+                return;
+
+            UnityEngine.Object.Destroy(_sheetTexture);
+            _sheetTexture = null;
         }
 
         public static bool TryGetFrame(int index, out Sprite sprite)
