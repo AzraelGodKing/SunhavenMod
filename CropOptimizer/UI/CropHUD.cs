@@ -49,8 +49,13 @@ namespace CropOptimizer.UI
         /// <summary>Matches what the HUD toggle currently shows — skip redundant TMP/sprite work until config or visibility changes.</summary>
         private bool? _lastHudTooltipShownInUi;
 
+        /// <summary>How often to scan the scene and backfill forecast rows for crops that loaded before Harmony fired.</summary>
+        private const float ForecastReconcileSeconds = 1.5f;
+
         /// <summary>Tooltip rows use reflection and tile probes — limit rebuild rate while the pointer stays on one crop.</summary>
         private const float TooltipContentRefreshSeconds = 0.22f;
+
+        private float _nextCropScanTime;
 
         /// <summary>Invoked when the player drags the HUD; parent saves X/Y to config (pixels from top-left).</summary>
         public event Action<float, float> PlacementChanged;
@@ -177,6 +182,16 @@ namespace CropOptimizer.UI
             EnsureCanvas();
 
             bool sessionLive = IsCharacterSessionActive();
+
+            if (sessionLive)
+            {
+                float now = Time.unscaledTime;
+                if (now >= _nextCropScanTime)
+                {
+                    _nextCropScanTime = now + ForecastReconcileSeconds;
+                    CropSceneCache.GetCrops(ForecastReconcileSeconds);
+                }
+            }
 
             // Summary panel
             if (_hudView != null)
