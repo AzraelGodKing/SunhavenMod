@@ -24,6 +24,7 @@ Notes for **players and release readers**. Per-mod blurbs and upstream metadata 
 - **Fix:** Field highlights now detect the equipped watering can / fertilizer via Sun Haven 3.1 `Player.UseItem` (the old inventory slot probe never matched).
 - **Fix:** Field highlight sprites now use the correct 36×36 regions from `tile_selection_sheet.png` (not equal 27px slices); corner frames use 9-slice borders matching vanilla `Tool._selection`.
 - **Fix:** Crop scene cache no longer wipes the forecast when `Wish.Crop` is unavailable or backfills forecast rows with placeholder values; highlight prototype resolution retries until assets or a live tool selection are available; field highlights are torn down and recreated on HUD canvas rebuild; farm tile center fallback uses grid cell Z half-size instead of preserving stale Z; bundled sheet load failures release the temporary texture.
+- **Fix:** HUD crop count and projected sell value now backfill from live scene crops after load (Harmony growth hooks alone missed already-planted crops); empty scene scans no longer clear the forecast when crop objects exist but fail a transient presence check.
 
 ---
 
