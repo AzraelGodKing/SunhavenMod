@@ -4,6 +4,13 @@ Internal engineering log: **CI**, **release automation**, **scripts**, **docs in
 
 ---
 
+## 2026-07-03
+
+- **Haven's Almanac — Relationships dashboard:** Built-in `RelationshipDataProvider` reads `characterData.Relationships`, `NPCManager._npcs`, and `GameSave` dating/marriage flags via Harmony reflection; IMGUI heart grid uses bundled `Assets/Relationships/` sprites (5-wide layout, white/silver fill for all filled slots, gold empty outlines); `[Relationships]` config section; dashboard opens without companion mods via `HasDashboardSections`.
+- **Gifting Assistant — heart sprites:** Same white/silver filled heart sprites as Almanac (`hearts_fill_21-25` + silver outline); single inline strip beside each name.
+
+---
+
 ## 2026-07-02 (continued)
 
 - **Haven Dev Tools — NPC relationships:** New **Relationships** Tools sub-tab (`NpcRelationshipEditor`) with hearts, date/platonic/marry/divorce, skip-to-cycle, set primary spouse, and reset-all-hearts. Dev console aliases: `relationship.set`, `relationship.marry`, `relationship.divorce`, `relationship.cycle`. Cheat commands: use **CheatEnabler** (removed in-mod `ForceEnableCheats` / Quantum Console patches).
