@@ -57,6 +57,10 @@
       <HintPath>$(ManagedPath)\UnityEngine.UnityWebRequestModule.dll</HintPath>
       <Private>false</Private>
     </Reference>
+    <Reference Include="UnityEngine.ImageConversionModule">
+      <HintPath>$(ManagedPath)\UnityEngine.ImageConversionModule.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
   </ItemGroup>
 
   <!-- Game References -->
@@ -126,10 +130,21 @@
     </EmbeddedResource>
   </ItemGroup>
 
+  <ItemGroup>
+    <None Include="Assets\**\*">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
+
   <!-- Copy to BepInEx plugins folder and builds folder after build -->
   <Target Name="CopyToPlugins" AfterTargets="Build">
     <Copy SourceFiles="$(TargetPath)" DestinationFolder="$(BepInExPath)\plugins\HavensAlmanac" Condition="'$(SunhavenCopyToBepInExPlugins)' == 'true'" />
     <Copy SourceFiles="$(TargetPath)" DestinationFolder="$(MSBuildProjectDirectory)\..\builds\HavensAlmanac" />
+    <ItemGroup>
+      <AlmanacAssets Include="$(MSBuildProjectDirectory)\Assets\**\*" />
+    </ItemGroup>
+    <Copy SourceFiles="@(AlmanacAssets)" DestinationFolder="$(BepInExPath)\plugins\HavensAlmanac\Assets\%(RecursiveDir)" Condition="'$(SunhavenCopyToBepInExPlugins)' == 'true'" SkipUnchangedFiles="true" />
+    <Copy SourceFiles="@(AlmanacAssets)" DestinationFolder="$(MSBuildProjectDirectory)\..\builds\HavensAlmanac\Assets\%(RecursiveDir)" SkipUnchangedFiles="true" />
     <Message Text="Copied $(TargetFileName) to BepInEx plugins and builds folder" Importance="High" />
   </Target>
 
