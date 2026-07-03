@@ -70,6 +70,7 @@ namespace HavenDevTools
         public static bool HasSunhavenTodo { get; private set; }
         public static bool HasHavensAlmanac { get; private set; }
         public static bool HasTrinketFortune { get; private set; }
+        public static bool HasUltraPolygamy => UltraPolygamyHelper.IsAvailable;
 
         private Harmony _harmony;
         private bool _applicationQuitting;
@@ -240,7 +241,7 @@ namespace HavenDevTools
                 if (name == "TrinketFortune") HasTrinketFortune = true;
             }
 
-            Log.LogInfo($"Mod detection complete - TheVault: {HasTheVault}, SMUT: {HasSMUT}, Birthright: {HasHavensBirthright}, SenpaisChest: {HasSenpaisChest}, Birthday: {HasBirthdayReminder}, Todo: {HasSunhavenTodo}, Almanac: {HasHavensAlmanac}, TrinketFortune: {HasTrinketFortune}");
+            Log.LogInfo($"Mod detection complete - TheVault: {HasTheVault}, SMUT: {HasSMUT}, Birthright: {HasHavensBirthright}, SenpaisChest: {HasSenpaisChest}, Birthday: {HasBirthdayReminder}, Todo: {HasSunhavenTodo}, Almanac: {HasHavensAlmanac}, TrinketFortune: {HasTrinketFortune}, UltraPolygamy: {HasUltraPolygamy}");
         }
 
         private void PatchPlayerInit()
