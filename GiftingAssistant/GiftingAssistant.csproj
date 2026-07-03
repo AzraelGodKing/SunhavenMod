@@ -47,6 +47,10 @@
       <HintPath>$(ManagedPath)\UnityEngine.TextRenderingModule.dll</HintPath>
       <Private>false</Private>
     </Reference>
+    <Reference Include="UnityEngine.ImageConversionModule">
+      <HintPath>$(ManagedPath)\UnityEngine.ImageConversionModule.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
     <Reference Include="UnityEngine.UnityWebRequestModule">
       <HintPath>$(ManagedPath)\UnityEngine.UnityWebRequestModule.dll</HintPath>
       <Private>false</Private>
@@ -96,9 +100,20 @@
     </EmbeddedResource>
   </ItemGroup>
 
+  <ItemGroup>
+    <None Include="Assets\**\*">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
+
   <Target Name="CopyToPlugins" AfterTargets="Build">
     <Copy SourceFiles="$(TargetPath)" DestinationFolder="$(BepInExPath)\plugins\GiftingAssistant" Condition="'$(SunhavenCopyToBepInExPlugins)' == 'true'" />
     <Copy SourceFiles="$(TargetPath)" DestinationFolder="$(MSBuildProjectDirectory)\..\builds\GiftingAssistant" />
+    <ItemGroup>
+      <GiftingAssets Include="$(MSBuildProjectDirectory)\Assets\**\*" />
+    </ItemGroup>
+    <Copy SourceFiles="@(GiftingAssets)" DestinationFolder="$(BepInExPath)\plugins\GiftingAssistant\Assets\%(RecursiveDir)" Condition="'$(SunhavenCopyToBepInExPlugins)' == 'true'" SkipUnchangedFiles="true" />
+    <Copy SourceFiles="@(GiftingAssets)" DestinationFolder="$(MSBuildProjectDirectory)\..\builds\GiftingAssistant\Assets\%(RecursiveDir)" SkipUnchangedFiles="true" />
     <Message Text="Copied $(TargetFileName) to BepInEx plugins and builds folder" Importance="High" />
   </Target>
 </Project>

@@ -14,6 +14,7 @@ namespace GiftingAssistant.Game
     public sealed class GiftNpcInfo
     {
         public string Name { get; }
+        public bool Romanceable { get; set; }
         public List<int> LovedItemIds { get; } = new List<int>();
         public List<int> LikedItemIds { get; } = new List<int>();
 
@@ -38,6 +39,7 @@ namespace GiftingAssistant.Game
         private static FieldInfo _like2Field;
         private static FieldInfo _giftTableField;
         private static FieldInfo _gaveGiftForDayField;
+        private static PropertyInfo _romanceableProp;
         private static bool _useGameData;
 
         private static MethodInfo _tryGetValueMethod;
@@ -124,6 +126,8 @@ namespace GiftingAssistant.Game
                 {
                     _giftTableField = AccessTools.Field(npcaiType, "giftTable");
                     _gaveGiftForDayField = AccessTools.Field(npcaiType, "gaveGiftForDay");
+                    _romanceableProp = AccessTools.Property(npcaiType, "Romanceable")
+                                       ?? AccessTools.Property(npcaiType, "romanceable");
                     _npcNameProps = new[]
                     {
                         AccessTools.Property(npcaiType, "OriginalName"),
@@ -405,6 +409,11 @@ namespace GiftingAssistant.Game
             return null;
         }
 
+        public static bool IsRomanceable(string npcName)
+        {
+            return GetNpcInfo(npcName)?.Romanceable == true;
+        }
+
         private static void BuildNpcCache()
         {
             InitializeReflection();
@@ -467,6 +476,8 @@ namespace GiftingAssistant.Game
                             continue;
 
                         var info = new GiftNpcInfo(displayName);
+                        if (_romanceableProp?.GetValue(npc) is bool romanceable)
+                            info.Romanceable = romanceable;
                         AddItemIds(_love2Field?.GetValue(giftTable) as IList, info.LovedItemIds);
                         AddItemIds(_like2Field?.GetValue(giftTable) as IList, info.LikedItemIds);
                         result.Add(info);
