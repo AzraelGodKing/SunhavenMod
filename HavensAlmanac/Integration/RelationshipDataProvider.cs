@@ -4,7 +4,6 @@ using System.Linq;
 using HavensAlmanac.Config;
 using HavensAlmanac.Data;
 using HavensAlmanac.Services;
-using HavensAlmanac.UI;
 using SunhavenMods.Shared;
 using UnityEngine;
 
@@ -140,10 +139,11 @@ namespace HavensAlmanac.Integration
 
         private void DrawRow(RelationshipRow row, float scale)
         {
+            var layout = RelationshipHeartLayout.Dashboard;
             int maxHearts = RelationshipHeartRules.GetMaxHearts(row.Points);
-            float gridW = RelationshipHeartRenderer.ScaledIconWidth(scale) * RelationshipHeartRules.HeartsPerRow
-                + Scaled(2f, scale) * (RelationshipHeartRules.HeartsPerRow - 1);
-            float gridH = RelationshipHeartRenderer.GridHeight(maxHearts, scale);
+            float gridW = RelationshipHeartRenderer.ScaledIconWidth(layout, scale) * RelationshipHeartRules.HeartsPerRow
+                + Scaled(layout.Gutter, scale) * (RelationshipHeartRules.HeartsPerRow - 1);
+            float gridH = RelationshipHeartRenderer.GridHeight(maxHearts, layout, scale);
             float rowH = Mathf.Max(gridH, GUI.skin.label.lineHeight);
 
             GUILayout.BeginHorizontal();
@@ -153,7 +153,7 @@ namespace HavensAlmanac.Integration
             GUILayout.BeginVertical(GUILayout.Width(gridW), GUILayout.Height(rowH));
             GUILayout.FlexibleSpace();
             Rect gridRect = GUILayoutUtility.GetRect(gridW, gridH, GUILayout.ExpandWidth(false));
-            RelationshipHeartRenderer.DrawGrid(gridRect, row.Points, row.Romanceable, scale);
+            RelationshipHeartRenderer.DrawGrid(gridRect, row.Points, row.Romanceable, scale, layout);
             GUILayout.FlexibleSpace();
             GUILayout.EndVertical();
 

@@ -8,11 +8,11 @@ Notes for **players and release readers**. Per-mod blurbs and upstream metadata 
 
 **Haven's Almanac**
 
-- **Relationships dashboard:** Built-in expandable section (Ctrl+F5 dashboard) listing every NPC's friendship hearts from the game's save data, with vanilla-style heart sprites (white/silver filled hearts, gold empty outlines), dating/marriage badges, and ungifted-today markers. Morning briefing highlights NPCs you have not gifted yet. Hearts align on the same row as each NPC name. Configure under `[Relationships]` in `HavensAlmanac.cfg`.
+- **Relationships dashboard:** Built-in expandable section (Ctrl+F5 dashboard) listing every NPC's friendship hearts from the game's save data, with vanilla-style heart sprites (gold filled hearts, silver milestone slot for romanceable NPCs), dating/marriage badges, and ungifted-today markers. Morning briefing highlights NPCs you have not gifted yet. Hearts align on the same row as each NPC name. Fully localized for all supported languages. Configure under `[Relationships]` in `HavensAlmanac.cfg`.
 
 **Gifting Assistant**
 
-- **Relationship hearts:** Roster rows and the Add NPC picker show friendship level inline on one row with the same white/silver heart sprites as Haven's Almanac instead of Unicode heart text. Hearts are vertically centered with the NPC name.
+- **Relationship hearts:** Roster rows and the Add NPC picker show friendship level inline on one row with the same heart sprites as Haven's Almanac instead of Unicode heart text. Hearts are vertically centered with the NPC name.
 
 ---
 

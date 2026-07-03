@@ -3,9 +3,9 @@ using System.IO;
 using System.Reflection;
 using UnityEngine;
 
-namespace GiftingAssistant.UI
+namespace SunhavenMods.Shared
 {
-    internal static class RelationshipHeartAssetLoader
+    public static class RelationshipHeartAssetLoader
     {
         private static Texture2D _bgStandard;
         private static Texture2D _bgMilestone;
