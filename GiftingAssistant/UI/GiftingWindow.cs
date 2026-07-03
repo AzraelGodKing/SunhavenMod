@@ -939,14 +939,15 @@ namespace GiftingAssistant.UI
             }
 
             float scale = _style.Scale;
+            var layout = RelationshipHeartLayout.Compact;
             int maxHearts = RelationshipHeartRules.GetMaxHearts(points.Value);
-            float w = RelationshipHeartRenderer.GridWidth(maxHearts, scale, singleRow: true);
-            float h = RelationshipHeartRenderer.GridHeight(maxHearts, scale, singleRow: true);
+            float w = RelationshipHeartRenderer.GridWidth(maxHearts, layout, scale, singleRow: true);
+            float h = RelationshipHeartRenderer.GridHeight(maxHearts, layout, scale, singleRow: true);
 
             GUILayout.BeginVertical(GUILayout.Width(w), GUILayout.Height(rowH));
             GUILayout.FlexibleSpace();
             Rect rect = GUILayoutUtility.GetRect(w, h, GUILayout.ExpandWidth(false));
-            RelationshipHeartRenderer.DrawGrid(rect, points.Value, GiftGameData.IsRomanceable(npcName), scale,
+            RelationshipHeartRenderer.DrawGrid(rect, points.Value, GiftGameData.IsRomanceable(npcName), scale, layout,
                 singleRow: true);
             GUILayout.FlexibleSpace();
             GUILayout.EndVertical();

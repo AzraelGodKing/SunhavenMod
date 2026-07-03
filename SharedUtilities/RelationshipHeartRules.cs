@@ -1,9 +1,9 @@
 using UnityEngine;
 
-namespace HavensAlmanac.Services
+namespace SunhavenMods.Shared
 {
     /// <summary>Heart slot math aligned with vanilla RelationshipHUD (5 points per heart).</summary>
-    internal static class RelationshipHeartRules
+    public static class RelationshipHeartRules
     {
         public const int PointsPerHeart = 5;
         public const int HeartsPerRow = 5;

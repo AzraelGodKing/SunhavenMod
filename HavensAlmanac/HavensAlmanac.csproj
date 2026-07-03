@@ -122,6 +122,10 @@
     <Compile Include="..\SharedUtilities\ModLocalization.cs" Link="Shared\ModLocalization.cs" />
     <Compile Include="..\SharedUtilities\LanguageChangeWatcher.cs" Link="Shared\LanguageChangeWatcher.cs" />
     <Compile Include="..\SharedUtilities\LocalizationBootstrap.cs" Link="Shared\LocalizationBootstrap.cs" />
+    <Compile Include="..\SharedUtilities\RelationshipHeartRules.cs" Link="Shared\RelationshipHeartRules.cs" />
+    <Compile Include="..\SharedUtilities\RelationshipHeartLayout.cs" Link="Shared\RelationshipHeartLayout.cs" />
+    <Compile Include="..\SharedUtilities\RelationshipHeartAssetLoader.cs" Link="Shared\RelationshipHeartAssetLoader.cs" />
+    <Compile Include="..\SharedUtilities\RelationshipHeartRenderer.cs" Link="Shared\RelationshipHeartRenderer.cs" />
   </ItemGroup>
 
   <ItemGroup>
