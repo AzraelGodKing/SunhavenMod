@@ -32,7 +32,13 @@ namespace HavensAlmanac.Data
         /// the user really has nothing else installed to aggregate data from.
         /// </summary>
         public int IntegrationModCount =>
-            _providers.Count(p => !(p is Integration.ModHealthDataProvider));
+            _providers.Count(p => p is not Integration.ModHealthDataProvider
+                               && p is not Integration.RelationshipDataProvider);
+
+        /// <summary>True when the dashboard should show expandable sections (companion mods or built-in Relationships).</summary>
+        public bool HasDashboardSections =>
+            IntegrationModCount > 0
+            || _providers.OfType<Integration.RelationshipDataProvider>().Any(p => p.IsReady);
 
         /// <summary>
         /// True when at least one provider reports it has daily-relevant content
