@@ -14,8 +14,6 @@ namespace CropOptimizer.UI
     internal static class CropHoverQuery
     {
         private static Type _cropType;
-        private static UnityEngine.Object[] _cachedCrops;
-        private static float _nextCacheTime;
 
         private static Camera _cachedGameplayCamera;
         private static float _nextGameplayCameraSearchTime;
@@ -90,6 +88,11 @@ namespace CropOptimizer.UI
             _nextGameplayCameraSearchTime = 0f;
         }
 
+        public static void InvalidateCropCache()
+        {
+            CropSceneCache.Invalidate();
+        }
+
         /// <summary>Clears hover fast-path state (e.g. after load) so we never reference destroyed crops.</summary>
         public static void InvalidateHoverAssist()
         {
@@ -126,16 +129,15 @@ namespace CropOptimizer.UI
         public static bool TryGetClosestCropNearMouse(Camera camera, float maxWorldDistance, out Component crop)
         {
             crop = null;
-            Type ct = CropType;
-            if (ct == null || camera == null)
+            if (camera == null)
                 return false;
 
-            RefreshCropCache();
-            if (_cachedCrops == null || _cachedCrops.Length == 0)
+            UnityEngine.Object[] crops = CropSceneCache.GetCrops(CropCacheRefreshSeconds);
+            if (crops == null || crops.Length == 0)
                 return false;
 
             float planeZ = 0f;
-            foreach (UnityEngine.Object o in _cachedCrops)
+            foreach (UnityEngine.Object o in crops)
             {
                 if (o is Component mb && mb != null)
                 {
@@ -147,6 +149,7 @@ namespace CropOptimizer.UI
             if (!TryMouseWorldOnPlane(camera, planeZ, out Vector3 worldOnPlane))
                 return false;
 
+            Vector2Int mouseFarmTile = GameFarmCoords.GetMouseFarmTile();
             Vector3 mouseScreen = Input.mousePosition;
             float now = Time.unscaledTime;
             float maxSq = maxWorldDistance * maxWorldDistance;
@@ -155,32 +158,35 @@ namespace CropOptimizer.UI
             bool mouseStable = (mouseScreen - _lastHoverMouseScreen).sqrMagnitude <= MouseMoveSkipScanPxSq;
             _lastHoverMouseScreen = mouseScreen;
 
-            // Fast path: between full scans, if the pointer barely moved and the last crop is still closest in range, skip O(n).
             if (mouseStable && now < _nextHoverFullScanTime && _lastHoverCrop != null)
             {
                 Component last = _lastHoverCrop;
-                if (last != null)
+                if (last != null
+                    && CropPresence.IsPresent(last)
+                    && GameFarmCoords.IsCropOnFarmTile(last, mouseFarmTile))
                 {
-                    Vector2 p = new Vector2(last.transform.position.x, last.transform.position.y);
-                    if ((p - mouse2).sqrMagnitude < maxSq)
-                    {
-                        crop = last;
-                        return true;
-                    }
+                    crop = last;
+                    return true;
                 }
             }
 
             _nextHoverFullScanTime = now + HoverRescanMinInterval;
 
-            float bestSq = maxSq;
             Component best = null;
+            float bestSq = maxSq;
 
-            foreach (UnityEngine.Object o in _cachedCrops)
+            foreach (UnityEngine.Object o in crops)
             {
-                if (o is not Component mb || mb == null)
+                if (o is not Component mb || mb == null || !CropPresence.IsPresent(mb))
                     continue;
-                if (!CropInstanceRegistry.IsKnownActive(mb.GetInstanceID()))
-                    continue;
+
+                if (GameFarmCoords.IsCropOnFarmTile(mb, mouseFarmTile))
+                {
+                    crop = mb;
+                    _lastHoverCrop = mb;
+                    return true;
+                }
+
                 Vector2 p = new Vector2(mb.transform.position.x, mb.transform.position.y);
                 float sq = (p - mouse2).sqrMagnitude;
                 if (sq < bestSq)
@@ -195,27 +201,10 @@ namespace CropOptimizer.UI
                 _lastHoverCrop = null;
                 return false;
             }
+
             crop = best;
             _lastHoverCrop = best;
             return true;
-        }
-
-        private static void RefreshCropCache()
-        {
-            float now = Time.unscaledTime;
-            if (_cachedCrops != null && now < _nextCacheTime)
-                return;
-            _nextCacheTime = now + CropCacheRefreshSeconds;
-            Type ct = CropType;
-            if (ct == null)
-            {
-                _cachedCrops = Array.Empty<UnityEngine.Object>();
-                return;
-            }
-            var discovered = UnityEngine.Object.FindObjectsOfType(ct);
-            for (int i = 0; i < discovered.Length; i++)
-                CropInstanceRegistry.Register(discovered[i]);
-            _cachedCrops = discovered;
         }
 
         public static string FormatWaterGuess(object cropInstance)

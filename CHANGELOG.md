@@ -18,6 +18,12 @@ Notes for **players and release readers**. Per-mod blurbs and upstream metadata 
 - **UI:** F11 debug window is resizable (drag bottom-right corner); size persists in `[DebugWindow] Width` / `Height`. Header bar with close button; list panels scale with window size.
 - **Fix:** F11 debug window no longer pauses the game by default (`[DebugWindow] PauseGameWhenDebugOpen = false`). Console tab accepts Enter and focuses the input field when opened.
 
+**Crop Optimizer**
+
+- **Field highlights:** Uses bundled tile-selection art from `Assets/tile_selection_sheet.png` (same look as vanilla tool hover; green corner brackets for fertilizer). Falls back to cloning `Tool._selection` if the sheet is missing. Toggle in `CropOptimizer.cfg` under `[Highlights]`.
+- **Fix:** Field highlights now detect the equipped watering can / fertilizer via Sun Haven 3.1 `Player.UseItem` (the old inventory slot probe never matched).
+- **Fix:** Field highlight sprites now use the correct 36×36 regions from `tile_selection_sheet.png` (not equal 27px slices); corner frames use 9-slice borders matching vanilla `Tool._selection`.
+
 ---
 
 ## 2026-06-29
