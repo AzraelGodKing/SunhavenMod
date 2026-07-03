@@ -1,6 +1,5 @@
 using System.Collections.Generic;
 using CropOptimizer.Data;
-using CropOptimizer.Patches;
 using HarmonyLib;
 using UnityEngine;
 
@@ -30,38 +29,21 @@ namespace CropOptimizer.UI
             if (cropType == null)
             {
                 _cachedCrops = System.Array.Empty<UnityEngine.Object>();
-                PruneStale(new HashSet<int>());
                 return _cachedCrops;
             }
 
-            var discovered = UnityEngine.Object.FindObjectsOfType(cropType);
+            var discovered = Object.FindObjectsOfType(cropType);
             var liveIds = new HashSet<int>();
-            var presentCrops = new List<UnityEngine.Object>(discovered.Length);
+            var presentCrops = new List<Object>(discovered.Length);
 
             for (int i = 0; i < discovered.Length; i++)
             {
                 if (discovered[i] is not Component crop || !CropPresence.IsPresent(crop))
                     continue;
 
-                bool forecastable = CropPresence.IsTrackable(crop);
-
                 CropInstanceRegistry.Register(crop);
                 liveIds.Add(crop.GetInstanceID());
                 presentCrops.Add(crop);
-
-                if (forecastable
-                    && Plugin.Instance?._forecast != null
-                    && !Plugin.Instance._forecast.TryGetState(crop.GetInstanceID(), out _))
-                {
-                    CropGrowthPatch.TryGetTooltipHarvestItemId(crop, out int itemId);
-                    float eta = 24f;
-                    CropGrowthPatch.TryGetTooltipEtaHours(crop, out eta, out _);
-                    float quality = 1f;
-                    CropGrowthPatch.TryGetTooltipQualityInfo(crop, out _, out quality);
-                    int gold = 0;
-                    CropGrowthPatch.TryGetTooltipProjectedGold(crop, out gold, out _);
-                    Plugin.Instance._forecast.UpdateCropState(crop.GetInstanceID(), eta, quality, gold, itemId);
-                }
             }
 
             PruneStale(liveIds);

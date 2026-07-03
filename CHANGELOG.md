@@ -23,6 +23,7 @@ Notes for **players and release readers**. Per-mod blurbs and upstream metadata 
 - **Field highlights:** Uses bundled tile-selection art from `Assets/tile_selection_sheet.png` (same look as vanilla tool hover; green corner brackets for fertilizer). Falls back to cloning `Tool._selection` if the sheet is missing. Toggle in `CropOptimizer.cfg` under `[Highlights]`.
 - **Fix:** Field highlights now detect the equipped watering can / fertilizer via Sun Haven 3.1 `Player.UseItem` (the old inventory slot probe never matched).
 - **Fix:** Field highlight sprites now use the correct 36×36 regions from `tile_selection_sheet.png` (not equal 27px slices); corner frames use 9-slice borders matching vanilla `Tool._selection`.
+- **Fix:** Crop scene cache no longer wipes the forecast when `Wish.Crop` is unavailable or backfills forecast rows with placeholder values; highlight prototype resolution retries until assets or a live tool selection are available.
 
 ---
 

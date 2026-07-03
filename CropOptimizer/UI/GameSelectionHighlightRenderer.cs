@@ -99,14 +99,16 @@ namespace CropOptimizer.UI
 
         private static bool ResolvePrototype()
         {
-            if (_prototypeResolved && (_useBundledSprites || _prototype != null))
-                return _useBundledSprites || _prototype != null;
+            if (_useBundledSprites || _prototype != null)
+                return true;
 
-            _prototypeResolved = true;
+            if (_prototypeResolved)
+                return false;
 
             if (TileSelectionAssetLoader.EnsureLoaded())
             {
                 _useBundledSprites = true;
+                _prototypeResolved = true;
                 return true;
             }
 
@@ -120,7 +122,11 @@ namespace CropOptimizer.UI
                     && _selectionField.GetValue(useItem) is GameObject liveSelection && liveSelection != null)
                 {
                     _prototype = ClonePrototype(liveSelection);
-                    return _prototype != null;
+                    if (_prototype != null)
+                    {
+                        _prototypeResolved = true;
+                        return true;
+                    }
                 }
 
                 foreach (UseItem item in Object.FindObjectsOfType<UseItem>())
@@ -131,7 +137,10 @@ namespace CropOptimizer.UI
                     {
                         _prototype = ClonePrototype(selection);
                         if (_prototype != null)
+                        {
+                            _prototypeResolved = true;
                             return true;
+                        }
                     }
                 }
             }
