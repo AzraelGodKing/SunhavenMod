@@ -518,12 +518,8 @@ namespace GiftingAssistant.UI
                 name = $"{name}  ({ModLocalization.T("gift.label.birthday")})";
             GUILayout.Label(name, _style.LabelBold, GUILayout.Height(_style.S(24)));
 
-            string hearts = FormatRelationshipLabel(entry.NpcName);
-            if (!string.IsNullOrEmpty(hearts))
-            {
-                GUILayout.Space(_style.S(4));
-                GUILayout.Label(hearts, _style.Label, GUILayout.Height(_style.S(24)));
-            }
+            GUILayout.Space(_style.S(4));
+            DrawRelationshipHearts(entry.NpcName);
 
             GUILayout.FlexibleSpace();
 
@@ -571,7 +567,7 @@ namespace GiftingAssistant.UI
 
             GUILayout.EndHorizontal();
 
-            // Second line: gift icons.
+            // Gift icons.
             DrawGiftIcons(entry);
 
             GUILayout.EndVertical();
@@ -681,7 +677,7 @@ namespace GiftingAssistant.UI
                     GUILayout.Space(_style.S(6));
                     GUILayout.Label(npc.Name, _style.Label, GUILayout.Height(_style.S(24)));
                     GUILayout.Space(_style.S(4));
-                    GUILayout.Label(FormatRelationshipLabel(npc.Name), _style.Label, GUILayout.Height(_style.S(24)));
+                    DrawRelationshipHearts(npc.Name);
                     GUILayout.FlexibleSpace();
                     GUILayout.EndHorizontal();
                     GUILayout.Space(_style.S(2));
@@ -931,13 +927,29 @@ namespace GiftingAssistant.UI
             return cached;
         }
 
-        private string FormatRelationshipLabel(string npcName)
+        private void DrawRelationshipHearts(string npcName)
         {
+            float rowH = _style.S(24);
             var points = GiftGameData.GetRelationshipPoints(npcName);
             if (!points.HasValue)
-                return ModLocalization.T("gift.label.heartsUnknown");
+            {
+                GUILayout.Label(ModLocalization.T("gift.label.heartsUnknown"), _style.Label,
+                    GUILayout.Height(rowH));
+                return;
+            }
 
-            return GiftGameData.FormatRelationshipHearts(points.Value);
+            float scale = _style.Scale;
+            int maxHearts = RelationshipHeartRules.GetMaxHearts(points.Value);
+            float w = RelationshipHeartRenderer.GridWidth(maxHearts, scale, singleRow: true);
+            float h = RelationshipHeartRenderer.GridHeight(maxHearts, scale, singleRow: true);
+
+            GUILayout.BeginVertical(GUILayout.Width(w), GUILayout.Height(rowH));
+            GUILayout.FlexibleSpace();
+            Rect rect = GUILayoutUtility.GetRect(w, h, GUILayout.ExpandWidth(false));
+            RelationshipHeartRenderer.DrawGrid(rect, points.Value, GiftGameData.IsRomanceable(npcName), scale,
+                singleRow: true);
+            GUILayout.FlexibleSpace();
+            GUILayout.EndVertical();
         }
 
         private static GiftPriority NextPriority(GiftPriority current)
