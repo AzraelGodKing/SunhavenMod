@@ -72,14 +72,14 @@
     "changelog": "Patch release: fixes a startup error in the shared localization layer that prevented the in-game language-change refresh from registering (HarmonyX could not patch LocalizationManager.SetLanguageAndCode because the postfix parameter names did not match the original method casing)."
   },
   "com.azraelgodking.havensalmanac": {
-    "version": "2.0.1",
+    "version": "2.1.0",
     "name": "Haven's Almanac",
     "description": "Unified mod dashboard - HUD, full dashboard, and daily morning briefing aggregating data from all installed mods",
     "nexus": "https://www.nexusmods.com/sunhaven/mods/501",
     "nexus_file_group_id": "7326779",
     "thunderstore": "https://thunderstore.io/c/sun-haven/p/AzraelGodKing/HavensAlmanac/",
     "thunderstoreName": "HavensAlmanac",
-    "changelog": "Patch release: fixes a startup error in the shared localization layer that prevented the in-game language-change refresh from registering (HarmonyX could not patch LocalizationManager.SetLanguageAndCode because the postfix parameter names did not match the original method casing)."
+    "changelog": "Added new Relationship tab to the almanac, showing the player's relationships with all NPCs."
   },
   "com.azraelgodking.fasterraces": {
     "version": "2.0.1",
@@ -122,13 +122,13 @@
     "changelog": "Patch release: fixes a startup error in the shared localization layer that prevented the in-game language-change refresh from registering (HarmonyX could not patch LocalizationManager.SetLanguageAndCode because the postfix parameter names did not match the original method casing)."
   },
   "com.azraelgodking.giftingassistant": {
-    "version": "1.0.0",
+    "version": "1.0.1",
     "name": "Gifting Assistant",
     "description": "Initial release: per-character gift roster, loved/liked suggestions with icons, preferred gifts, heart bars, gifted-today tracking, priority sort, Ctrl+G UI, 16 languages. Optional Birthday Reminder, Sun Haven Todo, and Haven's Almanac.",
     "nexus": "https://www.nexusmods.com/sunhaven/mods/507",
     "nexus_file_group_id": "7597922",
     "thunderstore": "https://thunderstore.io/c/sun-haven/p/AzraelGodKing/GiftingAssistant/",
     "thunderstoreName": "GiftingAssistant",
-    "changelog": "Initial release: per-character daily gift roster with loved/liked suggestions, per-NPC preferred gifts, item icons and bag counts, relationship heart bars, gifted-today tracking, priority sorting, localized UI (16 languages), Ctrl+G window toggle (open/close), and optional integrations with Birthday Reminder (birthday highlights), Sun Haven Todo (PushToTodo default — per-row +Todo, daily task refresh, in-game gift auto-complete; Gifted checkbox tracks roster only), and Haven's Almanac (pending/roster HUD, dashboard, and briefing surfaces)."
+    "changelog": "Updated to use the White Heart Icon."
   }
 }

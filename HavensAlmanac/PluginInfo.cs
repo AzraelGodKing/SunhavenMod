@@ -4,6 +4,6 @@ namespace HavensAlmanac
     {
         public const string PLUGIN_GUID = "com.azraelgodking.havensalmanac";
         public const string PLUGIN_NAME = "Haven's Almanac";
-        public const string PLUGIN_VERSION = "2.0.1";
+        public const string PLUGIN_VERSION = "2.1.0";
     }
 }
