@@ -27,6 +27,14 @@ namespace CropOptimizer.UI
         private static MethodInfo _worldToCellMethod;
         private static MethodInfo _waterWorldToCellMethod;
         private static MethodInfo _waterHasTileMethod;
+        private static MethodInfo _getCellCenterWorldMethod;
+        private static MethodInfo _gridCellToWorldMethod;
+        private static object _farmingGrid;
+        private static Vector3 _gridCellSize = Vector3.one;
+
+        private static PropertyInfo _cropRealCenterProp;
+        private static PropertyInfo _cropCenterProp;
+        private static bool _cropCenterPropsResolved;
 
         public static void EnsureInitialized()
         {
@@ -71,7 +79,19 @@ namespace CropOptimizer.UI
                 {
                     var tilemap = _farmingTileMapField.GetValue(_tileManagerInstance);
                     if (tilemap != null)
-                        _worldToCellMethod = tilemap.GetType().GetMethod("WorldToCell", new[] { typeof(Vector3) });
+                    {
+                        Type tilemapType = tilemap.GetType();
+                        _worldToCellMethod = tilemapType.GetMethod("WorldToCell", new[] { typeof(Vector3) });
+                        _getCellCenterWorldMethod = tilemapType.GetMethod("GetCellCenterWorld", new[] { typeof(Vector3Int) });
+                        object layoutGrid = tilemapType.GetProperty("layoutGrid")?.GetValue(tilemap);
+                        if (layoutGrid != null)
+                        {
+                            _farmingGrid = layoutGrid;
+                            _gridCellToWorldMethod = layoutGrid.GetType().GetMethod("CellToWorld", new[] { typeof(Vector3Int) });
+                            if (layoutGrid.GetType().GetProperty("cellSize")?.GetValue(layoutGrid) is Vector3 cellSize)
+                                _gridCellSize = cellSize;
+                        }
+                    }
                 }
                 catch
                 {
@@ -79,6 +99,114 @@ namespace CropOptimizer.UI
             }
 
             return _tileManagerInstance;
+        }
+
+        /// <summary>World-space center of a farm tile (matches tilled-soil / area-seeding grid).</summary>
+        public static bool TryGetFarmTileCenterWorld(Vector2Int tile, out Vector3 world)
+        {
+            world = default;
+            EnsureInitialized();
+            object tm = ResolveInstance();
+            if (tm == null || _farmingTileMapField == null)
+                return false;
+
+            try
+            {
+                var tilemap = _farmingTileMapField.GetValue(tm);
+                if (tilemap == null)
+                    return false;
+
+                var cell = new Vector3Int(tile.x, tile.y, 0);
+                if (_getCellCenterWorldMethod != null)
+                {
+                    world = (Vector3)_getCellCenterWorldMethod.Invoke(tilemap, new object[] { cell });
+                    return true;
+                }
+
+                if (_gridCellToWorldMethod != null && _farmingGrid != null)
+                {
+                    world = (Vector3)_gridCellToWorldMethod.Invoke(_farmingGrid, new object[] { cell });
+                    world += new Vector3(_gridCellSize.x * 0.5f, _gridCellSize.y * 0.5f, _gridCellSize.z * 0.5f);
+                    return true;
+                }
+            }
+            catch
+            {
+            }
+
+            return false;
+        }
+
+        /// <summary>Screen-space width of one farm tile at the given grid cell (for highlight sizing).</summary>
+        public static float MeasureFarmTileScreenPixels(Camera camera, Vector2Int tile)
+        {
+            if (camera == null)
+                return 52f;
+
+            if (!TryGetFarmTileCenterWorld(tile, out Vector3 center))
+                return 52f;
+
+            Vector3 east = center;
+            if (TryGetFarmTileCenterWorld(new Vector2Int(tile.x + 1, tile.y), out Vector3 neighbor))
+                east = neighbor;
+            else
+                east = center + new Vector3(Mathf.Max(0.25f, _gridCellSize.x), 0f, 0f);
+
+            Vector3 screenA = camera.WorldToScreenPoint(center);
+            Vector3 screenB = camera.WorldToScreenPoint(east);
+            return Mathf.Max(12f, Mathf.Abs(screenB.x - screenA.x));
+        }
+
+        /// <summary>Best anchor for drawing tile corner brackets on a crop.</summary>
+        public static bool TryGetCropHighlightCenter(Component crop, out Vector3 world)
+        {
+            world = default;
+            if (crop == null)
+                return false;
+
+            if (CropOptimizer.Patches.CropGrowthPatch.TryGetCropGridPosition(crop, out Vector2Int tile)
+                && TryGetFarmTileCenterWorld(tile, out world))
+                return true;
+
+            if (TryGetTileCoordForCrop(crop, out Vector2Int fallbackTile)
+                && TryGetFarmTileCenterWorld(fallbackTile, out world))
+                return true;
+
+            EnsureCropCenterProps();
+            try
+            {
+                if (_cropRealCenterProp?.GetValue(crop) is Vector3 realCenter)
+                {
+                    world = realCenter;
+                    return true;
+                }
+
+                if (_cropCenterProp?.GetValue(crop) is Vector3 center)
+                {
+                    world = center;
+                    return true;
+                }
+            }
+            catch
+            {
+            }
+
+            world = crop.transform.position;
+            return true;
+        }
+
+        private static void EnsureCropCenterProps()
+        {
+            if (_cropCenterPropsResolved)
+                return;
+            _cropCenterPropsResolved = true;
+
+            Type cropType = AccessTools.TypeByName("Wish.Crop");
+            if (cropType == null)
+                return;
+
+            _cropRealCenterProp = AccessTools.Property(cropType, "RealCenter");
+            _cropCenterProp = AccessTools.Property(cropType, "Center");
         }
 
         public static bool TryGetTileCoordForCrop(Component crop, out Vector2Int tile)
@@ -134,6 +262,36 @@ namespace CropOptimizer.UI
             return true;
         }
 
+        /// <summary>Maps a world point on the farm plane to a farming tilemap cell.</summary>
+        public static bool TryWorldToFarmTile(Vector3 world, out Vector2Int tile)
+        {
+            tile = default;
+            EnsureInitialized();
+            object tm = ResolveInstance();
+            if (tm != null && _worldToCellMethod != null && _farmingTileMapField != null)
+            {
+                try
+                {
+                    var tilemap = _farmingTileMapField.GetValue(tm);
+                    if (tilemap != null)
+                    {
+                        object cell = _worldToCellMethod.Invoke(tilemap, new object[] { world });
+                        if (cell is Vector3Int v3)
+                        {
+                            tile = new Vector2Int(v3.x, v3.y);
+                            return true;
+                        }
+                    }
+                }
+                catch
+                {
+                }
+            }
+
+            tile = new Vector2Int(Mathf.FloorToInt(world.x), Mathf.FloorToInt(world.y));
+            return true;
+        }
+
         /// <summary>
         /// Scan <c>farmingData</c> for the Vector2Int key closest (by squared XY distance) to the crop's
         /// world position. Tilemap grids may use non-trivial origin/scale, but the relative order of keys
@@ -181,6 +339,19 @@ namespace CropOptimizer.UI
         public static string DescribeFarmingTileState(Vector2Int tile, out Vector2Int matchedTile)
         {
             return DescribeFarmingTileState(tile, Vector3.zero, false, out matchedTile);
+        }
+
+        /// <summary>True when the crop's farming tile reads as watered on the water tilemap / TileManager.</summary>
+        public static bool IsCropTileWatered(Component crop)
+        {
+            if (crop == null)
+                return true;
+
+            if (!TryGetTileCoordForCrop(crop, out Vector2Int tile))
+                return true;
+
+            string state = DescribeFarmingTileState(tile, crop.transform.position, true, out _);
+            return string.Equals(state, "watered", StringComparison.OrdinalIgnoreCase);
         }
 
         /// <summary>
