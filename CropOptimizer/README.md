@@ -13,6 +13,7 @@ Crop Optimizer adds field-level harvest forecasting, a lightweight crop HUD, and
 
 - Tracks crop growth updates through a single Harmony patch on crop growth.
 - HUD summary for tracked crops and projected sell value.
+- **Field highlights:** bundled `Assets/tile_selection_sheet.png` (vanilla selection frames); yellow corners for dry tiles, green corners for unfertilized; see `[Highlights]` in config.
 - Optional Sunhaven Todo morning task injection for harvest-ready tiles.
 - Optional Birthday reminder integration for produce reservation hints.
 - Optional The Vault integration via reflection when The Vault is installed (no hard dependency on `TheVault.Abstractions.dll`).

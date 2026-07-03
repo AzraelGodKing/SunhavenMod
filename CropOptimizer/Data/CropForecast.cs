@@ -97,5 +97,24 @@ namespace CropOptimizer.Data
             _cropStateByInstanceId.Clear();
             _runningProjectedSellTotal = 0;
         }
+
+        public void PruneExcept(HashSet<int> liveIds)
+        {
+            if (liveIds == null || liveIds.Count == 0)
+            {
+                Clear();
+                return;
+            }
+
+            var stale = new List<int>();
+            foreach (int id in _cropStateByInstanceId.Keys)
+            {
+                if (!liveIds.Contains(id))
+                    stale.Add(id);
+            }
+
+            for (int i = 0; i < stale.Count; i++)
+                RemoveCropState(stale[i]);
+        }
     }
 }

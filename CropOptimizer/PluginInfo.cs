@@ -4,6 +4,6 @@ namespace CropOptimizer
     {
         public const string PLUGIN_GUID = "com.azraelgodking.cropoptimizer";
         public const string PLUGIN_NAME = "Crop Optimizer";
-        public const string PLUGIN_VERSION = "2.0.1";
+        public const string PLUGIN_VERSION = "2.1.0";
     }
 }
