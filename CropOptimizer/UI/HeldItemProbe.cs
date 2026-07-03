@@ -7,6 +7,9 @@ namespace CropOptimizer.UI
     /// <summary>Detects whether the player has a watering can or fertilizer selected (Sun Haven 3.1).</summary>
     internal static class HeldItemProbe
     {
+        private static readonly string[] WateringKeywords = { "watering" };
+        private static readonly string[] FertilizerKeywords = { "fertilizer", "compost" };
+
         public static bool IsWateringCanSelected()
         {
             if (Player.Instance?.UseItem is WateringCan)
@@ -14,7 +17,7 @@ namespace CropOptimizer.UI
 
             return ItemMatches(item =>
                 item.Type == ItemType.WateringCan
-                || NameMatches(item, "watering"));
+                || NameMatches(item, WateringKeywords));
         }
 
         public static bool IsFertilizerSelected()
@@ -22,7 +25,7 @@ namespace CropOptimizer.UI
             if (Player.Instance?.UseItem is Fertilizer)
                 return true;
 
-            return ItemMatches(item => NameMatches(item, "fertilizer", "compost"));
+            return ItemMatches(item => NameMatches(item, FertilizerKeywords));
         }
 
         private static bool ItemMatches(Func<Item, bool> predicate)
@@ -65,7 +68,7 @@ namespace CropOptimizer.UI
                 yield return slotData.item;
         }
 
-        private static bool NameMatches(Item item, params string[] keywords)
+        private static bool NameMatches(Item item, string[] keywords)
         {
             if (item.Equals(Item.Empty))
                 return false;

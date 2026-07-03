@@ -18,6 +18,7 @@ namespace CropOptimizer.UI
         private static bool _prototypeResolved;
         private static bool _useBundledSprites;
         private static FieldInfo _selectionField;
+        private static float _nextPrototypeRetryTime;
 
         private readonly List<Marker> _pool = new List<Marker>(128);
         private int _activeCount;
@@ -101,6 +102,11 @@ namespace CropOptimizer.UI
 
             if (_prototypeResolved)
                 return false;
+
+            float now = Time.unscaledTime;
+            if (now < _nextPrototypeRetryTime)
+                return false;
+            _nextPrototypeRetryTime = now + 1.0f;
 
             if (TileSelectionAssetLoader.EnsureLoaded())
             {
