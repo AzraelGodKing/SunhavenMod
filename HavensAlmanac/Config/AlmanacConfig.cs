@@ -17,6 +17,11 @@ namespace HavensAlmanac.Config
         public static ConfigEntry<bool> CheckForUpdates { get; private set; }
         public static ConfigEntry<float> UIScale { get; private set; }
 
+        public static ConfigEntry<bool> RelationshipsEnabled { get; private set; }
+        public static ConfigEntry<bool> RelationshipsRomanceOnly { get; private set; }
+        public static ConfigEntry<RelationshipSortMode> RelationshipsSortMode { get; private set; }
+        public static ConfigEntry<bool> RelationshipsShowGiftBadge { get; private set; }
+
         // Static values for PersistentRunner access
         internal static KeyCode StaticDashboardToggleKey = KeyCode.F5;
         internal static bool StaticDashboardRequireCtrl = true;
@@ -92,6 +97,19 @@ namespace HavensAlmanac.Config
                 StaticUIScale = Mathf.Clamp(UIScale.Value, 0.5f, 2.5f);
                 Plugin.Instance?.ApplyUIScaleToAllUI();
             };
+
+            RelationshipsEnabled = config.Bind(
+                "Relationships", "Enabled", true,
+                "Show the built-in Relationships dashboard section (native game heart data).");
+            RelationshipsRomanceOnly = config.Bind(
+                "Relationships", "RomanceOnly", false,
+                "Only list romanceable NPCs in the Relationships section.");
+            RelationshipsSortMode = config.Bind(
+                "Relationships", "SortBy", RelationshipSortMode.Name,
+                "Sort order for the Relationships dashboard list.");
+            RelationshipsShowGiftBadge = config.Bind(
+                "Relationships", "ShowUngiftedBadge", true,
+                "Show an ungifted-today marker on NPC rows (uses NPCAI.gaveGiftForDay).");
         }
     }
 }

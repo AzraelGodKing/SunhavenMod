@@ -110,6 +110,7 @@ namespace HavensAlmanac
 
             // Always available: telemetry surfaced by SharedUtilities.VersionChecker
             _staticAggregator.RegisterProvider(new Integration.ModHealthDataProvider());
+            _staticAggregator.RegisterProvider(new Integration.RelationshipDataProvider());
 
             TryRegisterProvider(pluginInfos, "com.azraelgodking.sunhaventodo",
                 () => new Integration.TodoDataProvider(), "SunhavenTodo");

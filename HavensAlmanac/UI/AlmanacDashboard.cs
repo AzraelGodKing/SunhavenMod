@@ -103,7 +103,7 @@ namespace HavensAlmanac.UI
             // Mod Health alone doesn't justify an expanded dashboard; only
             // open the provider scroll list when at least one integration
             // provider is present (IntegrationModCount excludes Mod Health).
-            if (_aggregator.IntegrationModCount == 0)
+            if (!_aggregator.HasDashboardSections)
             {
                 GUILayout.Label(ModLocalization.T("almanac.dashboard.noMods"), _noModsStyle);
                 GUILayout.Label(ModLocalization.T("almanac.dashboard.installHint"), _noModsStyle);
