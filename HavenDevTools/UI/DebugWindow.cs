@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using BepInEx;
 using HavenDevTools.API;
 using HavenDevTools.Config;
@@ -29,6 +30,18 @@ namespace HavenDevTools.UI
         private GUIStyle _textFieldStyle;
         private GUIStyle _boxStyle;
         private bool _stylesInitialized;
+
+        // Window chrome
+        private bool _isResizing;
+        private Vector2 _resizeStartMouse;
+        private Vector2 _resizeStartSize;
+        private float _contentAreaHeight = 280f;
+        private GUIStyle _headerBarStyle;
+        private GUIStyle _subtitleStyle;
+        private GUIStyle _closeButtonStyle;
+        private GUIStyle _resizeGripStyle;
+        private Texture2D _headerBarTexture;
+        private Texture2D _resizeGripTexture;
 
         // Tab state
         private int _selectedTab;
@@ -64,6 +77,26 @@ namespace HavenDevTools.UI
         private int _selectedRaceIndex;
         private Vector2 _raceScrollPosition;
 
+        // NPC relationships (CheatEnabler-style)
+        private bool _relationshipRomanceOnly = true;
+        private string _relationshipFilter = "";
+        private int _selectedRelationshipIndex = -1;
+        private string _relationshipHeartsInput = "40";
+        private string _relationshipCycleInput = "8";
+        private Vector2 _relationshipScrollPosition;
+        private string _relationshipStatusMessage = "";
+        private float _relationshipStatusUntil;
+        private List<NpcRelationshipEditor.NpcRelationshipRow> _relationshipRows = new List<NpcRelationshipEditor.NpcRelationshipRow>();
+        private bool _requestConsoleFocus;
+
+        // Marriable (multi-marriage via Ultra Polygamy)
+        private string _marriableFilter = "";
+        private Vector2 _marriableScrollPosition;
+        private readonly HashSet<string> _marriableSelectedKeys = new HashSet<string>(StringComparer.Ordinal);
+        private List<NpcRelationshipEditor.NpcRelationshipRow> _marriableRows = new List<NpcRelationshipEditor.NpcRelationshipRow>();
+        private string _marriableStatusMessage = "";
+        private float _marriableStatusUntil;
+
         // Version checking state
         private static Dictionary<string, VersionChecker.VersionCheckResult> _versionResults = new Dictionary<string, VersionChecker.VersionCheckResult>();
         private static bool _isCheckingVersions;
@@ -98,7 +131,10 @@ namespace HavenDevTools.UI
 
         private void Awake()
         {
-            _windowRect = new Rect(50, 50, 500, 600);
+            float w = ModConfig.DebugWindowWidth?.Value ?? DebugWindowLayout.DefaultWidth;
+            float h = ModConfig.DebugWindowHeight?.Value ?? DebugWindowLayout.DefaultHeight;
+            _windowRect = new Rect(50, 50, w, h);
+            DebugWindowLayout.ClampToScreen(ref _windowRect);
         }
 
         public void Toggle()
@@ -120,17 +156,19 @@ namespace HavenDevTools.UI
         {
             _isVisible = false;
             UnblockInput();
+            GUIUtility.keyboardControl = 0;
             Plugin.Log?.LogInfo("[DebugWindow] Hidden");
         }
 
         private void BlockInput()
         {
+            if (ModConfig.PauseGameWhenDebugOpen?.Value != true)
+                return;
+
             try
             {
                 if (Wish.Player.Instance != null)
-                {
                     Wish.Player.Instance.AddPauseObject(PAUSE_ID);
-                }
             }
             catch (Exception ex)
             {
@@ -143,9 +181,7 @@ namespace HavenDevTools.UI
             try
             {
                 if (Wish.Player.Instance != null)
-                {
                     Wish.Player.Instance.RemovePauseObject(PAUSE_ID);
-                }
             }
             catch (Exception ex)
             {
@@ -156,9 +192,7 @@ namespace HavenDevTools.UI
         private void Update()
         {
             if (_isVisible && Input.GetKeyDown(KeyCode.Escape))
-            {
                 Hide();
-            }
         }
 
         private void OnGUI()
@@ -166,6 +200,7 @@ namespace HavenDevTools.UI
             if (!_isVisible || !Plugin.IsAuthorized) return;
 
             InitializeStyles();
+            DebugWindowLayout.ClampToScreen(ref _windowRect);
 
             _windowRect = GUI.Window(
                 GetHashCode(),
@@ -174,6 +209,13 @@ namespace HavenDevTools.UI
                 "",
                 _windowStyle
             );
+
+            DebugWindowLayout.ClampToScreen(ref _windowRect);
+        }
+
+        private float ListHeight(float minHeight, float heightRatio = 0.42f)
+        {
+            return Mathf.Max(minHeight, _contentAreaHeight * heightRatio);
         }
 
         private void EnsureToolbarLabels()
@@ -191,6 +233,8 @@ namespace HavenDevTools.UI
             };
             _toolsSubTabLabels = new[]
             {
+                ModLocalization.T("devtools.tab.relationships"),
+                ModLocalization.T("devtools.tab.marriable"),
                 ModLocalization.T("devtools.tab.items"),
                 ModLocalization.T("devtools.tab.currencies"),
                 ModLocalization.T("devtools.tab.console"),
@@ -288,36 +332,130 @@ namespace HavenDevTools.UI
                 normal = { background = sectionBg }
             };
 
+            _headerBarTexture = new Texture2D(1, 1);
+            _headerBarTexture.SetPixel(0, 0, new Color(0.14f, 0.18f, 0.28f, 0.98f));
+            _headerBarTexture.Apply();
+            _headerBarStyle = new GUIStyle
+            {
+                normal = { background = _headerBarTexture }
+            };
+
+            _subtitleStyle = new GUIStyle(_labelStyle)
+            {
+                fontSize = 11,
+                normal = { textColor = new Color(0.7f, 0.78f, 0.88f) }
+            };
+
+            var closeBg = new Texture2D(1, 1);
+            closeBg.SetPixel(0, 0, new Color(0.45f, 0.18f, 0.18f, 0.9f));
+            closeBg.Apply();
+            var closeHover = new Texture2D(1, 1);
+            closeHover.SetPixel(0, 0, new Color(0.65f, 0.22f, 0.22f, 0.95f));
+            closeHover.Apply();
+            _closeButtonStyle = new GUIStyle(GUI.skin.button)
+            {
+                fontSize = 14,
+                fontStyle = FontStyle.Bold,
+                alignment = TextAnchor.MiddleCenter,
+                padding = new RectOffset(0, 0, 0, 0),
+                normal = { background = closeBg, textColor = Color.white },
+                hover = { background = closeHover, textColor = Color.white }
+            };
+
+            _resizeGripTexture = DebugWindowLayout.CreateResizeGripTexture();
+            _resizeGripStyle = new GUIStyle(GUI.skin.box)
+            {
+                normal = { background = _resizeGripTexture },
+                border = new RectOffset(0, 0, 0, 0),
+                padding = new RectOffset(0, 0, 0, 0)
+            };
+
+            _windowStyle.padding = new RectOffset(8, 8, 8, 8);
+
             _stylesInitialized = true;
+        }
+
+        private void DrawHeaderBar(int windowId)
+        {
+            var headerRect = GUILayoutUtility.GetRect(0, DebugWindowLayout.HeaderHeight, GUILayout.ExpandWidth(true));
+            GUI.DrawTexture(headerRect, _headerBarTexture, ScaleMode.StretchToFill);
+
+            const float closeWidth = 30f;
+            var titleArea = new Rect(headerRect.x + 10f, headerRect.y + 4f, headerRect.width - closeWidth - 16f, headerRect.height - 6f);
+            GUI.Label(new Rect(titleArea.x, titleArea.y, titleArea.width, 20f), ModLocalization.T("devtools.title"), _headerStyle);
+            GUI.Label(
+                new Rect(titleArea.x, titleArea.y + 20f, titleArea.width, 18f),
+                ModLocalization.T("devtools.player", Plugin.CurrentPlayerName ?? string.Empty),
+                _subtitleStyle);
+
+            var closeRect = new Rect(headerRect.xMax - closeWidth - 6f, headerRect.y + 8f, closeWidth, 24f);
+            if (GUI.Button(closeRect, "×", _closeButtonStyle))
+                Hide();
+
+            GUI.DragWindow(new Rect(0, 0, _windowRect.width - closeWidth - 8f, DebugWindowLayout.HeaderHeight));
+        }
+
+        private void DrawModStatusRow()
+        {
+            string yes = ModLocalization.T("devtools.yes");
+            string no = ModLocalization.T("devtools.no");
+
+            GUILayout.BeginHorizontal();
+            GUILayout.Label(ModLocalization.T("devtools.mod.thevault", Plugin.HasTheVault ? yes : no), _labelStyle);
+            GUILayout.Label(ModLocalization.T("devtools.mod.smut", Plugin.HasSMUT ? yes : no), _labelStyle);
+            GUILayout.Label(ModLocalization.T("devtools.mod.birthright", Plugin.HasHavensBirthright ? yes : no), _labelStyle);
+            GUILayout.FlexibleSpace();
+            GUILayout.EndHorizontal();
+
+            GUILayout.BeginHorizontal();
+            GUILayout.Label(ModLocalization.T("devtools.mod.senpai", Plugin.HasSenpaisChest ? yes : no), _labelStyle);
+            GUILayout.Label(ModLocalization.T("devtools.mod.todo", Plugin.HasSunhavenTodo ? yes : no), _labelStyle);
+            GUILayout.Label(ModLocalization.T("devtools.mod.ultrapolygamy", Plugin.HasUltraPolygamy ? yes : no), _labelStyle);
+            GUILayout.FlexibleSpace();
+            GUILayout.EndHorizontal();
+        }
+
+        private void DrawWindowFooter()
+        {
+            GUILayout.BeginHorizontal();
+            GUILayout.Label(ModLocalization.T("devtools.window.hint"), _subtitleStyle);
+            GUILayout.FlexibleSpace();
+            GUILayout.EndHorizontal();
+
+            if (DebugWindowLayout.DrawResizeGrip(
+                    _windowRect.width,
+                    _windowRect.height,
+                    _resizeGripStyle,
+                    ref _isResizing,
+                    ref _resizeStartMouse,
+                    ref _resizeStartSize,
+                    out float newWidth,
+                    out float newHeight))
+            {
+                _windowRect.width = newWidth;
+                _windowRect.height = newHeight;
+                ModConfig.SaveDebugWindowSize(newWidth, newHeight);
+            }
         }
 
         private void DrawWindow(int windowId)
         {
-            // Header
-            GUILayout.Label(ModLocalization.T("devtools.title"), _headerStyle);
-            GUILayout.Label(ModLocalization.T("devtools.player", Plugin.CurrentPlayerName ?? string.Empty), _labelStyle);
-            GUILayout.Space(5);
+            GUILayout.BeginVertical(GUILayout.ExpandHeight(true));
 
-            // Mod status
-            string yes = ModLocalization.T("devtools.yes");
-            string no = ModLocalization.T("devtools.no");
-            GUILayout.BeginHorizontal();
-            GUILayout.Label(ModLocalization.T("devtools.mod.thevault", Plugin.HasTheVault ? yes : no), _labelStyle, GUILayout.Width(100));
-            GUILayout.Label(ModLocalization.T("devtools.mod.smut", Plugin.HasSMUT ? yes : no), _labelStyle, GUILayout.Width(80));
-            GUILayout.Label(ModLocalization.T("devtools.mod.birthright", Plugin.HasHavensBirthright ? yes : no), _labelStyle, GUILayout.Width(100));
-            GUILayout.Label(ModLocalization.T("devtools.mod.senpai", Plugin.HasSenpaisChest ? yes : no), _labelStyle, GUILayout.Width(80));
-            GUILayout.Label(ModLocalization.T("devtools.mod.todo", Plugin.HasSunhavenTodo ? yes : no), _labelStyle);
-            GUILayout.EndHorizontal();
+            DrawHeaderBar(windowId);
+            GUILayout.Space(6);
+            DrawModStatusRow();
+            GUILayout.Space(8);
 
-            GUILayout.Space(10);
-
-            // Tabs
             EnsureToolbarLabels();
             _selectedTab = GUILayout.Toolbar(_selectedTab, _mainTabLabels, _buttonStyle);
-            GUILayout.Space(10);
+            GUILayout.Space(8);
 
-            // Content
-            _scrollPosition = GUILayout.BeginScrollView(_scrollPosition);
+            _contentAreaHeight = Mathf.Max(120f, _windowRect.height - 210f);
+            _scrollPosition = GUILayout.BeginScrollView(
+                _scrollPosition,
+                GUILayout.ExpandHeight(true),
+                GUILayout.ExpandWidth(true));
 
             switch (_selectedTab)
             {
@@ -327,16 +465,8 @@ namespace HavenDevTools.UI
             }
 
             GUILayout.EndScrollView();
-
-            GUILayout.Space(10);
-
-            // Close button
-            if (GUILayout.Button(ModLocalization.T("devtools.close"), _buttonStyle))
-            {
-                Hide();
-            }
-
-                GUI.DragWindow(new Rect(0, 0, 500, 30));
+            DrawWindowFooter();
+            GUILayout.EndVertical();
         }
 
         private void DrawExtensionsTab()
@@ -380,16 +510,327 @@ namespace HavenDevTools.UI
             _toolsSubTab = GUILayout.Toolbar(_toolsSubTab, _toolsSubTabLabels, _buttonStyle);
             GUILayout.Space(8);
 
+            if (_toolsSubTab == 4 && _lastDrawnToolsSubTab != 4)
+                _requestConsoleFocus = true;
+
             switch (_toolsSubTab)
             {
-                case 0: DrawItemsTab(); break;
-                case 1: DrawCurrenciesTab(); break;
-                case 2: DrawConsoleTab(); break;
-                case 3: DrawLogViewerTab(); break;
-                case 4: DrawPerformanceTab(); break;
-                case 5: DrawUtilityTab(); break;
+                case 0: DrawRelationshipsTab(); break;
+                case 1: DrawMarriableTab(); break;
+                case 2: DrawItemsTab(); break;
+                case 3: DrawCurrenciesTab(); break;
+                case 4: DrawConsoleTab(); break;
+                case 5: DrawLogViewerTab(); break;
+                case 6: DrawPerformanceTab(); break;
+                case 7: DrawUtilityTab(); break;
+            }
+
+            _lastDrawnToolsSubTab = _toolsSubTab;
+        }
+
+        private void DrawRelationshipsTab()
+        {
+            GUILayout.BeginVertical(_boxStyle);
+            GUILayout.Label(ModLocalization.T("devtools.relationships.title"), _sectionHeaderStyle);
+            GUILayout.Space(4);
+
+            if (!NpcRelationshipEditor.IsAvailable)
+            {
+                GUILayout.Label(ModLocalization.T("devtools.relationships.unavailable"), _labelStyle);
+                GUILayout.EndVertical();
+                return;
+            }
+
+            GUILayout.BeginHorizontal();
+            _relationshipRomanceOnly = GUILayout.Toggle(_relationshipRomanceOnly, ModLocalization.T("devtools.relationships.romanceOnly"), _labelStyle);
+            if (GUILayout.Button(ModLocalization.T("devtools.relationships.refresh"), _buttonStyle, GUILayout.Width(80)))
+                RefreshRelationshipRows();
+            GUILayout.EndHorizontal();
+
+            GUILayout.BeginHorizontal();
+            GUILayout.Label(ModLocalization.T("devtools.relationships.filter"), _labelStyle, GUILayout.Width(40));
+            _relationshipFilter = GUILayout.TextField(_relationshipFilter ?? string.Empty, _textFieldStyle);
+            if (GUILayout.Button("X", _buttonStyle, GUILayout.Width(24)))
+            {
+                _relationshipFilter = string.Empty;
+                RefreshRelationshipRows();
+            }
+            GUILayout.EndHorizontal();
+
+            if (_relationshipRows.Count == 0)
+                RefreshRelationshipRows();
+
+            _relationshipScrollPosition = GUILayout.BeginScrollView(_relationshipScrollPosition, GUILayout.Height(ListHeight(100f, 0.45f)));
+            for (int i = 0; i < _relationshipRows.Count; i++)
+            {
+                var row = _relationshipRows[i];
+                string status = BuildRelationshipStatusLabel(row);
+                bool selected = i == _selectedRelationshipIndex;
+                if (GUILayout.Toggle(selected, $"{row.DisplayName} ({row.Key}) — {row.Hearts:0.#} {status}", _buttonStyle))
+                {
+                    _selectedRelationshipIndex = i;
+                    _relationshipHeartsInput = ((int)Math.Round(row.Hearts)).ToString();
+                }
+            }
+            GUILayout.EndScrollView();
+
+            if (_selectedRelationshipIndex >= 0 && _selectedRelationshipIndex < _relationshipRows.Count)
+            {
+                var selected = _relationshipRows[_selectedRelationshipIndex];
+                GUILayout.Label(ModLocalization.T("devtools.relationships.selected", selected.DisplayName, selected.Key), _labelStyle);
+
+                GUILayout.BeginHorizontal();
+                GUILayout.Label(ModLocalization.T("devtools.relationships.hearts"), _labelStyle, GUILayout.Width(50));
+                _relationshipHeartsInput = GUILayout.TextField(_relationshipHeartsInput ?? "0", _textFieldStyle, GUILayout.Width(50));
+                if (GUILayout.Button(ModLocalization.T("devtools.relationships.setHearts"), _buttonStyle))
+                    RunRelationshipAction(() => NpcRelationshipEditor.SetHearts(selected.Key, ParseInt(_relationshipHeartsInput, 0)));
+                foreach (int preset in new[] { 25, 40, 75, 100 })
+                {
+                    if (GUILayout.Button(preset.ToString(), _buttonStyle, GUILayout.Width(36)))
+                        RunRelationshipAction(() => NpcRelationshipEditor.SetHearts(selected.Key, preset));
+                }
+                GUILayout.EndHorizontal();
+
+                GUILayout.BeginHorizontal();
+                if (GUILayout.Button("-5", _buttonStyle, GUILayout.Width(36)))
+                    RunRelationshipAction(() => NpcRelationshipEditor.AdjustHearts(selected.Key, -5));
+                if (GUILayout.Button("+5", _buttonStyle, GUILayout.Width(36)))
+                    RunRelationshipAction(() => NpcRelationshipEditor.AdjustHearts(selected.Key, 5));
+                if (selected.Romanceable && GUILayout.Button(ModLocalization.T("devtools.relationships.date"), _buttonStyle))
+                    RunRelationshipAction(() => NpcRelationshipEditor.DateNpc(selected.Key));
+                if (selected.Romanceable && GUILayout.Button(ModLocalization.T("devtools.relationships.platonic"), _buttonStyle))
+                    RunRelationshipAction(() => NpcRelationshipEditor.SetPlatonic(selected.Key));
+                GUILayout.EndHorizontal();
+
+                if (selected.Romanceable)
+                {
+                    GUILayout.BeginHorizontal();
+                    if (GUILayout.Button(ModLocalization.T("devtools.relationships.marry"), _buttonStyle))
+                        RunRelationshipAction(() => NpcRelationshipEditor.MarryNpc(selected.Key));
+                    if (GUILayout.Button(ModLocalization.T("devtools.relationships.divorce"), _buttonStyle))
+                        RunRelationshipAction(() => NpcRelationshipEditor.DivorceNpc(selected.Key));
+                    if (GUILayout.Button(ModLocalization.T("devtools.relationships.setPrimary"), _buttonStyle))
+                        RunRelationshipAction(() => NpcRelationshipEditor.SetPrimarySpouse(selected.Key));
+                    GUILayout.EndHorizontal();
+
+                    GUILayout.BeginHorizontal();
+                    GUILayout.Label(ModLocalization.T("devtools.relationships.cycle"), _labelStyle, GUILayout.Width(50));
+                    _relationshipCycleInput = GUILayout.TextField(_relationshipCycleInput ?? "0", _textFieldStyle, GUILayout.Width(40));
+                    if (GUILayout.Button(ModLocalization.T("devtools.relationships.skipCycle"), _buttonStyle))
+                        RunRelationshipAction(() => NpcRelationshipEditor.SkipToCycle(selected.Key, ParseInt(_relationshipCycleInput, 0)));
+                    GUILayout.EndHorizontal();
+                }
+            }
+
+            GUILayout.BeginHorizontal();
+            if (GUILayout.Button(ModLocalization.T("devtools.relationships.divorcePrimary"), _buttonStyle))
+                RunRelationshipAction(() => NpcRelationshipEditor.DivorcePrimarySpouse());
+            if (GUILayout.Button(ModLocalization.T("devtools.relationships.resetAll"), _buttonStyle))
+            {
+                NpcRelationshipEditor.ResetAllHearts();
+                SetRelationshipStatus(ModLocalization.T("devtools.relationships.actionOk"));
+                RefreshRelationshipRows();
+            }
+            GUILayout.EndHorizontal();
+
+            if (!string.IsNullOrEmpty(_relationshipStatusMessage) && Time.realtimeSinceStartup < _relationshipStatusUntil)
+                GUILayout.Label(_relationshipStatusMessage, _labelStyle);
+
+            GUILayout.EndVertical();
+        }
+
+        private void DrawMarriableTab()
+        {
+            GUILayout.BeginVertical(_boxStyle);
+            GUILayout.Label(ModLocalization.T("devtools.marriable.title"), _sectionHeaderStyle);
+            GUILayout.Space(4);
+
+            bool polyReady = UltraPolygamyHelper.IsAvailable;
+            GUILayout.Label(ModLocalization.T(UltraPolygamyHelper.StatusLocalizationKey), _labelStyle);
+
+            if (!NpcRelationshipEditor.IsAvailable)
+            {
+                GUILayout.Label(ModLocalization.T("devtools.marriable.unavailable"), _labelStyle);
+                GUILayout.EndVertical();
+                return;
+            }
+
+            if (!polyReady)
+            {
+                GUILayout.Label(ModLocalization.T("devtools.marriable.polyRequired"), _labelStyle);
+                GUILayout.EndVertical();
+                return;
+            }
+
+            GUILayout.BeginHorizontal();
+            if (GUILayout.Button(ModLocalization.T("devtools.marriable.refresh"), _buttonStyle, GUILayout.Width(80)))
+                RefreshMarriableRows();
+            if (GUILayout.Button(ModLocalization.T("devtools.marriable.selectAll"), _buttonStyle))
+                SelectAllMarriable(unmarriedOnly: true);
+            if (GUILayout.Button(ModLocalization.T("devtools.marriable.clearSelection"), _buttonStyle))
+                _marriableSelectedKeys.Clear();
+            GUILayout.EndHorizontal();
+
+            GUILayout.BeginHorizontal();
+            GUILayout.Label(ModLocalization.T("devtools.marriable.filter"), _labelStyle, GUILayout.Width(40));
+            _marriableFilter = GUILayout.TextField(_marriableFilter ?? string.Empty, _textFieldStyle);
+            if (GUILayout.Button("X", _buttonStyle, GUILayout.Width(24)))
+            {
+                _marriableFilter = string.Empty;
+                RefreshMarriableRows();
+            }
+            GUILayout.EndHorizontal();
+
+            if (_marriableRows.Count == 0)
+                RefreshMarriableRows();
+
+            _marriableScrollPosition = GUILayout.BeginScrollView(_marriableScrollPosition, GUILayout.Height(ListHeight(120f, 0.5f)));
+            foreach (var row in _marriableRows)
+            {
+                bool selected = _marriableSelectedKeys.Contains(row.Key);
+                string status = row.IsMarriedTo
+                    ? ModLocalization.T("devtools.marriable.alreadyMarried")
+                    : string.Empty;
+                string label = string.IsNullOrEmpty(status)
+                    ? $"{row.DisplayName} ({row.Key}) — {row.Hearts:0.#}"
+                    : $"{row.DisplayName} ({row.Key}) — {row.Hearts:0.#} [{status}]";
+
+                bool next = GUILayout.Toggle(selected, label, _buttonStyle);
+                if (next != selected)
+                {
+                    if (next)
+                        _marriableSelectedKeys.Add(row.Key);
+                    else
+                        _marriableSelectedKeys.Remove(row.Key);
+                }
+            }
+            GUILayout.EndScrollView();
+
+            GUILayout.Label(ModLocalization.T("devtools.marriable.selectedCount", _marriableSelectedKeys.Count), _labelStyle);
+
+            GUI.enabled = _marriableSelectedKeys.Count > 0;
+            if (GUILayout.Button(ModLocalization.T("devtools.marriable.marrySelected"), _buttonStyle))
+                RunMarriableAction();
+            GUI.enabled = true;
+
+            if (!string.IsNullOrEmpty(_marriableStatusMessage) && Time.realtimeSinceStartup < _marriableStatusUntil)
+                GUILayout.Label(_marriableStatusMessage, _labelStyle);
+
+            GUILayout.EndVertical();
+        }
+
+        private void RefreshMarriableRows()
+        {
+            _marriableRows = new List<NpcRelationshipEditor.NpcRelationshipRow>(
+                NpcRelationshipEditor.GetRows(romanceOnly: true, _marriableFilter));
+            _marriableSelectedKeys.RemoveWhere(key =>
+                _marriableRows.All(r => !string.Equals(r.Key, key, StringComparison.Ordinal)));
+        }
+
+        private void SelectAllMarriable(bool unmarriedOnly)
+        {
+            RefreshMarriableRows();
+            foreach (var row in _marriableRows)
+            {
+                if (unmarriedOnly && row.IsMarriedTo)
+                    continue;
+                _marriableSelectedKeys.Add(row.Key);
             }
         }
+
+        private void RunMarriableAction()
+        {
+            if (!UltraPolygamyHelper.IsAvailable)
+            {
+                SetMarriableStatus(ModLocalization.T("devtools.marriable.polyRequired"));
+                return;
+            }
+
+            if (_marriableSelectedKeys.Count == 0)
+            {
+                SetMarriableStatus(ModLocalization.T("devtools.marriable.noneSelected"));
+                return;
+            }
+
+            var keys = _marriableSelectedKeys.ToList();
+            int married = 0;
+            try
+            {
+                married = NpcRelationshipEditor.MarryMultiple(keys);
+            }
+            catch (Exception ex)
+            {
+                Plugin.Log?.LogWarning($"[Marriable] {ex.Message}");
+            }
+
+            if (married > 0)
+            {
+                SetMarriableStatus(ModLocalization.T("devtools.marriable.actionOk", married));
+                _marriableSelectedKeys.Clear();
+            }
+            else
+                SetMarriableStatus(ModLocalization.T("devtools.marriable.actionFail"));
+
+            RefreshMarriableRows();
+            RefreshRelationshipRows();
+        }
+
+        private void SetMarriableStatus(string message)
+        {
+            _marriableStatusMessage = message;
+            _marriableStatusUntil = Time.realtimeSinceStartup + 3f;
+        }
+
+        private string BuildRelationshipStatusLabel(NpcRelationshipEditor.NpcRelationshipRow row)
+        {
+            var parts = new List<string>();
+            if (row.IsDating)
+                parts.Add(ModLocalization.T("devtools.relationships.status.dating"));
+            if (row.IsMarriedTo)
+                parts.Add(ModLocalization.T("devtools.relationships.status.married"));
+            if (row.IsPrimarySpouse)
+                parts.Add(ModLocalization.T("devtools.relationships.status.primary"));
+            return parts.Count > 0 ? $"[{string.Join(", ", parts)}]" : string.Empty;
+        }
+
+        private void RefreshRelationshipRows()
+        {
+            _relationshipRows = new List<NpcRelationshipEditor.NpcRelationshipRow>(
+                NpcRelationshipEditor.GetRows(_relationshipRomanceOnly, _relationshipFilter));
+            if (_selectedRelationshipIndex >= _relationshipRows.Count)
+                _selectedRelationshipIndex = _relationshipRows.Count - 1;
+        }
+
+        private void RunRelationshipAction(Func<bool> action)
+        {
+            bool ok = false;
+            try
+            {
+                ok = action();
+            }
+            catch (Exception ex)
+            {
+                Plugin.Log?.LogWarning($"[Relationships] {ex.Message}");
+            }
+
+            SetRelationshipStatus(ok
+                ? ModLocalization.T("devtools.relationships.actionOk")
+                : ModLocalization.T("devtools.relationships.actionFail"));
+            RefreshRelationshipRows();
+        }
+
+        private void SetRelationshipStatus(string message)
+        {
+            _relationshipStatusMessage = message;
+            _relationshipStatusUntil = Time.realtimeSinceStartup + 3f;
+        }
+
+        private static int ParseInt(string text, int fallback)
+        {
+            return int.TryParse(text, out int value) ? value : fallback;
+        }
+
+        private int _lastDrawnToolsSubTab = -1;
 
         private void DrawConsoleTab()
         {
@@ -400,7 +841,14 @@ namespace HavenDevTools.UI
             var console = Plugin.GetCommandConsole();
             if (console != null)
             {
-                console.Draw(_boxStyle, _buttonStyle, _labelStyle, _textFieldStyle);
+                float consoleHeight = ListHeight(140f, 0.55f);
+                if (_requestConsoleFocus)
+                {
+                    console.Draw(_boxStyle, _buttonStyle, _labelStyle, _textFieldStyle, requestFocus: true, outputScrollHeight: consoleHeight);
+                    _requestConsoleFocus = false;
+                }
+                else
+                    console.Draw(_boxStyle, _buttonStyle, _labelStyle, _textFieldStyle, outputScrollHeight: consoleHeight);
             }
             else
             {
@@ -417,7 +865,7 @@ namespace HavenDevTools.UI
             var logViewer = Plugin.GetLogViewer();
             if (logViewer != null)
             {
-                logViewer.Draw(_boxStyle, _buttonStyle, _labelStyle);
+                logViewer.Draw(_boxStyle, _buttonStyle, _labelStyle, ListHeight(140f, 0.55f));
             }
             else
             {
@@ -486,7 +934,7 @@ namespace HavenDevTools.UI
             if (_searchResults.Count > 0)
             {
                 GUILayout.Space(4);
-                float h = Mathf.Min(180, 24 + _searchResults.Count * 22);
+                float h = Mathf.Min(ListHeight(80f, 0.35f), 24 + _searchResults.Count * 22);
                 _itemScrollPosition = GUILayout.BeginScrollView(_itemScrollPosition, GUILayout.Height(h));
                 foreach (var result in _searchResults)
                 {
@@ -565,7 +1013,7 @@ namespace HavenDevTools.UI
 
             // Inventory currencies
             GUILayout.Label(ModLocalization.T("devtools.currency.inventory"), _sectionHeaderStyle);
-            _currencyScrollPosition = GUILayout.BeginScrollView(_currencyScrollPosition, GUILayout.Height(120));
+            _currencyScrollPosition = GUILayout.BeginScrollView(_currencyScrollPosition, GUILayout.Height(ListHeight(90f, 0.3f)));
             if (summary.InventoryCurrencies.Count == 0)
             {
                 GUILayout.Label(ModLocalization.T("devtools.currency.none"), _labelStyle);
@@ -688,7 +1136,7 @@ namespace HavenDevTools.UI
 
                 // Items in bundle
                 GUILayout.Label(ModLocalization.T("devtools.museum.itemsIn", selectedBundle.Name), _sectionHeaderStyle);
-                _bundleScrollPosition = GUILayout.BeginScrollView(_bundleScrollPosition, GUILayout.Height(150));
+                _bundleScrollPosition = GUILayout.BeginScrollView(_bundleScrollPosition, GUILayout.Height(ListHeight(100f, 0.35f)));
                 foreach (var item in selectedBundle.Items)
                 {
                     bool donated = inspector.HasDonated(item.Id);
@@ -775,7 +1223,7 @@ namespace HavenDevTools.UI
                 GUILayout.Space(5);
 
                 var bonuses = tracker.GetBonusesForRace(races[_selectedRaceIndex]);
-                _raceScrollPosition = GUILayout.BeginScrollView(_raceScrollPosition, GUILayout.Height(150));
+                _raceScrollPosition = GUILayout.BeginScrollView(_raceScrollPosition, GUILayout.Height(ListHeight(100f, 0.35f)));
                 if (bonuses.Count == 0)
                 {
                     GUILayout.Label(ModLocalization.T("devtools.race.noDefined"), _labelStyle);
@@ -893,7 +1341,7 @@ namespace HavenDevTools.UI
             GUILayout.Space(5);
 
             // Results display
-            _versionScrollPosition = GUILayout.BeginScrollView(_versionScrollPosition, GUILayout.Height(140));
+            _versionScrollPosition = GUILayout.BeginScrollView(_versionScrollPosition, GUILayout.Height(ListHeight(100f, 0.35f)));
 
             foreach (var mod in _knownMods)
             {

@@ -66,7 +66,7 @@ namespace HavenDevTools.UI
             }
         }
 
-        public void Draw(GUIStyle boxStyle, GUIStyle buttonStyle, GUIStyle labelStyle)
+        public void Draw(GUIStyle boxStyle, GUIStyle buttonStyle, GUIStyle labelStyle, float listHeight = 200f)
         {
             GUILayout.BeginHorizontal();
             GUILayout.Label(ModLocalization.T("devtools.log.level"), labelStyle, GUILayout.Width(40));
@@ -83,7 +83,7 @@ namespace HavenDevTools.UI
                 snapshot = new List<LogEntry>(_entries);
             }
 
-            _scrollPosition = GUILayout.BeginScrollView(_scrollPosition, GUILayout.Height(200));
+            _scrollPosition = GUILayout.BeginScrollView(_scrollPosition, GUILayout.Height(listHeight));
 
             int minLevel = _levelFilterIndex;
             foreach (var e in snapshot)

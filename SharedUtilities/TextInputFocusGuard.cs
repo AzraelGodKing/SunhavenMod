@@ -61,7 +61,7 @@ namespace SunhavenMods.Shared
                     }
                 }
 
-                if (!defer && IsQuantumConsoleActive(debugLog))
+                if (!defer && IsQuantumConsoleActiveInternal(debugLog))
                     defer = true;
             }
             catch (Exception ex)
@@ -87,7 +87,31 @@ namespace SunhavenMods.Shared
             return go.GetComponent(_tmpInputFieldType) != null;
         }
 
-        private static bool IsQuantumConsoleActive(ManualLogSource debugLog)
+        /// <summary>True when Quantum Console (CheatEnabler chat) is open.</summary>
+        public static bool IsQuantumConsoleActive(ManualLogSource debugLog = null)
+        {
+            return IsQuantumConsoleActiveInternal(debugLog);
+        }
+
+        /// <summary>True when a uGUI text field (not IMGUI) has focus — e.g. Quantum Console input.</summary>
+        public static bool IsUnityUiTextInputFocused()
+        {
+            try
+            {
+                var go = EventSystem.current?.currentSelectedGameObject;
+                if (go == null)
+                    return false;
+                if (go.GetComponent<InputField>() != null)
+                    return true;
+                return TryGetTmpInputField(go);
+            }
+            catch
+            {
+                return false;
+            }
+        }
+
+        private static bool IsQuantumConsoleActiveInternal(ManualLogSource debugLog)
         {
             try
             {
