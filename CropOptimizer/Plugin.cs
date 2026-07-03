@@ -72,6 +72,7 @@ namespace CropOptimizer
             _hudVisible = _config.HudEnabled.Value;
             _hud.PlacementChanged += OnCropHudPlacementChanged;
             _hud.SetHoverConfig(_config.HoverTooltipEnabled, _config.HoverTooltipMaxWorldDistance);
+            _hud.SetHighlightConfig(_config);
 
             TrySubscribeVaultLoaded();
 

@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using CropOptimizer.Data;
+using CropOptimizer.UI;
 using HarmonyLib;
 using SunhavenMods.Shared;
 using UnityEngine;
@@ -154,8 +155,10 @@ namespace CropOptimizer.Patches
         {
             var lifecycleNames = new[]
             {
-                "Harvest",
                 "DestroyCrop",
+                "OnDestroyed",
+                "ApplyRegrowStateAfterHarvest",
+                "Harvest",
                 "RemoveCrop",
                 "Die",
                 "OnDestroy"
@@ -189,6 +192,8 @@ namespace CropOptimizer.Patches
             int instanceId = unityObj.GetInstanceID();
             CropInstanceRegistry.UnregisterById(instanceId);
             _forecast?.RemoveCropState(instanceId);
+            CropSceneCache.Invalidate();
+            CropHoverQuery.InvalidateHoverAssist();
         }
 
         private static float _resolvedEtaHoursCache;

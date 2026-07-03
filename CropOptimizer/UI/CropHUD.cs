@@ -1,5 +1,7 @@
 using System;
+using System.Collections.Generic;
 using BepInEx.Configuration;
+using CropOptimizer.Config;
 using CropOptimizer.Data;
 using SunhavenMods.Shared;
 using UnityEngine;
@@ -30,6 +32,10 @@ namespace CropOptimizer.UI
 
         private ConfigEntry<bool> _hoverTooltipEnabled;
         private ConfigEntry<float> _hoverTooltipMaxWorldDistance;
+        private CropOptimizerConfig _config;
+        private GameSelectionHighlightRenderer _fieldHighlights;
+        private float _nextHighlightScanTime;
+        private IReadOnlyList<CropHighlightTarget> _lastHighlightTargets = System.Array.Empty<CropHighlightTarget>();
 
         private Component _tooltipContentCrop;
         private TooltipContent _tooltipContentCache;
@@ -60,6 +66,11 @@ namespace CropOptimizer.UI
         {
             _hoverTooltipEnabled = enabled;
             _hoverTooltipMaxWorldDistance = maxWorldDistance;
+        }
+
+        public void SetHighlightConfig(CropOptimizerConfig config)
+        {
+            _config = config;
         }
 
         public void SetPlacement(float x, float y)
@@ -139,10 +150,16 @@ namespace CropOptimizer.UI
             _tooltipView = new CropTooltipView(_canvasGo.transform);
             _tooltipView.SetScale(_scale);
             _tooltipView.SetVisible(false);
+
+            _fieldHighlights = new GameSelectionHighlightRenderer();
+            _fieldHighlights.EnsureCreated(_canvasGo.transform);
         }
 
         private void RebuildCanvas()
         {
+            _fieldHighlights?.Destroy();
+            _fieldHighlights = null;
+
             if (_canvasGo != null)
             {
                 UnityEngine.Object.Destroy(_canvasGo);
@@ -195,6 +212,49 @@ namespace CropOptimizer.UI
 
             // Hover tooltip
             UpdateHoverTooltip(sessionLive);
+            UpdateFieldHighlights(sessionLive);
+        }
+
+        private void UpdateFieldHighlights(bool sessionLive)
+        {
+            if (_fieldHighlights == null || _config == null)
+                return;
+
+            if (!sessionLive
+                || (!_config.HighlightDryTiles.Value && !_config.HighlightUnfertilizedTiles.Value))
+            {
+                _fieldHighlights.SetVisible(false);
+                return;
+            }
+
+            bool toolGate = _config.HighlightOnlyWhenHoldingTool.Value;
+            bool requireMouse = _config.HighlightRequireMouseButton.Value;
+            bool mouseDown = Input.GetMouseButton(0);
+
+            bool showDry = _config.HighlightDryTiles.Value
+                && (!toolGate || HeldItemProbe.IsWateringCanSelected())
+                && (!toolGate || !requireMouse || mouseDown);
+
+            bool showFertilizer = _config.HighlightUnfertilizedTiles.Value
+                && (!toolGate || HeldItemProbe.IsFertilizerSelected())
+                && (!toolGate || !requireMouse || mouseDown);
+
+            if (!showDry && !showFertilizer)
+            {
+                _fieldHighlights.SetVisible(false);
+                return;
+            }
+
+            _fieldHighlights.SetVisible(true);
+            float now = Time.unscaledTime;
+            float interval = _config.HighlightRefreshSeconds?.Value ?? 0.35f;
+            if (now >= _nextHighlightScanTime || _lastHighlightTargets.Count == 0)
+            {
+                _nextHighlightScanTime = now + interval;
+                _lastHighlightTargets = CropFieldHighlightScanner.Scan(showDry, showFertilizer);
+            }
+
+            _fieldHighlights.Sync(_lastHighlightTargets);
         }
 
         private void OnTooltipToggleClicked()
@@ -288,6 +348,9 @@ namespace CropOptimizer.UI
         {
             CropHoverQuery.InvalidateGameplayCameraCache();
             CropHoverQuery.InvalidateHoverAssist();
+            CropSceneCache.Invalidate();
+            _nextHighlightScanTime = 0f;
+            _lastHighlightTargets = System.Array.Empty<CropHighlightTarget>();
             ClearTooltipContentState();
             LocalizationBootstrap.EnsureInitialized(
                 PluginInfo.PLUGIN_GUID,
@@ -303,7 +366,11 @@ namespace CropOptimizer.UI
         {
             CropHoverQuery.InvalidateGameplayCameraCache();
             CropHoverQuery.InvalidateHoverAssist();
+            CropSceneCache.Invalidate();
+            _nextHighlightScanTime = 0f;
+            _lastHighlightTargets = System.Array.Empty<CropHighlightTarget>();
             ClearTooltipContentState();
+            _fieldHighlights?.SetVisible(false);
             // Hide but keep canvas around; UI will be rebuilt if the player starts a new session.
             _hudView?.SetVisible(false);
             _tooltipView?.SetVisible(false);
@@ -320,6 +387,9 @@ namespace CropOptimizer.UI
                 _hudView = null;
                 _tooltipView = null;
             }
+
+            _fieldHighlights?.Destroy();
+            _fieldHighlights = null;
         }
 
         protected override void Log(string message)

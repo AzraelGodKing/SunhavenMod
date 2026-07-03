@@ -2,6 +2,7 @@ using System;
 using System.Linq;
 using System.Reflection;
 using CropOptimizer.Data;
+using CropOptimizer.UI;
 using HarmonyLib;
 using Wish;
 
@@ -53,6 +54,8 @@ namespace CropOptimizer.Patches
             try
             {
                 CropInstanceRegistry.Clear();
+                CropSceneCache.Invalidate();
+                CropHoverQuery.InvalidateHoverAssist();
 
                 if (_forecast != null)
                 {
