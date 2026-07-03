@@ -6,7 +6,7 @@ BepInEx plugins for [Sun Haven](https://store.steampowered.com/app/1432860/Sun_H
 
 | Mod | Folder | Version |
 |-----|--------|---------|
-| Senpai's Chest | [`SenpaisChest/`](SenpaisChest/) | 3.0.2 |
+| Senpai's Chest | [`SenpaisChest/`](SenpaisChest/) | 3.0.3 |
 | Sun Haven Todo | [`SunhavenTodo/`](SunhavenTodo/) | 2.0.1 |
 | Sun Haven Museum Utility Tracker (S.M.U.T.) | [`SunHavenMuseumUtilityTracker/`](SunHavenMuseumUtilityTracker/) | 3.0.1 |
 | The Vault | [`TheVault/`](TheVault/) | 4.0.1 |
