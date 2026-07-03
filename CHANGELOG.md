@@ -9,6 +9,14 @@ Notes for **players and release readers**. Per-mod blurbs and upstream metadata 
 **Senpai's Chest**
 
 - **Fix:** Smart-chest rules are no longer deleted when traveling between areas. Rules are not removed on `Chest.OnDisable` (Sun Haven fires that during every area change). Removal is only via the **Remove Smart Chest** UI button. `InitializeAsOwner` no longer reloads from disk on every map load, and save refuses to overwrite a non-empty file with empty in-memory state after a successful load unless you cleared all rules yourself.
+- **Fix:** Smart-chest config no longer calls `PlayerInput.DisableInput` while open, so CheatEnabler / Quantum Console (`~`) and in-game chat work with the config window up. Backspace/Cancel is still swallowed only while typing in Senpai's Chest search fields (`[UI] BlockInputWhenTypingInConfig`, default true).
+
+**Haven Dev Tools**
+
+- **NPC Relationships tab (F11 → Tools):** Edit NPC heart points, dating/marriage flags, romance cycles, and primary spouse in the dev window. Use **CheatEnabler** (or vanilla dev cheats) for Quantum Console commands such as `/setrelationship`.
+- **Marriable tab (F11 → Tools):** Select multiple romanceable NPCs and marry them at once when **Ultra Polygamy** is loaded and its `MarryPlayer` patch is active; blocked otherwise (single-marriage remains on the Relationships tab).
+- **UI:** F11 debug window is resizable (drag bottom-right corner); size persists in `[DebugWindow] Width` / `Height`. Header bar with close button; list panels scale with window size.
+- **Fix:** F11 debug window no longer pauses the game by default (`[DebugWindow] PauseGameWhenDebugOpen = false`). Console tab accepts Enter and focuses the input field when opened.
 
 ---
 
