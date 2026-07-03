@@ -939,25 +939,15 @@ namespace GiftingAssistant.UI
             }
 
             float scale = _style.Scale;
-<<<<<<< HEAD
             var layout = RelationshipHeartLayout.Compact;
             int maxHearts = RelationshipHeartRules.GetMaxHearts(points.Value);
             float w = RelationshipHeartRenderer.GridWidth(maxHearts, layout, scale, singleRow: true);
             float h = RelationshipHeartRenderer.GridHeight(maxHearts, layout, scale, singleRow: true);
-=======
-            int maxHearts = RelationshipHeartRules.GetMaxHearts(points.Value);
-            float w = RelationshipHeartRenderer.GridWidth(maxHearts, scale, singleRow: true);
-            float h = RelationshipHeartRenderer.GridHeight(maxHearts, scale, singleRow: true);
->>>>>>> f14ffc8 (Updated to use the White Heart Icon)
 
             GUILayout.BeginVertical(GUILayout.Width(w), GUILayout.Height(rowH));
             GUILayout.FlexibleSpace();
             Rect rect = GUILayoutUtility.GetRect(w, h, GUILayout.ExpandWidth(false));
-<<<<<<< HEAD
             RelationshipHeartRenderer.DrawGrid(rect, points.Value, GiftGameData.IsRomanceable(npcName), scale, layout,
-=======
-            RelationshipHeartRenderer.DrawGrid(rect, points.Value, GiftGameData.IsRomanceable(npcName), scale,
->>>>>>> f14ffc8 (Updated to use the White Heart Icon)
                 singleRow: true);
             GUILayout.FlexibleSpace();
             GUILayout.EndVertical();
