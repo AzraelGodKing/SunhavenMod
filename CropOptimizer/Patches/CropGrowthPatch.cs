@@ -111,21 +111,27 @@ namespace CropOptimizer.Patches
 
         private static void OnAfterCropGrowth(object __instance)
         {
-            if (__instance == null || _forecast == null)
+            SyncCropToForecast(__instance);
+        }
+
+        /// <summary>Harmony postfix and scene reconciliation share the same forecast write path.</summary>
+        internal static void SyncCropToForecast(object cropInstance)
+        {
+            if (cropInstance == null || _forecast == null)
                 return;
 
             try
             {
-                var unityObj = __instance as UnityEngine.Object;
+                var unityObj = cropInstance as UnityEngine.Object;
                 if (unityObj == null)
                     return;
 
                 int id = unityObj.GetInstanceID();
                 CropInstanceRegistry.Register(unityObj);
-                float etaHours = TryResolveEtaHours(__instance, out bool etaResolved) ? Mathf.Max(0f, _resolvedEtaHoursCache) : 24f;
-                float qualityMultiplier = TryResolveQualityMultiplier(__instance, out bool qualityResolved) ? _resolvedQualityMultiplierCache : 1f;
-                int projectedSellGold = TryResolveProjectedSellGold(__instance, qualityMultiplier, out bool sellResolved) ? _resolvedProjectedSellGoldCache : 0;
-                TryGetHarvestItemId(__instance, out int harvestItemId);
+                float etaHours = TryResolveEtaHours(cropInstance, out bool etaResolved) ? Mathf.Max(0f, _resolvedEtaHoursCache) : 24f;
+                float qualityMultiplier = TryResolveQualityMultiplier(cropInstance, out bool qualityResolved) ? _resolvedQualityMultiplierCache : 1f;
+                int projectedSellGold = TryResolveProjectedSellGold(cropInstance, qualityMultiplier, out bool sellResolved) ? _resolvedProjectedSellGoldCache : 0;
+                TryGetHarvestItemId(cropInstance, out int harvestItemId);
 
                 if (!etaResolved && !_loggedEtaFallback)
                 {

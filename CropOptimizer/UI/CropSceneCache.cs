@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using CropOptimizer.Data;
+using CropOptimizer.Patches;
 using HarmonyLib;
 using UnityEngine;
 
@@ -48,13 +49,43 @@ namespace CropOptimizer.UI
                 presentCrops.Add(crop);
             }
 
-            PruneStale(liveIds);
+            PruneStale(liveIds, discovered.Length);
+            ReconcileForecast(presentCrops);
             _cachedCrops = presentCrops.ToArray();
             return _cachedCrops;
         }
 
-        private static void PruneStale(HashSet<int> liveIds)
+        private static void ReconcileForecast(List<Object> presentCrops)
         {
+            CropForecast forecast = Plugin.Instance?._forecast;
+            if (forecast == null || presentCrops == null || presentCrops.Count == 0)
+                return;
+
+            for (int i = 0; i < presentCrops.Count; i++)
+            {
+                if (presentCrops[i] is not Component crop || !CropPresence.IsTrackable(crop))
+                    continue;
+
+                int id = crop.GetInstanceID();
+                if (!forecast.TryGetState(id, out CropForecast.CropState state) || state.ItemId <= 0)
+                    CropGrowthPatch.SyncCropToForecast(crop);
+            }
+        }
+
+        private static void PruneStale(HashSet<int> liveIds, int discoveredCount)
+        {
+            // Empty scan with no Wish.Crop instances — drop stale rows (left the farm / no crops).
+            // When instances exist but fail IsPresent, keep forecast until a successful pass.
+            if (liveIds == null || liveIds.Count == 0)
+            {
+                if (discoveredCount == 0)
+                {
+                    CropInstanceRegistry.PruneExcept(liveIds);
+                    Plugin.Instance?._forecast?.PruneExcept(liveIds);
+                }
+                return;
+            }
+
             CropInstanceRegistry.PruneExcept(liveIds);
             Plugin.Instance?._forecast?.PruneExcept(liveIds);
         }
