@@ -4,9 +4,14 @@ Internal engineering log: **CI**, **release automation**, **scripts**, **docs in
 
 ---
 
-## 2026-07-02
+## 2026-07-02 (continued)
 
-- **Senpai's Chest:** Stopped deleting rules on `Chest.OnDisable` (area changes always disable chests; SceneManager hooks did not run in Sun Haven). Rules removed only via UI. `InitializeAsOwner` uses same session guard as `OnSceneLoaded`. Save skips empty overwrite after successful load unless user cleared all rules in UI.
+- **Haven Dev Tools — NPC relationships:** New **Relationships** Tools sub-tab (`NpcRelationshipEditor`) with hearts, date/platonic/marry/divorce, skip-to-cycle, set primary spouse, and reset-all-hearts. Dev console aliases: `relationship.set`, `relationship.marry`, `relationship.divorce`, `relationship.cycle`. Cheat commands: use **CheatEnabler** (removed in-mod `ForceEnableCheats` / Quantum Console patches).
+- **Haven Dev Tools — Marriable tab:** Multi-select romanceable NPCs and marry via `MarryNpcPolygamy` (no divorce-first). Gated on `UltraPolygamyHelper`: BepInEx GUID `vurawnica.sunhaven.polygamy` plus Harmony prefix on `NPCAI.MarryPlayer`. Status line in F11 header (`Poly: Yes/No`).
+- **Haven Dev Tools — resizable window:** `DebugWindowLayout` + corner grip; `[DebugWindow] Width` / `Height` config persistence; header bar, mod status on two rows, flexible scroll/list heights in tabs.
+- **Haven Dev Tools — input:** `[DebugWindow] PauseGameWhenDebugOpen` default **false**. Built-in console tab: auto-focus + Enter/history keys.
+- **Senpai's Chest — CheatEnabler compat:** Removed `PlayerInput.DisableInput` / `AddPauseObject` on config open (`SmartChestUI.BlockGameInput`); was blocking `QuantumConsole.CanOpen`. `ShouldBlockGameInput` yields when QC or uGUI text fields are active; `TextInputFocusGuard` exposes `IsQuantumConsoleActive` / `IsUnityUiTextInputFocused`.
+- **Community mod — Ultra Polygamy:** 3.1 port of `vurawnica.sunhaven.polygamy` v0.0.5 under `CommunityMods/UltraPolygamy/` (original behavior; Harmony signature + decompiler fixes only). **Gitignored** and **excluded** from `mod-matrix.json` / release CI. See [`CommunityMods/README.md`](CommunityMods/README.md).
 
 ---
 

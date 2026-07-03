@@ -15,8 +15,6 @@ namespace SenpaisChest.UI
     [UnityEngine.DefaultExecutionOrder(-30000)]
     public class SmartChestUI : MonoBehaviour
     {
-        private const string PAUSE_ID = "SenpaisChest_Config";
-
         private SmartChestManager _manager;
         private bool _isVisible;
         private Chest _currentChest;
@@ -219,7 +217,15 @@ namespace SenpaisChest.UI
         /// <summary>True when we should block Backspace/UICancel from reaching the game (only when our search field has keyboard focus). When false, e.g. when the cheat enabler chat is focused, we do not block so that mod can receive input.</summary>
         internal static bool ShouldBlockGameInput(SmartChestUI ui)
         {
-            if (ui == null || !ui.IsVisible) return false;
+            if (ui == null || !ui.IsVisible)
+                return false;
+
+            // CheatEnabler / Quantum Console / uGUI chat — never swallow their keys
+            if (TextInputFocusGuard.IsQuantumConsoleActive())
+                return false;
+            if (TextInputFocusGuard.IsUnityUiTextInputFocused())
+                return false;
+
             var focused = GUI.GetNameOfFocusedControl();
             return focused == SearchFieldControlName || focused == GroupSearchFieldControlName ||
                    focused == WildcardPatternControlName;
@@ -253,7 +259,7 @@ namespace SenpaisChest.UI
         {
             _isVisible = false;
             _confirmCopyRules = false;
-            BlockGameInput(false);
+            ClearImGuiKeyboardFocus();
             var chestToClose = _currentChest;
             _currentChest = null;
             _currentData = null;
@@ -277,33 +283,13 @@ namespace SenpaisChest.UI
             _isVisible = false;
             _confirmCopyRules = false;
             _groupsWindowVisible = false;
-            BlockGameInput(false);
+            ClearImGuiKeyboardFocus();
         }
 
-        /// <summary>Block/unblock game input so only Senpai's Chest UI receives it (e.g. Backspace won't close chest).</summary>
-        private void BlockGameInput(bool block)
+        private static void ClearImGuiKeyboardFocus()
         {
-            try
-            {
-                if (Player.Instance != null)
-                {
-                    if (block)
-                        Player.Instance.AddPauseObject(PAUSE_ID);
-                    else
-                        Player.Instance.RemovePauseObject(PAUSE_ID);
-                }
-                var playerInputType = Type.GetType("PlayerInput, Assembly-CSharp");
-                if (playerInputType != null)
-                {
-                    var method = playerInputType.GetMethod(block ? "DisableInput" : "EnableInput",
-                        BindingFlags.Public | BindingFlags.Static, null, new[] { typeof(string) }, null);
-                    method?.Invoke(null, new object[] { PAUSE_ID });
-                }
-            }
-            catch (Exception ex)
-            {
-                Plugin.Log?.LogDebug($"[SmartChestUI] BlockGameInput failed: {ex.Message}");
-            }
+            GUIUtility.keyboardControl = 0;
+            GUI.FocusControl(null);
         }
 
         public void Toggle()
@@ -349,7 +335,6 @@ namespace SenpaisChest.UI
             _confirmCopyRules = false;
 
             _isVisible = true;
-            BlockGameInput(true);
             PositionWindowNextToChestPanel();
         }
 

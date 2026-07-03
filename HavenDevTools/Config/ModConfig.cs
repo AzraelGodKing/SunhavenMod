@@ -2,6 +2,7 @@ using System;
 using BepInEx.Configuration;
 using System.Reflection;
 using UnityEngine;
+using HavenDevTools.UI;
 using SunhavenMods.Shared;
 
 namespace HavenDevTools.Config
@@ -32,6 +33,22 @@ namespace HavenDevTools.Config
         private static bool _theVaultInspectorHooked;
         private static Type _cachedTheVaultPluginType;
         private static MethodInfo _cachedSetTheVaultFullInspector;
+
+        /// <summary>
+        /// When true, pauses the player while the F11 debug window is open. When false (default), other UI and chat stay usable.
+        /// </summary>
+        public static ConfigEntry<bool> PauseGameWhenDebugOpen { get; private set; }
+
+        public static ConfigEntry<float> DebugWindowWidth { get; private set; }
+        public static ConfigEntry<float> DebugWindowHeight { get; private set; }
+
+        public static void SaveDebugWindowSize(float width, float height)
+        {
+            if (DebugWindowWidth != null)
+                DebugWindowWidth.Value = width;
+            if (DebugWindowHeight != null)
+                DebugWindowHeight.Value = height;
+        }
 
         public static void Initialize(ConfigFile config)
         {
@@ -100,6 +117,27 @@ namespace HavenDevTools.Config
                 "FullVaultInspector",
                 false,
                 "When true: The Vault lists every defined currency (including 0), adds the Debug tab with a raw vault dump, and the HUD shows all slots. Same as the former [Debug] FullVaultInspector in TheVault.cfg (moved here)."
+            );
+
+            PauseGameWhenDebugOpen = config.Bind(
+                "DebugWindow",
+                "PauseGameWhenDebugOpen",
+                false,
+                "Pause the player while the F11 debug window is open. Leave false so in-game chat and other UI stay usable with the window open."
+            );
+
+            DebugWindowWidth = config.Bind(
+                "DebugWindow",
+                "Width",
+                DebugWindowLayout.DefaultWidth,
+                "Debug window width in pixels (drag bottom-right corner to resize in-game)."
+            );
+
+            DebugWindowHeight = config.Bind(
+                "DebugWindow",
+                "Height",
+                DebugWindowLayout.DefaultHeight,
+                "Debug window height in pixels (drag bottom-right corner to resize in-game)."
             );
 
             if (!_theVaultInspectorHooked)

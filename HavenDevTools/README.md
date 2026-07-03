@@ -8,5 +8,6 @@ Developer utilities for mod debugging and game state inspection in Sun Haven. No
 
 ## Notes
 
+- **2026-07-02:** Tools tab adds **Relationships** (NPC hearts / dating / marriage / cycles) and **Marriable** (multi-marry when Ultra Polygamy is active). F11 window is **resizable** (corner grip; `[DebugWindow] Width` / `Height`). Use **CheatEnabler** for Quantum Console / cheat commands. Config: `[DebugWindow] PauseGameWhenDebugOpen` (default false).
 - This README is intentionally short for repository contributors.
 - Full player-facing documentation is in `thunderstore/README.md`.
