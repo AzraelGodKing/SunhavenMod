@@ -6,7 +6,7 @@ Internal engineering log: **CI**, **release automation**, **scripts**, **docs in
 
 ## 2026-07-04
 
-- **CharacterSaveStore (foundation 1.1):** Added `SharedUtilities/CharacterSaveStore.cs` (sanitize path, atomic `.tmp` → `.bak`/`.backup` rotate write, backup fallback load). Migrated Todo, Gifting Assistant, SMUT, Senpais Chest, Birthday Reminder favorites, The Vault save bytes, and SMUT `PlayerPatches` sanitize. NUnit coverage in `SunhavenTodo.Tests/CharacterSaveStoreTests.cs`.
+- **CharacterSaveStore (foundation 1.1):** Added `SharedUtilities/CharacterSaveStore.cs` (sanitize path, atomic `.tmp` → `.bak`/`.backup` rotate write, backup fallback load). Migrated Todo, Gifting Assistant, SMUT, Senpais Chest, Birthday Reminder favorites, The Vault save bytes, and SMUT `PlayerPatches` sanitize. NUnit coverage in `SunhavenTodo.Tests/CharacterSaveStoreTests.cs`. **Fix:** `WriteAtomicCore` no longer swallows I/O exceptions — real failures propagate to each mod's outer `catch` for diagnosable logs.
 - **Mod review triage:** Foundation queue ([`maintainer-docs/reviews/mod-review-foundation-active-2026-07-04.md`](maintainer-docs/reviews/mod-review-foundation-active-2026-07-04.md)); deferred features/new mods ([`maintainer-docs/reviews/mod-review-on-hold-2026-07-04.md`](maintainer-docs/reviews/mod-review-on-hold-2026-07-04.md)). Moved `mod-review-2026-07-*.md` under `maintainer-docs/reviews/`.
 - **Crop Optimizer — off-farm FPS:** `CropSceneCache.GetCrops()` filters to `SceneManager.GetActiveScene()`; caches empty scene results for 4s; `CropHoverQuery` fast path caches hover misses (not only hits); `CropHUD.UpdateHoverTooltip()` skips work when the active scene has no crops.
 

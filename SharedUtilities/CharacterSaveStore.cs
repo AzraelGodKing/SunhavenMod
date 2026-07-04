@@ -183,10 +183,6 @@ namespace SunhavenMods.Shared
                 File.Move(tempPath, filePath);
                 return true;
             }
-            catch
-            {
-                return false;
-            }
             finally
             {
                 if (deleteTempInFinally)
