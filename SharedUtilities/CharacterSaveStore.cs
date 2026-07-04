@@ -190,7 +190,7 @@ namespace SunhavenMods.Shared
             if (File.Exists(filePath))
             {
                 string primary = TryReadAllText(filePath, onReadFailure);
-                if (!string.IsNullOrEmpty(primary))
+                if (primary != null)
                 {
                     source = CharacterSaveSource.Primary;
                     return primary;
@@ -201,7 +201,7 @@ namespace SunhavenMods.Shared
             if (File.Exists(backupPath))
             {
                 string backup = TryReadAllText(backupPath, onReadFailure);
-                if (!string.IsNullOrEmpty(backup))
+                if (backup != null)
                 {
                     source = CharacterSaveSource.Backup;
                     return backup;

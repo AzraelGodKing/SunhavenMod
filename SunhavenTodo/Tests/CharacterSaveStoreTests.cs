@@ -147,6 +147,18 @@ namespace SunhavenTodo.Tests
         }
 
         [Test]
+        public void LoadTextWithBackup_ReturnsEmptyPrimaryWithoutFallingBackToBackup()
+        {
+            string path = Path.Combine(_tempDir, "hero_favorites.txt");
+            CharacterSaveStore.WriteAtomic(path, "npc\tgift\n");
+            File.WriteAllText(path, string.Empty);
+
+            string loaded = CharacterSaveStore.LoadTextWithBackup(path, out var source);
+            Assert.That(loaded, Is.EqualTo(string.Empty));
+            Assert.That(source, Is.EqualTo(CharacterSaveSource.Primary));
+        }
+
+        [Test]
         public void LoadTextWithBackup_ReadsPrimaryFile()
         {
             string path = Path.Combine(_tempDir, "hero_favorites.txt");
