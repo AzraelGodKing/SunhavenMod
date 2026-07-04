@@ -85,7 +85,7 @@ namespace SunhavenMods.Shared
             bool deleteTempInFinally = true)
         {
             if (content == null)
-                return false;
+                throw new ArgumentNullException(nameof(content));
 
             return WriteAtomicCore(
                 filePath,
@@ -104,7 +104,7 @@ namespace SunhavenMods.Shared
             bool deleteTempInFinally = true)
         {
             if (content == null)
-                return false;
+                throw new ArgumentNullException(nameof(content));
 
             return WriteAtomicCore(
                 filePath,
