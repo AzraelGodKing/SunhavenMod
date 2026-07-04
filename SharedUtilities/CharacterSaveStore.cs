@@ -224,7 +224,6 @@ namespace SunhavenMods.Shared
                 return false;
 
             string tempPath = filePath + TempSuffix;
-            bool promoted = false;
             try
             {
                 writeTemp(tempPath);
@@ -238,12 +237,11 @@ namespace SunhavenMods.Shared
                 }
 
                 File.Move(tempPath, filePath);
-                promoted = true;
                 return true;
             }
             finally
             {
-                if (deleteTempInFinally && promoted)
+                if (deleteTempInFinally)
                     TryDelete(tempPath);
             }
         }
