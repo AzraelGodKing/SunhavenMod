@@ -1,3 +1,4 @@
+using System;
 using System.IO;
 using NUnit.Framework;
 using SunhavenMods.Shared;
@@ -94,6 +95,40 @@ namespace SunhavenTodo.Tests
 
             Assert.That(loaded, Is.EqualTo("{\"ok\":true}"));
             Assert.That(source, Is.EqualTo(CharacterSaveSource.Backup));
+        }
+
+        [Test]
+        public void LoadWithBackup_ReportsDeserializeFailureAndFallsBackToBackup()
+        {
+            string path = Path.Combine(_tempDir, "hero_todos.json");
+            CharacterSaveStore.WriteAtomic(path, "{\"ok\":true}");
+            CharacterSaveStore.WriteAtomic(path, "{\"ok\":false}");
+            File.WriteAllText(path, "{\"bad\":");
+
+            Exception reported = null;
+            string reportedPath = null;
+            int deserializeCalls = 0;
+            string loaded = CharacterSaveStore.LoadWithBackup<string>(
+                path,
+                text =>
+                {
+                    deserializeCalls++;
+                    if (deserializeCalls == 1)
+                        throw new InvalidOperationException("deserialize boom");
+                    return text;
+                },
+                out var source,
+                onReadFailure: (p, ex) =>
+                {
+                    reportedPath = p;
+                    reported = ex;
+                });
+
+            Assert.That(loaded, Is.EqualTo("{\"ok\":true}"));
+            Assert.That(source, Is.EqualTo(CharacterSaveSource.Backup));
+            Assert.That(reportedPath, Is.EqualTo(path));
+            Assert.That(reported, Is.TypeOf<InvalidOperationException>());
+            Assert.That(reported.Message, Is.EqualTo("deserialize boom"));
         }
 
         [Test]
