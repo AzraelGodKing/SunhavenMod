@@ -84,6 +84,9 @@ namespace SunhavenMods.Shared
             string backupSuffix = BackupSuffix,
             bool deleteTempInFinally = true)
         {
+            if (content == null)
+                return false;
+
             return WriteAtomicCore(
                 filePath,
                 tempPath => File.WriteAllText(tempPath, content),
@@ -130,11 +133,18 @@ namespace SunhavenMods.Shared
                 string text = TryReadAllText(filePath, onReadFailure);
                 if (text != null)
                 {
-                    T item = tryDeserialize(text);
-                    if (item != null)
+                    try
                     {
-                        source = CharacterSaveSource.Primary;
-                        return item;
+                        T item = tryDeserialize(text);
+                        if (item != null)
+                        {
+                            source = CharacterSaveSource.Primary;
+                            return item;
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        onReadFailure?.Invoke(filePath, ex);
                     }
                 }
             }
@@ -145,11 +155,18 @@ namespace SunhavenMods.Shared
                 string text = TryReadAllText(backupPath, onReadFailure);
                 if (text != null)
                 {
-                    T item = tryDeserialize(text);
-                    if (item != null)
+                    try
                     {
-                        source = CharacterSaveSource.Backup;
-                        return item;
+                        T item = tryDeserialize(text);
+                        if (item != null)
+                        {
+                            source = CharacterSaveSource.Backup;
+                            return item;
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        onReadFailure?.Invoke(backupPath, ex);
                     }
                 }
             }
@@ -173,7 +190,7 @@ namespace SunhavenMods.Shared
             if (File.Exists(filePath))
             {
                 string primary = TryReadAllText(filePath, onReadFailure);
-                if (primary != null)
+                if (!string.IsNullOrEmpty(primary))
                 {
                     source = CharacterSaveSource.Primary;
                     return primary;
@@ -184,7 +201,7 @@ namespace SunhavenMods.Shared
             if (File.Exists(backupPath))
             {
                 string backup = TryReadAllText(backupPath, onReadFailure);
-                if (backup != null)
+                if (!string.IsNullOrEmpty(backup))
                 {
                     source = CharacterSaveSource.Backup;
                     return backup;
@@ -207,6 +224,7 @@ namespace SunhavenMods.Shared
                 return false;
 
             string tempPath = filePath + TempSuffix;
+            bool promoted = false;
             try
             {
                 writeTemp(tempPath);
@@ -220,11 +238,12 @@ namespace SunhavenMods.Shared
                 }
 
                 File.Move(tempPath, filePath);
+                promoted = true;
                 return true;
             }
             finally
             {
-                if (deleteTempInFinally)
+                if (deleteTempInFinally && promoted)
                     TryDelete(tempPath);
             }
         }
