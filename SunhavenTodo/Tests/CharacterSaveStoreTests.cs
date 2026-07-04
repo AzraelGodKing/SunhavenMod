@@ -43,6 +43,22 @@ namespace SunhavenTodo.Tests
         }
 
         [Test]
+        public void WriteAtomicBytes_UsesCustomBackupSuffix()
+        {
+            string path = Path.Combine(_tempDir, "hero.vault");
+            Assert.That(
+                CharacterSaveStore.WriteAtomicBytes(
+                    path,
+                    new byte[] { 1, 2, 3 },
+                    CharacterSaveStore.VaultBackupSuffix,
+                    deleteTempInFinally: false),
+                Is.True);
+
+            Assert.That(File.ReadAllBytes(path), Is.EqualTo(new byte[] { 1, 2, 3 }));
+            Assert.That(File.Exists(path + CharacterSaveStore.VaultBackupSuffix), Is.False);
+        }
+
+        [Test]
         public void LoadWithBackup_FallsBackWhenPrimaryCorrupt()
         {
             string path = Path.Combine(_tempDir, "hero_todos.json");
@@ -57,6 +73,17 @@ namespace SunhavenTodo.Tests
 
             Assert.That(loaded, Is.EqualTo("{\"ok\":true}"));
             Assert.That(source, Is.EqualTo(CharacterSaveSource.Backup));
+        }
+
+        [Test]
+        public void LoadTextWithBackup_ReadsPrimaryFile()
+        {
+            string path = Path.Combine(_tempDir, "hero_favorites.txt");
+            CharacterSaveStore.WriteAtomic(path, "npc\tgift\n");
+
+            string loaded = CharacterSaveStore.LoadTextWithBackup(path, out var source);
+            Assert.That(loaded, Does.Contain("npc\tgift"));
+            Assert.That(source, Is.EqualTo(CharacterSaveSource.Primary));
         }
     }
 }
