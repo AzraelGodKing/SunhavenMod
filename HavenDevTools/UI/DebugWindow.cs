@@ -38,6 +38,7 @@ namespace HavenDevTools.UI
         private float _contentAreaHeight = 280f;
         private GUIStyle _headerBarStyle;
         private GUIStyle _subtitleStyle;
+        private GUIStyle _fpsHeaderStyle;
         private GUIStyle _closeButtonStyle;
         private GUIStyle _resizeGripStyle;
         private Texture2D _headerBarTexture;
@@ -159,8 +160,6 @@ namespace HavenDevTools.UI
             GUIUtility.keyboardControl = 0;
             Plugin.Log?.LogInfo("[DebugWindow] Hidden");
         }
-
-        public bool IsVisible => _isVisible;
 
         private void BlockInput()
         {
@@ -394,15 +393,19 @@ namespace HavenDevTools.UI
             if (GUI.Button(closeRect, "×", _closeButtonStyle))
                 Hide();
 
-            var fpsStyle = new GUIStyle(_subtitleStyle)
+            if (_fpsHeaderStyle == null)
             {
-                alignment = TextAnchor.MiddleRight,
-                normal = { textColor = PerformanceSampler.FpsColor(PerformanceSampler.SmoothedFps) }
-            };
+                _fpsHeaderStyle = new GUIStyle(_subtitleStyle)
+                {
+                    alignment = TextAnchor.MiddleRight
+                };
+            }
+            _fpsHeaderStyle.normal.textColor = PerformanceSampler.FpsColor(PerformanceSampler.SmoothedFps);
+
             GUI.Label(
                 new Rect(headerRect.xMax - closeWidth - 96f, headerRect.y + 10f, 84f, 20f),
                 ModLocalization.T("devtools.perf.fps", PerformanceSampler.SmoothedFps),
-                fpsStyle);
+                _fpsHeaderStyle);
 
             GUI.DragWindow(new Rect(0, 0, _windowRect.width - closeWidth - 8f, DebugWindowLayout.HeaderHeight));
         }
