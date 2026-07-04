@@ -166,11 +166,8 @@ namespace HavenDevTools.UI
 
             if (ModConfig.ShowPerformance?.Value ?? true)
             {
-                float fps = 1f / Mathf.Max(0.0001f, Time.deltaTime);
-                long memBytes = GC.GetTotalMemory(false);
-                float memMB = memBytes / (1024f * 1024f);
-                GUILayout.Label(ModLocalization.T("devtools.perf.fps", fps), _valueStyle);
-                GUILayout.Label(ModLocalization.T("devtools.perf.memory", memMB), _valueStyle);
+                GUILayout.Label(ModLocalization.T("devtools.perf.fps", PerformanceSampler.SmoothedFps), _valueStyle);
+                GUILayout.Label(ModLocalization.T("devtools.perf.memory", PerformanceSampler.MemoryMb), _valueStyle);
             }
 
             GUILayout.FlexibleSpace();
