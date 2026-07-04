@@ -109,7 +109,7 @@
     "nexus_file_group_id": "7320911",
     "thunderstore": "https://thunderstore.io/c/sun-haven/p/AzraelGodKing/CropOptimizer/",
     "thunderstoreName": "CropOptimizer",
-    "changelog": "Feature release: field highlights draw vanilla-style tile selection markers on crops that still need water (yellow corner brackets) or fertilizer (green corner brackets). Toggle under [Highlights] in CropOptimizer.cfg; by default highlights appear when the matching tool is selected. Fixes hover tooltip tile matching on the farm grid, and stale crop tracking after harvest or character load."
+    "changelog": "Patch: Fixes Severe FPS Drop."
   },
   "com.azraelgodking.havensrespec": {
     "version": "2.0.2",
