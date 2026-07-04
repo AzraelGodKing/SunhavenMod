@@ -311,6 +311,13 @@ namespace CropOptimizer.UI
                 }
             }
 
+            if (!CropSceneCache.HasActiveSceneCrops(CropHoverQuery.CropCacheRefreshSeconds))
+            {
+                ClearTooltipContentState();
+                _tooltipView.SetVisible(false);
+                return;
+            }
+
             Camera cam = CropHoverQuery.ResolveGameplayCamera();
             if (cam == null)
             {

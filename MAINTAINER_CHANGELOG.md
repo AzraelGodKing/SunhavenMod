@@ -4,6 +4,12 @@ Internal engineering log: **CI**, **release automation**, **scripts**, **docs in
 
 ---
 
+## 2026-07-04
+
+- **Crop Optimizer — off-farm FPS:** `CropSceneCache.GetCrops()` filters to `SceneManager.GetActiveScene()`; caches empty scene results for 4s; `CropHoverQuery` fast path caches hover misses (not just hits); `CropHUD.UpdateHoverTooltip()` skips work when the active scene has no crops.
+
+---
+
 ## 2026-07-03
 
 - **Haven's Almanac — Relationships dashboard:** Built-in `RelationshipDataProvider` reads `characterData.Relationships`, `NPCManager._npcs`, and `GameSave` dating/marriage flags via Harmony reflection; IMGUI heart grid uses bundled `Assets/Relationships/` sprites (5-wide layout, gold fill / silver milestone slot); `[Relationships]` config section; dashboard opens without companion mods via `HasDashboardSections`. **Refactor:** heart rules/loader/renderer moved to `SharedUtilities/` (`RelationshipHeartLayout.Dashboard` vs `.Compact`); relationship provider strings translated for all 16 locales.
