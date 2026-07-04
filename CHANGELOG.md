@@ -4,6 +4,14 @@ Notes for **players and release readers**. Per-mod blurbs and upstream metadata 
 
 ---
 
+## 2026-07-04
+
+**Crop Optimizer**
+
+- **Fix:** Hover tooltip no longer scans every crop in the save every frame when you are off the farm (town, sheds, etc.). Crop lists are scoped to the active scene, empty scenes are cached longer, and stable mouse positions reuse a "no crop under cursor" result instead of running a full scan.
+
+---
+
 ## 2026-07-03
 
 **Haven's Almanac**
