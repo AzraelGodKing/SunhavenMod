@@ -78,6 +78,7 @@
 
   <ItemGroup>
     <Compile Include="..\SharedUtilities\ConfigFileHelper.cs" Link="Shared\ConfigFileHelper.cs" />
+    <Compile Include="..\SharedUtilities\CharacterSaveStore.cs" Link="Shared\CharacterSaveStore.cs" />
     <Compile Include="..\SharedUtilities\PersistentRunnerBase.cs" Link="Shared\PersistentRunnerBase.cs" />
     <Compile Include="..\SharedUtilities\VersionChecker.cs" Link="Shared\VersionChecker.cs" />
     <Compile Include="..\SharedUtilities\SceneHelpers.cs" Link="Shared\SceneHelpers.cs" />

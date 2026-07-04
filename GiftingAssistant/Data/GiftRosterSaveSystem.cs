@@ -1,6 +1,7 @@
 using System;
 using System.IO;
 using BepInEx;
+using SunhavenMods.Shared;
 
 namespace GiftingAssistant.Data
 {
@@ -13,26 +14,11 @@ namespace GiftingAssistant.Data
         {
             _manager = manager;
             _savePath = Path.Combine(Paths.ConfigPath, PluginInfo.PLUGIN_GUID);
-
-            if (!Directory.Exists(_savePath))
-                Directory.CreateDirectory(_savePath);
+            CharacterSaveStore.EnsureDirectory(_savePath);
         }
 
-        private string GetSaveFilePath(string characterName)
-        {
-            var safeName = SanitizeFileName(characterName);
-            return Path.Combine(_savePath, $"{safeName}_giftroster.json");
-        }
-
-        private static string SanitizeFileName(string name)
-        {
-            if (string.IsNullOrEmpty(name))
-                return "unknown";
-
-            foreach (char c in Path.GetInvalidFileNameChars())
-                name = name.Replace(c, '_');
-            return name;
-        }
+        private string GetSaveFilePath(string characterName) =>
+            CharacterSaveStore.GetFilePath(_savePath, characterName, "_giftroster.json");
 
         public void Save()
         {
@@ -47,27 +33,9 @@ namespace GiftingAssistant.Data
             {
                 var json = GiftRosterJson.Serialize(data);
                 var filePath = GetSaveFilePath(data.CharacterName);
-                var tempFilePath = filePath + ".tmp";
 
-                try
-                {
-                    File.WriteAllText(tempFilePath, json);
-
-                    if (File.Exists(filePath))
-                    {
-                        var backupPath = filePath + ".bak";
-                        if (File.Exists(backupPath))
-                            File.Delete(backupPath);
-                        File.Move(filePath, backupPath);
-                    }
-
-                    File.Move(tempFilePath, filePath);
-                }
-                finally
-                {
-                    if (File.Exists(tempFilePath))
-                        File.Delete(tempFilePath);
-                }
+                if (!CharacterSaveStore.WriteAtomic(filePath, json))
+                    throw new IOException("Atomic write failed");
 
                 _manager.MarkClean();
                 Plugin.Log?.LogInfo($"[Save] Saved gift roster for '{data.CharacterName}' ({data.Entries.Count} entries)");
@@ -87,58 +55,47 @@ namespace GiftingAssistant.Data
             }
 
             var filePath = GetSaveFilePath(characterName);
-            var backupPath = filePath + ".bak";
+            var data = CharacterSaveStore.LoadWithBackup(
+                filePath,
+                json => TryDeserializePayload(json, characterName),
+                out var source,
+                onReadFailure: (p, ex) => Plugin.Log?.LogWarning($"[Load] Failed to read gift roster '{p}': {ex.Message}"));
 
-            if (File.Exists(filePath))
+            if (data != null)
             {
-                var result = TryLoadFromFile(filePath, characterName);
-                if (result != null)
-                    return result;
-                Plugin.Log?.LogWarning($"[Load] Main file corrupted for {characterName}, trying backup...");
-            }
-
-            if (File.Exists(backupPath))
-            {
-                var result = TryLoadFromFile(backupPath, characterName);
-                if (result != null)
-                {
+                if (source == CharacterSaveSource.Backup)
                     Plugin.Log?.LogInfo($"[Load] Loaded gift roster from backup for {characterName}");
-                    return result;
-                }
-            }
-
-            Plugin.Log?.LogInfo($"[Load] No valid gift roster for {characterName}, creating new");
-            return new GiftRosterData(characterName);
-        }
-
-        private GiftRosterData TryLoadFromFile(string filePath, string characterName)
-        {
-            try
-            {
-                var json = File.ReadAllText(filePath);
-                if (string.IsNullOrWhiteSpace(json) || !json.TrimStart().StartsWith("{"))
-                {
-                    Plugin.Log?.LogWarning($"[Load] {filePath} is not valid JSON");
-                    return null;
-                }
-
-                var data = GiftRosterJson.Deserialize(json);
-                if (data == null)
-                {
-                    Plugin.Log?.LogWarning($"[Load] Failed to deserialize {filePath}");
-                    return null;
-                }
-
-                if (string.IsNullOrEmpty(data.CharacterName))
-                    data.CharacterName = characterName;
 
                 return data;
             }
-            catch (Exception ex)
+
+            if (CharacterSaveStore.GetAbsenceReason(filePath) == CharacterSaveAbsenceReason.FilesPresentButUnusable)
+                Plugin.Log?.LogWarning($"[Load] Main and backup files unusable for {characterName}");
+            else
+                Plugin.Log?.LogInfo($"[Load] No valid gift roster for {characterName}, creating new");
+
+            return new GiftRosterData(characterName);
+        }
+
+        private GiftRosterData TryDeserializePayload(string json, string characterName)
+        {
+            if (!CharacterSaveStore.LooksLikeJsonObject(json))
             {
-                Plugin.Log?.LogError($"[Load] Error loading {filePath}: {ex.Message}");
+                Plugin.Log?.LogWarning($"[Load] Gift roster file is not valid JSON");
                 return null;
             }
+
+            var data = GiftRosterJson.Deserialize(json);
+            if (data == null)
+            {
+                Plugin.Log?.LogWarning("[Load] Failed to deserialize gift roster file");
+                return null;
+            }
+
+            if (string.IsNullOrEmpty(data.CharacterName))
+                data.CharacterName = characterName;
+
+            return data;
         }
     }
 }

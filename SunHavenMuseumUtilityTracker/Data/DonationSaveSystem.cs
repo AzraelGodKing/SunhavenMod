@@ -1,6 +1,7 @@
 using System;
 using System.IO;
 using UnityEngine;
+using SunhavenMods.Shared;
 
 namespace SunHavenMuseumUtilityTracker.Data
 {
@@ -21,25 +22,13 @@ namespace SunHavenMuseumUtilityTracker.Data
 
             if (!Directory.Exists(_saveFolder))
             {
-                Directory.CreateDirectory(_saveFolder);
+                CharacterSaveStore.EnsureDirectory(_saveFolder);
                 Plugin.Log?.LogInfo($"Created save folder: {_saveFolder}");
             }
         }
 
-        private string GetSaveFilePath(string characterName)
-        {
-            string safeName = SanitizeFileName(characterName);
-            return Path.Combine(_saveFolder, $"{safeName}_donations.json");
-        }
-
-        private string SanitizeFileName(string name)
-        {
-            foreach (char c in Path.GetInvalidFileNameChars())
-            {
-                name = name.Replace(c, '_');
-            }
-            return name;
-        }
+        private string GetSaveFilePath(string characterName) =>
+            CharacterSaveStore.GetFilePath(_saveFolder, characterName, "_donations.json");
 
         /// <summary>
         /// Loads donation data for a character.
@@ -47,53 +36,41 @@ namespace SunHavenMuseumUtilityTracker.Data
         public DonationData Load(string characterName)
         {
             string filePath = GetSaveFilePath(characterName);
-            string backupPath = filePath + ".bak";
+            var data = CharacterSaveStore.LoadWithBackup(
+                filePath,
+                TryDeserializePayload,
+                out var source,
+                onReadFailure: (p, ex) => Plugin.Log?.LogError($"Failed to read donation save '{p}': {ex.Message}"));
 
-            if (File.Exists(filePath))
+            if (data != null)
             {
-                var result = TryLoadFromFile(filePath, characterName);
-                if (result != null)
-                    return result;
-
-                Plugin.Log?.LogWarning($"Main save file corrupted for {characterName}, trying backup...");
-            }
-
-            if (File.Exists(backupPath))
-            {
-                var result = TryLoadFromFile(backupPath, characterName);
-                if (result != null)
-                {
+                if (source == CharacterSaveSource.Backup)
                     Plugin.Log?.LogInfo($"Loaded from backup for {characterName}");
-                    return result;
-                }
 
-                Plugin.Log?.LogWarning($"Backup file also corrupted for {characterName}");
+                Plugin.Log?.LogInfo($"Loaded {data.DonatedItemIds.Count} donated items for {characterName}");
+                return data;
             }
 
-            Plugin.Log?.LogInfo($"No usable save data for {characterName}, creating new data");
+            if (CharacterSaveStore.GetAbsenceReason(filePath) == CharacterSaveAbsenceReason.FilesPresentButUnusable)
+                Plugin.Log?.LogWarning($"Main and backup save files unusable for {characterName}");
+            else
+                Plugin.Log?.LogInfo($"No usable save data for {characterName}, creating new data");
+
             return new DonationData(characterName);
         }
 
-        private DonationData TryLoadFromFile(string filePath, string characterName)
+        private DonationData TryDeserializePayload(string json)
         {
             try
             {
-                string json = File.ReadAllText(filePath);
                 var wrapper = JsonUtility.FromJson<DonationDataWrapper>(json);
-
-                if (wrapper != null)
-                {
-                    var data = wrapper.ToData();
-                    Plugin.Log?.LogInfo($"Loaded {data.DonatedItemIds.Count} donated items for {characterName}");
-                    return data;
-                }
+                return wrapper?.ToData();
             }
             catch (Exception ex)
             {
-                Plugin.Log?.LogError($"Failed to load donation data for {characterName} from {Path.GetFileName(filePath)}: {ex.Message}");
+                Plugin.Log?.LogError($"Failed to deserialize donation save: {ex.Message}");
+                return null;
             }
-
-            return null;
         }
 
         /// <summary>
@@ -105,27 +82,14 @@ namespace SunHavenMuseumUtilityTracker.Data
                 return false;
 
             string filePath = GetSaveFilePath(characterName);
-            string tempPath = filePath + ".tmp";
-            string backupPath = filePath + ".bak";
 
             try
             {
                 var wrapper = new DonationDataWrapper(data);
                 string json = JsonUtility.ToJson(wrapper, true);
 
-                // Write to temp file first
-                File.WriteAllText(tempPath, json);
-
-                // Create backup of existing file
-                if (File.Exists(filePath))
-                {
-                    if (File.Exists(backupPath))
-                        File.Delete(backupPath);
-                    File.Move(filePath, backupPath);
-                }
-
-                // Move temp to final
-                File.Move(tempPath, filePath);
+                if (!CharacterSaveStore.WriteAtomic(filePath, json))
+                    throw new IOException("Atomic write failed");
 
                 Plugin.Log?.LogInfo($"Saved {data.DonatedItemIds.Count} donated items for {characterName}");
                 return true;
@@ -133,14 +97,6 @@ namespace SunHavenMuseumUtilityTracker.Data
             catch (Exception ex)
             {
                 Plugin.Log?.LogError($"Failed to save donation data for {characterName}: {ex.Message}");
-
-                // Cleanup temp file
-                if (File.Exists(tempPath))
-                {
-                    try { File.Delete(tempPath); }
-                catch (Exception delEx) { Plugin.Log?.LogWarning($"[DonationSave] Cleanup temp file failed: {delEx.Message}"); }
-                }
-
                 return false;
             }
         }

@@ -185,20 +185,8 @@ namespace TheVault.Patches
         /// <summary>
         /// Sanitize a string for use as a filename.
         /// </summary>
-        internal static string NormalizeCharacterNameForVault(string name)
-        {
-            if (string.IsNullOrEmpty(name))
-                return "default";
-
-            char[] invalid = System.IO.Path.GetInvalidFileNameChars();
-            foreach (char c in invalid)
-            {
-                name = name.Replace(c, '_');
-            }
-
-            name = name.Trim();
-            return string.IsNullOrEmpty(name) ? "default" : name;
-        }
+        internal static string NormalizeCharacterNameForVault(string name) =>
+            CharacterSaveStore.SanitizeFileName(name, "default");
 
         internal static void SetPendingCharacterName(string characterName)
         {

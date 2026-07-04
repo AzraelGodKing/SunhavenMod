@@ -5,6 +5,7 @@ using System.Reflection;
 using System.Security.Cryptography;
 using System.Text;
 using HarmonyLib;
+using SunhavenMods.Shared;
 
 namespace TheVault
 {
@@ -233,32 +234,15 @@ namespace TheVault
             try
             {
                 string filePath = GetGiftTrackingFilePath();
-                string backupPath = GetBackupFilePath();
-                string directory = GetSaveDirectory();
+                CharacterSaveStore.EnsureDirectory(GetSaveDirectory());
 
-                if (!Directory.Exists(directory))
-                {
-                    Directory.CreateDirectory(directory);
-                }
-
-                // Build data string
                 string data = string.Join("\n", _giftRecipients);
                 byte[] encrypted = Encrypt(data);
 
-                // Write to temp file first
-                string tempFile = filePath + ".tmp";
-                File.WriteAllBytes(tempFile, encrypted);
-
-                // Backup existing file
-                if (File.Exists(filePath))
-                {
-                    if (File.Exists(backupPath))
-                        File.Delete(backupPath);
-                    File.Move(filePath, backupPath);
-                }
-
-                // Move temp to main
-                File.Move(tempFile, filePath);
+                CharacterSaveStore.WriteAtomicBytes(
+                    filePath,
+                    encrypted,
+                    CharacterSaveStore.VaultBackupSuffix);
 
                 Plugin.Log?.LogInfo($"[SecretGifts] Saved {_giftRecipients.Count} gift records (encrypted)");
             }

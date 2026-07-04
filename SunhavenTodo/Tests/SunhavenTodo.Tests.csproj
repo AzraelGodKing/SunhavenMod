@@ -19,7 +19,9 @@
     <Compile Include="..\Data\TodoData.cs" Link="Data\TodoData.cs" />
     <Compile Include="..\Data\TodoJson.cs" Link="Data\TodoJson.cs" />
     <Compile Include="..\..\SharedUtilities\MinimalJsonParser.cs" Link="Shared\MinimalJsonParser.cs" />
+    <Compile Include="..\..\SharedUtilities\CharacterSaveStore.cs" Link="Shared\CharacterSaveStore.cs" />
     <Compile Include="TodoJsonTests.cs" />
+    <Compile Include="CharacterSaveStoreTests.cs" />
   </ItemGroup>
 
 </Project>
