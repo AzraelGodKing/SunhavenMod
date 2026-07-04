@@ -8,11 +8,10 @@
     <meta property="og:title" content="Sun Haven Mod Hub">
     <meta property="og:description" content="Quality-of-life mods for Sun Haven by AzraelGodKing. Museum tracker, smart chests, currency vault, and more.">
     <meta property="og:type" content="website">
-    <meta property="og:image" content="https://azraelgodking.github.io/SunhavenMod/favicon.svg">
     <meta name="twitter:card" content="summary_large_image">
     <meta name="twitter:title" content="Sun Haven Mod Hub">
     <meta name="twitter:description" content="Quality-of-life mods for Sun Haven by AzraelGodKing.">
-    <meta name="theme-color" content="#0f766e">
+    <meta name="theme-color" content="#b45309">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link rel="canonical" href="https://azraelgodking.github.io/SunhavenMod/">
@@ -23,118 +22,147 @@
     <meta name="twitter:image" content="https://azraelgodking.github.io/SunhavenMod/og-card.png">
     <link rel="preload" href="search-index.json" as="fetch">
     <link rel="icon" type="image/svg+xml" href="favicon.svg">
-    <link rel="stylesheet" href="index-style.css">
     <link rel="stylesheet" href="shared-styles.css">
+    <link rel="stylesheet" href="index-style.css">
     <script src="shared.js" defer></script>
     <script src="scripts/stats-display.js" defer></script>
 </head>
-<body>
+<body class="hub-page">
     <a href="#main-content" class="skip-to-content">Skip to content</a>
 
-    <!-- Town Crier's Notice -->
+    <!-- Announcement ribbon -->
     <div class="announcement-banner" id="announcementBanner" data-dismiss-key="announce-gifting-assistant-v100">
-        <span class="announcement-icon">&#x1F381;</span>
-        <span class="announcement-text"><strong>Hear ye!</strong> Gifting Assistant v1.0.0 &mdash; daily gift roster, loved/liked icons with bag counts, Todo auto-complete sync, and Almanac progress.</span>
-        <a href="GiftingAssistant/GiftingAssistant.html" class="announcement-link">View the Contract &rarr;</a>
+        <span class="announcement-icon" aria-hidden="true">&#x1F381;</span>
+        <span class="announcement-text"><strong>New:</strong> Gifting Assistant v1.0 &mdash; daily gift roster, loved/liked icons with bag counts, Todo sync, and Almanac progress.</span>
+        <a href="GiftingAssistant/GiftingAssistant.html" class="announcement-link">See what's inside &rarr;</a>
         <button class="announcement-dismiss" aria-label="Dismiss announcement">&times;</button>
     </div>
 
+    <!-- Sticky top bar -->
+    <header class="topbar">
+        <a class="topbar-brand" href="#main-content">
+            <svg class="topbar-sun" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+                <circle cx="12" cy="12" r="5" fill="currentColor"/>
+                <g stroke="currentColor" stroke-width="1.8" stroke-linecap="round">
+                    <line x1="12" y1="1.5" x2="12" y2="4.5"/><line x1="12" y1="19.5" x2="12" y2="22.5"/>
+                    <line x1="1.5" y1="12" x2="4.5" y2="12"/><line x1="19.5" y1="12" x2="22.5" y2="12"/>
+                    <line x1="4.6" y1="4.6" x2="6.7" y2="6.7"/><line x1="17.3" y1="17.3" x2="19.4" y2="19.4"/>
+                    <line x1="4.6" y1="19.4" x2="6.7" y2="17.3"/><line x1="17.3" y1="6.7" x2="19.4" y2="4.6"/>
+                </g>
+            </svg>
+            <span>Sun Haven <em>Mod Hub</em></span>
+        </a>
+        <nav class="topbar-nav" aria-label="Page sections">
+            <a href="#mods">Mods</a>
+            <a href="#party-loadouts">Starter Packs</a>
+            <a href="#guild-initiation">Install</a>
+            <a href="#guild-master-wisdom">FAQ</a>
+            <a href="#arsenal-comparison">Compare</a>
+        </nav>
+        <span class="topbar-hint" aria-hidden="true"><kbd>Ctrl</kbd>+<kbd>K</kbd> to search</span>
+    </header>
+
+    <!-- Hero -->
+    <section class="hero-band" aria-labelledby="hero-title">
+        <div class="hero-band-inner">
+            <p class="hero-kicker">BepInEx plugins for Sun Haven &middot; by AzraelGodKing</p>
+            <h1 id="hero-title">Make every day in Haven<br><span class="hero-accent">a little brighter.</span></h1>
+            <p class="hero-sub">Thirteen quality-of-life mods that track your museum, sort your chests, bank your tokens, remember every birthday, and plan your farm &mdash; each one standalone, all of them better together.</p>
+            <div class="hero-actions">
+                <a href="#mods" class="hero-btn hero-btn-primary">Browse the mods</a>
+                <a href="#guild-initiation" class="hero-btn hero-btn-ghost">Install guide</a>
+            </div>
+            <div class="hero-stats" aria-live="polite">
+                <div class="hero-stat">
+                    <span class="hero-stat-num" data-stats="total" data-field="grand_total">&mdash;</span>
+                    <span class="hero-stat-label">Total downloads</span>
+                </div>
+                <div class="hero-stat">
+                    <span class="hero-stat-num" data-stats="total" data-field="thunderstore_site_total">&mdash;</span>
+                    <span class="hero-stat-label">Thunderstore</span>
+                </div>
+                <div class="hero-stat">
+                    <span class="hero-stat-num" data-stats="total" data-field="nexus_site_total">&mdash;</span>
+                    <span class="hero-stat-label">Nexus Mods</span>
+                </div>
+                <div class="hero-stat">
+                    <span class="hero-stat-num">13</span>
+                    <span class="hero-stat-label">Mods maintained</span>
+                </div>
+            </div>
+        </div>
+        <div class="hero-horizon" aria-hidden="true">
+            <svg viewBox="0 0 1440 90" preserveAspectRatio="none" focusable="false">
+                <path d="M0,60 C240,20 420,80 720,50 C1020,20 1240,70 1440,40 L1440,90 L0,90 Z" fill="currentColor"/>
+            </svg>
+        </div>
+    </section>
+
     <div class="container" id="main-content" role="main">
 
-        <!-- Guild Hall Header -->
-        <header class="hub-header hub-header-refresh">
-            <p class="hub-kicker">Est. Sun Haven &bull; All Adventurers Welcome</p>
-            <h1>The Adventurer's Guild</h1>
-            <p class="subtitle hub-subtitle">Quality Commissions by AzraelGodKing</p>
-            <div class="hub-download-stats" aria-live="polite">
-                <p class="hub-download-stats-primary"><strong>Total downloads (all mods combined):</strong> <span class="hub-download-grand" data-stats="total" data-field="grand_total">&mdash;</span></p>
-                <p class="hub-download-stats-detail">Thunderstore <span data-stats="total" data-field="thunderstore_site_total">&mdash;</span> &middot; Nexus Mods <span data-stats="total" data-field="nexus_site_total">&mdash;</span></p>
+        <!-- Mods -->
+        <section class="mods-showcase" id="mods">
+            <div class="section-head">
+                <h2 class="section-title">The Mods</h2>
+                <p class="section-lede">Every mod keeps per-character saves, ships with sensible defaults, and stays out of your way until you need it.</p>
             </div>
-            <p class="hub-meta">&#x2694;&#xFE0F; 13 Contracts Posted &bull; 0 Expired &bull; All Ranks Welcome &#x2694;&#xFE0F;</p>
-        </header>
 
-        <nav class="hub-jump-nav" aria-label="Page sections">
-            <span class="hub-jump-label">Jump to</span>
-            <div class="hub-jump-links">
-                <a href="#guild-notice-board">Notice Board</a>
-                <a href="#guild-initiation">Initiation</a>
-                <a href="#guild-master-wisdom">Wisdom</a>
-                <a href="#party-loadouts">Loadouts</a>
-                <a href="#arsenal-comparison">Comparison</a>
-            </div>
-            <div class="hub-jump-select-wrap">
-                <label for="hubJumpSelect" class="visually-hidden">Jump to section</label>
-                <select id="hubJumpSelect" class="hub-jump-select" aria-label="Jump to section">
-                    <option value="">Jump to section&hellip;</option>
-                    <option value="#guild-notice-board">Guild Notice Board</option>
-                    <option value="#guild-initiation">Guild Initiation</option>
-                    <option value="#guild-master-wisdom">Guild Master&rsquo;s Wisdom</option>
-                    <option value="#party-loadouts">Party Loadouts</option>
-                    <option value="#arsenal-comparison">Arsenal Comparison</option>
-                </select>
-            </div>
-        </nav>
-
-        <!-- Guild Notice Board -->
-        <section class="mods-showcase">
-            <h2 class="section-title hub-section-title" id="guild-notice-board">Guild Notice Board</h2>
-
-            <div class="mod-filter mod-filter-refresh">
-                <input type="text" class="mod-search" placeholder="Search the board by name, skill, or description… ( / or s ) · All pages: Ctrl+K" id="modSearch" autocomplete="off">
-                <div class="filter-tags">
-                    <button class="filter-tag active" data-tag="all">All Postings</button>
+            <div class="mod-filter">
+                <div class="mod-search-wrap">
+                    <svg class="mod-search-icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><circle cx="10.5" cy="10.5" r="6.5" fill="none" stroke="currentColor" stroke-width="2"/><line x1="15.5" y1="15.5" x2="21" y2="21" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+                    <input type="text" class="mod-search" placeholder="Search by name, feature, or description&hellip;  ( / )" id="modSearch" autocomplete="off" aria-label="Search mods">
+                </div>
+                <div class="filter-tags" role="group" aria-label="Filter mods by tag">
+                    <button class="filter-tag active" data-tag="all">All</button>
                     <button class="filter-tag" data-tag="QoL">QoL</button>
                     <button class="filter-tag" data-tag="Storage">Storage</button>
                     <button class="filter-tag" data-tag="UI">UI</button>
                     <button class="filter-tag" data-tag="Social">Social</button>
                     <button class="filter-tag" data-tag="Tracking">Tracking</button>
+                    <button class="filter-tag" data-tag="Skills">Skills</button>
                     <button class="filter-tag" data-tag="Dev">Dev</button>
                 </div>
                 <p id="modBoardCount" class="mod-board-count" aria-live="polite" aria-atomic="true"></p>
             </div>
-            <div class="discoverability-row" aria-label="Browse by goal">
-                <a href="#party-loadouts" class="discoverability-chip">Find a Bundle</a>
-                <a href="#arsenal-comparison" class="discoverability-chip">Compare Mods</a>
-                <a href="#guild-initiation" class="discoverability-chip">Install Guide</a>
-            </div>
 
             <div class="mods-grid">
                 <!-- The Vault -->
-                <div class="mod-card vault-theme" data-tags="QoL,Storage" data-name="The Vault">
-                    <div class="mod-card-header">
-                        <span class="mod-icon-large">&#x1F512;</span>
+                <article class="mod-card" data-tags="QoL,Storage" data-name="The Vault" style="--card-accent:#3b82f6">
+                    <div class="mod-card-top">
+                        <img class="mod-icon" src="TheVault/icon.png" alt="" width="64" height="64" loading="lazy">
                         <div class="mod-title-area">
                             <h3>The Vault</h3>
                             <p class="mod-tagline">Secure Currency Storage</p>
-                            <span class="mod-version">v4.0.1</span>
                         </div>
+                        <span class="mod-version">v4.0.1</span>
                     </div>
-                    <p class="mod-description">Automatically stores seasonal tokens, community tokens, and keys in an encrypted vault. Seamless integration with shops and doors - your currencies are always available when you need them.</p>
+                    <p class="mod-description">Automatically stores seasonal tokens, community tokens, and keys in an encrypted vault. Seamless integration with shops and doors &mdash; your currencies are always available when you need them.</p>
                     <div class="mod-features-list">
                         <span class="mod-feature">Auto-Deposit</span>
                         <span class="mod-feature">Per-Character Saves</span>
                         <span class="mod-feature">Encrypted Storage</span>
                         <span class="mod-feature">Shop Integration</span>
                     </div>
-                    <div class="mod-card-downloads" aria-label="Recorded downloads">
-                        <div class="mod-card-downloads-row">
-                            <span>Thunderstore <strong><span data-stats-mod="the-vault" data-field="thunderstore_downloads">&mdash;</span></strong></span>
-                            <span>Nexus <strong><span data-stats-mod="the-vault" data-field="nexus_downloads">&mdash;</span></strong></span>
-                            <span>Total <strong><span data-stats-mod="the-vault" data-field="combined_total">&mdash;</span></strong></span>
+                    <div class="mod-card-foot">
+                        <div class="mod-card-downloads" aria-label="Recorded downloads">
+                            <span title="Thunderstore">&#x26A1; <span data-stats-mod="the-vault" data-field="thunderstore_downloads">&mdash;</span></span>
+                            <span title="Nexus Mods">&#x1F4E6; <span data-stats-mod="the-vault" data-field="nexus_downloads">&mdash;</span></span>
+                            <span class="mod-dl-total" title="Combined total">&#x2B07; <span data-stats-mod="the-vault" data-field="combined_total">&mdash;</span></span>
                         </div>
+                        <span class="mod-status-badge status-stable">Stable</span>
                     </div>
-                    <span class="mod-status-badge status-stable">Stable</span>
-                    <a href="TheVault/TheVault.html" class="mod-cta-button vault-btn">Accept Contract &rarr;</a>
-                </div>
+                    <a href="TheVault/TheVault.html" class="mod-cta-button">Open mod page <span aria-hidden="true">&rarr;</span></a>
+                </article>
 
                 <!-- Haven's Birthright -->
-                <div class="mod-card birthright-theme" data-tags="QoL" data-name="Haven's Birthright">                    <div class="mod-card-header">
-                        <span class="mod-icon-large">&#x2694;&#xFE0F;</span>
+                <article class="mod-card" data-tags="QoL" data-name="Haven's Birthright" style="--card-accent:#dc2626">
+                    <div class="mod-card-top">
+                        <img class="mod-icon" src="RacialBonuses/icon.png" alt="" width="64" height="64" loading="lazy">
                         <div class="mod-title-area">
                             <h3>Haven's Birthright</h3>
                             <p class="mod-tagline">Racial Bonuses System</p>
-                            <span class="mod-version">v3.0.1</span>
                         </div>
+                        <span class="mod-version">v3.0.1</span>
                     </div>
                     <p class="mod-description">Adds unique racial bonuses and abilities to Sun Haven. Each of the 12 races gains distinct gameplay advantages based on their heritage, making your character choice more meaningful.</p>
                     <div class="mod-features-list">
@@ -143,82 +171,82 @@
                         <span class="mod-feature">Balanced Gameplay</span>
                         <span class="mod-feature">In-Game Settings</span>
                     </div>
-                    <div class="mod-card-downloads" aria-label="Recorded downloads">
-                        <div class="mod-card-downloads-row">
-                            <span>Thunderstore <strong><span data-stats-mod="havens-birthright" data-field="thunderstore_downloads">&mdash;</span></strong></span>
-                            <span>Nexus <strong><span data-stats-mod="havens-birthright" data-field="nexus_downloads">&mdash;</span></strong></span>
-                            <span>Total <strong><span data-stats-mod="havens-birthright" data-field="combined_total">&mdash;</span></strong></span>
+                    <div class="mod-card-foot">
+                        <div class="mod-card-downloads" aria-label="Recorded downloads">
+                            <span title="Thunderstore">&#x26A1; <span data-stats-mod="havens-birthright" data-field="thunderstore_downloads">&mdash;</span></span>
+                            <span title="Nexus Mods">&#x1F4E6; <span data-stats-mod="havens-birthright" data-field="nexus_downloads">&mdash;</span></span>
+                            <span class="mod-dl-total" title="Combined total">&#x2B07; <span data-stats-mod="havens-birthright" data-field="combined_total">&mdash;</span></span>
                         </div>
+                        <span class="mod-status-badge status-active">Actively Maintained</span>
                     </div>
-                    <span class="mod-status-badge status-active">Actively Maintained</span>
-                    <a href="RacialBonuses/RacialBonuses.html" class="mod-cta-button birthright-btn">Accept Contract &rarr;</a>
-                </div>
+                    <a href="RacialBonuses/RacialBonuses.html" class="mod-cta-button">Open mod page <span aria-hidden="true">&rarr;</span></a>
+                </article>
 
                 <!-- Faster Races -->
-                <div class="mod-card faster-theme" data-tags="QoL" data-name="Faster Races">
-                    <div class="mod-card-header">
-                        <span class="mod-icon-large">&#x1F3C3;</span>
+                <article class="mod-card" data-tags="QoL" data-name="Faster Races" style="--card-accent:#f59e0b">
+                    <div class="mod-card-top">
+                        <img class="mod-icon" src="FasterRaces/icon.png" alt="" width="64" height="64" loading="lazy">
                         <div class="mod-title-area">
                             <h3>Faster Races</h3>
                             <p class="mod-tagline">Configurable Movement Speed</p>
-                            <span class="mod-version">v2.0.1</span>
                         </div>
+                        <span class="mod-version">v2.0.1</span>
                     </div>
-                    <p class="mod-description">Adds a configurable movement speed bonus for all races. When used with Haven's Birthright, disables HB's speed buffs so you get one consistent bonus—no double speed.</p>
+                    <p class="mod-description">Adds a configurable movement speed bonus for all races. When used with Haven's Birthright, disables HB's speed buffs so you get one consistent bonus &mdash; no double speed.</p>
                     <div class="mod-features-list">
                         <span class="mod-feature">Configurable %</span>
                         <span class="mod-feature">HB Compatible</span>
                         <span class="mod-feature">All Races</span>
                         <span class="mod-feature">Quick Mod</span>
                     </div>
-                    <div class="mod-card-downloads" aria-label="Recorded downloads">
-                        <div class="mod-card-downloads-row">
-                            <span>Thunderstore <strong><span data-stats-mod="faster-races" data-field="thunderstore_downloads">&mdash;</span></strong></span>
-                            <span>Nexus <strong><span data-stats-mod="faster-races" data-field="nexus_downloads">&mdash;</span></strong></span>
-                            <span>Total <strong><span data-stats-mod="faster-races" data-field="combined_total">&mdash;</span></strong></span>
+                    <div class="mod-card-foot">
+                        <div class="mod-card-downloads" aria-label="Recorded downloads">
+                            <span title="Thunderstore">&#x26A1; <span data-stats-mod="faster-races" data-field="thunderstore_downloads">&mdash;</span></span>
+                            <span title="Nexus Mods">&#x1F4E6; <span data-stats-mod="faster-races" data-field="nexus_downloads">&mdash;</span></span>
+                            <span class="mod-dl-total" title="Combined total">&#x2B07; <span data-stats-mod="faster-races" data-field="combined_total">&mdash;</span></span>
                         </div>
+                        <span class="mod-status-badge status-stable">Stable</span>
                     </div>
-                    <span class="mod-status-badge status-stable">Stable</span>
-                    <a href="FasterRaces/FasterRaces.html" class="mod-cta-button faster-btn">Accept Contract &rarr;</a>
-                </div>
+                    <a href="FasterRaces/FasterRaces.html" class="mod-cta-button">Open mod page <span aria-hidden="true">&rarr;</span></a>
+                </article>
 
                 <!-- Trinket Fortune -->
-                <div class="mod-card trinket-theme" data-tags="QoL,Tracking" data-name="Trinket Fortune">
-                    <div class="mod-card-header">
-                        <span class="mod-icon-large">&#x1F3A3;&#x2728;</span>
+                <article class="mod-card" data-tags="QoL,Tracking" data-name="Trinket Fortune" style="--card-accent:#0ea5e9">
+                    <div class="mod-card-top">
+                        <img class="mod-icon" src="TrinketFortune/icon.png" alt="" width="64" height="64" loading="lazy">
                         <div class="mod-title-area">
                             <h3>Trinket Fortune</h3>
                             <p class="mod-tagline">Fishing Trinket Bias</p>
-                            <span class="mod-version">v2.0.1</span>
                         </div>
+                        <span class="mod-version">v2.0.1</span>
                     </div>
-                    <p class="mod-description">Increases odds of unowned fishing trinkets dropping as you complete the aquarium. The sea rewards the patient—that last relic drifts closer with each cast.</p>
+                    <p class="mod-description">Increases odds of unowned fishing trinkets dropping as you complete the aquarium. The sea rewards the patient &mdash; that last relic drifts closer with each cast.</p>
                     <div class="mod-features-list">
                         <span class="mod-feature">Museum-Aware</span>
                         <span class="mod-feature">Configurable</span>
                         <span class="mod-feature">S.M.U.T. Compatible</span>
                         <span class="mod-feature">HavenDevTools Panel</span>
                     </div>
-                    <div class="mod-card-downloads" aria-label="Recorded downloads">
-                        <div class="mod-card-downloads-row">
-                            <span>Thunderstore <strong><span data-stats-mod="trinket-fortune" data-field="thunderstore_downloads">&mdash;</span></strong></span>
-                            <span>Nexus <strong><span data-stats-mod="trinket-fortune" data-field="nexus_downloads">&mdash;</span></strong></span>
-                            <span>Total <strong><span data-stats-mod="trinket-fortune" data-field="combined_total">&mdash;</span></strong></span>
+                    <div class="mod-card-foot">
+                        <div class="mod-card-downloads" aria-label="Recorded downloads">
+                            <span title="Thunderstore">&#x26A1; <span data-stats-mod="trinket-fortune" data-field="thunderstore_downloads">&mdash;</span></span>
+                            <span title="Nexus Mods">&#x1F4E6; <span data-stats-mod="trinket-fortune" data-field="nexus_downloads">&mdash;</span></span>
+                            <span class="mod-dl-total" title="Combined total">&#x2B07; <span data-stats-mod="trinket-fortune" data-field="combined_total">&mdash;</span></span>
                         </div>
+                        <span class="mod-status-badge status-stable">Stable</span>
                     </div>
-                    <span class="mod-status-badge status-stable">Stable</span>
-                    <a href="TrinketFortune/TrinketFortune.html" class="mod-cta-button trinket-btn">Accept Contract &rarr;</a>
-                </div>
+                    <a href="TrinketFortune/TrinketFortune.html" class="mod-cta-button">Open mod page <span aria-hidden="true">&rarr;</span></a>
+                </article>
 
-                <!-- S.M.U.T. - Museum Tracker -->
-                <div class="mod-card smut-theme" data-tags="Tracking,UI" data-name="S.M.U.T.">
-                    <div class="mod-card-header">
-                        <span class="mod-icon-large">&#x1F3DB;</span>
+                <!-- S.M.U.T. -->
+                <article class="mod-card" data-tags="Tracking,UI" data-name="S.M.U.T." style="--card-accent:#b45309">
+                    <div class="mod-card-top">
+                        <img class="mod-icon" src="SMUT/icon.png" alt="" width="64" height="64" loading="lazy">
                         <div class="mod-title-area">
                             <h3>S.M.U.T.</h3>
                             <p class="mod-tagline">Museum Donation Tracker</p>
-                            <span class="mod-version">v3.0.1</span>
                         </div>
+                        <span class="mod-version">v3.0.1</span>
                     </div>
                     <p class="mod-description">Track your museum donation progress across all three sections: Hall of Gems, Hall of Culture, and Aquarium. Never forget which items you've already donated or still need to find.</p>
                     <div class="mod-features-list">
@@ -227,26 +255,26 @@
                         <span class="mod-feature">Progress Stats</span>
                         <span class="mod-feature">Item Icons</span>
                     </div>
-                    <div class="mod-card-downloads" aria-label="Recorded downloads">
-                        <div class="mod-card-downloads-row">
-                            <span>Thunderstore <strong><span data-stats-mod="museum-utility-tracker" data-field="thunderstore_downloads">&mdash;</span></strong></span>
-                            <span>Nexus <strong><span data-stats-mod="museum-utility-tracker" data-field="nexus_downloads">&mdash;</span></strong></span>
-                            <span>Total <strong><span data-stats-mod="museum-utility-tracker" data-field="combined_total">&mdash;</span></strong></span>
+                    <div class="mod-card-foot">
+                        <div class="mod-card-downloads" aria-label="Recorded downloads">
+                            <span title="Thunderstore">&#x26A1; <span data-stats-mod="museum-utility-tracker" data-field="thunderstore_downloads">&mdash;</span></span>
+                            <span title="Nexus Mods">&#x1F4E6; <span data-stats-mod="museum-utility-tracker" data-field="nexus_downloads">&mdash;</span></span>
+                            <span class="mod-dl-total" title="Combined total">&#x2B07; <span data-stats-mod="museum-utility-tracker" data-field="combined_total">&mdash;</span></span>
                         </div>
+                        <span class="mod-status-badge status-active">Actively Maintained</span>
                     </div>
-                    <span class="mod-status-badge status-active">Actively Maintained</span>
-                    <a href="SMUT/SMUT.html" class="mod-cta-button smut-btn">Accept Contract &rarr;</a>
-                </div>
+                    <a href="SMUT/SMUT.html" class="mod-cta-button">Open mod page <span aria-hidden="true">&rarr;</span></a>
+                </article>
 
                 <!-- Sun Haven Todo -->
-                <div class="mod-card todo-theme" data-tags="QoL,Tracking,UI" data-name="Sun Haven Todo">
-                    <div class="mod-card-header">
-                        <span class="mod-icon-large">&#x1F4DD;</span>
+                <article class="mod-card" data-tags="QoL,Tracking,UI" data-name="Sun Haven Todo" style="--card-accent:#16a34a">
+                    <div class="mod-card-top">
+                        <img class="mod-icon" src="Todo/icon.png" alt="" width="64" height="64" loading="lazy">
                         <div class="mod-title-area">
                             <h3>Sun Haven Todo</h3>
                             <p class="mod-tagline">In-Game Task Tracker</p>
-                            <span class="mod-version">v2.0.1</span>
                         </div>
+                        <span class="mod-version">v2.0.1</span>
                     </div>
                     <p class="mod-description">Keep track of your farming goals, quests, and daily tasks with a beautiful parchment-themed todo list. Other mods can auto-create and auto-complete todos for birthdays, museum donations, and more.</p>
                     <div class="mod-features-list">
@@ -255,26 +283,26 @@
                         <span class="mod-feature">Categories</span>
                         <span class="mod-feature">Cross-Mod Todos</span>
                     </div>
-                    <div class="mod-card-downloads" aria-label="Recorded downloads">
-                        <div class="mod-card-downloads-row">
-                            <span>Thunderstore <strong><span data-stats-mod="havens-todo" data-field="thunderstore_downloads">&mdash;</span></strong></span>
-                            <span>Nexus <strong><span data-stats-mod="havens-todo" data-field="nexus_downloads">&mdash;</span></strong></span>
-                            <span>Total <strong><span data-stats-mod="havens-todo" data-field="combined_total">&mdash;</span></strong></span>
+                    <div class="mod-card-foot">
+                        <div class="mod-card-downloads" aria-label="Recorded downloads">
+                            <span title="Thunderstore">&#x26A1; <span data-stats-mod="havens-todo" data-field="thunderstore_downloads">&mdash;</span></span>
+                            <span title="Nexus Mods">&#x1F4E6; <span data-stats-mod="havens-todo" data-field="nexus_downloads">&mdash;</span></span>
+                            <span class="mod-dl-total" title="Combined total">&#x2B07; <span data-stats-mod="havens-todo" data-field="combined_total">&mdash;</span></span>
                         </div>
+                        <span class="mod-status-badge status-stable">Stable</span>
                     </div>
-                    <span class="mod-status-badge status-stable">Stable</span>
-                    <a href="Todo/todo.html" class="mod-cta-button todo-btn">Accept Contract &rarr;</a>
-                </div>
+                    <a href="Todo/todo.html" class="mod-cta-button">Open mod page <span aria-hidden="true">&rarr;</span></a>
+                </article>
 
                 <!-- A Squirrel's Birthday Reminder -->
-                <div class="mod-card birthday-theme" data-tags="Social,QoL" data-name="A Squirrel's Birthday Reminder">
-                    <div class="mod-card-header">
-                        <span class="mod-icon-large">&#x1F382;</span>
+                <article class="mod-card" data-tags="Social,QoL" data-name="A Squirrel's Birthday Reminder" style="--card-accent:#ec4899">
+                    <div class="mod-card-top">
+                        <img class="mod-icon" src="BirthdayReminder/icon.png" alt="" width="64" height="64" loading="lazy">
                         <div class="mod-title-area">
                             <h3>A Squirrel's Birthday Reminder</h3>
                             <p class="mod-tagline">Never Miss a Birthday</p>
-                            <span class="mod-version">v2.0.1</span>
                         </div>
+                        <span class="mod-version">v2.0.1</span>
                     </div>
                     <p class="mod-description">Automatically reminds you when NPCs have birthdays. Shows gift suggestions for loved and liked items, tracks who you've already gifted. With Todo installed, birthday gifts auto-create and auto-complete todos.</p>
                     <div class="mod-features-list">
@@ -283,26 +311,26 @@
                         <span class="mod-feature">Gift Tracking</span>
                         <span class="mod-feature">Todo Integration</span>
                     </div>
-                    <div class="mod-card-downloads" aria-label="Recorded downloads">
-                        <div class="mod-card-downloads-row">
-                            <span>Thunderstore <strong><span data-stats-mod="squirrels-birthday-reminder" data-field="thunderstore_downloads">&mdash;</span></strong></span>
-                            <span>Nexus <strong><span data-stats-mod="squirrels-birthday-reminder" data-field="nexus_downloads">&mdash;</span></strong></span>
-                            <span>Total <strong><span data-stats-mod="squirrels-birthday-reminder" data-field="combined_total">&mdash;</span></strong></span>
+                    <div class="mod-card-foot">
+                        <div class="mod-card-downloads" aria-label="Recorded downloads">
+                            <span title="Thunderstore">&#x26A1; <span data-stats-mod="squirrels-birthday-reminder" data-field="thunderstore_downloads">&mdash;</span></span>
+                            <span title="Nexus Mods">&#x1F4E6; <span data-stats-mod="squirrels-birthday-reminder" data-field="nexus_downloads">&mdash;</span></span>
+                            <span class="mod-dl-total" title="Combined total">&#x2B07; <span data-stats-mod="squirrels-birthday-reminder" data-field="combined_total">&mdash;</span></span>
                         </div>
+                        <span class="mod-status-badge status-stable">Stable</span>
                     </div>
-                    <span class="mod-status-badge status-stable">Stable</span>
-                    <a href="BirthdayReminder/BirthdayReminder.html" class="mod-cta-button birthday-btn">Accept Contract &rarr;</a>
-                </div>
+                    <a href="BirthdayReminder/BirthdayReminder.html" class="mod-cta-button">Open mod page <span aria-hidden="true">&rarr;</span></a>
+                </article>
 
                 <!-- Gifting Assistant -->
-                <div class="mod-card gifting-theme" data-tags="Social,QoL" data-name="Gifting Assistant">
-                    <div class="mod-card-header">
-                        <span class="mod-icon-large">&#x1F381;</span>
+                <article class="mod-card" data-tags="Social,QoL" data-name="Gifting Assistant" style="--card-accent:#e11d48">
+                    <div class="mod-card-top">
+                        <img class="mod-icon" src="GiftingAssistant/icon.png" alt="" width="64" height="64" loading="lazy">
                         <div class="mod-title-area">
                             <h3>Gifting Assistant</h3>
                             <p class="mod-tagline">Daily Gift Routine Planner</p>
-                            <span class="mod-version">v1.0.1</span>
                         </div>
+                        <span class="mod-version">v1.0.1</span>
                     </div>
                     <p class="mod-description">Build a per-character daily gift roster with loved and liked suggestions, item icons, and priority sorting. Mark NPCs gifted as you go; syncs with Sun Haven Todo, highlights birthdays, and shares progress with Haven's Almanac.</p>
                     <div class="mod-features-list">
@@ -311,54 +339,54 @@
                         <span class="mod-feature">Todo Sync</span>
                         <span class="mod-feature">Per-Character Saves</span>
                     </div>
-                    <div class="mod-card-downloads" aria-label="Recorded downloads">
-                        <div class="mod-card-downloads-row">
-                            <span>Thunderstore <strong><span data-stats-mod="gifting-assistant" data-field="thunderstore_downloads">&mdash;</span></strong></span>
-                            <span>Nexus <strong><span data-stats-mod="gifting-assistant" data-field="nexus_downloads">&mdash;</span></strong></span>
-                            <span>Total <strong><span data-stats-mod="gifting-assistant" data-field="combined_total">&mdash;</span></strong></span>
+                    <div class="mod-card-foot">
+                        <div class="mod-card-downloads" aria-label="Recorded downloads">
+                            <span title="Thunderstore">&#x26A1; <span data-stats-mod="gifting-assistant" data-field="thunderstore_downloads">&mdash;</span></span>
+                            <span title="Nexus Mods">&#x1F4E6; <span data-stats-mod="gifting-assistant" data-field="nexus_downloads">&mdash;</span></span>
+                            <span class="mod-dl-total" title="Combined total">&#x2B07; <span data-stats-mod="gifting-assistant" data-field="combined_total">&mdash;</span></span>
                         </div>
+                        <span class="mod-status-badge status-new">New</span>
                     </div>
-                    <span class="mod-status-badge status-new">New</span>
-                    <a href="GiftingAssistant/GiftingAssistant.html" class="mod-cta-button gifting-btn">Accept Contract &rarr;</a>
-                </div>
+                    <a href="GiftingAssistant/GiftingAssistant.html" class="mod-cta-button">Open mod page <span aria-hidden="true">&rarr;</span></a>
+                </article>
 
                 <!-- Senpai's Chest -->
-                <div class="mod-card chest-theme" data-tags="QoL,Storage" data-name="Senpai's Chest">
-                    <div class="mod-card-header">
-                        <span class="mod-icon-large">&#x1F4E6;</span>
+                <article class="mod-card" data-tags="QoL,Storage" data-name="Senpai's Chest" style="--card-accent:#8b5cf6">
+                    <div class="mod-card-top">
+                        <img class="mod-icon" src="SenpaisChest/icon.png" alt="" width="64" height="64" loading="lazy">
                         <div class="mod-title-area">
                             <h3>Senpai's Chest</h3>
                             <p class="mod-tagline">Smart Chest Auto-Sorting</p>
-                            <span class="mod-version">v3.0.3</span>
                         </div>
+                        <span class="mod-version">v3.0.3</span>
                     </div>
-                    <p class="mod-description">Designate chests as Smart Chests with custom sorting rules. Items are sorted by item, type, category, property, or your own groups. Use the Manage Groups tab to create subcategories (e.g. Flowers, Vegetables) and attach them to chests with one click. With S.M.U.T. and Todo, auto-creates donation reminders for museum items.</p>
+                    <p class="mod-description">Designate chests as Smart Chests with custom sorting rules &mdash; by item, type, category, property, or your own groups. Create subcategories like Flowers or Vegetables and attach them to chests with one click. With S.M.U.T. and Todo, auto-creates donation reminders.</p>
                     <div class="mod-features-list">
                         <span class="mod-feature">Auto-Sort</span>
                         <span class="mod-feature">Smart Ejection</span>
                         <span class="mod-feature">Controller Support</span>
                         <span class="mod-feature">Museum Todos</span>
                     </div>
-                    <div class="mod-card-downloads" aria-label="Recorded downloads">
-                        <div class="mod-card-downloads-row">
-                            <span>Thunderstore <strong><span data-stats-mod="senpais-chest" data-field="thunderstore_downloads">&mdash;</span></strong></span>
-                            <span>Nexus <strong><span data-stats-mod="senpais-chest" data-field="nexus_downloads">&mdash;</span></strong></span>
-                            <span>Total <strong><span data-stats-mod="senpais-chest" data-field="combined_total">&mdash;</span></strong></span>
+                    <div class="mod-card-foot">
+                        <div class="mod-card-downloads" aria-label="Recorded downloads">
+                            <span title="Thunderstore">&#x26A1; <span data-stats-mod="senpais-chest" data-field="thunderstore_downloads">&mdash;</span></span>
+                            <span title="Nexus Mods">&#x1F4E6; <span data-stats-mod="senpais-chest" data-field="nexus_downloads">&mdash;</span></span>
+                            <span class="mod-dl-total" title="Combined total">&#x2B07; <span data-stats-mod="senpais-chest" data-field="combined_total">&mdash;</span></span>
                         </div>
+                        <span class="mod-status-badge status-stable">Stable</span>
                     </div>
-                    <span class="mod-status-badge status-stable">Stable</span>
-                    <a href="SenpaisChest/SenpaisChest.html" class="mod-cta-button chest-btn">Accept Contract &rarr;</a>
-                </div>
+                    <a href="SenpaisChest/SenpaisChest.html" class="mod-cta-button">Open mod page <span aria-hidden="true">&rarr;</span></a>
+                </article>
 
                 <!-- Haven's Almanac -->
-                <div class="mod-card almanac-theme" data-tags="QoL,UI,Tracking" data-name="Haven's Almanac">
-                    <div class="mod-card-header">
-                        <span class="mod-icon-large">&#x1F4D6;</span>
+                <article class="mod-card" data-tags="QoL,UI,Tracking" data-name="Haven's Almanac" style="--card-accent:#0d9488">
+                    <div class="mod-card-top">
+                        <img class="mod-icon" src="HavensAlmanac/icon.png" alt="" width="64" height="64" loading="lazy">
                         <div class="mod-title-area">
                             <h3>Haven's Almanac</h3>
                             <p class="mod-tagline">Unified Mod Dashboard</p>
-                            <span class="mod-version">v2.1.0</span>
                         </div>
+                        <span class="mod-version">v2.1.0</span>
                     </div>
                     <p class="mod-description">Aggregates data from all installed mods into a compact HUD, full dashboard, and daily morning briefing. See birthdays, tasks, museum progress, crop forecasts, and mod health at a glance.</p>
                     <div class="mod-features-list">
@@ -367,26 +395,26 @@
                         <span class="mod-feature">Smart Daily Briefing</span>
                         <span class="mod-feature">9 Mod Integrations</span>
                     </div>
-                    <div class="mod-card-downloads" aria-label="Recorded downloads">
-                        <div class="mod-card-downloads-row">
-                            <span>Thunderstore <strong><span data-stats-mod="havens-almanac" data-field="thunderstore_downloads">&mdash;</span></strong></span>
-                            <span>Nexus <strong><span data-stats-mod="havens-almanac" data-field="nexus_downloads">&mdash;</span></strong></span>
-                            <span>Total <strong><span data-stats-mod="havens-almanac" data-field="combined_total">&mdash;</span></strong></span>
+                    <div class="mod-card-foot">
+                        <div class="mod-card-downloads" aria-label="Recorded downloads">
+                            <span title="Thunderstore">&#x26A1; <span data-stats-mod="havens-almanac" data-field="thunderstore_downloads">&mdash;</span></span>
+                            <span title="Nexus Mods">&#x1F4E6; <span data-stats-mod="havens-almanac" data-field="nexus_downloads">&mdash;</span></span>
+                            <span class="mod-dl-total" title="Combined total">&#x2B07; <span data-stats-mod="havens-almanac" data-field="combined_total">&mdash;</span></span>
                         </div>
+                        <span class="mod-status-badge status-stable">Stable</span>
                     </div>
-                    <span class="mod-status-badge status-stable">Stable</span>
-                    <a href="HavensAlmanac/HavensAlmanac.html" class="mod-cta-button almanac-btn">Accept Contract &rarr;</a>
-                </div>
+                    <a href="HavensAlmanac/HavensAlmanac.html" class="mod-cta-button">Open mod page <span aria-hidden="true">&rarr;</span></a>
+                </article>
 
                 <!-- Crop Optimizer -->
-                <div class="mod-card crop-theme" data-tags="QoL,UI,Tracking" data-name="Crop Optimizer">
-                    <div class="mod-card-header">
-                        <span class="mod-icon-large">&#x1F331;</span>
+                <article class="mod-card" data-tags="QoL,UI,Tracking" data-name="Crop Optimizer" style="--card-accent:#65a30d">
+                    <div class="mod-card-top">
+                        <img class="mod-icon" src="CropOptimizer/icon.png" alt="" width="64" height="64" loading="lazy">
                         <div class="mod-title-area">
                             <h3>Crop Optimizer</h3>
                             <p class="mod-tagline">Farm Forecast HUD &amp; Hover Tooltip</p>
-                            <span class="mod-version">v2.1.1</span>
                         </div>
+                        <span class="mod-version">v2.1.1</span>
                     </div>
                     <p class="mod-description">A draggable HUD that forecasts every crop in the ground, plus a hover tooltip showing quality, growth ETA, water / fertilizer state, projected gold, and tile coords. Soft-integrates with Todo, Birthday Reminder, The Vault, and the Almanac.</p>
                     <div class="mod-features-list">
@@ -395,26 +423,26 @@
                         <span class="mod-feature">Quality Tiers</span>
                         <span class="mod-feature">Projected Gold</span>
                     </div>
-                    <div class="mod-card-downloads" aria-label="Recorded downloads">
-                        <div class="mod-card-downloads-row">
-                            <span>Thunderstore <strong><span data-stats-mod="crop-optimizer" data-field="thunderstore_downloads">&mdash;</span></strong></span>
-                            <span>Nexus <strong><span data-stats-mod="crop-optimizer" data-field="nexus_downloads">&mdash;</span></strong></span>
-                            <span>Total <strong><span data-stats-mod="crop-optimizer" data-field="combined_total">&mdash;</span></strong></span>
+                    <div class="mod-card-foot">
+                        <div class="mod-card-downloads" aria-label="Recorded downloads">
+                            <span title="Thunderstore">&#x26A1; <span data-stats-mod="crop-optimizer" data-field="thunderstore_downloads">&mdash;</span></span>
+                            <span title="Nexus Mods">&#x1F4E6; <span data-stats-mod="crop-optimizer" data-field="nexus_downloads">&mdash;</span></span>
+                            <span class="mod-dl-total" title="Combined total">&#x2B07; <span data-stats-mod="crop-optimizer" data-field="combined_total">&mdash;</span></span>
                         </div>
+                        <span class="mod-status-badge status-stable">Stable</span>
                     </div>
-                    <span class="mod-status-badge status-stable">Stable</span>
-                    <a href="CropOptimizer/CropOptimizer.html" class="mod-cta-button crop-btn">Accept Contract &rarr;</a>
-                </div>
+                    <a href="CropOptimizer/CropOptimizer.html" class="mod-cta-button">Open mod page <span aria-hidden="true">&rarr;</span></a>
+                </article>
 
                 <!-- Haven's Respec -->
-                <div class="mod-card respec-theme" data-tags="QoL,UI,Skills" data-name="Haven's Respec">
-                    <div class="mod-card-header">
-                        <span class="mod-icon-large">&#x1F4DC;</span>
+                <article class="mod-card" data-tags="QoL,UI,Skills" data-name="Haven's Respec" style="--card-accent:#7c3aed">
+                    <div class="mod-card-top">
+                        <img class="mod-icon" src="HavensRespec/icon.png" alt="" width="64" height="64" loading="lazy">
                         <div class="mod-title-area">
                             <h3>Haven's Respec</h3>
                             <p class="mod-tagline">Safe Skill Tree Respec</p>
-                            <span class="mod-version">v2.0.2</span>
                         </div>
+                        <span class="mod-version">v2.0.2</span>
                     </div>
                     <p class="mod-description">Reset any profession's skill tree with a confirmation dialog, one-step Undo, and optional gold/gem cost. Clean-room and tree-driven &mdash; no hardcoded node names, so it survives Sun Haven updates. Configs edit live from the in-game Configuration Manager.</p>
                     <div class="mod-features-list">
@@ -423,26 +451,26 @@
                         <span class="mod-feature">Configurable Cost</span>
                         <span class="mod-feature">Hotkeys</span>
                     </div>
-                    <div class="mod-card-downloads" aria-label="Recorded downloads">
-                        <div class="mod-card-downloads-row">
-                            <span>Thunderstore <strong><span data-stats-mod="havens-respec" data-field="thunderstore_downloads">&mdash;</span></strong></span>
-                            <span>Nexus <strong><span data-stats-mod="havens-respec" data-field="nexus_downloads">&mdash;</span></strong></span>
-                            <span>Total <strong><span data-stats-mod="havens-respec" data-field="combined_total">&mdash;</span></strong></span>
+                    <div class="mod-card-foot">
+                        <div class="mod-card-downloads" aria-label="Recorded downloads">
+                            <span title="Thunderstore">&#x26A1; <span data-stats-mod="havens-respec" data-field="thunderstore_downloads">&mdash;</span></span>
+                            <span title="Nexus Mods">&#x1F4E6; <span data-stats-mod="havens-respec" data-field="nexus_downloads">&mdash;</span></span>
+                            <span class="mod-dl-total" title="Combined total">&#x2B07; <span data-stats-mod="havens-respec" data-field="combined_total">&mdash;</span></span>
                         </div>
+                        <span class="mod-status-badge status-stable">Stable</span>
                     </div>
-                    <span class="mod-status-badge status-stable">Stable</span>
-                    <a href="HavensRespec/HavensRespec.html" class="mod-cta-button respec-btn">Accept Contract &rarr;</a>
-                </div>
+                    <a href="HavensRespec/HavensRespec.html" class="mod-cta-button">Open mod page <span aria-hidden="true">&rarr;</span></a>
+                </article>
 
                 <!-- HavenDevTools -->
-                <div class="mod-card devtools-theme" data-tags="Dev" data-name="HavenDevTools">
-                    <div class="mod-card-header">
-                        <span class="mod-icon-large">&#x1F6E0;&#xFE0F;</span>
+                <article class="mod-card" data-tags="Dev" data-name="HavenDevTools" style="--card-accent:#64748b">
+                    <div class="mod-card-top">
+                        <img class="mod-icon" src="HavenDevTools/icon.png" alt="" width="64" height="64" loading="lazy">
                         <div class="mod-title-area">
                             <h3>HavenDevTools</h3>
-                            <p class="mod-tagline">Developer & Debug Utilities</p>
-                            <span class="mod-version">v2.0.2</span>
+                            <p class="mod-tagline">Developer &amp; Debug Utilities</p>
                         </div>
+                        <span class="mod-version">v2.0.2</span>
                     </div>
                     <p class="mod-description">A comprehensive development toolkit for mod developers. Real-time game state inspection, advanced logging, debug overlays, and utilities for testing and troubleshooting.</p>
                     <div class="mod-features-list">
@@ -451,108 +479,29 @@
                         <span class="mod-feature">Performance Monitor</span>
                         <span class="mod-feature">Hot Reload</span>
                     </div>
-                    <div class="mod-card-downloads" aria-label="Recorded downloads">
-                        <div class="mod-card-downloads-row">
-                            <span>Thunderstore <strong><span data-stats-mod="haven-dev-tools" data-field="thunderstore_downloads">&mdash;</span></strong></span>
-                            <span>Nexus <strong><span data-stats-mod="haven-dev-tools" data-field="nexus_downloads">&mdash;</span></strong></span>
-                            <span>Total <strong><span data-stats-mod="haven-dev-tools" data-field="combined_total">&mdash;</span></strong></span>
+                    <div class="mod-card-foot">
+                        <div class="mod-card-downloads" aria-label="Recorded downloads">
+                            <span title="Thunderstore">&#x26A1; <span data-stats-mod="haven-dev-tools" data-field="thunderstore_downloads">&mdash;</span></span>
+                            <span title="Nexus Mods">&#x1F4E6; <span data-stats-mod="haven-dev-tools" data-field="nexus_downloads">&mdash;</span></span>
+                            <span class="mod-dl-total" title="Combined total">&#x2B07; <span data-stats-mod="haven-dev-tools" data-field="combined_total">&mdash;</span></span>
                         </div>
+                        <span class="mod-status-badge status-stable">Stable</span>
                     </div>
-                    <span class="mod-status-badge status-stable">Stable</span>
-                    <a href="HavenDevTools/HavenDevTools.html" class="mod-cta-button devtools-btn">Accept Contract &rarr;</a>
-                </div>
+                    <a href="HavenDevTools/HavenDevTools.html" class="mod-cta-button">Open mod page <span aria-hidden="true">&rarr;</span></a>
+                </article>
             </div>
-            <p id="modSearchEmpty" class="mod-search-empty" role="status" aria-live="polite" hidden>No postings match your search or filter. <button type="button" class="mod-search-reset">Clear search and show all</button></p>
+            <p id="modSearchEmpty" class="mod-search-empty" role="status" aria-live="polite" hidden>No mods match your search or filter. <button type="button" class="mod-search-reset">Clear search and show all</button></p>
         </section>
 
-        <!-- Guild Initiation -->
-        <section class="quick-install" style="border-left:3px solid rgba(47,143,91,0.3); padding-left:20px;">
-            <h2 class="section-title" id="guild-initiation" style="letter-spacing:0.1em;">Guild Initiation</h2>
-            <p class="game-compat-callout">Built for <strong>Sun Haven</strong> on PC with <strong>BepInEx 5.x</strong>. Exact game-build compatibility varies by mod release; check each mod&rsquo;s page and <code>BepInEx/LogOutput.log</code> if a plugin fails to load.</p>
-            <div class="install-steps">
-                <div class="install-step">
-                    <div class="step-number" style="background:linear-gradient(135deg, #2f8f5b, #1a5c3a);">I</div>
-                    <div class="step-content">
-                        <h4>Forge Your Foundation</h4>
-                        <p>Download and install <a href="https://github.com/BepInEx/BepInEx/releases" target="_blank">BepInEx 5.x</a> for Unity games &mdash; the framework all guild contracts require.</p>
-                    </div>
-                </div>
-                <div class="install-step">
-                    <div class="step-number" style="background:linear-gradient(135deg, #2f8f5b, #1a5c3a);">II</div>
-                    <div class="step-content">
-                        <h4>Claim Your Contracts</h4>
-                        <p>Obtain the latest DLL scrolls from <a href="https://www.nexusmods.com/profile/AzraelGodKing/mods" target="_blank">Nexus Mods</a>.</p>
-                    </div>
-                </div>
-                <div class="install-step">
-                    <div class="step-number" style="background:linear-gradient(135deg, #2f8f5b, #1a5c3a);">III</div>
-                    <div class="step-content">
-                        <h4>Bind the Enchantments</h4>
-                        <p>Place mod DLLs in your <code>BepInEx/plugins</code> directory.</p>
-                    </div>
-                </div>
-                <div class="install-step">
-                    <div class="step-number" style="background:linear-gradient(135deg, #2f8f5b, #1a5c3a);">IV</div>
-                    <div class="step-content">
-                        <h4>Begin Your Adventure!</h4>
-                        <p>Launch Sun Haven. Your guild enchantments activate on entry.</p>
-                    </div>
-                </div>
+        <!-- Starter Packs -->
+        <section class="mod-packs" id="party-loadouts">
+            <div class="section-head">
+                <h2 class="section-title">Starter Packs</h2>
+                <p class="section-lede">Not sure where to begin? These bundles suit the most common playstyles &mdash; every mod also works fine on its own.</p>
             </div>
-        </section>
-
-        <!-- Guild Master's Wisdom -->
-        <section class="faq-section">
-            <h2 class="section-title" id="guild-master-wisdom" style="letter-spacing:0.1em;">Guild Master's Wisdom</h2>
-            <div class="faq-list">
-                <details class="faq-item">
-                    <summary class="faq-question">My enchantment failed to activate after binding?</summary>
-                    <div class="faq-answer">
-                        <p>Make sure you have BepInEx 5.x installed correctly. The mod DLL should be in <code>BepInEx/plugins/</code>. Check <code>BepInEx/LogOutput.log</code> for errors. Ensure you're running a compatible game version.</p>
-                    </div>
-                </details>
-                <details class="faq-item">
-                    <summary class="faq-question">Where are the configuration scrolls kept?</summary>
-                    <div class="faq-answer">
-                        <p>Config files are in <code>BepInEx/config/</code> inside your Sun Haven game folder. Each mod has its own <code>.cfg</code> file. You can edit these with any text editor while the game is closed, or use in-game settings if the mod supports them.</p>
-                    </div>
-                </details>
-                <details class="faq-item">
-                    <summary class="faq-question">Can I carry multiple enchantments at once?</summary>
-                    <div class="faq-answer">
-                        <p>Yes! All contracts from this guild are designed to work together with no conflicts. Several form powerful combinations:</p>
-                        <ul style="margin: 8px 0 0 20px; line-height: 1.8;">
-                            <li><strong>Senpai's Chest + S.M.U.T.</strong> &mdash; Auto-excludes already-donated museum items from sorting</li>
-                            <li><strong>Birthday Reminder + Todo</strong> &mdash; Birthday gift reminders auto-create todo tasks that complete when you give the gift</li>
-                            <li><strong>Gifting Assistant + Todo</strong> &mdash; Daily gift roster pushes &ldquo;Gift {NPC} today&rdquo; tasks that auto-complete when you gift in-game or mark gifted in the window</li>
-                            <li><strong>Gifting Assistant + Birthday Reminder + Almanac</strong> &mdash; Birthday NPCs surface in the gift roster; roster progress appears on the Almanac dashboard</li>
-                            <li><strong>Senpai's Chest + S.M.U.T. + Todo</strong> &mdash; Undonated museum items found in chests auto-create todo reminders that complete on donation</li>
-                        </ul>
-                        <p style="margin-top: 8px;">All combinations are optional &mdash; each enchantment works perfectly on its own!</p>
-                    </div>
-                </details>
-                <details class="faq-item">
-                    <summary class="faq-question">How do I upgrade an enchantment?</summary>
-                    <div class="faq-answer">
-                        <p>Simply replace the old DLL file in <code>BepInEx/plugins/</code> with the new version. Your config settings and save data are preserved automatically. If using r2modman/Thunderstore, updates are handled for you.</p>
-                    </div>
-                </details>
-                <details class="faq-item">
-                    <summary class="faq-question">My settings vanished after upgrading?</summary>
-                    <div class="faq-answer">
-                        <p>If a mod adds new config options, BepInEx may regenerate the config file. Your existing settings should be preserved, but new options will use their defaults. Check the <code>.cfg</code> file to verify your preferences.</p>
-                    </div>
-                </details>
-            </div>
-        </section>
-
-        <!-- Party Loadouts -->
-        <section class="mod-packs">
-            <h2 class="section-title" id="party-loadouts" style="letter-spacing:0.1em;">Party Loadouts</h2>
-            <p style="text-align:center; opacity:0.5; font-style:italic; margin-bottom:20px; font-size:0.9em;">Recommended contract bundles for different playstyles</p>
             <div class="packs-grid">
-                <div class="pack-card" style="border-top:3px solid #c4956a;">
-                    <h3 class="pack-name">&#x1F3DB; The Curator's Kit</h3>
+                <div class="pack-card" style="--pack-accent:#b45309">
+                    <h3 class="pack-name"><span aria-hidden="true">&#x1F3DB;</span> The Curator</h3>
                     <p class="pack-desc">Track, sort, and store your museum collectibles</p>
                     <div class="pack-mods">
                         <a href="SMUT/SMUT.html" class="pack-mod">S.M.U.T.</a>
@@ -560,8 +509,8 @@
                         <a href="TheVault/TheVault.html" class="pack-mod">The Vault</a>
                     </div>
                 </div>
-                <div class="pack-card" style="border-top:3px solid #e87ba4;">
-                    <h3 class="pack-name">&#x1F495; The Diplomat's Kit</h3>
+                <div class="pack-card" style="--pack-accent:#ec4899">
+                    <h3 class="pack-name"><span aria-hidden="true">&#x1F495;</span> The Socialite</h3>
                     <p class="pack-desc">Build relationships and never miss a birthday or daily gift</p>
                     <div class="pack-mods">
                         <a href="BirthdayReminder/BirthdayReminder.html" class="pack-mod">Birthday Reminder</a>
@@ -569,18 +518,18 @@
                         <a href="RacialBonuses/RacialBonuses.html" class="pack-mod">Haven's Birthright</a>
                     </div>
                 </div>
-                <div class="pack-card" style="border-top:3px solid #2f8f5b;">
-                    <h3 class="pack-name">&#x1F33E; The Homesteader's Kit</h3>
-                    <p class="pack-desc">Stay on track with tasks and sorted storage</p>
+                <div class="pack-card" style="--pack-accent:#16a34a">
+                    <h3 class="pack-name"><span aria-hidden="true">&#x1F33E;</span> The Homesteader</h3>
+                    <p class="pack-desc">Stay on track with tasks, crops, and sorted storage</p>
                     <div class="pack-mods">
                         <a href="Todo/todo.html" class="pack-mod">Sun Haven Todo</a>
+                        <a href="CropOptimizer/CropOptimizer.html" class="pack-mod">Crop Optimizer</a>
                         <a href="SenpaisChest/SenpaisChest.html" class="pack-mod">Senpai's Chest</a>
-                        <a href="TheVault/TheVault.html" class="pack-mod">The Vault</a>
                     </div>
                 </div>
-                <div class="pack-card full-suite" style="border-top:3px solid #ffc332;">
-                    <h3 class="pack-name">&#x2B50; Guild Master's Arsenal</h3>
-                    <p class="pack-desc">Full gameplay suite &mdash; all thirteen mods: vault, races, museum, storage, tasks, social, gifting, fishing luck, crop planning, skill respec, and the Almanac dashboard. Install <a href="HavenDevTools/HavenDevTools.html">HavenDevTools</a> separately if you need author utilities. Haven's Birthright can optionally mirror passive bonuses across races via <code>[BonusTransfers]</code> in its config.</p>
+                <div class="pack-card pack-card-wide" style="--pack-accent:#eab308">
+                    <h3 class="pack-name"><span aria-hidden="true">&#x2B50;</span> The Full Suite</h3>
+                    <p class="pack-desc">All twelve gameplay mods &mdash; vault, races, museum, storage, tasks, social, gifting, fishing luck, crop planning, skill respec, and the Almanac dashboard tying it all together. Add <a href="HavenDevTools/HavenDevTools.html">HavenDevTools</a> if you build mods yourself.</p>
                     <div class="pack-mods">
                         <a href="HavensAlmanac/HavensAlmanac.html" class="pack-mod">Almanac</a>
                         <a href="TheVault/TheVault.html" class="pack-mod">The Vault</a>
@@ -588,7 +537,7 @@
                         <a href="FasterRaces/FasterRaces.html" class="pack-mod">Faster Races</a>
                         <a href="TrinketFortune/TrinketFortune.html" class="pack-mod">Trinket Fortune</a>
                         <a href="CropOptimizer/CropOptimizer.html" class="pack-mod">Crop Optimizer</a>
-                        <a href="HavensRespec/HavensRespec.html" class="pack-mod">Haven's Respec</a>
+                        <a href="HavensRespec/HavensRespec.html" class="pack-mod">Respec</a>
                         <a href="SMUT/SMUT.html" class="pack-mod">S.M.U.T.</a>
                         <a href="SenpaisChest/SenpaisChest.html" class="pack-mod">Senpai's Chest</a>
                         <a href="Todo/todo.html" class="pack-mod">Todo</a>
@@ -599,171 +548,169 @@
             </div>
         </section>
 
-        <!-- Arsenal Comparison -->
-        <section class="comparison-section">
-            <h2 class="section-title" id="arsenal-comparison" style="letter-spacing:0.1em;">Arsenal Comparison</h2>
-            <p class="comparison-scroll-hint">On a phone or narrow window, scroll the table sideways to see every column.</p>
-            <table class="comparison-table">
-                <thead>
-                    <tr>
-                        <th>Capability</th>
-                        <th>Vault</th>
-                        <th>S.M.U.T.</th>
-                        <th>Chest</th>
-                        <th>Todo</th>
-                        <th>Birthday</th>
-                        <th>Gifting</th>
-                        <th>Birthright</th>
-                        <th>Faster</th>
-                        <th>Trinket</th>
-                        <th>Crop</th>
-                        <th>Respec</th>
-                        <th>Almanac</th>
-                        <th>DevTools</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <tr>
-                        <td>Per-Character Saves</td>
-                        <td class="cmp-yes">Yes</td>
-                        <td class="cmp-yes">Yes</td>
-                        <td class="cmp-yes">Yes</td>
-                        <td class="cmp-yes">Yes</td>
-                        <td class="cmp-yes">Yes</td>
-                        <td class="cmp-yes">Yes</td>
-                        <td class="cmp-yes">Yes</td>
-                        <td class="cmp-yes">Yes</td>
-                        <td class="cmp-yes">Yes</td>
-                        <td class="cmp-yes">Yes</td>
-                        <td class="cmp-yes">Yes</td>
-                        <td class="cmp-yes">Yes</td>
-                        <td class="cmp-no">&mdash;</td>
-                    </tr>
-                    <tr>
-                        <td>In-Game UI</td>
-                        <td class="cmp-yes">Yes</td>
-                        <td class="cmp-yes">Yes</td>
-                        <td class="cmp-yes">Yes</td>
-                        <td class="cmp-yes">Yes</td>
-                        <td class="cmp-yes">Yes</td>
-                        <td class="cmp-yes">Yes</td>
-                        <td class="cmp-no">&mdash;</td>
-                        <td class="cmp-no">&mdash;</td>
-                        <td class="cmp-no">&mdash;</td>
-                        <td class="cmp-yes">Yes</td>
-                        <td class="cmp-yes">Yes</td>
-                        <td class="cmp-yes">Yes</td>
-                        <td class="cmp-yes">Yes</td>
-                    </tr>
-                    <tr>
-                        <td>Configurable Settings</td>
-                        <td class="cmp-yes">Yes</td>
-                        <td class="cmp-yes">Yes</td>
-                        <td class="cmp-yes">Yes</td>
-                        <td class="cmp-yes">Yes</td>
-                        <td class="cmp-yes">Yes</td>
-                        <td class="cmp-yes">Yes</td>
-                        <td class="cmp-yes">Yes</td>
-                        <td class="cmp-yes">Yes</td>
-                        <td class="cmp-yes">Yes</td>
-                        <td class="cmp-yes">Yes</td>
-                        <td class="cmp-yes">Yes</td>
-                        <td class="cmp-yes">Yes</td>
-                        <td class="cmp-yes">Yes</td>
-                    </tr>
-                    <tr>
-                        <td>Keyboard Shortcuts</td>
-                        <td class="cmp-yes">Yes</td>
-                        <td class="cmp-yes">Yes</td>
-                        <td class="cmp-yes">Yes</td>
-                        <td class="cmp-yes">Yes</td>
-                        <td class="cmp-yes">Yes</td>
-                        <td class="cmp-yes">Yes</td>
-                        <td class="cmp-no">&mdash;</td>
-                        <td class="cmp-no">&mdash;</td>
-                        <td class="cmp-no">&mdash;</td>
-                        <td class="cmp-yes">Yes</td>
-                        <td class="cmp-yes">Yes</td>
-                        <td class="cmp-yes">Yes</td>
-                        <td class="cmp-yes">Yes</td>
-                    </tr>
-                    <tr>
-                        <td>Controller Support</td>
-                        <td class="cmp-no">&mdash;</td>
-                        <td class="cmp-no">&mdash;</td>
-                        <td class="cmp-yes">Yes</td>
-                        <td class="cmp-no">&mdash;</td>
-                        <td class="cmp-no">&mdash;</td>
-                        <td class="cmp-no">&mdash;</td>
-                        <td class="cmp-no">&mdash;</td>
-                        <td class="cmp-no">&mdash;</td>
-                        <td class="cmp-no">&mdash;</td>
-                        <td class="cmp-no">&mdash;</td>
-                        <td class="cmp-no">&mdash;</td>
-                        <td class="cmp-no">&mdash;</td>
-                        <td class="cmp-no">&mdash;</td>
-                    </tr>
-                    <tr>
-                        <td>Auto Storage/Sorting</td>
-                        <td class="cmp-yes">Yes</td>
-                        <td class="cmp-no">&mdash;</td>
-                        <td class="cmp-yes">Yes</td>
-                        <td class="cmp-no">&mdash;</td>
-                        <td class="cmp-no">&mdash;</td>
-                        <td class="cmp-no">&mdash;</td>
-                        <td class="cmp-no">&mdash;</td>
-                        <td class="cmp-no">&mdash;</td>
-                        <td class="cmp-no">&mdash;</td>
-                        <td class="cmp-no">&mdash;</td>
-                        <td class="cmp-no">&mdash;</td>
-                        <td class="cmp-no">&mdash;</td>
-                        <td class="cmp-no">&mdash;</td>
-                    </tr>
-                    <tr>
-                        <td>Progress Tracking</td>
-                        <td class="cmp-no">&mdash;</td>
-                        <td class="cmp-yes">Yes</td>
-                        <td class="cmp-no">&mdash;</td>
-                        <td class="cmp-yes">Yes</td>
-                        <td class="cmp-yes">Yes</td>
-                        <td class="cmp-yes">Yes</td>
-                        <td class="cmp-no">&mdash;</td>
-                        <td class="cmp-yes">Yes</td>
-                        <td class="cmp-yes">Yes</td>
-                        <td class="cmp-no">&mdash;</td>
-                        <td class="cmp-yes">Yes</td>
-                        <td class="cmp-no">&mdash;</td>
-                    </tr>
-                    <tr>
-                        <td>Cross-Mod Synergy</td>
-                        <td class="cmp-no">&mdash;</td>
-                        <td class="cmp-yes">Yes</td>
-                        <td class="cmp-yes">Yes</td>
-                        <td class="cmp-yes">Yes</td>
-                        <td class="cmp-yes">Yes</td>
-                        <td class="cmp-yes">Yes</td>
-                        <td class="cmp-no">&mdash;</td>
-                        <td class="cmp-yes">Yes</td>
-                        <td class="cmp-yes">Yes</td>
-                        <td class="cmp-yes">Yes</td>
-                        <td class="cmp-no">&mdash;</td>
-                        <td class="cmp-yes">Yes</td>
-                        <td class="cmp-no">&mdash;</td>
-                    </tr>
-                </tbody>
-            </table>
+        <!-- Install -->
+        <section class="quick-install" id="guild-initiation">
+            <div class="section-head">
+                <h2 class="section-title">Install in Four Steps</h2>
+                <p class="section-lede">Built for <strong>Sun Haven on PC</strong> with <strong>BepInEx 5.x</strong>. Exact game-build compatibility varies by release &mdash; check each mod's page, and <code>BepInEx/LogOutput.log</code> if a plugin fails to load.</p>
+            </div>
+            <div class="install-steps">
+                <div class="install-step">
+                    <div class="step-number">1</div>
+                    <div class="step-content">
+                        <h4>Install BepInEx</h4>
+                        <p>Download <a href="https://github.com/BepInEx/BepInEx/releases" target="_blank" rel="noopener noreferrer">BepInEx 5.x</a> for Unity games and unzip it into your Sun Haven folder. Launch the game once so it generates its folders.</p>
+                    </div>
+                </div>
+                <div class="install-step">
+                    <div class="step-number">2</div>
+                    <div class="step-content">
+                        <h4>Download the mods</h4>
+                        <p>Grab the latest releases from <a href="https://thunderstore.io/c/sun-haven/p/AzraelGodKing/" target="_blank" rel="noopener noreferrer">Thunderstore</a> or <a href="https://www.nexusmods.com/profile/AzraelGodKing/mods" target="_blank" rel="noopener noreferrer">Nexus Mods</a> &mdash; or use a mod manager like r2modman.</p>
+                    </div>
+                </div>
+                <div class="install-step">
+                    <div class="step-number">3</div>
+                    <div class="step-content">
+                        <h4>Drop in the DLLs</h4>
+                        <p>Place each mod's DLL (and any packaged files) into <code>BepInEx/plugins/</code>. Subfolders are fine.</p>
+                    </div>
+                </div>
+                <div class="install-step">
+                    <div class="step-number">4</div>
+                    <div class="step-content">
+                        <h4>Play</h4>
+                        <p>Launch Sun Haven. Mods activate automatically &mdash; check each mod's page for hotkeys and config options.</p>
+                    </div>
+                </div>
+            </div>
         </section>
 
-        <!-- Guild Seal Footer -->
-        <div class="footer" style="border-top:2px solid rgba(47,143,91,0.2); padding-top:24px;">
-            <p style="letter-spacing:0.1em;">The Adventurer's Guild &mdash; Founded by AzraelGodKing</p>
-            <p style="margin-top: 10px;">
-                <a href="https://www.nexusmods.com/profile/AzraelGodKing/mods" target="_blank">Nexus Mods Archives</a>
-                &nbsp;|&nbsp;
-                <a href="https://thunderstore.io/c/sun-haven/p/AzraelGodKing/" target="_blank">Thunderstore Emporium</a>
+        <!-- FAQ -->
+        <section class="faq-section" id="guild-master-wisdom">
+            <div class="section-head">
+                <h2 class="section-title">Frequently Asked</h2>
+            </div>
+            <div class="faq-list">
+                <details class="faq-item">
+                    <summary class="faq-question">A mod didn't load after installing?</summary>
+                    <div class="faq-answer">
+                        <p>Make sure BepInEx 5.x is installed correctly and the mod DLL sits in <code>BepInEx/plugins/</code>. Check <code>BepInEx/LogOutput.log</code> for errors, and confirm you're on a compatible game version.</p>
+                    </div>
+                </details>
+                <details class="faq-item">
+                    <summary class="faq-question">Where are the config files?</summary>
+                    <div class="faq-answer">
+                        <p>In <code>BepInEx/config/</code> inside your Sun Haven game folder &mdash; one <code>.cfg</code> per mod. Edit them with any text editor while the game is closed, or use in-game settings where a mod supports them.</p>
+                    </div>
+                </details>
+                <details class="faq-item">
+                    <summary class="faq-question">Can I run several mods at once?</summary>
+                    <div class="faq-answer">
+                        <p>Yes &mdash; all mods here are designed to work together with no conflicts, and several form powerful combinations:</p>
+                        <ul>
+                            <li><strong>Senpai's Chest + S.M.U.T.</strong> &mdash; auto-excludes already-donated museum items from sorting</li>
+                            <li><strong>Birthday Reminder + Todo</strong> &mdash; birthday gift reminders auto-create todos that complete when you give the gift</li>
+                            <li><strong>Gifting Assistant + Todo</strong> &mdash; the daily roster pushes &ldquo;Gift {NPC} today&rdquo; tasks that auto-complete when you gift</li>
+                            <li><strong>Gifting Assistant + Birthday Reminder + Almanac</strong> &mdash; birthday NPCs surface in the roster; progress appears on the Almanac dashboard</li>
+                            <li><strong>Senpai's Chest + S.M.U.T. + Todo</strong> &mdash; undonated museum items found in chests auto-create reminders that complete on donation</li>
+                        </ul>
+                        <p>Every combination is optional &mdash; each mod works perfectly on its own.</p>
+                    </div>
+                </details>
+                <details class="faq-item">
+                    <summary class="faq-question">How do I update a mod?</summary>
+                    <div class="faq-answer">
+                        <p>Replace the old DLL in <code>BepInEx/plugins/</code> with the new version &mdash; config settings and save data are preserved automatically. With r2modman or Thunderstore, updates are handled for you.</p>
+                    </div>
+                </details>
+                <details class="faq-item">
+                    <summary class="faq-question">My settings changed after upgrading?</summary>
+                    <div class="faq-answer">
+                        <p>If a mod adds new config options, BepInEx may regenerate the config file. Existing settings are preserved, but new options start at their defaults &mdash; check the <code>.cfg</code> file to verify your preferences.</p>
+                    </div>
+                </details>
+            </div>
+        </section>
+
+        <!-- Comparison -->
+        <section class="comparison-section" id="arsenal-comparison">
+            <div class="section-head">
+                <h2 class="section-title">Feature Comparison</h2>
+                <p class="section-lede comparison-scroll-hint">On a phone or narrow window, scroll the table sideways to see every column.</p>
+            </div>
+            <div class="comparison-scroll">
+                <table class="comparison-table">
+                    <thead>
+                        <tr>
+                            <th>Capability</th>
+                            <th>Vault</th>
+                            <th>S.M.U.T.</th>
+                            <th>Chest</th>
+                            <th>Todo</th>
+                            <th>Birthday</th>
+                            <th>Gifting</th>
+                            <th>Birthright</th>
+                            <th>Faster</th>
+                            <th>Trinket</th>
+                            <th>Crop</th>
+                            <th>Respec</th>
+                            <th>Almanac</th>
+                            <th>DevTools</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>Per-Character Saves</td>
+                            <td class="cmp-yes">Yes</td><td class="cmp-yes">Yes</td><td class="cmp-yes">Yes</td><td class="cmp-yes">Yes</td><td class="cmp-yes">Yes</td><td class="cmp-yes">Yes</td><td class="cmp-yes">Yes</td><td class="cmp-yes">Yes</td><td class="cmp-yes">Yes</td><td class="cmp-yes">Yes</td><td class="cmp-yes">Yes</td><td class="cmp-yes">Yes</td><td class="cmp-no">&mdash;</td>
+                        </tr>
+                        <tr>
+                            <td>In-Game UI</td>
+                            <td class="cmp-yes">Yes</td><td class="cmp-yes">Yes</td><td class="cmp-yes">Yes</td><td class="cmp-yes">Yes</td><td class="cmp-yes">Yes</td><td class="cmp-yes">Yes</td><td class="cmp-no">&mdash;</td><td class="cmp-no">&mdash;</td><td class="cmp-no">&mdash;</td><td class="cmp-yes">Yes</td><td class="cmp-yes">Yes</td><td class="cmp-yes">Yes</td><td class="cmp-yes">Yes</td>
+                        </tr>
+                        <tr>
+                            <td>Configurable Settings</td>
+                            <td class="cmp-yes">Yes</td><td class="cmp-yes">Yes</td><td class="cmp-yes">Yes</td><td class="cmp-yes">Yes</td><td class="cmp-yes">Yes</td><td class="cmp-yes">Yes</td><td class="cmp-yes">Yes</td><td class="cmp-yes">Yes</td><td class="cmp-yes">Yes</td><td class="cmp-yes">Yes</td><td class="cmp-yes">Yes</td><td class="cmp-yes">Yes</td><td class="cmp-yes">Yes</td>
+                        </tr>
+                        <tr>
+                            <td>Keyboard Shortcuts</td>
+                            <td class="cmp-yes">Yes</td><td class="cmp-yes">Yes</td><td class="cmp-yes">Yes</td><td class="cmp-yes">Yes</td><td class="cmp-yes">Yes</td><td class="cmp-yes">Yes</td><td class="cmp-no">&mdash;</td><td class="cmp-no">&mdash;</td><td class="cmp-no">&mdash;</td><td class="cmp-yes">Yes</td><td class="cmp-yes">Yes</td><td class="cmp-yes">Yes</td><td class="cmp-yes">Yes</td>
+                        </tr>
+                        <tr>
+                            <td>Controller Support</td>
+                            <td class="cmp-no">&mdash;</td><td class="cmp-no">&mdash;</td><td class="cmp-yes">Yes</td><td class="cmp-no">&mdash;</td><td class="cmp-no">&mdash;</td><td class="cmp-no">&mdash;</td><td class="cmp-no">&mdash;</td><td class="cmp-no">&mdash;</td><td class="cmp-no">&mdash;</td><td class="cmp-no">&mdash;</td><td class="cmp-no">&mdash;</td><td class="cmp-no">&mdash;</td><td class="cmp-no">&mdash;</td>
+                        </tr>
+                        <tr>
+                            <td>Auto Storage/Sorting</td>
+                            <td class="cmp-yes">Yes</td><td class="cmp-no">&mdash;</td><td class="cmp-yes">Yes</td><td class="cmp-no">&mdash;</td><td class="cmp-no">&mdash;</td><td class="cmp-no">&mdash;</td><td class="cmp-no">&mdash;</td><td class="cmp-no">&mdash;</td><td class="cmp-no">&mdash;</td><td class="cmp-no">&mdash;</td><td class="cmp-no">&mdash;</td><td class="cmp-no">&mdash;</td><td class="cmp-no">&mdash;</td>
+                        </tr>
+                        <tr>
+                            <td>Progress Tracking</td>
+                            <td class="cmp-no">&mdash;</td><td class="cmp-yes">Yes</td><td class="cmp-no">&mdash;</td><td class="cmp-yes">Yes</td><td class="cmp-yes">Yes</td><td class="cmp-yes">Yes</td><td class="cmp-no">&mdash;</td><td class="cmp-no">&mdash;</td><td class="cmp-yes">Yes</td><td class="cmp-yes">Yes</td><td class="cmp-no">&mdash;</td><td class="cmp-yes">Yes</td><td class="cmp-no">&mdash;</td>
+                        </tr>
+                        <tr>
+                            <td>Cross-Mod Synergy</td>
+                            <td class="cmp-no">&mdash;</td><td class="cmp-yes">Yes</td><td class="cmp-yes">Yes</td><td class="cmp-yes">Yes</td><td class="cmp-yes">Yes</td><td class="cmp-yes">Yes</td><td class="cmp-no">&mdash;</td><td class="cmp-yes">Yes</td><td class="cmp-yes">Yes</td><td class="cmp-yes">Yes</td><td class="cmp-no">&mdash;</td><td class="cmp-yes">Yes</td><td class="cmp-no">&mdash;</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+        <!-- Footer -->
+        <footer class="footer">
+            <p class="footer-title">Sun Haven Mod Hub &mdash; built &amp; maintained by AzraelGodKing</p>
+            <p class="footer-links">
+                <a href="https://www.nexusmods.com/profile/AzraelGodKing/mods" target="_blank" rel="noopener noreferrer">Nexus Mods</a>
+                <span aria-hidden="true">&middot;</span>
+                <a href="https://thunderstore.io/c/sun-haven/p/AzraelGodKing/" target="_blank" rel="noopener noreferrer">Thunderstore</a>
+                <span aria-hidden="true">&middot;</span>
+                <a href="https://github.com/AzraelGodKing/SunhavenMod" target="_blank" rel="noopener noreferrer">GitHub</a>
+                <span aria-hidden="true">&middot;</span>
+                <a href="https://discord.gg/Vwh2y7qMXv" target="_blank" rel="noopener noreferrer">Discord</a>
             </p>
             <p class="footer-disclaimer">Not affiliated with Sun Haven or Pixel Sprout Studios</p>
-        </div>
+        </footer>
     </div>
 </body>
 </html>
