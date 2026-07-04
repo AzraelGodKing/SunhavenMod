@@ -160,6 +160,8 @@ namespace HavenDevTools.UI
             Plugin.Log?.LogInfo("[DebugWindow] Hidden");
         }
 
+        public bool IsVisible => _isVisible;
+
         private void BlockInput()
         {
             if (ModConfig.PauseGameWhenDebugOpen?.Value != true)
@@ -391,6 +393,16 @@ namespace HavenDevTools.UI
             var closeRect = new Rect(headerRect.xMax - closeWidth - 6f, headerRect.y + 8f, closeWidth, 24f);
             if (GUI.Button(closeRect, "×", _closeButtonStyle))
                 Hide();
+
+            var fpsStyle = new GUIStyle(_subtitleStyle)
+            {
+                alignment = TextAnchor.MiddleRight,
+                normal = { textColor = PerformanceSampler.FpsColor(PerformanceSampler.SmoothedFps) }
+            };
+            GUI.Label(
+                new Rect(headerRect.xMax - closeWidth - 96f, headerRect.y + 10f, 84f, 20f),
+                ModLocalization.T("devtools.perf.fps", PerformanceSampler.SmoothedFps),
+                fpsStyle);
 
             GUI.DragWindow(new Rect(0, 0, _windowRect.width - closeWidth - 8f, DebugWindowLayout.HeaderHeight));
         }
@@ -879,11 +891,31 @@ namespace HavenDevTools.UI
             GUILayout.BeginVertical(_boxStyle);
             GUILayout.Label(ModLocalization.T("devtools.perf.title"), _sectionHeaderStyle);
             GUILayout.Space(5);
-            float fps = 1f / Mathf.Max(0.0001f, Time.deltaTime);
-            long memBytes = GC.GetTotalMemory(false);
-            float memMB = memBytes / (1024f * 1024f);
-            GUILayout.Label(ModLocalization.T("devtools.perf.fps", fps), _labelStyle);
-            GUILayout.Label(ModLocalization.T("devtools.perf.memory", memMB), _labelStyle);
+
+            GUILayout.Label(ModLocalization.T("devtools.perf.fps", PerformanceSampler.SmoothedFps), _labelStyle);
+            GUILayout.Label(
+                ModLocalization.T("devtools.perf.fpsRange", PerformanceSampler.MinFps, PerformanceSampler.MaxFps),
+                _labelStyle);
+            GUILayout.Label(ModLocalization.T("devtools.perf.memory", PerformanceSampler.MemoryMb), _labelStyle);
+            GUILayout.Space(6);
+
+            if (ModConfig.ShowFpsCounter != null)
+            {
+                bool showCounter = ModConfig.ShowFpsCounter.Value;
+                bool newShowCounter = GUILayout.Toggle(showCounter, ModLocalization.T("devtools.perf.showFpsCounter"), _labelStyle);
+                if (newShowCounter != showCounter)
+                    ModConfig.ShowFpsCounter.Value = newShowCounter;
+            }
+
+            if (ModConfig.ShowPerformance != null)
+            {
+                bool showPerf = ModConfig.ShowPerformance.Value;
+                bool newShowPerf = GUILayout.Toggle(showPerf, ModLocalization.T("devtools.perf.showOverlayPerf"), _labelStyle);
+                if (newShowPerf != showPerf)
+                    ModConfig.ShowPerformance.Value = newShowPerf;
+            }
+
+            GUILayout.Label(ModLocalization.T("devtools.perf.fpsCounterHint"), _labelStyle);
             GUILayout.Label(ModLocalization.T("devtools.perf.overlayHint"), _labelStyle);
             GUILayout.EndVertical();
         }
