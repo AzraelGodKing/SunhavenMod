@@ -68,6 +68,19 @@ namespace SunhavenTodo.Tests
         }
 
         [Test]
+        public void WriteAtomic_DeletesTempFileWhenPromoteFails()
+        {
+            string path = Path.Combine(_tempDir, "hero_todos.json");
+            string tempPath = path + CharacterSaveStore.TempSuffix;
+            CharacterSaveStore.WriteAtomic(path, "{\"v\":1}");
+            // Block backup rotate so the write fails after .tmp is created.
+            Directory.CreateDirectory(path + CharacterSaveStore.BackupSuffix);
+
+            Assert.Throws<IOException>(() => CharacterSaveStore.WriteAtomic(path, "{\"v\":2}"));
+            Assert.That(File.Exists(tempPath), Is.False);
+        }
+
+        [Test]
         public void WriteAtomic_RotatesBackupAndLoadsPrimary()
         {
             string path = Path.Combine(_tempDir, "hero_todos.json");
