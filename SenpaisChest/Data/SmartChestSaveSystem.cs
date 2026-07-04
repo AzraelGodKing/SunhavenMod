@@ -2,6 +2,7 @@ using System;
 using System.IO;
 using System.Collections.Generic;
 using BepInEx;
+using SunhavenMods.Shared;
 
 namespace SenpaisChest.Data
 {
@@ -15,30 +16,11 @@ namespace SenpaisChest.Data
         {
             _manager = manager;
             _savePath = Path.Combine(Paths.ConfigPath, "SenpaisChest", "Saves");
-
-            if (!Directory.Exists(_savePath))
-            {
-                Directory.CreateDirectory(_savePath);
-            }
+            CharacterSaveStore.EnsureDirectory(_savePath);
         }
 
-        private string GetSaveFilePath(string characterName)
-        {
-            var safeName = SanitizeFileName(characterName);
-            return Path.Combine(_savePath, $"{safeName}_smartchests.json");
-        }
-
-        private string SanitizeFileName(string name)
-        {
-            if (string.IsNullOrEmpty(name))
-                return "unknown";
-
-            foreach (char c in Path.GetInvalidFileNameChars())
-            {
-                name = name.Replace(c, '_');
-            }
-            return name;
-        }
+        private string GetSaveFilePath(string characterName) =>
+            CharacterSaveStore.GetFilePath(_savePath, characterName, "_smartchests.json");
 
         public void Save()
         {
@@ -95,26 +77,8 @@ namespace SenpaisChest.Data
 
                 Plugin.Log?.LogDebug($"[Save] JSON length: {json.Length} chars");
 
-                var tempFilePath = filePath + ".tmp";
-                try
-                {
-                    File.WriteAllText(tempFilePath, json);
-
-                    if (File.Exists(filePath))
-                    {
-                        var backupPath = filePath + ".bak";
-                        if (File.Exists(backupPath))
-                            File.Delete(backupPath);
-                        File.Move(filePath, backupPath);
-                    }
-
-                    File.Move(tempFilePath, filePath);
-                }
-                finally
-                {
-                    if (File.Exists(tempFilePath))
-                        File.Delete(tempFilePath);
-                }
+                if (!CharacterSaveStore.WriteAtomic(filePath, json))
+                    throw new IOException("Atomic write failed");
 
                 _manager.MarkClean();
                 Plugin.Log?.LogInfo($"[Save] Saved successfully: {filePath}");
@@ -134,33 +98,22 @@ namespace SenpaisChest.Data
             }
 
             var filePath = GetSaveFilePath(characterName);
-            var backupPath = filePath + ".bak";
+            var data = CharacterSaveStore.LoadWithBackup(filePath, json => TryDeserializePayload(json, characterName), out var source);
 
-            if (File.Exists(filePath))
+            if (data != null)
             {
-                var result = TryLoadFromFile(filePath, characterName);
-                if (result != null)
-                {
-                    MarkSuccessfulLoad(characterName);
-                    return result;
-                }
-
-                Plugin.Log?.LogWarning($"Main save file corrupted for {characterName}, trying backup...");
-            }
-
-            if (File.Exists(backupPath))
-            {
-                var result = TryLoadFromFile(backupPath, characterName);
-                if (result != null)
-                {
-                    MarkSuccessfulLoad(characterName);
+                MarkSuccessfulLoad(characterName);
+                if (source == CharacterSaveSource.Backup)
                     Plugin.Log?.LogInfo($"Loaded from backup for {characterName}");
-                    return result;
-                }
-                Plugin.Log?.LogWarning($"Backup file also corrupted for {characterName}");
+
+                return data;
             }
 
-            Plugin.Log?.LogInfo($"No save file found for {characterName}, creating new config");
+            if (File.Exists(filePath) || File.Exists(filePath + CharacterSaveStore.BackupSuffix))
+                Plugin.Log?.LogWarning($"Main and backup save files unusable for {characterName}");
+            else
+                Plugin.Log?.LogInfo($"No save file found for {characterName}, creating new config");
+
             return new SmartChestSaveData(characterName);
         }
 
@@ -205,31 +158,35 @@ namespace SenpaisChest.Data
             return false;
         }
 
+        private SmartChestSaveData TryDeserializePayload(string json, string characterName)
+        {
+            if (!CharacterSaveStore.LooksLikeJsonObject(json))
+            {
+                Plugin.Log?.LogWarning("Smart chest save file does not contain valid JSON");
+                return null;
+            }
+
+            var data = DeserializeFromJson(json);
+            if (data == null)
+            {
+                Plugin.Log?.LogWarning("Failed to deserialize smart chest save file");
+                return null;
+            }
+
+            int totalRules = 0;
+            foreach (var chest in data.Chests)
+                totalRules += chest.Rules.Count;
+
+            Plugin.Log?.LogInfo($"Loaded smart chest config for {characterName}: {data.Chests.Count} chest(s), {totalRules} rule(s)");
+            return data;
+        }
+
         private SmartChestSaveData TryLoadFromFile(string filePath, string characterName)
         {
             try
             {
                 var json = File.ReadAllText(filePath);
-
-                if (string.IsNullOrWhiteSpace(json) || !json.TrimStart().StartsWith("{"))
-                {
-                    Plugin.Log?.LogWarning($"File {filePath} does not contain valid JSON");
-                    return null;
-                }
-
-                var data = DeserializeFromJson(json);
-                if (data == null)
-                {
-                    Plugin.Log?.LogWarning($"Failed to deserialize {filePath}");
-                    return null;
-                }
-
-                int totalRules = 0;
-                foreach (var chest in data.Chests)
-                    totalRules += chest.Rules.Count;
-
-                Plugin.Log?.LogInfo($"Loaded smart chest config for {characterName}: {data.Chests.Count} chest(s), {totalRules} rule(s)");
-                return data;
+                return TryDeserializePayload(json, characterName);
             }
             catch (Exception ex)
             {

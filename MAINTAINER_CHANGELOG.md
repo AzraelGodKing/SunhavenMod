@@ -6,6 +6,7 @@ Internal engineering log: **CI**, **release automation**, **scripts**, **docs in
 
 ## 2026-07-04
 
+- **CharacterSaveStore (foundation 1.1):** Added `SharedUtilities/CharacterSaveStore.cs` (sanitize path, atomic `.tmp` → `.bak` rotate write, backup fallback load). Migrated `TodoSaveSystem`, `GiftRosterSaveSystem`, `DonationSaveSystem`, `SmartChestSaveSystem`. NUnit coverage in `SunhavenTodo.Tests/CharacterSaveStoreTests.cs`.
 - **Mod review triage:** Foundation queue ([`maintainer-docs/reviews/mod-review-foundation-active-2026-07-04.md`](maintainer-docs/reviews/mod-review-foundation-active-2026-07-04.md)); deferred features/new mods ([`maintainer-docs/reviews/mod-review-on-hold-2026-07-04.md`](maintainer-docs/reviews/mod-review-on-hold-2026-07-04.md)). Moved `mod-review-2026-07-*.md` under `maintainer-docs/reviews/`.
 - **Crop Optimizer — off-farm FPS:** `CropSceneCache.GetCrops()` filters to `SceneManager.GetActiveScene()`; caches empty scene results for 4s; `CropHoverQuery` fast path caches hover misses (not only hits); `CropHUD.UpdateHoverTooltip()` skips work when the active scene has no crops.
 

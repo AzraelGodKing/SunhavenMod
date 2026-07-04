@@ -8,7 +8,7 @@ Work these in order where possible — later items build on earlier extractions.
 
 | # | Item | Priority | Status | Notes |
 |---|------|----------|--------|-------|
-| 1.1 | **CharacterSaveStore** in SharedUtilities | Highest | Pending | Unify sanitize → temp → `.bak` → atomic move → fallback-load across 8 save systems + 2 `SanitizeFileName` copies |
+| 1.1 | **CharacterSaveStore** in SharedUtilities | Highest | In progress | Shared helper landed; Todo, Gifting Assistant, SMUT, Senpais Chest migrated. Remaining: Vault, Birthday Reminder favorites, PlayerPatches `SanitizeFileName` |
 | 1.2 | **Shared Todo integration client** | High | Pending | Replace 4 diverged copies; mirror TheVault.Abstractions / VaultModApiBridge pattern |
 | 1.3 | **IconCache + UiStyle consolidation** | High | Pending | SMUT → shared IconCache; CropOptimizer + GiftingAssistant → shared UiStyle superset |
 | 1.4 | **Vault CSVAULT3 crypto hardening** | Medium | Pending | Random IV/salt per save + HMAC; legacy decrypt chain for migration |
