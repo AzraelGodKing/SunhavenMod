@@ -100,10 +100,7 @@ namespace TheVault.Vault
         /// </summary>
         private string GetSaveFilePath(string playerName)
         {
-            string safeName = CharacterSaveStore.SanitizeFileName(playerName, string.Empty);
-            if (string.IsNullOrEmpty(safeName))
-                safeName = "default";
-
+            string safeName = CharacterSaveStore.SanitizeFileName(playerName, "default");
             string suffix = GetPerPlayerFileSuffix(playerName);
             return Path.Combine(_saveDirectory, $"{safeName}_{suffix}.vault");
         }
@@ -113,9 +110,7 @@ namespace TheVault.Vault
         /// </summary>
         private string GetLegacySaveFilePath(string playerName)
         {
-            string safeName = CharacterSaveStore.SanitizeFileName(playerName, string.Empty);
-            if (string.IsNullOrEmpty(safeName))
-                safeName = "default";
+            string safeName = CharacterSaveStore.SanitizeFileName(playerName, "default");
             return Path.Combine(_saveDirectory, $"{safeName}.vault");
         }
 

@@ -25,11 +25,14 @@ namespace BirthdayReminder.Data
         public static FavoriteGiftStore Load(string characterName)
         {
             var store = new FavoriteGiftStore(characterName);
-            string path = GetPath(characterName);
 
             try
             {
-                string text = CharacterSaveStore.LoadTextWithBackup(path, out var source);
+                string path = GetPath(characterName);
+                string text = CharacterSaveStore.LoadTextWithBackup(
+                    path,
+                    out var source,
+                    onReadFailure: (p, ex) => Plugin.Log?.LogWarning($"[Favorites] Failed to read '{p}': {ex.Message}"));
                 if (text == null)
                     return store;
 

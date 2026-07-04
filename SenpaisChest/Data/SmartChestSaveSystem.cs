@@ -52,7 +52,7 @@ namespace SenpaisChest.Data
             // Protect existing non-empty save files from being overwritten by an empty runtime state
             // when this session has not yet successfully loaded that character from disk.
             bool hasRulesInMemory = totalRules > 0;
-            bool hasExistingRulesOnDisk = FileContainsRules(filePath) || FileContainsRules(filePath + ".bak");
+            bool hasExistingRulesOnDisk = FileContainsRules(filePath) || FileContainsRules(filePath + CharacterSaveStore.BackupSuffix);
             if (!hasRulesInMemory
                 && hasExistingRulesOnDisk
                 && !HasSuccessfulLoadThisSession(data.CharacterName)
@@ -98,7 +98,11 @@ namespace SenpaisChest.Data
             }
 
             var filePath = GetSaveFilePath(characterName);
-            var data = CharacterSaveStore.LoadWithBackup(filePath, json => TryDeserializePayload(json, characterName), out var source);
+            var data = CharacterSaveStore.LoadWithBackup(
+                filePath,
+                json => TryDeserializePayload(json, characterName),
+                out var source,
+                onReadFailure: (p, ex) => Plugin.Log?.LogError($"Error loading {p}: {ex.Message}"));
 
             if (data != null)
             {
@@ -109,7 +113,7 @@ namespace SenpaisChest.Data
                 return data;
             }
 
-            if (File.Exists(filePath) || File.Exists(filePath + CharacterSaveStore.BackupSuffix))
+            if (CharacterSaveStore.GetAbsenceReason(filePath) == CharacterSaveAbsenceReason.FilesPresentButUnusable)
                 Plugin.Log?.LogWarning($"Main and backup save files unusable for {characterName}");
             else
                 Plugin.Log?.LogInfo($"No save file found for {characterName}, creating new config");
@@ -180,21 +184,6 @@ namespace SenpaisChest.Data
             Plugin.Log?.LogInfo($"Loaded smart chest config for {characterName}: {data.Chests.Count} chest(s), {totalRules} rule(s)");
             return data;
         }
-
-        private SmartChestSaveData TryLoadFromFile(string filePath, string characterName)
-        {
-            try
-            {
-                var json = File.ReadAllText(filePath);
-                return TryDeserializePayload(json, characterName);
-            }
-            catch (Exception ex)
-            {
-                Plugin.Log?.LogError($"Error loading {filePath}: {ex.Message}");
-                return null;
-            }
-        }
-
 
         #region JSON Serialization (delegates to SmartChestJson.cs — no BepInEx dependency)
 

@@ -36,7 +36,11 @@ namespace SunHavenMuseumUtilityTracker.Data
         public DonationData Load(string characterName)
         {
             string filePath = GetSaveFilePath(characterName);
-            var data = CharacterSaveStore.LoadWithBackup(filePath, TryDeserializePayload, out var source);
+            var data = CharacterSaveStore.LoadWithBackup(
+                filePath,
+                TryDeserializePayload,
+                out var source,
+                onReadFailure: (p, ex) => Plugin.Log?.LogError($"Failed to read donation save '{p}': {ex.Message}"));
 
             if (data != null)
             {
@@ -47,7 +51,7 @@ namespace SunHavenMuseumUtilityTracker.Data
                 return data;
             }
 
-            if (File.Exists(filePath) || File.Exists(filePath + CharacterSaveStore.BackupSuffix))
+            if (CharacterSaveStore.GetAbsenceReason(filePath) == CharacterSaveAbsenceReason.FilesPresentButUnusable)
                 Plugin.Log?.LogWarning($"Main and backup save files unusable for {characterName}");
             else
                 Plugin.Log?.LogInfo($"No usable save data for {characterName}, creating new data");

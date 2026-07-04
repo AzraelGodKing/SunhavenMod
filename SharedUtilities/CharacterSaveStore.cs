@@ -11,6 +11,15 @@ namespace SunhavenMods.Shared
     }
 
     /// <summary>
+    /// When <see cref="LoadWithBackup{T}"/> returns null, distinguishes missing files from unreadable/corrupt ones.
+    /// </summary>
+    public enum CharacterSaveAbsenceReason
+    {
+        NoFiles,
+        FilesPresentButUnusable
+    }
+
+    /// <summary>
     /// Per-character save path helpers and atomic write / backup fallback load.
     /// Matches the temp → backup rotate → promote contract documented in ATOMIC_SAVE_POLICY.md.
     /// </summary>
@@ -20,15 +29,18 @@ namespace SunhavenMods.Shared
         public const string VaultBackupSuffix = ".backup";
         public const string TempSuffix = ".tmp";
 
+        /// <summary>
+        /// Replace invalid filename characters, then trim (matches pre-CharacterSaveStore mod behavior).
+        /// </summary>
         public static string SanitizeFileName(string name, string fallback = "unknown")
         {
             if (string.IsNullOrWhiteSpace(name))
                 return fallback;
 
-            name = name.Trim();
             foreach (char c in Path.GetInvalidFileNameChars())
                 name = name.Replace(c, '_');
 
+            name = name.Trim();
             return string.IsNullOrEmpty(name) ? fallback : name;
         }
 
@@ -45,6 +57,21 @@ namespace SunhavenMods.Shared
 
             if (!Directory.Exists(directory))
                 Directory.CreateDirectory(directory);
+        }
+
+        /// <summary>
+        /// When load returned null, tells callers whether to treat the outcome as "no save yet" vs "corrupt/unreadable".
+        /// </summary>
+        public static CharacterSaveAbsenceReason GetAbsenceReason(string filePath, string backupSuffix = BackupSuffix)
+        {
+            if (string.IsNullOrEmpty(filePath))
+                return CharacterSaveAbsenceReason.NoFiles;
+
+            bool primaryExists = File.Exists(filePath);
+            bool backupExists = File.Exists(filePath + backupSuffix);
+            return primaryExists || backupExists
+                ? CharacterSaveAbsenceReason.FilesPresentButUnusable
+                : CharacterSaveAbsenceReason.NoFiles;
         }
 
         /// <summary>
@@ -90,7 +117,8 @@ namespace SunhavenMods.Shared
             string filePath,
             Func<string, T> tryDeserialize,
             out CharacterSaveSource source,
-            string backupSuffix = BackupSuffix)
+            string backupSuffix = BackupSuffix,
+            Action<string, Exception> onReadFailure = null)
             where T : class
         {
             source = CharacterSaveSource.None;
@@ -99,7 +127,7 @@ namespace SunhavenMods.Shared
 
             if (File.Exists(filePath))
             {
-                string text = TryReadAllText(filePath);
+                string text = TryReadAllText(filePath, onReadFailure);
                 if (text != null)
                 {
                     T item = tryDeserialize(text);
@@ -114,7 +142,7 @@ namespace SunhavenMods.Shared
             string backupPath = filePath + backupSuffix;
             if (File.Exists(backupPath))
             {
-                string text = TryReadAllText(backupPath);
+                string text = TryReadAllText(backupPath, onReadFailure);
                 if (text != null)
                 {
                     T item = tryDeserialize(text);
@@ -132,24 +160,35 @@ namespace SunhavenMods.Shared
         /// <summary>
         /// Reads primary text, then backup. Useful for non-JSON line formats.
         /// </summary>
-        public static string LoadTextWithBackup(string filePath, out CharacterSaveSource source, string backupSuffix = BackupSuffix)
+        public static string LoadTextWithBackup(
+            string filePath,
+            out CharacterSaveSource source,
+            string backupSuffix = BackupSuffix,
+            Action<string, Exception> onReadFailure = null)
         {
             source = CharacterSaveSource.None;
             if (string.IsNullOrEmpty(filePath))
                 return null;
 
-            string primary = TryReadAllText(filePath);
-            if (primary != null)
+            if (File.Exists(filePath))
             {
-                source = CharacterSaveSource.Primary;
-                return primary;
+                string primary = TryReadAllText(filePath, onReadFailure);
+                if (primary != null)
+                {
+                    source = CharacterSaveSource.Primary;
+                    return primary;
+                }
             }
 
-            string backup = TryReadAllText(filePath + backupSuffix);
-            if (backup != null)
+            string backupPath = filePath + backupSuffix;
+            if (File.Exists(backupPath))
             {
-                source = CharacterSaveSource.Backup;
-                return backup;
+                string backup = TryReadAllText(backupPath, onReadFailure);
+                if (backup != null)
+                {
+                    source = CharacterSaveSource.Backup;
+                    return backup;
+                }
             }
 
             return null;
@@ -190,7 +229,7 @@ namespace SunhavenMods.Shared
             }
         }
 
-        private static string TryReadAllText(string path)
+        private static string TryReadAllText(string path, Action<string, Exception> onReadFailure)
         {
             try
             {
@@ -198,8 +237,9 @@ namespace SunhavenMods.Shared
                     return null;
                 return File.ReadAllText(path);
             }
-            catch
+            catch (Exception ex)
             {
+                onReadFailure?.Invoke(path, ex);
                 return null;
             }
         }
@@ -213,7 +253,7 @@ namespace SunhavenMods.Shared
             }
             catch
             {
-                // Best-effort temp cleanup.
+                // Best-effort temp cleanup only; failure is non-fatal.
             }
         }
     }

@@ -59,7 +59,11 @@ namespace SunhavenTodo.Data
             }
 
             var filePath = GetSaveFilePath(characterName);
-            var data = CharacterSaveStore.LoadWithBackup(filePath, TryDeserializePayload, out var source);
+            var data = CharacterSaveStore.LoadWithBackup(
+                filePath,
+                TryDeserializePayload,
+                out var source,
+                onReadFailure: (p, ex) => Plugin.Log?.LogWarning($"Failed to read todo save '{p}': {ex.Message}"));
 
             if (data != null)
             {
@@ -70,14 +74,10 @@ namespace SunhavenTodo.Data
                 return data;
             }
 
-            if (File.Exists(filePath) || File.Exists(filePath + CharacterSaveStore.BackupSuffix))
-            {
+            if (CharacterSaveStore.GetAbsenceReason(filePath) == CharacterSaveAbsenceReason.FilesPresentButUnusable)
                 Plugin.Log?.LogWarning($"Main and backup save files unusable for {characterName}");
-            }
             else
-            {
                 Plugin.Log?.LogInfo($"No valid save file found for {characterName}, creating new todo list");
-            }
 
             return new TodoListData(characterName);
         }

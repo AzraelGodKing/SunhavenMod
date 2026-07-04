@@ -31,6 +31,27 @@ namespace SunhavenTodo.Tests
         }
 
         [Test]
+        public void SanitizeFileName_ReplacesControlCharsBeforeTrim()
+        {
+            // Pre-CharacterSaveStore mods replaced invalid chars then trimmed — tabs become underscores, not stripped.
+            Assert.That(CharacterSaveStore.SanitizeFileName("\tHero\t"), Is.EqualTo("_Hero_"));
+        }
+
+        [Test]
+        public void GetAbsenceReason_DistinguishesMissingFromUnusable()
+        {
+            string path = Path.Combine(_tempDir, "missing.json");
+            Assert.That(
+                CharacterSaveStore.GetAbsenceReason(path),
+                Is.EqualTo(CharacterSaveAbsenceReason.NoFiles));
+
+            CharacterSaveStore.WriteAtomic(path, "not-json");
+            Assert.That(
+                CharacterSaveStore.GetAbsenceReason(path),
+                Is.EqualTo(CharacterSaveAbsenceReason.FilesPresentButUnusable));
+        }
+
+        [Test]
         public void WriteAtomic_RotatesBackupAndLoadsPrimary()
         {
             string path = Path.Combine(_tempDir, "hero_todos.json");

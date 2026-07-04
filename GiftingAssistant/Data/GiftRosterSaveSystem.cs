@@ -55,7 +55,11 @@ namespace GiftingAssistant.Data
             }
 
             var filePath = GetSaveFilePath(characterName);
-            var data = CharacterSaveStore.LoadWithBackup(filePath, json => TryDeserializePayload(json, characterName), out var source);
+            var data = CharacterSaveStore.LoadWithBackup(
+                filePath,
+                json => TryDeserializePayload(json, characterName),
+                out var source,
+                onReadFailure: (p, ex) => Plugin.Log?.LogWarning($"[Load] Failed to read gift roster '{p}': {ex.Message}"));
 
             if (data != null)
             {
@@ -65,7 +69,7 @@ namespace GiftingAssistant.Data
                 return data;
             }
 
-            if (File.Exists(filePath) || File.Exists(filePath + CharacterSaveStore.BackupSuffix))
+            if (CharacterSaveStore.GetAbsenceReason(filePath) == CharacterSaveAbsenceReason.FilesPresentButUnusable)
                 Plugin.Log?.LogWarning($"[Load] Main and backup files unusable for {characterName}");
             else
                 Plugin.Log?.LogInfo($"[Load] No valid gift roster for {characterName}, creating new");
