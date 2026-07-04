@@ -6,7 +6,9 @@ Internal engineering log: **CI**, **release automation**, **scripts**, **docs in
 
 ## 2026-07-04
 
-- **Crop Optimizer — off-farm FPS:** `CropSceneCache.GetCrops()` filters to `SceneManager.GetActiveScene()`; caches empty scene results for 4s; `CropHoverQuery` fast path caches hover misses (not just hits); `CropHUD.UpdateHoverTooltip()` skips work when the active scene has no crops.
+- **CharacterSaveStore (foundation 1.1):** Added `SharedUtilities/CharacterSaveStore.cs` (sanitize path, atomic `.tmp` → `.bak`/`.backup` rotate write, backup fallback load). Migrated Todo, Gifting Assistant, SMUT, Senpais Chest, Birthday Reminder favorites, The Vault save bytes, and SMUT `PlayerPatches` sanitize. NUnit coverage in `SunhavenTodo.Tests/CharacterSaveStoreTests.cs`. **Fix:** `WriteAtomicCore` no longer swallows I/O exceptions — real failures propagate to each mod's outer `catch` for diagnosable logs. **Review follow-up:** restore replace-then-trim sanitize order; `GetAbsenceReason` + `onReadFailure` on load helpers; FavoriteGiftStore path inside try; remove dead Senpai's Chest loader; Vault `PlayerPatches`/`SecretGifts` save paths consolidated.
+- **Mod review triage:** Foundation queue ([`maintainer-docs/reviews/mod-review-foundation-active-2026-07-04.md`](maintainer-docs/reviews/mod-review-foundation-active-2026-07-04.md)); deferred features/new mods ([`maintainer-docs/reviews/mod-review-on-hold-2026-07-04.md`](maintainer-docs/reviews/mod-review-on-hold-2026-07-04.md)). Moved `mod-review-2026-07-*.md` under `maintainer-docs/reviews/`.
+- **Crop Optimizer — off-farm FPS:** `CropSceneCache.GetCrops()` filters to `SceneManager.GetActiveScene()`; caches empty scene results for 4s; `CropHoverQuery` fast path caches hover misses (not only hits); `CropHUD.UpdateHoverTooltip()` skips work when the active scene has no crops.
 
 ---
 
@@ -31,7 +33,7 @@ Internal engineering log: **CI**, **release automation**, **scripts**, **docs in
 
 ## 2026-06-29
 
-- **Mod review fixes (save + compat):** The Vault `VaultSaveSystem.Load()` tries `.backup` when primary/legacy saves are missing or unreadable; SMUT `DonationSaveSystem.Load()` matches SenpaisChest/Todo backup-first pattern; HavensBirthright shop discount restores listing price in `BuyItem` postfixes; HavenDevTools version checker uses `Chainloader.PluginInfos` instead of compiled-in version tuples. See [`mod-review-2026-07-02.md`](mod-review-2026-07-02.md).
+- **Mod review fixes (save + compat):** The Vault `VaultSaveSystem.Load()` tries `.backup` when primary/legacy saves are missing or unreadable; SMUT `DonationSaveSystem.Load()` matches SenpaisChest/Todo backup-first pattern; HavensBirthright shop discount restores listing price in `BuyItem` postfixes; HavenDevTools version checker uses `Chainloader.PluginInfos` instead of compiled-in version tuples. See [`maintainer-docs/reviews/mod-review-2026-07-02.md`](maintainer-docs/reviews/mod-review-2026-07-02.md).
 - **Vault load (PR review):** Candidate order canonical → backup → legacy; quarantine corrupt primary when a later candidate loads; reset `_needsReEncryption` per candidate try.
 - **Haven's Respec:** **RESET ALL** moved from the top of the skill grid to the left sidebar under **Reset** (`RespecButtonInjector` row layout); `UI.EnableResetAll` restored (default on).
 - **Cloudflare mirror:** [`sync-cloudflare-site-mirror.yml`](.github/workflows/sync-cloudflare-site-mirror.yml) authenticates git clone/push with host-scoped `Authorization: Basic` (`x-access-token`) instead of `Bearer`, which GitHub’s git HTTPS rejects and caused `could not read Username for 'https://github.com'` in CI.
