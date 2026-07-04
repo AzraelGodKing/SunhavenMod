@@ -13,7 +13,7 @@ BepInEx plugins for [Sun Haven](https://store.steampowered.com/app/1432860/Sun_H
 | Haven's Birthright | [`HavensBirthright/`](HavensBirthright/) | 3.0.1 |
 | Haven's Almanac | [`HavensAlmanac/`](HavensAlmanac/) | 2.1.0 |
 | A Squirrel's Birthday Reminder | [`BirthdayReminder/`](BirthdayReminder/) | 2.0.1 |
-| Haven Dev Tools | [`HavenDevTools/`](HavenDevTools/) | 2.0.1 |
+| Haven Dev Tools | [`HavenDevTools/`](HavenDevTools/) | 2.0.2 |
 | Trinket Fortune | [`TrinketFortune/`](TrinketFortune/) | 2.0.1 |
 | Faster Races | [`FasterRaces/`](FasterRaces/) | 2.0.1 |
 | Crop Optimizer | [`CropOptimizer/`](CropOptimizer/) | 2.1.1 |

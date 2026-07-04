@@ -52,14 +52,14 @@
     "changelog": "Patch release: fixes a startup error in the shared localization layer that prevented the in-game language-change refresh from registering (HarmonyX could not patch LocalizationManager.SetLanguageAndCode because the postfix parameter names did not match the original method casing)."
   },
   "com.azraelgodking.havendevtools": {
-    "version": "2.0.1",
+    "version": "2.0.2",
     "name": "HavenDevTools",
     "description": "Developer utilities for mod debugging and game state inspection",
     "nexus": "https://www.nexusmods.com/sunhaven/mods/495",
     "nexus_file_group_id": "1316842",
     "thunderstore": "https://thunderstore.io/c/sun-haven/p/AzraelGodKing/HavenDevTools/",
     "thunderstoreName": "HavenDevTools",
-    "changelog": "Patch release: fixes a startup error in the shared localization layer that prevented the in-game language-change refresh from registering (HarmonyX could not patch LocalizationManager.SetLanguageAndCode because the postfix parameter names did not match the original method casing)."
+    "changelog": "Patch release: Added FPS Counter."
   },
   "com.azraelgodking.senpaischest": {
     "version": "3.0.3",

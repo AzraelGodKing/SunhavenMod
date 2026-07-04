@@ -39,6 +39,7 @@ namespace HavenDevTools
         private static RaceModifierTracker _staticRaceModifierTracker;
         private static DebugWindow _staticDebugWindow;
         private static DebugOverlay _staticDebugOverlay;
+        private static FpsCounterOverlay _staticFpsCounterOverlay;
         private static CommandConsole _staticCommandConsole;
         private static LogViewerPanel _staticLogViewer;
 
@@ -175,6 +176,7 @@ namespace HavenDevTools
 
             _staticDebugWindow = uiObject.AddComponent<DebugWindow>();
             _staticDebugOverlay = uiObject.AddComponent<DebugOverlay>();
+            _staticFpsCounterOverlay = uiObject.AddComponent<FpsCounterOverlay>();
 
             Log.LogInfo("UI components created");
         }
@@ -200,7 +202,7 @@ namespace HavenDevTools
                 }
 
                 // Check if UI was destroyed and recreate it
-                if (_staticDebugWindow == null || _staticDebugOverlay == null)
+                if (_staticDebugWindow == null || _staticDebugOverlay == null || _staticFpsCounterOverlay == null)
                 {
                     Log?.LogInfo("[EnsureUI] Recreating UI components...");
                     var uiObject = new GameObject("HavenDevTools_UI");
@@ -208,6 +210,7 @@ namespace HavenDevTools
 
                     _staticDebugWindow = uiObject.AddComponent<DebugWindow>();
                     _staticDebugOverlay = uiObject.AddComponent<DebugOverlay>();
+                    _staticFpsCounterOverlay = uiObject.AddComponent<FpsCounterOverlay>();
 
                     Log?.LogInfo("[EnsureUI] UI components recreated");
                 }
@@ -562,6 +565,6 @@ namespace HavenDevTools
     {
         public const string PLUGIN_GUID = "com.azraelgodking.havendevtools";
         public const string PLUGIN_NAME = "Haven Dev Tools";
-        public const string PLUGIN_VERSION = "2.0.1";
+        public const string PLUGIN_VERSION = "2.0.2";
     }
 }
