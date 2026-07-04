@@ -3,6 +3,7 @@ using System.IO;
 using System.Reflection;
 using System.Security.Cryptography;
 using System.Text;
+using SunhavenMods.Shared;
 using UnityEngine;
 
 namespace TheVault.Vault
@@ -99,10 +100,7 @@ namespace TheVault.Vault
         /// </summary>
         private string GetSaveFilePath(string playerName)
         {
-            string safeName = SanitizeFileName(playerName);
-            if (string.IsNullOrEmpty(safeName))
-                safeName = "default";
-
+            string safeName = CharacterSaveStore.SanitizeFileName(playerName, "default");
             string suffix = GetPerPlayerFileSuffix(playerName);
             return Path.Combine(_saveDirectory, $"{safeName}_{suffix}.vault");
         }
@@ -112,9 +110,7 @@ namespace TheVault.Vault
         /// </summary>
         private string GetLegacySaveFilePath(string playerName)
         {
-            string safeName = SanitizeFileName(playerName);
-            if (string.IsNullOrEmpty(safeName))
-                safeName = "default";
+            string safeName = CharacterSaveStore.SanitizeFileName(playerName, "default");
             return Path.Combine(_saveDirectory, $"{safeName}.vault");
         }
 
@@ -125,7 +121,7 @@ namespace TheVault.Vault
         {
             string steamId = TryGetSteamId();
             if (!string.IsNullOrEmpty(steamId))
-                return "steam_" + SanitizeFileName(steamId);
+                return "steam_" + CharacterSaveStore.SanitizeFileName(steamId, string.Empty);
 
             try
             {
@@ -170,22 +166,6 @@ namespace TheVault.Vault
                 Plugin.Log?.LogError($"[VaultSave] Failed to quarantine corrupt vault file: {ex.Message}");
                 return false;
             }
-        }
-
-        /// <summary>
-        /// Sanitize a string for use as a filename
-        /// </summary>
-        private string SanitizeFileName(string name)
-        {
-            if (string.IsNullOrEmpty(name))
-                return "";
-
-            char[] invalid = Path.GetInvalidFileNameChars();
-            foreach (char c in invalid)
-            {
-                name = name.Replace(c, '_');
-            }
-            return name.Trim();
         }
 
         /// <summary>
@@ -236,7 +216,7 @@ namespace TheVault.Vault
             {
                 string canonicalPath = GetSaveFilePath(playerName);
                 string legacyPath = GetLegacySaveFilePath(playerName);
-                string backupPath = canonicalPath + ".backup";
+                string backupPath = canonicalPath + CharacterSaveStore.VaultBackupSuffix;
                 _currentSaveFile = canonicalPath;
 
                 var candidatePaths = new System.Collections.Generic.List<(string path, bool readFromLegacyNameOnly)>();
@@ -481,20 +461,14 @@ namespace TheVault.Vault
                 // Encrypt the JSON data
                 byte[] encryptedData = Encrypt(json, data.PlayerName);
 
-                // Write to temp file first, then move (atomic operation)
-                string tempFile = _currentSaveFile + ".tmp";
-                File.WriteAllBytes(tempFile, encryptedData);
-
-                // Backup existing file
-                if (File.Exists(_currentSaveFile))
+                if (!CharacterSaveStore.WriteAtomicBytes(
+                        _currentSaveFile,
+                        encryptedData,
+                        CharacterSaveStore.VaultBackupSuffix,
+                        deleteTempInFinally: false))
                 {
-                    string backupFile = _currentSaveFile + ".backup";
-                    if (File.Exists(backupFile))
-                        File.Delete(backupFile);
-                    File.Move(_currentSaveFile, backupFile);
+                    throw new IOException("Atomic vault write failed");
                 }
-
-                File.Move(tempFile, _currentSaveFile);
 
                 _vaultManager.MarkClean();
                 _lastAutoSave = Time.time;
@@ -571,7 +545,7 @@ namespace TheVault.Vault
                         Plugin.Log?.LogInfo($"Deleted vault save file: {saveFile}");
                     }
 
-                    string backupFile = saveFile + ".backup";
+                    string backupFile = saveFile + CharacterSaveStore.VaultBackupSuffix;
                     if (File.Exists(backupFile))
                         File.Delete(backupFile);
                 }

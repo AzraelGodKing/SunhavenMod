@@ -1,5 +1,6 @@
 using System;
 using System.Reflection;
+using SunhavenMods.Shared;
 using UnityEngine;
 using Wish;
 
@@ -87,7 +88,7 @@ namespace SunHavenMuseumUtilityTracker.Patches
                 string lastLoadedName = GameSavePatches.LastLoadedCharacterName;
                 if (!string.IsNullOrEmpty(lastLoadedName))
                 {
-                    string sanitizedName = SanitizeFileName(lastLoadedName);
+                    string sanitizedName = CharacterSaveStore.SanitizeFileName(lastLoadedName, "default");
                     LogCharacterSourceOnce("lastLoaded", sanitizedName);
                     return sanitizedName;
                 }
@@ -96,7 +97,7 @@ namespace SunHavenMuseumUtilityTracker.Patches
                 var currentChar = GameSave.CurrentCharacter;
                 if (currentChar != null && !string.IsNullOrEmpty(currentChar.characterName))
                 {
-                    string nameFromCurrent = SanitizeFileName(currentChar.characterName);
+                    string nameFromCurrent = CharacterSaveStore.SanitizeFileName(currentChar.characterName, "default");
                     Plugin.Log?.LogWarning($"GetCurrentCharacterName: FALLBACK to CurrentCharacter = '{nameFromCurrent}'");
                     return nameFromCurrent;
                 }
@@ -109,21 +110,6 @@ namespace SunHavenMuseumUtilityTracker.Patches
                 Plugin.Log?.LogError($"Error getting character name: {ex.Message}");
                 return "default";
             }
-        }
-
-        private static string SanitizeFileName(string name)
-        {
-            if (string.IsNullOrEmpty(name))
-                return "default";
-
-            char[] invalid = System.IO.Path.GetInvalidFileNameChars();
-            foreach (char c in invalid)
-            {
-                name = name.Replace(c, '_');
-            }
-
-            name = name.Trim();
-            return string.IsNullOrEmpty(name) ? "default" : name;
         }
 
         private static void LogCharacterSourceOnce(string source, string characterName)

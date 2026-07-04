@@ -33,7 +33,7 @@ Only three mods have test projects (SenpaisChest, SunhavenTodo, TheVault — 5 t
 
 ### 1.10 Repo hygiene (small)
 - `Tests/bin` + `obj` artifacts show up in the working tree (e.g. `TheVault/obj/Release/net48/CurrencySpell.dll`); verify `.gitignore` covers all of them so clones stay lean.
-- Root-level review docs (`mod-review-*.md`, `pt-BR-translation-review.md`, `repo-management-review-2026-07-02.md`) would sit better under `maintainer-docs/reviews/`.
+- Root-level review docs (`mod-review-*.md`, `pt-BR-translation-review.md`, `repo-management-review-2026-07-02.md`) would sit better under `maintainer-docs/reviews/`. *(Partially done 2026-07-04: `mod-review-2026-07-*.md` moved; see [`reviews/README.md`](reviews/README.md).)*
 - `docs/styles.css` (765 lines) appears unreferenced by `index.html` — confirm what still links it (404.html?) and delete or fold in if dead.
 
 ## 2. Feature suggestions for existing mods
