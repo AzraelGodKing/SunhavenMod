@@ -17,6 +17,8 @@ namespace HavenDevTools.Config
         public static ConfigEntry<bool> ShowOverlayOnStart { get; private set; }
         public static ConfigEntry<string> OverlayPosition { get; private set; }
         public static ConfigEntry<bool> ShowPerformance { get; private set; }
+        public static ConfigEntry<bool> ShowFpsCounter { get; private set; }
+        public static ConfigEntry<string> FpsCounterPosition { get; private set; }
 
         // Log Viewer
         public static ConfigEntry<int> MaxLogEntries { get; private set; }
@@ -87,6 +89,20 @@ namespace HavenDevTools.Config
                 "ShowPerformance",
                 true,
                 "Show FPS and memory usage in the debug overlay"
+            );
+
+            ShowFpsCounter = config.Bind(
+                "Overlay",
+                "ShowFpsCounter",
+                true,
+                "Show a compact FPS counter in a screen corner (independent of the F6 overlay)"
+            );
+
+            FpsCounterPosition = config.Bind(
+                "Overlay",
+                "FpsCounterPosition",
+                "TopLeft",
+                "FPS counter position: TopLeft, TopRight, BottomLeft, BottomRight"
             );
 
             // Log Viewer
@@ -177,7 +193,17 @@ namespace HavenDevTools.Config
 
         public static OverlayPositionType GetOverlayPosition()
         {
-            return OverlayPosition.Value?.ToLower() switch
+            return ParseOverlayPosition(OverlayPosition.Value);
+        }
+
+        public static OverlayPositionType GetFpsCounterPosition()
+        {
+            return ParseOverlayPosition(FpsCounterPosition.Value);
+        }
+
+        private static OverlayPositionType ParseOverlayPosition(string value)
+        {
+            return value?.ToLower() switch
             {
                 "topleft" => OverlayPositionType.TopLeft,
                 "topright" => OverlayPositionType.TopRight,
