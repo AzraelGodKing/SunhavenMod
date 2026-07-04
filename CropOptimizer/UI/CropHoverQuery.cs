@@ -23,7 +23,7 @@ namespace CropOptimizer.UI
         private static float _nextHoverFullScanTime;
 
         /// <summary>How often we refresh the crop list from the scene (large farms: avoid hammering <c>FindObjectsOfType</c>).</summary>
-        private const float CropCacheRefreshSeconds = 1.5f;
+        internal const float CropCacheRefreshSeconds = 1.5f;
 
         /// <summary>When the mouse is stable, skip the O(n) closest-crop scan for a short window.</summary>
         private const float HoverRescanMinInterval = 0.055f;
@@ -158,15 +158,23 @@ namespace CropOptimizer.UI
             bool mouseStable = (mouseScreen - _lastHoverMouseScreen).sqrMagnitude <= MouseMoveSkipScanPxSq;
             _lastHoverMouseScreen = mouseScreen;
 
-            if (mouseStable && now < _nextHoverFullScanTime && _lastHoverCrop != null)
+            if (mouseStable && now < _nextHoverFullScanTime)
             {
-                Component last = _lastHoverCrop;
-                if (last != null
-                    && CropPresence.IsPresent(last)
-                    && GameFarmCoords.IsCropOnFarmTile(last, mouseFarmTile))
+                if (_lastHoverCrop != null)
                 {
-                    crop = last;
-                    return true;
+                    Component last = _lastHoverCrop;
+                    if (last != null
+                        && CropPresence.IsPresent(last)
+                        && GameFarmCoords.IsCropOnFarmTile(last, mouseFarmTile))
+                    {
+                        crop = last;
+                        return true;
+                    }
+                }
+                else
+                {
+                    crop = null;
+                    return false;
                 }
             }
 
