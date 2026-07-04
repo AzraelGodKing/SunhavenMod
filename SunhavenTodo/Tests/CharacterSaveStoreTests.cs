@@ -53,6 +53,21 @@ namespace SunhavenTodo.Tests
         }
 
         [Test]
+        public void WriteAtomic_ThrowsWhenContentNull()
+        {
+            string path = Path.Combine(_tempDir, "hero_todos.json");
+            Assert.Throws<ArgumentNullException>(() => CharacterSaveStore.WriteAtomic(path, null));
+        }
+
+        [Test]
+        public void WriteAtomicBytes_ThrowsWhenContentNull()
+        {
+            string path = Path.Combine(_tempDir, "hero.vault");
+            Assert.Throws<ArgumentNullException>(() =>
+                CharacterSaveStore.WriteAtomicBytes(path, null));
+        }
+
+        [Test]
         public void WriteAtomic_RotatesBackupAndLoadsPrimary()
         {
             string path = Path.Combine(_tempDir, "hero_todos.json");
