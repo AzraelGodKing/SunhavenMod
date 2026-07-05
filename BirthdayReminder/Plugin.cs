@@ -90,6 +90,11 @@ namespace BirthdayReminder
             if (!_enabled.Value)
             {
                 Log.LogInfo($"{PluginInfo.PLUGIN_NAME} is disabled in config. Skipping initialization.");
+                ModDiagnostics.LogModStartup(Log, PluginInfo.PLUGIN_GUID, PluginInfo.PLUGIN_NAME, PluginInfo.PLUGIN_VERSION,
+                    ModHealthIntegrationSummary.Build(
+                        ("DevTools", SuitePluginGuids.DevTools),
+                        ("Todo", SuitePluginGuids.SunhavenTodo)),
+                    mode: "disabled");
                 return;
             }
             CreatePersistentRunner();
@@ -107,6 +112,10 @@ namespace BirthdayReminder
             }
 
             Log.LogInfo($"{PluginInfo.PLUGIN_NAME} loaded successfully!");
+            ModDiagnostics.LogModStartup(Log, PluginInfo.PLUGIN_GUID, PluginInfo.PLUGIN_NAME, PluginInfo.PLUGIN_VERSION,
+                ModHealthIntegrationSummary.Build(
+                    ("DevTools", SuitePluginGuids.DevTools),
+                    ("Todo", SuitePluginGuids.SunhavenTodo)));
         }
 
         private void BindConfiguration()

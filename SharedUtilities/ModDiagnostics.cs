@@ -89,7 +89,34 @@ namespace SunhavenMods.Shared
 
         public static void LogStartupHealth(ManualLogSource log, ModHealthReport report)
         {
+            ReportStartup(report);
             log?.LogInfo(FormatHealthLogLine(report));
+        }
+
+        /// <summary>
+        /// Standard startup health line + registry entry for the Mod Health dashboard.
+        /// </summary>
+        public static void LogModStartup(
+            ManualLogSource log,
+            string pluginGuid,
+            string displayName,
+            string pluginVersion,
+            string integrationSummary,
+            string mode = "startup",
+            bool? dataLoaded = false,
+            string lastPersistenceOutcome = "—")
+        {
+            LogStartupHealth(log, new ModHealthReport
+            {
+                PluginGuid = pluginGuid,
+                DisplayName = displayName,
+                PluginVersion = pluginVersion,
+                SharedCodeRevision = SharedCodeRevision.Value,
+                IntegrationSummary = integrationSummary,
+                Mode = mode,
+                DataLoaded = dataLoaded,
+                LastPersistenceOutcome = lastPersistenceOutcome
+            });
         }
     }
 }

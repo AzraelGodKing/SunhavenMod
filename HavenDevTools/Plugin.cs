@@ -71,6 +71,10 @@ namespace HavenDevTools
         public static bool HasSunhavenTodo { get; private set; }
         public static bool HasHavensAlmanac { get; private set; }
         public static bool HasTrinketFortune { get; private set; }
+        public static bool HasCropOptimizer { get; private set; }
+        public static bool HasFasterRaces { get; private set; }
+        public static bool HasHavensRespec { get; private set; }
+        public static bool HasGiftingAssistant { get; private set; }
         public static bool HasUltraPolygamy => UltraPolygamyHelper.IsAvailable;
 
         private Harmony _harmony;
@@ -244,24 +248,31 @@ namespace HavenDevTools
                 if (name == "SunhavenTodo") HasSunhavenTodo = true;
                 if (name == "HavensAlmanac") HasHavensAlmanac = true;
                 if (name == "TrinketFortune") HasTrinketFortune = true;
+                if (name == "CropOptimizer") HasCropOptimizer = true;
+                if (name == "FasterRaces") HasFasterRaces = true;
+                if (name == "HavensRespec") HasHavensRespec = true;
+                if (name == "GiftingAssistant") HasGiftingAssistant = true;
             }
 
-            Log.LogInfo($"Mod detection complete - TheVault: {HasTheVault}, SMUT: {HasSMUT}, Birthright: {HasHavensBirthright}, SenpaisChest: {HasSenpaisChest}, Birthday: {HasBirthdayReminder}, Todo: {HasSunhavenTodo}, Almanac: {HasHavensAlmanac}, TrinketFortune: {HasTrinketFortune}, UltraPolygamy: {HasUltraPolygamy}");
+            Log.LogInfo($"Mod detection complete - TheVault: {HasTheVault}, SMUT: {HasSMUT}, Birthright: {HasHavensBirthright}, SenpaisChest: {HasSenpaisChest}, Birthday: {HasBirthdayReminder}, Todo: {HasSunhavenTodo}, Almanac: {HasHavensAlmanac}, TrinketFortune: {HasTrinketFortune}, CropOptimizer: {HasCropOptimizer}, FasterRaces: {HasFasterRaces}, Respec: {HasHavensRespec}, GiftingAssistant: {HasGiftingAssistant}, UltraPolygamy: {HasUltraPolygamy}");
         }
 
         private void ReportStartupHealth()
         {
-            ModDiagnostics.LogStartupHealth(Log, new ModHealthReport
-            {
-                PluginGuid = PluginInfo.PLUGIN_GUID,
-                DisplayName = PluginInfo.PLUGIN_NAME,
-                PluginVersion = PluginInfo.PLUGIN_VERSION,
-                SharedCodeRevision = SharedCodeRevision.Value,
-                IntegrationSummary =
-                    $"Vault={(HasTheVault ? "ok" : "—")}, SMUT={(HasSMUT ? "ok" : "—")}, Todo={(HasSunhavenTodo ? "ok" : "—")}, Almanac={(HasHavensAlmanac ? "ok" : "—")}",
-                Mode = "startup",
-                DataLoaded = false
-            });
+            ModDiagnostics.LogModStartup(Log, PluginInfo.PLUGIN_GUID, PluginInfo.PLUGIN_NAME, PluginInfo.PLUGIN_VERSION,
+                $"Suite tabs: {ModHealthIntegrationSummary.Build(
+                    ("Vault", SuitePluginGuids.TheVault),
+                    ("SMUT", SuitePluginGuids.Smut),
+                    ("Birthright", SuitePluginGuids.HavensBirthright),
+                    ("SenpaisChest", SuitePluginGuids.SenpaisChest),
+                    ("Birthday", SuitePluginGuids.BirthdayReminder),
+                    ("Todo", SuitePluginGuids.SunhavenTodo),
+                    ("Almanac", SuitePluginGuids.HavensAlmanac),
+                    ("TrinketFortune", SuitePluginGuids.TrinketFortune),
+                    ("CropOptimizer", SuitePluginGuids.CropOptimizer),
+                    ("FasterRaces", SuitePluginGuids.FasterRaces),
+                    ("Respec", SuitePluginGuids.HavensRespec),
+                    ("GiftingAssistant", SuitePluginGuids.GiftingAssistant))}");
         }
 
         private void PatchPlayerInit()

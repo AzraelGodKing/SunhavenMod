@@ -50,6 +50,9 @@ namespace HavensRespec
                 if (!_staticConfig.Enabled.Value)
                 {
                     Log.LogInfo($"{PluginInfo.PLUGIN_NAME} disabled in config.");
+                    ModDiagnostics.LogModStartup(Log, PluginInfo.PLUGIN_GUID, PluginInfo.PLUGIN_NAME, PluginInfo.PLUGIN_VERSION,
+                        ModHealthIntegrationSummary.Build(("DevTools", SuitePluginGuids.DevTools)),
+                        mode: "disabled");
                     return;
                 }
 
@@ -69,6 +72,8 @@ namespace HavensRespec
                 }
 
                 Log.LogInfo($"{PluginInfo.PLUGIN_NAME} v{PluginInfo.PLUGIN_VERSION} loaded.");
+                ModDiagnostics.LogModStartup(Log, PluginInfo.PLUGIN_GUID, PluginInfo.PLUGIN_NAME, PluginInfo.PLUGIN_VERSION,
+                    ModHealthIntegrationSummary.Build(("DevTools", SuitePluginGuids.DevTools)));
             }
             catch (Exception ex)
             {

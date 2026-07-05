@@ -76,6 +76,18 @@ namespace HavensAlmanac
             int integrationCount = _staticAggregator.IntegrationModCount;
             Log.LogInfo($"{PluginInfo.PLUGIN_NAME} loaded with {integrationCount} integration{(integrationCount == 1 ? string.Empty : "s")}");
 
+            ModDiagnostics.LogModStartup(Log, PluginInfo.PLUGIN_GUID, PluginInfo.PLUGIN_NAME, PluginInfo.PLUGIN_VERSION,
+                $"{integrationCount} providers, {ModHealthIntegrationSummary.Build(
+                    ("DevTools", SuitePluginGuids.DevTools),
+                    ("Todo", SuitePluginGuids.SunhavenTodo),
+                    ("Birthday", SuitePluginGuids.BirthdayReminder),
+                    ("SMUT", SuitePluginGuids.Smut),
+                    ("SenpaisChest", SuitePluginGuids.SenpaisChest),
+                    ("Vault", SuitePluginGuids.TheVault),
+                    ("Birthright", SuitePluginGuids.HavensBirthright),
+                    ("CropOptimizer", SuitePluginGuids.CropOptimizer),
+                    ("GiftingAssistant", SuitePluginGuids.GiftingAssistant))}");
+
             // IntegrationModCount excludes Mod Health bridge and built-in Relationships.
             if (integrationCount == 0)
                 Log.LogWarning("No supported companion mods detected. Haven's Almanac is most useful alongside SunhavenTodo, Birthday Reminder, Museum Tracker, Senpai's Chest, The Vault, Haven's Birthright, Haven Dev Tools, Crop Optimizer, or Gifting Assistant.");

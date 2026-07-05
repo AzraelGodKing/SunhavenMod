@@ -49,6 +49,13 @@ namespace CropOptimizer
             if (!_config.Enabled.Value)
             {
                 Log.LogInfo($"{PluginInfo.PLUGIN_NAME} disabled in config.");
+                ModDiagnostics.LogModStartup(Log, PluginInfo.PLUGIN_GUID, PluginInfo.PLUGIN_NAME, PluginInfo.PLUGIN_VERSION,
+                    ModHealthIntegrationSummary.Build(
+                        ("DevTools", SuitePluginGuids.DevTools),
+                        ("Todo", SuitePluginGuids.SunhavenTodo),
+                        ("Birthday", SuitePluginGuids.BirthdayReminder),
+                        ("Vault", SuitePluginGuids.TheVault)),
+                    mode: "disabled");
                 return;
             }
 
@@ -86,6 +93,12 @@ namespace CropOptimizer
             }
 
             Log.LogInfo($"{PluginInfo.PLUGIN_NAME} v{PluginInfo.PLUGIN_VERSION} loaded");
+            ModDiagnostics.LogModStartup(Log, PluginInfo.PLUGIN_GUID, PluginInfo.PLUGIN_NAME, PluginInfo.PLUGIN_VERSION,
+                ModHealthIntegrationSummary.Build(
+                    ("DevTools", SuitePluginGuids.DevTools),
+                    ("Todo", SuitePluginGuids.SunhavenTodo),
+                    ("Birthday", SuitePluginGuids.BirthdayReminder),
+                    ("Vault", SuitePluginGuids.TheVault)));
         }
 
         private void OnDestroy()

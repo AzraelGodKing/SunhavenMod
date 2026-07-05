@@ -170,17 +170,10 @@ namespace TheVault
                 }
 
                 Log.LogInfo($"{PluginInfo.PLUGIN_NAME} loaded successfully!");
-                ModDiagnostics.LogStartupHealth(Log, new ModHealthReport
-                {
-                    PluginGuid = PluginInfo.PLUGIN_GUID,
-                    DisplayName = PluginInfo.PLUGIN_NAME,
-                    PluginVersion = PluginInfo.PLUGIN_VERSION,
-                    SharedCodeRevision = SharedCodeRevision.Value,
-                    IntegrationSummary = "Abstractions=ok",
-                    Mode = "startup",
-                    DataLoaded = false,
-                    LastPersistenceOutcome = "—"
-                });
+                ModDiagnostics.LogModStartup(Log, PluginInfo.PLUGIN_GUID, PluginInfo.PLUGIN_NAME, PluginInfo.PLUGIN_VERSION,
+                    ModHealthIntegrationSummary.Build(
+                        ("DevTools", SuitePluginGuids.DevTools),
+                        ("Almanac", SuitePluginGuids.HavensAlmanac)));
                 Log.LogInfo($"Press {(_requireCtrlModifier.Value ? "Ctrl+" : "")}{_toggleKey.Value} or {_altToggleKey.Value} to open the vault");
             }
             catch (Exception ex)

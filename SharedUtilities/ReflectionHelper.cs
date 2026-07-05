@@ -27,20 +27,65 @@ namespace SunhavenMods.Shared
         /// <returns>The found Type, or null if not found</returns>
         public static Type FindType(string typeName, params string[] namespaces)
         {
-            // Try Harmony's method first (handles most cases)
+            var hasNamespaces = namespaces != null && namespaces.Length > 0;
+
+            // When namespaces are supplied, resolve qualified names first so short names like
+            // "Plugin" do not match the wrong mod (e.g. HavenDevTools.Plugin).
+            if (hasNamespaces)
+            {
+                foreach (var ns in namespaces)
+                {
+                    var qualified = AccessTools.TypeByName($"{ns}.{typeName}");
+                    if (qualified != null)
+                        return qualified;
+                }
+
+                foreach (var assembly in AppDomain.CurrentDomain.GetAssemblies())
+                {
+                    foreach (var ns in namespaces)
+                    {
+                        try
+                        {
+                            var qualified = assembly.GetType($"{ns}.{typeName}", throwOnError: false);
+                            if (qualified != null)
+                                return qualified;
+                        }
+                        catch
+                        {
+                            // Skip assemblies that fail type enumeration.
+                        }
+                    }
+                }
+
+                foreach (var assembly in AppDomain.CurrentDomain.GetAssemblies())
+                {
+                    try
+                    {
+                        var match = assembly.GetTypes().FirstOrDefault(t =>
+                            namespaces.Any(ns =>
+                                string.Equals(t.FullName, $"{ns}.{typeName}", StringComparison.Ordinal)
+                                || (t.Name == typeName && string.Equals(t.Namespace, ns, StringComparison.Ordinal))));
+                        if (match != null)
+                            return match;
+                    }
+                    catch (ReflectionTypeLoadException ex)
+                    {
+                        var match = ex.Types?.FirstOrDefault(t =>
+                            t != null && namespaces.Any(ns =>
+                                string.Equals(t.FullName, $"{ns}.{typeName}", StringComparison.Ordinal)
+                                || (t.Name == typeName && string.Equals(t.Namespace, ns, StringComparison.Ordinal))));
+                        if (match != null)
+                            return match;
+                    }
+                }
+
+                return null;
+            }
+
             var type = AccessTools.TypeByName(typeName);
             if (type != null)
                 return type;
 
-            // Try with namespace prefixes
-            foreach (var ns in namespaces)
-            {
-                type = AccessTools.TypeByName($"{ns}.{typeName}");
-                if (type != null)
-                    return type;
-            }
-
-            // Search all loaded assemblies as fallback
             foreach (var assembly in AppDomain.CurrentDomain.GetAssemblies())
             {
                 try
@@ -57,6 +102,57 @@ namespace SunhavenMods.Shared
             }
 
             return null;
+        }
+
+        /// <summary>
+        /// Finds the main <c>Plugin</c> type for a mod assembly (e.g. GiftingAssistant → GiftingAssistant.Plugin).
+        /// </summary>
+        public static Type FindModPlugin(string assemblyName)
+        {
+            if (string.IsNullOrWhiteSpace(assemblyName))
+                return null;
+
+            var byNamespace = FindType("Plugin", assemblyName);
+            if (byNamespace != null
+                && string.Equals(byNamespace.Assembly.GetName().Name, assemblyName, StringComparison.OrdinalIgnoreCase))
+            {
+                return byNamespace;
+            }
+
+            foreach (var assembly in AppDomain.CurrentDomain.GetAssemblies())
+            {
+                if (!string.Equals(assembly.GetName().Name, assemblyName, StringComparison.OrdinalIgnoreCase))
+                    continue;
+
+                var direct = assembly.GetType($"{assemblyName}.Plugin", throwOnError: false);
+                if (direct != null)
+                    return direct;
+
+                try
+                {
+                    var plugin = assembly.GetTypes().FirstOrDefault(t =>
+                        t.IsClass && !t.IsAbstract && t.Name == "Plugin");
+                    if (plugin != null)
+                        return plugin;
+                }
+                catch (ReflectionTypeLoadException ex)
+                {
+                    var plugin = ex.Types?.FirstOrDefault(t =>
+                        t != null && t.IsClass && !t.IsAbstract && t.Name == "Plugin");
+                    if (plugin != null)
+                        return plugin;
+                }
+            }
+
+            return null;
+        }
+
+        /// <summary>
+        /// Gets a static method on a type, including internal methods.
+        /// </summary>
+        public static MethodInfo GetStaticMethod(Type type, string methodName)
+        {
+            return type?.GetMethod(methodName, AllBindingFlags);
         }
 
         /// <summary>
