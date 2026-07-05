@@ -90,6 +90,11 @@ namespace SunHavenMuseumUtilityTracker
             }
 
             Logger.LogInfo($"{PluginInfo.PLUGIN_NAME} loaded successfully!");
+            ModDiagnostics.LogModStartup(Log, PluginInfo.PLUGIN_GUID, PluginInfo.PLUGIN_NAME, PluginInfo.PLUGIN_VERSION,
+                ModHealthIntegrationSummary.Build(
+                    ("DevTools", SuitePluginGuids.DevTools),
+                    ("SenpaisChest", SuitePluginGuids.SenpaisChest),
+                    ("Almanac", SuitePluginGuids.HavensAlmanac)));
             Logger.LogInfo($"Press {(_requireCtrl.Value ? "Ctrl+" : "")}{_toggleKey.Value} or {_altToggleKey.Value} to open the tracker");
         }
 

@@ -2,6 +2,7 @@ using BepInEx;
 using BepInEx.Bootstrap;
 using BepInEx.Logging;
 using HarmonyLib;
+using SunhavenMods.Shared;
 using TrinketFortune.Patches;
 using System.IO;
 using UnityEngine;
@@ -26,12 +27,11 @@ namespace TrinketFortune
             _harmony = new Harmony(PluginInfo.PLUGIN_GUID);
             FishingTrinketPatches.ApplyPatches(_harmony);
 
-            bool hasHavenDevTools = Chainloader.PluginInfos != null &&
-                                    Chainloader.PluginInfos.ContainsKey("com.azraelgodking.havendevtools");
-            if (hasHavenDevTools)
-                Log.LogInfo("HavenDevTools detected. Trinket Fortune runs in standalone-safe mode (no hard API dependency).");
-
             Log.LogInfo($"{PluginInfo.PLUGIN_NAME} v{PluginInfo.PLUGIN_VERSION} loaded. Fishing loot bias active when S.M.U.T. is installed.");
+            ModDiagnostics.LogModStartup(Log, PluginInfo.PLUGIN_GUID, PluginInfo.PLUGIN_NAME, PluginInfo.PLUGIN_VERSION,
+                ModHealthIntegrationSummary.Build(
+                    ("DevTools", SuitePluginGuids.DevTools),
+                    ("SMUT", SuitePluginGuids.Smut)));
         }
 
         private void OnApplicationQuit()
@@ -66,6 +66,30 @@ namespace TrinketFortune
                 Log?.LogWarning($"[Config] Migration to TrinketFortune.cfg failed: {ex.Message}");
             }
             return new BepInEx.Configuration.ConfigFile(configPath, true);
+        }
+
+        /// <summary>
+        /// Lightweight status for Haven Dev Tools → Suite tab (soft integration).
+        /// </summary>
+        public static string GetDevToolsSummary()
+        {
+            if (TrinketFortune.Config.Enabled == null)
+                return "Not ready";
+
+            bool smutInstalled = Chainloader.PluginInfos != null
+                && Chainloader.PluginInfos.ContainsKey(SuitePluginGuids.Smut);
+            string integration = DonationHelper.IsAvailable
+                ? "S.M.U.T. donations linked"
+                : smutInstalled
+                    ? "S.M.U.T. installed (load a save for donation data)"
+                    : "standalone mode";
+
+            if (!TrinketFortune.Config.Enabled.Value)
+                return $"Disabled in config | {integration}";
+
+            float aquariumPct = DonationHelper.GetAquariumProgressPercent();
+            return $"Aquarium: {aquariumPct:F1}% | Bonus {TrinketFortune.Config.MuseumProgressBonusPercent.Value}% per 10% | " +
+                   $"Min {TrinketFortune.Config.MinimumMuseumProgress.Value:P0} | Cap {TrinketFortune.Config.MaxBonusChancePercent.Value}% | {integration}";
         }
 
         public static class PluginInfo

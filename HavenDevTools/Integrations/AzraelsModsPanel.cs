@@ -27,13 +27,38 @@ namespace HavenDevTools.Integrations
 
         // Cached reflection to avoid per-frame lag (FindType/GetMethod scan assemblies)
         private static Type _cachedSenpaisChestPlugin;
-        private static MethodInfo _cachedSenpaisChestGetManager;
         private static Type _cachedBirthdayReminderPlugin;
-        private static MethodInfo _cachedBirthdayReminderGetManager;
         private static Type _cachedSunhavenTodoPlugin;
-        private static MethodInfo _cachedSunhavenTodoGetManager;
         private static Type _cachedHavensAlmanacPlugin;
-        private static MethodInfo _cachedHavensAlmanacGetAggregator;
+        private static Type _cachedCropOptimizerPlugin;
+        private static MethodInfo _cachedCropGetHudSummary;
+        private static Type _cachedFasterRacesPlugin;
+        private static Type _cachedHavensRespecPlugin;
+        private static Type _cachedTrinketFortunePlugin;
+        private static MethodInfo _cachedTrinketGetDevToolsSummary;
+        private static Type _cachedGiftingAssistantPlugin;
+
+        private static Type ResolveModPlugin(string assemblyName, ref Type cache, params string[] alternateAssemblyNames)
+        {
+            if (cache != null
+                && string.Equals(cache.Assembly.GetName().Name, assemblyName, StringComparison.OrdinalIgnoreCase))
+            {
+                return cache;
+            }
+
+            cache = ReflectionHelper.FindModPlugin(assemblyName);
+            if (cache == null && alternateAssemblyNames != null)
+            {
+                foreach (var alt in alternateAssemblyNames)
+                {
+                    cache = ReflectionHelper.FindModPlugin(alt);
+                    if (cache != null)
+                        break;
+                }
+            }
+
+            return cache;
+        }
 
         public static void Draw(GUIStyle boxStyle, GUIStyle buttonStyle, GUIStyle labelStyle, GUIStyle sectionHeaderStyle)
         {
@@ -55,6 +80,14 @@ namespace HavenDevTools.Integrations
             if (Plugin.HasHavensAlmanac) { installedTabs.Add(ModLocalization.T("azrael.tab.almanac")); installedIndices.Add(idx); }
             idx++;
             if (Plugin.HasTrinketFortune) { installedTabs.Add(ModLocalization.T("azrael.tab.trinket_fortune")); installedIndices.Add(idx); }
+            idx++;
+            if (Plugin.HasCropOptimizer) { installedTabs.Add(ModLocalization.T("azrael.tab.crop_optimizer")); installedIndices.Add(idx); }
+            idx++;
+            if (Plugin.HasFasterRaces) { installedTabs.Add(ModLocalization.T("azrael.tab.faster_races")); installedIndices.Add(idx); }
+            idx++;
+            if (Plugin.HasHavensRespec) { installedTabs.Add(ModLocalization.T("azrael.tab.havens_respec")); installedIndices.Add(idx); }
+            idx++;
+            if (Plugin.HasGiftingAssistant) { installedTabs.Add(ModLocalization.T("azrael.tab.gifting_assistant")); installedIndices.Add(idx); }
 
             if (installedTabs.Count == 0)
             {
@@ -82,6 +115,10 @@ namespace HavenDevTools.Integrations
                 case 5: DrawTodo(boxStyle, buttonStyle, labelStyle, sectionHeaderStyle); break;
                 case 6: DrawAlmanac(boxStyle, buttonStyle, labelStyle, sectionHeaderStyle); break;
                 case 7: DrawTrinketFortune(boxStyle, buttonStyle, labelStyle, sectionHeaderStyle); break;
+                case 8: DrawCropOptimizer(boxStyle, buttonStyle, labelStyle, sectionHeaderStyle); break;
+                case 9: DrawFasterRaces(boxStyle, buttonStyle, labelStyle, sectionHeaderStyle); break;
+                case 10: DrawHavensRespec(boxStyle, buttonStyle, labelStyle, sectionHeaderStyle); break;
+                case 11: DrawGiftingAssistant(boxStyle, buttonStyle, labelStyle, sectionHeaderStyle); break;
             }
 
             GUILayout.EndScrollView();
@@ -94,16 +131,21 @@ namespace HavenDevTools.Integrations
 
             try
             {
-                if (_cachedSenpaisChestPlugin == null)
-                    _cachedSenpaisChestPlugin = ReflectionHelper.FindType("Plugin", "SenpaisChest") ?? ReflectionHelper.FindType("Plugin", "SenpaiChest");
-                if (_cachedSenpaisChestPlugin == null) { GUILayout.Label("SenpaisChest.Plugin not found", label); GUILayout.EndVertical(); return; }
+                var plugin = ResolveModPlugin("SenpaisChest", ref _cachedSenpaisChestPlugin, "SenpaiChest");
+                if (plugin == null)
+                {
+                    GUILayout.Label(ModLocalization.T("azrael.suite.plugin_not_found", "Senpai's Chest"), label);
+                    GUILayout.EndVertical();
+                    return;
+                }
 
-                if (_cachedSenpaisChestGetManager == null)
-                    _cachedSenpaisChestGetManager = _cachedSenpaisChestPlugin.GetMethod("GetManager", BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Static);
-                if (_cachedSenpaisChestGetManager == null) { GUILayout.Label("GetManager not found", label); GUILayout.EndVertical(); return; }
-
-                var manager = _cachedSenpaisChestGetManager.Invoke(null, null);
-                if (manager == null) { GUILayout.Label("Manager not loaded", label); GUILayout.EndVertical(); return; }
+                var manager = ReflectionHelper.InvokeStaticMethod(plugin, "GetManager");
+                if (manager == null)
+                {
+                    GUILayout.Label(ModLocalization.T("azrael.suite.awaiting_character"), label);
+                    GUILayout.EndVertical();
+                    return;
+                }
 
                 // Smart chests
                 var getSaveData = manager.GetType().GetMethod("GetSaveData");
@@ -299,16 +341,21 @@ namespace HavenDevTools.Integrations
 
             try
             {
-                if (_cachedBirthdayReminderPlugin == null)
-                    _cachedBirthdayReminderPlugin = ReflectionHelper.FindType("Plugin", "BirthdayReminder");
-                if (_cachedBirthdayReminderPlugin == null) { GUILayout.Label("BirthdayReminder.Plugin not found", label); GUILayout.EndVertical(); return; }
+                var plugin = ResolveModPlugin("BirthdayReminder", ref _cachedBirthdayReminderPlugin);
+                if (plugin == null)
+                {
+                    GUILayout.Label(ModLocalization.T("azrael.suite.plugin_not_found", "Birthday Reminder"), label);
+                    GUILayout.EndVertical();
+                    return;
+                }
 
-                if (_cachedBirthdayReminderGetManager == null)
-                    _cachedBirthdayReminderGetManager = _cachedBirthdayReminderPlugin.GetMethod("GetManager", BindingFlags.Public | BindingFlags.Static);
-                if (_cachedBirthdayReminderGetManager == null) { GUILayout.Label("GetManager not found", label); GUILayout.EndVertical(); return; }
-
-                var manager = _cachedBirthdayReminderGetManager.Invoke(null, null);
-                if (manager == null) { GUILayout.Label("Manager not loaded", label); GUILayout.EndVertical(); return; }
+                var manager = ReflectionHelper.InvokeStaticMethod(plugin, "GetManager");
+                if (manager == null)
+                {
+                    GUILayout.Label(ModLocalization.T("azrael.suite.awaiting_character"), label);
+                    GUILayout.EndVertical();
+                    return;
+                }
 
                 var hasBirthdays = manager.GetType().GetProperty("HasBirthdays")?.GetValue(manager);
                 var hasUngifted = manager.GetType().GetProperty("HasUngiftedBirthdays")?.GetValue(manager);
@@ -333,7 +380,7 @@ namespace HavenDevTools.Integrations
                 GUILayout.BeginHorizontal();
                 if (GUILayout.Button(ModLocalization.T("azrael.birthday.check"), button))
                 {
-                    ReflectionHelper.InvokeStaticMethod(_cachedBirthdayReminderPlugin, "CheckBirthdays");
+                    ReflectionHelper.InvokeStaticMethod(plugin, "CheckBirthdays");
                 }
                 if (GUILayout.Button(ModLocalization.T("azrael.birthday.refresh"), button))
                 {
@@ -341,7 +388,7 @@ namespace HavenDevTools.Integrations
                 }
                 if (GUILayout.Button(ModLocalization.T("azrael.birthday.test_notify"), button))
                 {
-                    ReflectionHelper.InvokeStaticMethod(_cachedBirthdayReminderPlugin, "SendAllBirthdayNotifications");
+                    ReflectionHelper.InvokeStaticMethod(plugin, "SendAllBirthdayNotifications");
                 }
                 GUILayout.EndHorizontal();
             }
@@ -360,16 +407,24 @@ namespace HavenDevTools.Integrations
 
             try
             {
-                if (_cachedSunhavenTodoPlugin == null)
-                    _cachedSunhavenTodoPlugin = ReflectionHelper.FindType("Plugin", "SunhavenTodo");
-                if (_cachedSunhavenTodoPlugin == null) { GUILayout.Label("SunhavenTodo.Plugin not found", label); GUILayout.EndVertical(); return; }
+                var plugin = ResolveModPlugin("SunhavenTodo", ref _cachedSunhavenTodoPlugin);
+                if (plugin == null)
+                {
+                    GUILayout.Label(ModLocalization.T("azrael.suite.plugin_not_found", "Sun Haven Todo"), label);
+                    GUILayout.EndVertical();
+                    return;
+                }
 
-                if (_cachedSunhavenTodoGetManager == null)
-                    _cachedSunhavenTodoGetManager = _cachedSunhavenTodoPlugin.GetMethod("GetTodoManager", BindingFlags.Public | BindingFlags.Static);
-                if (_cachedSunhavenTodoGetManager == null) { GUILayout.Label("GetTodoManager not found", label); GUILayout.EndVertical(); return; }
-
-                var manager = _cachedSunhavenTodoGetManager.Invoke(null, null);
-                if (manager == null) { GUILayout.Label("Manager not loaded", label); GUILayout.EndVertical(); return; }
+                var manager = ReflectionHelper.InvokeStaticMethod(plugin, "GetTodoManager");
+                if (manager == null)
+                {
+                    GUILayout.Label(ModLocalization.T("azrael.suite.awaiting_character"), label);
+                    var shortcutOnly = ReflectionHelper.InvokeStaticMethod(plugin, "GetOpenListShortcutDisplay") as string;
+                    if (!string.IsNullOrEmpty(shortcutOnly))
+                        GUILayout.Label($"Shortcut: {shortcutOnly}", label);
+                    GUILayout.EndVertical();
+                    return;
+                }
 
                 var getData = manager.GetType().GetMethod("GetData");
                 var data = getData?.Invoke(manager, null);
@@ -384,7 +439,7 @@ namespace HavenDevTools.Integrations
                 var currentChar = manager.GetType().GetProperty("CurrentCharacter")?.GetValue(manager);
                 charName = currentChar?.ToString() ?? "?";
 
-                var shortcutDisplay = _cachedSunhavenTodoPlugin.GetMethod("GetOpenListShortcutDisplay", BindingFlags.Public | BindingFlags.Static);
+                var shortcutDisplay = ReflectionHelper.GetStaticMethod(plugin, "GetOpenListShortcutDisplay");
                 string shortcut = shortcutDisplay?.Invoke(null, null)?.ToString() ?? "Ctrl+T";
 
                 GUILayout.Label($"Tasks: {count}", label);
@@ -394,11 +449,11 @@ namespace HavenDevTools.Integrations
                 GUILayout.Space(8);
                 GUILayout.BeginHorizontal();
                 if (GUILayout.Button(ModLocalization.T("azrael.todo.toggle_ui"), button))
-                    ReflectionHelper.InvokeStaticMethod(_cachedSunhavenTodoPlugin, "ToggleUI");
+                    ReflectionHelper.InvokeStaticMethod(plugin, "ToggleUI");
                 if (GUILayout.Button(ModLocalization.T("azrael.todo.toggle_hud"), button))
-                    ReflectionHelper.InvokeStaticMethod(_cachedSunhavenTodoPlugin, "ToggleHUD");
+                    ReflectionHelper.InvokeStaticMethod(plugin, "ToggleHUD");
                 if (GUILayout.Button(ModLocalization.T("azrael.todo.save"), button))
-                    ReflectionHelper.InvokeStaticMethod(_cachedSunhavenTodoPlugin, "SaveData");
+                    ReflectionHelper.InvokeStaticMethod(plugin, "SaveData");
                 GUILayout.EndHorizontal();
             }
             catch (Exception ex)
@@ -416,16 +471,21 @@ namespace HavenDevTools.Integrations
 
             try
             {
-                if (_cachedHavensAlmanacPlugin == null)
-                    _cachedHavensAlmanacPlugin = ReflectionHelper.FindType("Plugin", "HavensAlmanac");
-                if (_cachedHavensAlmanacPlugin == null) { GUILayout.Label("HavensAlmanac.Plugin not found", label); GUILayout.EndVertical(); return; }
+                var plugin = ResolveModPlugin("HavensAlmanac", ref _cachedHavensAlmanacPlugin);
+                if (plugin == null)
+                {
+                    GUILayout.Label(ModLocalization.T("azrael.suite.plugin_not_found", "Haven's Almanac"), label);
+                    GUILayout.EndVertical();
+                    return;
+                }
 
-                if (_cachedHavensAlmanacGetAggregator == null)
-                    _cachedHavensAlmanacGetAggregator = _cachedHavensAlmanacPlugin.GetMethod("GetDataAggregator", BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Static);
-                if (_cachedHavensAlmanacGetAggregator == null) { GUILayout.Label("GetDataAggregator not found (internal)", label); GUILayout.EndVertical(); return; }
-
-                var aggregator = _cachedHavensAlmanacGetAggregator.Invoke(null, null);
-                if (aggregator == null) { GUILayout.Label("Aggregator not loaded", label); GUILayout.EndVertical(); return; }
+                var aggregator = ReflectionHelper.InvokeStaticMethod(plugin, "GetDataAggregator");
+                if (aggregator == null)
+                {
+                    GUILayout.Label(ModLocalization.T("azrael.suite.awaiting_character"), label);
+                    GUILayout.EndVertical();
+                    return;
+                }
 
                 var modCountProp = aggregator.GetType().GetProperty("InstalledModCount");
                 var hasDataProp = aggregator.GetType().GetProperty("HasAnyData");
@@ -465,51 +525,217 @@ namespace HavenDevTools.Integrations
             GUILayout.EndVertical();
         }
 
-        private static IDevToolsPanel _cachedTrinketFortunePanel;
-
         private static void DrawTrinketFortune(GUIStyle box, GUIStyle button, GUIStyle label, GUIStyle sectionHeader)
         {
-            var panel = DevToolsRegistry.Panels.FirstOrDefault(p => p.ModGuid == "com.azraelgodking.trinketfortune")
-                ?? _cachedTrinketFortunePanel;
-
-            if (panel == null)
+            var registeredPanel = DevToolsRegistry.Panels.FirstOrDefault(p =>
+                p.ModGuid == "com.azraelgodking.trinketfortune");
+            if (registeredPanel != null)
             {
+                GUILayout.BeginVertical(box);
+                GUILayout.Label(registeredPanel.DisplayName, sectionHeader);
+                GUILayout.Space(5);
                 try
                 {
-                    var panelType = Type.GetType("TrinketFortune.DevTools.TrinketFortunePanel, TrinketFortune");
-                    if (panelType != null)
-                    {
-                        panel = (IDevToolsPanel)Activator.CreateInstance(panelType);
-                        _cachedTrinketFortunePanel = panel;
-                    }
+                    registeredPanel.Draw(box, button, label);
                 }
                 catch (Exception ex)
                 {
-                    Plugin.Log?.LogDebug($"[AzraelsMods] Trinket Fortune panel fallback: {ex.Message}");
+                    GUILayout.Label($"Error: {ex.Message}", label);
                 }
-            }
-
-            if (panel == null)
-            {
-                GUILayout.BeginVertical(box);
-                GUILayout.Label(ModLocalization.T("azrael.tab.trinket_fortune"), sectionHeader);
-                GUILayout.Label(ModLocalization.T("azrael.trinket.not_loaded"), label);
                 GUILayout.EndVertical();
                 return;
             }
 
             GUILayout.BeginVertical(box);
-            GUILayout.Label(panel.DisplayName, sectionHeader);
-            GUILayout.Space(5);
+            GUILayout.Label(ModLocalization.T("azrael.trinket.title"), sectionHeader);
+
             try
             {
-                panel.Draw(box, button, label);
+                var plugin = ResolveModPlugin("TrinketFortune", ref _cachedTrinketFortunePlugin);
+                if (plugin == null)
+                {
+                    GUILayout.Label(ModLocalization.T("azrael.suite.plugin_not_found", "Trinket Fortune"), label);
+                    GUILayout.EndVertical();
+                    return;
+                }
+
+                if (_cachedTrinketGetDevToolsSummary == null)
+                    _cachedTrinketGetDevToolsSummary = ReflectionHelper.GetStaticMethod(plugin, "GetDevToolsSummary");
+
+                string summary = _cachedTrinketGetDevToolsSummary?.Invoke(null, null) as string;
+                GUILayout.Label(string.IsNullOrEmpty(summary)
+                    ? ModLocalization.T("azrael.trinket.unavailable")
+                    : summary, label);
             }
             catch (Exception ex)
             {
                 GUILayout.Label($"Error: {ex.Message}", label);
             }
+
             GUILayout.EndVertical();
+        }
+
+        private static void DrawCropOptimizer(GUIStyle box, GUIStyle button, GUIStyle label, GUIStyle sectionHeader)
+        {
+            GUILayout.BeginVertical(box);
+            GUILayout.Label(ModLocalization.T("azrael.crop.title"), sectionHeader);
+
+            try
+            {
+                var plugin = ResolveModPlugin("CropOptimizer", ref _cachedCropOptimizerPlugin);
+                if (plugin == null)
+                {
+                    GUILayout.Label(ModLocalization.T("azrael.suite.plugin_not_found", "Crop Optimizer"), label);
+                    GUILayout.EndVertical();
+                    return;
+                }
+
+                if (_cachedCropGetHudSummary == null)
+                    _cachedCropGetHudSummary = ReflectionHelper.GetStaticMethod(plugin, "GetHudSummary");
+
+                string summary = _cachedCropGetHudSummary?.Invoke(null, null) as string;
+                GUILayout.Label(string.IsNullOrEmpty(summary) ? ModLocalization.T("azrael.crop.unavailable") : summary, label);
+            }
+            catch (Exception ex)
+            {
+                GUILayout.Label($"Error: {ex.Message}", label);
+            }
+
+            GUILayout.EndVertical();
+        }
+
+        private static void DrawFasterRaces(GUIStyle box, GUIStyle button, GUIStyle label, GUIStyle sectionHeader)
+        {
+            GUILayout.BeginVertical(box);
+            GUILayout.Label(ModLocalization.T("azrael.races.title"), sectionHeader);
+
+            try
+            {
+                var plugin = ResolveModPlugin("FasterRaces", ref _cachedFasterRacesPlugin);
+                if (plugin == null)
+                {
+                    GUILayout.Label(ModLocalization.T("azrael.suite.plugin_not_found", "Faster Races"), label);
+                    GUILayout.EndVertical();
+                    return;
+                }
+
+                var enableField = plugin.GetField("EnableMod", ReflectionHelper.AllBindingFlags);
+                var speedField = plugin.GetField("SpeedBonusPercent", ReflectionHelper.AllBindingFlags);
+                bool enabled = ReadConfigEntryBool(enableField?.GetValue(null));
+                float speed = ReadConfigEntryFloat(speedField?.GetValue(null));
+
+                if (!enabled)
+                    GUILayout.Label(ModLocalization.T("azrael.races.disabled"), label);
+                else
+                    GUILayout.Label(ModLocalization.T("azrael.races.speed", speed), label);
+            }
+            catch (Exception ex)
+            {
+                GUILayout.Label($"Error: {ex.Message}", label);
+            }
+
+            GUILayout.EndVertical();
+        }
+
+        private static void DrawHavensRespec(GUIStyle box, GUIStyle button, GUIStyle label, GUIStyle sectionHeader)
+        {
+            GUILayout.BeginVertical(box);
+            GUILayout.Label(ModLocalization.T("azrael.respec.title"), sectionHeader);
+
+            try
+            {
+                var plugin = ResolveModPlugin("HavensRespec", ref _cachedHavensRespecPlugin);
+                if (plugin == null)
+                {
+                    GUILayout.Label(ModLocalization.T("azrael.suite.plugin_not_found", "Haven's Respec"), label);
+                    GUILayout.EndVertical();
+                    return;
+                }
+
+                var instanceProp = plugin.GetProperty("Instance", ReflectionHelper.AllBindingFlags);
+                var instance = instanceProp?.GetValue(null);
+                GUILayout.Label(instance == null
+                    ? ModLocalization.T("azrael.respec.unavailable")
+                    : ModLocalization.T("azrael.respec.ready"), label);
+            }
+            catch (Exception ex)
+            {
+                GUILayout.Label($"Error: {ex.Message}", label);
+            }
+
+            GUILayout.EndVertical();
+        }
+
+        private static void DrawGiftingAssistant(GUIStyle box, GUIStyle button, GUIStyle label, GUIStyle sectionHeader)
+        {
+            GUILayout.BeginVertical(box);
+            GUILayout.Label(ModLocalization.T("azrael.gifting.title"), sectionHeader);
+
+            try
+            {
+                var plugin = ResolveModPlugin("GiftingAssistant", ref _cachedGiftingAssistantPlugin);
+                if (plugin == null)
+                {
+                    GUILayout.Label(ModLocalization.T("azrael.suite.plugin_not_found", "Gifting Assistant"), label);
+                    GUILayout.EndVertical();
+                    return;
+                }
+
+                var enabledProp = plugin.GetProperty("StaticEnabled", ReflectionHelper.AllBindingFlags);
+                bool enabled = enabledProp?.GetValue(null) is bool b && b;
+                if (!enabled)
+                {
+                    GUILayout.Label(ModLocalization.T("azrael.gifting.disabled"), label);
+                    GUILayout.EndVertical();
+                    return;
+                }
+
+                string shortcut = ReflectionHelper.InvokeStaticMethod(plugin, "GetOpenShortcutDisplay") as string ?? "Ctrl+G";
+                GUILayout.Label($"Shortcut: {shortcut}", label);
+
+                var manager = ReflectionHelper.InvokeStaticMethod(plugin, "GetManager");
+                if (manager == null)
+                {
+                    GUILayout.Label(ModLocalization.T("azrael.suite.awaiting_character"), label);
+                }
+                else
+                {
+                    var getEntries = manager.GetType().GetMethod("GetEntries");
+                    var entries = getEntries?.Invoke(manager, null) as System.Collections.ICollection;
+                    int count = entries?.Count ?? 0;
+                    var charProp = manager.GetType().GetProperty("CurrentCharacter");
+                    string charName = charProp?.GetValue(manager)?.ToString();
+                    if (string.IsNullOrEmpty(charName))
+                        charName = "?";
+
+                    GUILayout.Label(ModLocalization.T("azrael.gifting.roster", count), label);
+                    GUILayout.Label($"Character: {charName}", label);
+                }
+
+                GUILayout.Space(8);
+                if (GUILayout.Button(ModLocalization.T("azrael.gifting.toggle_ui"), button))
+                    ReflectionHelper.InvokeStaticMethod(plugin, "ToggleUI");
+            }
+            catch (Exception ex)
+            {
+                GUILayout.Label($"Error: {ex.Message}", label);
+            }
+
+            GUILayout.EndVertical();
+        }
+
+        private static bool ReadConfigEntryBool(object configEntry)
+        {
+            if (configEntry == null) return false;
+            var valueProp = configEntry.GetType().GetProperty("Value");
+            return valueProp?.GetValue(configEntry) is bool b && b;
+        }
+
+        private static float ReadConfigEntryFloat(object configEntry)
+        {
+            if (configEntry == null) return 0f;
+            var valueProp = configEntry.GetType().GetProperty("Value");
+            return valueProp?.GetValue(configEntry) is float f ? f : 0f;
         }
     }
 }

@@ -112,6 +112,9 @@ namespace TrinketFortune
             return items[UnityEngine.Random.Range(0, items.Count)];
         }
 
+        /// <summary>Aquarium completion 0–100 for Dev Tools / bias tuning.</summary>
+        public static float GetAquariumProgressPercent() => GetAquariumProgress();
+
         private static float GetAquariumProgress()
         {
             try

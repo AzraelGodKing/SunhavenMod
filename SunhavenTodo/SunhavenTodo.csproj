@@ -84,6 +84,7 @@
     <Compile Include="..\SharedUtilities\SharedCodeRevision.cs" Link="Shared\SharedCodeRevision.cs" />
     <Compile Include="..\SharedUtilities\ModHealthReport.cs" Link="Shared\ModHealthReport.cs" />
     <Compile Include="..\SharedUtilities\ModDiagnostics.cs" Link="Shared\ModDiagnostics.cs" />
+    <Compile Include="..\SharedUtilities\ModHealthIntegrationSummary.cs" Link="Shared\ModHealthIntegrationSummary.cs" />
     <Compile Include="..\SharedUtilities\ModHealthAggregator.cs" Link="Shared\ModHealthAggregator.cs" />
     <Compile Include="..\SharedUtilities\VersionChecker.cs" Link="Shared\VersionChecker.cs" />
     <Compile Include="..\SharedUtilities\SceneRootSurvivor.cs" Link="Shared\SceneRootSurvivor.cs" />

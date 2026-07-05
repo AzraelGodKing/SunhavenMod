@@ -175,7 +175,7 @@ namespace HavenDevTools.Config
             {
                 if (!global::HavenDevTools.Plugin.HasTheVault || TheVaultFullVaultInspector == null) return;
 
-                _cachedTheVaultPluginType ??= ReflectionHelper.FindType("Plugin", "TheVault");
+                _cachedTheVaultPluginType ??= ReflectionHelper.FindModPlugin("TheVault");
                 if (_cachedTheVaultPluginType == null) return;
 
                 _cachedSetTheVaultFullInspector ??= _cachedTheVaultPluginType.GetMethod(
