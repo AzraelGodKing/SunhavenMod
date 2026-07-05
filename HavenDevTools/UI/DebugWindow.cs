@@ -168,7 +168,7 @@ namespace HavenDevTools.UI
 
         private void OnGUI()
         {
-            if (!_isVisible || !Plugin.IsAuthorized) return;
+            if (!_isVisible) return;
 
             InitializeStyles();
             DebugWindowLayout.ClampToScreen(ref _windowRect);
@@ -1294,35 +1294,6 @@ namespace HavenDevTools.UI
             if (GUILayout.Button(ModLocalization.T("devtools.logPlayerStats"), _buttonStyle))
             {
                 LogPlayerStats();
-            }
-
-            GUILayout.Space(10);
-
-            // Hash generator
-            GUILayout.Label(ModLocalization.T("devtools.auth.title"), _sectionHeaderStyle);
-            GUILayout.Label(ModLocalization.T("devtools.auth.hint"), _labelStyle);
-            if (GUILayout.Button(ModLocalization.T("devtools.auth.logHash"), _buttonStyle))
-            {
-                try
-                {
-                    var steamId = typeof(Plugin).GetMethod("TryGetSteamId",
-                        System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Static)
-                        ?.Invoke(null, null) as string;
-                    if (!string.IsNullOrEmpty(steamId))
-                    {
-                        string hash = Plugin.GenerateHash(steamId);
-                        Plugin.Log?.LogInfo($"Steam ID: {steamId}");
-                        Plugin.Log?.LogInfo($"Steam ID Hash: {hash}");
-                    }
-                    else
-                    {
-                        Plugin.Log?.LogWarning("Could not retrieve Steam ID");
-                    }
-                }
-                catch (Exception ex)
-                {
-                    Plugin.Log?.LogError($"Error generating hash: {ex.Message}");
-                }
             }
 
             GUILayout.EndVertical();
