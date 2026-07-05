@@ -50,3 +50,11 @@ Each mod should provide:
 
 This keeps support logs consistent across mods and reduces triage time.
 
+### Implementation (SharedUtilities)
+
+- **`SharedCodeRevision.Value`** — bump in the same PR as any material `SharedUtilities/` change.
+- **`ModDiagnostics.ReportStartup(ModHealthReport)`** — stores structured startup snapshot; logs via **`ModDiagnostics.LogStartupHealth(logger, report)`** using the standard `[Health]` line format.
+- **`ModDiagnostics.ReportRuntime(guid, update)`** — update character/load/save fields during play.
+- **`ModHealthAggregator`** — merges diagnostics + `VersionChecker` telemetry across linked DLL copies (used by Haven Dev Tools → **Health** tab).
+- **Dashboard:** Haven Dev Tools → **Health** tab (suite-wide). Haven's Almanac shows a short bridge **only when Dev Tools is installed** (points to F11 → Health).
+
