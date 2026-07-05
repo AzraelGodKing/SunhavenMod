@@ -81,6 +81,10 @@
     <Compile Include="..\SharedUtilities\PersistentRunnerBase.cs" Link="Shared\PersistentRunnerBase.cs" />
     <Compile Include="..\SharedUtilities\SceneHelpers.cs" Link="Shared\SceneHelpers.cs" />
     <Compile Include="..\SharedUtilities\TextInputFocusGuard.cs" Link="Shared\TextInputFocusGuard.cs" />
+    <Compile Include="..\SharedUtilities\SharedCodeRevision.cs" Link="Shared\SharedCodeRevision.cs" />
+    <Compile Include="..\SharedUtilities\ModHealthReport.cs" Link="Shared\ModHealthReport.cs" />
+    <Compile Include="..\SharedUtilities\ModDiagnostics.cs" Link="Shared\ModDiagnostics.cs" />
+    <Compile Include="..\SharedUtilities\ModHealthIntegrationSummary.cs" Link="Shared\ModHealthIntegrationSummary.cs" />
   </ItemGroup>
 
   <!-- Copy to BepInEx plugins folder and builds folder after build -->

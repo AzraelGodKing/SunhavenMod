@@ -7,6 +7,9 @@ Internal engineering log: **CI**, **release automation**, **scripts**, **docs in
 ## 2026-07-05
 
 - **Mod Health Dashboard:** `SharedCodeRevision`, `ModDiagnostics`, `ModHealthReport`, `ModHealthAggregator` in SharedUtilities. Haven Dev Tools tab bar → **Health | Tools | Suite | Extensions**; Health tab aggregates suite diagnostics, shared-code skew banner, version checker (moved from Utility). Pilot `[Health]` startup reports: Dev Tools, Todo, Vault. Almanac `ModHealthBridgeProvider` registers only when Dev Tools is installed.
+- **Suite-wide Dev Tools integration:** `ModHealthIntegrationSummary`, `SuitePluginGuids`, `ModDiagnostics.LogModStartup`; `LogStartupHealth` now registers reports for the Health dashboard. All 13 suite mods emit startup health; Suite tab extended with Crop Optimizer, Faster Races, Respec, Gifting Assistant panels.
+- **Suite tab reflection fix:** `ReflectionHelper.FindType` now resolves namespace-qualified types before bare names; added `FindModPlugin`. Fixes GetManager/GetTodoManager resolving HavenDevTools.Plugin instead of target mod.
+- **Haven Dev Tools — Currencies tab FPS:** `CurrencyTracker.GetSummary()` was invoked every IMGUI layout/repaint with uncached reflection (`AccessTools`, assembly scan, `GetMethod` per currency). Cached reflection handles; summary throttled to 0.5s; manual Refresh on Tools → Currencies.
 
 ## 2026-07-04
 

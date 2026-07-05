@@ -10,14 +10,20 @@ Notes for **players and release readers**. Per-mod blurbs and upstream metadata 
 
 - **Mod Health dashboard:** New top-level **Health** tab (F11) aggregates suite mod diagnostics, shared-code revision skew warnings, version checks, and per-mod detail dumps. Tab bar is now **Health | Tools | Suite | Extensions** (Azrael's Mods renamed **Suite**). Version checker moved from Tools → Utility into Health.
 - **FPS counter:** Compact corner HUD showing smoothed FPS (color-coded green/yellow/red). Enabled by default via `[Overlay] ShowFpsCounter`; position via `FpsCounterPosition` (TopLeft, TopRight, BottomLeft, BottomRight). F11 → Tools → Perf tab adds toggles for the corner counter and F6 overlay stats, plus a 3-second min/max FPS range.
-
-**Haven's Almanac**
+- **Fix:** Tools → Currencies no longer runs full reflection and inventory scans every IMGUI frame; balances refresh twice per second (Refresh button for immediate update).
+- **Suite integration:** All suite mods report startup health to the **Health** tab. **Suite** adds panels for Crop Optimizer, Faster Races, Haven's Respec, and Gifting Assistant when installed.
+- **Fix:** Suite tab no longer resolves the wrong mod `Plugin` type when calling GetManager/GetTodoManager (namespace-qualified reflection).
+- **Fix:** Trinket Fortune Suite panel uses built-in status summary (`GetDevToolsSummary`) instead of a missing optional DevTools panel class.
 
 - **Mod Health bridge:** When Haven Dev Tools is installed, the dashboard shows a short Mod Health summary and points to Dev Tools → Health for full diagnostics. No Mod Health section when Dev Tools is absent.
 
 **Sun Haven Todo** / **The Vault**
 
-- **Support diagnostics:** Startup `[Health]` log line with version, shared-code revision, and integration summary (feeds the Dev Tools dashboard).
+- **Support diagnostics:** Startup `[Health]` log line with version, shared-code revision, and detected companion mods (feeds Dev Tools → **Health** tab).
+
+**Senpai's Chest** / **Birthday Reminder** / **S.M.U.T.** / **Haven's Birthright** / **Crop Optimizer** / **Faster Races** / **Haven's Respec** / **Gifting Assistant** / **Trinket Fortune**
+
+- **Support diagnostics:** Same startup `[Health]` line and Dev Tools Suite tab integration when Haven Dev Tools is installed.
 
 **Crop Optimizer**
 

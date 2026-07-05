@@ -1001,10 +1001,18 @@ namespace HavenDevTools.UI
         private void DrawCurrenciesTab()
         {
             GUILayout.BeginVertical(_boxStyle);
+            GUILayout.BeginHorizontal();
             GUILayout.Label(ModLocalization.T("devtools.currency.title"), _sectionHeaderStyle);
+            GUILayout.FlexibleSpace();
+            var tracker = Plugin.GetCurrencyTracker();
+            if (tracker != null
+                && GUILayout.Button(ModLocalization.T("devtools.relationships.refresh"), _buttonStyle, GUILayout.Width(80)))
+            {
+                tracker.GetSummary(forceRefresh: true);
+            }
+            GUILayout.EndHorizontal();
             GUILayout.Space(5);
 
-            var tracker = Plugin.GetCurrencyTracker();
             if (tracker == null)
             {
                 GUILayout.Label(ModLocalization.T("devtools.currency.unavailable"), _labelStyle);
