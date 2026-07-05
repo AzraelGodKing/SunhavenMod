@@ -20,7 +20,10 @@ namespace HavensRespec
     {
         public static ManualLogSource Log { get; private set; }
         public static Plugin Instance { get; private set; }
+        public static bool IsModEnabled => _staticConfig != null && _staticConfig.Enabled.Value;
         public static bool IsDebugLoggingEnabled => _staticConfig?.DebugLogging?.Value == true;
+
+        internal static RespecController GetController() => _staticController;
 
         private static Harmony _staticHarmony;
         private static RespecConfig _staticConfig;

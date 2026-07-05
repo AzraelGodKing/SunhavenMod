@@ -72,6 +72,9 @@ namespace SunHavenMuseumUtilityTracker.Patches
                 _isDataLoaded = true;
                 _loadedCharacterName = characterName;
 
+                SunhavenMods.Shared.IconCache.LoadAllIcons();
+                MuseumWishlistOverlayPatches.SubscribeDonationRefresh();
+
                 Plugin.Log?.LogInfo($"Donation data loaded successfully for {characterName}");
             }
             catch (Exception ex)

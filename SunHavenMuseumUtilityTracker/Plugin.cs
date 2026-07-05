@@ -42,12 +42,16 @@ namespace SunHavenMuseumUtilityTracker
         private ConfigEntry<KeyCode> _altToggleKey;
         private ConfigEntry<bool> _checkForUpdates;
         private ConfigEntry<float> _uiScale;
+        private ConfigEntry<bool> _wishlistShopBadges;
+        private ConfigEntry<bool> _wishlistGiftBadges;
 
         // Static config for PersistentRunner
         public static KeyCode StaticToggleKey { get; private set; }
         public static bool StaticRequireCtrl { get; private set; }
         public static KeyCode StaticAltToggleKey { get; private set; }
         public static float StaticUIScale { get; private set; } = 1f;
+        public static bool StaticWishlistShopBadges { get; private set; } = true;
+        public static bool StaticWishlistGiftBadges { get; private set; } = true;
 
         public DonationManager DonationManager => _donationManager;
 
@@ -63,12 +67,15 @@ namespace SunHavenMuseumUtilityTracker
             // Bind configuration
             BindConfiguration();
 
+            SunhavenMods.Shared.IconCache.Initialize(Logger);
+
             // Create persistent runner first
             CreatePersistentRunner();
 
             // Initialize managers
             _donationManager = new DonationManager();
             _staticDonationManager = _donationManager;
+            MuseumWishlistOverlayPatches.SubscribeDonationRefresh();
 
             _saveSystem = new DonationSaveSystem(_donationManager);
             _staticSaveSystem = _saveSystem;
@@ -138,11 +145,27 @@ namespace SunHavenMuseumUtilityTracker
                 )
             );
 
+            _wishlistShopBadges = ConfigFile.Bind(
+                "WishlistOverlay",
+                "ShowShopBadges",
+                true,
+                "Show a museum-needed badge on shop items that are still undonated"
+            );
+
+            _wishlistGiftBadges = ConfigFile.Bind(
+                "WishlistOverlay",
+                "ShowGiftBadges",
+                true,
+                "Show a museum-needed badge on inventory items while gifting to NPCs"
+            );
+
             // Set static values for PersistentRunner
             StaticToggleKey = _toggleKey.Value;
             StaticRequireCtrl = _requireCtrl.Value;
             StaticAltToggleKey = _altToggleKey.Value;
             StaticUIScale = Mathf.Clamp(_uiScale.Value, 0.5f, 2.5f);
+            StaticWishlistShopBadges = _wishlistShopBadges.Value;
+            StaticWishlistGiftBadges = _wishlistGiftBadges.Value;
 
             // Listen for config changes
             _toggleKey.SettingChanged += (_, _) =>
@@ -164,6 +187,8 @@ namespace SunHavenMuseumUtilityTracker
                 StaticUIScale = Mathf.Clamp(_uiScale.Value, 0.5f, 2.5f);
                 _trackerUI?.SetScale(StaticUIScale);
             };
+            _wishlistShopBadges.SettingChanged += (_, _) => StaticWishlistShopBadges = _wishlistShopBadges.Value;
+            _wishlistGiftBadges.SettingChanged += (_, _) => StaticWishlistGiftBadges = _wishlistGiftBadges.Value;
 
             LocalizationBootstrap.BindForceEnglish(ConfigFile);
         }
@@ -290,6 +315,8 @@ namespace SunHavenMuseumUtilityTracker
 
                 // Patch HungryMonster for real-time donation tracking
                 HungryMonsterPatches.ApplyPatches(_harmony);
+
+                MuseumWishlistOverlayPatches.ApplyPatches(_harmony);
 
                 Logger.LogInfo("Harmony patches applied");
             }

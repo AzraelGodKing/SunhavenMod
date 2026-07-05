@@ -4,14 +4,18 @@ Notes for **players and release readers**. Per-mod blurbs and upstream metadata 
 
 ---
 
-## 2026-07-04
+## 2026-07-05
 
 **Haven Dev Tools**
 
+- **Steam ID lock removed:** F11 debug window, F6 overlay, and FPS counter are available to all users without Steam ID authorization. Removed the authorization hash generator from the Utility tab.
 - **Mod Health dashboard:** New top-level **Health** tab (F11) aggregates suite mod diagnostics, shared-code revision skew warnings, version checks, and per-mod detail dumps. Tab bar is now **Health | Tools | Suite | Extensions** (Azrael's Mods renamed **Suite**). Version checker moved from Tools → Utility into Health.
 - **FPS counter:** Compact corner HUD showing smoothed FPS (color-coded green/yellow/red). Enabled by default via `[Overlay] ShowFpsCounter`; position via `FpsCounterPosition` (TopLeft, TopRight, BottomLeft, BottomRight). F11 → Tools → Perf tab adds toggles for the corner counter and F6 overlay stats, plus a 3-second min/max FPS range.
 - **Fix:** Tools → Currencies no longer runs full reflection and inventory scans every IMGUI frame; balances refresh twice per second (Refresh button for immediate update).
 - **Suite integration:** All suite mods report startup health to the **Health** tab. **Suite** adds panels for Crop Optimizer, Faster Races, Haven's Respec, and Gifting Assistant when installed.
+- **Respec simulator:** Suite → Haven's Respec panel dry-runs a profession reset, shows projected refund/cost, and lets you **Apply reset** or **Revert preview** without charging until confirmed. Requires Haven's Respec installed and the Skills panel opened at least once in the current session.
+- **Fix:** Suite tab re-detects installed mods after the full BepInEx chain loads so Haven's Respec (and other late-loading suite mods) show up reliably.
+- **Fix:** Respec simulator panel reads `IsReady` / `ProfessionCount` as API properties (not methods) so the UI no longer stuck on "Open the Skills panel".
 - **Fix:** Suite tab no longer resolves the wrong mod `Plugin` type when calling GetManager/GetTodoManager (namespace-qualified reflection).
 - **Fix:** Trinket Fortune Suite panel uses built-in status summary (`GetDevToolsSummary`) instead of a missing optional DevTools panel class.
 
@@ -24,6 +28,16 @@ Notes for **players and release readers**. Per-mod blurbs and upstream metadata 
 **Senpai's Chest** / **Birthday Reminder** / **S.M.U.T.** / **Haven's Birthright** / **Crop Optimizer** / **Faster Races** / **Haven's Respec** / **Gifting Assistant** / **Trinket Fortune**
 
 - **Support diagnostics:** Same startup `[Health]` line and Dev Tools Suite tab integration when Haven Dev Tools is installed.
+
+**S.M.U.T. (Sun Haven Museum Utility Tracker)**
+
+- **Museum wishlist overlay:** Shop items and gift-inventory slots show a small orange "needed" badge when the item is still undonated for the museum. Toggle under `[WishlistOverlay]` in `SunHavenMuseumUtilityTracker.cfg`.
+- **Museum wishlist badge:** Shop/gift overlay now shows an **M** (museum / S.M.U.T. marker) with gold-trim styling instead of the first letter of "Needed".
+- **Museum wishlist tooltip:** Hovering a marked shop or gift item appends “Needed for the museum” to the vanilla tooltip. Badge size reduced.
+
+**Haven's Respec**
+
+- **DevTools API:** Exposes `RespecDevToolsApi` for dry-run profession reset preview (simulate, apply, revert). In-game Simulate button removed until Respec ships its own UI.
 
 **Crop Optimizer**
 

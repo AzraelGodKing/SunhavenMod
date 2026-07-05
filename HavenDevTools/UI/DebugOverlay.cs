@@ -49,7 +49,7 @@ namespace HavenDevTools.UI
 
         private void Update()
         {
-            if (!_isVisible || !Plugin.IsAuthorized) return;
+            if (!_isVisible) return;
 
             _updateTimer += Time.deltaTime;
             if (_updateTimer >= UPDATE_INTERVAL)
@@ -92,7 +92,7 @@ namespace HavenDevTools.UI
 
         private void OnGUI()
         {
-            if (!_isVisible || !Plugin.IsAuthorized) return;
+            if (!_isVisible) return;
 
             InitializeStyles();
 
