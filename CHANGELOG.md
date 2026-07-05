@@ -8,7 +8,16 @@ Notes for **players and release readers**. Per-mod blurbs and upstream metadata 
 
 **Haven Dev Tools**
 
+- **Mod Health dashboard:** New top-level **Health** tab (F11) aggregates suite mod diagnostics, shared-code revision skew warnings, version checks, and per-mod detail dumps. Tab bar is now **Health | Tools | Suite | Extensions** (Azrael's Mods renamed **Suite**). Version checker moved from Tools → Utility into Health.
 - **FPS counter:** Compact corner HUD showing smoothed FPS (color-coded green/yellow/red). Enabled by default via `[Overlay] ShowFpsCounter`; position via `FpsCounterPosition` (TopLeft, TopRight, BottomLeft, BottomRight). F11 → Tools → Perf tab adds toggles for the corner counter and F6 overlay stats, plus a 3-second min/max FPS range.
+
+**Haven's Almanac**
+
+- **Mod Health bridge:** When Haven Dev Tools is installed, the dashboard shows a short Mod Health summary and points to Dev Tools → Health for full diagnostics. No Mod Health section when Dev Tools is absent.
+
+**Sun Haven Todo** / **The Vault**
+
+- **Support diagnostics:** Startup `[Health]` log line with version, shared-code revision, and integration summary (feeds the Dev Tools dashboard).
 
 **Crop Optimizer**
 

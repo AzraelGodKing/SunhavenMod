@@ -4,6 +4,10 @@ Internal engineering log: **CI**, **release automation**, **scripts**, **docs in
 
 ---
 
+## 2026-07-05
+
+- **Mod Health Dashboard:** `SharedCodeRevision`, `ModDiagnostics`, `ModHealthReport`, `ModHealthAggregator` in SharedUtilities. Haven Dev Tools tab bar → **Health | Tools | Suite | Extensions**; Health tab aggregates suite diagnostics, shared-code skew banner, version checker (moved from Utility). Pilot `[Health]` startup reports: Dev Tools, Todo, Vault. Almanac `ModHealthBridgeProvider` registers only when Dev Tools is installed.
+
 ## 2026-07-04
 
 - **CharacterSaveStore — load failures:** `LoadWithBackup` wraps `tryDeserialize` in try/catch and forwards exceptions via `onReadFailure`; added unit test. Fixed `WriteAtomicCore` finally so failed writes delete `.tmp` when `deleteTempInFinally` is true (regression from merged `#90`). `WriteAtomic` / `WriteAtomicBytes` throw `ArgumentNullException` on null content instead of returning false. `LoadTextWithBackup` treats empty primary as a successful read (`primary != null`), matching `LoadWithBackup`.

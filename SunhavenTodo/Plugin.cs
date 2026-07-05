@@ -105,6 +105,17 @@ namespace SunhavenTodo
             }
 
             Log.LogInfo($"{PluginInfo.PLUGIN_NAME} loaded successfully!");
+            ModDiagnostics.LogStartupHealth(Log, new ModHealthReport
+            {
+                PluginGuid = PluginInfo.PLUGIN_GUID,
+                DisplayName = PluginInfo.PLUGIN_NAME,
+                PluginVersion = PluginInfo.PLUGIN_VERSION,
+                SharedCodeRevision = SharedCodeRevision.Value,
+                IntegrationSummary = "Almanac=soft",
+                Mode = "startup",
+                DataLoaded = false,
+                LastPersistenceOutcome = "—"
+            });
         }
 
         private void BindConfiguration()

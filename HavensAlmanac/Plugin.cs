@@ -74,11 +74,9 @@ namespace HavensAlmanac
             }
 
             int integrationCount = _staticAggregator.IntegrationModCount;
-            Log.LogInfo($"{PluginInfo.PLUGIN_NAME} loaded with {integrationCount} integration{(integrationCount == 1 ? string.Empty : "s")} + built-in Mod Health telemetry");
+            Log.LogInfo($"{PluginInfo.PLUGIN_NAME} loaded with {integrationCount} integration{(integrationCount == 1 ? string.Empty : "s")}");
 
-            // IntegrationModCount excludes the always-registered Mod Health
-            // provider, so this fires only when the user really has none of
-            // the supported companion mods installed.
+            // IntegrationModCount excludes Mod Health bridge and built-in Relationships.
             if (integrationCount == 0)
                 Log.LogWarning("No supported companion mods detected. Haven's Almanac is most useful alongside SunhavenTodo, Birthday Reminder, Museum Tracker, Senpai's Chest, The Vault, Haven's Birthright, Haven Dev Tools, Crop Optimizer, or Gifting Assistant.");
         }
@@ -108,9 +106,10 @@ namespace HavensAlmanac
         {
             var pluginInfos = BepInEx.Bootstrap.Chainloader.PluginInfos;
 
-            // Always available: telemetry surfaced by SharedUtilities.VersionChecker
-            _staticAggregator.RegisterProvider(new Integration.ModHealthDataProvider());
             _staticAggregator.RegisterProvider(new Integration.RelationshipDataProvider());
+
+            if (pluginInfos.ContainsKey("com.azraelgodking.havendevtools"))
+                _staticAggregator.RegisterProvider(new Integration.ModHealthBridgeProvider());
 
             TryRegisterProvider(pluginInfos, "com.azraelgodking.sunhaventodo",
                 () => new Integration.TodoDataProvider(), "SunhavenTodo");
