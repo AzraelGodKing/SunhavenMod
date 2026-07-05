@@ -15,13 +15,25 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Reference Include="BepInEx">
+      <HintPath>$(BepInExPath)\core\BepInEx.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
+  </ItemGroup>
+
+  <ItemGroup>
     <!-- Pure data + JSON serialization — no BepInEx/Unity dependency -->
     <Compile Include="..\Data\TodoData.cs" Link="Data\TodoData.cs" />
     <Compile Include="..\Data\TodoJson.cs" Link="Data\TodoJson.cs" />
     <Compile Include="..\..\SharedUtilities\MinimalJsonParser.cs" Link="Shared\MinimalJsonParser.cs" />
     <Compile Include="..\..\SharedUtilities\CharacterSaveStore.cs" Link="Shared\CharacterSaveStore.cs" />
+    <Compile Include="..\..\SharedUtilities\SharedCodeRevision.cs" Link="Shared\SharedCodeRevision.cs" />
+    <Compile Include="..\..\SharedUtilities\ModHealthReport.cs" Link="Shared\ModHealthReport.cs" />
+    <Compile Include="..\..\SharedUtilities\ModDiagnostics.cs" Link="Shared\ModDiagnostics.cs" />
+    <Compile Include="..\..\SharedUtilities\ModHealthAggregator.cs" Link="Shared\ModHealthAggregator.cs" />
     <Compile Include="TodoJsonTests.cs" />
     <Compile Include="CharacterSaveStoreTests.cs" />
+    <Compile Include="ModDiagnosticsTests.cs" />
   </ItemGroup>
 
 </Project>

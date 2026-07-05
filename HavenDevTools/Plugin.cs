@@ -129,6 +129,8 @@ namespace HavenDevTools
                 }
 
                 Log.LogInfo($"{PluginInfo.PLUGIN_NAME} loaded successfully!");
+                ReportStartupHealth();
+
                 Log.LogInfo($"Press {ModConfig.ToggleKey.Value} to open the debug window (requires authorization)");
                 Log.LogInfo($"Press {ModConfig.OverlayToggleKey.Value} to toggle the overlay");
                 Log.LogInfo($"Detected mods - TheVault: {HasTheVault}, SMUT: {HasSMUT}, Birthright: {HasHavensBirthright}, SenpaisChest: {HasSenpaisChest}, Birthday: {HasBirthdayReminder}, Todo: {HasSunhavenTodo}, Almanac: {HasHavensAlmanac}, TrinketFortune: {HasTrinketFortune}");
@@ -245,6 +247,21 @@ namespace HavenDevTools
             }
 
             Log.LogInfo($"Mod detection complete - TheVault: {HasTheVault}, SMUT: {HasSMUT}, Birthright: {HasHavensBirthright}, SenpaisChest: {HasSenpaisChest}, Birthday: {HasBirthdayReminder}, Todo: {HasSunhavenTodo}, Almanac: {HasHavensAlmanac}, TrinketFortune: {HasTrinketFortune}, UltraPolygamy: {HasUltraPolygamy}");
+        }
+
+        private void ReportStartupHealth()
+        {
+            ModDiagnostics.LogStartupHealth(Log, new ModHealthReport
+            {
+                PluginGuid = PluginInfo.PLUGIN_GUID,
+                DisplayName = PluginInfo.PLUGIN_NAME,
+                PluginVersion = PluginInfo.PLUGIN_VERSION,
+                SharedCodeRevision = SharedCodeRevision.Value,
+                IntegrationSummary =
+                    $"Vault={(HasTheVault ? "ok" : "—")}, SMUT={(HasSMUT ? "ok" : "—")}, Todo={(HasSunhavenTodo ? "ok" : "—")}, Almanac={(HasHavensAlmanac ? "ok" : "—")}",
+                Mode = "startup",
+                DataLoaded = false
+            });
         }
 
         private void PatchPlayerInit()
