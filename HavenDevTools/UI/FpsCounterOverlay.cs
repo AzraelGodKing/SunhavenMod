@@ -13,15 +13,12 @@ namespace HavenDevTools.UI
 
         private void Update()
         {
-            if (!Plugin.IsAuthorized)
-                return;
-
             PerformanceSampler.Tick();
         }
 
         private void OnGUI()
         {
-            if (!Plugin.IsAuthorized || !(ModConfig.ShowFpsCounter?.Value ?? false))
+            if (!(ModConfig.ShowFpsCounter?.Value ?? false))
                 return;
 
             InitializeStyles();

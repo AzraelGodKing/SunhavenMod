@@ -33,7 +33,6 @@ namespace HavenDevTools.Integrations
         private static Type _cachedCropOptimizerPlugin;
         private static MethodInfo _cachedCropGetHudSummary;
         private static Type _cachedFasterRacesPlugin;
-        private static Type _cachedHavensRespecPlugin;
         private static Type _cachedTrinketFortunePlugin;
         private static MethodInfo _cachedTrinketGetDevToolsSummary;
         private static Type _cachedGiftingAssistantPlugin;
@@ -62,6 +61,8 @@ namespace HavenDevTools.Integrations
 
         public static void Draw(GUIStyle boxStyle, GUIStyle buttonStyle, GUIStyle labelStyle, GUIStyle sectionHeaderStyle)
         {
+            Plugin.RefreshInstalledMods();
+
             var installedTabs = new List<string>();
             var installedIndices = new List<int>();
             int idx = 0;
@@ -639,31 +640,7 @@ namespace HavenDevTools.Integrations
 
         private static void DrawHavensRespec(GUIStyle box, GUIStyle button, GUIStyle label, GUIStyle sectionHeader)
         {
-            GUILayout.BeginVertical(box);
-            GUILayout.Label(ModLocalization.T("azrael.respec.title"), sectionHeader);
-
-            try
-            {
-                var plugin = ResolveModPlugin("HavensRespec", ref _cachedHavensRespecPlugin);
-                if (plugin == null)
-                {
-                    GUILayout.Label(ModLocalization.T("azrael.suite.plugin_not_found", "Haven's Respec"), label);
-                    GUILayout.EndVertical();
-                    return;
-                }
-
-                var instanceProp = plugin.GetProperty("Instance", ReflectionHelper.AllBindingFlags);
-                var instance = instanceProp?.GetValue(null);
-                GUILayout.Label(instance == null
-                    ? ModLocalization.T("azrael.respec.unavailable")
-                    : ModLocalization.T("azrael.respec.ready"), label);
-            }
-            catch (Exception ex)
-            {
-                GUILayout.Label($"Error: {ex.Message}", label);
-            }
-
-            GUILayout.EndVertical();
+            RespecSimulatorPanel.Draw(box, button, label, sectionHeader);
         }
 
         private static void DrawGiftingAssistant(GUIStyle box, GUIStyle button, GUIStyle label, GUIStyle sectionHeader)
