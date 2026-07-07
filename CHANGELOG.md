@@ -4,6 +4,14 @@ Notes for **players and release readers**. Per-mod blurbs and upstream metadata 
 
 ---
 
+## 2026-07-07
+
+**Suite mods (localization)**
+
+- **Portuguese (Brazil):** Updated 389 `pt-BR` strings across Birthday Reminder, Crop Optimizer, Haven Dev Tools, Haven's Almanac, Haven's Respec, S.M.U.T., Senpai's Chest, Sun Haven Todo, and The Vault from a native-speaker review.
+
+---
+
 ## 2026-07-04
 
 **Haven Dev Tools**
