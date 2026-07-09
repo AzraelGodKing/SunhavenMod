@@ -1,5 +1,5 @@
 {
-  "lastFetched": "2026-07-09T19:45:11.478Z",
+  "lastFetched": "2026-07-09T21:22:17.521Z",
   "mods": {
     "senpais-chest": {
       "name": "Senpai's Chest",
@@ -65,10 +65,10 @@
         }
       },
       "nexus": {
-        "total_downloads": 1360,
-        "unique_downloads": 926
+        "total_downloads": 1361,
+        "unique_downloads": 927
       },
-      "combined_total": 2100
+      "combined_total": 2101
     },
     "museum-utility-tracker": {
       "name": "S.M.U.T.",
@@ -342,8 +342,8 @@
   },
   "site_total": {
     "thunderstore": 6244,
-    "nexus_total": 9104,
-    "nexus_unique": 6834,
-    "grand_total": 15348
+    "nexus_total": 9105,
+    "nexus_unique": 6835,
+    "grand_total": 15349
   }
 }
