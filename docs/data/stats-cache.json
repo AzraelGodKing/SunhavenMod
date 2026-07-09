@@ -1,5 +1,5 @@
 {
-  "lastFetched": "2026-07-08T22:04:21.258Z",
+  "lastFetched": "2026-07-09T00:08:17.639Z",
   "mods": {
     "senpais-chest": {
       "name": "Senpai's Chest",
@@ -34,10 +34,10 @@
         }
       },
       "nexus": {
-        "total_downloads": 905,
-        "unique_downloads": 655
+        "total_downloads": 906,
+        "unique_downloads": 656
       },
-      "combined_total": 1763
+      "combined_total": 1764
     },
     "havens-birthright": {
       "name": "Haven's Birthright",
@@ -100,13 +100,13 @@
     "squirrels-birthday-reminder": {
       "name": "A Squirrel's Birthday Reminder",
       "thunderstore": {
-        "total_downloads": 604,
+        "total_downloads": 605,
         "versions": {
           "2.0.1": 37,
           "2.0.0": 25,
           "1.4.2": 113,
           "1.4.0": 24,
-          "1.3.0": 24,
+          "1.3.0": 25,
           "1.2.0": 16,
           "1.1.7": 25,
           "1.1.4": 72,
@@ -122,7 +122,7 @@
         "total_downloads": 946,
         "unique_downloads": 743
       },
-      "combined_total": 1550
+      "combined_total": 1551
     },
     "havens-todo": {
       "name": "Sun Haven Todo",
@@ -240,7 +240,7 @@
     "faster-races": {
       "name": "Faster Races",
       "thunderstore": {
-        "total_downloads": 238,
+        "total_downloads": 239,
         "versions": {
           "2.0.1": 22,
           "2.0.0": 23,
@@ -248,7 +248,7 @@
           "1.4.0": 15,
           "1.3.0": 21,
           "1.2.0": 14,
-          "1.1.6": 11,
+          "1.1.6": 12,
           "1.0.0": 77
         }
       },
@@ -256,7 +256,7 @@
         "total_downloads": 250,
         "unique_downloads": 188
       },
-      "combined_total": 488
+      "combined_total": 489
     },
     "trinket-fortune": {
       "name": "Trinket Fortune",
@@ -341,9 +341,9 @@
     }
   },
   "site_total": {
-    "thunderstore": 6205,
-    "nexus_total": 9026,
-    "nexus_unique": 6769,
-    "grand_total": 15231
+    "thunderstore": 6207,
+    "nexus_total": 9027,
+    "nexus_unique": 6770,
+    "grand_total": 15234
   }
 }
