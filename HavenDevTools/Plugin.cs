@@ -1,10 +1,8 @@
 using System;
-using System.Collections.Generic;
 using System.Reflection;
-using System.Security.Cryptography;
-using System.Text;
 using System.IO;
 using BepInEx;
+using BepInEx.Bootstrap;
 using BepInEx.Configuration;
 using BepInEx.Logging;
 using HarmonyLib;
@@ -25,6 +23,7 @@ namespace HavenDevTools
     [BepInDependency("com.azraelgodking.squirrelsbirthdayreminder", BepInDependency.DependencyFlags.SoftDependency)]
     [BepInDependency("com.azraelgodking.sunhaventodo", BepInDependency.DependencyFlags.SoftDependency)]
     [BepInDependency("com.azraelgodking.trinketfortune", BepInDependency.DependencyFlags.SoftDependency)]
+    [BepInDependency("com.azraelgodking.havensrespec", BepInDependency.DependencyFlags.SoftDependency)]
     // NOTE: Do NOT add BepInDependency on HavensAlmanac - it creates a cyclic dep (Almanac already depends on HavenDevTools).
     public class Plugin : BaseUnityPlugin
     {
@@ -51,15 +50,6 @@ namespace HavenDevTools
         internal static KeyCode StaticToggleKey = KeyCode.F11;
         internal static KeyCode StaticOverlayToggleKey = KeyCode.F6;
 
-        // Convenience gate only (not security): anyone can patch or rebuild the DLL.
-        // SHA-256 of Steam ID strings — when matched, dev UI/features stay enabled; otherwise some toggles are hidden.
-        private static readonly HashSet<string> _authorizedSteamIdHashes = new HashSet<string>
-        {
-            "Tr4eyf86yKRu6fhNQjQOrO/ZnwasQaY/fgKV0PcnoGA=" // Steam ID: 76561198082062127
-        };
-
-        private static bool _isAuthorized;
-        private static string _currentSteamId;
         private static string _currentPlayerName;
 
         // Detected mods
@@ -71,6 +61,10 @@ namespace HavenDevTools
         public static bool HasSunhavenTodo { get; private set; }
         public static bool HasHavensAlmanac { get; private set; }
         public static bool HasTrinketFortune { get; private set; }
+        public static bool HasCropOptimizer { get; private set; }
+        public static bool HasFasterRaces { get; private set; }
+        public static bool HasHavensRespec { get; private set; }
+        public static bool HasGiftingAssistant { get; private set; }
         public static bool HasUltraPolygamy => UltraPolygamyHelper.IsAvailable;
 
         private Harmony _harmony;
@@ -129,6 +123,8 @@ namespace HavenDevTools
                 }
 
                 Log.LogInfo($"{PluginInfo.PLUGIN_NAME} loaded successfully!");
+                ReportStartupHealth();
+
                 Log.LogInfo($"Press {ModConfig.ToggleKey.Value} to open the debug window (requires authorization)");
                 Log.LogInfo($"Press {ModConfig.OverlayToggleKey.Value} to toggle the overlay");
                 Log.LogInfo($"Detected mods - TheVault: {HasTheVault}, SMUT: {HasSMUT}, Birthright: {HasHavensBirthright}, SenpaisChest: {HasSenpaisChest}, Birthday: {HasBirthdayReminder}, Todo: {HasSunhavenTodo}, Almanac: {HasHavensAlmanac}, TrinketFortune: {HasTrinketFortune}");
@@ -229,22 +225,66 @@ namespace HavenDevTools
             }
         }
 
-        private void DetectInstalledMods()
+        /// <summary>
+        /// Re-scan suite mods. Safe to call after chainload finishes (e.g. Suite tab draw, first Update).
+        /// Awake-time detection misses plugins that load later in the BepInEx chain.
+        /// </summary>
+        public static void RefreshInstalledMods()
         {
-            foreach (var assembly in AppDomain.CurrentDomain.GetAssemblies())
+            HasTheVault = IsSuitePluginLoaded(SuitePluginGuids.TheVault, "TheVault");
+            HasSMUT = IsSuitePluginLoaded(SuitePluginGuids.Smut, "SunHavenMuseumUtilityTracker");
+            HasHavensBirthright = IsSuitePluginLoaded(SuitePluginGuids.HavensBirthright, "HavensBirthright");
+            HasSenpaisChest = IsSuitePluginLoaded(SuitePluginGuids.SenpaisChest, "SenpaisChest");
+            HasBirthdayReminder = IsSuitePluginLoaded(SuitePluginGuids.BirthdayReminder, "BirthdayReminder");
+            HasSunhavenTodo = IsSuitePluginLoaded(SuitePluginGuids.SunhavenTodo, "SunhavenTodo");
+            HasHavensAlmanac = IsSuitePluginLoaded(SuitePluginGuids.HavensAlmanac, "HavensAlmanac");
+            HasTrinketFortune = IsSuitePluginLoaded(SuitePluginGuids.TrinketFortune, "TrinketFortune");
+            HasCropOptimizer = IsSuitePluginLoaded(SuitePluginGuids.CropOptimizer, "CropOptimizer");
+            HasFasterRaces = IsSuitePluginLoaded(SuitePluginGuids.FasterRaces, "FasterRaces");
+            HasHavensRespec = IsSuitePluginLoaded(SuitePluginGuids.HavensRespec, "HavensRespec");
+            HasGiftingAssistant = IsSuitePluginLoaded(SuitePluginGuids.GiftingAssistant, "GiftingAssistant");
+        }
+
+        private static bool IsSuitePluginLoaded(string pluginGuid, string assemblyName)
+        {
+            if (Chainloader.PluginInfos != null
+                && !string.IsNullOrEmpty(pluginGuid)
+                && Chainloader.PluginInfos.ContainsKey(pluginGuid))
             {
-                string name = assembly.GetName().Name;
-                if (name == "TheVault") HasTheVault = true;
-                if (name == "SunHavenMuseumUtilityTracker") HasSMUT = true;
-                if (name == "HavensBirthright") HasHavensBirthright = true;
-                if (name == "SenpaisChest") HasSenpaisChest = true;
-                if (name == "BirthdayReminder") HasBirthdayReminder = true;
-                if (name == "SunhavenTodo") HasSunhavenTodo = true;
-                if (name == "HavensAlmanac") HasHavensAlmanac = true;
-                if (name == "TrinketFortune") HasTrinketFortune = true;
+                return true;
             }
 
-            Log.LogInfo($"Mod detection complete - TheVault: {HasTheVault}, SMUT: {HasSMUT}, Birthright: {HasHavensBirthright}, SenpaisChest: {HasSenpaisChest}, Birthday: {HasBirthdayReminder}, Todo: {HasSunhavenTodo}, Almanac: {HasHavensAlmanac}, TrinketFortune: {HasTrinketFortune}, UltraPolygamy: {HasUltraPolygamy}");
+            foreach (var assembly in AppDomain.CurrentDomain.GetAssemblies())
+            {
+                if (string.Equals(assembly.GetName().Name, assemblyName, StringComparison.OrdinalIgnoreCase))
+                    return true;
+            }
+
+            return false;
+        }
+
+        private void DetectInstalledMods()
+        {
+            RefreshInstalledMods();
+            Log.LogInfo($"Mod detection complete - TheVault: {HasTheVault}, SMUT: {HasSMUT}, Birthright: {HasHavensBirthright}, SenpaisChest: {HasSenpaisChest}, Birthday: {HasBirthdayReminder}, Todo: {HasSunhavenTodo}, Almanac: {HasHavensAlmanac}, TrinketFortune: {HasTrinketFortune}, CropOptimizer: {HasCropOptimizer}, FasterRaces: {HasFasterRaces}, Respec: {HasHavensRespec}, GiftingAssistant: {HasGiftingAssistant}, UltraPolygamy: {HasUltraPolygamy}");
+        }
+
+        private void ReportStartupHealth()
+        {
+            ModDiagnostics.LogModStartup(Log, PluginInfo.PLUGIN_GUID, PluginInfo.PLUGIN_NAME, PluginInfo.PLUGIN_VERSION,
+                $"Suite tabs: {ModHealthIntegrationSummary.Build(
+                    ("Vault", SuitePluginGuids.TheVault),
+                    ("SMUT", SuitePluginGuids.Smut),
+                    ("Birthright", SuitePluginGuids.HavensBirthright),
+                    ("SenpaisChest", SuitePluginGuids.SenpaisChest),
+                    ("Birthday", SuitePluginGuids.BirthdayReminder),
+                    ("Todo", SuitePluginGuids.SunhavenTodo),
+                    ("Almanac", SuitePluginGuids.HavensAlmanac),
+                    ("TrinketFortune", SuitePluginGuids.TrinketFortune),
+                    ("CropOptimizer", SuitePluginGuids.CropOptimizer),
+                    ("FasterRaces", SuitePluginGuids.FasterRaces),
+                    ("Respec", SuitePluginGuids.HavensRespec),
+                    ("GiftingAssistant", SuitePluginGuids.GiftingAssistant))}");
         }
 
         private void PatchPlayerInit()
@@ -269,9 +309,9 @@ namespace HavenDevTools
 
         private static void OnPlayerInitialized()
         {
-            Log?.LogInfo("[HavenDevTools] Player initialized, ensuring UI exists and checking authorization...");
+            Log?.LogInfo("[HavenDevTools] Player initialized, ensuring UI exists...");
             EnsureUIComponentsExist();
-            CheckAuthorization();
+            UpdatePlayerContext();
         }
 
         private void OnSceneLoaded(Scene scene, LoadSceneMode mode)
@@ -282,8 +322,6 @@ namespace HavenDevTools
             if (sceneLower.Contains("menu") || sceneLower.Contains("title"))
             {
                 Log.LogDebug($"Menu scene detected: {scene.name}");
-                // Reset authorization state on return to menu
-                _isAuthorized = false;
                 _currentPlayerName = null;
             }
         }
@@ -310,139 +348,39 @@ namespace HavenDevTools
             // can trigger EnsureUIComponentsExist() on character reload.
         }
 
-        #region Authorization
+        #region Player context
 
-        private static void CheckAuthorization()
+        private static void UpdatePlayerContext()
         {
             try
             {
-                // Get player name
-                try
+                if (Wish.Player.Instance != null)
                 {
-                    if (Wish.Player.Instance != null)
+                    var playerNameProp = Wish.Player.Instance.GetType().GetProperty("PlayerName",
+                        BindingFlags.Public | BindingFlags.Instance);
+                    if (playerNameProp != null)
                     {
-                        var playerNameProp = Wish.Player.Instance.GetType().GetProperty("PlayerName",
-                            BindingFlags.Public | BindingFlags.Instance);
-                        if (playerNameProp != null)
-                        {
-                            _currentPlayerName = playerNameProp.GetValue(Wish.Player.Instance) as string;
-                        }
+                        _currentPlayerName = playerNameProp.GetValue(Wish.Player.Instance) as string;
+                    }
 
-                        if (string.IsNullOrEmpty(_currentPlayerName))
-                        {
-                            _currentPlayerName = Wish.Player.Instance.name;
-                        }
+                    if (string.IsNullOrEmpty(_currentPlayerName))
+                    {
+                        _currentPlayerName = Wish.Player.Instance.name;
                     }
                 }
-                catch (Exception ex)
-                {
-                    Log?.LogDebug($"[HavenDevTools] Player name fallback: {ex.Message}");
-                    _currentPlayerName = "Unknown";
-                }
-
-                // Steam ID authorization
-                _currentSteamId = TryGetSteamId();
-
-                if (!string.IsNullOrEmpty(_currentSteamId))
-                {
-                    string steamHash = ComputeHash(_currentSteamId);
-                    if (_authorizedSteamIdHashes.Contains(steamHash))
-                    {
-                        Log?.LogInfo("[HavenDevTools] Authorized via Steam ID");
-                        _isAuthorized = true;
-                        return;
-                    }
-                    Log?.LogInfo($"[HavenDevTools] Steam ID hash not authorized: {steamHash}");
-                }
-                else
-                {
-                    Log?.LogInfo("[HavenDevTools] Could not retrieve Steam ID");
-                }
-
-                Log?.LogInfo("[HavenDevTools] Not authorized - Steam ID required");
             }
             catch (Exception ex)
             {
-                Log?.LogError($"[HavenDevTools] Authorization error: {ex.Message}");
+                Log?.LogDebug($"[HavenDevTools] Player name fallback: {ex.Message}");
+                _currentPlayerName = "Unknown";
             }
         }
-
-        private static string TryGetSteamId()
-        {
-            try
-            {
-                Assembly steamAssembly = null;
-
-                foreach (var assembly in AppDomain.CurrentDomain.GetAssemblies())
-                {
-                    string name = assembly.GetName().Name;
-                    if (name.Contains("rlabrecque") || name == "Steamworks.NET")
-                    {
-                        steamAssembly = assembly;
-                        break;
-                    }
-                }
-
-                if (steamAssembly == null)
-                {
-                    foreach (var assembly in AppDomain.CurrentDomain.GetAssemblies())
-                    {
-                        try
-                        {
-                            var steamUserType = assembly.GetType("Steamworks.SteamUser");
-                            if (steamUserType != null)
-                            {
-                                steamAssembly = assembly;
-                                break;
-                            }
-                        }
-                        catch (Exception ex)
-                        {
-                            Log?.LogDebug($"[HavenDevTools] TryGetSteamId assembly search: {ex.Message}");
-                        }
-                    }
-                }
-
-                if (steamAssembly == null) return null;
-
-                var steamUserType2 = steamAssembly.GetType("Steamworks.SteamUser");
-                if (steamUserType2 == null) return null;
-
-                var getSteamIdMethod = steamUserType2.GetMethod("GetSteamID", BindingFlags.Public | BindingFlags.Static);
-                if (getSteamIdMethod == null) return null;
-
-                var steamId = getSteamIdMethod.Invoke(null, null);
-                if (steamId == null) return null;
-
-                string steamIdStr = steamId.ToString();
-                if (string.IsNullOrEmpty(steamIdStr) || steamIdStr == "0" || steamIdStr.Length < 10)
-                    return null;
-
-                return steamIdStr;
-            }
-            catch (Exception ex)
-            {
-                Plugin.Log?.LogDebug($"[HavenDevTools] TryGetSteamId: {ex.Message}");
-                return null;
-            }
-        }
-
-        private static string ComputeHash(string input)
-        {
-            using (var sha256 = SHA256.Create())
-            {
-                byte[] bytes = sha256.ComputeHash(Encoding.UTF8.GetBytes(input));
-                return Convert.ToBase64String(bytes);
-            }
-        }
-
-        public static string GenerateHash(string input) => ComputeHash(input);
 
         #endregion
 
         #region Public API
 
-        public static bool IsAuthorized => _isAuthorized;
+        public static bool IsAuthorized => true;
         public static string CurrentPlayerName => _currentPlayerName;
 
         public static ItemInspector GetItemInspector() => _staticItemInspector;
@@ -457,26 +395,12 @@ namespace HavenDevTools
 
         public static void ToggleDebugWindow()
         {
-            if (_isAuthorized)
-            {
-                _staticDebugWindow?.Toggle();
-            }
-            else
-            {
-                CheckAuthorization();
-                if (_isAuthorized)
-                {
-                    _staticDebugWindow?.Toggle();
-                }
-            }
+            _staticDebugWindow?.Toggle();
         }
 
         public static void ToggleDebugOverlay()
         {
-            if (_isAuthorized)
-            {
-                _staticDebugOverlay?.Toggle();
-            }
+            _staticDebugOverlay?.Toggle();
         }
 
         #endregion
@@ -501,10 +425,11 @@ namespace HavenDevTools
 
         private void Update()
         {
-            // HavenDevTools may load before TheVault; push inspector flag once all assemblies are in.
+            // HavenDevTools may load before other suite plugins; refresh detection once chainload is done.
             if (!_syncedTheVaultInspectorOnce)
             {
                 _syncedTheVaultInspectorOnce = true;
+                Plugin.RefreshInstalledMods();
                 ModConfig.SyncTheVaultFullVaultInspectorToPlugin();
             }
 
@@ -516,7 +441,7 @@ namespace HavenDevTools
             {
                 _heartbeatTimer = 0f;
                 _heartbeatCount++;
-                Plugin.Log?.LogInfo($"[PersistentRunner Heartbeat #{_heartbeatCount}] Authorized: {Plugin.IsAuthorized}, Player: {Plugin.CurrentPlayerName ?? "none"}");
+                Plugin.Log?.LogInfo($"[PersistentRunner Heartbeat #{_heartbeatCount}] Player: {Plugin.CurrentPlayerName ?? "none"}");
             }
         }
 
@@ -565,6 +490,6 @@ namespace HavenDevTools
     {
         public const string PLUGIN_GUID = "com.azraelgodking.havendevtools";
         public const string PLUGIN_NAME = "Haven Dev Tools";
-        public const string PLUGIN_VERSION = "2.0.2";
+        public const string PLUGIN_VERSION = "2.1.0";
     }
 }

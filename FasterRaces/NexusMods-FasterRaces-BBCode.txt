@@ -1,4 +1,4 @@
-[b][size=5]Faster Races[/size][/b] [i](v2.0.1)[/i]
+[b][size=5]Faster Races[/size][/b] [i](v2.1.0)[/i]
 
 Adds a [b]configurable movement speed bonus[/b] for your character. When used with [b]Haven's Birthright[/b], Birthright's [b]movement speed bonuses[/b] are disabled so you don't get double speed — one consistent bonus from Faster Races. Speed [b]penalties[/b] from Birthright (e.g. some Amari lines, Naga) still apply.
 
