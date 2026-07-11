@@ -20,7 +20,10 @@ namespace HavensRespec
     {
         public static ManualLogSource Log { get; private set; }
         public static Plugin Instance { get; private set; }
+        public static bool IsModEnabled => _staticConfig != null && _staticConfig.Enabled.Value;
         public static bool IsDebugLoggingEnabled => _staticConfig?.DebugLogging?.Value == true;
+
+        internal static RespecController GetController() => _staticController;
 
         private static Harmony _staticHarmony;
         private static RespecConfig _staticConfig;
@@ -50,6 +53,9 @@ namespace HavensRespec
                 if (!_staticConfig.Enabled.Value)
                 {
                     Log.LogInfo($"{PluginInfo.PLUGIN_NAME} disabled in config.");
+                    ModDiagnostics.LogModStartup(Log, PluginInfo.PLUGIN_GUID, PluginInfo.PLUGIN_NAME, PluginInfo.PLUGIN_VERSION,
+                        ModHealthIntegrationSummary.Build(("DevTools", SuitePluginGuids.DevTools)),
+                        mode: "disabled");
                     return;
                 }
 
@@ -69,6 +75,8 @@ namespace HavensRespec
                 }
 
                 Log.LogInfo($"{PluginInfo.PLUGIN_NAME} v{PluginInfo.PLUGIN_VERSION} loaded.");
+                ModDiagnostics.LogModStartup(Log, PluginInfo.PLUGIN_GUID, PluginInfo.PLUGIN_NAME, PluginInfo.PLUGIN_VERSION,
+                    ModHealthIntegrationSummary.Build(("DevTools", SuitePluginGuids.DevTools)));
             }
             catch (Exception ex)
             {

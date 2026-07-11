@@ -63,12 +63,12 @@ namespace HavensRespec.UI
                 var parent = pointsTmp.transform.parent;
                 var anchorRt = pointsTmp.GetComponent<RectTransform>();
 
-                int undoRowIndex = enableResetAll ? 2 : 1;
+                int rowIndex = 0;
 
                 ResetButton = BuildButton(
                     parent,
                     anchorRt,
-                    rowIndex: 0,
+                    rowIndex++,
                     ModLocalization.T("respec.button.reset"),
                     ButtonWidth,
                     RespecStyle.Danger, RespecStyle.DangerHover, RespecStyle.DangerPressed,
@@ -80,7 +80,7 @@ namespace HavensRespec.UI
                     ResetAllButton = BuildButton(
                         parent,
                         anchorRt,
-                        rowIndex: 1,
+                        rowIndex++,
                         ModLocalization.T("respec.button.reset_all"),
                         ResetAllButtonWidth,
                         RespecStyle.Danger, RespecStyle.DangerHover, RespecStyle.DangerPressed,
@@ -92,7 +92,7 @@ namespace HavensRespec.UI
                 UndoButton = BuildButton(
                     parent,
                     anchorRt,
-                    rowIndex: undoRowIndex,
+                    rowIndex,
                     ModLocalization.T("respec.button.undo"),
                     ButtonWidth,
                     RespecStyle.Neutral, RespecStyle.NeutralHover, RespecStyle.NeutralPressed,

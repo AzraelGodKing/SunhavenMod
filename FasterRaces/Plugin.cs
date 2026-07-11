@@ -2,6 +2,7 @@ using BepInEx;
 using BepInEx.Configuration;
 using BepInEx.Logging;
 using HarmonyLib;
+using SunhavenMods.Shared;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -84,6 +85,11 @@ namespace FasterRaces
             }
 
             Log.LogInfo($"{PluginInfo.PLUGIN_NAME} v{PluginInfo.PLUGIN_VERSION} loaded. Global speed bonus: {SpeedBonusPercent.Value}%");
+            ModDiagnostics.LogModStartup(Log, PluginInfo.PLUGIN_GUID, PluginInfo.PLUGIN_NAME, PluginInfo.PLUGIN_VERSION,
+                ModHealthIntegrationSummary.Build(
+                    ("DevTools", SuitePluginGuids.DevTools),
+                    ("Birthright", SuitePluginGuids.HavensBirthright)),
+                mode: EnableMod.Value ? "startup" : "disabled");
         }
 
         /// <summary>

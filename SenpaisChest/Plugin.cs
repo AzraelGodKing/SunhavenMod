@@ -119,6 +119,11 @@ namespace SenpaisChest
                 }
 
                 Log.LogInfo($"{PluginInfo.PLUGIN_NAME} loaded successfully!");
+                ModDiagnostics.LogModStartup(Log, PluginInfo.PLUGIN_GUID, PluginInfo.PLUGIN_NAME, PluginInfo.PLUGIN_VERSION,
+                    ModHealthIntegrationSummary.Build(
+                        ("DevTools", SuitePluginGuids.DevTools),
+                        ("SMUT", SuitePluginGuids.Smut),
+                        ("Todo", SuitePluginGuids.SunhavenTodo)));
                 Log.LogInfo($"Press {(_config.RequireCtrlModifier.Value ? "Ctrl+" : "")}{_config.ToggleKey.Value} to configure a chest while interacting with it");
                 if (_config.EnableChestLabels.Value)
                     Log.LogInfo("Chest Labels enabled - labels shown above Chest and BankChest (not Hoppers/Animal Feeders)");

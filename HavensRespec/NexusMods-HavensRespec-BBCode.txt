@@ -1,4 +1,4 @@
-[b][size=5]Haven's Respec[/size][/b] [i](v2.0.2)[/i]
+[b][size=5]Haven's Respec[/size][/b] [i](v2.1.0)[/i]
 
 Reset Sun Haven skill trees safely with confirmation, undo, and configurable costs.
 

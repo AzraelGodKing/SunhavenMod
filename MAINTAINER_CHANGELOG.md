@@ -4,6 +4,24 @@ Internal engineering log: **CI**, **release automation**, **scripts**, **docs in
 
 ---
 
+## 2026-07-11
+
+- **Suite minor version bump:** All mods touched on this branch bumped Minor; `docs/versions.json` changelog lines updated; `SharedCodeRevision` → `2026.07.11`.
+- **S.M.U.T. — wishlist LateUpdate lag (3.1.2):** `ItemImage`/`ItemIcon` LateUpdate postfixes were walking parent-name heuristics every frame and calling `FindByGameItemId` (full museum scan) + `IconCache.GetIcon`/`RefreshLabel` on every tick. Now: shop=`ShopItem` only, gift=`GiftMode` only (frame-cached); `HashSet` museum id index; badge need cache invalidated on donations; badge Apply only when id/visibility changes.
+- **pt-BR apply script UTF-8 fix:** `scripts/localization/apply-ptbr-review.ps1` `ConvertTo-JsonString` was iterating UTF-8 bytes as chars (mojibake in JSON). Fixed to iterate Unicode code units; re-applied all 389 reviewed `pt-BR` strings.
+
+## 2026-07-05
+
+- **Haven Dev Tools — Steam ID lock removed:** Dropped SHA-256 Steam ID allowlist; `IsAuthorized` is always true; F11/F6/FPS counter no longer gated. Removed Utility-tab hash generator UI.
+- **Mod Health Dashboard:** `SharedCodeRevision`, `ModDiagnostics`, `ModHealthReport`, `ModHealthAggregator` in SharedUtilities. Haven Dev Tools tab bar → **Health | Tools | Suite | Extensions**; Health tab aggregates suite diagnostics, shared-code skew banner, version checker (moved from Utility). Pilot `[Health]` startup reports: Dev Tools, Todo, Vault. Almanac `ModHealthBridgeProvider` registers only when Dev Tools is installed.
+- **Suite-wide Dev Tools integration:** `ModHealthIntegrationSummary`, `SuitePluginGuids`, `ModDiagnostics.LogModStartup`; `LogStartupHealth` now registers reports for the Health dashboard. All 13 suite mods emit startup health; Suite tab extended with Crop Optimizer, Faster Races, Respec, Gifting Assistant panels.
+- **Suite tab reflection fix:** `ReflectionHelper.FindType` now resolves namespace-qualified types before bare names; added `FindModPlugin`. Fixes GetManager/GetTodoManager resolving HavenDevTools.Plugin instead of target mod.
+- **Haven Dev Tools — Currencies tab FPS:** `CurrencyTracker.GetSummary()` was invoked every IMGUI layout/repaint with uncached reflection (`AccessTools`, assembly scan, `GetMethod` per currency). Cached reflection handles; summary throttled to 0.5s; manual Refresh on Tools → Currencies.
+- **Haven Dev Tools — respec simulator:** Suite tab Haven's Respec panel calls `HavensRespec.DevTools.RespecDevToolsApi` for dry-run reset preview (estimate, simulate, apply, revert).
+- **Haven Dev Tools — Suite mod detection:** `RefreshInstalledMods()` uses `Chainloader.PluginInfos` + assembly fallback; called on first Update and when drawing Suite tab (fixes Respec missing when Dev Tools Awake runs before later plugins).
+- **Haven Dev Tools — Respec simulator reflection:** `IsReady` and `ProfessionCount` are static properties on `RespecDevToolsApi`; panel now uses `GetStaticValue` instead of `InvokeStaticMethod`.
+- **Haven's Respec — DevTools API:** `RespecDevToolsApi` + controller hooks; removed in-game Simulate button/dialog and `[UI] EnableSimulator` until Respec ships its own UI.
+- **S.M.U.T. — museum wishlist overlay:** Harmony postfix on `ItemImage`/`ItemIcon` LateUpdate; orange UGUI badge when `DonationManager.HasDonatedByGameId` is false for a known museum item. Shop (`ShopItem`) and gift-inventory contexts; config `[WishlistOverlay] ShowShopBadges` / `ShowGiftBadges`. Badge label uses `smut.wishlist.badge` (**M**). Hover tooltip appends `smut.wishlist.tooltip`; smaller 14×14 badge.
 ## 2026-07-07
 
 - **Localization — pt-BR review import:** Applied 389 native-speaker `pt-BR` corrections from `pt-BR-translation-review.md` across 9 suite mods. Added `scripts/localization/apply-ptbr-review.ps1` (and `.py`) to import review markdown in-place without reformatting `strings.json`.

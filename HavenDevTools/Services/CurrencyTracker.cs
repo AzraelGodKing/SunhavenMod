@@ -2,6 +2,8 @@ using System;
 using System.Collections.Generic;
 using System.Reflection;
 using HarmonyLib;
+using SunhavenMods.Shared;
+using UnityEngine;
 using Wish;
 
 namespace HavenDevTools.Services
@@ -11,6 +13,8 @@ namespace HavenDevTools.Services
     /// </summary>
     public class CurrencyTracker
     {
+        private const float SummaryRefreshIntervalSeconds = 0.5f;
+
         // Known currency item IDs in Sun Haven
         public static readonly Dictionary<string, int> CurrencyItemIds = new Dictionary<string, int>
         {
@@ -38,6 +42,23 @@ namespace HavenDevTools.Services
             { "Mana Shard", 18015 }
         };
 
+        private PropertyInfo _gameSaveCoinsProperty;
+        private PropertyInfo _singletonInstanceProperty;
+        private PropertyInfo _currentSaveProperty;
+        private FieldInfo _currentSaveCoinsField;
+        private PropertyInfo _playerOrbsProperty;
+        private PropertyInfo _playerTicketsProperty;
+        private MethodInfo _inventoryGetAmountMethod;
+        private Type _vaultPluginType;
+        private MethodInfo _vaultGetVaultManagerMethod;
+        private MethodInfo _vaultGetAllNonZeroCurrenciesMethod;
+        private bool _goldFallbackResolved;
+        private bool _playerPropertiesResolved;
+        private bool _vaultReflectionResolved;
+
+        private CurrencySummary _cachedSummary;
+        private float _lastSummaryRefreshTime = float.NegativeInfinity;
+
         public CurrencyTracker()
         {
             Plugin.Log?.LogInfo("[CurrencyTracker] Initialized");
@@ -53,11 +74,17 @@ namespace HavenDevTools.Services
                 if (Player.Instance?.Inventory == null) return 0;
 
                 var inventory = Player.Instance.Inventory;
-                var getAmountMethod = AccessTools.Method(inventory.GetType(), "GetAmount", new[] { typeof(int) });
-
-                if (getAmountMethod != null)
+                if (_inventoryGetAmountMethod == null)
                 {
-                    return (int)getAmountMethod.Invoke(inventory, new object[] { itemId });
+                    _inventoryGetAmountMethod = AccessTools.Method(
+                        inventory.GetType(),
+                        "GetAmount",
+                        new[] { typeof(int) });
+                }
+
+                if (_inventoryGetAmountMethod != null)
+                {
+                    return (int)_inventoryGetAmountMethod.Invoke(inventory, new object[] { itemId });
                 }
             }
             catch (Exception ex)
@@ -77,16 +104,9 @@ namespace HavenDevTools.Services
 
             try
             {
-                var vaultAssembly = GetVaultAssembly();
-                if (vaultAssembly == null) return 0;
+                if (!EnsureVaultReflection()) return 0;
 
-                var pluginType = vaultAssembly.GetType("TheVault.Plugin");
-                if (pluginType == null) return 0;
-
-                var getVaultManagerMethod = pluginType.GetMethod("GetVaultManager", BindingFlags.Public | BindingFlags.Static);
-                if (getVaultManagerMethod == null) return 0;
-
-                var vaultManager = getVaultManagerMethod.Invoke(null, null);
+                var vaultManager = _vaultGetVaultManagerMethod.Invoke(null, null);
                 if (vaultManager == null) return 0;
 
                 var getCurrencyMethod = vaultManager.GetType().GetMethod("GetCurrency", new[] { typeof(string) });
@@ -114,22 +134,14 @@ namespace HavenDevTools.Services
 
             try
             {
-                var vaultAssembly = GetVaultAssembly();
-                if (vaultAssembly == null) return result;
+                if (!EnsureVaultReflection()) return result;
 
-                var pluginType = vaultAssembly.GetType("TheVault.Plugin");
-                if (pluginType == null) return result;
-
-                var getVaultManagerMethod = pluginType.GetMethod("GetVaultManager", BindingFlags.Public | BindingFlags.Static);
-                if (getVaultManagerMethod == null) return result;
-
-                var vaultManager = getVaultManagerMethod.Invoke(null, null);
+                var vaultManager = _vaultGetVaultManagerMethod.Invoke(null, null);
                 if (vaultManager == null) return result;
 
-                var getAllMethod = vaultManager.GetType().GetMethod("GetAllNonZeroCurrencies");
-                if (getAllMethod != null)
+                if (_vaultGetAllNonZeroCurrenciesMethod != null)
                 {
-                    var currencies = getAllMethod.Invoke(vaultManager, null) as Dictionary<string, int>;
+                    var currencies = _vaultGetAllNonZeroCurrenciesMethod.Invoke(vaultManager, null) as Dictionary<string, int>;
                     if (currencies != null)
                     {
                         return currencies;
@@ -151,41 +163,22 @@ namespace HavenDevTools.Services
         {
             try
             {
-                // Gold is stored in GameSave.Coins (static property)
-                var gameSaveType = AccessTools.TypeByName("Wish.GameSave");
-                if (gameSaveType != null)
+                EnsureGoldReflection();
+
+                if (_gameSaveCoinsProperty != null)
                 {
-                    var coinsProp = gameSaveType.GetProperty("Coins", BindingFlags.Public | BindingFlags.Static);
-                    if (coinsProp != null)
-                    {
-                        return (int)coinsProp.GetValue(null);
-                    }
+                    return (int)_gameSaveCoinsProperty.GetValue(null);
                 }
 
-                // Fallback: try through SingletonBehaviour<GameSave>.Instance
-                var singletonType = AccessTools.TypeByName("SingletonBehaviour`1");
-                if (singletonType != null && gameSaveType != null)
+                if (_singletonInstanceProperty != null && _currentSaveProperty != null && _currentSaveCoinsField != null)
                 {
-                    var genericType = singletonType.MakeGenericType(gameSaveType);
-                    var instanceProp = genericType.GetProperty("Instance", BindingFlags.Public | BindingFlags.Static);
-                    if (instanceProp != null)
+                    var instance = _singletonInstanceProperty.GetValue(null);
+                    if (instance != null)
                     {
-                        var instance = instanceProp.GetValue(null);
-                        if (instance != null)
+                        var currentSave = _currentSaveProperty.GetValue(instance);
+                        if (currentSave != null)
                         {
-                            var currentSaveProp = instance.GetType().GetProperty("CurrentSave");
-                            if (currentSaveProp != null)
-                            {
-                                var currentSave = currentSaveProp.GetValue(instance);
-                                if (currentSave != null)
-                                {
-                                    var coinsField = currentSave.GetType().GetField("coins", BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance);
-                                    if (coinsField != null)
-                                    {
-                                        return Convert.ToInt32(coinsField.GetValue(currentSave));
-                                    }
-                                }
-                            }
+                            return Convert.ToInt32(_currentSaveCoinsField.GetValue(currentSave));
                         }
                     }
                 }
@@ -207,10 +200,10 @@ namespace HavenDevTools.Services
             {
                 if (Player.Instance == null) return 0;
 
-                var orbsProp = Player.Instance.GetType().GetProperty("Orbs", BindingFlags.Public | BindingFlags.Instance);
-                if (orbsProp != null)
+                EnsurePlayerProperties();
+                if (_playerOrbsProperty != null)
                 {
-                    return (int)orbsProp.GetValue(Player.Instance);
+                    return (int)_playerOrbsProperty.GetValue(Player.Instance);
                 }
             }
             catch (Exception ex)
@@ -230,10 +223,10 @@ namespace HavenDevTools.Services
             {
                 if (Player.Instance == null) return 0;
 
-                var ticketsProp = Player.Instance.GetType().GetProperty("Tickets", BindingFlags.Public | BindingFlags.Instance);
-                if (ticketsProp != null)
+                EnsurePlayerProperties();
+                if (_playerTicketsProperty != null)
                 {
-                    return (int)ticketsProp.GetValue(Player.Instance);
+                    return (int)_playerTicketsProperty.GetValue(Player.Instance);
                 }
             }
             catch (Exception ex)
@@ -245,9 +238,23 @@ namespace HavenDevTools.Services
         }
 
         /// <summary>
-        /// Get a summary of all currencies
+        /// Get a summary of all currencies. Results are cached and refreshed at most twice per second.
         /// </summary>
-        public CurrencySummary GetSummary()
+        public CurrencySummary GetSummary(bool forceRefresh = false)
+        {
+            if (!forceRefresh
+                && _cachedSummary != null
+                && Time.unscaledTime - _lastSummaryRefreshTime < SummaryRefreshIntervalSeconds)
+            {
+                return _cachedSummary;
+            }
+
+            _cachedSummary = BuildSummary();
+            _lastSummaryRefreshTime = Time.unscaledTime;
+            return _cachedSummary;
+        }
+
+        private CurrencySummary BuildSummary()
         {
             var summary = new CurrencySummary
             {
@@ -275,16 +282,81 @@ namespace HavenDevTools.Services
             return summary;
         }
 
-        private Assembly GetVaultAssembly()
+        private void EnsureGoldReflection()
         {
-            foreach (var assembly in AppDomain.CurrentDomain.GetAssemblies())
+            if (_gameSaveCoinsProperty != null || _goldFallbackResolved)
+                return;
+
+            var gameSaveType = AccessTools.TypeByName("Wish.GameSave");
+            if (gameSaveType != null)
             {
-                if (assembly.GetName().Name == "TheVault")
+                _gameSaveCoinsProperty = gameSaveType.GetProperty("Coins", BindingFlags.Public | BindingFlags.Static);
+            }
+
+            if (_gameSaveCoinsProperty != null)
+                return;
+
+            var singletonType = AccessTools.TypeByName("SingletonBehaviour`1");
+            if (singletonType != null && gameSaveType != null)
+            {
+                var genericType = singletonType.MakeGenericType(gameSaveType);
+                _singletonInstanceProperty = genericType.GetProperty("Instance", BindingFlags.Public | BindingFlags.Static);
+                if (_singletonInstanceProperty != null)
                 {
-                    return assembly;
+                    var instance = _singletonInstanceProperty.GetValue(null);
+                    if (instance != null)
+                    {
+                        _currentSaveProperty = instance.GetType().GetProperty("CurrentSave");
+                        if (_currentSaveProperty != null)
+                        {
+                            var currentSave = _currentSaveProperty.GetValue(instance);
+                            if (currentSave != null)
+                            {
+                                _currentSaveCoinsField = currentSave.GetType().GetField(
+                                    "coins",
+                                    BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance);
+                            }
+                        }
+                    }
                 }
             }
-            return null;
+
+            _goldFallbackResolved = true;
+        }
+
+        private void EnsurePlayerProperties()
+        {
+            if (_playerPropertiesResolved || Player.Instance == null)
+                return;
+
+            var playerType = Player.Instance.GetType();
+            _playerOrbsProperty = playerType.GetProperty("Orbs", BindingFlags.Public | BindingFlags.Instance);
+            _playerTicketsProperty = playerType.GetProperty("Tickets", BindingFlags.Public | BindingFlags.Instance);
+            _playerPropertiesResolved = true;
+        }
+
+        private bool EnsureVaultReflection()
+        {
+            if (_vaultReflectionResolved)
+                return _vaultGetVaultManagerMethod != null;
+
+            _vaultReflectionResolved = true;
+            _vaultPluginType = ReflectionHelper.FindModPlugin("TheVault");
+            if (_vaultPluginType == null)
+                return false;
+
+            _vaultGetVaultManagerMethod = _vaultPluginType.GetMethod(
+                "GetVaultManager",
+                BindingFlags.Public | BindingFlags.Static);
+            if (_vaultGetVaultManagerMethod == null)
+                return false;
+
+            var vaultManager = _vaultGetVaultManagerMethod.Invoke(null, null);
+            if (vaultManager == null)
+                return false;
+
+            _vaultGetAllNonZeroCurrenciesMethod = vaultManager.GetType().GetMethod("GetAllNonZeroCurrencies");
+            return _vaultGetAllNonZeroCurrenciesMethod != null;
         }
     }
 

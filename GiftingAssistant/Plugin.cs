@@ -77,6 +77,13 @@ namespace GiftingAssistant
             if (!_config.Enabled.Value)
             {
                 Log.LogInfo($"{PluginInfo.PLUGIN_NAME} disabled in config.");
+                ModDiagnostics.LogModStartup(Log, PluginInfo.PLUGIN_GUID, PluginInfo.PLUGIN_NAME, PluginInfo.PLUGIN_VERSION,
+                    ModHealthIntegrationSummary.Build(
+                        ("DevTools", SuitePluginGuids.DevTools),
+                        ("Birthday", SuitePluginGuids.BirthdayReminder),
+                        ("Todo", SuitePluginGuids.SunhavenTodo),
+                        ("Almanac", SuitePluginGuids.HavensAlmanac)),
+                    mode: "disabled");
                 return;
             }
 
@@ -110,6 +117,12 @@ namespace GiftingAssistant
             }
 
             Log.LogInfo($"{PluginInfo.PLUGIN_NAME} loaded successfully!");
+            ModDiagnostics.LogModStartup(Log, PluginInfo.PLUGIN_GUID, PluginInfo.PLUGIN_NAME, PluginInfo.PLUGIN_VERSION,
+                ModHealthIntegrationSummary.Build(
+                    ("DevTools", SuitePluginGuids.DevTools),
+                    ("Birthday", SuitePluginGuids.BirthdayReminder),
+                    ("Todo", SuitePluginGuids.SunhavenTodo),
+                    ("Almanac", SuitePluginGuids.HavensAlmanac)));
         }
 
         private void BindConfigEvents()

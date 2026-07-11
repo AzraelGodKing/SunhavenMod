@@ -46,6 +46,10 @@
 
   <ItemGroup>
     <Compile Include="..\SharedUtilities\ConfigFileHelper.cs" Link="Shared\ConfigFileHelper.cs" />
+    <Compile Include="..\SharedUtilities\SharedCodeRevision.cs" Link="Shared\SharedCodeRevision.cs" />
+    <Compile Include="..\SharedUtilities\ModHealthReport.cs" Link="Shared\ModHealthReport.cs" />
+    <Compile Include="..\SharedUtilities\ModDiagnostics.cs" Link="Shared\ModDiagnostics.cs" />
+    <Compile Include="..\SharedUtilities\ModHealthIntegrationSummary.cs" Link="Shared\ModHealthIntegrationSummary.cs" />
   </ItemGroup>
 
   <Target Name="CopyToPlugins" AfterTargets="Build">

@@ -204,6 +204,10 @@ namespace HavensBirthright
                 }
 
                 Log.LogInfo($"{PluginInfo.PLUGIN_NAME} loaded successfully!");
+                ModDiagnostics.LogModStartup(Log, PluginInfo.PLUGIN_GUID, PluginInfo.PLUGIN_NAME, PluginInfo.PLUGIN_VERSION,
+                    ModHealthIntegrationSummary.Build(
+                        ("DevTools", SuitePluginGuids.DevTools),
+                        ("FasterRaces", SuitePluginGuids.FasterRaces)));
                 Log.LogInfo($"Active abilities: {(AbilityConfig.EnableActiveAbilities.Value ? "ENABLED" : "DISABLED")}");
                 Log.LogInfo($"Racial drawbacks: {(AbilityConfig.EnableRacialDrawbacks.Value ? "ENABLED" : "DISABLED")}");
                 Log.LogInfo($"Conditional synergies: {(AbilityConfig.EnableConditionalSynergies.Value ? "ENABLED" : "DISABLED")}");
@@ -543,6 +547,6 @@ namespace HavensBirthright
     {
         public const string PLUGIN_GUID = "com.azraelgodking.havensbirthright";
         public const string PLUGIN_NAME = "Haven's Birthright";
-        public const string PLUGIN_VERSION = "3.0.1";
+        public const string PLUGIN_VERSION = "3.1.0";
     }
 }
