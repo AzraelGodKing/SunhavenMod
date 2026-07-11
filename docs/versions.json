@@ -7,7 +7,7 @@
     "nexus_file_group_id": "1311370",
     "thunderstore": "https://thunderstore.io/c/sun-haven/p/AzraelGodKing/SquirrelsBirthdayReminder/",
     "thunderstoreName": "SquirrelsBirthdayReminder",
-    "changelog": "Minor: startup Mod Health report for Haven Dev Tools Health tab when Dev Tools is installed."
+    "changelog": "Minor: startup Mod Health report for Haven Dev Tools Health tab when Dev Tools is installed. Fix: re-applied native pt-BR review with correct UTF-8 encoding."
   },
   "com.azraelgodking.havensbirthright": {
     "version": "3.1.0",
@@ -27,7 +27,7 @@
     "nexus_file_group_id": "1309168",
     "thunderstore": "https://thunderstore.io/c/sun-haven/p/AzraelGodKing/SMUT/",
     "thunderstoreName": "SMUT",
-    "changelog": "Minor: museum wishlist shop/gift badges and tooltips; LateUpdate performance fix for Sun Haven 3.1.2 (shop/gift-only decoration, cached museum lookups). Mod Health startup report."
+    "changelog": "Minor: museum wishlist shop/gift badges and tooltips; LateUpdate performance fix for Sun Haven 3.1.2 (shop/gift-only decoration, cached museum lookups). Mod Health startup report. Fix: re-applied native pt-BR review with correct UTF-8 encoding."
   },
   "com.azraelgodking.sunhaventodo": {
     "version": "2.1.0",
@@ -37,7 +37,7 @@
     "nexus_file_group_id": "1310599",
     "thunderstore": "https://thunderstore.io/c/sun-haven/p/AzraelGodKing/SunHavenTodo/",
     "thunderstoreName": "SunHavenTodo",
-    "changelog": "Minor: startup Mod Health report for Haven Dev Tools Health tab when Dev Tools is installed."
+    "changelog": "Minor: startup Mod Health report for Haven Dev Tools Health tab when Dev Tools is installed. Fix: re-applied native pt-BR review with correct UTF-8 encoding."
   },
   "com.azraelgodking.thevault": {
     "version": "4.1.0",
@@ -49,7 +49,7 @@
     "nexus_file_group_id": "1305781",
     "thunderstore": "https://thunderstore.io/c/sun-haven/p/AzraelGodKing/TheVault/",
     "thunderstoreName": "TheVault",
-    "changelog": "Minor: startup Mod Health report for Haven Dev Tools Health tab when Dev Tools is installed."
+    "changelog": "Minor: startup Mod Health report for Haven Dev Tools Health tab when Dev Tools is installed. Fix: re-applied native pt-BR review with correct UTF-8 encoding."
   },
   "com.azraelgodking.havendevtools": {
     "version": "2.1.0",
@@ -59,7 +59,7 @@
     "nexus_file_group_id": "1316842",
     "thunderstore": "https://thunderstore.io/c/sun-haven/p/AzraelGodKing/HavenDevTools/",
     "thunderstoreName": "HavenDevTools",
-    "changelog": "Minor: Steam ID lock removed; Mod Health dashboard; Suite tab integrations (including Respec simulator); suite mod detection refresh after chainload; Currencies tab FPS fix. FPS counter remains available."
+    "changelog": "Minor: Steam ID lock removed; Mod Health dashboard; Suite tab integrations (including Respec simulator); suite mod detection refresh after chainload; Currencies tab FPS fix. FPS counter remains available. Fix: re-applied native pt-BR review with correct UTF-8 encoding."
   },
   "com.azraelgodking.senpaischest": {
     "version": "3.1.0",
@@ -69,7 +69,7 @@
     "nexus_file_group_id": "1317103",
     "thunderstore": "https://thunderstore.io/c/sun-haven/p/AzraelGodKing/SenpaisChest/",
     "thunderstoreName": "SenpaisChest",
-    "changelog": "Minor: startup Mod Health report for Haven Dev Tools Health tab when Dev Tools is installed."
+    "changelog": "Minor: startup Mod Health report for Haven Dev Tools Health tab when Dev Tools is installed. Fix: re-applied native pt-BR review with correct UTF-8 encoding."
   },
   "com.azraelgodking.havensalmanac": {
     "version": "2.2.0",
@@ -79,7 +79,7 @@
     "nexus_file_group_id": "7326779",
     "thunderstore": "https://thunderstore.io/c/sun-haven/p/AzraelGodKing/HavensAlmanac/",
     "thunderstoreName": "HavensAlmanac",
-    "changelog": "Minor: Mod Health bridge only when Haven Dev Tools is installed; points players to Dev Tools → Health for full diagnostics."
+    "changelog": "Minor: Mod Health bridge only when Haven Dev Tools is installed; points players to Dev Tools → Health for full diagnostics. Fix: re-applied native pt-BR review with correct UTF-8 encoding."
   },
   "com.azraelgodking.fasterraces": {
     "version": "2.1.0",
@@ -109,7 +109,7 @@
     "nexus_file_group_id": "7320911",
     "thunderstore": "https://thunderstore.io/c/sun-haven/p/AzraelGodKing/CropOptimizer/",
     "thunderstoreName": "CropOptimizer",
-    "changelog": "Minor: startup Mod Health report and Suite tab summary for Haven Dev Tools when installed."
+    "changelog": "Minor: startup Mod Health report and Suite tab summary for Haven Dev Tools when installed. Fix: re-applied native pt-BR review with correct UTF-8 encoding."
   },
   "com.azraelgodking.havensrespec": {
     "version": "2.1.0",
@@ -119,7 +119,7 @@
     "nexus_file_group_id": "7326839",
     "thunderstore": "https://thunderstore.io/c/sun-haven/p/AzraelGodKing/HavensRespec/",
     "thunderstoreName": "HavensRespec",
-    "changelog": "Minor: RespecDevToolsApi for dry-run simulate/apply/revert from Haven Dev Tools Suite tab; Mod Health startup report."
+    "changelog": "Minor: RespecDevToolsApi for dry-run simulate/apply/revert from Haven Dev Tools Suite tab; Mod Health startup report. Fix: re-applied native pt-BR review with correct UTF-8 encoding."
   },
   "com.azraelgodking.giftingassistant": {
     "version": "1.1.0",

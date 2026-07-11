@@ -33,11 +33,10 @@ function Unescape-Cell([string]$s) {
 
 function ConvertTo-JsonString([string]$s) {
     if ($null -eq $s) { return '""' }
-    $bytes = [System.Text.Encoding]::UTF8.GetBytes($s)
+    # Iterate Unicode chars — never UTF-8 bytes-as-chars (that double-encodes and produces mojibake).
     $sb = New-Object System.Text.StringBuilder
     [void]$sb.Append('"')
-    foreach ($b in $bytes) {
-        $ch = [char]$b
+    foreach ($ch in $s.ToCharArray()) {
         switch ($ch) {
             '"' { [void]$sb.Append('\"') }
             '\' { [void]$sb.Append('\\') }
@@ -45,8 +44,9 @@ function ConvertTo-JsonString([string]$s) {
             "`r" { [void]$sb.Append('\r') }
             "`t" { [void]$sb.Append('\t') }
             default {
-                if ([int]$ch -lt 32) {
-                    [void]$sb.Append('\u{0:x4}' -f [int]$ch)
+                $code = [int]$ch
+                if ($code -lt 32) {
+                    [void]$sb.AppendFormat('\u{0:x4}', $code)
                 }
                 else {
                     [void]$sb.Append($ch)
