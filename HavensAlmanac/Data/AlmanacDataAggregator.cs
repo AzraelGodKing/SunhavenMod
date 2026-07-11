@@ -27,12 +27,12 @@ namespace HavensAlmanac.Data
 
         /// <summary>
         /// Count of providers that represent actual other-mod integrations
-        /// (excludes the always-registered built-in Mod Health provider).
+        /// (excludes Mod Health bridge and built-in Relationships provider).
         /// Used for "no supported mods detected" messaging so it only fires when
         /// the user really has nothing else installed to aggregate data from.
         /// </summary>
         public int IntegrationModCount =>
-            _providers.Count(p => p is not Integration.ModHealthDataProvider
+            _providers.Count(p => p is not Integration.ModHealthBridgeProvider
                                && p is not Integration.RelationshipDataProvider);
 
         /// <summary>True when the dashboard should show expandable sections (companion mods or built-in Relationships).</summary>

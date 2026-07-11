@@ -98,36 +98,6 @@ namespace HavenDevTools.UI
         private string _marriableStatusMessage = "";
         private float _marriableStatusUntil;
 
-        // Version checking state
-        private static Dictionary<string, VersionChecker.VersionCheckResult> _versionResults = new Dictionary<string, VersionChecker.VersionCheckResult>();
-        private static bool _isCheckingVersions;
-        private Vector2 _versionScrollPosition;
-
-        // Known mod GUIDs for version checks (installed version read from Chainloader at runtime).
-        private static readonly (string guid, string name)[] _knownMods = new[]
-        {
-            ("com.azraelgodking.havendevtools", "Haven Dev Tools"),
-            ("com.azraelgodking.senpaischest", "Senpai's Chest"),
-            ("com.azraelgodking.squirrelsbirthdayreminder", "Birthday Reminder"),
-            ("com.azraelgodking.havensbirthright", "Haven's Birthright"),
-            ("com.azraelgodking.sunhavenmuseumutilitytracker", "S.M.U.T."),
-            ("com.azraelgodking.sunhaventodo", "Sunhaven Todo"),
-            ("com.azraelgodking.thevault", "The Vault"),
-            ("com.azraelgodking.havensalmanac", "Haven's Almanac"),
-            ("com.azraelgodking.fasterraces", "Faster Races"),
-            ("com.azraelgodking.trinketfortune", "Trinket Fortune"),
-            ("com.azraelgodking.cropoptimizer", "Crop Optimizer"),
-            ("com.azraelgodking.havensrespec", "Haven's Respec"),
-            ("com.azraelgodking.giftingassistant", "Gifting Assistant"),
-        };
-
-        private static string GetInstalledModVersion(string guid)
-        {
-            if (BepInEx.Bootstrap.Chainloader.PluginInfos.TryGetValue(guid, out var info))
-                return info.Metadata.Version.ToString();
-            return null;
-        }
-
         private const string PAUSE_ID = "HavenDevTools_Debug";
 
         private void Awake()
@@ -198,7 +168,7 @@ namespace HavenDevTools.UI
 
         private void OnGUI()
         {
-            if (!_isVisible || !Plugin.IsAuthorized) return;
+            if (!_isVisible) return;
 
             InitializeStyles();
             DebugWindowLayout.ClampToScreen(ref _windowRect);
@@ -228,8 +198,9 @@ namespace HavenDevTools.UI
             _cachedTabLabelsLanguage = lang;
             _mainTabLabels = new[]
             {
+                ModLocalization.T("devtools.tab.health"),
                 ModLocalization.T("devtools.tab.tools"),
-                ModLocalization.T("devtools.tab.azraels_mods"),
+                ModLocalization.T("devtools.tab.suite"),
                 ModLocalization.T("devtools.tab.extensions")
             };
             _toolsSubTabLabels = new[]
@@ -474,9 +445,13 @@ namespace HavenDevTools.UI
 
             switch (_selectedTab)
             {
-                case 0: DrawToolsTab(); break;
-                case 1: AzraelsModsPanel.Draw(_boxStyle, _buttonStyle, _labelStyle, _sectionHeaderStyle); break;
-                case 2: DrawExtensionsTab(); break;
+                case 0:
+                    ModHealthDashboardPanel.RefreshRows(force: false);
+                    ModHealthDashboardPanel.Draw(_boxStyle, _sectionHeaderStyle, _buttonStyle, _labelStyle);
+                    break;
+                case 1: DrawToolsTab(); break;
+                case 2: AzraelsModsPanel.Draw(_boxStyle, _buttonStyle, _labelStyle, _sectionHeaderStyle); break;
+                case 3: DrawExtensionsTab(); break;
             }
 
             GUILayout.EndScrollView();
@@ -1026,10 +1001,18 @@ namespace HavenDevTools.UI
         private void DrawCurrenciesTab()
         {
             GUILayout.BeginVertical(_boxStyle);
+            GUILayout.BeginHorizontal();
             GUILayout.Label(ModLocalization.T("devtools.currency.title"), _sectionHeaderStyle);
+            GUILayout.FlexibleSpace();
+            var tracker = Plugin.GetCurrencyTracker();
+            if (tracker != null
+                && GUILayout.Button(ModLocalization.T("devtools.relationships.refresh"), _buttonStyle, GUILayout.Width(80)))
+            {
+                tracker.GetSummary(forceRefresh: true);
+            }
+            GUILayout.EndHorizontal();
             GUILayout.Space(5);
 
-            var tracker = Plugin.GetCurrencyTracker();
             if (tracker == null)
             {
                 GUILayout.Label(ModLocalization.T("devtools.currency.unavailable"), _labelStyle);
@@ -1287,11 +1270,6 @@ namespace HavenDevTools.UI
             GUILayout.Label(ModLocalization.T("devtools.utility"), _sectionHeaderStyle);
             GUILayout.Space(5);
 
-            // Version Checker Section
-            DrawVersionCheckerSection();
-
-            GUILayout.Space(10);
-
             // Config
             GUILayout.Label(ModLocalization.T("devtools.config"), _sectionHeaderStyle);
             if (GUILayout.Button(ModLocalization.T("devtools.config.reload"), _buttonStyle))
@@ -1318,166 +1296,7 @@ namespace HavenDevTools.UI
                 LogPlayerStats();
             }
 
-            GUILayout.Space(10);
-
-            // Hash generator
-            GUILayout.Label(ModLocalization.T("devtools.auth.title"), _sectionHeaderStyle);
-            GUILayout.Label(ModLocalization.T("devtools.auth.hint"), _labelStyle);
-            if (GUILayout.Button(ModLocalization.T("devtools.auth.logHash"), _buttonStyle))
-            {
-                try
-                {
-                    var steamId = typeof(Plugin).GetMethod("TryGetSteamId",
-                        System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Static)
-                        ?.Invoke(null, null) as string;
-                    if (!string.IsNullOrEmpty(steamId))
-                    {
-                        string hash = Plugin.GenerateHash(steamId);
-                        Plugin.Log?.LogInfo($"Steam ID: {steamId}");
-                        Plugin.Log?.LogInfo($"Steam ID Hash: {hash}");
-                    }
-                    else
-                    {
-                        Plugin.Log?.LogWarning("Could not retrieve Steam ID");
-                    }
-                }
-                catch (Exception ex)
-                {
-                    Plugin.Log?.LogError($"Error generating hash: {ex.Message}");
-                }
-            }
-
             GUILayout.EndVertical();
-        }
-
-        private void DrawVersionCheckerSection()
-        {
-            GUILayout.Label(ModLocalization.T("devtools.versions.title"), _sectionHeaderStyle);
-            GUILayout.Space(3);
-
-            GUILayout.BeginHorizontal();
-
-            // Check all button
-            GUI.enabled = !_isCheckingVersions;
-            if (GUILayout.Button(_isCheckingVersions ? ModLocalization.T("devtools.versions.checking") : ModLocalization.T("devtools.versions.checkAll"), _buttonStyle))
-            {
-                CheckAllModVersions();
-            }
-            GUI.enabled = true;
-
-            // Test notification button
-            if (GUILayout.Button(ModLocalization.T("devtools.versions.testNotify"), _buttonStyle, GUILayout.Width(120)))
-            {
-                TestUpdateNotification();
-            }
-
-            GUILayout.EndHorizontal();
-
-            GUILayout.Space(5);
-
-            // Results display
-            _versionScrollPosition = GUILayout.BeginScrollView(_versionScrollPosition, GUILayout.Height(ListHeight(100f, 0.35f)));
-
-            foreach (var mod in _knownMods)
-            {
-                GUILayout.BeginHorizontal();
-
-                var installedVersion = GetInstalledModVersion(mod.guid);
-                string versionLabel = installedVersion != null
-                    ? $"{mod.name} v{installedVersion}"
-                    : $"{mod.name} ({ModLocalization.T("devtools.versions.notInstalled")})";
-                GUILayout.Label(versionLabel, _labelStyle, GUILayout.Width(200));
-
-                // Status
-                if (_versionResults.TryGetValue(mod.guid, out var result))
-                {
-                    if (!result.Success)
-                    {
-                        // Error state
-                        var errorStyle = new GUIStyle(_labelStyle) { normal = { textColor = new Color(1f, 0.5f, 0.5f) } };
-                        GUILayout.Label($"Error: {result.ErrorMessage}", errorStyle);
-                    }
-                    else if (result.UpdateAvailable)
-                    {
-                        // Update available
-                        var updateStyle = new GUIStyle(_labelStyle) { normal = { textColor = new Color(1f, 0.9f, 0.3f) } };
-                        GUILayout.Label(ModLocalization.T("devtools.versions.update", result.LatestVersion), updateStyle);
-                    }
-                    else
-                    {
-                        // Up to date
-                        var okStyle = new GUIStyle(_labelStyle) { normal = { textColor = new Color(0.5f, 1f, 0.5f) } };
-                        GUILayout.Label(ModLocalization.T("devtools.versions.upToDate"), okStyle);
-                    }
-                }
-                else
-                {
-                    GUILayout.Label(ModLocalization.T("devtools.versions.notChecked"), _labelStyle);
-                }
-
-                GUILayout.EndHorizontal();
-            }
-
-            GUILayout.EndScrollView();
-        }
-
-        private void CheckAllModVersions()
-        {
-            _isCheckingVersions = true;
-            _versionResults.Clear();
-            int pendingChecks = _knownMods.Length;
-
-            foreach (var mod in _knownMods)
-            {
-                var installedVersion = GetInstalledModVersion(mod.guid);
-                if (installedVersion == null)
-                {
-                    pendingChecks--;
-                    if (pendingChecks <= 0)
-                        _isCheckingVersions = false;
-                    continue;
-                }
-
-                VersionChecker.CheckForUpdate(mod.guid, installedVersion, Plugin.Log, result =>
-                {
-                    _versionResults[mod.guid] = result;
-                    pendingChecks--;
-                    if (pendingChecks <= 0)
-                    {
-                        _isCheckingVersions = false;
-                    }
-
-                    // Log result
-                    if (result.Success)
-                    {
-                        if (result.UpdateAvailable)
-                            Plugin.Log?.LogInfo($"[VersionChecker] {mod.name}: Update available v{result.LatestVersion}");
-                        else
-                            Plugin.Log?.LogInfo($"[VersionChecker] {mod.name}: Up to date (v{installedVersion})");
-                    }
-                    else
-                    {
-                        Plugin.Log?.LogWarning($"[VersionChecker] {mod.name}: {result.ErrorMessage}");
-                    }
-                });
-            }
-        }
-
-        private void TestUpdateNotification()
-        {
-            // Create a fake result to test the notification system
-            var fakeResult = new VersionChecker.VersionCheckResult
-            {
-                Success = true,
-                UpdateAvailable = true,
-                CurrentVersion = "1.0.0",
-                LatestVersion = "9.9.9",
-                ModName = "Test Mod (HavenDevTools)",
-                NexusUrl = "https://www.nexusmods.com/sunhaven"
-            };
-
-            Plugin.Log?.LogInfo("[VersionChecker] Testing notification system...");
-            fakeResult.NotifyUpdateAvailable(Plugin.Log);
         }
 
         private void LogPlayerStats()
