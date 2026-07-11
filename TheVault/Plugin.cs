@@ -1402,6 +1402,6 @@ namespace TheVault
     {
         public const string PLUGIN_GUID = "com.azraelgodking.thevault";
         public const string PLUGIN_NAME = "The Vault";
-        public const string PLUGIN_VERSION = "4.0.1";
+        public const string PLUGIN_VERSION = "4.1.0";
     }
 }

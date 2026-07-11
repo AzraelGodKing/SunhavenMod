@@ -4,6 +4,11 @@ Internal engineering log: **CI**, **release automation**, **scripts**, **docs in
 
 ---
 
+## 2026-07-11
+
+- **Suite minor version bump:** All mods touched on this branch bumped Minor; `docs/versions.json` changelog lines updated; `SharedCodeRevision` → `2026.07.11`.
+- **S.M.U.T. — wishlist LateUpdate lag (3.1.2):** `ItemImage`/`ItemIcon` LateUpdate postfixes were walking parent-name heuristics every frame and calling `FindByGameItemId` (full museum scan) + `IconCache.GetIcon`/`RefreshLabel` on every tick. Now: shop=`ShopItem` only, gift=`GiftMode` only (frame-cached); `HashSet` museum id index; badge need cache invalidated on donations; badge Apply only when id/visibility changes.
+
 ## 2026-07-05
 
 - **Haven Dev Tools — Steam ID lock removed:** Dropped SHA-256 Steam ID allowlist; `IsAuthorized` is always true; F11/F6/FPS counter no longer gated. Removed Utility-tab hash generator UI.
