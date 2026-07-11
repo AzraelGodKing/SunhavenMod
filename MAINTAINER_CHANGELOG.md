@@ -21,6 +21,9 @@ Internal engineering log: **CI**, **release automation**, **scripts**, **docs in
 - **Haven Dev Tools — Respec simulator reflection:** `IsReady` and `ProfessionCount` are static properties on `RespecDevToolsApi`; panel now uses `GetStaticValue` instead of `InvokeStaticMethod`.
 - **Haven's Respec — DevTools API:** `RespecDevToolsApi` + controller hooks; removed in-game Simulate button/dialog and `[UI] EnableSimulator` until Respec ships its own UI.
 - **S.M.U.T. — museum wishlist overlay:** Harmony postfix on `ItemImage`/`ItemIcon` LateUpdate; orange UGUI badge when `DonationManager.HasDonatedByGameId` is false for a known museum item. Shop (`ShopItem`) and gift-inventory contexts; config `[WishlistOverlay] ShowShopBadges` / `ShowGiftBadges`. Badge label uses `smut.wishlist.badge` (**M**). Hover tooltip appends `smut.wishlist.tooltip`; smaller 14×14 badge.
+## 2026-07-07
+
+- **Localization — pt-BR review import:** Applied 389 native-speaker `pt-BR` corrections from `pt-BR-translation-review.md` across 9 suite mods. Added `scripts/localization/apply-ptbr-review.ps1` (and `.py`) to import review markdown in-place without reformatting `strings.json`.
 
 ## 2026-07-04
 
