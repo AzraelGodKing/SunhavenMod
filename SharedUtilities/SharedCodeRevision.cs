@@ -6,6 +6,6 @@ namespace SunhavenMods.Shared
     /// </summary>
     public static class SharedCodeRevision
     {
-        public const string Value = "2026.07.05";
+        public const string Value = "2026.07.11";
     }
 }

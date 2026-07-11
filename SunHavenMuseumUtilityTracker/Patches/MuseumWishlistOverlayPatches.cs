@@ -68,6 +68,7 @@ namespace SunHavenMuseumUtilityTracker.Patches
 
         private static void OnDonationsChanged()
         {
+            MuseumWishlistService.InvalidateCaches();
             MuseumWishlistBadgeHost.RefreshAllLabels();
             MuseumWishlistTooltipHelper.RefreshTooltipCache();
         }

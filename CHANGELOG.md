@@ -4,6 +4,18 @@ Notes for **players and release readers**. Per-mod blurbs and upstream metadata 
 
 ---
 
+## 2026-07-11
+
+**Suite release (minor bumps)**
+
+- Versioned suite mods for this branch: Dev Tools / Respec / SMUT / Almanac / Vault / Todo / Birthday / Birthright / Senpai's Chest / Faster Races / Trinket Fortune / Crop Optimizer / Gifting Assistant. See `docs/versions.json` changelog lines per mod.
+
+**S.M.U.T. (Sun Haven Museum Utility Tracker)**
+
+- **Fix (perf):** Museum wishlist overlay no longer tanks FPS after Sun Haven 3.1.2. LateUpdate work is limited to real shop slots / gift inventory, museum membership uses a HashSet + cached badge results, and badges only update when the item/visibility changes.
+
+---
+
 ## 2026-07-05
 
 **Haven Dev Tools**
