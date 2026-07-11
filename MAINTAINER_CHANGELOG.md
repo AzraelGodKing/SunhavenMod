@@ -8,6 +8,7 @@ Internal engineering log: **CI**, **release automation**, **scripts**, **docs in
 
 - **Suite minor version bump:** All mods touched on this branch bumped Minor; `docs/versions.json` changelog lines updated; `SharedCodeRevision` → `2026.07.11`.
 - **S.M.U.T. — wishlist LateUpdate lag (3.1.2):** `ItemImage`/`ItemIcon` LateUpdate postfixes were walking parent-name heuristics every frame and calling `FindByGameItemId` (full museum scan) + `IconCache.GetIcon`/`RefreshLabel` on every tick. Now: shop=`ShopItem` only, gift=`GiftMode` only (frame-cached); `HashSet` museum id index; badge need cache invalidated on donations; badge Apply only when id/visibility changes.
+- **pt-BR apply script UTF-8 fix:** `scripts/localization/apply-ptbr-review.ps1` `ConvertTo-JsonString` was iterating UTF-8 bytes as chars (mojibake in JSON). Fixed to iterate Unicode code units; re-applied all 389 reviewed `pt-BR` strings.
 
 ## 2026-07-05
 
