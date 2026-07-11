@@ -1,46 +1,46 @@
 ﻿{
   "com.azraelgodking.squirrelsbirthdayreminder": {
-    "version": "2.0.1",
+    "version": "2.1.0",
     "name": "A Squirrel's Birthday Reminder",
     "description": "Never miss an NPC birthday - get reminders and gift suggestions",
     "nexus": "https://www.nexusmods.com/sunhaven/mods/493",
     "nexus_file_group_id": "1311370",
     "thunderstore": "https://thunderstore.io/c/sun-haven/p/AzraelGodKing/SquirrelsBirthdayReminder/",
     "thunderstoreName": "SquirrelsBirthdayReminder",
-    "changelog": "Patch release: fixes a startup error in the shared localization layer that prevented the in-game language-change refresh from registering (HarmonyX could not patch LocalizationManager.SetLanguageAndCode because the postfix parameter names did not match the original method casing)."
+    "changelog": "Minor: startup Mod Health report for Haven Dev Tools Health tab when Dev Tools is installed."
   },
   "com.azraelgodking.havensbirthright": {
-    "version": "3.0.1",
+    "version": "3.1.0",
     "name": "Haven's Birthright",
     "description": "Unique racial bonuses and abilities for all 12 playable races",
     "nexus": "https://www.nexusmods.com/sunhaven/mods/487",
     "nexus_file_group_id": "1297555",
     "thunderstore": "https://thunderstore.io/c/sun-haven/p/AzraelGodKing/HavensBirthright/",
     "thunderstoreName": "HavensBirthright",
-    "changelog": "Patch release: fixes a startup error in the shared localization layer that prevented the in-game language-change refresh from registering (HarmonyX could not patch LocalizationManager.SetLanguageAndCode because the postfix parameter names did not match the original method casing)."
+    "changelog": "Minor: startup Mod Health report for Haven Dev Tools Health tab when Dev Tools is installed."
   },
   "com.azraelgodking.sunhavenmuseumutilitytracker": {
-    "version": "3.0.1",
+    "version": "3.1.0",
     "name": "Sunhaven Museum Utility Tracker",
     "description": "Track museum donation progress across all three halls",
     "nexus": "https://www.nexusmods.com/sunhaven/mods/490",
     "nexus_file_group_id": "1309168",
     "thunderstore": "https://thunderstore.io/c/sun-haven/p/AzraelGodKing/SMUT/",
     "thunderstoreName": "SMUT",
-    "changelog": "Patch release: fixes a startup error in the shared localization layer that prevented the in-game language-change refresh from registering (HarmonyX could not patch LocalizationManager.SetLanguageAndCode because the postfix parameter names did not match the original method casing)."
+    "changelog": "Minor: museum wishlist shop/gift badges and tooltips; LateUpdate performance fix for Sun Haven 3.1.2 (shop/gift-only decoration, cached museum lookups). Mod Health startup report."
   },
   "com.azraelgodking.sunhaventodo": {
-    "version": "2.0.1",
+    "version": "2.1.0",
     "name": "Sun Haven Todo",
     "description": "In-game task tracker for farming goals, quests, and daily tasks",
     "nexus": "https://www.nexusmods.com/sunhaven/mods/491",
     "nexus_file_group_id": "1310599",
     "thunderstore": "https://thunderstore.io/c/sun-haven/p/AzraelGodKing/SunHavenTodo/",
     "thunderstoreName": "SunHavenTodo",
-    "changelog": "Patch release: fixes a startup error in the shared localization layer that prevented the in-game language-change refresh from registering (HarmonyX could not patch LocalizationManager.SetLanguageAndCode because the postfix parameter names did not match the original method casing)."
+    "changelog": "Minor: startup Mod Health report for Haven Dev Tools Health tab when Dev Tools is installed."
   },
   "com.azraelgodking.thevault": {
-    "version": "4.0.1",
+    "version": "4.1.0",
     "name": "The Vault",
     "description": "The Vault 3 — per-character vault, encrypted saves, HUD, auto-deposit, shop and inventory vault integration, Custom tab & mod API.",
     "vault_save_breaking": false,
@@ -49,86 +49,86 @@
     "nexus_file_group_id": "1305781",
     "thunderstore": "https://thunderstore.io/c/sun-haven/p/AzraelGodKing/TheVault/",
     "thunderstoreName": "TheVault",
-    "changelog": "Patch release: fixes a startup error in the shared localization layer that prevented the in-game language-change refresh from registering (HarmonyX could not patch LocalizationManager.SetLanguageAndCode because the postfix parameter names did not match the original method casing)."
+    "changelog": "Minor: startup Mod Health report for Haven Dev Tools Health tab when Dev Tools is installed."
   },
   "com.azraelgodking.havendevtools": {
-    "version": "2.0.2",
+    "version": "2.1.0",
     "name": "HavenDevTools",
     "description": "Developer utilities for mod debugging and game state inspection",
     "nexus": "https://www.nexusmods.com/sunhaven/mods/495",
     "nexus_file_group_id": "1316842",
     "thunderstore": "https://thunderstore.io/c/sun-haven/p/AzraelGodKing/HavenDevTools/",
     "thunderstoreName": "HavenDevTools",
-    "changelog": "Patch release: Added FPS Counter."
+    "changelog": "Minor: Steam ID lock removed; Mod Health dashboard; Suite tab integrations (including Respec simulator); suite mod detection refresh after chainload; Currencies tab FPS fix. FPS counter remains available."
   },
   "com.azraelgodking.senpaischest": {
-    "version": "3.0.3",
+    "version": "3.1.0",
     "name": "Senpai's Chest",
     "description": "Smart chest auto-sorting with custom rules by item, type, category, property, or player groups. Manage Groups tab for custom subcategories.",
     "nexus": "https://www.nexusmods.com/sunhaven/mods/496",
     "nexus_file_group_id": "1317103",
     "thunderstore": "https://thunderstore.io/c/sun-haven/p/AzraelGodKing/SenpaisChest/",
     "thunderstoreName": "SenpaisChest",
-    "changelog": "Patch release: fixes a startup error in the shared localization layer that prevented the in-game language-change refresh from registering (HarmonyX could not patch LocalizationManager.SetLanguageAndCode because the postfix parameter names did not match the original method casing)."
+    "changelog": "Minor: startup Mod Health report for Haven Dev Tools Health tab when Dev Tools is installed."
   },
   "com.azraelgodking.havensalmanac": {
-    "version": "2.1.0",
+    "version": "2.2.0",
     "name": "Haven's Almanac",
     "description": "Unified mod dashboard - HUD, full dashboard, and daily morning briefing aggregating data from all installed mods",
     "nexus": "https://www.nexusmods.com/sunhaven/mods/501",
     "nexus_file_group_id": "7326779",
     "thunderstore": "https://thunderstore.io/c/sun-haven/p/AzraelGodKing/HavensAlmanac/",
     "thunderstoreName": "HavensAlmanac",
-    "changelog": "Added new Relationship tab to the almanac, showing the player's relationships with all NPCs."
+    "changelog": "Minor: Mod Health bridge only when Haven Dev Tools is installed; points players to Dev Tools → Health for full diagnostics."
   },
   "com.azraelgodking.fasterraces": {
-    "version": "2.0.1",
+    "version": "2.1.0",
     "name": "Faster Races",
     "description": "Configurable movement speed bonus for all races; disables Haven's Birthright speed buffs when both are installed",
     "nexus": "https://www.nexusmods.com/sunhaven/mods/497",
     "nexus_file_group_id": "7154323",
     "thunderstore": "https://thunderstore.io/c/sun-haven/p/AzraelGodKing/FasterRaces/",
     "thunderstoreName": "FasterRaces",
-    "changelog": "Patch release: fixes a startup error in the shared localization layer that prevented the in-game language-change refresh from registering (HarmonyX could not patch LocalizationManager.SetLanguageAndCode because the postfix parameter names did not match the original method casing)."
+    "changelog": "Minor: startup Mod Health report for Haven Dev Tools Health tab when Dev Tools is installed."
   },
   "com.azraelgodking.trinketfortune": {
-    "version": "2.0.1",
+    "version": "2.1.0",
     "name": "Trinket Fortune",
     "description": "Increases odds of unowned fishing trinkets dropping as you complete the aquarium",
     "nexus": "https://www.nexusmods.com/sunhaven/mods/498",
     "nexus_file_group_id": "7159384",
     "thunderstore": "https://thunderstore.io/c/sun-haven/p/AzraelGodKing/TrinketFortune/",
     "thunderstoreName": "TrinketFortune",
-    "changelog": "Patch release: fixes a startup error in the shared localization layer that prevented the in-game language-change refresh from registering (HarmonyX could not patch LocalizationManager.SetLanguageAndCode because the postfix parameter names did not match the original method casing)."
+    "changelog": "Minor: Dev Tools Suite status via GetDevToolsSummary; startup Mod Health report when Dev Tools is installed."
   },
   "com.azraelgodking.cropoptimizer": {
-    "version": "2.1.1",
+    "version": "2.2.0",
     "name": "Crop Optimizer",
     "description": "Crop forecast HUD with seasonal planning helpers and soft Todo/Birthday/Vault integrations",
     "nexus": "https://www.nexusmods.com/sunhaven/mods/500",
     "nexus_file_group_id": "7320911",
     "thunderstore": "https://thunderstore.io/c/sun-haven/p/AzraelGodKing/CropOptimizer/",
     "thunderstoreName": "CropOptimizer",
-    "changelog": "Patch: Fixes Severe FPS Drop."
+    "changelog": "Minor: startup Mod Health report and Suite tab summary for Haven Dev Tools when installed."
   },
   "com.azraelgodking.havensrespec": {
-    "version": "2.0.2",
+    "version": "2.1.0",
     "name": "Haven's Respec",
     "description": "Safe skill respec — Reset button on every skill tab, confirmation dialog, one-step Undo, configurable cost, and full Configuration Manager support",
     "nexus": "https://www.nexusmods.com/sunhaven/mods/502",
     "nexus_file_group_id": "7326839",
     "thunderstore": "https://thunderstore.io/c/sun-haven/p/AzraelGodKing/HavensRespec/",
     "thunderstoreName": "HavensRespec",
-    "changelog": "Patch release: fixes a startup error in the shared localization layer that prevented the in-game language-change refresh from registering (HarmonyX could not patch LocalizationManager.SetLanguageAndCode because the postfix parameter names did not match the original method casing)."
+    "changelog": "Minor: RespecDevToolsApi for dry-run simulate/apply/revert from Haven Dev Tools Suite tab; Mod Health startup report."
   },
   "com.azraelgodking.giftingassistant": {
-    "version": "1.0.1",
+    "version": "1.1.0",
     "name": "Gifting Assistant",
     "description": "Initial release: per-character gift roster, loved/liked suggestions with icons, preferred gifts, heart bars, gifted-today tracking, priority sort, Ctrl+G UI, 16 languages. Optional Birthday Reminder, Sun Haven Todo, and Haven's Almanac.",
     "nexus": "https://www.nexusmods.com/sunhaven/mods/507",
     "nexus_file_group_id": "7597922",
     "thunderstore": "https://thunderstore.io/c/sun-haven/p/AzraelGodKing/GiftingAssistant/",
     "thunderstoreName": "GiftingAssistant",
-    "changelog": "Updated to use the White Heart Icon."
+    "changelog": "Minor: startup Mod Health report for Haven Dev Tools Health tab when Dev Tools is installed."
   }
 }

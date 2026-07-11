@@ -45,7 +45,7 @@ namespace SunHavenMuseumUtilityTracker.UI
                 return;
 
             if (ItemImageBadges.TryGetValue(itemImage, out BadgeView badge))
-                badge.SetVisible(false);
+                badge.Hide();
         }
 
         internal static void UpdateItemIcon(ItemIcon itemIcon)
@@ -69,7 +69,7 @@ namespace SunHavenMuseumUtilityTracker.UI
                 return;
 
             if (ItemIconBadges.TryGetValue(itemIcon, out BadgeView badge))
-                badge.SetVisible(false);
+                badge.Hide();
         }
 
         internal static void RefreshAllLabels()
@@ -88,19 +88,22 @@ namespace SunHavenMuseumUtilityTracker.UI
             if (parent == null)
                 return;
 
+            bool show = MuseumWishlistService.NeedsMuseumBadge(gameItemId);
+
+            // Avoid allocating/updating badge GameObjects when the slot does not need one.
             if (!cache.TryGetValue(key, out BadgeView badge) || badge == null)
             {
+                if (!show)
+                    return;
                 badge = CreateBadge(parent);
                 cache[key] = badge;
             }
 
-            bool show = MuseumWishlistService.NeedsMuseumBadge(gameItemId);
-            badge.SetVisible(show);
-            if (show)
-            {
-                badge.RefreshLabel();
-                SunhavenMods.Shared.IconCache.GetIcon(gameItemId);
-            }
+            // Skip work when item id + visibility are unchanged (LateUpdate runs every frame).
+            if (badge.Matches(gameItemId, show))
+                return;
+
+            badge.Apply(gameItemId, show);
         }
 
         private static BadgeView CreateBadge(Transform parent)
@@ -206,11 +209,32 @@ namespace SunHavenMuseumUtilityTracker.UI
         {
             private readonly GameObject _root;
             private readonly Text _label;
+            private int _lastGameItemId = int.MinValue;
+            private bool _lastVisible;
 
             internal BadgeView(GameObject root, Text label)
             {
                 _root = root;
                 _label = label;
+                if (_label != null)
+                    _label.text = GetBadgeLabel();
+            }
+
+            internal bool Matches(int gameItemId, bool visible) =>
+                _lastGameItemId == gameItemId && _lastVisible == visible;
+
+            internal void Apply(int gameItemId, bool visible)
+            {
+                _lastGameItemId = gameItemId;
+                _lastVisible = visible;
+                SetVisible(visible);
+            }
+
+            internal void Hide()
+            {
+                _lastVisible = false;
+                _lastGameItemId = int.MinValue;
+                SetVisible(false);
             }
 
             internal void SetVisible(bool visible)

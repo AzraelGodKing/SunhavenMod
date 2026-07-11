@@ -4,6 +4,6 @@ namespace HavensRespec
     {
         public const string PLUGIN_GUID = "com.azraelgodking.havensrespec";
         public const string PLUGIN_NAME = "Haven's Respec";
-        public const string PLUGIN_VERSION = "2.0.2";
+        public const string PLUGIN_VERSION = "2.1.0";
     }
 }

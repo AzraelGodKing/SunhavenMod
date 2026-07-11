@@ -501,6 +501,6 @@ namespace SunHavenMuseumUtilityTracker
     {
         public const string PLUGIN_GUID = "com.azraelgodking.sunhavenmuseumutilitytracker";
         public const string PLUGIN_NAME = "Sun Haven Museum Utility Tracker";
-        public const string PLUGIN_VERSION = "3.0.1";
+        public const string PLUGIN_VERSION = "3.1.0";
     }
 }
