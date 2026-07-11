@@ -14,6 +14,10 @@ Notes for **players and release readers**. Per-mod blurbs and upstream metadata 
 
 - **Fix (perf):** Museum wishlist overlay no longer tanks FPS after Sun Haven 3.1.2. LateUpdate work is limited to real shop slots / gift inventory, museum membership uses a HashSet + cached badge results, and badges only update when the item/visibility changes.
 
+**Suite mods (localization)**
+
+- **Fix (pt-BR):** Re-applied the native-speaker Portuguese (Brazil) review with correct UTF-8 encoding (previous import had mojibake such as `AniversÃ¡rios`). 389 strings across Birthday Reminder, Crop Optimizer, Haven Dev Tools, Haven's Almanac, Haven's Respec, S.M.U.T., Senpai's Chest, Sun Haven Todo, and The Vault.
+
 ---
 
 ## 2026-07-05
