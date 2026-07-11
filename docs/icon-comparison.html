@@ -1,0 +1,428 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Icon Refresh — Old vs New | Sun Haven Mod Hub</title>
+<meta name="description" content="Every Sun Haven mod icon redrawn as one night-sky family — see the old and new set side by side, and hunt for the hidden A in each.">
+<link rel="icon" type="image/svg+xml" href="favicon.svg">
+<style>
+:root {
+  --ground: #0e1026;
+  --card: #171a38;
+  --card-edge: #262a52;
+  --ink: #e9e7f6;
+  --muted: #9b98bd;
+  --gold: #ffd97a;
+  --gold-dim: #b99a4e;
+}
+* { box-sizing: border-box; }
+html { background: var(--ground); }
+body {
+  margin: 0;
+  color: var(--ink);
+  font-family: "Avenir Next", "Segoe UI", "Trebuchet MS", system-ui, sans-serif;
+  line-height: 1.5;
+  background:
+    radial-gradient(1.5px 1.5px at 12% 18%, #ffffffcc, transparent),
+    radial-gradient(1px 1px at 78% 8%, #ffd97aaa, transparent),
+    radial-gradient(1.2px 1.2px at 45% 30%, #ffffff88, transparent),
+    radial-gradient(1px 1px at 90% 55%, #cfd8ff99, transparent),
+    radial-gradient(1.4px 1.4px at 25% 70%, #ffffff77, transparent),
+    radial-gradient(1px 1px at 60% 90%, #ffd97a88, transparent),
+    var(--ground);
+}
+.wrap { max-width: 1060px; margin: 0 auto; padding: 40px 24px 72px; }
+.back {
+  display: inline-block; color: var(--muted); text-decoration: none;
+  font-size: 14px; margin-bottom: 24px; border: 1px solid var(--card-edge);
+  border-radius: 999px; padding: 6px 16px; background: #14173066;
+}
+.back:hover, .back:focus-visible { color: var(--gold); border-color: var(--gold-dim); }
+.eyebrow {
+  color: var(--gold); text-transform: uppercase; letter-spacing: 0.18em;
+  font-size: 12px; font-weight: 700; margin: 0 0 10px;
+}
+h1 {
+  font-size: clamp(26px, 4vw, 38px); margin: 0 0 8px; text-wrap: balance;
+  font-weight: 700; letter-spacing: -0.01em;
+}
+.lede { color: var(--muted); max-width: 62ch; margin: 0 0 14px; }
+.meta {
+  display: inline-flex; gap: 8px; align-items: center;
+  font-size: 13px; color: var(--muted);
+  border: 1px solid var(--card-edge); border-radius: 999px;
+  padding: 6px 14px; background: #14173066;
+  font-variant-numeric: tabular-nums;
+}
+.meta b { color: var(--gold); font-weight: 700; }
+.grid {
+  margin-top: 36px;
+  display: grid; gap: 20px;
+  grid-template-columns: repeat(auto-fill, minmax(460px, 1fr));
+}
+@media (max-width: 540px) { .grid { grid-template-columns: 1fr; } }
+.card {
+  background: var(--card);
+  border: 1px solid var(--card-edge);
+  border-radius: 14px;
+  padding: 18px 20px 16px;
+}
+.card-head { margin-bottom: 14px; }
+.card-head h2 { font-size: 17px; margin: 0; font-weight: 700; }
+.pair { display: flex; align-items: center; gap: 16px; flex-wrap: wrap; }
+figure { margin: 0; text-align: center; }
+.icon {
+  display: block; border-radius: 18px;
+  box-shadow: 0 4px 18px #00000066;
+}
+.icon.is-new { outline: 2px solid var(--gold-dim); outline-offset: 3px; }
+figcaption {
+  margin-top: 8px; font-size: 11px; text-transform: uppercase;
+  letter-spacing: 0.14em; color: var(--muted); font-weight: 600;
+}
+figcaption.new-cap { color: var(--gold); }
+.arrow { font-size: 22px; color: var(--gold-dim); }
+.scales {
+  margin-left: auto; display: flex; flex-direction: column;
+  align-items: center; gap: 8px;
+}
+.scales img { border-radius: 6px; display: block; }
+.scale-note { font-size: 10px; color: var(--muted); letter-spacing: 0.08em; font-variant-numeric: tabular-nums; }
+.note { color: var(--muted); font-size: 13px; margin: 14px 0 0; }
+footer {
+  margin-top: 40px; color: var(--muted); font-size: 13px;
+  border-top: 1px solid var(--card-edge); padding-top: 18px; max-width: 70ch;
+}
+footer a { color: var(--gold); }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <a class="back" href="index.html">&larr; Back to the Mod Hub</a>
+  <p class="eyebrow">Icon refresh</p>
+  <h1>The mod icons — old vs. new</h1>
+  <p class="lede">All 13 mod icons, redrawn as one family: a rounded night-sky tile,
+  scattered stars, a centered emblem per mod, and a gold name banner. Every new icon
+  hides an &ldquo;A&rdquo; &mdash; the AzraelGodKing mark &mdash; somewhere in the scene.
+  Each card's caption tells you where to look, but try spotting it first.</p>
+  <span class="meta"><b>13</b> icons &middot; 256&times;256 &middot; one hidden <b>A</b> each</span>
+  <div class="grid">
+<section class="card">
+  <header class="card-head">
+    <h2>A Squirrel's Birthday Reminder</h2>
+  </header>
+  <div class="pair">
+    <figure>
+      <img class="icon" src="icon-comparison/old/BirthdayReminder.png" alt="Old A Squirrel's Birthday Reminder icon"
+           width="128" height="128" loading="lazy">
+      <figcaption>Old</figcaption>
+    </figure>
+    <span class="arrow" aria-hidden="true">&#8594;</span>
+    <figure>
+      <img class="icon is-new" src="BirthdayReminder/icon.png" alt="New A Squirrel's Birthday Reminder icon"
+           width="128" height="128" loading="lazy">
+      <figcaption class="new-cap">New</figcaption>
+    </figure>
+    <div class="scales">
+      <img src="BirthdayReminder/icon.png" alt="" width="64" height="64" loading="lazy">
+      <img src="BirthdayReminder/icon.png" alt="" width="32" height="32" loading="lazy">
+      <span class="scale-note">64 / 32 px</span>
+    </div>
+  </div>
+  <p class="note">Birthday cake, candle glow, acorn + balloon. Hidden A: piped in frosting on the cake's front.</p>
+</section>
+<section class="card">
+  <header class="card-head">
+    <h2>Crop Optimizer</h2>
+  </header>
+  <div class="pair">
+    <figure>
+      <img class="icon" src="icon-comparison/old/CropOptimizer.png" alt="Old Crop Optimizer icon"
+           width="128" height="128" loading="lazy">
+      <figcaption>Old</figcaption>
+    </figure>
+    <span class="arrow" aria-hidden="true">&#8594;</span>
+    <figure>
+      <img class="icon is-new" src="CropOptimizer/icon.png" alt="New Crop Optimizer icon"
+           width="128" height="128" loading="lazy">
+      <figcaption class="new-cap">New</figcaption>
+    </figure>
+    <div class="scales">
+      <img src="CropOptimizer/icon.png" alt="" width="64" height="64" loading="lazy">
+      <img src="CropOptimizer/icon.png" alt="" width="32" height="32" loading="lazy">
+      <span class="scale-note">64 / 32 px</span>
+    </div>
+  </div>
+  <p class="note">Sprout with golden growth chevrons. Hidden A: stamped into the soil bed, left of the stem.</p>
+</section>
+<section class="card">
+  <header class="card-head">
+    <h2>Faster Races</h2>
+  </header>
+  <div class="pair">
+    <figure>
+      <img class="icon" src="icon-comparison/old/FasterRaces.png" alt="Old Faster Races icon"
+           width="128" height="128" loading="lazy">
+      <figcaption>Old</figcaption>
+    </figure>
+    <span class="arrow" aria-hidden="true">&#8594;</span>
+    <figure>
+      <img class="icon is-new" src="FasterRaces/icon.png" alt="New Faster Races icon"
+           width="128" height="128" loading="lazy">
+      <figcaption class="new-cap">New</figcaption>
+    </figure>
+    <div class="scales">
+      <img src="FasterRaces/icon.png" alt="" width="64" height="64" loading="lazy">
+      <img src="FasterRaces/icon.png" alt="" width="32" height="32" loading="lazy">
+      <span class="scale-note">64 / 32 px</span>
+    </div>
+  </div>
+  <p class="note">Lightning bolt with speed streaks. Hidden A: star constellation in the lower-right sky.</p>
+</section>
+<section class="card">
+  <header class="card-head">
+    <h2>Gifting Assistant</h2>
+  </header>
+  <div class="pair">
+    <figure>
+      <img class="icon" src="icon-comparison/old/GiftingAssistant.png" alt="Old Gifting Assistant icon"
+           width="128" height="128" loading="lazy">
+      <figcaption>Old</figcaption>
+    </figure>
+    <span class="arrow" aria-hidden="true">&#8594;</span>
+    <figure>
+      <img class="icon is-new" src="GiftingAssistant/icon.png" alt="New Gifting Assistant icon"
+           width="128" height="128" loading="lazy">
+      <figcaption class="new-cap">New</figcaption>
+    </figure>
+    <div class="scales">
+      <img src="GiftingAssistant/icon.png" alt="" width="64" height="64" loading="lazy">
+      <img src="GiftingAssistant/icon.png" alt="" width="32" height="32" loading="lazy">
+      <span class="scale-note">64 / 32 px</span>
+    </div>
+  </div>
+  <p class="note">Gift box, bow, floating heart. Hidden A: monogram on the gift tag hanging off the bow.</p>
+</section>
+<section class="card">
+  <header class="card-head">
+    <h2>HavenDevTools</h2>
+  </header>
+  <div class="pair">
+    <figure>
+      <img class="icon" src="icon-comparison/old/HavenDevTools.png" alt="Old HavenDevTools icon"
+           width="128" height="128" loading="lazy">
+      <figcaption>Old</figcaption>
+    </figure>
+    <span class="arrow" aria-hidden="true">&#8594;</span>
+    <figure>
+      <img class="icon is-new" src="HavenDevTools/icon.png" alt="New HavenDevTools icon"
+           width="128" height="128" loading="lazy">
+      <figcaption class="new-cap">New</figcaption>
+    </figure>
+    <div class="scales">
+      <img src="HavenDevTools/icon.png" alt="" width="64" height="64" loading="lazy">
+      <img src="HavenDevTools/icon.png" alt="" width="32" height="32" loading="lazy">
+      <span class="scale-note">64 / 32 px</span>
+    </div>
+  </div>
+  <p class="note">Terminal window with gears. Hidden A: typed at the prompt on the last terminal line.</p>
+</section>
+<section class="card">
+  <header class="card-head">
+    <h2>Haven's Almanac</h2>
+  </header>
+  <div class="pair">
+    <figure>
+      <img class="icon" src="icon-comparison/old/HavensAlmanac.png" alt="Old Haven's Almanac icon"
+           width="128" height="128" loading="lazy">
+      <figcaption>Old</figcaption>
+    </figure>
+    <span class="arrow" aria-hidden="true">&#8594;</span>
+    <figure>
+      <img class="icon is-new" src="HavensAlmanac/icon.png" alt="New Haven's Almanac icon"
+           width="128" height="128" loading="lazy">
+      <figcaption class="new-cap">New</figcaption>
+    </figure>
+    <div class="scales">
+      <img src="HavensAlmanac/icon.png" alt="" width="64" height="64" loading="lazy">
+      <img src="HavensAlmanac/icon.png" alt="" width="32" height="32" loading="lazy">
+      <span class="scale-note">64 / 32 px</span>
+    </div>
+  </div>
+  <p class="note">Open book under a constellation. Hidden A: illuminated drop cap on the left page.</p>
+</section>
+<section class="card">
+  <header class="card-head">
+    <h2>Haven's Respec</h2>
+  </header>
+  <div class="pair">
+    <figure>
+      <img class="icon" src="icon-comparison/old/HavensRespec.png" alt="Old Haven's Respec icon"
+           width="128" height="128" loading="lazy">
+      <figcaption>Old</figcaption>
+    </figure>
+    <span class="arrow" aria-hidden="true">&#8594;</span>
+    <figure>
+      <img class="icon is-new" src="HavensRespec/icon.png" alt="New Haven's Respec icon"
+           width="128" height="128" loading="lazy">
+      <figcaption class="new-cap">New</figcaption>
+    </figure>
+    <div class="scales">
+      <img src="HavensRespec/icon.png" alt="" width="64" height="64" loading="lazy">
+      <img src="HavensRespec/icon.png" alt="" width="32" height="32" loading="lazy">
+      <span class="scale-note">64 / 32 px</span>
+    </div>
+  </div>
+  <p class="note">Reset arrows circling a skill orb. Hidden A: sealed into the golden orb.</p>
+</section>
+<section class="card">
+  <header class="card-head">
+    <h2>Haven's Birthright</h2>
+  </header>
+  <div class="pair">
+    <figure>
+      <img class="icon" src="icon-comparison/old/RacialBonuses.png" alt="Old Haven's Birthright icon"
+           width="128" height="128" loading="lazy">
+      <figcaption>Old</figcaption>
+    </figure>
+    <span class="arrow" aria-hidden="true">&#8594;</span>
+    <figure>
+      <img class="icon is-new" src="RacialBonuses/icon.png" alt="New Haven's Birthright icon"
+           width="128" height="128" loading="lazy">
+      <figcaption class="new-cap">New</figcaption>
+    </figure>
+    <div class="scales">
+      <img src="RacialBonuses/icon.png" alt="" width="64" height="64" loading="lazy">
+      <img src="RacialBonuses/icon.png" alt="" width="32" height="32" loading="lazy">
+      <span class="scale-note">64 / 32 px</span>
+    </div>
+  </div>
+  <p class="note">Celestial rings, moons and a birth star. Hidden A: the sigil at the top of the zodiac ring.</p>
+</section>
+<section class="card">
+  <header class="card-head">
+    <h2>S.M.U.T. — Museum Tracker</h2>
+  </header>
+  <div class="pair">
+    <figure>
+      <img class="icon" src="icon-comparison/old/SMUT.png" alt="Old S.M.U.T. — Museum Tracker icon"
+           width="128" height="128" loading="lazy">
+      <figcaption>Old</figcaption>
+    </figure>
+    <span class="arrow" aria-hidden="true">&#8594;</span>
+    <figure>
+      <img class="icon is-new" src="SMUT/icon.png" alt="New S.M.U.T. — Museum Tracker icon"
+           width="128" height="128" loading="lazy">
+      <figcaption class="new-cap">New</figcaption>
+    </figure>
+    <div class="scales">
+      <img src="SMUT/icon.png" alt="" width="64" height="64" loading="lazy">
+      <img src="SMUT/icon.png" alt="" width="32" height="32" loading="lazy">
+      <span class="scale-note">64 / 32 px</span>
+    </div>
+  </div>
+  <p class="note">Framed gem, 75% progress bar, check badge. Hidden A: brass exhibit plaque on the pedestal.</p>
+</section>
+<section class="card">
+  <header class="card-head">
+    <h2>Senpai's Chest</h2>
+  </header>
+  <div class="pair">
+    <figure>
+      <img class="icon" src="icon-comparison/old/SenpaisChest.png" alt="Old Senpai's Chest icon"
+           width="128" height="128" loading="lazy">
+      <figcaption>Old</figcaption>
+    </figure>
+    <span class="arrow" aria-hidden="true">&#8594;</span>
+    <figure>
+      <img class="icon is-new" src="SenpaisChest/icon.png" alt="New Senpai's Chest icon"
+           width="128" height="128" loading="lazy">
+      <figcaption class="new-cap">New</figcaption>
+    </figure>
+    <div class="scales">
+      <img src="SenpaisChest/icon.png" alt="" width="64" height="64" loading="lazy">
+      <img src="SenpaisChest/icon.png" alt="" width="32" height="32" loading="lazy">
+      <span class="scale-note">64 / 32 px</span>
+    </div>
+  </div>
+  <p class="note">Treasure chest with a heart lock. Hidden A: branded into the lid above the lock.</p>
+</section>
+<section class="card">
+  <header class="card-head">
+    <h2>The Vault</h2>
+  </header>
+  <div class="pair">
+    <figure>
+      <img class="icon" src="icon-comparison/old/TheVault.png" alt="Old The Vault icon"
+           width="128" height="128" loading="lazy">
+      <figcaption>Old</figcaption>
+    </figure>
+    <span class="arrow" aria-hidden="true">&#8594;</span>
+    <figure>
+      <img class="icon is-new" src="TheVault/icon.png" alt="New The Vault icon"
+           width="128" height="128" loading="lazy">
+      <figcaption class="new-cap">New</figcaption>
+    </figure>
+    <div class="scales">
+      <img src="TheVault/icon.png" alt="" width="64" height="64" loading="lazy">
+      <img src="TheVault/icon.png" alt="" width="32" height="32" loading="lazy">
+      <span class="scale-note">64 / 32 px</span>
+    </div>
+  </div>
+  <p class="note">Vault door, emerald dial, floating coins. Hidden A: engraved name plate at the top of the door.</p>
+</section>
+<section class="card">
+  <header class="card-head">
+    <h2>Sun Haven TODO</h2>
+  </header>
+  <div class="pair">
+    <figure>
+      <img class="icon" src="icon-comparison/old/Todo.png" alt="Old Sun Haven TODO icon"
+           width="128" height="128" loading="lazy">
+      <figcaption>Old</figcaption>
+    </figure>
+    <span class="arrow" aria-hidden="true">&#8594;</span>
+    <figure>
+      <img class="icon is-new" src="Todo/icon.png" alt="New Sun Haven TODO icon"
+           width="128" height="128" loading="lazy">
+      <figcaption class="new-cap">New</figcaption>
+    </figure>
+    <div class="scales">
+      <img src="Todo/icon.png" alt="" width="64" height="64" loading="lazy">
+      <img src="Todo/icon.png" alt="" width="32" height="32" loading="lazy">
+      <span class="scale-note">64 / 32 px</span>
+    </div>
+  </div>
+  <p class="note">Checklist scroll with a quill. Hidden A: the quill's signature on the bottom scroll roll.</p>
+</section>
+<section class="card">
+  <header class="card-head">
+    <h2>Trinket Fortune</h2>
+  </header>
+  <div class="pair">
+    <figure>
+      <img class="icon" src="icon-comparison/old/TrinketFortune.png" alt="Old Trinket Fortune icon"
+           width="128" height="128" loading="lazy">
+      <figcaption>Old</figcaption>
+    </figure>
+    <span class="arrow" aria-hidden="true">&#8594;</span>
+    <figure>
+      <img class="icon is-new" src="TrinketFortune/icon.png" alt="New Trinket Fortune icon"
+           width="128" height="128" loading="lazy">
+      <figcaption class="new-cap">New</figcaption>
+    </figure>
+    <div class="scales">
+      <img src="TrinketFortune/icon.png" alt="" width="64" height="64" loading="lazy">
+      <img src="TrinketFortune/icon.png" alt="" width="32" height="32" loading="lazy">
+      <span class="scale-note">64 / 32 px</span>
+    </div>
+  </div>
+  <p class="note">Fish chasing a lucky star lure. Hidden A: star constellation inside the ring, upper-left.</p>
+</section>
+  </div>
+  <footer>The original icons are archived on this page for posterity; the new set is what
+  ships across the <a href="index.html">Mod Hub</a>, Thunderstore, and Nexus pages.</footer>
+</div>
+</body>
+</html>
