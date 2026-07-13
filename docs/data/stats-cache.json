@@ -1,12 +1,12 @@
 {
-  "lastFetched": "2026-07-13T20:14:11.290Z",
+  "lastFetched": "2026-07-13T21:55:41.845Z",
   "mods": {
     "senpais-chest": {
       "name": "Senpai's Chest",
       "thunderstore": {
-        "total_downloads": 945,
+        "total_downloads": 946,
         "versions": {
-          "3.1.0": 10,
+          "3.1.0": 11,
           "3.0.3": 34,
           "3.0.2": 8,
           "3.0.1": 23,
@@ -38,14 +38,14 @@
         "total_downloads": 958,
         "unique_downloads": 690
       },
-      "combined_total": 1903
+      "combined_total": 1904
     },
     "havens-birthright": {
       "name": "Haven's Birthright",
       "thunderstore": {
-        "total_downloads": 793,
+        "total_downloads": 794,
         "versions": {
-          "3.1.0": 8,
+          "3.1.0": 9,
           "3.0.1": 46,
           "3.0.0": 26,
           "2.2.2": 118,
@@ -70,7 +70,7 @@
         "total_downloads": 1404,
         "unique_downloads": 952
       },
-      "combined_total": 2197
+      "combined_total": 2198
     },
     "museum-utility-tracker": {
       "name": "S.M.U.T.",
@@ -131,7 +131,7 @@
     "havens-todo": {
       "name": "Sun Haven Todo",
       "thunderstore": {
-        "total_downloads": 736,
+        "total_downloads": 738,
         "versions": {
           "2.1.0": 11,
           "2.0.1": 49,
@@ -146,18 +146,18 @@
           "1.1.5": 114,
           "1.1.4": 38,
           "1.1.3": 47,
-          "1.1.2": 41,
+          "1.1.2": 42,
           "1.1.1": 42,
           "1.1.0": 39,
           "1.0.1": 33,
-          "1.0.0": 38
+          "1.0.0": 39
         }
       },
       "nexus": {
         "total_downloads": 565,
         "unique_downloads": 440
       },
-      "combined_total": 1301
+      "combined_total": 1303
     },
     "the-vault": {
       "name": "The Vault",
@@ -248,9 +248,9 @@
     "faster-races": {
       "name": "Faster Races",
       "thunderstore": {
-        "total_downloads": 260,
+        "total_downloads": 261,
         "versions": {
-          "2.1.0": 6,
+          "2.1.0": 7,
           "2.0.1": 27,
           "2.0.0": 25,
           "1.4.2": 56,
@@ -265,7 +265,7 @@
         "total_downloads": 276,
         "unique_downloads": 208
       },
-      "combined_total": 536
+      "combined_total": 537
     },
     "trinket-fortune": {
       "name": "Trinket Fortune",
@@ -354,9 +354,9 @@
     }
   },
   "site_total": {
-    "thunderstore": 6686,
+    "thunderstore": 6691,
     "nexus_total": 9710,
     "nexus_unique": 7195,
-    "grand_total": 16396
+    "grand_total": 16401
   }
 }
