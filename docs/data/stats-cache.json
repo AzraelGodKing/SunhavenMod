@@ -1,12 +1,12 @@
 {
-  "lastFetched": "2026-07-16T10:59:08.907Z",
+  "lastFetched": "2026-07-16T12:25:51.271Z",
   "mods": {
     "senpais-chest": {
       "name": "Senpai's Chest",
       "thunderstore": {
-        "total_downloads": 977,
+        "total_downloads": 978,
         "versions": {
-          "3.1.0": 17,
+          "3.1.0": 18,
           "3.0.3": 38,
           "3.0.2": 11,
           "3.0.1": 25,
@@ -38,7 +38,7 @@
         "total_downloads": 976,
         "unique_downloads": 703
       },
-      "combined_total": 1953
+      "combined_total": 1954
     },
     "havens-birthright": {
       "name": "Haven's Birthright",
@@ -162,7 +162,7 @@
     "the-vault": {
       "name": "The Vault",
       "thunderstore": {
-        "total_downloads": 602,
+        "total_downloads": 603,
         "versions": {
           "4.1.0": 13,
           "4.0.1": 39,
@@ -179,7 +179,7 @@
           "2.0.7": 33,
           "2.0.6": 34,
           "2.0.5": 31,
-          "2.0.4": 48,
+          "2.0.4": 49,
           "2.0.3": 30
         }
       },
@@ -187,7 +187,7 @@
         "total_downloads": 1811,
         "unique_downloads": 1268
       },
-      "combined_total": 2413
+      "combined_total": 2414
     },
     "haven-dev-tools": {
       "name": "HavenDevTools",
@@ -248,10 +248,10 @@
     "faster-races": {
       "name": "Faster Races",
       "thunderstore": {
-        "total_downloads": 283,
+        "total_downloads": 284,
         "versions": {
           "2.1.0": 11,
-          "2.0.1": 28,
+          "2.0.1": 29,
           "2.0.0": 28,
           "1.4.2": 58,
           "1.4.0": 22,
@@ -265,7 +265,7 @@
         "total_downloads": 289,
         "unique_downloads": 219
       },
-      "combined_total": 572
+      "combined_total": 573
     },
     "trinket-fortune": {
       "name": "Trinket Fortune",
@@ -354,9 +354,9 @@
     }
   },
   "site_total": {
-    "thunderstore": 7020,
+    "thunderstore": 7023,
     "nexus_total": 9968,
     "nexus_unique": 7389,
-    "grand_total": 16988
+    "grand_total": 16991
   }
 }
