@@ -1,5 +1,5 @@
 {
-  "lastFetched": "2026-07-18T20:02:45.515Z",
+  "lastFetched": "2026-07-18T21:50:08.651Z",
   "mods": {
     "senpais-chest": {
       "name": "Senpai's Chest",
@@ -95,10 +95,10 @@
         }
       },
       "nexus": {
-        "total_downloads": 1384,
+        "total_downloads": 1385,
         "unique_downloads": 1076
       },
-      "combined_total": 2159
+      "combined_total": 2160
     },
     "squirrels-birthday-reminder": {
       "name": "A Squirrel's Birthday Reminder",
@@ -123,10 +123,10 @@
         }
       },
       "nexus": {
-        "total_downloads": 1060,
+        "total_downloads": 1061,
         "unique_downloads": 813
       },
-      "combined_total": 1747
+      "combined_total": 1748
     },
     "havens-todo": {
       "name": "Sun Haven Todo",
@@ -184,10 +184,10 @@
         }
       },
       "nexus": {
-        "total_downloads": 1831,
-        "unique_downloads": 1279
+        "total_downloads": 1832,
+        "unique_downloads": 1280
       },
-      "combined_total": 2471
+      "combined_total": 2472
     },
     "haven-dev-tools": {
       "name": "HavenDevTools",
@@ -240,10 +240,10 @@
         }
       },
       "nexus": {
-        "total_downloads": 498,
-        "unique_downloads": 378
+        "total_downloads": 500,
+        "unique_downloads": 379
       },
-      "combined_total": 1095
+      "combined_total": 1097
     },
     "faster-races": {
       "name": "Faster Races",
@@ -284,10 +284,10 @@
         }
       },
       "nexus": {
-        "total_downloads": 408,
+        "total_downloads": 409,
         "unique_downloads": 311
       },
-      "combined_total": 820
+      "combined_total": 821
     },
     "crop-optimizer": {
       "name": "Crop Optimizer",
@@ -309,10 +309,10 @@
         }
       },
       "nexus": {
-        "total_downloads": 815,
-        "unique_downloads": 616
+        "total_downloads": 817,
+        "unique_downloads": 617
       },
-      "combined_total": 1168
+      "combined_total": 1170
     },
     "havens-respec": {
       "name": "Haven's Respec",
@@ -331,10 +331,10 @@
         }
       },
       "nexus": {
-        "total_downloads": 336,
-        "unique_downloads": 255
+        "total_downloads": 338,
+        "unique_downloads": 257
       },
-      "combined_total": 643
+      "combined_total": 645
     },
     "gifting-assistant": {
       "name": "Gifting Assistant",
@@ -347,16 +347,16 @@
         }
       },
       "nexus": {
-        "total_downloads": 363,
-        "unique_downloads": 299
+        "total_downloads": 364,
+        "unique_downloads": 300
       },
-      "combined_total": 445
+      "combined_total": 446
     }
   },
   "site_total": {
     "thunderstore": 7213,
-    "nexus_total": 10189,
-    "nexus_unique": 7526,
-    "grand_total": 17402
+    "nexus_total": 10200,
+    "nexus_unique": 7532,
+    "grand_total": 17413
   }
 }
