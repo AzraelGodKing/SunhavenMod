@@ -1,5 +1,5 @@
 {
-  "lastFetched": "2026-07-19T21:51:22.988Z",
+  "lastFetched": "2026-07-19T22:50:52.411Z",
   "mods": {
     "senpais-chest": {
       "name": "Senpai's Chest",
@@ -43,9 +43,9 @@
     "havens-birthright": {
       "name": "Haven's Birthright",
       "thunderstore": {
-        "total_downloads": 858,
+        "total_downloads": 860,
         "versions": {
-          "3.1.0": 22,
+          "3.1.0": 24,
           "3.0.1": 49,
           "3.0.0": 29,
           "2.2.2": 120,
@@ -70,7 +70,7 @@
         "total_downloads": 1462,
         "unique_downloads": 986
       },
-      "combined_total": 2320
+      "combined_total": 2322
     },
     "museum-utility-tracker": {
       "name": "S.M.U.T.",
@@ -103,9 +103,9 @@
     "squirrels-birthday-reminder": {
       "name": "A Squirrel's Birthday Reminder",
       "thunderstore": {
-        "total_downloads": 691,
+        "total_downloads": 693,
         "versions": {
-          "2.1.0": 24,
+          "2.1.0": 26,
           "2.0.1": 48,
           "2.0.0": 34,
           "1.4.2": 115,
@@ -126,7 +126,7 @@
         "total_downloads": 1072,
         "unique_downloads": 819
       },
-      "combined_total": 1763
+      "combined_total": 1765
     },
     "havens-todo": {
       "name": "Sun Haven Todo",
@@ -339,9 +339,9 @@
     "gifting-assistant": {
       "name": "Gifting Assistant",
       "thunderstore": {
-        "total_downloads": 83,
+        "total_downloads": 85,
         "versions": {
-          "1.1.0": 25,
+          "1.1.0": 27,
           "1.0.1": 38,
           "1.0.0": 20
         }
@@ -350,13 +350,13 @@
         "total_downloads": 384,
         "unique_downloads": 317
       },
-      "combined_total": 467
+      "combined_total": 469
     }
   },
   "site_total": {
-    "thunderstore": 7270,
+    "thunderstore": 7276,
     "nexus_total": 10290,
     "nexus_unique": 7596,
-    "grand_total": 17560
+    "grand_total": 17566
   }
 }
