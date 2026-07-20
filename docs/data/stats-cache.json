@@ -1,5 +1,5 @@
 {
-  "lastFetched": "2026-07-20T18:01:24.327Z",
+  "lastFetched": "2026-07-20T20:19:48.140Z",
   "mods": {
     "senpais-chest": {
       "name": "Senpai's Chest",
@@ -95,10 +95,10 @@
         }
       },
       "nexus": {
-        "total_downloads": 1402,
-        "unique_downloads": 1091
+        "total_downloads": 1403,
+        "unique_downloads": 1092
       },
-      "combined_total": 2196
+      "combined_total": 2197
     },
     "squirrels-birthday-reminder": {
       "name": "A Squirrel's Birthday Reminder",
@@ -123,20 +123,20 @@
         }
       },
       "nexus": {
-        "total_downloads": 1077,
-        "unique_downloads": 823
+        "total_downloads": 1078,
+        "unique_downloads": 824
       },
-      "combined_total": 1771
+      "combined_total": 1772
     },
     "havens-todo": {
       "name": "Sun Haven Todo",
       "thunderstore": {
-        "total_downloads": 789,
+        "total_downloads": 791,
         "versions": {
           "2.1.0": 24,
           "2.0.1": 52,
           "2.0.0": 27,
-          "1.4.3": 98,
+          "1.4.3": 99,
           "1.4.2": 35,
           "1.4.0": 27,
           "1.3.0": 29,
@@ -149,7 +149,7 @@
           "1.1.2": 44,
           "1.1.1": 45,
           "1.1.0": 43,
-          "1.0.1": 35,
+          "1.0.1": 36,
           "1.0.0": 41
         }
       },
@@ -157,7 +157,7 @@
         "total_downloads": 599,
         "unique_downloads": 464
       },
-      "combined_total": 1388
+      "combined_total": 1390
     },
     "the-vault": {
       "name": "The Vault",
@@ -184,15 +184,15 @@
         }
       },
       "nexus": {
-        "total_downloads": 1856,
-        "unique_downloads": 1294
+        "total_downloads": 1857,
+        "unique_downloads": 1295
       },
-      "combined_total": 2525
+      "combined_total": 2526
     },
     "haven-dev-tools": {
       "name": "HavenDevTools",
       "thunderstore": {
-        "total_downloads": 437,
+        "total_downloads": 438,
         "versions": {
           "2.1.0": 13,
           "2.0.1": 30,
@@ -205,7 +205,7 @@
           "1.0.7": 31,
           "1.0.6": 39,
           "1.0.5": 58,
-          "1.0.4": 28,
+          "1.0.4": 29,
           "1.0.3": 37,
           "1.0.2": 39
         }
@@ -214,7 +214,7 @@
         "total_downloads": 146,
         "unique_downloads": 117
       },
-      "combined_total": 583
+      "combined_total": 584
     },
     "havens-almanac": {
       "name": "Haven's Almanac",
@@ -240,10 +240,10 @@
         }
       },
       "nexus": {
-        "total_downloads": 516,
-        "unique_downloads": 390
+        "total_downloads": 517,
+        "unique_downloads": 391
       },
-      "combined_total": 1121
+      "combined_total": 1122
     },
     "faster-races": {
       "name": "Faster Races",
@@ -284,17 +284,17 @@
         }
       },
       "nexus": {
-        "total_downloads": 412,
-        "unique_downloads": 313
+        "total_downloads": 414,
+        "unique_downloads": 314
       },
-      "combined_total": 832
+      "combined_total": 834
     },
     "crop-optimizer": {
       "name": "Crop Optimizer",
       "thunderstore": {
-        "total_downloads": 369,
+        "total_downloads": 370,
         "versions": {
-          "2.2.0": 21,
+          "2.2.0": 22,
           "2.1.1": 31,
           "2.1.0": 10,
           "2.0.1": 27,
@@ -309,10 +309,10 @@
         }
       },
       "nexus": {
-        "total_downloads": 835,
+        "total_downloads": 836,
         "unique_downloads": 629
       },
-      "combined_total": 1204
+      "combined_total": 1206
     },
     "havens-respec": {
       "name": "Haven's Respec",
@@ -347,16 +347,16 @@
         }
       },
       "nexus": {
-        "total_downloads": 397,
-        "unique_downloads": 329
+        "total_downloads": 398,
+        "unique_downloads": 330
       },
-      "combined_total": 483
+      "combined_total": 484
     }
   },
   "site_total": {
-    "thunderstore": 7344,
-    "nexus_total": 10370,
-    "nexus_unique": 7652,
-    "grand_total": 17714
+    "thunderstore": 7348,
+    "nexus_total": 10378,
+    "nexus_unique": 7658,
+    "grand_total": 17726
   }
 }
