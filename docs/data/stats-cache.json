@@ -1,5 +1,5 @@
 {
-  "lastFetched": "2026-07-21T11:07:15.694Z",
+  "lastFetched": "2026-07-21T13:47:18.090Z",
   "mods": {
     "senpais-chest": {
       "name": "Senpai's Chest",
@@ -35,15 +35,15 @@
         }
       },
       "nexus": {
-        "total_downloads": 1022,
-        "unique_downloads": 726
+        "total_downloads": 1024,
+        "unique_downloads": 727
       },
-      "combined_total": 2035
+      "combined_total": 2037
     },
     "havens-birthright": {
       "name": "Haven's Birthright",
       "thunderstore": {
-        "total_downloads": 864,
+        "total_downloads": 866,
         "versions": {
           "3.1.0": 25,
           "3.0.1": 49,
@@ -51,7 +51,7 @@
           "2.2.2": 121,
           "2.2.0": 20,
           "2.1.0": 28,
-          "2.0.3": 27,
+          "2.0.3": 28,
           "2.0.0": 58,
           "1.4.3": 39,
           "1.4.1": 66,
@@ -62,7 +62,7 @@
           "1.3.0": 44,
           "1.2.3": 41,
           "1.2.2": 40,
-          "1.2.1": 53,
+          "1.2.1": 54,
           "1.2.0": 40
         }
       },
@@ -70,7 +70,7 @@
         "total_downloads": 1475,
         "unique_downloads": 994
       },
-      "combined_total": 2339
+      "combined_total": 2341
     },
     "museum-utility-tracker": {
       "name": "S.M.U.T.",
@@ -95,10 +95,10 @@
         }
       },
       "nexus": {
-        "total_downloads": 1413,
+        "total_downloads": 1414,
         "unique_downloads": 1099
       },
-      "combined_total": 2216
+      "combined_total": 2217
     },
     "squirrels-birthday-reminder": {
       "name": "A Squirrel's Birthday Reminder",
@@ -123,10 +123,10 @@
         }
       },
       "nexus": {
-        "total_downloads": 1084,
-        "unique_downloads": 830
+        "total_downloads": 1085,
+        "unique_downloads": 831
       },
-      "combined_total": 1781
+      "combined_total": 1782
     },
     "havens-todo": {
       "name": "Sun Haven Todo",
@@ -154,10 +154,10 @@
         }
       },
       "nexus": {
-        "total_downloads": 600,
-        "unique_downloads": 465
+        "total_downloads": 601,
+        "unique_downloads": 466
       },
-      "combined_total": 1403
+      "combined_total": 1404
     },
     "the-vault": {
       "name": "The Vault",
@@ -192,7 +192,7 @@
     "haven-dev-tools": {
       "name": "HavenDevTools",
       "thunderstore": {
-        "total_downloads": 440,
+        "total_downloads": 441,
         "versions": {
           "2.1.0": 14,
           "2.0.1": 30,
@@ -200,7 +200,7 @@
           "1.2.2": 52,
           "1.2.0": 18,
           "1.1.0": 24,
-          "1.0.11": 22,
+          "1.0.11": 23,
           "1.0.8": 27,
           "1.0.7": 31,
           "1.0.6": 39,
@@ -214,7 +214,7 @@
         "total_downloads": 147,
         "unique_downloads": 118
       },
-      "combined_total": 587
+      "combined_total": 588
     },
     "havens-almanac": {
       "name": "Haven's Almanac",
@@ -240,10 +240,10 @@
         }
       },
       "nexus": {
-        "total_downloads": 521,
-        "unique_downloads": 395
+        "total_downloads": 523,
+        "unique_downloads": 396
       },
-      "combined_total": 1127
+      "combined_total": 1129
     },
     "faster-races": {
       "name": "Faster Races",
@@ -309,10 +309,10 @@
         }
       },
       "nexus": {
-        "total_downloads": 844,
-        "unique_downloads": 637
+        "total_downloads": 847,
+        "unique_downloads": 639
       },
-      "combined_total": 1215
+      "combined_total": 1218
     },
     "havens-respec": {
       "name": "Haven's Respec",
@@ -347,16 +347,16 @@
         }
       },
       "nexus": {
-        "total_downloads": 410,
+        "total_downloads": 411,
         "unique_downloads": 342
       },
-      "combined_total": 496
+      "combined_total": 497
     }
   },
   "site_total": {
-    "thunderstore": 7389,
-    "nexus_total": 10450,
-    "nexus_unique": 7718,
-    "grand_total": 17839
+    "thunderstore": 7392,
+    "nexus_total": 10461,
+    "nexus_unique": 7724,
+    "grand_total": 17853
   }
 }
