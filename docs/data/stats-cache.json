@@ -1,5 +1,5 @@
 {
-  "lastFetched": "2026-07-21T17:18:14.916Z",
+  "lastFetched": "2026-07-21T19:20:27.069Z",
   "mods": {
     "senpais-chest": {
       "name": "Senpai's Chest",
@@ -95,10 +95,10 @@
         }
       },
       "nexus": {
-        "total_downloads": 1414,
-        "unique_downloads": 1099
+        "total_downloads": 1415,
+        "unique_downloads": 1100
       },
-      "combined_total": 2218
+      "combined_total": 2219
     },
     "squirrels-birthday-reminder": {
       "name": "A Squirrel's Birthday Reminder",
@@ -131,12 +131,12 @@
     "havens-todo": {
       "name": "Sun Haven Todo",
       "thunderstore": {
-        "total_downloads": 806,
+        "total_downloads": 807,
         "versions": {
           "2.1.0": 24,
           "2.0.1": 53,
           "2.0.0": 28,
-          "1.4.3": 99,
+          "1.4.3": 100,
           "1.4.2": 36,
           "1.4.0": 28,
           "1.3.0": 30,
@@ -157,7 +157,7 @@
         "total_downloads": 601,
         "unique_downloads": 466
       },
-      "combined_total": 1407
+      "combined_total": 1408
     },
     "the-vault": {
       "name": "The Vault",
@@ -354,9 +354,9 @@
     }
   },
   "site_total": {
-    "thunderstore": 7401,
-    "nexus_total": 10470,
-    "nexus_unique": 7732,
-    "grand_total": 17871
+    "thunderstore": 7402,
+    "nexus_total": 10471,
+    "nexus_unique": 7733,
+    "grand_total": 17873
   }
 }
