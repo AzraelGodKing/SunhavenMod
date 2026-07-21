@@ -1,5 +1,5 @@
 {
-  "lastFetched": "2026-07-21T21:07:52.841Z",
+  "lastFetched": "2026-07-21T22:55:39.458Z",
   "mods": {
     "senpais-chest": {
       "name": "Senpai's Chest",
@@ -240,10 +240,10 @@
         }
       },
       "nexus": {
-        "total_downloads": 524,
-        "unique_downloads": 397
+        "total_downloads": 525,
+        "unique_downloads": 398
       },
-      "combined_total": 1131
+      "combined_total": 1132
     },
     "faster-races": {
       "name": "Faster Races",
@@ -284,10 +284,10 @@
         }
       },
       "nexus": {
-        "total_downloads": 419,
-        "unique_downloads": 318
+        "total_downloads": 420,
+        "unique_downloads": 319
       },
-      "combined_total": 839
+      "combined_total": 840
     },
     "crop-optimizer": {
       "name": "Crop Optimizer",
@@ -347,16 +347,16 @@
         }
       },
       "nexus": {
-        "total_downloads": 413,
-        "unique_downloads": 344
+        "total_downloads": 414,
+        "unique_downloads": 345
       },
-      "combined_total": 499
+      "combined_total": 500
     }
   },
   "site_total": {
     "thunderstore": 7404,
-    "nexus_total": 10473,
-    "nexus_unique": 7735,
-    "grand_total": 17877
+    "nexus_total": 10476,
+    "nexus_unique": 7738,
+    "grand_total": 17880
   }
 }
