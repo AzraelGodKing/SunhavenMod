@@ -1,16 +1,16 @@
 {
-  "lastFetched": "2026-07-23T02:40:04.078Z",
+  "lastFetched": "2026-07-23T05:52:56.248Z",
   "mods": {
     "senpais-chest": {
       "name": "Senpai's Chest",
       "thunderstore": {
-        "total_downloads": 1021,
+        "total_downloads": 1024,
         "versions": {
           "3.1.0": 33,
           "3.0.3": 44,
           "3.0.2": 16,
           "3.0.1": 29,
-          "3.0.0": 30,
+          "3.0.0": 32,
           "2.7.0": 111,
           "2.6.2": 19,
           "2.6.0": 28,
@@ -22,7 +22,7 @@
           "2.2.2": 76,
           "2.2.1": 32,
           "2.2.0": 39,
-          "2.1.0": 75,
+          "2.1.0": 76,
           "2.0.4": 47,
           "2.0.3": 32,
           "2.0.2": 45,
@@ -38,14 +38,14 @@
         "total_downloads": 1029,
         "unique_downloads": 732
       },
-      "combined_total": 2050
+      "combined_total": 2053
     },
     "havens-birthright": {
       "name": "Haven's Birthright",
       "thunderstore": {
-        "total_downloads": 873,
+        "total_downloads": 875,
         "versions": {
-          "3.1.0": 27,
+          "3.1.0": 28,
           "3.0.1": 50,
           "3.0.0": 30,
           "2.2.2": 121,
@@ -54,7 +54,7 @@
           "2.0.3": 28,
           "2.0.0": 58,
           "1.4.3": 39,
-          "1.4.1": 66,
+          "1.4.1": 67,
           "1.4.0": 31,
           "1.3.3": 77,
           "1.3.2": 40,
@@ -67,10 +67,10 @@
         }
       },
       "nexus": {
-        "total_downloads": 1479,
+        "total_downloads": 1480,
         "unique_downloads": 997
       },
-      "combined_total": 2352
+      "combined_total": 2355
     },
     "museum-utility-tracker": {
       "name": "S.M.U.T.",
@@ -95,10 +95,10 @@
         }
       },
       "nexus": {
-        "total_downloads": 1422,
-        "unique_downloads": 1106
+        "total_downloads": 1423,
+        "unique_downloads": 1107
       },
-      "combined_total": 2228
+      "combined_total": 2229
     },
     "squirrels-birthday-reminder": {
       "name": "A Squirrel's Birthday Reminder",
@@ -123,10 +123,10 @@
         }
       },
       "nexus": {
-        "total_downloads": 1091,
-        "unique_downloads": 836
+        "total_downloads": 1093,
+        "unique_downloads": 838
       },
-      "combined_total": 1792
+      "combined_total": 1794
     },
     "havens-todo": {
       "name": "Sun Haven Todo",
@@ -184,10 +184,10 @@
         }
       },
       "nexus": {
-        "total_downloads": 1876,
+        "total_downloads": 1877,
         "unique_downloads": 1308
       },
-      "combined_total": 2558
+      "combined_total": 2559
     },
     "haven-dev-tools": {
       "name": "HavenDevTools",
@@ -219,7 +219,7 @@
     "havens-almanac": {
       "name": "Haven's Almanac",
       "thunderstore": {
-        "total_downloads": 608,
+        "total_downloads": 609,
         "versions": {
           "2.2.0": 25,
           "2.1.0": 29,
@@ -231,7 +231,7 @@
           "1.2.0": 22,
           "1.1.2": 26,
           "1.0.6": 24,
-          "1.0.5": 41,
+          "1.0.5": 42,
           "1.0.4": 46,
           "1.0.3": 82,
           "1.0.2": 37,
@@ -243,7 +243,7 @@
         "total_downloads": 530,
         "unique_downloads": 403
       },
-      "combined_total": 1138
+      "combined_total": 1139
     },
     "faster-races": {
       "name": "Faster Races",
@@ -262,10 +262,10 @@
         }
       },
       "nexus": {
-        "total_downloads": 304,
+        "total_downloads": 305,
         "unique_downloads": 231
       },
-      "combined_total": 610
+      "combined_total": 611
     },
     "trinket-fortune": {
       "name": "Trinket Fortune",
@@ -339,9 +339,9 @@
     "gifting-assistant": {
       "name": "Gifting Assistant",
       "thunderstore": {
-        "total_downloads": 88,
+        "total_downloads": 89,
         "versions": {
-          "1.1.0": 30,
+          "1.1.0": 31,
           "1.0.1": 38,
           "1.0.0": 20
         }
@@ -350,13 +350,13 @@
         "total_downloads": 425,
         "unique_downloads": 356
       },
-      "combined_total": 513
+      "combined_total": 514
     }
   },
   "site_total": {
-    "thunderstore": 7443,
-    "nexus_total": 10539,
-    "nexus_unique": 7795,
-    "grand_total": 17982
+    "thunderstore": 7450,
+    "nexus_total": 10545,
+    "nexus_unique": 7798,
+    "grand_total": 17995
   }
 }
