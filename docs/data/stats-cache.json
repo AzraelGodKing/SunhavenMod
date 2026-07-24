@@ -1,12 +1,12 @@
 {
-  "lastFetched": "2026-07-24T13:43:25.573Z",
+  "lastFetched": "2026-07-24T15:24:44.224Z",
   "mods": {
     "senpais-chest": {
       "name": "Senpai's Chest",
       "thunderstore": {
-        "total_downloads": 1030,
+        "total_downloads": 1031,
         "versions": {
-          "3.1.0": 35,
+          "3.1.0": 36,
           "3.0.3": 44,
           "3.0.2": 17,
           "3.0.1": 30,
@@ -38,21 +38,21 @@
         "total_downloads": 1038,
         "unique_downloads": 738
       },
-      "combined_total": 2068
+      "combined_total": 2069
     },
     "havens-birthright": {
       "name": "Haven's Birthright",
       "thunderstore": {
-        "total_downloads": 892,
+        "total_downloads": 894,
         "versions": {
-          "3.1.0": 35,
+          "3.1.0": 36,
           "3.0.1": 51,
           "3.0.0": 31,
           "2.2.2": 123,
           "2.2.0": 21,
           "2.1.0": 28,
           "2.0.3": 28,
-          "2.0.0": 58,
+          "2.0.0": 59,
           "1.4.3": 40,
           "1.4.1": 67,
           "1.4.0": 32,
@@ -70,14 +70,14 @@
         "total_downloads": 1485,
         "unique_downloads": 1001
       },
-      "combined_total": 2377
+      "combined_total": 2379
     },
     "museum-utility-tracker": {
       "name": "S.M.U.T.",
       "thunderstore": {
-        "total_downloads": 814,
+        "total_downloads": 815,
         "versions": {
-          "3.1.0": 44,
+          "3.1.0": 45,
           "3.0.1": 56,
           "3.0.0": 42,
           "2.4.2": 126,
@@ -98,7 +98,7 @@
         "total_downloads": 1433,
         "unique_downloads": 1112
       },
-      "combined_total": 2247
+      "combined_total": 2248
     },
     "squirrels-birthday-reminder": {
       "name": "A Squirrel's Birthday Reminder",
@@ -131,13 +131,13 @@
     "havens-todo": {
       "name": "Sun Haven Todo",
       "thunderstore": {
-        "total_downloads": 821,
+        "total_downloads": 823,
         "versions": {
           "2.1.0": 29,
           "2.0.1": 55,
           "2.0.0": 28,
-          "1.4.3": 100,
-          "1.4.2": 37,
+          "1.4.3": 101,
+          "1.4.2": 38,
           "1.4.0": 29,
           "1.3.0": 30,
           "1.2.0": 23,
@@ -157,7 +157,7 @@
         "total_downloads": 610,
         "unique_downloads": 472
       },
-      "combined_total": 1431
+      "combined_total": 1433
     },
     "the-vault": {
       "name": "The Vault",
@@ -184,10 +184,10 @@
         }
       },
       "nexus": {
-        "total_downloads": 1884,
-        "unique_downloads": 1312
+        "total_downloads": 1885,
+        "unique_downloads": 1313
       },
-      "combined_total": 2569
+      "combined_total": 2570
     },
     "haven-dev-tools": {
       "name": "HavenDevTools",
@@ -248,13 +248,13 @@
     "faster-races": {
       "name": "Faster Races",
       "thunderstore": {
-        "total_downloads": 309,
+        "total_downloads": 310,
         "versions": {
           "2.1.0": 23,
           "2.0.1": 33,
           "2.0.0": 30,
           "1.4.2": 59,
-          "1.4.0": 24,
+          "1.4.0": 25,
           "1.3.0": 25,
           "1.2.0": 20,
           "1.1.6": 16,
@@ -265,7 +265,7 @@
         "total_downloads": 306,
         "unique_downloads": 232
       },
-      "combined_total": 615
+      "combined_total": 616
     },
     "trinket-fortune": {
       "name": "Trinket Fortune",
@@ -339,9 +339,9 @@
     "gifting-assistant": {
       "name": "Gifting Assistant",
       "thunderstore": {
-        "total_downloads": 100,
+        "total_downloads": 102,
         "versions": {
-          "1.1.0": 36,
+          "1.1.0": 38,
           "1.0.1": 41,
           "1.0.0": 23
         }
@@ -350,13 +350,13 @@
         "total_downloads": 439,
         "unique_downloads": 369
       },
-      "combined_total": 539
+      "combined_total": 541
     }
   },
   "site_total": {
-    "thunderstore": 7539,
-    "nexus_total": 10616,
-    "nexus_unique": 7851,
-    "grand_total": 18155
+    "thunderstore": 7548,
+    "nexus_total": 10617,
+    "nexus_unique": 7852,
+    "grand_total": 18165
   }
 }
