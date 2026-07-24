@@ -1,5 +1,5 @@
 {
-  "lastFetched": "2026-07-24T15:24:44.224Z",
+  "lastFetched": "2026-07-24T17:36:39.614Z",
   "mods": {
     "senpais-chest": {
       "name": "Senpai's Chest",
@@ -95,10 +95,10 @@
         }
       },
       "nexus": {
-        "total_downloads": 1433,
-        "unique_downloads": 1112
+        "total_downloads": 1434,
+        "unique_downloads": 1113
       },
-      "combined_total": 2248
+      "combined_total": 2249
     },
     "squirrels-birthday-reminder": {
       "name": "A Squirrel's Birthday Reminder",
@@ -339,10 +339,10 @@
     "gifting-assistant": {
       "name": "Gifting Assistant",
       "thunderstore": {
-        "total_downloads": 102,
+        "total_downloads": 103,
         "versions": {
           "1.1.0": 38,
-          "1.0.1": 41,
+          "1.0.1": 42,
           "1.0.0": 23
         }
       },
@@ -350,13 +350,13 @@
         "total_downloads": 439,
         "unique_downloads": 369
       },
-      "combined_total": 541
+      "combined_total": 542
     }
   },
   "site_total": {
-    "thunderstore": 7548,
-    "nexus_total": 10617,
-    "nexus_unique": 7852,
-    "grand_total": 18165
+    "thunderstore": 7549,
+    "nexus_total": 10618,
+    "nexus_unique": 7853,
+    "grand_total": 18167
   }
 }
