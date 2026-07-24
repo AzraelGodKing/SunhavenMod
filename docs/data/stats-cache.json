@@ -1,5 +1,5 @@
 {
-  "lastFetched": "2026-07-24T19:23:31.614Z",
+  "lastFetched": "2026-07-24T21:02:22.950Z",
   "mods": {
     "senpais-chest": {
       "name": "Senpai's Chest",
@@ -35,10 +35,10 @@
         }
       },
       "nexus": {
-        "total_downloads": 1038,
-        "unique_downloads": 738
+        "total_downloads": 1039,
+        "unique_downloads": 739
       },
-      "combined_total": 2069
+      "combined_total": 2070
     },
     "havens-birthright": {
       "name": "Haven's Birthright",
@@ -131,7 +131,7 @@
     "havens-todo": {
       "name": "Sun Haven Todo",
       "thunderstore": {
-        "total_downloads": 825,
+        "total_downloads": 826,
         "versions": {
           "2.1.0": 30,
           "2.0.1": 55,
@@ -143,7 +143,7 @@
           "1.2.0": 23,
           "1.1.10": 24,
           "1.1.8": 41,
-          "1.1.5": 117,
+          "1.1.5": 118,
           "1.1.4": 43,
           "1.1.3": 50,
           "1.1.2": 45,
@@ -154,10 +154,10 @@
         }
       },
       "nexus": {
-        "total_downloads": 610,
-        "unique_downloads": 472
+        "total_downloads": 611,
+        "unique_downloads": 473
       },
-      "combined_total": 1435
+      "combined_total": 1437
     },
     "the-vault": {
       "name": "The Vault",
@@ -184,10 +184,10 @@
         }
       },
       "nexus": {
-        "total_downloads": 1885,
+        "total_downloads": 1887,
         "unique_downloads": 1313
       },
-      "combined_total": 2571
+      "combined_total": 2573
     },
     "haven-dev-tools": {
       "name": "HavenDevTools",
@@ -219,7 +219,7 @@
     "havens-almanac": {
       "name": "Haven's Almanac",
       "thunderstore": {
-        "total_downloads": 620,
+        "total_downloads": 621,
         "versions": {
           "2.2.0": 30,
           "2.1.0": 30,
@@ -229,7 +229,7 @@
           "1.4.0": 17,
           "1.3.0": 40,
           "1.2.0": 22,
-          "1.1.2": 26,
+          "1.1.2": 27,
           "1.0.6": 25,
           "1.0.5": 42,
           "1.0.4": 46,
@@ -243,7 +243,7 @@
         "total_downloads": 535,
         "unique_downloads": 408
       },
-      "combined_total": 1155
+      "combined_total": 1156
     },
     "faster-races": {
       "name": "Faster Races",
@@ -347,16 +347,16 @@
         }
       },
       "nexus": {
-        "total_downloads": 440,
-        "unique_downloads": 370
+        "total_downloads": 441,
+        "unique_downloads": 371
       },
-      "combined_total": 543
+      "combined_total": 544
     }
   },
   "site_total": {
-    "thunderstore": 7563,
-    "nexus_total": 10620,
-    "nexus_unique": 7855,
-    "grand_total": 18183
+    "thunderstore": 7565,
+    "nexus_total": 10625,
+    "nexus_unique": 7858,
+    "grand_total": 18190
   }
 }
