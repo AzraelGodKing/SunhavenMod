@@ -1,46 +1,46 @@
-﻿{
+{
   "com.azraelgodking.squirrelsbirthdayreminder": {
-    "version": "2.1.0",
+    "version": "2.1.1",
     "name": "A Squirrel's Birthday Reminder",
     "description": "Never miss an NPC birthday - get reminders and gift suggestions",
     "nexus": "https://www.nexusmods.com/sunhaven/mods/493",
     "nexus_file_group_id": "1311370",
     "thunderstore": "https://thunderstore.io/c/sun-haven/p/AzraelGodKing/SquirrelsBirthdayReminder/",
     "thunderstoreName": "SquirrelsBirthdayReminder",
-    "changelog": "Minor: startup Mod Health report for Haven Dev Tools Health tab when Dev Tools is installed. Fix: re-applied native pt-BR review with correct UTF-8 encoding."
+    "changelog": "Fix: overnight unhook before re-hook; birthday todo cleanup on character switch (no orphan/duplicate todos)."
   },
   "com.azraelgodking.havensbirthright": {
-    "version": "3.1.0",
+    "version": "3.1.1",
     "name": "Haven's Birthright",
     "description": "Unique racial bonuses and abilities for all 12 playable races",
     "nexus": "https://www.nexusmods.com/sunhaven/mods/487",
     "nexus_file_group_id": "1297555",
     "thunderstore": "https://thunderstore.io/c/sun-haven/p/AzraelGodKing/HavensBirthright/",
     "thunderstoreName": "HavensBirthright",
-    "changelog": "Minor: startup Mod Health report for Haven Dev Tools Health tab when Dev Tools is installed."
+    "changelog": "Fix: stop double-stacking racial Defense on ReceiveDamage; guard zero max HP/mana on Tidal Blessing, Infernal Forge, Divine Ward."
   },
   "com.azraelgodking.sunhavenmuseumutilitytracker": {
-    "version": "3.1.0",
+    "version": "3.1.1",
     "name": "Sunhaven Museum Utility Tracker",
     "description": "Track museum donation progress across all three halls",
     "nexus": "https://www.nexusmods.com/sunhaven/mods/490",
     "nexus_file_group_id": "1309168",
     "thunderstore": "https://thunderstore.io/c/sun-haven/p/AzraelGodKing/SMUT/",
     "thunderstoreName": "SMUT",
-    "changelog": "Minor: museum wishlist shop/gift badges and tooltips; LateUpdate performance fix for Sun Haven 3.1.2 (shop/gift-only decoration, cached museum lookups). Mod Health startup report. Fix: re-applied native pt-BR review with correct UTF-8 encoding."
+    "changelog": "Fix: wishlist badges destroy and drop dead dictionary entries on disable/refresh."
   },
   "com.azraelgodking.sunhaventodo": {
-    "version": "2.1.0",
+    "version": "2.1.1",
     "name": "Sun Haven Todo",
     "description": "In-game task tracker for farming goals, quests, and daily tasks",
     "nexus": "https://www.nexusmods.com/sunhaven/mods/491",
     "nexus_file_group_id": "1310599",
     "thunderstore": "https://thunderstore.io/c/sun-haven/p/AzraelGodKing/SunHavenTodo/",
     "thunderstoreName": "SunHavenTodo",
-    "changelog": "Minor: startup Mod Health report for Haven Dev Tools Health tab when Dev Tools is installed. Fix: re-applied native pt-BR review with correct UTF-8 encoding."
+    "changelog": "Fix: overnight unhook before re-hook; refuse previous-character name fallback when lookup fails."
   },
   "com.azraelgodking.thevault": {
-    "version": "4.1.0",
+    "version": "4.1.1",
     "name": "The Vault",
     "description": "The Vault 3 — per-character vault, encrypted saves, HUD, auto-deposit, shop and inventory vault integration, Custom tab & mod API.",
     "vault_save_breaking": false,
@@ -49,86 +49,86 @@
     "nexus_file_group_id": "1305781",
     "thunderstore": "https://thunderstore.io/c/sun-haven/p/AzraelGodKing/TheVault/",
     "thunderstoreName": "TheVault",
-    "changelog": "Minor: startup Mod Health report for Haven Dev Tools Health tab when Dev Tools is installed. Fix: re-applied native pt-BR review with correct UTF-8 encoding."
+    "changelog": "Fix: HasEnough uses bag+vault; deposit/auto-deposit rolls back inventory if vault credit fails; clear auto-deposit guards on menu reset."
   },
   "com.azraelgodking.havendevtools": {
-    "version": "2.1.0",
+    "version": "2.1.1",
     "name": "HavenDevTools",
     "description": "Developer utilities for mod debugging and game state inspection",
     "nexus": "https://www.nexusmods.com/sunhaven/mods/495",
     "nexus_file_group_id": "1316842",
     "thunderstore": "https://thunderstore.io/c/sun-haven/p/AzraelGodKing/HavenDevTools/",
     "thunderstoreName": "HavenDevTools",
-    "changelog": "Minor: Steam ID lock removed; Mod Health dashboard; Suite tab integrations (including Respec simulator); suite mod detection refresh after chainload; Currencies tab FPS fix. FPS counter remains available. Fix: re-applied native pt-BR review with correct UTF-8 encoding."
+    "changelog": "Patch: SharedCodeRevision 2026.07.28 (suite overnight unhook) for Mod Health skew detection."
   },
   "com.azraelgodking.senpaischest": {
-    "version": "3.1.0",
+    "version": "3.1.1",
     "name": "Senpai's Chest",
     "description": "Smart chest auto-sorting with custom rules by item, type, category, property, or player groups. Manage Groups tab for custom subcategories.",
     "nexus": "https://www.nexusmods.com/sunhaven/mods/496",
     "nexus_file_group_id": "1317103",
     "thunderstore": "https://thunderstore.io/c/sun-haven/p/AzraelGodKing/SenpaisChest/",
     "thunderstoreName": "SenpaisChest",
-    "changelog": "Minor: startup Mod Health report for Haven Dev Tools Health tab when Dev Tools is installed. Fix: re-applied native pt-BR review with correct UTF-8 encoding."
+    "changelog": "Fix: smart-chest transfers only remove what AddItem accepted (no item loss on failed moves)."
   },
   "com.azraelgodking.havensalmanac": {
-    "version": "2.2.0",
+    "version": "2.2.1",
     "name": "Haven's Almanac",
     "description": "Unified mod dashboard - HUD, full dashboard, and daily morning briefing aggregating data from all installed mods",
     "nexus": "https://www.nexusmods.com/sunhaven/mods/501",
     "nexus_file_group_id": "7326779",
     "thunderstore": "https://thunderstore.io/c/sun-haven/p/AzraelGodKing/HavensAlmanac/",
     "thunderstoreName": "HavensAlmanac",
-    "changelog": "Minor: Mod Health bridge only when Haven Dev Tools is installed; points players to Dev Tools → Health for full diagnostics. Fix: re-applied native pt-BR review with correct UTF-8 encoding."
+    "changelog": "Fix: overnight unhook before re-hook to prevent duplicate morning briefings."
   },
   "com.azraelgodking.fasterraces": {
-    "version": "2.1.0",
+    "version": "2.1.1",
     "name": "Faster Races",
     "description": "Configurable movement speed bonus for all races; disables Haven's Birthright speed buffs when both are installed",
     "nexus": "https://www.nexusmods.com/sunhaven/mods/497",
     "nexus_file_group_id": "7154323",
     "thunderstore": "https://thunderstore.io/c/sun-haven/p/AzraelGodKing/FasterRaces/",
     "thunderstoreName": "FasterRaces",
-    "changelog": "Minor: startup Mod Health report for Haven Dev Tools Health tab when Dev Tools is installed."
+    "changelog": "Patch: SharedCodeRevision 2026.07.28 rebuild with suite overnight unhook."
   },
   "com.azraelgodking.trinketfortune": {
-    "version": "2.1.0",
+    "version": "2.1.1",
     "name": "Trinket Fortune",
     "description": "Increases odds of unowned fishing trinkets dropping as you complete the aquarium",
     "nexus": "https://www.nexusmods.com/sunhaven/mods/498",
     "nexus_file_group_id": "7159384",
     "thunderstore": "https://thunderstore.io/c/sun-haven/p/AzraelGodKing/TrinketFortune/",
     "thunderstoreName": "TrinketFortune",
-    "changelog": "Minor: Dev Tools Suite status via GetDevToolsSummary; startup Mod Health report when Dev Tools is installed."
+    "changelog": "Fix: fish bias respects drop-level gates when loot exposes useLevel/level/minLevel."
   },
   "com.azraelgodking.cropoptimizer": {
-    "version": "2.2.0",
+    "version": "2.2.1",
     "name": "Crop Optimizer",
     "description": "Crop forecast HUD with seasonal planning helpers and soft Todo/Birthday/Vault integrations",
     "nexus": "https://www.nexusmods.com/sunhaven/mods/500",
     "nexus_file_group_id": "7320911",
     "thunderstore": "https://thunderstore.io/c/sun-haven/p/AzraelGodKing/CropOptimizer/",
     "thunderstoreName": "CropOptimizer",
-    "changelog": "Minor: startup Mod Health report and Suite tab summary for Haven Dev Tools when installed. Fix: re-applied native pt-BR review with correct UTF-8 encoding."
+    "changelog": "Patch: SharedCodeRevision 2026.07.28 rebuild with suite overnight unhook."
   },
   "com.azraelgodking.havensrespec": {
-    "version": "2.1.0",
+    "version": "2.1.1",
     "name": "Haven's Respec",
     "description": "Safe skill respec — Reset button on every skill tab, confirmation dialog, one-step Undo, configurable cost, and full Configuration Manager support",
     "nexus": "https://www.nexusmods.com/sunhaven/mods/502",
     "nexus_file_group_id": "7326839",
     "thunderstore": "https://thunderstore.io/c/sun-haven/p/AzraelGodKing/HavensRespec/",
     "thunderstoreName": "HavensRespec",
-    "changelog": "Minor: RespecDevToolsApi for dry-run simulate/apply/revert from Haven Dev Tools Suite tab; Mod Health startup report. Fix: re-applied native pt-BR review with correct UTF-8 encoding."
+    "changelog": "Fix: profession reset fails closed and rolls back on mid-walk errors (no gold charge for partial wipe)."
   },
   "com.azraelgodking.giftingassistant": {
-    "version": "1.1.0",
+    "version": "1.1.1",
     "name": "Gifting Assistant",
     "description": "Initial release: per-character gift roster, loved/liked suggestions with icons, preferred gifts, heart bars, gifted-today tracking, priority sort, Ctrl+G UI, 16 languages. Optional Birthday Reminder, Sun Haven Todo, and Haven's Almanac.",
     "nexus": "https://www.nexusmods.com/sunhaven/mods/507",
     "nexus_file_group_id": "7597922",
     "thunderstore": "https://thunderstore.io/c/sun-haven/p/AzraelGodKing/GiftingAssistant/",
     "thunderstoreName": "GiftingAssistant",
-    "changelog": "Minor: startup Mod Health report for Haven Dev Tools Health tab when Dev Tools is installed."
+    "changelog": "Fix: overnight unhook before re-hook to prevent duplicate day resets."
   }
 }

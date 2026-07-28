@@ -6,7 +6,8 @@ Internal engineering log: **CI**, **release automation**, **scripts**, **docs in
 
 ## 2026-07-28
 
-- **Suite bug-risk audit (branch `fix/suite-bug-risk-audit`):** Cross-mod pass of crash/corruption paths. Player-facing notes in `CHANGELOG.md`. `SharedCodeRevision` → `2026.07.28` for OvernightHookUtility `TryUnhookOvernightEvent` (rebuild all overnight consumers). No mod package version bumps.
+- **Suite patch bumps:** All 13 suite mods `.x.x+1` for bug-risk audit release; `docs/versions.json` changelogs set per mod. Branch `fix/suite-patch-version-bumps`.
+- **Suite bug-risk audit (branch `fix/suite-bug-risk-audit`):** Cross-mod pass of crash/corruption paths. Player-facing notes in `CHANGELOG.md`. `SharedCodeRevision` → `2026.07.28` for OvernightHookUtility `TryUnhookOvernightEvent` (rebuild all overnight consumers).
 - **Respec:** `SkillResetService.ResetProfession` transactional — node walk + save zeroing in one try; `TryRestoreSnapshot` on failure before returning false.
 - **Vault ItemPatches:** `AddCurrencyToVault` returns bool; deposit/auto-deposit rollback; `HasEnough` uses bag+vault; `ResetState` clears skip/auto-deposit/suppress flags.
 - **Shared OvernightHookUtility:** Best-effort unhook from both DayCycle.OnDayStart and UIHandler.OnCompleteOvernight; Almanac/Birthday/Todo/Gifting menu + reset paths call it.
