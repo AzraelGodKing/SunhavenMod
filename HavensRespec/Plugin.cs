@@ -176,8 +176,15 @@ namespace HavensRespec
 
         private static void CreatePersistentRunner()
         {
-            if (_persistentRunner != null && _persistentRunnerComponent != null)
+            if (_persistentRunner != null)
+            {
+                if (_persistentRunnerComponent == null || !_persistentRunnerComponent)
+                {
+                    _persistentRunnerComponent = _persistentRunner.AddComponent<RespecPersistentRunner>();
+                    Log?.LogInfo("[PersistentRunner] Reattached component");
+                }
                 return;
+            }
 
             _persistentRunner = new GameObject("HavensRespec_PersistentRunner");
             UnityEngine.Object.DontDestroyOnLoad(_persistentRunner);
@@ -228,6 +235,9 @@ namespace HavensRespec
         internal static void TickHotkeys()
         {
             if (_staticController == null || _staticConfig == null)
+                return;
+
+            if (TextInputFocusGuard.ShouldDeferModHotkeys(Log))
                 return;
 
             var resetKey = _staticConfig.ResetCurrentTabHotkey.Value;
