@@ -98,6 +98,9 @@ namespace HavensRespec.Services
                 // be in sync with what the game thinks was spent. Deactivating each node
                 // via SetActive(false, false, 0) also repaints the UI immediately (no wait
                 // for LateUpdate/UpdateProfession) and bypasses the DeactivateNode sound.
+                //
+                // Fail closed: any exception mid-walk rolls back from snapshot and returns
+                // false so callers never charge gold for a half-applied reset.
                 int nodeSlotsVisited = 0;
                 int nodesDeactivated = 0;
                 int refundedFromNodes = 0;
@@ -119,52 +122,56 @@ namespace HavensRespec.Services
                             }
                         }
                     }
+
+                    // --- Zero persisted allocations -------------------------------------------
+                    // Whatever the SkillNode[]-derived count says, make sure the save file no
+                    // longer thinks any node in this profession is allocated. Covers legacy /
+                    // renamed keys that might not map to any live SkillNode in the current
+                    // game version.
+                    var existingKeys = new List<int>(profData.Nodes.Keys);
+                    foreach (var key in existingKeys)
+                        profData.Nodes[key] = 0;
+
+                    // And merge in every live SkillNode hash so next UpdateProfession finds a
+                    // 0 in Nodes (rather than falling into the `else` branch that adds a fresh 0).
+                    var nodeHashes = CollectNodeHashes(skills, profession, profData);
+                    foreach (var hash in nodeHashes)
+                        profData.Nodes[hash] = 0;
+
+                    // --- Reconcile the Skills dicts -------------------------------------------
+                    // UpdateProfession will re-zero these on its next run; we set them now so
+                    // anything that reads them before the next LateUpdate sees the post-reset
+                    // state.
+                    SetSkillPointsUsed(profession, 0);
+                    SetNumActiveNodes(profession, 0);
+
+                    // Refund reported to the caller: prefer the direct node-walk result. If we
+                    // somehow couldn't read the node dictionary at all (nodeSlotsVisited == 0),
+                    // fall back to the skillPointsUsed snapshot as a best-effort estimate.
+                    pointsRefunded = nodeSlotsVisited > 0 ? refundedFromNodes : snapshot.SkillPointsUsed;
+
+                    TryRefreshProfessionPanel(skills, profession);
+
+                    PushUndoSnapshot(profession, snapshot);
+
+                    if (nodeSlotsVisited > 0)
+                    {
+                        _log?.LogInfo($"[Respec] Reset {profession}: refunded {pointsRefunded} point(s) from {nodesDeactivated}/{nodeSlotsVisited} active node(s); cleared {existingKeys.Count} save key(s).");
+                    }
+                    else
+                    {
+                        _log?.LogInfo($"[Respec] Reset {profession}: refunded {pointsRefunded} point(s) (fallback from skillPointsUsed snapshot); cleared {existingKeys.Count} save key(s). _professionNodeDictionary was unreadable.");
+                    }
+                    return true;
                 }
                 catch (Exception ex)
                 {
-                    _log?.LogDebug($"[Respec] Node-walk deactivation swallowed: {ex.Message}");
+                    _log?.LogError($"[Respec] ResetProfession({profession}) aborted mid-mutation; rolling back: {ex}");
+                    if (!TryRestoreSnapshot(skills, profession, snapshot, profData))
+                        _log?.LogError($"[Respec] Rollback after failed reset of {profession} also failed — skill tree may be inconsistent.");
+                    pointsRefunded = 0;
+                    return false;
                 }
-
-                // --- Zero persisted allocations -------------------------------------------
-                // Whatever the SkillNode[]-derived count says, make sure the save file no
-                // longer thinks any node in this profession is allocated. Covers legacy /
-                // renamed keys that might not map to any live SkillNode in the current
-                // game version.
-                var existingKeys = new List<int>(profData.Nodes.Keys);
-                foreach (var key in existingKeys)
-                    profData.Nodes[key] = 0;
-
-                // And merge in every live SkillNode hash so next UpdateProfession finds a
-                // 0 in Nodes (rather than falling into the `else` branch that adds a fresh 0).
-                var nodeHashes = CollectNodeHashes(skills, profession, profData);
-                foreach (var hash in nodeHashes)
-                    profData.Nodes[hash] = 0;
-
-                // --- Reconcile the Skills dicts -------------------------------------------
-                // UpdateProfession will re-zero these on its next run; we set them now so
-                // anything that reads them before the next LateUpdate sees the post-reset
-                // state.
-                SetSkillPointsUsed(profession, 0);
-                SetNumActiveNodes(profession, 0);
-
-                // Refund reported to the caller: prefer the direct node-walk result. If we
-                // somehow couldn't read the node dictionary at all (nodeSlotsVisited == 0),
-                // fall back to the skillPointsUsed snapshot as a best-effort estimate.
-                pointsRefunded = nodeSlotsVisited > 0 ? refundedFromNodes : snapshot.SkillPointsUsed;
-
-                TryRefreshProfessionPanel(skills, profession);
-
-                PushUndoSnapshot(profession, snapshot);
-
-                if (nodeSlotsVisited > 0)
-                {
-                    _log?.LogInfo($"[Respec] Reset {profession}: refunded {pointsRefunded} point(s) from {nodesDeactivated}/{nodeSlotsVisited} active node(s); cleared {existingKeys.Count} save key(s).");
-                }
-                else
-                {
-                    _log?.LogInfo($"[Respec] Reset {profession}: refunded {pointsRefunded} point(s) (fallback from skillPointsUsed snapshot); cleared {existingKeys.Count} save key(s). _professionNodeDictionary was unreadable.");
-                }
-                return true;
             }
             catch (Exception ex)
             {
@@ -440,6 +447,33 @@ namespace HavensRespec.Services
                 _undoByProfession[profession] = stack;
             }
             stack.Push(snapshot);
+        }
+
+        /// <summary>
+        /// Restores save + Skills counters from a pre-mutation snapshot without touching the undo stack.
+        /// Used when a reset fails mid-walk so callers never charge for a partial wipe.
+        /// </summary>
+        private bool TryRestoreSnapshot(Skills skills, ProfessionType profession, ResetSnapshot snapshot, Profession profData)
+        {
+            if (snapshot == null || profData == null)
+                return false;
+
+            try
+            {
+                profData.Nodes.Clear();
+                foreach (var kv in snapshot.Nodes)
+                    profData.Nodes[kv.Key] = kv.Value;
+
+                SetSkillPointsUsed(profession, snapshot.SkillPointsUsed);
+                SetNumActiveNodes(profession, snapshot.NumActiveNodes);
+                TryRefreshProfessionPanel(skills, profession);
+                return true;
+            }
+            catch (Exception ex)
+            {
+                _log?.LogError($"[Respec] TryRestoreSnapshot({profession}) failed: {ex}");
+                return false;
+            }
         }
     }
 }

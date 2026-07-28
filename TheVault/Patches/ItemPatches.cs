@@ -114,6 +114,10 @@ namespace TheVault.Patches
         {
             IsWithdrawing = false;
             _withdrawingItemIds.Clear();
+            _skipObjectAddItemPostfixOnce = false;
+            _isProcessingAutoDeposit = false;
+            _suppressVaultRemoveHookDepth = 0;
+            _skipVaultInGetAmount = false;
         }
 
         /// <summary>
@@ -382,8 +386,21 @@ namespace TheVault.Patches
                 EndSuppressVaultRemoveHook();
             }
 
-            // Add to vault
-            AddCurrencyToVault(vaultManager, currencyId, amount);
+            // Add to vault — roll inventory back if currency id is unrecognized / add fails.
+            if (!AddCurrencyToVault(vaultManager, currencyId, amount))
+            {
+                BeginSuppressVaultRemoveHook();
+                try
+                {
+                    AddItemToInventory(gameItemId, amount);
+                }
+                finally
+                {
+                    EndSuppressVaultRemoveHook();
+                }
+                Plugin.Log?.LogWarning($"Failed to credit {amount} {currencyId} to vault; restored inventory item {gameItemId}");
+                return false;
+            }
             Plugin.Log?.LogInfo($"Deposited {amount} of item {gameItemId} as {currencyId}");
             return true;
         }
@@ -453,7 +470,12 @@ namespace TheVault.Patches
                 // Auto-deposit: remove from inventory, add to vault
                 if (RemoveItemFromInventory(itemId, amount))
                 {
-                    AddCurrencyToVault(vaultManager, currencyId, amount);
+                    if (!AddCurrencyToVault(vaultManager, currencyId, amount))
+                    {
+                        AddItemToInventory(itemId, amount);
+                        Plugin.Log?.LogWarning($"Auto-deposit pickup failed to credit {currencyId}; restored item {itemId}");
+                        return;
+                    }
                     Plugin.Log?.LogInfo($"Auto-deposited {amount} of item {itemId} as {currencyId}");
 
                     // Show notification
@@ -534,7 +556,11 @@ namespace TheVault.Patches
                         return;
                     }
 
-                    AddCurrencyToVault(vaultManager, currencyId, amount);
+                    if (!AddCurrencyToVault(vaultManager, currencyId, amount))
+                    {
+                        AddItemToInventory(itemId, amount);
+                        Plugin.Log?.LogWarning($"Auto-deposit failed to credit {currencyId}; restored {amount} of item {itemId}");
+                    }
                 }
                 finally
                 {
@@ -596,7 +622,11 @@ namespace TheVault.Patches
                         return;
                     }
 
-                    AddCurrencyToVault(vaultManager, currencyId, amount);
+                    if (!AddCurrencyToVault(vaultManager, currencyId, amount))
+                    {
+                        AddItemToInventory(itemId, amount);
+                        Plugin.Log?.LogWarning($"Auto-deposit failed to credit {currencyId}; restored {amount} of item {itemId}");
+                    }
                 }
                 finally
                 {
@@ -653,7 +683,11 @@ namespace TheVault.Patches
                 _isProcessingAutoDeposit = true;
                 try
                 {
-                    AddCurrencyToVault(vaultManager, currencyId, amount);
+                    if (!AddCurrencyToVault(vaultManager, currencyId, amount))
+                    {
+                        Plugin.Log?.LogWarning($"Auto-deposit skipped: could not credit {amount} {currencyId} for item {itemId}");
+                        return true; // Let original AddItem run — nothing credited yet
+                    }
                     if (sendNotification)
                         EnqueueAutoDepositNotification(currencyId, amount);
                     _skipObjectAddItemPostfixOnce = true;
@@ -667,6 +701,7 @@ namespace TheVault.Patches
             catch (Exception ex)
             {
                 _isProcessingAutoDeposit = false;
+                _skipObjectAddItemPostfixOnce = false;
                 Plugin.Log?.LogError($"Error in OnInventoryAddItemObjectPrefix: {ex.Message}\n{ex.StackTrace}");
                 return true; // Let original run on error
             }
@@ -722,8 +757,12 @@ namespace TheVault.Patches
                         EndSuppressVaultRemoveHook();
                     }
                     if (!removed) return;
-                    // Add to vault
-                    AddCurrencyToVault(vaultManager, currencyId, amount);
+                    if (!AddCurrencyToVault(vaultManager, currencyId, amount))
+                    {
+                        // Inventory already removed — restore bag so currency is not destroyed.
+                        AddItemToInventory(itemId, amount);
+                        Plugin.Log?.LogWarning($"Auto-deposit postfix failed to credit {currencyId}; restored {amount} of item {itemId} to inventory");
+                    }
                 }
                 finally
                 {
@@ -1042,39 +1081,57 @@ namespace TheVault.Patches
 
         #region Vault Operations
 
-        private static void AddCurrencyToVault(VaultManager vaultManager, string currencyId, int amount)
+        /// <summary>
+        /// Credits vault currency. Returns false when the id is unrecognized so callers can roll back inventory.
+        /// </summary>
+        private static bool AddCurrencyToVault(VaultManager vaultManager, string currencyId, int amount)
         {
+            if (vaultManager == null || string.IsNullOrEmpty(currencyId) || amount <= 0)
+                return false;
+
             if (TryStripPrefix(currencyId, VaultCurrencyIds.PrefixSeasonal, out string suffix))
             {
                 if (Enum.TryParse<SeasonalTokenType>(suffix, out var tokenType))
                 {
                     vaultManager.AddSeasonalTokens(tokenType, amount);
+                    return true;
                 }
+                Plugin.Log?.LogWarning($"AddCurrencyToVault: invalid seasonal type '{suffix}' in '{currencyId}'");
+                return false;
             }
-            else if (TryStripPrefix(currencyId, VaultCurrencyIds.PrefixCommunity, out suffix))
+            if (TryStripPrefix(currencyId, VaultCurrencyIds.PrefixCommunity, out suffix))
             {
                 vaultManager.AddCommunityTokens(suffix, amount);
+                return true;
             }
-            else if (TryStripPrefix(currencyId, VaultCurrencyIds.PrefixSpecial, out suffix))
+            if (TryStripPrefix(currencyId, VaultCurrencyIds.PrefixSpecial, out suffix))
             {
                 vaultManager.AddSpecial(suffix, amount);
+                return true;
             }
-            else if (TryStripPrefix(currencyId, VaultCurrencyIds.PrefixKey, out suffix))
+            if (TryStripPrefix(currencyId, VaultCurrencyIds.PrefixKey, out suffix))
             {
                 vaultManager.AddKeys(suffix, amount);
+                return true;
             }
-            else if (TryStripPrefix(currencyId, VaultCurrencyIds.PrefixTicket, out suffix))
+            if (TryStripPrefix(currencyId, VaultCurrencyIds.PrefixTicket, out suffix))
             {
                 vaultManager.AddTickets(suffix, amount);
+                return true;
             }
-            else if (TryStripPrefix(currencyId, VaultCurrencyIds.PrefixOrb, out suffix))
+            if (TryStripPrefix(currencyId, VaultCurrencyIds.PrefixOrb, out suffix))
             {
                 vaultManager.AddOrbs(suffix, amount);
+                return true;
             }
-            else if (TryStripPrefix(currencyId, VaultCurrencyIds.PrefixCustom, out suffix))
+            if (TryStripPrefix(currencyId, VaultCurrencyIds.PrefixCustom, out suffix))
             {
                 vaultManager.AddCustomCurrency(suffix, amount);
+                return true;
             }
+
+            Plugin.Log?.LogWarning($"AddCurrencyToVault: unrecognized currency id '{currencyId}'");
+            return false;
         }
 
         private static bool RemoveCurrencyFromVault(VaultManager vaultManager, string currencyId, int amount)
@@ -1238,11 +1295,14 @@ namespace TheVault.Patches
                 // Only check vault for registered currencies
                 if (!IsVaultCurrency(id)) return;
 
+                // Combine bag + vault. __result is false here, so bag alone is short —
+                // but bag+vault may still cover the full amount (e.g. bag 5 + vault 5 for need 10).
+                int bagAmount = GetRawInventoryCount(id);
                 int vaultAmount = GetVaultAmount(id);
-                if (vaultAmount >= amount)
+                if (bagAmount + vaultAmount >= amount)
                 {
                     __result = true;
-                    Plugin.Log?.LogInfo($"HasEnough for item {id}: vault has {vaultAmount}, need {amount} - returning TRUE");
+                    Plugin.Log?.LogDebug($"HasEnough for item {id}: bag={bagAmount}, vault={vaultAmount}, need={amount} - TRUE");
                 }
             }
             catch (Exception ex)

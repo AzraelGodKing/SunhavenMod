@@ -287,9 +287,29 @@ namespace SunhavenTodo
 
             if (isMenuScene)
             {
-                // DayCycle singleton is gone on main menu — reset so we re-hook on next game load
-                _overnightHooked = false;
-                _overnightCallback = null;
+                // DayCycle singleton is gone on main menu — unhook both event sources so re-entry cannot dual-fire.
+                SunhavenMods.Shared.OvernightHookUtility.TryUnhookOvernightEvent(
+                    ref _overnightHooked,
+                    ref _overnightCallback,
+                    type =>
+                    {
+                        try
+                        {
+                            var singletonBaseType = AccessTools.TypeByName("Wish.SingletonBehaviour`1");
+                            if (singletonBaseType != null)
+                            {
+                                var genericType = singletonBaseType.MakeGenericType(type);
+                                return genericType.GetProperty("Instance")?.GetValue(null);
+                            }
+                        }
+                        catch (Exception ex)
+                        {
+                            System.Diagnostics.Debug.WriteLine($"[SunhavenTodo] TryUnhookOvernight resolver failed: {ex.Message}");
+                        }
+                        return null;
+                    },
+                    msg => Log?.LogInfo(msg),
+                    msg => Log?.LogWarning(msg));
 
                 if (!_wasInMenuScene)
                 {
@@ -712,7 +732,7 @@ namespace SunhavenTodo
             }
 
             if (!string.IsNullOrEmpty(_loadedCharacterName))
-                return _loadedCharacterName;
+                Plugin.Log?.LogWarning("Character name lookup failed; refusing to reuse previous character identity.");
 
             return null;
         }

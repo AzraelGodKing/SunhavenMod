@@ -45,7 +45,10 @@ namespace SunHavenMuseumUtilityTracker.UI
                 return;
 
             if (ItemImageBadges.TryGetValue(itemImage, out BadgeView badge))
-                badge.Hide();
+            {
+                badge.Destroy();
+                ItemImageBadges.Remove(itemImage);
+            }
         }
 
         internal static void UpdateItemIcon(ItemIcon itemIcon)
@@ -69,17 +72,46 @@ namespace SunHavenMuseumUtilityTracker.UI
                 return;
 
             if (ItemIconBadges.TryGetValue(itemIcon, out BadgeView badge))
-                badge.Hide();
+            {
+                badge.Destroy();
+                ItemIconBadges.Remove(itemIcon);
+            }
         }
 
         internal static void RefreshAllLabels()
         {
             _cachedBadgeLabel = null;
             MuseumWishlistTooltipHelper.RefreshTooltipCache();
+            PruneDestroyed(ItemImageBadges);
+            PruneDestroyed(ItemIconBadges);
             foreach (var badge in ItemImageBadges.Values)
                 badge.RefreshLabel();
             foreach (var badge in ItemIconBadges.Values)
                 badge.RefreshLabel();
+        }
+
+        private static void PruneDestroyed<T>(Dictionary<T, BadgeView> cache)
+            where T : Object
+        {
+            if (cache.Count == 0)
+                return;
+
+            List<T> dead = null;
+            foreach (var kvp in cache)
+            {
+                if (kvp.Key == null || kvp.Value == null)
+                {
+                    dead ??= new List<T>();
+                    dead.Add(kvp.Key);
+                    kvp.Value?.Destroy();
+                }
+            }
+
+            if (dead == null)
+                return;
+
+            foreach (var key in dead)
+                cache.Remove(key);
         }
 
         private static void UpdateBadge<T>(Dictionary<T, BadgeView> cache, T key, Transform parent, int gameItemId)
@@ -247,6 +279,12 @@ namespace SunHavenMuseumUtilityTracker.UI
             {
                 if (_label != null)
                     _label.text = GetBadgeLabel();
+            }
+
+            internal void Destroy()
+            {
+                if (_root != null)
+                    UnityEngine.Object.Destroy(_root);
             }
         }
     }

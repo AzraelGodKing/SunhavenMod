@@ -299,6 +299,9 @@ namespace HavensBirthright
                 if (currentHP < 0)
                     currentHP = ReflectionHelper.TryGetValue<float>(player, "Health", maxHP);
 
+                if (maxHP <= 0f)
+                    return;
+
                 float hpPercent = (currentHP / maxHP) * 100f;
 
                 // One-time diagnostic dump (fires once per toggle ON)
@@ -355,7 +358,7 @@ namespace HavensBirthright
             }
             catch (Exception ex)
             {
-                Plugin.Log.LogWarning($"[TidalBlessing] Error: {ex.Message}");
+                Plugin.Log?.LogWarning($"[TidalBlessing] Error: {ex.Message}");
                 Plugin.Log?.LogWarning($"[TidalBlessing] Stack: {ex.StackTrace}");
             }
         }
@@ -494,7 +497,7 @@ namespace HavensBirthright
             int plotsWatered = 0;
 
             var crops = UnityEngine.Object.FindObjectsOfType(GameApis.CropType);
-            Plugin.Log?.LogInfo($"[TidalBlessing] Fallback mode: FindObjectsOfType found {crops?.Length ?? 0} Crop objects");
+            Plugin.Log?.LogDebug($"[TidalBlessing] Fallback mode: FindObjectsOfType found {crops?.Length ?? 0} Crop objects");
 
             if (crops == null || crops.Length == 0)
                 return;
@@ -599,6 +602,8 @@ namespace HavensBirthright
 
                 // Check mana threshold before scanning
                 float maxMana = player.MaxMana;
+                if (maxMana <= 0f)
+                    return;
                 float currentMana = ReflectionHelper.TryGetValue<float>(player, "Mana", 0f);
                 float manaPercent = (currentMana / maxMana) * 100f;
                 if (manaPercent <= AbilityConfig.InfernalForgeManaThreshold.Value)
