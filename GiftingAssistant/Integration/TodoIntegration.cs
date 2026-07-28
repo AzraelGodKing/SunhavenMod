@@ -617,17 +617,18 @@ namespace GiftingAssistant.Integration
 
         private bool EnsureTodoDataLoaded(object todoPluginInstance, Type pluginType, object manager, Type managerType)
         {
-            if (HasTodoDataLoaded(manager, managerType))
+            string characterName = ResolveTodoCharacterName();
+            if (HasTodoDataLoaded(manager, managerType, characterName))
             {
                 _warnedNoData = false;
                 return true;
             }
 
-            string characterName = Plugin.GetManager()?.CurrentCharacter;
-            if (string.IsNullOrEmpty(characterName))
-                characterName = GameSaveCharacterName.TryGetCurrent(
-                    null,
-                    msg => Plugin.Log?.LogWarning($"[GiftingAssistant] Todo integration: character lookup failed: {msg}"));
+            if (IsTodoCharacterDataLoadedViaPlugin(pluginType, characterName))
+            {
+                _warnedNoData = false;
+                return true;
+            }
 
             if (string.IsNullOrEmpty(characterName))
             {
@@ -662,9 +663,16 @@ namespace GiftingAssistant.Integration
                 return false;
             }
 
+            if (HasTodoDataLoaded(manager, managerType, characterName) ||
+                IsTodoCharacterDataLoadedViaPlugin(pluginType, characterName))
+            {
+                _warnedNoData = false;
+                return true;
+            }
+
             loadMethod.Invoke(todoPluginInstance, new object[] { characterName });
 
-            if (!HasTodoDataLoaded(manager, managerType))
+            if (!HasTodoDataLoaded(manager, managerType, characterName))
             {
                 if (!_warnedNoData)
                 {
@@ -679,10 +687,61 @@ namespace GiftingAssistant.Integration
             return true;
         }
 
-        private static bool HasTodoDataLoaded(object manager, Type managerType)
+        private static string ResolveTodoCharacterName()
+        {
+            string characterName = Plugin.GetManager()?.CurrentCharacter;
+            if (string.IsNullOrEmpty(characterName))
+            {
+                characterName = GameSaveCharacterName.TryGetCurrent(
+                    null,
+                    msg => Plugin.Log?.LogWarning($"[GiftingAssistant] Todo integration: character lookup failed: {msg}"));
+            }
+
+            return characterName;
+        }
+
+        private static bool IsTodoCharacterDataLoadedViaPlugin(Type pluginType, string expectedCharacter)
+        {
+            if (pluginType == null)
+                return false;
+
+            try
+            {
+                var flagProp = AccessTools.Property(pluginType, "IsCharacterDataLoaded");
+                if (flagProp != null &&
+                    flagProp.GetValue(null) is bool loaded &&
+                    loaded)
+                {
+                    if (string.IsNullOrEmpty(expectedCharacter))
+                        return true;
+
+                    var manager = AccessTools.Method(pluginType, "GetTodoManager", Type.EmptyTypes)
+                        ?.Invoke(null, null);
+                    if (manager == null)
+                        return loaded;
+
+                    var currentCharacter = AccessTools.Property(manager.GetType(), "CurrentCharacter")
+                        ?.GetValue(manager) as string;
+                    return string.IsNullOrEmpty(currentCharacter) ||
+                           string.Equals(currentCharacter, expectedCharacter, StringComparison.OrdinalIgnoreCase);
+                }
+            }
+            catch (Exception ex)
+            {
+                Plugin.Log?.LogDebug($"[GiftingAssistant] Todo integration: IsCharacterDataLoaded check: {ex.Message}");
+            }
+
+            return false;
+        }
+
+        private static bool HasTodoDataLoaded(object manager, Type managerType, string expectedCharacter = null)
         {
             var currentCharacter = AccessTools.Property(managerType, "CurrentCharacter")?.GetValue(manager) as string;
             if (string.IsNullOrEmpty(currentCharacter))
+                return false;
+
+            if (!string.IsNullOrEmpty(expectedCharacter) &&
+                !string.Equals(currentCharacter, expectedCharacter, StringComparison.OrdinalIgnoreCase))
                 return false;
 
             var getData = AccessTools.Method(managerType, "GetData", Type.EmptyTypes);

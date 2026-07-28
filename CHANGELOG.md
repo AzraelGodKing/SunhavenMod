@@ -14,6 +14,11 @@ Notes for **players and release readers**. Per-mod blurbs and upstream metadata 
 - **Fix:** Menu save-on-exit detection includes the `Menu` scene alongside `MainMenu` and `Bootstrap`.
 - **Fix:** Exposed `IsCharacterDataLoaded` for cross-mod integrations; documented weekly recurring reset heuristic (`DayCycle.MonthDay` has no `Week` property).
 
+**Gifting Assistant**
+
+- **Fix:** `HasGivenGiftToday` refreshes the gifted-today cache once when stale instead of returning false.
+- **Fix:** Todo integration skips redundant `LoadDataForCharacter` when Sun Haven Todo's manager (or `IsCharacterDataLoaded` flag) already has data for the active character.
+
 ---
 
 ## 2026-07-11
