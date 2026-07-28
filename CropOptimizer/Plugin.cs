@@ -30,8 +30,6 @@ namespace CropOptimizer
         private CropOptimizerConfig _config;
         internal CropForecast _forecast;
         private CropHUD _hud;
-        private TodoIntegration _todoIntegration;
-        private BirthdayIntegration _birthdayIntegration;
         private VaultIntegration _vaultIntegration;
         private bool _hudVisible = true;
         private bool _applicationQuitting;
@@ -60,8 +58,6 @@ namespace CropOptimizer
             }
 
             _forecast = new CropForecast();
-            _todoIntegration = new TodoIntegration();
-            _birthdayIntegration = new BirthdayIntegration();
             _vaultIntegration = new VaultIntegration();
 
             LocalizationBootstrap.BindForceEnglish(namedConfig);
@@ -149,6 +145,9 @@ namespace CropOptimizer
         private void Update()
         {
             if (_config == null || _hud == null)
+                return;
+
+            if (TextInputFocusGuard.ShouldDeferModHotkeys(Plugin.Log))
                 return;
 
             if (_config.ToggleHudKey.Value != KeyCode.None && Input.GetKeyDown(_config.ToggleHudKey.Value))

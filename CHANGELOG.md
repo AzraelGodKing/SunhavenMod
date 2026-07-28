@@ -53,6 +53,12 @@ Notes for **players and release readers**. Per-mod blurbs and upstream metadata 
 - **Fix:** `PickBiasedFishingMuseumItem` builds the unowned list with a pre-sized loop instead of LINQ.
 - **Fix:** Aquarium progress prefers S.M.U.T. donation save stats when available, falling back to game save progress.
 
+**Crop Optimizer**
+
+- **Fix:** After character load clears the forecast, existing crops are rescanned once so the HUD is populated immediately.
+- **Fix:** F3 HUD toggle defers while typing in chat, console, or UI text fields (`TextInputFocusGuard`).
+- **Chore:** Removed unused todo/birthday integration field construction from the plugin entry point.
+
 ---
 
 ## 2026-07-11

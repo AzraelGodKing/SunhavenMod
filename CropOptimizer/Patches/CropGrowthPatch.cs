@@ -109,6 +109,39 @@ namespace CropOptimizer.Patches
             PatchLifecycleMethods(harmony, cropType);
         }
 
+        /// <summary>One-time scan of crops already in the world (e.g. after character load clears the forecast).</summary>
+        internal static void RescanExistingCrops()
+        {
+            if (_forecast == null)
+                return;
+
+            try
+            {
+                Type cropType = AccessTools.TypeByName("Wish.Crop");
+                if (cropType == null)
+                    return;
+
+                var crops = UnityEngine.Object.FindObjectsOfType(cropType);
+                if (crops == null || crops.Length == 0)
+                    return;
+
+                int scanned = 0;
+                foreach (var crop in crops)
+                {
+                    if (crop == null)
+                        continue;
+                    OnAfterCropGrowth(crop);
+                    scanned++;
+                }
+
+                Plugin.Log?.LogInfo($"[CropGrowthPatch] Rescanned {scanned} existing crop(s) after character load.");
+            }
+            catch (Exception ex)
+            {
+                Plugin.Log?.LogDebug($"[CropGrowthPatch] Existing crop rescan failed: {ex.Message}");
+            }
+        }
+
         private static void OnAfterCropGrowth(object __instance)
         {
             SyncCropToForecast(__instance);
