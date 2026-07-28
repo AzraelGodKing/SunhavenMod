@@ -18,6 +18,8 @@ namespace HavenDevTools.UI
         private int _levelFilterIndex = 1; // 0=Debug, 1=Info, 2=Warning, 3=Error
         private static readonly string[] _levelNames = { "Debug", "Info", "Warning", "Error" };
         private static bool _listenerAttached;
+        private GUIStyle _logLineStyle;
+        private bool _logLineStyleInitialized;
 
         private static readonly LogCaptureListener _captureListener = new LogCaptureListener();
 
@@ -68,6 +70,12 @@ namespace HavenDevTools.UI
 
         public void Draw(GUIStyle boxStyle, GUIStyle buttonStyle, GUIStyle labelStyle, float listHeight = 200f)
         {
+            if (!_logLineStyleInitialized)
+            {
+                _logLineStyle = new GUIStyle(labelStyle);
+                _logLineStyleInitialized = true;
+            }
+
             GUILayout.BeginHorizontal();
             GUILayout.Label(ModLocalization.T("devtools.log.level"), labelStyle, GUILayout.Width(40));
             _levelFilterIndex = GUILayout.Toolbar(_levelFilterIndex, _levelNames, buttonStyle);
@@ -97,9 +105,9 @@ namespace HavenDevTools.UI
                     3 => new Color(1f, 0.4f, 0.4f),
                     _ => Color.white
                 };
-                var style = new GUIStyle(labelStyle) { normal = { textColor = color } };
+                _logLineStyle.normal.textColor = color;
                 string line = $"[{e.Timestamp:HH:mm:ss}] [{_levelNames[e.Level]}] [{e.Source}] {e.Message}";
-                GUILayout.Label(line, style);
+                GUILayout.Label(line, _logLineStyle);
             }
 
             GUILayout.EndScrollView();
