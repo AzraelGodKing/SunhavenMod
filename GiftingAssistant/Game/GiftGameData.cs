@@ -509,7 +509,10 @@ namespace GiftingAssistant.Game
                 return false;
 
             string normalized = NormalizeNpcName(npcName);
-            if (_giftedTodayCacheValid && _giftedTodayCache != null &&
+            if (!_giftedTodayCacheValid)
+                RefreshGiftedTodayCache();
+
+            if (_giftedTodayCache != null &&
                 _giftedTodayCache.TryGetValue(normalized, out bool cached))
                 return cached;
 
