@@ -440,7 +440,7 @@ namespace BirthdayReminder.UI
             GUILayout.EndHorizontal();
 
             // Gift hint
-            if (!birthday.HasBeenGifted && !string.IsNullOrEmpty(birthday.GiftHint))
+            if (Plugin.ShowGiftHints && !birthday.HasBeenGifted && !string.IsNullOrEmpty(birthday.GiftHint))
             {
                 GUILayout.Space(Scaled(2));
                 GUILayout.Label(birthday.GiftHint, _hintStyle);
