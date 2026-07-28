@@ -93,6 +93,9 @@ namespace SunhavenTodo.UI
         private GUIStyle _titleStyle;
         private GUIStyle _emptyStyle;
         private GUIStyle _closeButtonStyle;
+        private GUIStyle _hintStyle;
+        private GUIStyle _wrappedTitleStyle;
+        private GUIStyle _rowStyle;
 
         // Textures
         private Texture2D _windowBackground;
@@ -257,12 +260,7 @@ namespace SunhavenTodo.UI
             GUILayout.FlexibleSpace();
 
             // Drag hint
-            var hintStyle = new GUIStyle(_headerStyle)
-            {
-                fontSize = ScaledFont(9),
-                fontStyle = FontStyle.Italic,
-                normal = { textColor = new Color(_textDark.r, _textDark.g, _textDark.b, 0.5f) }
-            };
+            var hintStyle = _hintStyle;
             var shortcut = Plugin.GetOpenListShortcutDisplay();
             GUILayout.Label(ModLocalization.T("todo.hud.openHint", shortcut), hintStyle, GUILayout.Height(HeaderHeight));
 
@@ -310,35 +308,28 @@ namespace SunhavenTodo.UI
             var bgTex = index % 2 == 0 ? _itemEven : _itemOdd;
             var titleText = string.IsNullOrWhiteSpace(item.Title) ? ModLocalization.T("todo.item.noTitle") : item.Title;
 
-            var wrappedTitleStyle = new GUIStyle(_titleStyle)
-            {
-                wordWrap = true,
-                clipping = TextClipping.Overflow,
-                alignment = TextAnchor.UpperLeft
-            };
-
+            var wrappedTitleStyle = _wrappedTitleStyle;
             float titleAvailableWidth = GetTitleAvailableWidth(item);
             float titleHeight = Mathf.Ceil(wrappedTitleStyle.CalcHeight(new GUIContent(titleText), titleAvailableWidth));
             float rowHeight = Mathf.Max(ItemHeight, titleHeight + Scaled(6));
 
             // Use row style with background so content stays in layout flow (avoids blank title in some setups)
-            var rowStyle = new GUIStyle(_itemStyle)
-            {
-                normal = { background = bgTex },
-                padding = new RectOffset(ScaledInt(6), ScaledInt(6), ScaledInt(2), ScaledInt(2))
-            };
+            var rowStyle = _rowStyle;
+            rowStyle.normal.background = bgTex;
 
             GUILayout.BeginHorizontal(rowStyle, GUILayout.MinHeight(rowHeight));
             GUILayout.Space(Scaled(6));
 
             // Priority indicator
             var priorityColor = _priorityColors.TryGetValue(item.Priority, out var pc) ? pc : _textDark;
-            var priorityStyle = new GUIStyle(_priorityStyle) { normal = { textColor = priorityColor } };
+            var priorityStyle = _priorityStyle;
+            priorityStyle.normal.textColor = priorityColor;
             GUILayout.Label(GetPriorityIcon(item.Priority), priorityStyle, GUILayout.Width(Scaled(16)));
 
             // Category indicator
             var categoryColor = _categoryColors.TryGetValue(item.Category, out var cc) ? cc : _textDark;
-            var categoryStyle = new GUIStyle(_categoryStyle) { normal = { textColor = categoryColor } };
+            var categoryStyle = _categoryStyle;
+            categoryStyle.normal.textColor = categoryColor;
             GUILayout.Label($"[{GetCategoryShort(item.Category)}]", categoryStyle, GUILayout.Width(Scaled(36)));
 
             GUILayout.Space(Scaled(4));
@@ -373,14 +364,8 @@ namespace SunhavenTodo.UI
             if (item == null) return ItemHeight;
 
             var titleText = string.IsNullOrWhiteSpace(item.Title) ? ModLocalization.T("todo.item.noTitle") : item.Title;
-            var wrappedTitleStyle = new GUIStyle(_titleStyle)
-            {
-                wordWrap = true,
-                clipping = TextClipping.Overflow,
-                alignment = TextAnchor.UpperLeft
-            };
             float titleWidth = GetTitleAvailableWidth(item);
-            float titleHeight = Mathf.Ceil(wrappedTitleStyle.CalcHeight(new GUIContent(titleText), titleWidth));
+            float titleHeight = Mathf.Ceil(_wrappedTitleStyle.CalcHeight(new GUIContent(titleText), titleWidth));
             return Mathf.Max(ItemHeight, titleHeight + Scaled(6));
         }
 
@@ -513,6 +498,25 @@ namespace SunhavenTodo.UI
                 alignment = TextAnchor.MiddleCenter,
                 padding = new RectOffset(ScaledInt(2), ScaledInt(2), ScaledInt(2), ScaledInt(2)),
                 border = new RectOffset(ScaledInt(2), ScaledInt(2), ScaledInt(2), ScaledInt(2))
+            };
+
+            _hintStyle = new GUIStyle(_headerStyle)
+            {
+                fontSize = ScaledFont(9),
+                fontStyle = FontStyle.Italic,
+                normal = { textColor = new Color(_textDark.r, _textDark.g, _textDark.b, 0.5f) }
+            };
+
+            _wrappedTitleStyle = new GUIStyle(_titleStyle)
+            {
+                wordWrap = true,
+                clipping = TextClipping.Overflow,
+                alignment = TextAnchor.UpperLeft
+            };
+
+            _rowStyle = new GUIStyle(_itemStyle)
+            {
+                padding = new RectOffset(ScaledInt(6), ScaledInt(6), ScaledInt(2), ScaledInt(2))
             };
         }
 

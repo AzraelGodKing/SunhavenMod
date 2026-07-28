@@ -4,6 +4,18 @@ Notes for **players and release readers**. Per-mod blurbs and upstream metadata 
 
 ---
 
+---
+
+## 2026-07-28
+
+**Sun Haven Todo**
+
+- **Fix:** Todo HUD caches reusable `GUIStyle` instances instead of allocating them every `OnGUI` frame.
+- **Fix:** Menu save-on-exit detection includes the `Menu` scene alongside `MainMenu` and `Bootstrap`.
+- **Fix:** Exposed `IsCharacterDataLoaded` for cross-mod integrations; documented weekly recurring reset heuristic (`DayCycle.MonthDay` has no `Week` property).
+
+---
+
 ## 2026-07-11
 
 **Suite release (minor bumps)**
