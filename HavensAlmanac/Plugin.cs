@@ -302,9 +302,6 @@ namespace HavensAlmanac
                 // Reset and re-hook overnight event
                 ResetOvernightHook();
                 TryHookOvernightEvent();
-
-                // Show daily briefing
-                _staticBriefing?.ShowBriefing();
             }
             catch (Exception ex)
             {

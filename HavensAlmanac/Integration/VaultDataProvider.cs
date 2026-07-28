@@ -21,9 +21,7 @@ namespace HavensAlmanac.Integration
         public string HudSummary => _hudSummary;
         public bool IsReady => _isReady;
 
-        // Currency balances are persistent state rather than daily-relevant
-        // information; the briefing never reminds about vault contents.
-        public bool HasBriefingContent => false;
+        public bool HasBriefingContent => _isReady && _currencyCount > 0;
 
         public void Refresh()
         {

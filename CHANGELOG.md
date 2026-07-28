@@ -59,6 +59,12 @@ Notes for **players and release readers**. Per-mod blurbs and upstream metadata 
 - **Fix:** F3 HUD toggle defers while typing in chat, console, or UI text fields (`TextInputFocusGuard`).
 - **Chore:** Removed unused todo/birthday integration field construction from the plugin entry point.
 
+**Haven's Almanac**
+
+- **Fix:** Daily briefing shows only after overnight/sleep (not on every player init).
+- **Fix:** Birthday provider copies `TodaysBirthdays` into its own list instead of holding a live reference.
+- **Fix:** Vault provider `HasBriefingContent` matches `DrawBriefingSection` when stored currencies exist.
+
 ---
 
 ## 2026-07-11
