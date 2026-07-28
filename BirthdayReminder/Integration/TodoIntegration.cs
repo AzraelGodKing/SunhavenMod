@@ -241,10 +241,23 @@ namespace BirthdayReminder.Integration
         /// <summary>
         /// Reset tracking when character changes or new day starts.
         /// Called from Plugin.OnCharacterChanged.
+        /// Removes any tracked birthday todos so the next sync does not orphan/duplicate them.
         /// </summary>
         public void Reset()
         {
-            _birthdayTodoIds.Clear();
+            try
+            {
+                var todoManager = SunhavenTodo.Plugin.GetTodoManager();
+                if (todoManager != null && _birthdayTodoIds.Count > 0)
+                    CleanupBirthdayTodos(todoManager);
+                else
+                    _birthdayTodoIds.Clear();
+            }
+            catch (Exception ex)
+            {
+                Plugin.Log?.LogWarning($"[TodoIntegration] Reset cleanup failed: {ex.Message}");
+                _birthdayTodoIds.Clear();
+            }
         }
 
         public void Dispose()

@@ -332,9 +332,12 @@ namespace BirthdayReminder
         /// </summary>
         public static void ResetOvernightHook()
         {
-            _overnightHooked = false;
-            _overnightCallback = null;
-            Log?.LogInfo("[BirthdayReminder] Overnight hook reset");
+            OvernightHookUtility.TryUnhookOvernightEvent(
+                ref _overnightHooked,
+                ref _overnightCallback,
+                GetSingletonInstance,
+                message => Log?.LogInfo($"[BirthdayReminder] {message}"),
+                message => Log?.LogWarning($"[BirthdayReminder] {message}"));
         }
 
         /// <summary>
