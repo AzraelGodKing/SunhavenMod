@@ -365,9 +365,13 @@ namespace HavensBirthright.Patches
                 case Race.AmariDog:
                     if (AbilityConfig.EnableLoyaltyAura.Value)
                     {
-                        float loyaltyBonus = ActiveAbilityManager.GetBonusValue(ActiveAbilityManager.LoyaltyAura);
-                        if (loyaltyBonus > 0)
-                            __result *= (1f + loyaltyBonus / 100f);
+                        if (stat == StatType.Defense || stat == StatType.AttackDamage ||
+                            stat == StatType.SpellDamage || stat == StatType.Health)
+                        {
+                            float loyaltyBonus = ActiveAbilityManager.GetBonusValue(ActiveAbilityManager.LoyaltyAura);
+                            if (loyaltyBonus > 0)
+                                __result *= (1f + loyaltyBonus / 100f);
+                        }
                     }
                     break;
 

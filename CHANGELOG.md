@@ -4,6 +4,8 @@ Notes for **players and release readers**. Per-mod blurbs and upstream metadata 
 
 ---
 
+---
+
 ## 2026-07-28
 
 **Sun Haven Todo**
@@ -69,6 +71,12 @@ Notes for **players and release readers**. Per-mod blurbs and upstream metadata 
 
 - **Fix:** `SpawnItem` returns false when `AddItem` invoke fails or reports failure.
 - **Fix:** Log viewer caches a reusable `GUIStyle` for log lines instead of allocating per entry.
+
+**Haven's Birthright**
+
+- **Fix:** Infernal Forge no longer blocks explicit mana restores (food/consumables) while active — only passive regen ticks (`AddMana` amount 0) are suppressed.
+- **Fix:** Amari Dog Loyalty Aura now counts max-friendship NPCs and applies bonuses to Defense, melee damage, magic damage, and max HP only.
+- **Fix:** `StatFrameCache` marks the cache invalid on update errors instead of falsely reporting valid data.
 
 ---
 

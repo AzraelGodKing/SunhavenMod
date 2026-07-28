@@ -2,6 +2,7 @@ using HarmonyLib;
 using HavensBirthright.Abilities;
 using HavensBirthright.Patches;
 using HavensBirthright.Session;
+using Wish;
 using SunhavenMods.Shared;
 using System;
 using System.Collections;
@@ -25,6 +26,8 @@ namespace HavensBirthright
         private float _lastTidalBlessingCheck = 0f;
         private float _lastInfernalForgeCheck = 0f;
         private float _lastFontOfLightCheck = 0f;
+        private float _lastLoyaltyAuraCheck = 0f;
+        private const float LoyaltyAuraUpdateInterval = 2f;
 
         // One-time diagnostic flag (logs all gate checks on first call after toggle ON)
         private bool _tidalBlessingDiagLogged = false;
@@ -83,6 +86,12 @@ namespace HavensBirthright
             if (race.Value == Race.AmariBird && AbilityConfig.EnableTailwind.Value)
             {
                 UpdateTailwind();
+            }
+
+            // Amari Dog Loyalty Aura — bonus scales with max-friendship NPC count
+            if (race.Value == Race.AmariDog && AbilityConfig.EnableLoyaltyAura.Value)
+            {
+                UpdateLoyaltyAura();
             }
 
             // Water Elemental Tidal Blessing - auto-water nearby plots
@@ -145,7 +154,9 @@ namespace HavensBirthright
             _lastTidalBlessingCheck = 0f;
             _lastInfernalForgeCheck = 0f;
             _lastFontOfLightCheck = 0f;
+            _lastLoyaltyAuraCheck = 0f;
             _tidalBlessingDiagLogged = false;
+            ActiveAbilityManager.SetBonusValue(ActiveAbilityManager.LoyaltyAura, 0f);
         }
 
         /// <summary>
@@ -166,6 +177,57 @@ namespace HavensBirthright
         protected override void LogWarning(string message)
         {
             Plugin.Log?.LogWarning(message);
+        }
+
+        /// <summary>
+        /// Amari Dog Loyalty Aura: bonus defense, melee, magic, and max HP based on NPCs at max friendship.
+        /// </summary>
+        private void UpdateLoyaltyAura()
+        {
+            if (Time.time - _lastLoyaltyAuraCheck < LoyaltyAuraUpdateInterval)
+                return;
+
+            _lastLoyaltyAuraCheck = Time.time;
+
+            try
+            {
+                CharacterData characterData = CharacterFingerprint.GetAuthoritativeCharacterData();
+                var relationships = characterData?.Relationships;
+                if (relationships == null || relationships.Count == 0)
+                {
+                    ActiveAbilityManager.SetBonusValue(ActiveAbilityManager.LoyaltyAura, 0f);
+                    return;
+                }
+
+                int maxFriendCount = 0;
+                foreach (var entry in relationships)
+                {
+                    float points = entry.Value;
+                    int maxHearts = GetMaxHeartsForRelationshipPoints(points);
+                    if (points >= maxHearts * 5f)
+                        maxFriendCount++;
+                }
+
+                float bonus = Mathf.Min(
+                    maxFriendCount * AbilityConfig.LoyaltyAuraBonusPerNPC.Value,
+                    AbilityConfig.LoyaltyAuraMaxBonus.Value);
+                ActiveAbilityManager.SetBonusValue(ActiveAbilityManager.LoyaltyAura, bonus);
+            }
+            catch (Exception ex)
+            {
+                Plugin.Log?.LogWarning($"[LoyaltyAura] Error: {ex.Message}");
+                ActiveAbilityManager.SetBonusValue(ActiveAbilityManager.LoyaltyAura, 0f);
+            }
+        }
+
+        /// <summary>Max heart slots for a relationship tier (mirrors Wish.RelationshipHUD).</summary>
+        private static int GetMaxHeartsForRelationshipPoints(float points)
+        {
+            if (points >= 75f)
+                return 20;
+            if (points >= 50f)
+                return 15;
+            return 10;
         }
 
         /// <summary>

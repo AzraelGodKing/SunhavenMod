@@ -80,9 +80,10 @@ namespace HavensBirthright.Patches
         /// Blocks ALL mana regeneration while Infernal Forge is toggled ON.
         /// Only applies to Fire Elemental (Infernal Forge ability) — must NOT block
         /// mana for other races (e.g. Cat Amari food/drink/fishing mana restore).
-        /// Returns false to skip the original AddMana method entirely.
+        /// Returns false to skip the original AddMana method entirely (passive regen only).
+        /// Explicit restores (food, consumables) pass a positive amount and are allowed through.
         /// </summary>
-        public static bool OnPlayerAddManaPrefix()
+        public static bool OnPlayerAddManaPrefix(float amount, float _)
         {
             if (!RacialConfig.EnableRacialBonuses.Value) return true;
             if (!AbilityConfig.EnableInfernalForge.Value) return true;
@@ -95,7 +96,8 @@ namespace HavensBirthright.Patches
             bool infernalManaLockRace = infernalRace == Race.FireElemental || infernalRace == Race.Elemental;
             if (!infernalManaLockRace) return true; // Never block mana for Water Elemental, other races, etc.
             if (!ActiveAbilityManager.IsRuntimeEnabled(ActiveAbilityManager.InfernalForge)) return true;
-            return false; // Block all mana regen (Fire Elemental only)
+            if (amount > 0f) return true; // Allow explicit mana restores (consumables, food, abilities)
+            return false; // Block passive regen ticks (amount 0)
         }
 
         // ===================== INFERNAL FORGE PATCH =====================
