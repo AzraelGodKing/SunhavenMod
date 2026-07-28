@@ -94,7 +94,8 @@ namespace FasterRaces
 
         /// <summary>
         /// Compatibility hook for other mods (e.g. Haven's Birthright):
-        /// true only when this mod is currently enabled and has a positive bonus.
+        /// true when this mod is enabled and would apply a positive speed bonus
+        /// for the current race (or any configured override when player is unavailable).
         /// </summary>
         public static bool IsSpeedBonusActive
         {
@@ -103,8 +104,50 @@ namespace FasterRaces
                 if (EnableMod == null || !EnableMod.Value)
                     return false;
 
-                float pct = SpeedBonusPercent != null ? SpeedBonusPercent.Value : 0f;
-                return pct > 0f;
+                string raceName = SpeedPatch.GetCurrentRaceName();
+                if (!string.IsNullOrEmpty(raceName))
+                    return GetEffectiveSpeedBonus(raceName) > 0f;
+
+                if (SpeedBonusPercent != null && SpeedBonusPercent.Value > 0f)
+                    return true;
+
+                foreach (var entry in RaceSpeedOverrides.Values)
+                {
+                    if (entry.Value > 0f)
+                        return true;
+                }
+
+                return false;
+            }
+        }
+
+        /// <summary>
+        /// Maps game SubRace strings to per-race config keys in KnownRaces.
+        /// </summary>
+        internal static string NormalizeRaceName(string rawRaceName)
+        {
+            if (string.IsNullOrEmpty(rawRaceName))
+                return rawRaceName;
+
+            if (RaceSpeedOverrides.ContainsKey(rawRaceName))
+                return rawRaceName;
+
+            // SubRace enum may use alternate spellings (e.g. spaces, generic Elemental).
+            switch (rawRaceName.Replace(" ", ""))
+            {
+                case "Fire":
+                case "FireElement":
+                    return "FireElemental";
+                case "Water":
+                case "WaterElement":
+                    return "WaterElemental";
+                case "Magma":
+                case "MagmaElement":
+                    return "MagmaElemental";
+                case "ShadeElement":
+                    return "Shade";
+                default:
+                    return rawRaceName;
             }
         }
 
@@ -114,6 +157,7 @@ namespace FasterRaces
         /// </summary>
         internal static float GetEffectiveSpeedBonus(string raceName)
         {
+            raceName = NormalizeRaceName(raceName);
             if (!string.IsNullOrEmpty(raceName)
                 && RaceSpeedOverrides.TryGetValue(raceName, out var entry)
                 && entry.Value >= 0f)
@@ -174,14 +218,14 @@ namespace FasterRaces
                     return;
 
                 string raceName = GetCurrentRaceName();
-                float pct = Mathf.Clamp(GetEffectiveSpeedBonus(raceName), MinSpeedBonusPercent, MaxSpeedBonusPercent);
+                float pct = Mathf.Clamp(Plugin.GetEffectiveSpeedBonus(raceName), MinSpeedBonusPercent, MaxSpeedBonusPercent);
                 if (pct <= 0f)
                     return;
 
                 __result *= (1f + pct / 100f);
             }
 
-            private static string GetCurrentRaceName()
+            internal static string GetCurrentRaceName()
             {
                 try
                 {

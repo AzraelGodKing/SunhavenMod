@@ -4,8 +4,6 @@ Notes for **players and release readers**. Per-mod blurbs and upstream metadata 
 
 ---
 
----
-
 ## 2026-07-28
 
 **Sun Haven Todo**
@@ -31,6 +29,11 @@ Notes for **players and release readers**. Per-mod blurbs and upstream metadata 
 - **Fix:** Todo integration keys NPCs with normalized names so fuzzy/composite names complete correctly.
 - **Fix:** Date staleness checks skip when no save is loaded (avoids spurious main-menu refreshes).
 - **Fix:** Gift tracking uses case-insensitive NPC name matching.
+
+**Faster Races**
+
+- **Fix:** `IsSpeedBonusActive` now respects per-race overrides and current SubRace so Haven's Birthright does not double-apply movement speed when global bonus is 0.
+- **Fix:** SubRace names are normalized to per-race config keys (e.g. alternate elemental spellings).
 
 ---
 
