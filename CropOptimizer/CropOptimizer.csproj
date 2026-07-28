@@ -91,6 +91,7 @@
     <Compile Include="..\SharedUtilities\ModLocalization.cs" Link="Shared\ModLocalization.cs" />
     <Compile Include="..\SharedUtilities\LanguageChangeWatcher.cs" Link="Shared\LanguageChangeWatcher.cs" />
     <Compile Include="..\SharedUtilities\LocalizationBootstrap.cs" Link="Shared\LocalizationBootstrap.cs" />
+    <Compile Include="..\SharedUtilities\TextInputFocusGuard.cs" Link="Shared\TextInputFocusGuard.cs" />
   </ItemGroup>
 
   <ItemGroup>

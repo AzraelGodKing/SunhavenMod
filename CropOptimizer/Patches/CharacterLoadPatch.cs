@@ -60,10 +60,12 @@ namespace CropOptimizer.Patches
                 if (_forecast != null)
                 {
                     _forecast.Clear();
+                    CropGrowthPatch.RescanExistingCrops();
                     return;
                 }
 
                 Plugin.Instance?._forecast?.Clear();
+                CropGrowthPatch.RescanExistingCrops();
             }
             catch (Exception ex)
             {
