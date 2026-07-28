@@ -70,10 +70,13 @@ namespace SenpaisChest.ChestLabels
             if (label == null) return;
 
             var text = label.GetText();
-            __result.interactionText = new List<string>
-            {
-                !string.IsNullOrWhiteSpace(text) ? text : "Chest"
-            };
+            if (string.IsNullOrWhiteSpace(text))
+                return;
+
+            if (__result.interactionText == null)
+                __result.interactionText = new List<string>();
+
+            __result.interactionText.Add(text);
         }
 
         private static bool ShouldShowLabelForChest(Chest chest)

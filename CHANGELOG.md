@@ -42,6 +42,12 @@ Notes for **players and release readers**. Per-mod blurbs and upstream metadata 
 - **Fix:** `EnsureUIComponentsExist` recreates `VaultHUD` when destroyed independently of `VaultUI`.
 - **Fix:** Reduced encryption and secret-gift hash log verbosity.
 
+**Senpai's Chest**
+
+- **Fix:** Player init no longer reloads save data when the same character is already active this session (matches scene-load guard); museum todo integration resets only on character change.
+- **Fix:** Removed periodic `FindObjectsOfType<Chest>` label scan — labels are ensured via existing `OnEnable` / `SetMeta` patches.
+- **Fix:** Chest label interaction text is appended on a new line instead of replacing the game's default prompt.
+
 ---
 
 ## 2026-07-11
