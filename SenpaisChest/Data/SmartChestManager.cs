@@ -508,7 +508,7 @@ namespace SenpaisChest.Data
                             continue;
 
                         Plugin.Log?.LogInfo($"[Scan] Ejecting {itemName} x{amountToAccept} from '{smartData.ChestName}' to smart chest '{otherEntry.Value.ChestName}'");
-                        TransferItemData(smartInventory, i, destPair.Key, slotData.item, amountToAccept);
+                        TransferItemData(smartInventory, i, destPair.Key, slotData.item, amountToAccept, slotData.id);
                         modifiedChests.Add(smartChest);
                         modifiedChests.Add(destPair.Value);
                         totalMoved++;
@@ -532,7 +532,7 @@ namespace SenpaisChest.Data
                             continue;
 
                         Plugin.Log?.LogInfo($"[Scan] Ejecting {itemName} x{amountToAccept} from '{smartData.ChestName}' to normal chest");
-                        TransferItemData(smartInventory, i, normalEntry.Value.Key, slotData.item, amountToAccept);
+                        TransferItemData(smartInventory, i, normalEntry.Value.Key, slotData.item, amountToAccept, slotData.id);
                         modifiedChests.Add(smartChest);
                         modifiedChests.Add(normalEntry.Value.Value);
                         totalMoved++;
@@ -603,7 +603,7 @@ namespace SenpaisChest.Data
                 var itemName = sellInfo?.name ?? $"Item {slotData.id}";
                 Plugin.Log?.LogInfo($"[Scan] Moving {itemName} x{amountToAccept}");
 
-                TransferItemData(sourceInv, i, targetInv, slotData.item, amountToAccept);
+                TransferItemData(sourceInv, i, targetInv, slotData.item, amountToAccept, slotData.id);
                 moved++;
             }
 
@@ -611,13 +611,13 @@ namespace SenpaisChest.Data
         }
 
         private void TransferItemData(Inventory sourceInv, int sourceSlot,
-            Inventory targetInv, Item item, int amount)
+            Inventory targetInv, Item item, int amount, int itemId)
         {
-            if (sourceInv == null || targetInv == null || item == null || amount <= 0)
+            if (sourceInv == null || targetInv == null || item == null || amount <= 0 || itemId <= 0)
                 return;
 
             // Only remove what the target actually accepted — never drop items on a failed AddItem.
-            int itemId = item.id;
+            // Wish.Item exposes ID() / slot ids, not a public `id` field.
             int targetBefore = targetInv.GetAmount(itemId);
             targetInv.AddItem(item, amount, false);
             int added = targetInv.GetAmount(itemId) - targetBefore;
