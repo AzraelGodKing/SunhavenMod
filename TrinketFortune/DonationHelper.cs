@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Reflection;
 using BepInEx.Bootstrap;
 using UnityEngine;
@@ -17,6 +16,9 @@ namespace TrinketFortune
 
         private static object _donationManager;
         private static MethodInfo _hasDonatedByGameId;
+        private static MethodInfo _getSectionStatsMethod;
+        private static MethodInfo _getAllSectionsMethod;
+        private static object _aquariumSection;
         private static float _lastResolveAttemptRealtime = -100f;
         private const float ResolveRetrySeconds = 10f;
 
@@ -94,7 +96,14 @@ namespace TrinketFortune
             if (!IsAvailable)
                 return 0; // let vanilla run
 
-            var unowned = items.Where(id => !HasDonatedByGameId(id)).ToList();
+            var unowned = new List<int>(items.Count);
+            for (int i = 0; i < items.Count; i++)
+            {
+                int id = items[i];
+                if (!HasDonatedByGameId(id))
+                    unowned.Add(id);
+            }
+
             if (unowned.Count == 0)
                 return items[UnityEngine.Random.Range(0, items.Count)];
 
@@ -116,6 +125,89 @@ namespace TrinketFortune
         public static float GetAquariumProgressPercent() => GetAquariumProgress();
 
         private static float GetAquariumProgress()
+        {
+            if (TryGetSmutAquariumProgress(out float smutProgress))
+                return smutProgress;
+
+            return GetGameSaveAquariumProgress();
+        }
+
+        private static bool TryGetSmutAquariumProgress(out float percent)
+        {
+            percent = 0f;
+            EnsureResolved();
+            if (_donationManager == null)
+                return false;
+
+            try
+            {
+                EnsureAquariumSectionResolved();
+                if (_aquariumSection == null || _getSectionStatsMethod == null)
+                    return false;
+
+                var stats = _getSectionStatsMethod.Invoke(_donationManager, new[] { _aquariumSection });
+                if (stats == null)
+                    return false;
+
+                var statsType = stats.GetType();
+                var donatedField = statsType.GetField("Item1") ?? statsType.GetField("donated");
+                var totalField = statsType.GetField("Item2") ?? statsType.GetField("total");
+                if (donatedField == null || totalField == null)
+                    return false;
+
+                int donated = (int)donatedField.GetValue(stats);
+                int total = (int)totalField.GetValue(stats);
+                if (total <= 0)
+                    return false;
+
+                percent = donated / (float)total * 100f;
+                return true;
+            }
+            catch (Exception ex)
+            {
+                Plugin.Log?.LogDebug($"DonationHelper: SMUT aquarium progress failed: {ex.Message}");
+                return false;
+            }
+        }
+
+        private static void EnsureAquariumSectionResolved()
+        {
+            if (_aquariumSection != null && _getSectionStatsMethod != null)
+                return;
+
+            if (_donationManager == null)
+                return;
+
+            var managerType = _donationManager.GetType();
+            _getSectionStatsMethod = managerType.GetMethod("GetSectionStats",
+                BindingFlags.Public | BindingFlags.Instance);
+            if (_getSectionStatsMethod == null)
+                return;
+
+            var museumContentType = managerType.Assembly.GetType("SunHavenMuseumUtilityTracker.Data.MuseumContent");
+            if (museumContentType == null)
+                return;
+
+            _getAllSectionsMethod = museumContentType.GetMethod("GetAllSections",
+                BindingFlags.Public | BindingFlags.Static);
+            if (_getAllSectionsMethod?.Invoke(null, null) is not System.Collections.IEnumerable sections)
+                return;
+
+            foreach (var section in sections)
+            {
+                if (section == null)
+                    continue;
+
+                var idProp = section.GetType().GetProperty("Id");
+                if (string.Equals(idProp?.GetValue(section) as string, "aquarium", StringComparison.OrdinalIgnoreCase))
+                {
+                    _aquariumSection = section;
+                    break;
+                }
+            }
+        }
+
+        private static float GetGameSaveAquariumProgress()
         {
             try
             {
