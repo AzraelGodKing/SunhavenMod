@@ -48,6 +48,11 @@ Notes for **players and release readers**. Per-mod blurbs and upstream metadata 
 - **Fix:** Removed periodic `FindObjectsOfType<Chest>` label scan — labels are ensured via existing `OnEnable` / `SetMeta` patches.
 - **Fix:** Chest label interaction text is appended on a new line instead of replacing the game's default prompt.
 
+**Trinket Fortune**
+
+- **Fix:** `PickBiasedFishingMuseumItem` builds the unowned list with a pre-sized loop instead of LINQ.
+- **Fix:** Aquarium progress prefers S.M.U.T. donation save stats when available, falling back to game save progress.
+
 ---
 
 ## 2026-07-11
