@@ -35,6 +35,13 @@ Notes for **players and release readers**. Per-mod blurbs and upstream metadata 
 - **Fix:** `IsSpeedBonusActive` now respects per-race overrides and current SubRace so Haven's Birthright does not double-apply movement speed when global bonus is 0.
 - **Fix:** SubRace names are normalized to per-race config keys (e.g. alternate elemental spellings).
 
+**The Vault**
+
+- **Fix:** `GetVaultAmount` now reads registered `custom_` currencies for inventory merge paths.
+- **Fix:** Shop postfix deducts vault currency only when the purchase prefix approved it.
+- **Fix:** `EnsureUIComponentsExist` recreates `VaultHUD` when destroyed independently of `VaultUI`.
+- **Fix:** Reduced encryption and secret-gift hash log verbosity.
+
 ---
 
 ## 2026-07-11

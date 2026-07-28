@@ -20,6 +20,9 @@ namespace TheVault.Patches
         private static Dictionary<int, (string currencyId, int amount)> _vaultPurchaseRequirements
             = new Dictionary<int, (string, int)>();
         private static readonly Dictionary<string, string> _currencyDisplayNameCache = new Dictionary<string, string>(StringComparer.Ordinal);
+        private static int _approvedVaultPurchaseItemId = -1;
+        private static string _approvedVaultPurchaseCurrencyId;
+        private static int _approvedVaultPurchaseAmount;
 
         /// <summary>
         /// Register an item that requires vault currency to purchase.
@@ -60,8 +63,12 @@ namespace TheVault.Patches
                 {
                     Plugin.Log?.LogInfo($"Purchase blocked: insufficient {requirement.currencyId} (need {requirement.amount})");
                     ShowInsufficientFundsMessage(requirement.currencyId, requirement.amount);
+                    ClearApprovedVaultPurchase();
                     return false; // Skip original (Shop.BuyItem is void)
                 }
+                _approvedVaultPurchaseItemId = itemId;
+                _approvedVaultPurchaseCurrencyId = requirement.currencyId;
+                _approvedVaultPurchaseAmount = requirement.amount;
                 Plugin.Log?.LogInfo($"Vault purchase approved: {requirement.amount} {requirement.currencyId}");
                 return true;
             }
@@ -81,21 +88,25 @@ namespace TheVault.Patches
             {
                 int itemId = GetItemIdFromItemInfo(__0);
                 if (itemId < 0) return;
-                if (!_vaultPurchaseRequirements.TryGetValue(itemId, out var requirement))
-                {
-                    return; // Not a vault purchase
-                }
+                if (itemId != _approvedVaultPurchaseItemId)
+                    return;
 
                 var vaultManager = Plugin.GetVaultManager();
-                if (vaultManager == null) return;
-
-                // Deduct the currency now that purchase is confirmed
-                if (!DeductCurrency(vaultManager, requirement.currencyId, requirement.amount))
+                if (vaultManager == null)
                 {
-                    Plugin.Log?.LogError($"Failed to deduct {requirement.amount} {requirement.currencyId} after purchase; potential desync.");
+                    ClearApprovedVaultPurchase();
                     return;
                 }
-                Plugin.Log?.LogInfo($"Deducted {requirement.amount} {requirement.currencyId} for purchase");
+
+                // Deduct the currency now that purchase is confirmed
+                if (!DeductCurrency(vaultManager, _approvedVaultPurchaseCurrencyId, _approvedVaultPurchaseAmount))
+                {
+                    Plugin.Log?.LogError($"Failed to deduct {_approvedVaultPurchaseAmount} {_approvedVaultPurchaseCurrencyId} after purchase; potential desync.");
+                    ClearApprovedVaultPurchase();
+                    return;
+                }
+                Plugin.Log?.LogInfo($"Deducted {_approvedVaultPurchaseAmount} {_approvedVaultPurchaseCurrencyId} for purchase");
+                ClearApprovedVaultPurchase();
             }
             catch (Exception ex)
             {
@@ -116,26 +127,7 @@ namespace TheVault.Patches
         /// </summary>
         public static bool OnBeforeBuyItemSingle(object __instance, object __0)
         {
-            try
-            {
-                int itemId = GetItemIdFromItemInfo(__0);
-                if (itemId < 0) return true;
-                if (!_vaultPurchaseRequirements.TryGetValue(itemId, out var requirement))
-                    return true;
-                var vaultManager = Plugin.GetVaultManager();
-                if (vaultManager == null) { Plugin.Log?.LogWarning("VaultManager not available"); return true; }
-                if (!vaultManager.HasCurrency(requirement.currencyId, requirement.amount))
-                {
-                    ShowInsufficientFundsMessage(requirement.currencyId, requirement.amount);
-                    return false;
-                }
-                return true;
-            }
-            catch (Exception ex)
-            {
-                Plugin.Log?.LogError($"Error in OnBeforeBuyItemSingle: {ex.Message}");
-                return true;
-            }
+            return OnBeforeBuyItem(__instance, __0, 1);
         }
 
         /// <summary>
@@ -284,6 +276,13 @@ namespace TheVault.Patches
                 "manashard" => "Mana Shards",
                 _ => specialName
             };
+        }
+
+        private static void ClearApprovedVaultPurchase()
+        {
+            _approvedVaultPurchaseItemId = -1;
+            _approvedVaultPurchaseCurrencyId = null;
+            _approvedVaultPurchaseAmount = 0;
         }
     }
 }
