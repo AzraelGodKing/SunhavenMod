@@ -6,6 +6,18 @@ Notes for **players and release readers**. Per-mod blurbs and upstream metadata 
 
 ## 2026-07-28
 
+**Suite bug-risk audit fixes (no version bumps)**
+
+- **Haven's Respec:** Profession reset now fails closed — any mid-walk exception rolls back from the pre-reset snapshot instead of charging gold for a half-wiped tree.
+- **The Vault:** `HasEnough` now treats bag + vault as a combined balance; auto-deposit/deposit paths roll inventory back if vault credit fails; menu reset clears auto-deposit guard flags.
+- **Senpai's Chest:** Smart-chest transfers only remove what `AddItem` actually accepted (no item loss on failed moves).
+- **Haven's Birthright:** Removed double-stacked racial Defense on `ReceiveDamage` (Defense already comes from `GetStat`); guarded Tidal Blessing / Infernal Forge / Divine Ward against zero max HP/mana; safer Tidal Blessing logging.
+- **Shared overnight hooks:** `OvernightHookUtility.TryUnhookOvernightEvent` removes DayCycle and UIHandler listeners before re-hook (Almanac, Birthday Reminder, Todo, Gifting Assistant) to stop duplicate morning briefings/resets.
+- **Birthday Reminder:** Character-switch `TodoIntegration.Reset` removes tracked birthday todos so they are not orphaned/duplicated.
+- **Sun Haven Todo:** Character-name lookup no longer falls back to the previous character's name on failure.
+- **S.M.U.T.:** Wishlist badges destroy and leave the host dictionaries on disable; dead Unity keys are pruned on refresh.
+- **Trinket Fortune:** Fish bias respects drop-level gates when the loot type exposes them.
+
 **Sun Haven Todo**
 
 - **Fix:** Todo HUD caches reusable `GUIStyle` instances instead of allocating them every `OnGUI` frame.

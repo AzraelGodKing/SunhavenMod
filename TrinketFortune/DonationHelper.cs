@@ -242,6 +242,7 @@ namespace TrinketFortune
         /// <summary>
         /// Pick a fish from the pool, biased toward unowned aquarium fish when possible.
         /// Returns null to keep vanilla result.
+        /// Only considers drops eligible at the current fishing <paramref name="level"/>.
         /// </summary>
         public static FishData PickBiasedFish(RandomFishArray array, float level)
         {
@@ -253,6 +254,7 @@ namespace TrinketFortune
             {
                 var loot = array.drops[i];
                 if (loot?.fish == null) continue;
+                if (!IsLootEligibleAtLevel(loot, level)) continue;
                 int id = loot.fish.id;
                 if (!HasDonatedByGameId(id))
                     unowned.Add(loot.fish);
@@ -268,6 +270,69 @@ namespace TrinketFortune
             if (UnityEngine.Random.Range(0f, 100f) >= bonusChance) return null;
 
             return unowned[UnityEngine.Random.Range(0, unowned.Count)];
+        }
+
+        private static FieldInfo _lootLevelField;
+        private static PropertyInfo _lootLevelProperty;
+        private static bool _lootLevelResolved;
+        private static bool _lootLevelLoggedMissing;
+
+        /// <summary>
+        /// Mirrors vanilla RandomFishArray gating when the drop exposes a level/useLevel/minLevel member.
+        /// If no level gate exists on the loot type, treat the drop as eligible (weight-only tables).
+        /// </summary>
+        private static bool IsLootEligibleAtLevel(object loot, float level)
+        {
+            if (loot == null) return false;
+
+            EnsureLootLevelMember(loot.GetType());
+            object raw = null;
+            try
+            {
+                if (_lootLevelField != null)
+                    raw = _lootLevelField.GetValue(loot);
+                else if (_lootLevelProperty != null)
+                    raw = _lootLevelProperty.GetValue(loot);
+                else
+                    return true;
+            }
+            catch
+            {
+                return true;
+            }
+
+            if (raw == null) return true;
+            try
+            {
+                float required = Convert.ToSingle(raw);
+                return level + 0.001f >= required;
+            }
+            catch
+            {
+                return true;
+            }
+        }
+
+        private static void EnsureLootLevelMember(Type lootType)
+        {
+            if (_lootLevelResolved || lootType == null) return;
+            _lootLevelResolved = true;
+
+            string[] names = { "useLevel", "level", "minLevel", "requiredLevel", "fishingLevel" };
+            const BindingFlags flags = BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic;
+            foreach (var name in names)
+            {
+                _lootLevelField = lootType.GetField(name, flags);
+                if (_lootLevelField != null) return;
+                _lootLevelProperty = lootType.GetProperty(name, flags);
+                if (_lootLevelProperty != null) return;
+            }
+
+            if (!_lootLevelLoggedMissing)
+            {
+                _lootLevelLoggedMissing = true;
+                Plugin.Log?.LogDebug($"[TrinketFortune] No level gate on {lootType.Name}; fish bias uses full drop list.");
+            }
         }
     }
 }
