@@ -412,8 +412,15 @@ namespace SenpaisChest
                 }
 
                 Log?.LogInfo($"Player initialized: {characterName}");
-                _staticManager?.SetCharacterName(characterName);
+
+                if (string.Equals(_gameplaySessionCharacter, characterName, StringComparison.Ordinal))
+                {
+                    Log?.LogDebug($"[SenpaisChest] Skip disk reload on player init — '{characterName}' already active");
+                    return;
+                }
+
                 _museumTodoIntegration?.Reset();
+                _staticManager?.SetCharacterName(characterName);
 
                 // Sun Haven may call InitializeAsOwner on every map load — do not reload from disk
                 // or we overwrite in-memory rules (same guard as OnSceneLoaded).
@@ -813,9 +820,7 @@ namespace SenpaisChest
     {
         private float _scanTimer;
         private float _autoSaveTimer;
-        private float _chestLabelScanTimer;
         private const float AUTO_SAVE_INTERVAL = 300f; // 5 minutes
-        private const float CHEST_LABEL_SCAN_INTERVAL = 2f;
         private int _lastCountdownSecond = -1;
 
         private void Update()
@@ -823,23 +828,6 @@ namespace SenpaisChest
             Plugin.ProcessPendingChestButton();
 
             var config = Plugin.GetConfig();
-
-            // Chest Labels: periodic scan for chests that need labels
-            if (config != null && config.EnableChestLabels.Value)
-            {
-                _chestLabelScanTimer += Time.unscaledDeltaTime;
-                if (_chestLabelScanTimer >= CHEST_LABEL_SCAN_INTERVAL)
-                {
-                    _chestLabelScanTimer = 0f;
-                    var chests = UnityEngine.Object.FindObjectsOfType<Chest>();
-                    foreach (var chest in chests)
-                    {
-                        if (chest != null && chest.gameObject != null)
-                            SenpaisChest.ChestLabels.ChestLabelPatch.EnsureLabel(chest);
-                    }
-                }
-            }
-
             var manager = Plugin.GetManager();
 
             if (config == null || manager == null)
