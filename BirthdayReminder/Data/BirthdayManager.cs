@@ -41,6 +41,8 @@ namespace BirthdayReminder.Data
         private static FieldInfo _gaveGiftForDayField;
         private static FieldInfo _giftTableField; // NPCAI.giftTable is a field, not a property
         private static bool _useGameData = false;
+        private static MethodInfo _itemSellDictContainsKey;
+        private static MethodInfo _itemSellDictGetItem;
 
         public event Action OnBirthdaysUpdated;
 
@@ -676,7 +678,7 @@ namespace BirthdayReminder.Data
                         var currentSaveProp = AccessTools.Property(gameSaveType, "CurrentSave");
                         var currentSave = currentSaveProp?.GetValue(instance);
                         if (currentSave == null)
-                            return (1, "Spring", 1); // No save loaded (e.g. main menu / LoadScreen)
+                            return (0, "", 0); // No save loaded (e.g. main menu / LoadScreen)
                     }
                 }
 
@@ -712,7 +714,7 @@ namespace BirthdayReminder.Data
                 Plugin.Log?.LogDebug($"[BirthdayManager] Date unavailable (may be on LoadScreen): {ex.Message}");
             }
 
-            return (1, "Spring", 1);
+            return (0, "", 0);
         }
 
         /// <summary>
@@ -750,17 +752,21 @@ namespace BirthdayReminder.Data
             try
             {
                 var gameSaveType = AccessTools.TypeByName("Wish.GameSave");
-                if (gameSaveType != null)
-                {
-                    var gameSave = GetSingletonInstance(gameSaveType);
+                if (gameSaveType == null)
+                    return "Unknown";
 
-                    if (gameSave != null)
-                    {
-                        var currentCharProp = AccessTools.Property(gameSaveType, "CurrentCharacter");
-                        var currentChar = currentCharProp?.GetValue(gameSave);
-                        return currentChar?.ToString() ?? "Unknown";
-                    }
-                }
+                var gameSave = GetSingletonInstance(gameSaveType);
+                if (gameSave == null)
+                    return "Unknown";
+
+                var currentCharProp = AccessTools.Property(gameSaveType, "CurrentCharacter");
+                var currentChar = currentCharProp?.GetValue(gameSave);
+                if (currentChar == null)
+                    return "Unknown";
+
+                var nameProp = AccessTools.Property(currentChar.GetType(), "characterName");
+                var name = nameProp?.GetValue(currentChar) as string;
+                return string.IsNullOrEmpty(name) ? "Unknown" : name;
             }
             catch (Exception ex)
             {
@@ -986,11 +992,16 @@ namespace BirthdayReminder.Data
                         var dict = allItemSellInfosField?.GetValue(instance);
                         if (dict != null)
                         {
-                            var containsKey = dict.GetType().GetMethod("ContainsKey", new[] { typeof(int) });
-                            var getItem = dict.GetType().GetMethod("get_Item", new[] { typeof(int) });
-                            if (containsKey != null && getItem != null && (bool)containsKey.Invoke(dict, new object[] { itemId }))
+                            if (_itemSellDictContainsKey == null || _itemSellDictGetItem == null)
                             {
-                                var info = getItem.Invoke(dict, new object[] { itemId });
+                                _itemSellDictContainsKey = dict.GetType().GetMethod("ContainsKey", new[] { typeof(int) });
+                                _itemSellDictGetItem = dict.GetType().GetMethod("get_Item", new[] { typeof(int) });
+                            }
+
+                            if (_itemSellDictContainsKey != null && _itemSellDictGetItem != null
+                                && (bool)_itemSellDictContainsKey.Invoke(dict, new object[] { itemId }))
+                            {
+                                var info = _itemSellDictGetItem.Invoke(dict, new object[] { itemId });
                                 if (info != null)
                                 {
                                     var nameField = info.GetType().GetField("name", BindingFlags.Public | BindingFlags.Instance);
