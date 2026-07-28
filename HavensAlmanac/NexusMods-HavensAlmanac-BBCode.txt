@@ -1,4 +1,4 @@
-[b][size=5]Haven's Almanac[/size][/b] [i](v2.2.0)[/i]
+[b][size=5]Haven's Almanac[/size][/b] [i](v2.2.1)[/i]
 
 Unified mod dashboard for Sun Haven. Aggregates data from supported installed mods: compact HUD, full dashboard ([b]Ctrl+F5[/b] by default), daily briefing, draggable UI, optional UI scale and update check.
 
