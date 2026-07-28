@@ -355,18 +355,7 @@ namespace SunHavenMuseumUtilityTracker.UI
 
             try
             {
-                Texture2D texture;
-
-                if (sprite.rect.width == sprite.texture.width && sprite.rect.height == sprite.texture.height)
-                {
-                    // Sprite uses the full texture
-                    texture = sprite.texture;
-                }
-                else
-                {
-                    // Sprite is a sub-region, extract it
-                    texture = ExtractSpriteTexture(sprite);
-                }
+                Texture2D texture = ExtractSpriteTexture(sprite);
 
                 if (texture != null)
                 {

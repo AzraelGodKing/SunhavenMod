@@ -19,6 +19,10 @@ Notes for **players and release readers**. Per-mod blurbs and upstream metadata 
 - **Fix:** `HasGivenGiftToday` refreshes the gifted-today cache once when stale instead of returning false.
 - **Fix:** Todo integration skips redundant `LoadDataForCharacter` when Sun Haven Todo's manager (or `IsCharacterDataLoaded` flag) already has data for the active character.
 
+**S.M.U.T. (Sun Haven Museum Utility Tracker)**
+
+- **Fix:** Icon cache always extracts sprite regions via `ExtractSpriteTexture` instead of storing shared atlas textures.
+
 ---
 
 ## 2026-07-11
