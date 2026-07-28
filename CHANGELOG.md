@@ -4,8 +4,6 @@ Notes for **players and release readers**. Per-mod blurbs and upstream metadata 
 
 ---
 
----
-
 ## 2026-07-28
 
 **Sun Haven Todo**
@@ -77,6 +75,11 @@ Notes for **players and release readers**. Per-mod blurbs and upstream metadata 
 - **Fix:** Infernal Forge no longer blocks explicit mana restores (food/consumables) while active — only passive regen ticks (`AddMana` amount 0) are suppressed.
 - **Fix:** Amari Dog Loyalty Aura now counts max-friendship NPCs and applies bonuses to Defense, melee damage, magic damage, and max HP only.
 - **Fix:** `StatFrameCache` marks the cache invalid on update errors instead of falsely reporting valid data.
+
+**Haven's Respec**
+
+- **Fix:** Reset/undo hotkeys defer while typing in chat, console, or UI text fields (`TextInputFocusGuard`).
+- **Fix:** Persistent runner recreation reattaches its component when the GameObject survives but the MonoBehaviour was destroyed.
 
 ---
 
