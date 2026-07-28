@@ -46,10 +46,26 @@ namespace HavenDevTools.Services
                     return false;
                 }
 
+                object result;
                 if (_addItemArgCount == 3)
-                    method.Invoke(inventory, new object[] { itemId, amount, true });
+                    result = method.Invoke(inventory, new object[] { itemId, amount, true });
                 else
-                    method.Invoke(inventory, new object[] { itemId, amount });
+                    result = method.Invoke(inventory, new object[] { itemId, amount });
+
+                var returnType = method.ReturnType;
+                if (returnType == typeof(bool))
+                {
+                    if (result is bool success && !success)
+                    {
+                        Plugin.Log?.LogWarning($"[ItemInspector] AddItem rejected item {itemId} x{amount}");
+                        return false;
+                    }
+                }
+                else if (returnType != typeof(void) && result == null)
+                {
+                    Plugin.Log?.LogWarning("[ItemInspector] AddItem returned null");
+                    return false;
+                }
 
                 return true;
             }

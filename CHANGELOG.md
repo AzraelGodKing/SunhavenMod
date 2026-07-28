@@ -65,6 +65,11 @@ Notes for **players and release readers**. Per-mod blurbs and upstream metadata 
 - **Fix:** Birthday provider copies `TodaysBirthdays` into its own list instead of holding a live reference.
 - **Fix:** Vault provider `HasBriefingContent` matches `DrawBriefingSection` when stored currencies exist.
 
+**Haven Dev Tools**
+
+- **Fix:** `SpawnItem` returns false when `AddItem` invoke fails or reports failure.
+- **Fix:** Log viewer caches a reusable `GUIStyle` for log lines instead of allocating per entry.
+
 ---
 
 ## 2026-07-11
