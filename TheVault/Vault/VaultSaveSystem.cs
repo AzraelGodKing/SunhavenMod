@@ -754,6 +754,8 @@ namespace TheVault.Vault
             }
         }
 
+        private static bool _loggedEncryptionMode;
+
         /// <summary>
         /// Generate encryption key using Steam ID (preferred) or player name (fallback).
         /// Steam ID allows saves to work across all devices on the same Steam account.
@@ -766,15 +768,21 @@ namespace TheVault.Vault
 
             if (!string.IsNullOrEmpty(steamId))
             {
-                // Use Steam ID - works across all devices on same Steam account
                 identifier = $"Steam_{steamId}";
-                Plugin.Log?.LogInfo("Using Steam ID for vault encryption (cross-device compatible)");
+                if (!_loggedEncryptionMode)
+                {
+                    _loggedEncryptionMode = true;
+                    Plugin.Log?.LogDebug("Using Steam ID for vault encryption (cross-device compatible)");
+                }
             }
             else
             {
-                // Fallback to player name for non-Steam versions
                 identifier = $"Player_{playerName}";
-                Plugin.Log?.LogInfo("Using player name for vault encryption (non-Steam mode)");
+                if (!_loggedEncryptionMode)
+                {
+                    _loggedEncryptionMode = true;
+                    Plugin.Log?.LogDebug("Using player name for vault encryption (non-Steam mode)");
+                }
             }
 
             string combined = $"{ENCRYPTION_SALT}_{identifier}_TheVaultPortable";

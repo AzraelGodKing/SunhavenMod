@@ -1169,6 +1169,10 @@ namespace TheVault.Patches
             {
                 return vaultManager.GetOrbs(currencyId.Substring(VaultCurrencyIds.PrefixOrb.Length));
             }
+            else if (currencyId.StartsWith(VaultCurrencyIds.PrefixCustom, StringComparison.Ordinal))
+            {
+                return vaultManager.GetCustomCurrency(currencyId.Substring(VaultCurrencyIds.PrefixCustom.Length));
+            }
 
             return 0;
         }

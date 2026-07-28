@@ -4,6 +4,10 @@
 
 - **Fix:** Load restores from `.backup` when the primary save file is missing or unreadable (crash during atomic save), instead of silently starting an empty vault. Tries candidates in order canonical → backup → legacy; quarantines corrupt primary when backup/legacy loads; resets re-encryption flag per candidate.
 - **Fix (pt-BR):** Re-applied native-speaker Portuguese (Brazil) strings with correct UTF-8 encoding.
+- **Fix:** `GetVaultAmount` supports registered `custom_` currencies in inventory merge paths.
+- **Fix:** Shop currency deduction runs only after prefix-approved vault purchases.
+- **Fix:** HUD recreated when destroyed without recreating the full vault window.
+- **Fix:** Encryption mode and secret-gift hash logs downgraded to debug.
 
 ## Version 4.0.1
 
