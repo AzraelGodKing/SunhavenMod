@@ -110,7 +110,7 @@ namespace HavensBirthright
             catch (Exception ex)
             {
                 Plugin.Log.LogWarning($"[StatFrameCache] Update error: {ex.Message}");
-                _cacheValid = true;
+                _cacheValid = false;
             }
         }
 
