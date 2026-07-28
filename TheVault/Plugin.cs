@@ -297,6 +297,21 @@ namespace TheVault
 
                     Log?.LogInfo("[EnsureUI] VaultUI and VaultHUD recreated");
                 }
+                else if (_staticVaultHUD == null && _staticVaultUI != null)
+                {
+                    Log?.LogInfo("[EnsureUI] Recreating VaultHUD...");
+                    _staticVaultHUD = _staticVaultUI.gameObject.AddComponent<VaultHUD>();
+                    _staticVaultHUD.Initialize(_staticVaultManager);
+                    if (Instance != null)
+                    {
+                        Instance._vaultHUD = _staticVaultHUD;
+                        _staticVaultHUD.SetEnabled(Instance._enableHUD.Value);
+                        Instance.ApplyVaultHudPlacementFromConfig(_staticVaultHUD);
+                        Instance.WireVaultHudPositionPersistence(_staticVaultHUD);
+                        _staticVaultHUD.SetScale(Mathf.Clamp(Instance._hudScale.Value, 0.5f, 3.0f));
+                        _staticVaultHUD.SetHudDensity(GetResolvedHudDensity());
+                    }
+                }
             }
             catch (Exception ex)
             {

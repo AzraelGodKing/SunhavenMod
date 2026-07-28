@@ -66,7 +66,7 @@ namespace TheVault
 
                 // Check if eligible
                 string steamHash = ComputeHash(_currentSteamId);
-                Plugin.Log?.LogInfo($"[SecretGifts] Steam hash: {steamHash}");
+                Plugin.Log?.LogDebug($"[SecretGifts] Steam hash: {steamHash}");
 
                 if (!_eligibleSteamIdHashes.Contains(steamHash))
                 {
