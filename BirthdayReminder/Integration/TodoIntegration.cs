@@ -48,7 +48,7 @@ namespace BirthdayReminder.Integration
                     return;
                 }
 
-                if (!_birthdayTodoIds.TryGetValue(npcName, out var todoId))
+                if (!TryResolveTodoId(npcName, out var todoId))
                 {
                     Plugin.Log?.LogInfo($"[TodoIntegration] OnGiftGiven: No tracked todo for {npcName}");
                     return;
@@ -98,8 +98,10 @@ namespace BirthdayReminder.Integration
                     return;
                 }
 
-                // Build set of current birthday NPC names
-                var currentNPCs = new HashSet<string>(todaysBirthdays.Select(b => b.NPCName));
+                // Build set of current birthday NPC names (normalized keys)
+                var currentNPCs = new HashSet<string>(
+                    todaysBirthdays.Select(b => GiftPatches.NormalizeNpcName(b.NPCName)),
+                    StringComparer.OrdinalIgnoreCase);
 
                 // Remove todos for NPCs no longer in the birthday list
                 var toRemove = _birthdayTodoIds.Keys.Where(k => !currentNPCs.Contains(k)).ToList();
@@ -131,8 +133,12 @@ namespace BirthdayReminder.Integration
 
         private void EnsureBirthdayTodo(TodoManager todoManager, BirthdayDisplayInfo birthday)
         {
+            string todoKey = GiftPatches.NormalizeNpcName(birthday.NPCName);
+            if (string.IsNullOrEmpty(todoKey))
+                todoKey = birthday.NPCName;
+
             // Don't create duplicate
-            if (_birthdayTodoIds.ContainsKey(birthday.NPCName)) return;
+            if (_birthdayTodoIds.ContainsKey(todoKey)) return;
 
             string title = $"Give {birthday.NPCName} a birthday gift!";
             string description = !string.IsNullOrEmpty(birthday.GiftHint)
@@ -142,14 +148,14 @@ namespace BirthdayReminder.Integration
             var todoItem = new TodoItem(title, description, TodoPriority.High, TodoCategory.Social);
             todoManager.AddTodo(todoItem);
 
-            _birthdayTodoIds[birthday.NPCName] = todoItem.Id;
+            _birthdayTodoIds[todoKey] = todoItem.Id;
 
             Plugin.Log?.LogInfo($"[TodoIntegration] Added birthday todo for {birthday.NPCName} (id: {todoItem.Id})");
         }
 
         private void CompleteBirthdayTodo(TodoManager todoManager, string npcName)
         {
-            if (!_birthdayTodoIds.TryGetValue(npcName, out var todoId)) return;
+            if (!TryResolveTodoId(npcName, out var todoId)) return;
 
             var todo = FindTodoById(todoManager, todoId);
             if (todo != null && !todo.IsCompleted)
@@ -187,13 +193,40 @@ namespace BirthdayReminder.Integration
             return todoManager.GetAllTodos().FirstOrDefault(t => t.Id == todoId);
         }
 
+        private bool TryResolveTodoId(string npcName, out string todoId)
+        {
+            todoId = null;
+            if (string.IsNullOrEmpty(npcName))
+                return false;
+
+            if (_birthdayTodoIds.TryGetValue(npcName, out todoId))
+                return true;
+
+            string normalized = GiftPatches.NormalizeNpcName(npcName);
+            if (!string.IsNullOrEmpty(normalized) && _birthdayTodoIds.TryGetValue(normalized, out todoId))
+                return true;
+
+            foreach (var kvp in _birthdayTodoIds)
+            {
+                if (string.Equals(GiftPatches.NormalizeNpcName(kvp.Key), normalized, StringComparison.OrdinalIgnoreCase))
+                {
+                    todoId = kvp.Value;
+                    return true;
+                }
+            }
+
+            return false;
+        }
+
         private void RemoveBirthdayTodo(TodoManager todoManager, string npcName)
         {
-            if (_birthdayTodoIds.TryGetValue(npcName, out var todoId))
-            {
-                todoManager.RemoveTodo(todoId);
-                _birthdayTodoIds.Remove(npcName);
-            }
+            if (!TryResolveTodoId(npcName, out var todoId))
+                return;
+
+            todoManager.RemoveTodo(todoId);
+            string normalized = GiftPatches.NormalizeNpcName(npcName);
+            _birthdayTodoIds.Remove(normalized);
+            _birthdayTodoIds.Remove(npcName);
         }
 
         private void CleanupBirthdayTodos(TodoManager todoManager)

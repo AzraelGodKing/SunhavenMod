@@ -49,6 +49,7 @@ namespace BirthdayReminder.Data
             Year = year;
             Season = season;
             Day = day;
+            GiftedNPCs = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
         }
 
         public bool HasGifted(string npcName)

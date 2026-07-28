@@ -23,6 +23,15 @@ Notes for **players and release readers**. Per-mod blurbs and upstream metadata 
 
 - **Fix:** Icon cache always extracts sprite regions via `ExtractSpriteTexture` instead of storing shared atlas textures.
 
+**A Squirrel's Birthday Reminder**
+
+- **Fix:** Gift-tracking patch failure no longer calls `UnpatchSelf()` and removes player-init hooks.
+- **Fix:** `ShowGiftHints` config now gates HUD gift-hint labels.
+- **Fix:** Character name resolution uses `characterName` consistently with player-init patches.
+- **Fix:** Todo integration keys NPCs with normalized names so fuzzy/composite names complete correctly.
+- **Fix:** Date staleness checks skip when no save is loaded (avoids spurious main-menu refreshes).
+- **Fix:** Gift tracking uses case-insensitive NPC name matching.
+
 ---
 
 ## 2026-07-11

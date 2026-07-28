@@ -46,6 +46,7 @@ namespace BirthdayReminder
 
         // Static config for UI scale (used when recreating HUD)
         private static float _staticUIScale = 1f;
+        private static bool _staticShowGiftHints = true;
 
         // Character tracking for save switching
         private static string _currentCharacterName;
@@ -160,6 +161,8 @@ namespace BirthdayReminder
                 true,
                 "Show gift preferences in the birthday reminder"
             );
+            _staticShowGiftHints = _showGiftHints.Value;
+            _showGiftHints.SettingChanged += (_, _) => _staticShowGiftHints = _showGiftHints.Value;
 
             _useNativeNotifications = ConfigFile.Bind(
                 "General",
@@ -296,21 +299,14 @@ namespace BirthdayReminder
                         Log.LogInfo("Applied gift tracking patch (NPCAI.Gift)");
                     }
                     else
-                    {
                         Log.LogWarning("Could not find NPCAI.Gift(Item) — gift tracking disabled");
-                        _harmony.UnpatchSelf();
-                    }
                 }
                 else
-                {
                     Log.LogWarning("Could not find NPCAI or Wish.Item — gift tracking disabled");
-                    _harmony.UnpatchSelf();
-                }
             }
             catch (Exception ex)
             {
-                Log.LogWarning($"Failed to apply gift patch (rolling back Harmony): {ex.Message}");
-                _harmony.UnpatchSelf();
+                Log.LogWarning($"Failed to apply gift patch — gift tracking disabled: {ex.Message}");
             }
         }
 
@@ -440,6 +436,7 @@ namespace BirthdayReminder
         public static BirthdayManager GetManager() => _staticManager;
         public static BirthdayHUD GetHUD() => _staticHUD;
         public static TodoIntegration GetTodoIntegration() => _todoIntegration;
+        public static bool ShowGiftHints => _staticShowGiftHints;
         public static KeyCode StaticToggleKey => _staticToggleKey;
         public static bool StaticDebugMode => _staticDebugMode;
         public static bool StaticUseNativeNotifications => _staticUseNativeNotifications;
@@ -850,17 +847,20 @@ namespace BirthdayReminder
             }
         }
 
-        private static string NormalizeNpcName(string npcName)
+        internal static string NormalizeNpcName(string npcName)
         {
             if (string.IsNullOrWhiteSpace(npcName))
                 return "";
 
-            var parts = npcName
-                .Split(new[] { '+' }, StringSplitOptions.RemoveEmptyEntries)
-                .Select(p => p.Trim())
-                .Where(p => !string.IsNullOrEmpty(p))
-                .Distinct(StringComparer.OrdinalIgnoreCase)
-                .ToList();
+            var seen = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+            var parts = new List<string>();
+            foreach (var segment in npcName.Split('+'))
+            {
+                var trimmed = segment.Trim();
+                if (trimmed.Length == 0 || !seen.Add(trimmed))
+                    continue;
+                parts.Add(trimmed);
+            }
 
             if (parts.Count == 0)
                 return npcName.Trim();
