@@ -29,7 +29,10 @@ namespace HavensAlmanac.Integration
                 var manager = BirthdayReminder.Plugin.GetManager();
                 if (manager == null) { _isReady = false; return; }
 
-                _birthdays = new List<BirthdayDisplayInfo>(manager.TodaysBirthdays ?? Array.Empty<BirthdayDisplayInfo>());
+                var today = manager.TodaysBirthdays;
+                _birthdays = today != null
+                    ? new List<BirthdayDisplayInfo>(today)
+                    : new List<BirthdayDisplayInfo>();
                 _ungiftedCount = 0;
                 foreach (var b in _birthdays)
                 {
