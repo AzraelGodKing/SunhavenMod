@@ -6,7 +6,11 @@ Notes for **players and release readers**. Per-mod blurbs and upstream metadata 
 
 ## 2026-07-28
 
-**Suite bug-risk audit fixes (no version bumps)**
+**Suite patch release (all mods)**
+
+- Patch bumps across the suite for the bug-risk audit fixes. Per-mod notes in `docs/versions.json`.
+
+**Suite bug-risk audit fixes**
 
 - **Haven's Respec:** Profession reset now fails closed — any mid-walk exception rolls back from the pre-reset snapshot instead of charging gold for a half-wiped tree.
 - **The Vault:** `HasEnough` now treats bag + vault as a combined balance; auto-deposit/deposit paths roll inventory back if vault credit fails; menu reset clears auto-deposit guard flags.
