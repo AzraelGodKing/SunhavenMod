@@ -315,8 +315,12 @@ namespace HavensAlmanac
 
         public static void ResetOvernightHook()
         {
-            _overnightHooked = false;
-            _overnightCallback = null;
+            OvernightHookUtility.TryUnhookOvernightEvent(
+                ref _overnightHooked,
+                ref _overnightCallback,
+                ResolveSingletonInstance,
+                message => Log?.LogInfo($"[Almanac] {message}"),
+                message => Log?.LogWarning($"[Almanac] {message}"));
         }
 
         public static void TryHookOvernightEvent()

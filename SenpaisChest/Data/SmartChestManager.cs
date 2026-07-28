@@ -613,9 +613,24 @@ namespace SenpaisChest.Data
         private void TransferItemData(Inventory sourceInv, int sourceSlot,
             Inventory targetInv, Item item, int amount)
         {
-            // Use the game's own Inventory API — handles stacking, empty slots, and UI updates
+            if (sourceInv == null || targetInv == null || item == null || amount <= 0)
+                return;
+
+            // Only remove what the target actually accepted — never drop items on a failed AddItem.
+            int itemId = item.id;
+            int targetBefore = targetInv.GetAmount(itemId);
             targetInv.AddItem(item, amount, false);
-            sourceInv.RemoveItemAt(sourceSlot, amount);
+            int added = targetInv.GetAmount(itemId) - targetBefore;
+            if (added <= 0)
+            {
+                Plugin.Log?.LogWarning($"[Scan] AddItem accepted 0 of item {itemId}; skipping source remove");
+                return;
+            }
+
+            int toRemove = Mathf.Min(added, amount);
+            sourceInv.RemoveItemAt(sourceSlot, toRemove);
+            if (toRemove < amount)
+                Plugin.Log?.LogWarning($"[Scan] Partial transfer of item {itemId}: added {toRemove}/{amount}");
         }
 
         #endregion

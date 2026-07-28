@@ -37,12 +37,8 @@ namespace HavensBirthright.Patches
             if (!race.HasValue)
                 return;
 
-            // Apply base defense bonus (existing)
-            if (manager.HasBonus(BonusType.Defense))
-            {
-                float defenseBonus = manager.GetBonusValue(BonusType.Defense);
-                damageInfo.damage *= (1f - defenseBonus / 100f);
-            }
+            // Racial Defense is already applied via StatPatches.ModifyGetStat(StatType.Defense).
+            // Do not multiply damage again here — that double-stacks the same bonus.
 
             // Amari Cat - Nine Lives (passive): chance to survive lethal damage and heal to X% HP (not an active/innate power)
             if (race.Value == Race.AmariCat && AbilityConfig.EnableNineLives != null && AbilityConfig.EnableNineLives.Value)
@@ -198,6 +194,8 @@ namespace HavensBirthright.Patches
                     return;
 
                 float maxHP = player.MaxHealth;
+                if (maxHP <= 0f)
+                    return;
                 float currentHP = ReflectionHelper.TryGetValue<float>(player, "health", maxHP);
                 float hpPercent = (currentHP / maxHP) * 100f;
 
@@ -205,6 +203,8 @@ namespace HavensBirthright.Patches
                 {
                     // Check mana cost
                     float maxMana = player.MaxMana;
+                    if (maxMana <= 0f)
+                        return;
                     float currentMana = ReflectionHelper.TryGetValue<float>(player, "mana", 0f);
                     float manaCost = maxMana * (AbilityConfig.DivineWardManaCostPercent.Value / 100f);
 

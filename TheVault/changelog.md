@@ -2,6 +2,7 @@
 
 ## Unreleased
 
+- **Fix:** `HasEnough` combines bag + vault; deposit/auto-deposit rolls back inventory when vault credit fails; menu `ResetState` clears auto-deposit guard flags.
 - **Fix:** Load restores from `.backup` when the primary save file is missing or unreadable (crash during atomic save), instead of silently starting an empty vault. Tries candidates in order canonical → backup → legacy; quarantines corrupt primary when backup/legacy loads; resets re-encryption flag per candidate.
 - **Fix (pt-BR):** Re-applied native-speaker Portuguese (Brazil) strings with correct UTF-8 encoding.
 - **Fix:** `GetVaultAmount` supports registered `custom_` currencies in inventory merge paths.
