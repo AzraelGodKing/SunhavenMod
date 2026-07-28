@@ -283,7 +283,7 @@ namespace SunhavenTodo
 
         private void OnSceneLoaded(Scene scene, LoadSceneMode mode)
         {
-            bool isMenuScene = scene.name == "MainMenu" || scene.name == "Bootstrap";
+            bool isMenuScene = IsMenuScene(scene.name);
 
             if (isMenuScene)
             {
@@ -456,6 +456,7 @@ namespace SunhavenTodo
 
             try
             {
+                // DayCycle exposes MonthDay but no Week property; weekly reset uses day-of-month heuristic.
                 var dayCycleType = AccessTools.TypeByName("Wish.DayCycle");
                 if (dayCycleType != null)
                 {
@@ -463,6 +464,7 @@ namespace SunhavenTodo
                     int day = monthDayProp != null ? (int)monthDayProp.GetValue(null) : 0;
                     if (day > 0)
                     {
+                        // First day of each 7-day block in the season (days 1, 8, 15, 22).
                         if ((day - 1) % 7 == 0)
                         {
                             _staticTodoManager.ResetRecurringTodos(Data.RecurInterval.Weekly);
@@ -505,6 +507,12 @@ namespace SunhavenTodo
         public static TodoUI GetTodoUI() => _staticTodoUI;
         public static TodoHUD GetTodoHUD() => _staticTodoHUD;
 
+        /// <summary>True when todo data is loaded for the active character.</summary>
+        public static bool IsCharacterDataLoaded =>
+            _staticTodoManager != null &&
+            !string.IsNullOrEmpty(_staticTodoManager.CurrentCharacter) &&
+            _staticTodoManager.GetData() != null;
+
         public static void ToggleHUD()
         {
             EnsureUIComponentsExist();
@@ -533,6 +541,9 @@ namespace SunhavenTodo
             SaveData();
             _lastAutoSaveTime = Time.unscaledTime;
         }
+
+        private static bool IsMenuScene(string sceneName) =>
+            sceneName == "MainMenu" || sceneName == "Bootstrap" || sceneName == "Menu";
 
         private void OnDestroy()
         {
