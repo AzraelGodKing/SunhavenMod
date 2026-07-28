@@ -1,6 +1,6 @@
 # Gifting Assistant
 
-**Version 1.1.0**
+**Version 1.1.1**
 
 Daily gift routine planner for Sun Haven.
 

@@ -1,4 +1,4 @@
-﻿# Sun Haven Mods
+# Sun Haven Mods
 
 BepInEx plugins for [Sun Haven](https://store.steampowered.com/app/1432860/Sun_Haven/) — vault, QoL, integrations, and docs. **Published versions and download links** live in [`docs/versions.json`](docs/versions.json) (also drives the [mod hub](https://azraelgodking.github.io/SunhavenMod/)).
 
@@ -6,19 +6,19 @@ BepInEx plugins for [Sun Haven](https://store.steampowered.com/app/1432860/Sun_H
 
 | Mod | Folder | Version |
 |-----|--------|---------|
-| Senpai's Chest | [`SenpaisChest/`](SenpaisChest/) | 3.1.0 |
-| Sun Haven Todo | [`SunhavenTodo/`](SunhavenTodo/) | 2.1.0 |
-| Sun Haven Museum Utility Tracker (S.M.U.T.) | [`SunHavenMuseumUtilityTracker/`](SunHavenMuseumUtilityTracker/) | 3.1.0 |
-| The Vault | [`TheVault/`](TheVault/) | 4.1.0 |
-| Haven's Birthright | [`HavensBirthright/`](HavensBirthright/) | 3.1.0 |
-| Haven's Almanac | [`HavensAlmanac/`](HavensAlmanac/) | 2.2.0 |
-| A Squirrel's Birthday Reminder | [`BirthdayReminder/`](BirthdayReminder/) | 2.1.0 |
-| Haven Dev Tools | [`HavenDevTools/`](HavenDevTools/) | 2.1.0 |
-| Trinket Fortune | [`TrinketFortune/`](TrinketFortune/) | 2.1.0 |
-| Faster Races | [`FasterRaces/`](FasterRaces/) | 2.1.0 |
-| Crop Optimizer | [`CropOptimizer/`](CropOptimizer/) | 2.2.0 |
-| Haven's Respec | [`HavensRespec/`](HavensRespec/) | 2.1.0 |
-| Gifting Assistant | [`GiftingAssistant/`](GiftingAssistant/) | 1.1.0 |
+| Senpai's Chest | [`SenpaisChest/`](SenpaisChest/) | 3.1.1 |
+| Sun Haven Todo | [`SunhavenTodo/`](SunhavenTodo/) | 2.1.1 |
+| Sun Haven Museum Utility Tracker (S.M.U.T.) | [`SunHavenMuseumUtilityTracker/`](SunHavenMuseumUtilityTracker/) | 3.1.1 |
+| The Vault | [`TheVault/`](TheVault/) | 4.1.1 |
+| Haven's Birthright | [`HavensBirthright/`](HavensBirthright/) | 3.1.1 |
+| Haven's Almanac | [`HavensAlmanac/`](HavensAlmanac/) | 2.2.1 |
+| A Squirrel's Birthday Reminder | [`BirthdayReminder/`](BirthdayReminder/) | 2.1.1 |
+| Haven Dev Tools | [`HavenDevTools/`](HavenDevTools/) | 2.1.1 |
+| Trinket Fortune | [`TrinketFortune/`](TrinketFortune/) | 2.1.1 |
+| Faster Races | [`FasterRaces/`](FasterRaces/) | 2.1.1 |
+| Crop Optimizer | [`CropOptimizer/`](CropOptimizer/) | 2.2.1 |
+| Haven's Respec | [`HavensRespec/`](HavensRespec/) | 2.1.1 |
+| Gifting Assistant | [`GiftingAssistant/`](GiftingAssistant/) | 1.1.1 |
 
 Per-mod READMEs and Thunderstore packages describe features, hotkeys, and config in detail.
 
