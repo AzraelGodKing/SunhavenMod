@@ -1,5 +1,5 @@
 {
-  "lastFetched": "2026-08-06T07:37:40.921Z",
+  "lastFetched": "2026-08-06T10:37:07.734Z",
   "mods": {
     "senpais-chest": {
       "name": "Senpai's Chest",
@@ -36,10 +36,10 @@
         }
       },
       "nexus": {
-        "total_downloads": 1080,
-        "unique_downloads": 766
+        "total_downloads": 1081,
+        "unique_downloads": 767
       },
-      "combined_total": 2290
+      "combined_total": 2291
     },
     "havens-birthright": {
       "name": "Haven's Birthright",
@@ -77,7 +77,7 @@
     "museum-utility-tracker": {
       "name": "S.M.U.T.",
       "thunderstore": {
-        "total_downloads": 1045,
+        "total_downloads": 1054,
         "versions": {
           "3.1.1": 32,
           "3.1.0": 70,
@@ -87,10 +87,10 @@
           "2.4.0": 41,
           "2.3.0": 44,
           "2.2.9": 36,
-          "2.2.6": 120,
+          "2.2.6": 125,
           "2.2.5": 61,
           "2.2.3": 94,
-          "2.2.2": 77,
+          "2.2.2": 81,
           "2.2.1": 59,
           "2.2.0": 67,
           "2.1.1": 46,
@@ -101,7 +101,7 @@
         "total_downloads": 1503,
         "unique_downloads": 1151
       },
-      "combined_total": 2548
+      "combined_total": 2557
     },
     "squirrels-birthday-reminder": {
       "name": "A Squirrel's Birthday Reminder",
@@ -167,10 +167,10 @@
     "the-vault": {
       "name": "The Vault",
       "thunderstore": {
-        "total_downloads": 822,
+        "total_downloads": 824,
         "versions": {
           "4.1.1": 20,
-          "4.1.0": 48,
+          "4.1.0": 50,
           "4.0.1": 51,
           "4.0.0": 35,
           "3.3.2": 72,
@@ -193,7 +193,7 @@
         "total_downloads": 1965,
         "unique_downloads": 1362
       },
-      "combined_total": 2787
+      "combined_total": 2789
     },
     "haven-dev-tools": {
       "name": "HavenDevTools",
@@ -367,9 +367,9 @@
     }
   },
   "site_total": {
-    "thunderstore": 9122,
-    "nexus_total": 11153,
-    "nexus_unique": 8195,
-    "grand_total": 20275
+    "thunderstore": 9133,
+    "nexus_total": 11154,
+    "nexus_unique": 8196,
+    "grand_total": 20287
   }
 }
