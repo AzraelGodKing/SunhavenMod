@@ -1,5 +1,5 @@
 {
-  "lastFetched": "2026-08-07T15:54:36.743Z",
+  "lastFetched": "2026-08-07T16:53:03.288Z",
   "mods": {
     "senpais-chest": {
       "name": "Senpai's Chest",
@@ -36,10 +36,10 @@
         }
       },
       "nexus": {
-        "total_downloads": 1081,
-        "unique_downloads": 766
+        "total_downloads": 1082,
+        "unique_downloads": 767
       },
-      "combined_total": 2297
+      "combined_total": 2298
     },
     "havens-birthright": {
       "name": "Haven's Birthright",
@@ -127,10 +127,10 @@
         }
       },
       "nexus": {
-        "total_downloads": 1154,
-        "unique_downloads": 876
+        "total_downloads": 1155,
+        "unique_downloads": 877
       },
-      "combined_total": 1964
+      "combined_total": 1965
     },
     "havens-todo": {
       "name": "Sun Haven Todo",
@@ -159,10 +159,10 @@
         }
       },
       "nexus": {
-        "total_downloads": 627,
-        "unique_downloads": 483
+        "total_downloads": 628,
+        "unique_downloads": 484
       },
-      "combined_total": 1626
+      "combined_total": 1627
     },
     "the-vault": {
       "name": "The Vault",
@@ -271,10 +271,10 @@
         }
       },
       "nexus": {
-        "total_downloads": 322,
-        "unique_downloads": 242
+        "total_downloads": 323,
+        "unique_downloads": 243
       },
-      "combined_total": 705
+      "combined_total": 706
     },
     "trinket-fortune": {
       "name": "Trinket Fortune",
@@ -320,10 +320,10 @@
         }
       },
       "nexus": {
-        "total_downloads": 914,
-        "unique_downloads": 692
+        "total_downloads": 915,
+        "unique_downloads": 693
       },
-      "combined_total": 1384
+      "combined_total": 1385
     },
     "havens-respec": {
       "name": "Haven's Respec",
@@ -368,8 +368,8 @@
   },
   "site_total": {
     "thunderstore": 9279,
-    "nexus_total": 11162,
-    "nexus_unique": 8198,
-    "grand_total": 20441
+    "nexus_total": 11167,
+    "nexus_unique": 8203,
+    "grand_total": 20446
   }
 }
