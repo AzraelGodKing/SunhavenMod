@@ -1,5 +1,5 @@
 {
-  "lastFetched": "2026-08-08T20:28:04.504Z",
+  "lastFetched": "2026-08-08T21:28:22.762Z",
   "mods": {
     "senpais-chest": {
       "name": "Senpai's Chest",
@@ -77,9 +77,9 @@
     "museum-utility-tracker": {
       "name": "S.M.U.T.",
       "thunderstore": {
-        "total_downloads": 1182,
+        "total_downloads": 1184,
         "versions": {
-          "3.1.1": 35,
+          "3.1.1": 37,
           "3.1.0": 70,
           "3.0.1": 66,
           "3.0.0": 51,
@@ -98,17 +98,17 @@
         }
       },
       "nexus": {
-        "total_downloads": 1513,
-        "unique_downloads": 1161
+        "total_downloads": 1514,
+        "unique_downloads": 1162
       },
-      "combined_total": 2695
+      "combined_total": 2698
     },
     "squirrels-birthday-reminder": {
       "name": "A Squirrel's Birthday Reminder",
       "thunderstore": {
-        "total_downloads": 829,
+        "total_downloads": 830,
         "versions": {
-          "2.1.1": 29,
+          "2.1.1": 30,
           "2.1.0": 50,
           "2.0.1": 60,
           "2.0.0": 41,
@@ -130,7 +130,7 @@
         "total_downloads": 1156,
         "unique_downloads": 878
       },
-      "combined_total": 1985
+      "combined_total": 1986
     },
     "havens-todo": {
       "name": "Sun Haven Todo",
@@ -190,10 +190,10 @@
         }
       },
       "nexus": {
-        "total_downloads": 1972,
-        "unique_downloads": 1368
+        "total_downloads": 1973,
+        "unique_downloads": 1369
       },
-      "combined_total": 2808
+      "combined_total": 2809
     },
     "haven-dev-tools": {
       "name": "HavenDevTools",
@@ -351,25 +351,25 @@
     "gifting-assistant": {
       "name": "Gifting Assistant",
       "thunderstore": {
-        "total_downloads": 172,
+        "total_downloads": 173,
         "versions": {
-          "1.1.1": 33,
+          "1.1.1": 34,
           "1.1.0": 67,
           "1.0.1": 46,
           "1.0.0": 26
         }
       },
       "nexus": {
-        "total_downloads": 527,
-        "unique_downloads": 440
+        "total_downloads": 528,
+        "unique_downloads": 441
       },
-      "combined_total": 699
+      "combined_total": 701
     }
   },
   "site_total": {
-    "thunderstore": 9487,
-    "nexus_total": 11213,
-    "nexus_unique": 8250,
-    "grand_total": 20700
+    "thunderstore": 9491,
+    "nexus_total": 11216,
+    "nexus_unique": 8253,
+    "grand_total": 20707
   }
 }
