@@ -1,5 +1,5 @@
 {
-  "lastFetched": "2026-08-10T17:50:16.850Z",
+  "lastFetched": "2026-08-10T18:55:46.317Z",
   "mods": {
     "senpais-chest": {
       "name": "Senpai's Chest",
@@ -248,10 +248,10 @@
         }
       },
       "nexus": {
-        "total_downloads": 570,
-        "unique_downloads": 431
+        "total_downloads": 571,
+        "unique_downloads": 432
       },
-      "combined_total": 1399
+      "combined_total": 1400
     },
     "faster-races": {
       "name": "Faster Races",
@@ -368,8 +368,8 @@
   },
   "site_total": {
     "thunderstore": 9878,
-    "nexus_total": 11208,
-    "nexus_unique": 8239,
-    "grand_total": 21086
+    "nexus_total": 11209,
+    "nexus_unique": 8240,
+    "grand_total": 21087
   }
 }
