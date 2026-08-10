@@ -76,14 +76,15 @@ namespace HavensBirthright.Patches
         // ===================== MANA REGEN BLOCK PATCH =====================
 
         /// <summary>
-        /// PREFIX patch for Player.AddMana(float, float).
+        /// PREFIX patch for Player.AddMana(float mana, float overCapAmount).
         /// Blocks ALL mana regeneration while Infernal Forge is toggled ON.
         /// Only applies to Fire Elemental (Infernal Forge ability) — must NOT block
         /// mana for other races (e.g. Cat Amari food/drink/fishing mana restore).
         /// Returns false to skip the original AddMana method entirely (passive regen only).
-        /// Explicit restores (food, consumables) pass a positive amount and are allowed through.
+        /// Explicit restores (food, consumables) pass a positive mana value and are allowed through.
+        /// Parameter names must match Wish.Player.AddMana or HarmonyX fails to patch.
         /// </summary>
-        public static bool OnPlayerAddManaPrefix(float amount, float _)
+        public static bool OnPlayerAddManaPrefix(float mana, float overCapAmount)
         {
             if (!RacialConfig.EnableRacialBonuses.Value) return true;
             if (!AbilityConfig.EnableInfernalForge.Value) return true;
@@ -96,8 +97,8 @@ namespace HavensBirthright.Patches
             bool infernalManaLockRace = infernalRace == Race.FireElemental || infernalRace == Race.Elemental;
             if (!infernalManaLockRace) return true; // Never block mana for Water Elemental, other races, etc.
             if (!ActiveAbilityManager.IsRuntimeEnabled(ActiveAbilityManager.InfernalForge)) return true;
-            if (amount > 0f) return true; // Allow explicit mana restores (consumables, food, abilities)
-            return false; // Block passive regen ticks (amount 0)
+            if (mana > 0f) return true; // Allow explicit mana restores (consumables, food, abilities)
+            return false; // Block passive regen ticks (mana 0)
         }
 
         // ===================== INFERNAL FORGE PATCH =====================
