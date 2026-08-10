@@ -4,6 +4,14 @@ Notes for **players and release readers**. Per-mod blurbs and upstream metadata 
 
 ---
 
+## 2026-08-10
+
+**Haven's Birthright (3.1.2)**
+
+- **Fix:** Infernal Forge `Player.AddMana` Harmony prefix now uses parameter names `mana` / `overCapAmount` so HarmonyX can patch after the game signature change (was looking for `amount` and failing the patch).
+
+---
+
 ## 2026-07-28
 
 **Suite patch release (all mods)**

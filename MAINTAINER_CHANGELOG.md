@@ -4,6 +4,10 @@ Internal engineering log: **CI**, **release automation**, **scripts**, **docs in
 
 ---
 
+## 2026-08-10
+
+- **Haven's Birthright 3.1.2:** `OnPlayerAddManaPrefix` args renamed to `mana` / `overCapAmount` to match `Wish.Player.AddMana` (HarmonyX name-bind failure was marking essential patches incomplete).
+
 ## 2026-07-28
 
 - **Suite patch bumps:** All 13 suite mods `.x.x+1` for bug-risk audit release; `docs/versions.json` changelogs set per mod. Branch `fix/suite-patch-version-bumps`.
