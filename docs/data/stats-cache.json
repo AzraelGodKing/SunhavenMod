@@ -1,5 +1,5 @@
 {
-  "lastFetched": "2026-08-11T08:54:11.599Z",
+  "lastFetched": "2026-08-11T09:59:33.460Z",
   "mods": {
     "senpais-chest": {
       "name": "Senpai's Chest",
@@ -127,10 +127,10 @@
         }
       },
       "nexus": {
-        "total_downloads": 1154,
-        "unique_downloads": 876
+        "total_downloads": 1155,
+        "unique_downloads": 877
       },
-      "combined_total": 2010
+      "combined_total": 2011
     },
     "havens-todo": {
       "name": "Sun Haven Todo",
@@ -248,17 +248,17 @@
         }
       },
       "nexus": {
-        "total_downloads": 566,
-        "unique_downloads": 427
+        "total_downloads": 567,
+        "unique_downloads": 428
       },
-      "combined_total": 1396
+      "combined_total": 1397
     },
     "faster-races": {
       "name": "Faster Races",
       "thunderstore": {
-        "total_downloads": 405,
+        "total_downloads": 406,
         "versions": {
-          "2.1.1": 25,
+          "2.1.1": 26,
           "2.1.0": 36,
           "2.0.1": 39,
           "2.0.0": 42,
@@ -274,7 +274,7 @@
         "total_downloads": 321,
         "unique_downloads": 242
       },
-      "combined_total": 726
+      "combined_total": 727
     },
     "trinket-fortune": {
       "name": "Trinket Fortune",
@@ -367,9 +367,9 @@
     }
   },
   "site_total": {
-    "thunderstore": 9924,
-    "nexus_total": 11153,
-    "nexus_unique": 8195,
-    "grand_total": 21077
+    "thunderstore": 9925,
+    "nexus_total": 11155,
+    "nexus_unique": 8197,
+    "grand_total": 21080
   }
 }
