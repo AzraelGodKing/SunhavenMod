@@ -1,5 +1,5 @@
 {
-  "lastFetched": "2026-08-11T10:58:10.179Z",
+  "lastFetched": "2026-08-11T11:49:47.494Z",
   "mods": {
     "senpais-chest": {
       "name": "Senpai's Chest",
@@ -36,10 +36,10 @@
         }
       },
       "nexus": {
-        "total_downloads": 1080,
+        "total_downloads": 1081,
         "unique_downloads": 766
       },
-      "combined_total": 2341
+      "combined_total": 2342
     },
     "havens-birthright": {
       "name": "Haven's Birthright",
@@ -98,10 +98,10 @@
         }
       },
       "nexus": {
-        "total_downloads": 1504,
+        "total_downloads": 1505,
         "unique_downloads": 1152
       },
-      "combined_total": 2773
+      "combined_total": 2774
     },
     "squirrels-birthday-reminder": {
       "name": "A Squirrel's Birthday Reminder",
@@ -248,10 +248,10 @@
         }
       },
       "nexus": {
-        "total_downloads": 567,
-        "unique_downloads": 428
+        "total_downloads": 568,
+        "unique_downloads": 429
       },
-      "combined_total": 1397
+      "combined_total": 1398
     },
     "faster-races": {
       "name": "Faster Races",
@@ -368,8 +368,8 @@
   },
   "site_total": {
     "thunderstore": 9928,
-    "nexus_total": 11157,
-    "nexus_unique": 8199,
-    "grand_total": 21085
+    "nexus_total": 11160,
+    "nexus_unique": 8200,
+    "grand_total": 21088
   }
 }
