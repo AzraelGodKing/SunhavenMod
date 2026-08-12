@@ -1,5 +1,5 @@
 {
-  "lastFetched": "2026-08-12T04:06:38.754Z",
+  "lastFetched": "2026-08-12T06:12:57.221Z",
   "mods": {
     "senpais-chest": {
       "name": "Senpai's Chest",
@@ -99,10 +99,10 @@
         }
       },
       "nexus": {
-        "total_downloads": 1514,
-        "unique_downloads": 1159
+        "total_downloads": 1516,
+        "unique_downloads": 1161
       },
-      "combined_total": 2786
+      "combined_total": 2788
     },
     "squirrels-birthday-reminder": {
       "name": "A Squirrel's Birthday Reminder",
@@ -191,10 +191,10 @@
         }
       },
       "nexus": {
-        "total_downloads": 1968,
-        "unique_downloads": 1363
+        "total_downloads": 1970,
+        "unique_downloads": 1365
       },
-      "combined_total": 2827
+      "combined_total": 2829
     },
     "haven-dev-tools": {
       "name": "HavenDevTools",
@@ -295,10 +295,10 @@
         }
       },
       "nexus": {
-        "total_downloads": 452,
-        "unique_downloads": 339
+        "total_downloads": 453,
+        "unique_downloads": 340
       },
-      "combined_total": 987
+      "combined_total": 988
     },
     "crop-optimizer": {
       "name": "Crop Optimizer",
@@ -352,25 +352,25 @@
     "gifting-assistant": {
       "name": "Gifting Assistant",
       "thunderstore": {
-        "total_downloads": 190,
+        "total_downloads": 192,
         "versions": {
           "1.1.1": 44,
           "1.1.0": 68,
-          "1.0.1": 49,
-          "1.0.0": 29
+          "1.0.1": 50,
+          "1.0.0": 30
         }
       },
       "nexus": {
-        "total_downloads": 529,
-        "unique_downloads": 442
+        "total_downloads": 530,
+        "unique_downloads": 443
       },
-      "combined_total": 719
+      "combined_total": 722
     }
   },
   "site_total": {
-    "thunderstore": 9972,
-    "nexus_total": 11209,
-    "nexus_unique": 8232,
-    "grand_total": 21181
+    "thunderstore": 9974,
+    "nexus_total": 11215,
+    "nexus_unique": 8238,
+    "grand_total": 21189
   }
 }
