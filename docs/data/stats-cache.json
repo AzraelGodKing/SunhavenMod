@@ -1,10 +1,10 @@
 {
-  "lastFetched": "2026-08-13T13:07:26.405Z",
+  "lastFetched": "2026-08-13T14:55:52.235Z",
   "mods": {
     "senpais-chest": {
       "name": "Senpai's Chest",
       "thunderstore": {
-        "total_downloads": 1270,
+        "total_downloads": 1271,
         "versions": {
           "3.1.1": 45,
           "3.1.0": 59,
@@ -29,7 +29,7 @@
           "2.0.2": 51,
           "2.0.1": 47,
           "2.0.0": 49,
-          "1.3.0": 39,
+          "1.3.0": 40,
           "1.2.0": 40,
           "1.1.0": 49,
           "1.0.0": 42
@@ -39,12 +39,12 @@
         "total_downloads": 1081,
         "unique_downloads": 767
       },
-      "combined_total": 2351
+      "combined_total": 2352
     },
     "havens-birthright": {
       "name": "Haven's Birthright",
       "thunderstore": {
-        "total_downloads": 1184,
+        "total_downloads": 1185,
         "versions": {
           "3.1.2": 8,
           "3.1.1": 57,
@@ -56,7 +56,7 @@
           "2.1.0": 38,
           "2.0.3": 44,
           "2.0.0": 68,
-          "1.4.3": 53,
+          "1.4.3": 54,
           "1.4.1": 74,
           "1.4.0": 42,
           "1.3.3": 87,
@@ -70,10 +70,10 @@
         }
       },
       "nexus": {
-        "total_downloads": 1529,
-        "unique_downloads": 1022
+        "total_downloads": 1531,
+        "unique_downloads": 1023
       },
-      "combined_total": 2713
+      "combined_total": 2716
     },
     "museum-utility-tracker": {
       "name": "S.M.U.T.",
@@ -99,10 +99,10 @@
         }
       },
       "nexus": {
-        "total_downloads": 1506,
+        "total_downloads": 1507,
         "unique_downloads": 1154
       },
-      "combined_total": 2783
+      "combined_total": 2784
     },
     "squirrels-birthday-reminder": {
       "name": "A Squirrel's Birthday Reminder",
@@ -128,10 +128,10 @@
         }
       },
       "nexus": {
-        "total_downloads": 1155,
-        "unique_downloads": 877
+        "total_downloads": 1157,
+        "unique_downloads": 878
       },
-      "combined_total": 2016
+      "combined_total": 2018
     },
     "havens-todo": {
       "name": "Sun Haven Todo",
@@ -168,15 +168,15 @@
     "the-vault": {
       "name": "The Vault",
       "thunderstore": {
-        "total_downloads": 871,
+        "total_downloads": 875,
         "versions": {
           "4.1.1": 33,
           "4.1.0": 51,
           "4.0.1": 53,
           "4.0.0": 39,
           "3.3.2": 74,
-          "3.3.0": 30,
-          "3.2.0": 48,
+          "3.3.0": 31,
+          "3.2.0": 49,
           "3.1.0": 33,
           "3.0.7": 34,
           "3.0.4": 79,
@@ -184,17 +184,17 @@
           "3.0.1": 45,
           "2.0.8": 79,
           "2.0.7": 45,
-          "2.0.6": 46,
+          "2.0.6": 47,
           "2.0.5": 42,
-          "2.0.4": 56,
+          "2.0.4": 57,
           "2.0.3": 42
         }
       },
       "nexus": {
-        "total_downloads": 1967,
+        "total_downloads": 1968,
         "unique_downloads": 1364
       },
-      "combined_total": 2838
+      "combined_total": 2843
     },
     "haven-dev-tools": {
       "name": "HavenDevTools",
@@ -219,10 +219,10 @@
         }
       },
       "nexus": {
-        "total_downloads": 153,
+        "total_downloads": 154,
         "unique_downloads": 121
       },
-      "combined_total": 718
+      "combined_total": 719
     },
     "havens-almanac": {
       "name": "Haven's Almanac",
@@ -272,10 +272,10 @@
         }
       },
       "nexus": {
-        "total_downloads": 321,
+        "total_downloads": 322,
         "unique_downloads": 242
       },
-      "combined_total": 735
+      "combined_total": 736
     },
     "trinket-fortune": {
       "name": "Trinket Fortune",
@@ -295,10 +295,10 @@
         }
       },
       "nexus": {
-        "total_downloads": 451,
+        "total_downloads": 452,
         "unique_downloads": 338
       },
-      "combined_total": 990
+      "combined_total": 991
     },
     "crop-optimizer": {
       "name": "Crop Optimizer",
@@ -329,7 +329,7 @@
     "havens-respec": {
       "name": "Haven's Respec",
       "thunderstore": {
-        "total_downloads": 439,
+        "total_downloads": 440,
         "versions": {
           "2.1.1": 39,
           "2.1.0": 48,
@@ -338,7 +338,7 @@
           "2.0.0": 38,
           "1.3.2": 102,
           "1.3.0": 25,
-          "1.2.0": 48,
+          "1.2.0": 49,
           "1.1.0": 33,
           "1.0.1": 33
         }
@@ -347,7 +347,7 @@
         "total_downloads": 375,
         "unique_downloads": 285
       },
-      "combined_total": 814
+      "combined_total": 815
     },
     "gifting-assistant": {
       "name": "Gifting Assistant",
@@ -361,16 +361,16 @@
         }
       },
       "nexus": {
-        "total_downloads": 521,
-        "unique_downloads": 435
+        "total_downloads": 522,
+        "unique_downloads": 436
       },
-      "combined_total": 716
+      "combined_total": 717
     }
   },
   "site_total": {
-    "thunderstore": 10040,
-    "nexus_total": 11167,
-    "nexus_unique": 8209,
-    "grand_total": 21207
+    "thunderstore": 10047,
+    "nexus_total": 11177,
+    "nexus_unique": 8212,
+    "grand_total": 21224
   }
 }
