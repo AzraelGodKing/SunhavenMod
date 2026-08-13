@@ -1,14 +1,14 @@
 {
-  "lastFetched": "2026-08-13T04:11:11.810Z",
+  "lastFetched": "2026-08-13T06:15:35.857Z",
   "mods": {
     "senpais-chest": {
       "name": "Senpai's Chest",
       "thunderstore": {
-        "total_downloads": 1267,
+        "total_downloads": 1268,
         "versions": {
           "3.1.1": 45,
           "3.1.0": 59,
-          "3.0.3": 50,
+          "3.0.3": 51,
           "3.0.2": 28,
           "3.0.1": 38,
           "3.0.0": 39,
@@ -39,7 +39,7 @@
         "total_downloads": 1082,
         "unique_downloads": 767
       },
-      "combined_total": 2349
+      "combined_total": 2350
     },
     "havens-birthright": {
       "name": "Haven's Birthright",
@@ -99,10 +99,10 @@
         }
       },
       "nexus": {
-        "total_downloads": 1510,
-        "unique_downloads": 1156
+        "total_downloads": 1511,
+        "unique_downloads": 1157
       },
-      "combined_total": 2787
+      "combined_total": 2788
     },
     "squirrels-birthday-reminder": {
       "name": "A Squirrel's Birthday Reminder",
@@ -168,17 +168,17 @@
     "the-vault": {
       "name": "The Vault",
       "thunderstore": {
-        "total_downloads": 862,
+        "total_downloads": 864,
         "versions": {
           "4.1.1": 33,
           "4.1.0": 51,
-          "4.0.1": 52,
+          "4.0.1": 53,
           "4.0.0": 39,
           "3.3.2": 73,
           "3.3.0": 30,
           "3.2.0": 47,
           "3.1.0": 32,
-          "3.0.7": 33,
+          "3.0.7": 34,
           "3.0.4": 79,
           "3.0.2": 42,
           "3.0.1": 44,
@@ -194,7 +194,7 @@
         "total_downloads": 1973,
         "unique_downloads": 1368
       },
-      "combined_total": 2835
+      "combined_total": 2837
     },
     "haven-dev-tools": {
       "name": "HavenDevTools",
@@ -368,9 +368,9 @@
     }
   },
   "site_total": {
-    "thunderstore": 10026,
-    "nexus_total": 11199,
-    "nexus_unique": 8226,
-    "grand_total": 21225
+    "thunderstore": 10029,
+    "nexus_total": 11200,
+    "nexus_unique": 8227,
+    "grand_total": 21229
   }
 }
