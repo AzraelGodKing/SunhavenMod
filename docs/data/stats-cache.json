@@ -1,5 +1,5 @@
 {
-  "lastFetched": "2026-08-13T21:42:47.024Z",
+  "lastFetched": "2026-08-13T22:39:44.853Z",
   "mods": {
     "senpais-chest": {
       "name": "Senpai's Chest",
@@ -352,25 +352,25 @@
     "gifting-assistant": {
       "name": "Gifting Assistant",
       "thunderstore": {
-        "total_downloads": 197,
+        "total_downloads": 199,
         "versions": {
           "1.1.1": 47,
           "1.1.0": 70,
-          "1.0.1": 50,
-          "1.0.0": 30
+          "1.0.1": 51,
+          "1.0.0": 31
         }
       },
       "nexus": {
         "total_downloads": 524,
         "unique_downloads": 438
       },
-      "combined_total": 721
+      "combined_total": 723
     }
   },
   "site_total": {
-    "thunderstore": 10077,
+    "thunderstore": 10079,
     "nexus_total": 11195,
     "nexus_unique": 8222,
-    "grand_total": 21272
+    "grand_total": 21274
   }
 }
