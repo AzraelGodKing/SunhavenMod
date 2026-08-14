@@ -1,5 +1,5 @@
 {
-  "lastFetched": "2026-08-14T08:14:22.077Z",
+  "lastFetched": "2026-08-14T09:59:45.988Z",
   "mods": {
     "senpais-chest": {
       "name": "Senpai's Chest",
@@ -99,10 +99,10 @@
         }
       },
       "nexus": {
-        "total_downloads": 1503,
-        "unique_downloads": 1151
+        "total_downloads": 1505,
+        "unique_downloads": 1153
       },
-      "combined_total": 2785
+      "combined_total": 2787
     },
     "squirrels-birthday-reminder": {
       "name": "A Squirrel's Birthday Reminder",
@@ -136,7 +136,7 @@
     "havens-todo": {
       "name": "Sun Haven Todo",
       "thunderstore": {
-        "total_downloads": 1053,
+        "total_downloads": 1054,
         "versions": {
           "2.1.1": 46,
           "2.1.0": 53,
@@ -149,7 +149,7 @@
           "1.2.0": 30,
           "1.1.10": 32,
           "1.1.8": 48,
-          "1.1.5": 128,
+          "1.1.5": 129,
           "1.1.4": 50,
           "1.1.3": 59,
           "1.1.2": 52,
@@ -163,7 +163,7 @@
         "total_downloads": 627,
         "unique_downloads": 483
       },
-      "combined_total": 1680
+      "combined_total": 1681
     },
     "the-vault": {
       "name": "The Vault",
@@ -352,9 +352,9 @@
     "gifting-assistant": {
       "name": "Gifting Assistant",
       "thunderstore": {
-        "total_downloads": 199,
+        "total_downloads": 200,
         "versions": {
-          "1.1.1": 47,
+          "1.1.1": 48,
           "1.1.0": 70,
           "1.0.1": 51,
           "1.0.0": 31
@@ -364,13 +364,13 @@
         "total_downloads": 520,
         "unique_downloads": 434
       },
-      "combined_total": 719
+      "combined_total": 720
     }
   },
   "site_total": {
-    "thunderstore": 10095,
-    "nexus_total": 11154,
-    "nexus_unique": 8196,
-    "grand_total": 21249
+    "thunderstore": 10097,
+    "nexus_total": 11156,
+    "nexus_unique": 8198,
+    "grand_total": 21253
   }
 }
