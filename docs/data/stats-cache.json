@@ -1,5 +1,5 @@
 {
-  "lastFetched": "2026-08-14T09:59:45.988Z",
+  "lastFetched": "2026-08-14T11:03:52.260Z",
   "mods": {
     "senpais-chest": {
       "name": "Senpai's Chest",
@@ -257,9 +257,9 @@
     "faster-races": {
       "name": "Faster Races",
       "thunderstore": {
-        "total_downloads": 416,
+        "total_downloads": 417,
         "versions": {
-          "2.1.1": 28,
+          "2.1.1": 29,
           "2.1.0": 36,
           "2.0.1": 40,
           "2.0.0": 43,
@@ -275,7 +275,7 @@
         "total_downloads": 321,
         "unique_downloads": 242
       },
-      "combined_total": 737
+      "combined_total": 738
     },
     "trinket-fortune": {
       "name": "Trinket Fortune",
@@ -368,9 +368,9 @@
     }
   },
   "site_total": {
-    "thunderstore": 10097,
+    "thunderstore": 10098,
     "nexus_total": 11156,
     "nexus_unique": 8198,
-    "grand_total": 21253
+    "grand_total": 21254
   }
 }
