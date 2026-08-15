@@ -1,17 +1,17 @@
 {
-  "lastFetched": "2026-08-15T22:19:44.016Z",
+  "lastFetched": "2026-08-15T23:18:26.919Z",
   "mods": {
     "senpais-chest": {
       "name": "Senpai's Chest",
       "thunderstore": {
-        "total_downloads": 1337,
+        "total_downloads": 1339,
         "versions": {
           "3.1.1": 51,
           "3.1.0": 60,
           "3.0.3": 52,
           "3.0.2": 30,
           "3.0.1": 40,
-          "3.0.0": 40,
+          "3.0.0": 41,
           "2.7.0": 124,
           "2.6.2": 31,
           "2.6.0": 40,
@@ -19,7 +19,7 @@
           "2.4.0": 39,
           "2.3.0": 29,
           "2.2.6": 32,
-          "2.2.4": 40,
+          "2.2.4": 41,
           "2.2.2": 83,
           "2.2.1": 42,
           "2.2.0": 47,
@@ -39,7 +39,7 @@
         "total_downloads": 1085,
         "unique_downloads": 770
       },
-      "combined_total": 2422
+      "combined_total": 2424
     },
     "havens-birthright": {
       "name": "Haven's Birthright",
@@ -78,21 +78,21 @@
     "museum-utility-tracker": {
       "name": "S.M.U.T.",
       "thunderstore": {
-        "total_downloads": 1314,
+        "total_downloads": 1319,
         "versions": {
           "3.1.1": 65,
           "3.1.0": 73,
           "3.0.1": 68,
-          "3.0.0": 54,
+          "3.0.0": 55,
           "2.4.2": 144,
           "2.4.0": 44,
           "2.3.0": 51,
           "2.2.9": 39,
-          "2.2.6": 215,
-          "2.2.5": 63,
+          "2.2.6": 216,
+          "2.2.5": 64,
           "2.2.3": 97,
-          "2.2.2": 176,
-          "2.2.1": 62,
+          "2.2.2": 177,
+          "2.2.1": 63,
           "2.2.0": 69,
           "2.1.1": 49,
           "2.1.0": 45
@@ -102,7 +102,7 @@
         "total_downloads": 1510,
         "unique_downloads": 1156
       },
-      "combined_total": 2824
+      "combined_total": 2829
     },
     "squirrels-birthday-reminder": {
       "name": "A Squirrel's Birthday Reminder",
@@ -199,11 +199,11 @@
     "haven-dev-tools": {
       "name": "HavenDevTools",
       "thunderstore": {
-        "total_downloads": 593,
+        "total_downloads": 595,
         "versions": {
-          "2.1.1": 25,
+          "2.1.1": 26,
           "2.1.0": 24,
-          "2.0.1": 39,
+          "2.0.1": 40,
           "2.0.0": 30,
           "1.2.2": 62,
           "1.2.0": 28,
@@ -222,7 +222,7 @@
         "total_downloads": 153,
         "unique_downloads": 121
       },
-      "combined_total": 746
+      "combined_total": 748
     },
     "havens-almanac": {
       "name": "Haven's Almanac",
@@ -368,9 +368,9 @@
     }
   },
   "site_total": {
-    "thunderstore": 10446,
+    "thunderstore": 10455,
     "nexus_total": 11215,
     "nexus_unique": 8237,
-    "grand_total": 21661
+    "grand_total": 21670
   }
 }
