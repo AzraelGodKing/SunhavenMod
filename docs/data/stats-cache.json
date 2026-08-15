@@ -1,12 +1,12 @@
 {
-  "lastFetched": "2026-08-15T20:20:19.813Z",
+  "lastFetched": "2026-08-15T21:19:08.816Z",
   "mods": {
     "senpais-chest": {
       "name": "Senpai's Chest",
       "thunderstore": {
-        "total_downloads": 1328,
+        "total_downloads": 1332,
         "versions": {
-          "3.1.1": 50,
+          "3.1.1": 51,
           "3.1.0": 60,
           "3.0.3": 52,
           "3.0.2": 30,
@@ -14,16 +14,16 @@
           "3.0.0": 40,
           "2.7.0": 124,
           "2.6.2": 31,
-          "2.6.0": 39,
+          "2.6.0": 40,
           "2.5.0": 39,
           "2.4.0": 39,
           "2.3.0": 29,
           "2.2.6": 31,
           "2.2.4": 40,
           "2.2.2": 83,
-          "2.2.1": 41,
+          "2.2.1": 42,
           "2.2.0": 47,
-          "2.1.0": 83,
+          "2.1.0": 84,
           "2.0.4": 55,
           "2.0.3": 41,
           "2.0.2": 55,
@@ -39,7 +39,7 @@
         "total_downloads": 1085,
         "unique_downloads": 770
       },
-      "combined_total": 2413
+      "combined_total": 2417
     },
     "havens-birthright": {
       "name": "Haven's Birthright",
@@ -78,14 +78,14 @@
     "museum-utility-tracker": {
       "name": "S.M.U.T.",
       "thunderstore": {
-        "total_downloads": 1310,
+        "total_downloads": 1312,
         "versions": {
-          "3.1.1": 63,
+          "3.1.1": 64,
           "3.1.0": 73,
           "3.0.1": 68,
           "3.0.0": 54,
           "2.4.2": 144,
-          "2.4.0": 43,
+          "2.4.0": 44,
           "2.3.0": 51,
           "2.2.9": 39,
           "2.2.6": 215,
@@ -102,7 +102,7 @@
         "total_downloads": 1510,
         "unique_downloads": 1156
       },
-      "combined_total": 2820
+      "combined_total": 2822
     },
     "squirrels-birthday-reminder": {
       "name": "A Squirrel's Birthday Reminder",
@@ -199,7 +199,7 @@
     "haven-dev-tools": {
       "name": "HavenDevTools",
       "thunderstore": {
-        "total_downloads": 590,
+        "total_downloads": 591,
         "versions": {
           "2.1.1": 25,
           "2.1.0": 24,
@@ -207,7 +207,7 @@
           "2.0.0": 30,
           "1.2.2": 62,
           "1.2.0": 28,
-          "1.1.0": 29,
+          "1.1.0": 30,
           "1.0.11": 32,
           "1.0.8": 35,
           "1.0.7": 42,
@@ -222,7 +222,7 @@
         "total_downloads": 153,
         "unique_downloads": 121
       },
-      "combined_total": 743
+      "combined_total": 744
     },
     "havens-almanac": {
       "name": "Haven's Almanac",
@@ -249,10 +249,10 @@
         }
       },
       "nexus": {
-        "total_downloads": 571,
-        "unique_downloads": 430
+        "total_downloads": 572,
+        "unique_downloads": 431
       },
-      "combined_total": 1424
+      "combined_total": 1425
     },
     "faster-races": {
       "name": "Faster Races",
@@ -303,9 +303,9 @@
     "crop-optimizer": {
       "name": "Crop Optimizer",
       "thunderstore": {
-        "total_downloads": 567,
+        "total_downloads": 568,
         "versions": {
-          "2.2.1": 48,
+          "2.2.1": 49,
           "2.2.0": 50,
           "2.1.1": 41,
           "2.1.0": 28,
@@ -324,7 +324,7 @@
         "total_downloads": 919,
         "unique_downloads": 697
       },
-      "combined_total": 1486
+      "combined_total": 1487
     },
     "havens-respec": {
       "name": "Haven's Respec",
@@ -352,9 +352,9 @@
     "gifting-assistant": {
       "name": "Gifting Assistant",
       "thunderstore": {
-        "total_downloads": 210,
+        "total_downloads": 211,
         "versions": {
-          "1.1.1": 54,
+          "1.1.1": 55,
           "1.1.0": 71,
           "1.0.1": 53,
           "1.0.0": 32
@@ -364,13 +364,13 @@
         "total_downloads": 526,
         "unique_downloads": 438
       },
-      "combined_total": 736
+      "combined_total": 737
     }
   },
   "site_total": {
-    "thunderstore": 10426,
-    "nexus_total": 11212,
-    "nexus_unique": 8235,
-    "grand_total": 21638
+    "thunderstore": 10435,
+    "nexus_total": 11213,
+    "nexus_unique": 8236,
+    "grand_total": 21648
   }
 }
