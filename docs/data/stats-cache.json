@@ -1,5 +1,5 @@
 {
-  "lastFetched": "2026-08-15T18:27:11.769Z",
+  "lastFetched": "2026-08-15T19:19:52.325Z",
   "mods": {
     "senpais-chest": {
       "name": "Senpai's Chest",
@@ -44,9 +44,9 @@
     "havens-birthright": {
       "name": "Haven's Birthright",
       "thunderstore": {
-        "total_downloads": 1226,
+        "total_downloads": 1227,
         "versions": {
-          "3.1.2": 19,
+          "3.1.2": 20,
           "3.1.1": 59,
           "3.1.0": 61,
           "3.0.1": 61,
@@ -73,7 +73,7 @@
         "total_downloads": 1532,
         "unique_downloads": 1023
       },
-      "combined_total": 2758
+      "combined_total": 2759
     },
     "museum-utility-tracker": {
       "name": "S.M.U.T.",
@@ -99,10 +99,10 @@
         }
       },
       "nexus": {
-        "total_downloads": 1507,
-        "unique_downloads": 1153
+        "total_downloads": 1508,
+        "unique_downloads": 1154
       },
-      "combined_total": 2817
+      "combined_total": 2818
     },
     "squirrels-birthday-reminder": {
       "name": "A Squirrel's Birthday Reminder",
@@ -191,10 +191,10 @@
         }
       },
       "nexus": {
-        "total_downloads": 1972,
-        "unique_downloads": 1366
+        "total_downloads": 1973,
+        "unique_downloads": 1367
       },
-      "combined_total": 2877
+      "combined_total": 2878
     },
     "haven-dev-tools": {
       "name": "HavenDevTools",
@@ -368,9 +368,9 @@
     }
   },
   "site_total": {
-    "thunderstore": 10424,
-    "nexus_total": 11200,
-    "nexus_unique": 8223,
-    "grand_total": 21624
+    "thunderstore": 10425,
+    "nexus_total": 11202,
+    "nexus_unique": 8225,
+    "grand_total": 21627
   }
 }
