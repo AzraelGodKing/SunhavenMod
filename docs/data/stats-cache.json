@@ -1,5 +1,5 @@
 {
-  "lastFetched": "2026-08-15T08:26:37.568Z",
+  "lastFetched": "2026-08-15T09:23:59.689Z",
   "mods": {
     "senpais-chest": {
       "name": "Senpai's Chest",
@@ -99,10 +99,10 @@
         }
       },
       "nexus": {
-        "total_downloads": 1503,
-        "unique_downloads": 1151
+        "total_downloads": 1504,
+        "unique_downloads": 1152
       },
-      "combined_total": 2808
+      "combined_total": 2809
     },
     "squirrels-birthday-reminder": {
       "name": "A Squirrel's Birthday Reminder",
@@ -257,7 +257,7 @@
     "faster-races": {
       "name": "Faster Races",
       "thunderstore": {
-        "total_downloads": 432,
+        "total_downloads": 433,
         "versions": {
           "2.1.1": 30,
           "2.1.0": 37,
@@ -267,7 +267,7 @@
           "1.4.0": 35,
           "1.3.0": 33,
           "1.2.0": 29,
-          "1.1.6": 23,
+          "1.1.6": 24,
           "1.0.0": 90
         }
       },
@@ -275,7 +275,7 @@
         "total_downloads": 321,
         "unique_downloads": 242
       },
-      "combined_total": 753
+      "combined_total": 754
     },
     "trinket-fortune": {
       "name": "Trinket Fortune",
@@ -352,25 +352,25 @@
     "gifting-assistant": {
       "name": "Gifting Assistant",
       "thunderstore": {
-        "total_downloads": 205,
+        "total_downloads": 206,
         "versions": {
           "1.1.1": 50,
           "1.1.0": 71,
-          "1.0.1": 52,
+          "1.0.1": 53,
           "1.0.0": 32
         }
       },
       "nexus": {
-        "total_downloads": 520,
-        "unique_downloads": 434
+        "total_downloads": 522,
+        "unique_downloads": 436
       },
-      "combined_total": 725
+      "combined_total": 728
     }
   },
   "site_total": {
-    "thunderstore": 10375,
-    "nexus_total": 11154,
-    "nexus_unique": 8195,
-    "grand_total": 21529
+    "thunderstore": 10377,
+    "nexus_total": 11157,
+    "nexus_unique": 8198,
+    "grand_total": 21534
   }
 }
