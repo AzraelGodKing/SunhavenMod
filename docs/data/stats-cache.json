@@ -1,5 +1,5 @@
 {
-  "lastFetched": "2026-08-15T15:18:38.648Z",
+  "lastFetched": "2026-08-15T16:22:04.306Z",
   "mods": {
     "senpais-chest": {
       "name": "Senpai's Chest",
@@ -191,10 +191,10 @@
         }
       },
       "nexus": {
-        "total_downloads": 1971,
-        "unique_downloads": 1365
+        "total_downloads": 1972,
+        "unique_downloads": 1366
       },
-      "combined_total": 2875
+      "combined_total": 2876
     },
     "haven-dev-tools": {
       "name": "HavenDevTools",
@@ -280,7 +280,7 @@
     "trinket-fortune": {
       "name": "Trinket Fortune",
       "thunderstore": {
-        "total_downloads": 553,
+        "total_downloads": 554,
         "versions": {
           "2.1.1": 45,
           "2.1.0": 49,
@@ -291,14 +291,14 @@
           "1.1.0": 38,
           "1.0.5": 31,
           "1.0.3": 47,
-          "1.0.0": 111
+          "1.0.0": 112
         }
       },
       "nexus": {
         "total_downloads": 454,
         "unique_downloads": 339
       },
-      "combined_total": 1007
+      "combined_total": 1008
     },
     "crop-optimizer": {
       "name": "Crop Optimizer",
@@ -368,9 +368,9 @@
     }
   },
   "site_total": {
-    "thunderstore": 10403,
-    "nexus_total": 11197,
-    "nexus_unique": 8220,
-    "grand_total": 21600
+    "thunderstore": 10404,
+    "nexus_total": 11198,
+    "nexus_unique": 8221,
+    "grand_total": 21602
   }
 }
