@@ -1,5 +1,5 @@
 {
-  "lastFetched": "2026-08-15T02:51:25.680Z",
+  "lastFetched": "2026-08-15T03:37:13.360Z",
   "mods": {
     "senpais-chest": {
       "name": "Senpai's Chest",
@@ -136,9 +136,9 @@
     "havens-todo": {
       "name": "Sun Haven Todo",
       "thunderstore": {
-        "total_downloads": 1095,
+        "total_downloads": 1096,
         "versions": {
-          "2.1.1": 47,
+          "2.1.1": 48,
           "2.1.0": 54,
           "2.0.1": 71,
           "2.0.0": 42,
@@ -163,14 +163,14 @@
         "total_downloads": 627,
         "unique_downloads": 483
       },
-      "combined_total": 1722
+      "combined_total": 1723
     },
     "the-vault": {
       "name": "The Vault",
       "thunderstore": {
-        "total_downloads": 903,
+        "total_downloads": 904,
         "versions": {
-          "4.1.1": 36,
+          "4.1.1": 37,
           "4.1.0": 53,
           "4.0.1": 56,
           "4.0.0": 41,
@@ -191,10 +191,10 @@
         }
       },
       "nexus": {
-        "total_downloads": 1967,
-        "unique_downloads": 1363
+        "total_downloads": 1969,
+        "unique_downloads": 1364
       },
-      "combined_total": 2870
+      "combined_total": 2873
     },
     "haven-dev-tools": {
       "name": "HavenDevTools",
@@ -352,9 +352,9 @@
     "gifting-assistant": {
       "name": "Gifting Assistant",
       "thunderstore": {
-        "total_downloads": 204,
+        "total_downloads": 205,
         "versions": {
-          "1.1.1": 49,
+          "1.1.1": 50,
           "1.1.0": 71,
           "1.0.1": 52,
           "1.0.0": 32
@@ -364,13 +364,13 @@
         "total_downloads": 524,
         "unique_downloads": 438
       },
-      "combined_total": 728
+      "combined_total": 729
     }
   },
   "site_total": {
-    "thunderstore": 10357,
-    "nexus_total": 11190,
-    "nexus_unique": 8216,
-    "grand_total": 21547
+    "thunderstore": 10360,
+    "nexus_total": 11192,
+    "nexus_unique": 8217,
+    "grand_total": 21552
   }
 }
