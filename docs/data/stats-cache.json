@@ -1,5 +1,5 @@
 {
-  "lastFetched": "2026-08-16T04:34:10.935Z",
+  "lastFetched": "2026-08-16T05:26:47.144Z",
   "mods": {
     "senpais-chest": {
       "name": "Senpai's Chest",
@@ -99,10 +99,10 @@
         }
       },
       "nexus": {
-        "total_downloads": 1511,
-        "unique_downloads": 1157
+        "total_downloads": 1512,
+        "unique_downloads": 1158
       },
-      "combined_total": 2837
+      "combined_total": 2838
     },
     "squirrels-birthday-reminder": {
       "name": "A Squirrel's Birthday Reminder",
@@ -136,7 +136,7 @@
     "havens-todo": {
       "name": "Sun Haven Todo",
       "thunderstore": {
-        "total_downloads": 1107,
+        "total_downloads": 1108,
         "versions": {
           "2.1.1": 52,
           "2.1.0": 54,
@@ -146,7 +146,7 @@
           "1.4.2": 51,
           "1.4.0": 43,
           "1.3.0": 41,
-          "1.2.0": 35,
+          "1.2.0": 36,
           "1.1.10": 35,
           "1.1.8": 50,
           "1.1.5": 131,
@@ -163,16 +163,16 @@
         "total_downloads": 631,
         "unique_downloads": 486
       },
-      "combined_total": 1738
+      "combined_total": 1739
     },
     "the-vault": {
       "name": "The Vault",
       "thunderstore": {
-        "total_downloads": 906,
+        "total_downloads": 907,
         "versions": {
           "4.1.1": 39,
           "4.1.0": 53,
-          "4.0.1": 56,
+          "4.0.1": 57,
           "4.0.0": 41,
           "3.3.2": 75,
           "3.3.0": 32,
@@ -194,7 +194,7 @@
         "total_downloads": 1975,
         "unique_downloads": 1369
       },
-      "combined_total": 2881
+      "combined_total": 2882
     },
     "haven-dev-tools": {
       "name": "HavenDevTools",
@@ -219,10 +219,10 @@
         }
       },
       "nexus": {
-        "total_downloads": 153,
-        "unique_downloads": 121
+        "total_downloads": 154,
+        "unique_downloads": 122
       },
-      "combined_total": 754
+      "combined_total": 755
     },
     "havens-almanac": {
       "name": "Haven's Almanac",
@@ -257,7 +257,7 @@
     "faster-races": {
       "name": "Faster Races",
       "thunderstore": {
-        "total_downloads": 434,
+        "total_downloads": 435,
         "versions": {
           "2.1.1": 30,
           "2.1.0": 37,
@@ -267,7 +267,7 @@
           "1.4.0": 35,
           "1.3.0": 33,
           "1.2.0": 29,
-          "1.1.6": 25,
+          "1.1.6": 26,
           "1.0.0": 90
         }
       },
@@ -275,7 +275,7 @@
         "total_downloads": 323,
         "unique_downloads": 243
       },
-      "combined_total": 757
+      "combined_total": 758
     },
     "trinket-fortune": {
       "name": "Trinket Fortune",
@@ -321,10 +321,10 @@
         }
       },
       "nexus": {
-        "total_downloads": 920,
-        "unique_downloads": 698
+        "total_downloads": 922,
+        "unique_downloads": 700
       },
-      "combined_total": 1488
+      "combined_total": 1490
     },
     "havens-respec": {
       "name": "Haven's Respec",
@@ -361,16 +361,16 @@
         }
       },
       "nexus": {
-        "total_downloads": 530,
-        "unique_downloads": 442
+        "total_downloads": 531,
+        "unique_downloads": 443
       },
-      "combined_total": 741
+      "combined_total": 742
     }
   },
   "site_total": {
-    "thunderstore": 10487,
-    "nexus_total": 11224,
-    "nexus_unique": 8246,
-    "grand_total": 21711
+    "thunderstore": 10490,
+    "nexus_total": 11229,
+    "nexus_unique": 8251,
+    "grand_total": 21719
   }
 }
