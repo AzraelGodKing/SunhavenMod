@@ -1,5 +1,5 @@
 {
-  "lastFetched": "2026-08-16T17:18:05.716Z",
+  "lastFetched": "2026-08-16T18:26:50.521Z",
   "mods": {
     "senpais-chest": {
       "name": "Senpai's Chest",
@@ -44,7 +44,7 @@
     "havens-birthright": {
       "name": "Haven's Birthright",
       "thunderstore": {
-        "total_downloads": 1230,
+        "total_downloads": 1231,
         "versions": {
           "3.1.2": 22,
           "3.1.1": 59,
@@ -66,19 +66,19 @@
           "1.2.3": 53,
           "1.2.2": 50,
           "1.2.1": 68,
-          "1.2.0": 50
+          "1.2.0": 51
         }
       },
       "nexus": {
-        "total_downloads": 1531,
-        "unique_downloads": 1022
+        "total_downloads": 1532,
+        "unique_downloads": 1023
       },
-      "combined_total": 2761
+      "combined_total": 2763
     },
     "museum-utility-tracker": {
       "name": "S.M.U.T.",
       "thunderstore": {
-        "total_downloads": 1336,
+        "total_downloads": 1337,
         "versions": {
           "3.1.1": 70,
           "3.1.0": 73,
@@ -93,7 +93,7 @@
           "2.2.3": 99,
           "2.2.2": 178,
           "2.2.1": 65,
-          "2.2.0": 71,
+          "2.2.0": 72,
           "2.1.1": 50,
           "2.1.0": 46
         }
@@ -102,7 +102,7 @@
         "total_downloads": 1508,
         "unique_downloads": 1155
       },
-      "combined_total": 2844
+      "combined_total": 2845
     },
     "squirrels-birthday-reminder": {
       "name": "A Squirrel's Birthday Reminder",
@@ -128,10 +128,10 @@
         }
       },
       "nexus": {
-        "total_downloads": 1154,
+        "total_downloads": 1155,
         "unique_downloads": 876
       },
-      "combined_total": 2050
+      "combined_total": 2051
     },
     "havens-todo": {
       "name": "Sun Haven Todo",
@@ -352,9 +352,9 @@
     "gifting-assistant": {
       "name": "Gifting Assistant",
       "thunderstore": {
-        "total_downloads": 213,
+        "total_downloads": 214,
         "versions": {
-          "1.1.1": 56,
+          "1.1.1": 57,
           "1.1.0": 71,
           "1.0.1": 54,
           "1.0.0": 32
@@ -364,13 +364,13 @@
         "total_downloads": 525,
         "unique_downloads": 438
       },
-      "combined_total": 738
+      "combined_total": 739
     }
   },
   "site_total": {
-    "thunderstore": 10539,
-    "nexus_total": 11185,
-    "nexus_unique": 8219,
-    "grand_total": 21724
+    "thunderstore": 10542,
+    "nexus_total": 11187,
+    "nexus_unique": 8220,
+    "grand_total": 21729
   }
 }
