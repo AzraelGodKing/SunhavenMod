@@ -1,5 +1,5 @@
 {
-  "lastFetched": "2026-08-16T12:36:11.694Z",
+  "lastFetched": "2026-08-16T13:29:59.966Z",
   "mods": {
     "senpais-chest": {
       "name": "Senpai's Chest",
@@ -36,10 +36,10 @@
         }
       },
       "nexus": {
-        "total_downloads": 1081,
-        "unique_downloads": 767
+        "total_downloads": 1083,
+        "unique_downloads": 768
       },
-      "combined_total": 2440
+      "combined_total": 2442
     },
     "havens-birthright": {
       "name": "Haven's Birthright",
@@ -99,10 +99,10 @@
         }
       },
       "nexus": {
-        "total_downloads": 1505,
-        "unique_downloads": 1153
+        "total_downloads": 1506,
+        "unique_downloads": 1154
       },
-      "combined_total": 2839
+      "combined_total": 2840
     },
     "squirrels-birthday-reminder": {
       "name": "A Squirrel's Birthday Reminder",
@@ -160,10 +160,10 @@
         }
       },
       "nexus": {
-        "total_downloads": 628,
-        "unique_downloads": 484
+        "total_downloads": 629,
+        "unique_downloads": 485
       },
-      "combined_total": 1738
+      "combined_total": 1739
     },
     "the-vault": {
       "name": "The Vault",
@@ -280,9 +280,9 @@
     "trinket-fortune": {
       "name": "Trinket Fortune",
       "thunderstore": {
-        "total_downloads": 555,
+        "total_downloads": 558,
         "versions": {
-          "2.1.1": 46,
+          "2.1.1": 49,
           "2.1.0": 49,
           "2.0.1": 57,
           "2.0.0": 37,
@@ -298,7 +298,7 @@
         "total_downloads": 452,
         "unique_downloads": 339
       },
-      "combined_total": 1007
+      "combined_total": 1010
     },
     "crop-optimizer": {
       "name": "Crop Optimizer",
@@ -344,33 +344,33 @@
         }
       },
       "nexus": {
-        "total_downloads": 375,
-        "unique_downloads": 285
+        "total_downloads": 377,
+        "unique_downloads": 287
       },
-      "combined_total": 830
+      "combined_total": 832
     },
     "gifting-assistant": {
       "name": "Gifting Assistant",
       "thunderstore": {
-        "total_downloads": 212,
+        "total_downloads": 213,
         "versions": {
           "1.1.1": 56,
           "1.1.0": 71,
-          "1.0.1": 53,
+          "1.0.1": 54,
           "1.0.0": 32
         }
       },
       "nexus": {
-        "total_downloads": 523,
-        "unique_downloads": 436
+        "total_downloads": 525,
+        "unique_downloads": 438
       },
-      "combined_total": 735
+      "combined_total": 738
     }
   },
   "site_total": {
-    "thunderstore": 10522,
-    "nexus_total": 11170,
-    "nexus_unique": 8209,
-    "grand_total": 21692
+    "thunderstore": 10526,
+    "nexus_total": 11178,
+    "nexus_unique": 8216,
+    "grand_total": 21704
   }
 }
