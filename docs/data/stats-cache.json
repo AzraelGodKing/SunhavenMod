@@ -1,5 +1,5 @@
 {
-  "lastFetched": "2026-08-16T09:25:03.640Z",
+  "lastFetched": "2026-08-16T10:21:11.542Z",
   "mods": {
     "senpais-chest": {
       "name": "Senpai's Chest",
@@ -70,17 +70,17 @@
         }
       },
       "nexus": {
-        "total_downloads": 1528,
+        "total_downloads": 1529,
         "unique_downloads": 1021
       },
-      "combined_total": 2758
+      "combined_total": 2759
     },
     "museum-utility-tracker": {
       "name": "S.M.U.T.",
       "thunderstore": {
-        "total_downloads": 1330,
+        "total_downloads": 1331,
         "versions": {
-          "3.1.1": 69,
+          "3.1.1": 70,
           "3.1.0": 73,
           "3.0.1": 68,
           "3.0.0": 55,
@@ -102,7 +102,7 @@
         "total_downloads": 1504,
         "unique_downloads": 1152
       },
-      "combined_total": 2834
+      "combined_total": 2835
     },
     "squirrels-birthday-reminder": {
       "name": "A Squirrel's Birthday Reminder",
@@ -249,10 +249,10 @@
         }
       },
       "nexus": {
-        "total_downloads": 567,
+        "total_downloads": 568,
         "unique_downloads": 428
       },
-      "combined_total": 1423
+      "combined_total": 1424
     },
     "faster-races": {
       "name": "Faster Races",
@@ -368,9 +368,9 @@
     }
   },
   "site_total": {
-    "thunderstore": 10506,
-    "nexus_total": 11160,
+    "thunderstore": 10507,
+    "nexus_total": 11162,
     "nexus_unique": 8201,
-    "grand_total": 21666
+    "grand_total": 21669
   }
 }
