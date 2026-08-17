@@ -1,5 +1,5 @@
 {
-  "lastFetched": "2026-08-17T03:55:30.070Z",
+  "lastFetched": "2026-08-17T04:40:32.513Z",
   "mods": {
     "senpais-chest": {
       "name": "Senpai's Chest",
@@ -199,9 +199,9 @@
     "haven-dev-tools": {
       "name": "HavenDevTools",
       "thunderstore": {
-        "total_downloads": 621,
+        "total_downloads": 622,
         "versions": {
-          "2.1.1": 28,
+          "2.1.1": 29,
           "2.1.0": 27,
           "2.0.1": 41,
           "2.0.0": 32,
@@ -222,7 +222,7 @@
         "total_downloads": 153,
         "unique_downloads": 121
       },
-      "combined_total": 774
+      "combined_total": 775
     },
     "havens-almanac": {
       "name": "Haven's Almanac",
@@ -280,17 +280,17 @@
     "trinket-fortune": {
       "name": "Trinket Fortune",
       "thunderstore": {
-        "total_downloads": 571,
+        "total_downloads": 574,
         "versions": {
-          "2.1.1": 50,
+          "2.1.1": 51,
           "2.1.0": 51,
           "2.0.1": 58,
-          "2.0.0": 38,
+          "2.0.0": 39,
           "1.2.2": 102,
           "1.2.0": 38,
           "1.1.0": 40,
           "1.0.5": 33,
-          "1.0.3": 48,
+          "1.0.3": 49,
           "1.0.0": 113
         }
       },
@@ -298,17 +298,17 @@
         "total_downloads": 454,
         "unique_downloads": 340
       },
-      "combined_total": 1025
+      "combined_total": 1028
     },
     "crop-optimizer": {
       "name": "Crop Optimizer",
       "thunderstore": {
-        "total_downloads": 588,
+        "total_downloads": 589,
         "versions": {
           "2.2.1": 52,
           "2.2.0": 52,
           "2.1.1": 42,
-          "2.1.0": 29,
+          "2.1.0": 30,
           "2.0.1": 42,
           "2.0.0": 36,
           "1.4.3": 105,
@@ -324,7 +324,7 @@
         "total_downloads": 918,
         "unique_downloads": 696
       },
-      "combined_total": 1506
+      "combined_total": 1507
     },
     "havens-respec": {
       "name": "Haven's Respec",
@@ -368,9 +368,9 @@
     }
   },
   "site_total": {
-    "thunderstore": 10765,
+    "thunderstore": 10770,
     "nexus_total": 11208,
     "nexus_unique": 8232,
-    "grand_total": 21973
+    "grand_total": 21978
   }
 }
