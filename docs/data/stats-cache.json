@@ -1,5 +1,5 @@
 {
-  "lastFetched": "2026-08-17T10:30:39.161Z",
+  "lastFetched": "2026-08-17T11:23:33.740Z",
   "mods": {
     "senpais-chest": {
       "name": "Senpai's Chest",
@@ -227,9 +227,9 @@
     "havens-almanac": {
       "name": "Haven's Almanac",
       "thunderstore": {
-        "total_downloads": 875,
+        "total_downloads": 876,
         "versions": {
-          "2.2.1": 45,
+          "2.2.1": 46,
           "2.2.0": 51,
           "2.1.0": 46,
           "2.0.1": 43,
@@ -252,7 +252,7 @@
         "total_downloads": 566,
         "unique_downloads": 427
       },
-      "combined_total": 1441
+      "combined_total": 1442
     },
     "faster-races": {
       "name": "Faster Races",
@@ -361,16 +361,16 @@
         }
       },
       "nexus": {
-        "total_downloads": 522,
-        "unique_downloads": 436
+        "total_downloads": 523,
+        "unique_downloads": 437
       },
-      "combined_total": 741
+      "combined_total": 742
     }
   },
   "site_total": {
-    "thunderstore": 10791,
-    "nexus_total": 11165,
-    "nexus_unique": 8206,
-    "grand_total": 21956
+    "thunderstore": 10792,
+    "nexus_total": 11166,
+    "nexus_unique": 8207,
+    "grand_total": 21958
   }
 }
