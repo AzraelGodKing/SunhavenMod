@@ -1,5 +1,5 @@
 {
-  "lastFetched": "2026-08-17T15:23:44.352Z",
+  "lastFetched": "2026-08-17T16:25:34.896Z",
   "mods": {
     "senpais-chest": {
       "name": "Senpai's Chest",
@@ -44,9 +44,9 @@
     "havens-birthright": {
       "name": "Haven's Birthright",
       "thunderstore": {
-        "total_downloads": 1256,
+        "total_downloads": 1257,
         "versions": {
-          "3.1.2": 24,
+          "3.1.2": 25,
           "3.1.1": 60,
           "3.1.0": 63,
           "3.0.1": 63,
@@ -70,10 +70,10 @@
         }
       },
       "nexus": {
-        "total_downloads": 1532,
-        "unique_downloads": 1024
+        "total_downloads": 1533,
+        "unique_downloads": 1025
       },
-      "combined_total": 2788
+      "combined_total": 2790
     },
     "museum-utility-tracker": {
       "name": "S.M.U.T.",
@@ -99,17 +99,17 @@
         }
       },
       "nexus": {
-        "total_downloads": 1504,
-        "unique_downloads": 1152
+        "total_downloads": 1505,
+        "unique_downloads": 1153
       },
-      "combined_total": 2865
+      "combined_total": 2866
     },
     "squirrels-birthday-reminder": {
       "name": "A Squirrel's Birthday Reminder",
       "thunderstore": {
-        "total_downloads": 919,
+        "total_downloads": 920,
         "versions": {
-          "2.1.1": 47,
+          "2.1.1": 48,
           "2.1.0": 53,
           "2.0.1": 65,
           "2.0.0": 44,
@@ -131,7 +131,7 @@
         "total_downloads": 1158,
         "unique_downloads": 879
       },
-      "combined_total": 2077
+      "combined_total": 2078
     },
     "havens-todo": {
       "name": "Sun Haven Todo",
@@ -191,10 +191,10 @@
         }
       },
       "nexus": {
-        "total_downloads": 1968,
-        "unique_downloads": 1364
+        "total_downloads": 1969,
+        "unique_downloads": 1365
       },
-      "combined_total": 2898
+      "combined_total": 2899
     },
     "haven-dev-tools": {
       "name": "HavenDevTools",
@@ -280,9 +280,9 @@
     "trinket-fortune": {
       "name": "Trinket Fortune",
       "thunderstore": {
-        "total_downloads": 578,
+        "total_downloads": 579,
         "versions": {
-          "2.1.1": 51,
+          "2.1.1": 52,
           "2.1.0": 52,
           "2.0.1": 59,
           "2.0.0": 39,
@@ -298,7 +298,7 @@
         "total_downloads": 451,
         "unique_downloads": 338
       },
-      "combined_total": 1029
+      "combined_total": 1030
     },
     "crop-optimizer": {
       "name": "Crop Optimizer",
@@ -352,25 +352,25 @@
     "gifting-assistant": {
       "name": "Gifting Assistant",
       "thunderstore": {
-        "total_downloads": 219,
+        "total_downloads": 220,
         "versions": {
-          "1.1.1": 59,
+          "1.1.1": 60,
           "1.1.0": 72,
           "1.0.1": 55,
           "1.0.0": 33
         }
       },
       "nexus": {
-        "total_downloads": 525,
-        "unique_downloads": 439
+        "total_downloads": 526,
+        "unique_downloads": 440
       },
-      "combined_total": 744
+      "combined_total": 746
     }
   },
   "site_total": {
-    "thunderstore": 10796,
-    "nexus_total": 11182,
-    "nexus_unique": 8220,
-    "grand_total": 21978
+    "thunderstore": 10800,
+    "nexus_total": 11186,
+    "nexus_unique": 8224,
+    "grand_total": 21986
   }
 }
