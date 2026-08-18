@@ -1,5 +1,5 @@
 {
-  "lastFetched": "2026-08-18T13:40:55.433Z",
+  "lastFetched": "2026-08-18T14:31:41.213Z",
   "mods": {
     "senpais-chest": {
       "name": "Senpai's Chest",
@@ -78,9 +78,9 @@
     "museum-utility-tracker": {
       "name": "S.M.U.T.",
       "thunderstore": {
-        "total_downloads": 1363,
+        "total_downloads": 1364,
         "versions": {
-          "3.1.1": 72,
+          "3.1.1": 73,
           "3.1.0": 75,
           "3.0.1": 70,
           "3.0.0": 56,
@@ -102,7 +102,7 @@
         "total_downloads": 1656,
         "unique_downloads": 1265
       },
-      "combined_total": 3019
+      "combined_total": 3020
     },
     "squirrels-birthday-reminder": {
       "name": "A Squirrel's Birthday Reminder",
@@ -136,12 +136,12 @@
     "havens-todo": {
       "name": "Sun Haven Todo",
       "thunderstore": {
-        "total_downloads": 1154,
+        "total_downloads": 1155,
         "versions": {
           "2.1.1": 58,
           "2.1.0": 56,
           "2.0.1": 74,
-          "2.0.0": 46,
+          "2.0.0": 47,
           "1.4.3": 115,
           "1.4.2": 53,
           "1.4.0": 45,
@@ -163,12 +163,12 @@
         "total_downloads": 678,
         "unique_downloads": 521
       },
-      "combined_total": 1832
+      "combined_total": 1833
     },
     "the-vault": {
       "name": "The Vault",
       "thunderstore": {
-        "total_downloads": 963,
+        "total_downloads": 964,
         "versions": {
           "4.1.1": 43,
           "4.1.0": 55,
@@ -179,7 +179,7 @@
           "3.2.0": 52,
           "3.1.0": 37,
           "3.0.7": 41,
-          "3.0.4": 84,
+          "3.0.4": 85,
           "3.0.2": 49,
           "3.0.1": 48,
           "2.0.8": 83,
@@ -194,7 +194,7 @@
         "total_downloads": 2095,
         "unique_downloads": 1446
       },
-      "combined_total": 3058
+      "combined_total": 3059
     },
     "haven-dev-tools": {
       "name": "HavenDevTools",
@@ -368,9 +368,9 @@
     }
   },
   "site_total": {
-    "thunderstore": 10951,
+    "thunderstore": 10954,
     "nexus_total": 12246,
     "nexus_unique": 8978,
-    "grand_total": 23197
+    "grand_total": 23200
   }
 }
