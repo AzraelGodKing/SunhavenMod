@@ -1,5 +1,5 @@
 {
-  "lastFetched": "2026-08-18T09:31:15.493Z",
+  "lastFetched": "2026-08-18T10:26:30.047Z",
   "mods": {
     "senpais-chest": {
       "name": "Senpai's Chest",
@@ -70,10 +70,10 @@
         }
       },
       "nexus": {
-        "total_downloads": 1627,
-        "unique_downloads": 1077
+        "total_downloads": 1629,
+        "unique_downloads": 1078
       },
-      "combined_total": 2893
+      "combined_total": 2895
     },
     "museum-utility-tracker": {
       "name": "S.M.U.T.",
@@ -136,11 +136,11 @@
     "havens-todo": {
       "name": "Sun Haven Todo",
       "thunderstore": {
-        "total_downloads": 1152,
+        "total_downloads": 1153,
         "versions": {
           "2.1.1": 57,
           "2.1.0": 56,
-          "2.0.1": 73,
+          "2.0.1": 74,
           "2.0.0": 46,
           "1.4.3": 115,
           "1.4.2": 53,
@@ -163,7 +163,7 @@
         "total_downloads": 678,
         "unique_downloads": 521
       },
-      "combined_total": 1830
+      "combined_total": 1831
     },
     "the-vault": {
       "name": "The Vault",
@@ -295,10 +295,10 @@
         }
       },
       "nexus": {
-        "total_downloads": 500,
-        "unique_downloads": 369
+        "total_downloads": 502,
+        "unique_downloads": 370
       },
-      "combined_total": 1090
+      "combined_total": 1092
     },
     "crop-optimizer": {
       "name": "Crop Optimizer",
@@ -368,9 +368,9 @@
     }
   },
   "site_total": {
-    "thunderstore": 10911,
-    "nexus_total": 12232,
-    "nexus_unique": 8972,
-    "grand_total": 23143
+    "thunderstore": 10912,
+    "nexus_total": 12236,
+    "nexus_unique": 8974,
+    "grand_total": 23148
   }
 }
