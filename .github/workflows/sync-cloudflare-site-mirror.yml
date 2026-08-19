@@ -38,6 +38,19 @@ jobs:
       - name: Checkout SunhavenMod
         uses: actions/checkout@v4
 
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: npm
+          cache-dependency-path: cloudflare-site/package-lock.json
+
+      - name: Build Vite Vue site
+        working-directory: cloudflare-site
+        run: |
+          npm ci
+          npm run build
+
       - name: Mirror website files into destination repo
         env:
           # If you ever rename the destination repo, update this string.
@@ -79,8 +92,19 @@ jobs:
           mkdir -p "$tmp/dest/cloudflare-site"
           mkdir -p "$tmp/dest/functions"
 
-          echo "Syncing cloudflare-site/ ..."
-          rsync -a --delete "${GITHUB_WORKSPACE}/cloudflare-site/" "$tmp/dest/cloudflare-site/"
+          echo "Syncing built site (cloudflare-site/dist -> dest/cloudflare-site) ..."
+          rsync -a --delete \
+            --exclude 'functions' \
+            "${GITHUB_WORKSPACE}/cloudflare-site/dist/" \
+            "$tmp/dest/cloudflare-site/"
+
+          echo "Syncing Pages Functions into dest/cloudflare-site/functions ..."
+          if [ -d "${GITHUB_WORKSPACE}/cloudflare-site/functions" ]; then
+            mkdir -p "$tmp/dest/cloudflare-site/functions"
+            rsync -a --delete \
+              "${GITHUB_WORKSPACE}/cloudflare-site/functions/" \
+              "$tmp/dest/cloudflare-site/functions/"
+          fi
 
           echo "Syncing root functions/ ..."
           if [ -d "${GITHUB_WORKSPACE}/functions" ]; then
@@ -89,8 +113,18 @@ jobs:
             rm -rf "$tmp/dest/functions"
           fi
 
-          echo "Copying deploy helper files (if present) ..."
-          for f in wrangler.toml package.json package-lock.json; do
+          echo "Writing destination wrangler.toml (static output dir) ..."
+          printf '%s\n' \
+            'name = "azrael-sunhaven-website"' \
+            'compatibility_date = "2026-04-22"' \
+            'pages_build_output_dir = "cloudflare-site"' \
+            '' \
+            '[observability]' \
+            'enabled = true' \
+            > "$tmp/dest/wrangler.toml"
+
+          echo "Copying root package.json helpers if present (non-site tools) ..."
+          for f in package.json package-lock.json; do
             if [ -f "${GITHUB_WORKSPACE}/${f}" ]; then
               cp "${GITHUB_WORKSPACE}/${f}" "$tmp/dest/${f}"
             fi
@@ -109,5 +143,5 @@ jobs:
 
           # Do not use [skip ci] here: Cloudflare Pages honors skip directives and will skip
           # production builds, leaving the site stuck on an older deployment.
-          git commit -m "chore: sync cloudflare-site from SunhavenMod"
+          git commit -m "chore: sync cloudflare-site from SunhavenMod (Vite Vue SPA)"
           git "${GIT_AUTH_CONFIG[@]}" push origin "HEAD:${SOURCE_BRANCH}"

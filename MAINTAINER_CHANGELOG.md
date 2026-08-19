@@ -4,6 +4,10 @@ Internal engineering log: **CI**, **release automation**, **scripts**, **docs in
 
 ---
 
+## 2026-08-19
+
+- **Cloudflare site → Vite + Vue 3 SPA:** Replaced CDN/Options-API static pages under `cloudflare-site/` with Vite 8 + Vue Router. Source in `cloudflare-site/src/`; build output `cloudflare-site/dist`. Root `wrangler.toml` `pages_build_output_dir` → `cloudflare-site/dist`. Scripts: `cf:site:dev` / `cf:site:build` / `cf:pages:deploy`. Mirror workflow builds then syncs `dist/` (+ functions) to `azrael-sunhaven-website`. See `cloudflare-site/AGENTS.md`. Branch `feat/vue-site-vite-spa`.
+
 ## 2026-08-10
 
 - **Haven's Birthright 3.1.2:** `OnPlayerAddManaPrefix` args renamed to `mana` / `overCapAmount` to match `Wish.Player.AddMana` (HarmonyX name-bind failure was marking essential patches incomplete).

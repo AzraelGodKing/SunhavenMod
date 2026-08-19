@@ -4,6 +4,14 @@ Notes for **players and release readers**. Per-mod blurbs and upstream metadata 
 
 ---
 
+## 2026-08-19
+
+**Website (Cloudflare)**
+
+- Full rebuild of the public SunhavenMod site as a **Vite + Vue 3** SPA (router, Composition API): home, downloads board, per-mod profiles, and feedback desk. Same live stats/matrix/versions data sources; legacy `.html` URLs redirect.
+
+---
+
 ## 2026-08-10
 
 **Haven's Birthright (3.1.2)**
