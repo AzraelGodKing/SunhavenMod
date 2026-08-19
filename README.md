@@ -49,6 +49,7 @@ Multi-mod solution (subset of mods): [`HavensBirthright/HavensBirthright.sln`](H
 | [`TheVault.Abstractions/`](TheVault.Abstractions/) | Compile-time API surface for soft-dependent mods |
 | [`scripts/`](scripts/) | Maintainer tooling: mod matrix, version sync, stats, build checks, localization (see [`scripts/README.md`](scripts/README.md)) |
 | [`docs/`](docs/) | GitHub Pages site (public), `versions.json`, mod HTML guides |
+| [`docs-app/`](docs-app/) | Vite + Vue 3 source for the Pages mod hub — see [`AGENTS.md`](docs-app/AGENTS.md) |
 | [`maintainer-docs/`](maintainer-docs/) | Internal engineering docs (not published) — release process, compatibility contract, lifecycle/save policies |
 | [`.github/workflows/`](.github/workflows/) | CI, release, stats, site mirror |
 

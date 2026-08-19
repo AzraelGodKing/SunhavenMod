@@ -2,42 +2,42 @@
    Sun Haven Mod Hub - Shared Component Styles
    =================================================================== */
 
-@import url('https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,500;0,9..144,700;1,9..144,450&family=Outfit:wght@400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,500;0,9..144,700;1,9..144,450&family=Syne:wght@600;700;800&family=Figtree:wght@400;500;600;700&display=swap');
 
 /* Design tokens (light default; dark overrides on html[data-theme="dark"]) */
 :root {
-    --font-display: "Fraunces", Georgia, "Times New Roman", serif;
-    --font-ui: "Outfit", system-ui, -apple-system, "Segoe UI", sans-serif;
-    --accent: #0f766e;
-    --accent-bright: #14b8a6;
-    --accent-muted: #0d9488;
-    --accent-dim: #115e59;
-    --accent-rgb: 15, 118, 110;
-    --accent-2: #ea580c;
-    --accent-2-rgb: 234, 88, 12;
-    --ink: #0f1714;
+    --font-display: "Syne", "Segoe UI", sans-serif;
+    --font-ui: "Figtree", "Segoe UI", sans-serif;
+    --accent: #0b3d4a;
+    --accent-bright: #176574;
+    --accent-muted: #3d6b4f;
+    --accent-dim: #102a32;
+    --accent-rgb: 11, 61, 74;
+    --accent-2: #e8a317;
+    --accent-2-rgb: 232, 163, 23;
+    --ink: #102a32;
     /* Muted text: ≥4.5:1 on --paper for WCAG AA body copy */
-    --muted: #4a524c;
-    --paper: #f3f7f5;
-    --paper-deep: #e5ebe8;
+    --muted: #2a4a54;
+    --paper: #f4f0e6;
+    --paper-deep: #e8e1d1;
     --surface: rgba(255, 255, 255, 0.78);
     --shadow-sm: rgba(12, 22, 18, 0.07);
     --shadow-md: rgba(12, 22, 18, 0.14);
 }
 
 html[data-theme="dark"] {
-    --accent: #2dd4bf;
-    --accent-bright: #5eead4;
-    --accent-muted: #14b8a6;
-    --accent-dim: #0f766e;
-    --accent-rgb: 45, 212, 191;
-    --accent-2: #fbbf24;
-    --accent-2-rgb: 251, 191, 36;
-    --ink: #eef4f0;
+    --accent: #7cb89a;
+    --accent-bright: #9fd0b8;
+    --accent-muted: #3d6b4f;
+    --accent-dim: #0b3d4a;
+    --accent-rgb: 124, 184, 154;
+    --accent-2: #f0b84a;
+    --accent-2-rgb: 240, 184, 74;
+    --ink: #e8f1ef;
     /* Lifted from #9aaa9e for small-text contrast on dark surfaces */
-    --muted: #b8c4bc;
-    --paper: #0c1210;
-    --paper-deep: #080b0a;
+    --muted: #b7c9c6;
+    --paper: #0f1a1d;
+    --paper-deep: #162429;
     --surface: rgba(18, 28, 24, 0.75);
     --shadow-sm: rgba(0, 0, 0, 0.35);
     --shadow-md: rgba(0, 0, 0, 0.5);

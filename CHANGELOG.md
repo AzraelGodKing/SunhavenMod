@@ -4,6 +4,14 @@ Notes for **players and release readers**. Per-mod blurbs and upstream metadata 
 
 ---
 
+## 2026-08-19
+
+**Docs hub (GitHub Pages)**
+
+- Rebuilt the public mod hub as a **Vite + Vue 3** app (search, filters, starter packs, install, FAQ, comparison, live stats). Per-mod guide pages stay at the same URLs; shared guide styling refreshed to match.
+
+---
+
 ## 2026-08-10
 
 **Haven's Birthright (3.1.2)**

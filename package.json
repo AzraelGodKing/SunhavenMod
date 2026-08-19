@@ -7,6 +7,9 @@
     "stats": "node scripts/stats/fetch-stats.js",
     "stats:force": "node scripts/stats/fetch-stats.js --force",
     "verify-versions": "python scripts/version/verify-version-consistency.py",
+    "docs:hub:install": "npm --prefix docs-app install",
+    "docs:hub:dev": "npm --prefix docs-app run dev",
+    "docs:hub:build": "npm --prefix docs-app run merge",
     "cf:pages:dev": "npx wrangler pages dev --project-name azrael-sunhaven-website",
     "cf:pages:deploy": "npx wrangler pages deploy --project-name azrael-sunhaven-website"
   },

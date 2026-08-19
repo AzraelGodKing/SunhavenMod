@@ -4,6 +4,10 @@ Internal engineering log: **CI**, **release automation**, **scripts**, **docs in
 
 ---
 
+## 2026-08-19
+
+- **Docs hub → Vite + Vue 3:** Source in `docs-app/` (`base: /SunhavenMod/`). `npm run docs:hub:build` merges into `docs/` without touching `versions.json`, `data/stats-cache.json`, or per-mod HTML guides. Shared guide tokens/fonts aligned with hub. See `docs-app/AGENTS.md`. Branch `feat/docs-vue-hub`.
+
 ## 2026-08-10
 
 - **Haven's Birthright 3.1.2:** `OnPlayerAddManaPrefix` args renamed to `mana` / `overCapAmount` to match `Wish.Player.AddMana` (HarmonyX name-bind failure was marking essential patches incomplete).
