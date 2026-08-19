@@ -1,5 +1,5 @@
 {
-  "lastFetched": "2026-08-19T04:35:02.626Z",
+  "lastFetched": "2026-08-19T05:28:13.380Z",
   "mods": {
     "senpais-chest": {
       "name": "Senpai's Chest",
@@ -78,7 +78,7 @@
     "museum-utility-tracker": {
       "name": "S.M.U.T.",
       "thunderstore": {
-        "total_downloads": 1374,
+        "total_downloads": 1375,
         "versions": {
           "3.1.1": 76,
           "3.1.0": 75,
@@ -93,7 +93,7 @@
           "2.2.3": 101,
           "2.2.2": 179,
           "2.2.1": 66,
-          "2.2.0": 75,
+          "2.2.0": 76,
           "2.1.1": 52,
           "2.1.0": 50
         }
@@ -102,7 +102,7 @@
         "total_downloads": 1662,
         "unique_downloads": 1269
       },
-      "combined_total": 3036
+      "combined_total": 3037
     },
     "squirrels-birthday-reminder": {
       "name": "A Squirrel's Birthday Reminder",
@@ -168,7 +168,7 @@
     "the-vault": {
       "name": "The Vault",
       "thunderstore": {
-        "total_downloads": 981,
+        "total_downloads": 983,
         "versions": {
           "4.1.1": 46,
           "4.1.0": 55,
@@ -180,7 +180,7 @@
           "3.1.0": 39,
           "3.0.7": 42,
           "3.0.4": 85,
-          "3.0.2": 50,
+          "3.0.2": 52,
           "3.0.1": 51,
           "2.0.8": 83,
           "2.0.7": 51,
@@ -194,7 +194,7 @@
         "total_downloads": 2099,
         "unique_downloads": 1449
       },
-      "combined_total": 3080
+      "combined_total": 3082
     },
     "haven-dev-tools": {
       "name": "HavenDevTools",
@@ -280,10 +280,10 @@
     "trinket-fortune": {
       "name": "Trinket Fortune",
       "thunderstore": {
-        "total_downloads": 603,
+        "total_downloads": 604,
         "versions": {
           "2.1.1": 58,
-          "2.1.0": 53,
+          "2.1.0": 54,
           "2.0.1": 62,
           "2.0.0": 41,
           "1.2.2": 104,
@@ -298,7 +298,7 @@
         "total_downloads": 502,
         "unique_downloads": 370
       },
-      "combined_total": 1105
+      "combined_total": 1106
     },
     "crop-optimizer": {
       "name": "Crop Optimizer",
@@ -368,9 +368,9 @@
     }
   },
   "site_total": {
-    "thunderstore": 11071,
+    "thunderstore": 11075,
     "nexus_total": 12272,
     "nexus_unique": 8996,
-    "grand_total": 23343
+    "grand_total": 23347
   }
 }
