@@ -102,14 +102,14 @@
     "changelog": "Fix: fish bias respects drop-level gates when loot exposes useLevel/level/minLevel."
   },
   "com.azraelgodking.cropoptimizer": {
-    "version": "2.2.1",
+    "version": "2.2.2",
     "name": "Crop Optimizer",
     "description": "Crop forecast HUD with seasonal planning helpers and soft Todo/Birthday/Vault integrations",
     "nexus": "https://www.nexusmods.com/sunhaven/mods/500",
     "nexus_file_group_id": "7320911",
     "thunderstore": "https://thunderstore.io/c/sun-haven/p/AzraelGodKing/CropOptimizer/",
     "thunderstoreName": "CropOptimizer",
-    "changelog": "Patch: SharedCodeRevision 2026.07.28 rebuild with suite overnight unhook."
+    "changelog": "Fix: Nel'Vari/Withergate HUD totals use orb and ticket shop prices, not gold-only."
   },
   "com.azraelgodking.havensrespec": {
     "version": "2.1.1",

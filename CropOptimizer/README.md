@@ -7,7 +7,7 @@ Crop Optimizer adds field-level harvest forecasting, a lightweight crop HUD, and
 
 ## Version
 
-**2.0.1** — published in [`docs/versions.json`](../docs/versions.json). Player-facing store text: [`thunderstore/README.md`](thunderstore/README.md).
+**2.2.2** — published in [`docs/versions.json`](../docs/versions.json). Player-facing store text: [`thunderstore/README.md`](thunderstore/README.md).
 
 ## Features
 
@@ -44,6 +44,9 @@ Crop Optimizer adds field-level harvest forecasting, a lightweight crop HUD, and
 - Optional shortcut to open the Vault / journal filtered by the hovered crop.
 
 ## Changelog
+
+### 2026-08-30 (2.2.2)
+- **Fixed (AZR-92):** Projected sell on the HUD (and hover) now includes **orbs** (Nel'Vari) and **tickets** (Withergate). Those harvests use `ItemSellInfo.orbSellPrice` / `ticketSellPrice` with gold at 0, so the farm total looked missing even though crop count and hover names already worked.
 
 ### 2026-05-02 (maintainer notes)
 - **Lifecycle:** Improved plugin teardown diagnostics to distinguish expected menu/quit destroys from unexpected runtime destruction.
