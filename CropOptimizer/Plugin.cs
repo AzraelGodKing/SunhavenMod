@@ -161,7 +161,7 @@ namespace CropOptimizer
         {
             if (Instance?._forecast == null)
                 return "Not ready";
-            return $"Crops: {Instance._forecast.Snapshot().Count}, Value: {Instance._forecast.GetProjectedSellTotal()}g";
+            return $"Crops: {Instance._forecast.Snapshot().Count}, Value: {CropOptimizer.UI.CropSellDisplay.FormatPlain(Instance._forecast.GetProjectedShopValue())}";
         }
 
         internal static System.Collections.Generic.List<CropForecast.CropTypeSummary> GetTopCrops(int count = 5)

@@ -44,7 +44,9 @@ namespace CropOptimizer.UI
         /// <summary>HUD label refresh — avoids TMP mesh rebuild every frame when counts are unchanged.</summary>
         private int _lastHudTrackedCount = -1;
 
-        private long _lastHudProjectedGold = long.MinValue;
+        private int _lastHudProjectedGold = int.MinValue;
+        private int _lastHudProjectedOrbs = int.MinValue;
+        private int _lastHudProjectedTickets = int.MinValue;
 
         /// <summary>Matches what the HUD toggle currently shows — skip redundant TMP/sprite work until config or visibility changes.</summary>
         private bool? _lastHudTooltipShownInUi;
@@ -202,11 +204,16 @@ namespace CropOptimizer.UI
                 {
                     var snap = _forecast.Snapshot();
                     int count = snap.Count;
-                    long projected = _forecast.GetProjectedSellTotal();
-                    if (count != _lastHudTrackedCount || projected != _lastHudProjectedGold)
+                    CropShopValue projected = _forecast.GetProjectedShopValue();
+                    if (count != _lastHudTrackedCount
+                        || projected.Gold != _lastHudProjectedGold
+                        || projected.Orbs != _lastHudProjectedOrbs
+                        || projected.Tickets != _lastHudProjectedTickets)
                     {
                         _lastHudTrackedCount = count;
-                        _lastHudProjectedGold = projected;
+                        _lastHudProjectedGold = projected.Gold;
+                        _lastHudProjectedOrbs = projected.Orbs;
+                        _lastHudProjectedTickets = projected.Tickets;
                         _hudView.UpdateStats(count, projected);
                     }
 
@@ -220,7 +227,9 @@ namespace CropOptimizer.UI
                 else
                 {
                     _lastHudTrackedCount = -1;
-                    _lastHudProjectedGold = long.MinValue;
+                    _lastHudProjectedGold = int.MinValue;
+                    _lastHudProjectedOrbs = int.MinValue;
+                    _lastHudProjectedTickets = int.MinValue;
                     _lastHudTooltipShownInUi = null;
                 }
             }

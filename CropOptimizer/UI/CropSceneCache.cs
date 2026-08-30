@@ -91,7 +91,9 @@ namespace CropOptimizer.UI
                     continue;
 
                 int id = crop.GetInstanceID();
-                if (!forecast.TryGetState(id, out CropForecast.CropState state) || state.ItemId <= 0)
+                if (!forecast.TryGetState(id, out CropForecast.CropState state)
+                    || state.ItemId <= 0
+                    || !state.SellLookupComplete)
                     CropGrowthPatch.SyncCropToForecast(crop);
             }
         }

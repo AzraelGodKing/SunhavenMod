@@ -386,9 +386,18 @@ namespace CropOptimizer.UI
                 content.Rows.Add(RowSpec.Make(UiStyle.IconKind.Clock, UiStyle.Clock,
                     ModLocalization.T("crop.tooltip.etaUnknown", mutedCream)));
 
-            if (CropGrowthPatch.TryGetTooltipProjectedGold(inst, out int gold, out _) && gold > 0)
-                content.Rows.Add(RowSpec.Make(UiStyle.IconKind.Coin, UiStyle.Coin,
-                    ModLocalization.T("crop.tooltip.projectedGold", accentGold, gold)));
+            if (CropGrowthPatch.TryGetTooltipProjectedShopValue(inst, out CropShopValue shop, out _))
+            {
+                if (shop.Gold > 0)
+                    content.Rows.Add(RowSpec.Make(UiStyle.IconKind.Coin, UiStyle.Coin,
+                        CropSellDisplay.FormatTooltipLine(accentGold, shop.Gold, "crop.tooltip.projectedGold")));
+                if (shop.Orbs > 0)
+                    content.Rows.Add(RowSpec.Make(UiStyle.IconKind.Coin, UiStyle.Coin,
+                        CropSellDisplay.FormatTooltipLine(accentGold, shop.Orbs, "crop.tooltip.projectedOrbs")));
+                if (shop.Tickets > 0)
+                    content.Rows.Add(RowSpec.Make(UiStyle.IconKind.Coin, UiStyle.Coin,
+                        CropSellDisplay.FormatTooltipLine(accentGold, shop.Tickets, "crop.tooltip.projectedTickets")));
+            }
 
             // Water (from the water tilemap; fallback to "?" if nothing resolves).
             Vector2Int tile = default;

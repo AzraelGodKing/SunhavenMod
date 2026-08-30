@@ -29,7 +29,14 @@ namespace CropOptimizer.Data
             var topCrops = Plugin.GetTopCrops(count);
             var result = new List<CropTypeSummary>(topCrops.Count);
             foreach (var crop in topCrops)
-                result.Add(new CropTypeSummary(crop.ItemId, crop.TotalGold, crop.CropCount));
+            {
+                int displayValue = crop.Total.Gold;
+                if (displayValue <= 0 && crop.Total.Orbs > 0)
+                    displayValue = crop.Total.Orbs;
+                else if (displayValue <= 0 && crop.Total.Tickets > 0)
+                    displayValue = crop.Total.Tickets;
+                result.Add(new CropTypeSummary(crop.ItemId, displayValue, crop.CropCount));
+            }
             return result;
         }
 

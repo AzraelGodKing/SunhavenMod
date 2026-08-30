@@ -41,3 +41,8 @@ builds/
 
 # Community mods — local builds, not in mod-matrix / release pipeline
 CommunityMods/UltraPolygamy/
+
+# Node / docs-app
+node_modules/
+docs-app/dist/
+

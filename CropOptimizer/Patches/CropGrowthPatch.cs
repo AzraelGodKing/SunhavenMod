@@ -163,7 +163,9 @@ namespace CropOptimizer.Patches
                 CropInstanceRegistry.Register(unityObj);
                 float etaHours = TryResolveEtaHours(cropInstance, out bool etaResolved) ? Mathf.Max(0f, _resolvedEtaHoursCache) : 24f;
                 float qualityMultiplier = TryResolveQualityMultiplier(cropInstance, out bool qualityResolved) ? _resolvedQualityMultiplierCache : 1f;
-                int projectedSellGold = TryResolveProjectedSellGold(cropInstance, qualityMultiplier, out bool sellResolved) ? _resolvedProjectedSellGoldCache : 0;
+                CropShopValue projectedSell = TryResolveProjectedShopValue(cropInstance, qualityMultiplier, out bool sellResolved)
+                    ? _resolvedShopValueCache
+                    : default;
                 TryGetHarvestItemId(cropInstance, out int harvestItemId);
 
                 if (!etaResolved && !_loggedEtaFallback)
@@ -179,10 +181,10 @@ namespace CropOptimizer.Patches
                 if (!sellResolved && !_loggedSellFallback)
                 {
                     _loggedSellFallback = true;
-                    Plugin.Log?.LogDebug("[CropGrowthPatch] Sell value reflection fallback active; using default 0g for unresolved crops.");
+                    Plugin.Log?.LogDebug("[CropGrowthPatch] Sell value reflection fallback active; using default 0 for unresolved crops.");
                 }
 
-                _forecast.UpdateCropState(id, etaHours, qualityMultiplier, projectedSellGold, harvestItemId);
+                _forecast.UpdateCropState(id, etaHours, qualityMultiplier, projectedSell, harvestItemId, sellResolved);
             }
             catch (Exception ex)
             {
@@ -237,7 +239,7 @@ namespace CropOptimizer.Patches
 
         private static float _resolvedEtaHoursCache;
         private static float _resolvedQualityMultiplierCache;
-        private static int _resolvedProjectedSellGoldCache;
+        private static CropShopValue _resolvedShopValueCache;
 
         /// <summary>Live read for UI (hover); safe to call outside Harmony postfix (no shared static ETA cache).</summary>
         internal static bool TryGetTooltipEtaHours(object cropInstance, out float etaHours, out bool resolvedFromReflection)
@@ -389,6 +391,15 @@ namespace CropOptimizer.Patches
         internal static bool TryGetTooltipProjectedGold(object cropInstance, out int projectedGold, out float qualityMultiplier)
         {
             projectedGold = 0;
+            if (!TryGetTooltipProjectedShopValue(cropInstance, out CropShopValue value, out qualityMultiplier))
+                return false;
+            projectedGold = value.Gold;
+            return value.Gold > 0;
+        }
+
+        internal static bool TryGetTooltipProjectedShopValue(object cropInstance, out CropShopValue value, out float qualityMultiplier)
+        {
+            value = default;
             qualityMultiplier = 1f;
             if (cropInstance == null)
                 return false;
@@ -401,11 +412,11 @@ namespace CropOptimizer.Patches
                 if (!TryGetHarvestItemId(cropInstance, out int itemId) || itemId <= 0)
                     return false;
 
-                if (!TryGetBaseSellPrice(itemId, out int baseSell))
+                if (!TryGetShopValue(itemId, out CropShopValue baseValue))
                     return false;
 
-                projectedGold = Mathf.Max(0, Mathf.RoundToInt(baseSell * Mathf.Max(0f, qualityMultiplier)));
-                return true;
+                value = baseValue.Scaled(qualityMultiplier);
+                return value.HasAny;
             }
             catch
             {
@@ -643,10 +654,10 @@ namespace CropOptimizer.Patches
             }
         }
 
-        private static bool TryResolveProjectedSellGold(object cropInstance, float qualityMultiplier, out bool resolved)
+        private static bool TryResolveProjectedShopValue(object cropInstance, float qualityMultiplier, out bool resolved)
         {
             resolved = false;
-            _resolvedProjectedSellGoldCache = 0;
+            _resolvedShopValueCache = default;
             if (cropInstance == null)
                 return false;
 
@@ -656,10 +667,10 @@ namespace CropOptimizer.Patches
                 if (!TryGetHarvestItemId(cropInstance, out int itemId) || itemId <= 0)
                     return false;
 
-                if (!TryGetBaseSellPrice(itemId, out int baseSellPrice))
+                if (!TryGetShopValue(itemId, out CropShopValue baseValue))
                     return false;
 
-                _resolvedProjectedSellGoldCache = Mathf.Max(0, Mathf.RoundToInt(baseSellPrice * Mathf.Max(0f, qualityMultiplier)));
+                _resolvedShopValueCache = baseValue.Scaled(qualityMultiplier);
                 resolved = true;
                 return true;
             }
@@ -738,6 +749,16 @@ namespace CropOptimizer.Patches
                 _itemInfoDatabaseInstanceProperty = itemInfoDatabaseType.GetProperty("Instance", AllMemberFlags)
                                                    ?? itemInfoDatabaseType.GetProperty("instance", AllMemberFlags);
                 _allItemSellInfosField = itemInfoDatabaseType.GetField("allItemSellInfos", AllMemberFlags);
+                if (_itemInfoDatabaseInstanceProperty == null)
+                {
+                    var singletonType = AccessTools.TypeByName("Wish.SingletonBehaviour`1");
+                    if (singletonType != null)
+                    {
+                        Type constructed = singletonType.MakeGenericType(itemInfoDatabaseType);
+                        _itemInfoDatabaseInstanceProperty = constructed.GetProperty("Instance", AllMemberFlags)
+                                                            ?? constructed.GetProperty("instance", AllMemberFlags);
+                    }
+                }
             }
         }
 
@@ -823,31 +844,38 @@ namespace CropOptimizer.Patches
             }
         }
 
-        private static bool TryGetBaseSellPrice(int itemId, out int sellPrice)
+        /// <summary>
+        /// Reads gold, orbs, and tickets. Nel'Vari / Withergate produce often has gold 0 with
+        /// <c>orbSellPrice</c> or <c>ticketSellPrice</c> set on <c>ItemSellInfo</c> / <c>ItemData</c>.
+        /// </summary>
+        private static bool TryGetShopValue(int itemId, out CropShopValue value)
         {
-            sellPrice = 0;
+            value = default;
             try
             {
                 EnsureItemPriceCaches();
+                CropShopValue acc = default;
+                bool found = false;
 
-                // Primary path: ItemInfoDatabase.Instance.allItemSellInfos[itemId] -> ItemSellInfo.sellPrice
                 if (_itemInfoDatabaseInstanceProperty != null && _allItemSellInfosField != null)
                 {
                     object instance = _itemInfoDatabaseInstanceProperty.GetValue(null);
                     object dictObj = instance != null ? _allItemSellInfosField.GetValue(instance) : null;
                     if (dictObj is System.Collections.IDictionary idict && idict.Contains(itemId))
                     {
-                        object entry = idict[itemId];
-                        if (TryExtractSellPrice(entry, out sellPrice))
-                            return true;
+                        acc = CropShopValue.MergePreferNonZero(acc, ExtractShopValue(idict[itemId]));
+                        found = true;
                     }
                 }
 
                 if (_itemDatabaseGetItemMethod != null)
                 {
                     object itemData = _itemDatabaseGetItemMethod.Invoke(null, new object[] { itemId });
-                    if (TryExtractSellPrice(itemData, out sellPrice))
-                        return true;
+                    if (itemData != null)
+                    {
+                        acc = CropShopValue.MergePreferNonZero(acc, ExtractShopValue(itemData));
+                        found = true;
+                    }
                 }
 
                 if (_itemDatabaseItemsContainer != null)
@@ -856,54 +884,65 @@ namespace CropOptimizer.Patches
                     if (_dictTryGetValueMethod != null)
                     {
                         var args = new object[] { itemId, null };
-                        bool found = (bool)_dictTryGetValueMethod.Invoke(_itemDatabaseItemsContainer, args);
-                        if (found)
+                        bool foundInDict = (bool)_dictTryGetValueMethod.Invoke(_itemDatabaseItemsContainer, args);
+                        if (foundInDict)
                             itemData = args[1];
                     }
                     else if (_dictIndexerProperty != null)
                     {
                         itemData = _dictIndexerProperty.GetValue(_itemDatabaseItemsContainer, new object[] { itemId });
                     }
-                    if (TryExtractSellPrice(itemData, out sellPrice))
-                        return true;
+                    if (itemData != null)
+                    {
+                        acc = CropShopValue.MergePreferNonZero(acc, ExtractShopValue(itemData));
+                        found = true;
+                    }
                 }
+
+                value = acc;
+                return found;
             }
             catch
             {
                 return false;
             }
-
-            return false;
         }
 
-        private static bool TryExtractSellPrice(object itemData, out int sellPrice)
+        private static CropShopValue ExtractShopValue(object itemData)
         {
-            sellPrice = 0;
             if (itemData == null)
-                return false;
+                return default;
 
-            var type = itemData.GetType();
-            var member = FindMember(type, "sellPrice", "sellGold", "sell", "price", "Price");
+            int gold = ExtractCurrencyAmount(itemData, "sellPrice", "sellGold");
+            int orbs = ExtractCurrencyAmount(itemData, "orbSellPrice", "orbsSellPrice", "sellOrbs");
+            int tickets = ExtractCurrencyAmount(itemData, "ticketSellPrice", "ticketsSellPrice", "sellTickets");
+            return new CropShopValue(gold, orbs, tickets);
+        }
+
+        private static int ExtractCurrencyAmount(object itemData, params string[] memberNames)
+        {
+            if (itemData == null || memberNames == null)
+                return 0;
+
+            var member = FindMember(itemData.GetType(), memberNames);
             if (member == null)
-                return false;
+                return 0;
 
             object raw = GetMemberValue(itemData, member);
             if (raw == null)
-                return false;
+                return 0;
 
             try
             {
                 if (raw is float f)
-                    sellPrice = Mathf.Max(0, Mathf.RoundToInt(f));
-                else if (raw is double d)
-                    sellPrice = Mathf.Max(0, Mathf.RoundToInt((float)d));
-                else
-                    sellPrice = Mathf.Max(0, Mathf.RoundToInt(Convert.ToSingle(raw)));
-                return true;
+                    return Mathf.Max(0, Mathf.RoundToInt(f));
+                if (raw is double d)
+                    return Mathf.Max(0, Mathf.RoundToInt((float)d));
+                return Mathf.Max(0, Mathf.RoundToInt(Convert.ToSingle(raw)));
             }
             catch
             {
-                return false;
+                return 0;
             }
         }
 
