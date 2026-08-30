@@ -4,6 +4,14 @@ Notes for **players and release readers**. Per-mod blurbs and upstream metadata 
 
 ---
 
+## 2026-08-30
+
+**Crop Optimizer (2.2.2)**
+
+- **Fix:** Nel'Vari and Withergate HUD totals now use orb and ticket shop prices. Those farms store harvest value on `orbSellPrice` / `ticketSellPrice` with gold at 0, so the overlay previously showed crop count (and hover names) with a blank overall price.
+
+---
+
 ## 2026-08-10
 
 **Haven's Birthright (3.1.2)**

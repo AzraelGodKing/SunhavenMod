@@ -1,4 +1,5 @@
 ﻿using System;
+using CropOptimizer.Data;
 using TMPro;
 using UnityEngine;
 using UnityEngine.EventSystems;
@@ -55,11 +56,12 @@ namespace CropOptimizer.UI
             if (_panelRt != null) _panelRt.localScale = new Vector3(scale, scale, 1f);
         }
 
-        public void UpdateStats(int trackedCount, long projectedGold)
+        public void UpdateStats(int trackedCount, CropShopValue projected)
         {
             if (_trackedLabel == null) return;
             _trackedLabel.text = ModLocalization.T("crop.hud.tracked", trackedCount);
-            _valueLabel.text = ModLocalization.T("crop.hud.projected", projectedGold);
+            if (_valueLabel != null)
+                _valueLabel.text = CropSellDisplay.FormatHudLine(projected);
         }
 
         public void RefreshLocalization(bool tooltipEnabled)
@@ -109,7 +111,7 @@ namespace CropOptimizer.UI
             _panelRt.anchorMax = new Vector2(0f, 1f);
             _panelRt.pivot = new Vector2(0f, 1f);
             _panelRt.anchoredPosition = new Vector2(24f, -80f);
-            _panelRt.sizeDelta = new Vector2(320f, 96f);
+            _panelRt.sizeDelta = new Vector2(360f, 96f);
 
             var border = _panel.GetComponent<Image>();
             border.sprite = UiStyle.SolidSprite;
