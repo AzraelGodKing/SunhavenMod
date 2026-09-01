@@ -215,6 +215,11 @@ body.hub-page {
     background: rgba(var(--accent-rgb), 0.1);
 }
 
+.topbar-nav a[aria-current="page"] {
+    color: var(--accent);
+    background: rgba(var(--accent-rgb), 0.12);
+}
+
 .topbar-hint {
     color: var(--muted);
     font-size: 0.8em;

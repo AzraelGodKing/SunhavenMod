@@ -1,3 +1,5 @@
+# Pages project hosts /api/feedback (Linear ticket desk). Hub form lives in docs/.
+# Marketing HTML in cloudflare-site/ is slated for teardown; keep Functions + CORS.
 name = "azrael-sunhaven-website"
 compatibility_date = "2026-04-22"
 pages_build_output_dir = "cloudflare-site"
