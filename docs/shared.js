@@ -12,6 +12,16 @@
 
 document.addEventListener('DOMContentLoaded', function() {
 
+    function hubDocsBase() {
+        var el = document.querySelector('script[src*="shared.js"]');
+        if (!el) return '';
+        try {
+            return new URL(el.getAttribute('src'), document.baseURI).href.replace(/[^/]+$/, '');
+        } catch (err) {
+            return '';
+        }
+    }
+
     // -----------------------------------------------------------------
     // 1. BACK-TO-TOP BUTTON
     // -----------------------------------------------------------------
@@ -504,12 +514,10 @@ document.addEventListener('DOMContentLoaded', function() {
     // -----------------------------------------------------------------
     (function() {
         var bugBtn = document.createElement('a');
-        bugBtn.href = 'https://discord.gg/Vwh2y7qMXv';
-        bugBtn.target = '_blank';
-        bugBtn.rel = 'noopener noreferrer';
+        bugBtn.href = hubDocsBase() + 'feedback.html';
         bugBtn.className = 'bug-report-btn';
-        bugBtn.setAttribute('aria-label', 'Report a bug on Discord');
-        bugBtn.title = 'Report a bug on Discord';
+        bugBtn.setAttribute('aria-label', 'Report a bug');
+        bugBtn.title = 'Report a bug';
         bugBtn.innerHTML = '<span class="bug-icon">&#x1F41B;</span><span class="bug-label">Report Bug</span>';
         document.body.appendChild(bugBtn);
     })();
@@ -518,13 +526,7 @@ document.addEventListener('DOMContentLoaded', function() {
     // 10. SITE-WIDE SEARCH (Ctrl/Cmd+K, FAB)
     // -----------------------------------------------------------------
     (function() {
-        var base = '';
-        var el = document.querySelector('script[src*="shared.js"]');
-        if (el) {
-            try {
-                base = new URL(el.getAttribute('src'), document.baseURI).href.replace(/[^/]+$/, '');
-            } catch (err) { base = ''; }
-        }
+        var base = hubDocsBase();
 
         var root = document.createElement('div');
         root.className = 'site-search';

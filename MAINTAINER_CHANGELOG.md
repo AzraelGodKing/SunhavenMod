@@ -4,6 +4,10 @@ Internal engineering log: **CI**, **release automation**, **scripts**, **docs in
 
 ---
 
+## 2026-08-30
+
+- **AZR-99 — Docs hub Linear ticket desk:** Live Pages hub (`docs/feedback.html`) POSTs JSON to Cloudflare `/api/feedback`. Worker CORS allowlist: `https://azraelgodking.github.io` plus `localhost` / `127.0.0.1` (any port) for `docs:hub:dev`. Extra origins via optional `FEEDBACK_CORS_ORIGINS`. Required env: `LINEAR_API_TOKEN`, `LINEAR_TEAM_ID`. Optional: `FEEDBACK_RATE_WINDOW_SECONDS` (600), `FEEDBACK_RATE_MAX` (5), `LINEAR_BUG_LABEL_ID`, `LINEAR_FEATURE_LABEL_ID`. Default API origin on the form: `https://azrael-sunhaven-website.pages.dev` (override with `data-feedback-api-origin`, `?api=`, or `localStorage sunhavenmod-feedback-api-origin`). Marketing `cloudflare-site/` HTML teardown is a follow-up. No mod version bumps.
+
 ## 2026-08-10
 
 - **Haven's Birthright 3.1.2:** `OnPlayerAddManaPrefix` args renamed to `mana` / `overCapAmount` to match `Wish.Player.AddMana` (HarmonyX name-bind failure was marking essential patches incomplete).

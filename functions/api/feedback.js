@@ -1,7 +1,7 @@
 /**
- * Cloudflare Pages Function: POST /api/feedback
+ * Cloudflare Pages Function: POST /api/feedback  |  GET /api/feedback
  *
- * Required env vars (Pages project):
+ * Required env vars (Pages / Worker project):
  * - LINEAR_API_TOKEN
  * - LINEAR_TEAM_ID
  *
@@ -10,9 +10,13 @@
  * - FEEDBACK_RATE_MAX (default 5)
  * - LINEAR_BUG_LABEL_ID
  * - LINEAR_FEATURE_LABEL_ID
+ * - FEEDBACK_CORS_ORIGINS — comma-separated extra allowed Origins
  *
- * Logs: one JSON object per line (search in Workers Logs for `event` values
- * like `feedback.linear_failed`). Never logs tokens or user-submitted text.
+ * CORS allowlist (always):
+ * - https://azraelgodking.github.io  (GitHub Pages hub)
+ * - http(s)://localhost:* and http(s)://127.0.0.1:*  (docs:hub:dev / local static)
+ *
+ * Logs: one JSON object per line. Never logs tokens or user-submitted text.
  */
 
 const rateWindowMsDefault = 10 * 60 * 1000;
@@ -22,16 +26,14 @@ const rateBuckets = new Map();
 const LOG_SERVICE = "sunhaven-website";
 const LOG_COMPONENT = "api.feedback";
 
+const PAGES_HUB_ORIGIN = "https://azraelgodking.github.io";
+
 function truncate(str, maxLen) {
   const s = String(str ?? "");
   if (s.length <= maxLen) return s;
   return `${s.slice(0, maxLen)}…`;
 }
 
-/**
- * @param {"debug"|"info"|"warn"|"error"} level
- * @param {Record<string, unknown>} fields
- */
 function feedbackLog(level, fields) {
   const line = JSON.stringify({
     ts: new Date().toISOString(),
@@ -43,6 +45,50 @@ function feedbackLog(level, fields) {
   if (level === "error") console.error(line);
   else if (level === "warn") console.warn(line);
   else console.log(line);
+}
+
+function extraCorsOrigins(env) {
+  return String(env?.FEEDBACK_CORS_ORIGINS || "")
+    .split(",")
+    .map((s) => s.trim())
+    .filter(Boolean);
+}
+
+function isAllowedOrigin(origin, env) {
+  if (!origin) return false;
+  if (origin === PAGES_HUB_ORIGIN) return true;
+  if (extraCorsOrigins(env).includes(origin)) return true;
+  try {
+    const u = new URL(origin);
+    const localHost = u.hostname === "localhost" || u.hostname === "127.0.0.1";
+    const http = u.protocol === "http:" || u.protocol === "https:";
+    return localHost && http;
+  } catch {
+    return false;
+  }
+}
+
+function corsHeaders(request, env) {
+  const origin = request.headers.get("Origin") || "";
+  const headers = {
+    Vary: "Origin",
+    "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
+    "Access-Control-Allow-Headers": "Content-Type",
+    "Access-Control-Max-Age": "86400",
+  };
+  if (isAllowedOrigin(origin, env)) {
+    headers["Access-Control-Allow-Origin"] = origin;
+  }
+  return headers;
+}
+
+function withCors(response, request, env) {
+  const next = new Response(response.body, response);
+  const headers = corsHeaders(request, env);
+  for (const [key, value] of Object.entries(headers)) {
+    next.headers.set(key, value);
+  }
+  return next;
 }
 
 function summarizeGraphQLErrors(errors) {
@@ -84,14 +130,19 @@ function checkRateLimit(ip, windowMs, maxPerWindow) {
   return true;
 }
 
-function bad(message, status = 400) {
-  return new Response(JSON.stringify({ ok: false, error: message }), {
+function jsonResponse(body, status = 200) {
+  return new Response(JSON.stringify(body), {
     status,
     headers: { "content-type": "application/json; charset=utf-8" },
   });
 }
 
-/** @param {Record<string, unknown>} [detail] */
+function bad(message, status = 400, detail = null) {
+  const body = { ok: false, error: message };
+  if (detail) body.detail = detail;
+  return jsonResponse(body, status);
+}
+
 function throwLinearUpstream(detail = {}) {
   const err = new Error("Failed to create Linear issue");
   err.name = "FeedbackLinearUpstreamError";
@@ -109,8 +160,30 @@ function requestDiag(request, env, extra = {}) {
   };
 }
 
-export async function onRequestPost(context) {
+export async function onRequestOptions(context) {
+  return new Response(null, {
+    status: 204,
+    headers: corsHeaders(context.request, context.env),
+  });
+}
+
+export async function onRequestGet(context) {
   const { request, env } = context;
+  const diag = requestDiag(request, env);
+  feedbackLog("info", { event: "feedback.health_check", ...diag });
+  return withCors(
+    jsonResponse({
+      ok: true,
+      configured: Boolean(env.LINEAR_API_TOKEN && env.LINEAR_TEAM_ID),
+      linearTokenConfigured: Boolean(env.LINEAR_API_TOKEN),
+      linearTeamIdConfigured: Boolean(env.LINEAR_TEAM_ID),
+    }),
+    request,
+    env
+  );
+}
+
+async function handlePost(request, env) {
   if (!env.LINEAR_API_TOKEN || !env.LINEAR_TEAM_ID) {
     feedbackLog("warn", {
       event: "feedback.config_missing",
@@ -120,7 +193,11 @@ export async function onRequestPost(context) {
       ].filter(Boolean),
       ...requestDiag(request, env),
     });
-    return bad("Server is not configured for feedback submission.", 500);
+    return bad(
+      "Server is not configured for feedback submission. The admin needs to set LINEAR_API_TOKEN and LINEAR_TEAM_ID.",
+      500,
+      { reason: "missing_env" }
+    );
   }
 
   let body;
@@ -150,7 +227,7 @@ export async function onRequestPost(context) {
       submittedType: truncate(type, 32) || null,
       ...requestDiag(request, env),
     });
-    return bad("Invalid feedback type.");
+    return bad("Invalid feedback type. Must be 'bug' or 'feature'.");
   }
 
   const windowSec = Number(env.FEEDBACK_RATE_WINDOW_SECONDS || 600);
@@ -168,6 +245,9 @@ export async function onRequestPost(context) {
   const name = sanitizeText(body?.name, 120);
   const title = sanitizeText(body?.title, 160);
   const description = sanitizeText(body?.description, 4000);
+  const mod = sanitizeText(body?.mod, 120);
+  const priority = sanitizeText(body?.priority, 12).toLowerCase();
+
   if (!name || !title || !description) {
     feedbackLog("warn", {
       event: "feedback.validation_missing_fields",
@@ -176,7 +256,7 @@ export async function onRequestPost(context) {
       hasDescription: Boolean(description),
       ...requestDiag(request, env, { feedbackType: type }),
     });
-    return bad("Missing required fields.");
+    return bad("Missing required fields: name, title, and description are required.");
   }
 
   const issueTitle = `[${type === "bug" ? "Bug" : "Feature"}] ${title}`;
@@ -184,9 +264,12 @@ export async function onRequestPost(context) {
   const featureLabelId = sanitizeText(env.LINEAR_FEATURE_LABEL_ID, 120);
   const labelId = type === "bug" ? bugLabelId : featureLabelId;
   const labelIds = labelId ? [labelId] : [];
+
   const issueDescription =
-    `Submitted from website feedback form.\n` +
+    `Submitted from website ticket desk.\n` +
     asList("Type", type) +
+    (mod ? asList("Related Mod", mod) : "") +
+    (priority ? asList("Priority", priority) : "") +
     asList("Name", name) +
     asList("Description", description);
 
@@ -203,6 +286,15 @@ export async function onRequestPost(context) {
     }
   `;
 
+  const linearInput = {
+    teamId: env.LINEAR_TEAM_ID,
+    title: issueTitle,
+    description: issueDescription,
+  };
+  if (labelIds.length) {
+    linearInput.labelIds = labelIds;
+  }
+
   let issueCreate;
   try {
     const linearResp = await fetch("https://api.linear.app/graphql", {
@@ -213,14 +305,7 @@ export async function onRequestPost(context) {
       },
       body: JSON.stringify({
         query: mutation,
-        variables: {
-          input: {
-            teamId: env.LINEAR_TEAM_ID,
-            title: issueTitle,
-            description: issueDescription,
-            ...(labelIds.length ? { labelIds } : {}),
-          },
-        },
+        variables: { input: linearInput },
       }),
     });
 
@@ -278,6 +363,7 @@ export async function onRequestPost(context) {
     }
   } catch (err) {
     if (err && err.name === "FeedbackLinearUpstreamError") {
+      const detail = err.detail && typeof err.detail === "object" ? err.detail : {};
       feedbackLog("error", {
         event: "feedback.linear_failed",
         httpStatusReturned: 502,
@@ -285,9 +371,13 @@ export async function onRequestPost(context) {
           feedbackType: type,
           labelIdsCount: labelIds.length,
         }),
-        ...(err.detail && typeof err.detail === "object" ? err.detail : {}),
+        ...detail,
       });
-      return bad("Failed to create Linear issue", 502);
+      return bad(
+        "Linear returned an error. This usually means the API token is invalid, the team ID is wrong, or the token lacks issue-create permissions.",
+        502,
+        { linearReason: detail.failureReason || "unknown" }
+      );
     }
     feedbackLog("error", {
       event: "feedback.linear_failed",
@@ -300,7 +390,10 @@ export async function onRequestPost(context) {
         labelIdsCount: labelIds.length,
       }),
     });
-    return bad("Failed to create Linear issue", 502);
+    return bad(
+      "Could not reach Linear. This may be a temporary network issue. Please try again in a moment.",
+      502
+    );
   }
 
   feedbackLog("info", {
@@ -313,16 +406,15 @@ export async function onRequestPost(context) {
     }),
   });
 
-  return new Response(
-    JSON.stringify({
-      ok: true,
-      id: issueCreate.issue?.id || null,
-      identifier: issueCreate.issue?.identifier || null,
-      url: issueCreate.issue?.url || null,
-    }),
-    {
-      status: 200,
-      headers: { "content-type": "application/json; charset=utf-8" },
-    }
-  );
+  return jsonResponse({
+    ok: true,
+    id: issueCreate.issue?.id || null,
+    identifier: issueCreate.issue?.identifier || null,
+    url: issueCreate.issue?.url || null,
+  });
+}
+
+export async function onRequestPost(context) {
+  const { request, env } = context;
+  return withCors(await handlePost(request, env), request, env);
 }
