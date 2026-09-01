@@ -1,7 +1,7 @@
 /**
  * Cloudflare Pages Function: POST /api/feedback  |  GET /api/feedback
  *
- * Required env vars (Pages project):
+ * Required env vars (Pages / Worker project):
  * - LINEAR_API_TOKEN
  * - LINEAR_TEAM_ID
  *
@@ -10,6 +10,11 @@
  * - FEEDBACK_RATE_MAX (default 5)
  * - LINEAR_BUG_LABEL_ID
  * - LINEAR_FEATURE_LABEL_ID
+ * - FEEDBACK_CORS_ORIGINS — comma-separated extra allowed Origins
+ *
+ * CORS allowlist (always):
+ * - https://azraelgodking.github.io  (GitHub Pages hub)
+ * - http(s)://localhost:* and http(s)://127.0.0.1:*  (docs:hub:dev / local static)
  *
  * Logs: one JSON object per line. Never logs tokens or user-submitted text.
  */
@@ -20,6 +25,8 @@ const rateBuckets = new Map();
 
 const LOG_SERVICE = "sunhaven-website";
 const LOG_COMPONENT = "api.feedback";
+
+const PAGES_HUB_ORIGIN = "https://azraelgodking.github.io";
 
 function truncate(str, maxLen) {
   const s = String(str ?? "");
@@ -38,6 +45,50 @@ function feedbackLog(level, fields) {
   if (level === "error") console.error(line);
   else if (level === "warn") console.warn(line);
   else console.log(line);
+}
+
+function extraCorsOrigins(env) {
+  return String(env?.FEEDBACK_CORS_ORIGINS || "")
+    .split(",")
+    .map((s) => s.trim())
+    .filter(Boolean);
+}
+
+function isAllowedOrigin(origin, env) {
+  if (!origin) return false;
+  if (origin === PAGES_HUB_ORIGIN) return true;
+  if (extraCorsOrigins(env).includes(origin)) return true;
+  try {
+    const u = new URL(origin);
+    const localHost = u.hostname === "localhost" || u.hostname === "127.0.0.1";
+    const http = u.protocol === "http:" || u.protocol === "https:";
+    return localHost && http;
+  } catch {
+    return false;
+  }
+}
+
+function corsHeaders(request, env) {
+  const origin = request.headers.get("Origin") || "";
+  const headers = {
+    Vary: "Origin",
+    "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
+    "Access-Control-Allow-Headers": "Content-Type",
+    "Access-Control-Max-Age": "86400",
+  };
+  if (isAllowedOrigin(origin, env)) {
+    headers["Access-Control-Allow-Origin"] = origin;
+  }
+  return headers;
+}
+
+function withCors(response, request, env) {
+  const next = new Response(response.body, response);
+  const headers = corsHeaders(request, env);
+  for (const [key, value] of Object.entries(headers)) {
+    next.headers.set(key, value);
+  }
+  return next;
 }
 
 function summarizeGraphQLErrors(errors) {
@@ -109,22 +160,30 @@ function requestDiag(request, env, extra = {}) {
   };
 }
 
+export async function onRequestOptions(context) {
+  return new Response(null, {
+    status: 204,
+    headers: corsHeaders(context.request, context.env),
+  });
+}
+
 export async function onRequestGet(context) {
   const { request, env } = context;
   const diag = requestDiag(request, env);
   feedbackLog("info", { event: "feedback.health_check", ...diag });
-  return jsonResponse({
-    ok: true,
-    configured: Boolean(env.LINEAR_API_TOKEN && env.LINEAR_TEAM_ID),
-    linearTokenConfigured: Boolean(env.LINEAR_API_TOKEN),
-    linearTeamIdConfigured: Boolean(env.LINEAR_TEAM_ID),
-  });
+  return withCors(
+    jsonResponse({
+      ok: true,
+      configured: Boolean(env.LINEAR_API_TOKEN && env.LINEAR_TEAM_ID),
+      linearTokenConfigured: Boolean(env.LINEAR_API_TOKEN),
+      linearTeamIdConfigured: Boolean(env.LINEAR_TEAM_ID),
+    }),
+    request,
+    env
+  );
 }
 
-export async function onRequestPost(context) {
-  const { request, env } = context;
-
-  // 1) Config check
+async function handlePost(request, env) {
   if (!env.LINEAR_API_TOKEN || !env.LINEAR_TEAM_ID) {
     feedbackLog("warn", {
       event: "feedback.config_missing",
@@ -141,7 +200,6 @@ export async function onRequestPost(context) {
     );
   }
 
-  // 2) Parse body
   let body;
   try {
     body = await request.json();
@@ -153,7 +211,6 @@ export async function onRequestPost(context) {
     return bad("Invalid JSON body.");
   }
 
-  // 3) Honeypot
   const honeypot = sanitizeText(body?.website, 120);
   if (honeypot) {
     feedbackLog("warn", {
@@ -163,7 +220,6 @@ export async function onRequestPost(context) {
     return bad("Spam detected.");
   }
 
-  // 4) Type validation
   const type = sanitizeText(body?.type, 12).toLowerCase();
   if (type !== "bug" && type !== "feature") {
     feedbackLog("warn", {
@@ -174,7 +230,6 @@ export async function onRequestPost(context) {
     return bad("Invalid feedback type. Must be 'bug' or 'feature'.");
   }
 
-  // 5) Rate limit
   const windowSec = Number(env.FEEDBACK_RATE_WINDOW_SECONDS || 600);
   const maxPerWindow = Number(env.FEEDBACK_RATE_MAX || rateLimitDefault);
   const windowMs = Number.isFinite(windowSec) ? Math.max(30, windowSec) * 1000 : rateWindowMsDefault;
@@ -187,7 +242,6 @@ export async function onRequestPost(context) {
     return bad("Too many submissions. Please try again later.", 429);
   }
 
-  // 6) Field validation
   const name = sanitizeText(body?.name, 120);
   const title = sanitizeText(body?.title, 160);
   const description = sanitizeText(body?.description, 4000);
@@ -205,7 +259,6 @@ export async function onRequestPost(context) {
     return bad("Missing required fields: name, title, and description are required.");
   }
 
-  // 7) Build Linear payload
   const issueTitle = `[${type === "bug" ? "Bug" : "Feature"}] ${title}`;
   const bugLabelId = sanitizeText(env.LINEAR_BUG_LABEL_ID, 120);
   const featureLabelId = sanitizeText(env.LINEAR_FEATURE_LABEL_ID, 120);
@@ -242,7 +295,6 @@ export async function onRequestPost(context) {
     linearInput.labelIds = labelIds;
   }
 
-  // 8) Call Linear
   let issueCreate;
   try {
     const linearResp = await fetch("https://api.linear.app/graphql", {
@@ -360,4 +412,9 @@ export async function onRequestPost(context) {
     identifier: issueCreate.issue?.identifier || null,
     url: issueCreate.issue?.url || null,
   });
+}
+
+export async function onRequestPost(context) {
+  const { request, env } = context;
+  return withCors(await handlePost(request, env), request, env);
 }

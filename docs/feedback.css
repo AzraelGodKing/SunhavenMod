@@ -1,0 +1,140 @@
+/* ===================================================================
+   Feedback ticket desk — hub parchment form
+   Loads after index-style.css
+   =================================================================== */
+
+.feedback-hero {
+    padding: 36px 0 8px;
+}
+
+.feedback-hero .hero-kicker {
+    margin-bottom: 8px;
+}
+
+.feedback-hero h1 {
+    font-family: var(--font-display);
+    font-size: clamp(1.8rem, 3.2vw, 2.4rem);
+    line-height: 1.2;
+    margin: 0 0 12px;
+    color: var(--ink);
+}
+
+.feedback-hero .hero-sub {
+    max-width: 640px;
+    margin: 0;
+    color: var(--muted);
+}
+
+.feedback-shell {
+    max-width: 720px;
+    margin: 0 auto 40px;
+}
+
+.feedback-card {
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: 16px;
+    padding: 28px 32px;
+    box-shadow: 0 10px 30px var(--shadow-sm);
+}
+
+.feedback-form .field {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    margin-bottom: 16px;
+}
+
+.feedback-form .field > span {
+    font-weight: 600;
+    font-size: 0.88em;
+    color: var(--ink);
+}
+
+.feedback-form .field .hint {
+    font-weight: 400;
+    font-size: 0.8em;
+    color: var(--muted);
+}
+
+.feedback-form input,
+.feedback-form select,
+.feedback-form textarea {
+    font: inherit;
+    color: var(--ink);
+    background: var(--paper);
+    border: 1px solid var(--line);
+    border-radius: 10px;
+    padding: 10px 12px;
+}
+
+.feedback-form input:focus,
+.feedback-form select:focus,
+.feedback-form textarea:focus {
+    outline: 3px solid #ffffff;
+    outline-offset: 2px;
+    border-color: rgba(var(--accent-rgb), 0.55);
+}
+
+.feedback-form textarea {
+    min-height: 140px;
+    resize: vertical;
+}
+
+.feedback-form .honeypot {
+    position: absolute;
+    left: -10000px;
+    top: auto;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+}
+
+.feedback-actions {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 14px;
+    margin-top: 8px;
+}
+
+.feedback-actions .hero-btn {
+    border: 0;
+    cursor: pointer;
+    font-family: inherit;
+}
+
+.feedback-actions .hero-btn:disabled {
+    opacity: 0.65;
+    cursor: wait;
+    transform: none;
+}
+
+.feedback-inline {
+    margin: 0;
+    color: var(--muted);
+    font-size: 0.92em;
+}
+
+.feedback-inline[data-status="error"] {
+    color: #b45309;
+}
+
+html[data-theme="dark"] .feedback-inline[data-status="error"] {
+    color: #fbbf24;
+}
+
+.feedback-inline[data-status="success"] {
+    color: var(--accent-2);
+}
+
+.topbar-nav a[aria-current="page"] {
+    color: var(--accent);
+    background: rgba(var(--accent-rgb), 0.12);
+}
+
+@media (max-width: 640px) {
+    .feedback-card {
+        padding: 20px 16px;
+    }
+}

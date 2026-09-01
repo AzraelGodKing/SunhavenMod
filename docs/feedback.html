@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="en" data-feedback-api-origin="https://azrael-sunhaven-website.pages.dev">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Feedback — Sun Haven Mod Hub</title>
+    <meta name="description" content="Report a bug or request a feature for AzraelGodKing's Sun Haven mods from the Mod Hub.">
+    <meta property="og:title" content="Feedback — Sun Haven Mod Hub">
+    <meta property="og:description" content="File a bug report or feature request without leaving the docs hub.">
+    <meta property="og:type" content="website">
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="Feedback — Sun Haven Mod Hub">
+    <meta name="theme-color" content="#b45309">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="canonical" href="https://azraelgodking.github.io/SunhavenMod/feedback.html">
+    <meta property="og:url" content="https://azraelgodking.github.io/SunhavenMod/feedback.html">
+    <meta property="og:image" content="https://azraelgodking.github.io/SunhavenMod/og-card.png">
+    <meta name="twitter:image" content="https://azraelgodking.github.io/SunhavenMod/og-card.png">
+    <link rel="icon" type="image/svg+xml" href="favicon.svg">
+    <link rel="stylesheet" href="shared-styles.css">
+    <link rel="stylesheet" href="index-style.css">
+    <link rel="stylesheet" href="feedback.css">
+    <script src="shared.js" defer></script>
+    <script src="feedback.js" defer></script>
+</head>
+<body class="hub-page">
+    <a href="#main-content" class="skip-to-content">Skip to content</a>
+
+    <header class="topbar">
+        <a class="topbar-brand" href="index.html">
+            <svg class="topbar-sun" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+                <circle cx="12" cy="12" r="5" fill="currentColor"/>
+                <g stroke="currentColor" stroke-width="1.8" stroke-linecap="round">
+                    <line x1="12" y1="1.5" x2="12" y2="4.5"/><line x1="12" y1="19.5" x2="12" y2="22.5"/>
+                    <line x1="1.5" y1="12" x2="4.5" y2="12"/><line x1="19.5" y1="12" x2="22.5" y2="12"/>
+                    <line x1="4.6" y1="4.6" x2="6.7" y2="6.7"/><line x1="17.3" y1="17.3" x2="19.4" y2="19.4"/>
+                    <line x1="4.6" y1="19.4" x2="6.7" y2="17.3"/><line x1="17.3" y1="6.7" x2="19.4" y2="4.6"/>
+                </g>
+            </svg>
+            <span>Sun Haven <em>Mod Hub</em></span>
+        </a>
+        <nav class="topbar-nav" aria-label="Hub pages">
+            <a href="index.html#mods">Mods</a>
+            <a href="index.html#party-loadouts">Starter Packs</a>
+            <a href="index.html#guild-initiation">Install</a>
+            <a href="index.html#guild-master-wisdom">FAQ</a>
+            <a href="index.html#arsenal-comparison">Compare</a>
+            <a href="feedback.html" aria-current="page">Feedback</a>
+        </nav>
+        <span class="topbar-hint" aria-hidden="true"><kbd>Ctrl</kbd>+<kbd>K</kbd> to search</span>
+    </header>
+
+    <div class="container" id="main-content" role="main">
+        <section class="feedback-hero" aria-labelledby="feedback-title">
+            <p class="hero-kicker">Ticket desk</p>
+            <h1 id="feedback-title">Tell us what broke<br><span class="hero-accent">or what should exist next.</span></h1>
+            <p class="hero-sub">Bug reports and feature requests go to the maintainer issue tracker. You stay on this page. Discord is still there if you prefer to chat.</p>
+        </section>
+
+        <div class="feedback-shell">
+            <div class="feedback-card">
+                <form class="feedback-form" id="feedbackForm" novalidate>
+                    <label class="field">
+                        <span>Type</span>
+                        <select name="type" required>
+                            <option value="bug" selected>Bug</option>
+                            <option value="feature">Feature</option>
+                        </select>
+                    </label>
+
+                    <label class="field">
+                        <span>Name</span>
+                        <input name="name" type="text" autocomplete="name" required maxlength="120">
+                    </label>
+
+                    <label class="field">
+                        <span>Title</span>
+                        <input name="title" type="text" required maxlength="160" placeholder="Short summary">
+                    </label>
+
+                    <label class="field">
+                        <span>Related mod <span class="hint">(optional)</span></span>
+                        <select name="mod">
+                            <option value="">Any / not sure</option>
+                        </select>
+                    </label>
+
+                    <label class="field">
+                        <span>Description</span>
+                        <textarea name="description" rows="6" required maxlength="4000" placeholder="What happened, what you expected, and how to reproduce it."></textarea>
+                    </label>
+
+                    <label class="honeypot" aria-hidden="true">
+                        <span>Leave this field empty</span>
+                        <input name="website" type="text" tabindex="-1" autocomplete="off">
+                    </label>
+
+                    <div class="feedback-actions">
+                        <button class="hero-btn hero-btn-primary" type="submit">Submit feedback</button>
+                        <p class="feedback-inline" id="feedbackNotice" role="status" aria-live="polite"></p>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <footer class="footer">
+            <p class="footer-title">Sun Haven Mod Hub &mdash; built &amp; maintained by AzraelGodKing</p>
+            <p class="footer-links">
+                <a href="index.html">Mod Hub</a>
+                <span aria-hidden="true">&middot;</span>
+                <a href="https://www.nexusmods.com/profile/AzraelGodKing/mods" target="_blank" rel="noopener noreferrer">Nexus Mods</a>
+                <span aria-hidden="true">&middot;</span>
+                <a href="https://thunderstore.io/c/sun-haven/p/AzraelGodKing/" target="_blank" rel="noopener noreferrer">Thunderstore</a>
+                <span aria-hidden="true">&middot;</span>
+                <a href="https://github.com/AzraelGodKing/SunhavenMod" target="_blank" rel="noopener noreferrer">GitHub</a>
+                <span aria-hidden="true">&middot;</span>
+                <a href="https://discord.gg/Vwh2y7qMXv" target="_blank" rel="noopener noreferrer">Discord</a>
+                <span aria-hidden="true">&middot;</span>
+                <a href="feedback.html" aria-current="page">Feedback</a>
+            </p>
+            <p class="footer-disclaimer">Not affiliated with Sun Haven or Pixel Sprout Studios</p>
+        </footer>
+    </div>
+</body>
+</html>

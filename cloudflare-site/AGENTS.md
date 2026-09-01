@@ -182,6 +182,7 @@ Manual test checklist when making changes:
 | `FEEDBACK_RATE_MAX` | `5` | Max submissions per window per IP |
 | `LINEAR_BUG_LABEL_ID` | — | Linear label ID for bugs |
 | `LINEAR_FEATURE_LABEL_ID` | — | Linear label ID for features |
+| `FEEDBACK_CORS_ORIGINS` | — | Comma-separated extra allowed `Origin` values |
 
 ### Behavior
 - `GET /api/feedback` — health check; returns whether the function is configured
@@ -201,7 +202,7 @@ Manual test checklist when making changes:
 - **Input sanitization**: Control characters (`\u0000`–`\u001F`) are stripped from feedback text.
 - **Rate limiting**: Per-IP sliding window with configurable max and duration.
 - **Safe logging**: The feedback function logs structured JSON but never includes the Linear token or raw user input.
-- **CORS**: Not explicitly configured; the function is intended to be called same-origin.
+- **CORS**: Allowlist for `https://azraelgodking.github.io` (GitHub Pages hub), `http(s)://localhost:*` and `http(s)://127.0.0.1:*` (local docs hub), plus any origins in `FEEDBACK_CORS_ORIGINS`. `OPTIONS` preflight is handled. The hub form at `docs/feedback.html` calls this Worker cross-origin.
 
 ## Accessibility Conventions
 

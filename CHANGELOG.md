@@ -6,6 +6,10 @@ Notes for **players and release readers**. Per-mod blurbs and upstream metadata 
 
 ## 2026-08-30
 
+**Docs hub**
+
+- **New:** [Feedback](https://azraelgodking.github.io/SunhavenMod/feedback.html) ticket desk on the GitHub Pages hub — file a bug or feature request without leaving the docs. The floating Report Bug button on every guide now opens that page.
+
 **Crop Optimizer (2.2.2)**
 
 - **Fix:** Nel'Vari and Withergate HUD totals now use orb and ticket shop prices. Those farms store harvest value on `orbSellPrice` / `ticketSellPrice` with gold at 0, so the overlay previously showed crop count (and hover names) with a blank overall price.
