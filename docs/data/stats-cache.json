@@ -1,10 +1,10 @@
 {
-  "lastFetched": "2026-09-06T10:19:27.858Z",
+  "lastFetched": "2026-09-06T13:56:36.125Z",
   "mods": {
     "senpais-chest": {
       "name": "Senpai's Chest",
       "thunderstore": {
-        "total_downloads": 1561,
+        "total_downloads": 1562,
         "versions": {
           "3.1.1": 97,
           "3.1.0": 68,
@@ -17,7 +17,7 @@
           "2.6.0": 47,
           "2.5.0": 45,
           "2.4.0": 48,
-          "2.3.0": 36,
+          "2.3.0": 37,
           "2.2.6": 38,
           "2.2.4": 48,
           "2.2.2": 91,
@@ -39,19 +39,19 @@
         "total_downloads": 1250,
         "unique_downloads": 872
       },
-      "combined_total": 2811
+      "combined_total": 2812
     },
     "havens-birthright": {
       "name": "Haven's Birthright",
       "thunderstore": {
-        "total_downloads": 1443,
+        "total_downloads": 1444,
         "versions": {
           "3.1.2": 74,
           "3.1.1": 67,
           "3.1.0": 70,
           "3.0.1": 73,
           "3.0.0": 58,
-          "2.2.2": 151,
+          "2.2.2": 152,
           "2.2.0": 43,
           "2.1.0": 47,
           "2.0.3": 53,
@@ -73,7 +73,7 @@
         "total_downloads": 1753,
         "unique_downloads": 1142
       },
-      "combined_total": 3196
+      "combined_total": 3197
     },
     "museum-utility-tracker": {
       "name": "S.M.U.T.",
@@ -136,9 +136,9 @@
     "havens-todo": {
       "name": "Sun Haven Todo",
       "thunderstore": {
-        "total_downloads": 1315,
+        "total_downloads": 1316,
         "versions": {
-          "2.1.1": 89,
+          "2.1.1": 90,
           "2.1.0": 61,
           "2.0.1": 85,
           "2.0.0": 51,
@@ -163,7 +163,7 @@
         "total_downloads": 733,
         "unique_downloads": 553
       },
-      "combined_total": 2048
+      "combined_total": 2049
     },
     "the-vault": {
       "name": "The Vault",
@@ -353,10 +353,10 @@
     "gifting-assistant": {
       "name": "Gifting Assistant",
       "thunderstore": {
-        "total_downloads": 295,
+        "total_downloads": 296,
         "versions": {
           "1.1.1": 108,
-          "1.1.0": 82,
+          "1.1.0": 83,
           "1.0.1": 64,
           "1.0.0": 41
         }
@@ -365,13 +365,13 @@
         "total_downloads": 769,
         "unique_downloads": 650
       },
-      "combined_total": 1064
+      "combined_total": 1065
     }
   },
   "site_total": {
-    "thunderstore": 12392,
+    "thunderstore": 12396,
     "nexus_total": 13324,
     "nexus_unique": 9685,
-    "grand_total": 25716
+    "grand_total": 25720
   }
 }
