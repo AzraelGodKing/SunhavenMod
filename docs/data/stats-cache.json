@@ -1,10 +1,10 @@
 {
-  "lastFetched": "2026-09-08T21:35:06.645Z",
+  "lastFetched": "2026-09-08T23:50:56.757Z",
   "mods": {
     "senpais-chest": {
       "name": "Senpai's Chest",
       "thunderstore": {
-        "total_downloads": 1601,
+        "total_downloads": 1602,
         "versions": {
           "3.1.1": 102,
           "3.1.0": 69,
@@ -27,7 +27,7 @@
           "2.0.4": 65,
           "2.0.3": 49,
           "2.0.2": 61,
-          "2.0.1": 56,
+          "2.0.1": 57,
           "2.0.0": 58,
           "1.3.0": 46,
           "1.2.0": 48,
@@ -39,7 +39,7 @@
         "total_downloads": 1260,
         "unique_downloads": 880
       },
-      "combined_total": 2861
+      "combined_total": 2862
     },
     "havens-birthright": {
       "name": "Haven's Birthright",
@@ -78,17 +78,17 @@
     "museum-utility-tracker": {
       "name": "S.M.U.T.",
       "thunderstore": {
-        "total_downloads": 1560,
+        "total_downloads": 1563,
         "versions": {
-          "3.1.1": 132,
+          "3.1.1": 133,
           "3.1.0": 83,
           "3.0.1": 79,
           "3.0.0": 65,
-          "2.4.2": 155,
+          "2.4.2": 156,
           "2.4.0": 58,
           "2.3.0": 65,
           "2.2.9": 52,
-          "2.2.6": 226,
+          "2.2.6": 227,
           "2.2.5": 79,
           "2.2.3": 107,
           "2.2.2": 185,
@@ -102,7 +102,7 @@
         "total_downloads": 1809,
         "unique_downloads": 1371
       },
-      "combined_total": 3369
+      "combined_total": 3372
     },
     "squirrels-birthday-reminder": {
       "name": "A Squirrel's Birthday Reminder",
@@ -330,9 +330,9 @@
     "havens-respec": {
       "name": "Haven's Respec",
       "thunderstore": {
-        "total_downloads": 549,
+        "total_downloads": 550,
         "versions": {
-          "2.1.1": 76,
+          "2.1.1": 77,
           "2.1.0": 58,
           "2.0.2": 48,
           "2.0.1": 41,
@@ -348,7 +348,7 @@
         "total_downloads": 499,
         "unique_downloads": 380
       },
-      "combined_total": 1048
+      "combined_total": 1049
     },
     "gifting-assistant": {
       "name": "Gifting Assistant",
@@ -369,9 +369,9 @@
     }
   },
   "site_total": {
-    "thunderstore": 12707,
+    "thunderstore": 12712,
     "nexus_total": 13453,
     "nexus_unique": 9794,
-    "grand_total": 26160
+    "grand_total": 26165
   }
 }
