@@ -1,0 +1,15 @@
+<Project>
+  <!--
+    Baseline SharedUtilities compile links (AZR-256).
+    Import from each mod csproj, then add optional files explicitly.
+  -->
+  <ItemGroup>
+    <Compile Include="$(MSBuildThisFileDirectory)ConfigFileHelper.cs" Link="Shared\ConfigFileHelper.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)SharedCodeRevision.cs" Link="Shared\SharedCodeRevision.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)ModDiagnostics.cs" Link="Shared\ModDiagnostics.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)ModHealthReport.cs" Link="Shared\ModHealthReport.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)ModHealthIntegrationSummary.cs" Link="Shared\ModHealthIntegrationSummary.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)ReflectionHelper.cs" Link="Shared\ReflectionHelper.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)ReflectionProbe.cs" Link="Shared\ReflectionProbe.cs" />
+  </ItemGroup>
+</Project>

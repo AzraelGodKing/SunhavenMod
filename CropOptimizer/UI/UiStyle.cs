@@ -1,6 +1,9 @@
+using System;
 using System.Collections.Generic;
 using TMPro;
 using UnityEngine;
+
+using SunhavenMods.Shared;
 
 namespace CropOptimizer.UI
 {
@@ -72,7 +75,7 @@ namespace CropOptimizer.UI
                             _font = all[0];
                     }
                 }
-                catch { }
+                catch (Exception __ex) { ReflectionProbe.LogOnce("CropOptimizer/UI/UiStyle.cs:77", __ex, Plugin.Log); }
                 return _font;
             }
         }

@@ -4,6 +4,8 @@ using System.Collections.Generic;
 using BepInEx.Bootstrap;
 using HarmonyLib;
 
+using SunhavenMods.Shared;
+
 namespace CropOptimizer.Integration
 {
     internal sealed class BirthdayIntegration

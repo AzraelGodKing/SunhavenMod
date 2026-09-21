@@ -4,6 +4,8 @@ using CropOptimizer.Patches;
 using HarmonyLib;
 using UnityEngine;
 
+using SunhavenMods.Shared;
+
 namespace CropOptimizer.UI
 {
     /// <summary>Filters scene <c>Wish.Crop</c> instances down to planted, active crops worth tracking.</summary>
@@ -32,9 +34,7 @@ namespace CropOptimizer.UI
                     if (_placedProp.GetValue(crop) is bool placed && !placed)
                         return false;
                 }
-                catch
-                {
-                }
+                catch (Exception __ex) { ReflectionProbe.LogOnce("CropOptimizer/UI/CropPresence.cs:37", __ex, Plugin.Log); }
             }
 
             return CropGrowthPatch.TryGetTooltipHarvestItemId(crop, out int itemId) && itemId > 0;
@@ -61,9 +61,7 @@ namespace CropOptimizer.UI
                     if (_placedProp.GetValue(crop) is bool placed && !placed)
                         return false;
                 }
-                catch
-                {
-                }
+                catch (Exception __ex) { ReflectionProbe.LogOnce("CropOptimizer/UI/CropPresence.cs:66", __ex, Plugin.Log); }
             }
 
             return true;

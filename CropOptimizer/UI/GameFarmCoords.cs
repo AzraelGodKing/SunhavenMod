@@ -1,6 +1,9 @@
+using System;
 using CropOptimizer.Patches;
 using UnityEngine;
 using Wish;
+
+using SunhavenMods.Shared;
 
 namespace CropOptimizer.UI
 {
@@ -62,9 +65,7 @@ namespace CropOptimizer.UI
                     vector = new Vector3(vector.x, vector.y + depth, vector.z + depth);
                 }
             }
-            catch
-            {
-            }
+            catch (Exception __ex) { ReflectionProbe.LogOnce("CropOptimizer/UI/GameFarmCoords.cs:67", __ex, Plugin.Log); }
 
             return vector + SelectionOffset;
         }

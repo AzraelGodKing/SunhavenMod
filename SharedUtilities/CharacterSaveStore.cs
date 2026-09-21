@@ -76,8 +76,9 @@ namespace SunhavenMods.Shared
 
         /// <summary>
         /// Writes text atomically: .tmp → rotate live to backup → promote .tmp.
+        /// Returns false on IO failure after best-effort restore; does not throw for those failures.
         /// </summary>
-        /// <param name="deleteTempInFinally">When false (The Vault), a failed write may leave .tmp for manual recovery.</param>
+        /// <param name="deleteTempInFinally">Obsolete: kept for call-site compatibility. Temp is only deleted on success or when failure happened before the live file was rotated.</param>
         public static bool WriteAtomic(
             string filePath,
             string content,
@@ -89,7 +90,7 @@ namespace SunhavenMods.Shared
 
             return WriteAtomicCore(
                 filePath,
-                tempPath => File.WriteAllText(tempPath, content),
+                tempPath => WriteAllTextDurable(tempPath, content),
                 backupSuffix,
                 deleteTempInFinally);
         }
@@ -97,6 +98,7 @@ namespace SunhavenMods.Shared
         /// <summary>
         /// Writes bytes atomically (encrypted vault payloads).
         /// </summary>
+        /// <param name="deleteTempInFinally">Obsolete: kept for call-site compatibility. See <see cref="WriteAtomic"/>.</param>
         public static bool WriteAtomicBytes(
             string filePath,
             byte[] content,
@@ -108,7 +110,7 @@ namespace SunhavenMods.Shared
 
             return WriteAtomicCore(
                 filePath,
-                tempPath => File.WriteAllBytes(tempPath, content),
+                tempPath => WriteAllBytesDurable(tempPath, content),
                 backupSuffix,
                 deleteTempInFinally);
         }
@@ -224,25 +226,66 @@ namespace SunhavenMods.Shared
                 return false;
 
             string tempPath = filePath + TempSuffix;
+            string backupPath = filePath + backupSuffix;
+            bool rotatedLiveToBackup = false;
             try
             {
                 writeTemp(tempPath);
 
                 if (File.Exists(filePath))
                 {
-                    string backupPath = filePath + backupSuffix;
                     if (File.Exists(backupPath))
                         File.Delete(backupPath);
                     File.Move(filePath, backupPath);
+                    rotatedLiveToBackup = true;
                 }
 
                 File.Move(tempPath, filePath);
+                // Success: drop temp if somehow still present (Move should have removed it).
+                TryDelete(tempPath);
                 return true;
             }
-            finally
+            catch (Exception)
             {
-                if (deleteTempInFinally)
+                // Restore rotated live file when promote failed after the move-away.
+                if (rotatedLiveToBackup && !File.Exists(filePath) && File.Exists(backupPath))
+                {
+                    try
+                    {
+                        File.Move(backupPath, filePath);
+                    }
+                    catch
+                    {
+                        // Best-effort restore; caller still gets false.
+                    }
+                }
+
+                // Only delete temp when we never rotated the live file — otherwise keep .tmp for recovery.
+                // deleteTempInFinally=false (Vault) always keeps .tmp on failure.
+                if (deleteTempInFinally && !rotatedLiveToBackup)
                     TryDelete(tempPath);
+
+                return false;
+            }
+        }
+
+        private static void WriteAllTextDurable(string path, string content)
+        {
+            using (var fs = new FileStream(path, FileMode.Create, FileAccess.Write, FileShare.None))
+            using (var writer = new StreamWriter(fs))
+            {
+                writer.Write(content);
+                writer.Flush();
+                fs.Flush(true);
+            }
+        }
+
+        private static void WriteAllBytesDurable(string path, byte[] content)
+        {
+            using (var fs = new FileStream(path, FileMode.Create, FileAccess.Write, FileShare.None))
+            {
+                fs.Write(content, 0, content.Length);
+                fs.Flush(true);
             }
         }
 

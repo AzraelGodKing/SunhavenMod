@@ -3,6 +3,8 @@ using System.IO;
 using System.Reflection;
 using BepInEx.Bootstrap;
 
+using SunhavenMods.Shared;
+
 namespace CropOptimizer.Integration
 {
     /// <summary>

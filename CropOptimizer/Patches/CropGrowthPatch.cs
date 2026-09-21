@@ -382,9 +382,7 @@ namespace CropOptimizer.Patches
                     return true;
                 }
             }
-            catch
-            {
-            }
+            catch (Exception __ex) { ReflectionProbe.LogOnce("CropOptimizer/Patches/CropGrowthPatch.cs:385", __ex, Plugin.Log); }
             return false;
         }
 
@@ -456,9 +454,7 @@ namespace CropOptimizer.Patches
                 if (bundle == true)
                     lines.Add("Bundle: yes");
             }
-            catch
-            {
-            }
+            catch (Exception __ex) { ReflectionProbe.LogOnce("CropOptimizer/Patches/CropGrowthPatch.cs:459", __ex, Plugin.Log); }
         }
 
         private static string ReadStringLike(object instance, Type t, params string[] names)
@@ -810,9 +806,7 @@ namespace CropOptimizer.Patches
                     }
                 }
             }
-            catch
-            {
-            }
+            catch (Exception __ex) { ReflectionProbe.LogOnce("CropOptimizer/Patches/CropGrowthPatch.cs:813", __ex, Plugin.Log); }
 
             return false;
         }
@@ -988,13 +982,13 @@ namespace CropOptimizer.Patches
                         var field = cur.GetField(name, AllMemberFlags);
                         if (field != null) return field;
                     }
-                    catch { }
+                    catch (Exception __ex) { ReflectionProbe.LogOnce("CropOptimizer/Patches/CropGrowthPatch.cs:991", __ex, Plugin.Log); }
                     try
                     {
                         var prop = cur.GetProperty(name, AllMemberFlags);
                         if (prop != null) return prop;
                     }
-                    catch { }
+                    catch (Exception __ex) { ReflectionProbe.LogOnce("CropOptimizer/Patches/CropGrowthPatch.cs:997", __ex, Plugin.Log); }
                 }
             }
             return null;
@@ -1034,9 +1028,7 @@ namespace CropOptimizer.Patches
                 if (member is PropertyInfo pi)
                     return pi.GetValue(instance, null);
             }
-            catch
-            {
-            }
+            catch (Exception __ex) { ReflectionProbe.LogOnce("CropOptimizer/Patches/CropGrowthPatch.cs:1037", __ex, Plugin.Log); }
             return null;
         }
 

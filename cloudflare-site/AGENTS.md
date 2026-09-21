@@ -11,7 +11,18 @@ This is a handcrafted, static marketing and discovery portal for **SunhavenMod**
 3. **Per-mod profile pages** (`mods/*.html`) — individually themed pages for each mod with stats, install instructions, and context.
 4. **Feedback desk** (`feedback.html`) — inline bug report / feature request form backed by a serverless function.
 
-The site is deployed to **Cloudflare Pages** (project name: `azrael-sunhaven-website`). There is no build step or bundler — all files are hand-written static assets.
+The site is deployed to **Cloudflare Pages** (project name: `azrael-sunhaven-website`).
+
+### Feedback Function (live path)
+
+**Only** `cloudflare-site/functions/api/feedback.js` deploys (`wrangler.toml` → `pages_build_output_dir = "cloudflare-site"`). Do not reintroduce a root `functions/` copy (AZR-253).
+
+Required Pages project env vars (AZR-103):
+
+- `LINEAR_API_TOKEN` — personal API key with **issue create** on team AzraelGodKing
+- `LINEAR_TEAM_ID` — AzraelGodKing team id
+
+Optional: `LINEAR_BUG_LABEL_ID`, `LINEAR_FEATURE_LABEL_ID`, `FEEDBACK_RATE_*`, `FEEDBACK_CORS_ORIGINS`.
 
 ## Technology Stack
 

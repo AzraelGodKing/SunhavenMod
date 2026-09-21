@@ -1,8 +1,11 @@
+using System;
 using System.Collections.Generic;
 using System.Reflection;
 using HarmonyLib;
 using UnityEngine;
 using Wish;
+
+using SunhavenMods.Shared;
 
 namespace CropOptimizer.UI
 {
@@ -147,9 +150,7 @@ namespace CropOptimizer.UI
                     }
                 }
             }
-            catch
-            {
-            }
+            catch (Exception __ex) { ReflectionProbe.LogOnce("CropOptimizer/UI/GameSelectionHighlightRenderer.cs:152", __ex, Plugin.Log); }
 
             _prototype = null;
             return false;
