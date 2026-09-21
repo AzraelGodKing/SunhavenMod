@@ -57,9 +57,7 @@ namespace CropOptimizer.UI
                 _waterTileMapField = _tileManagerType.GetField("waterTileMap", instanceFlags);
                 _wateredTilesField = _tileManagerType.GetField("wateredTiles", instanceFlags);
             }
-            catch
-            {
-            }
+            catch (Exception __ex) { ReflectionProbe.LogOnce("CropOptimizer/UI/CropTileReflection.cs:60", __ex, Plugin.Log); }
         }
 
         private static object ResolveInstance()
@@ -70,7 +68,7 @@ namespace CropOptimizer.UI
                 _tileManagerInstance = null;
             if (_tileManagerInstance == null)
             {
-                try { _tileManagerInstance = ReflectionHelper.GetSingletonInstance(_tileManagerType); } catch { }
+                try { _tileManagerInstance = ReflectionHelper.GetSingletonInstance(_tileManagerType); } catch (Exception __ex) { ReflectionProbe.LogOnce("CropOptimizer/UI/CropTileReflection.cs:73", __ex, Plugin.Log); }
             }
 
             if (_tileManagerInstance != null && _worldToCellMethod == null && _farmingTileMapField != null)
@@ -93,9 +91,7 @@ namespace CropOptimizer.UI
                         }
                     }
                 }
-                catch
-                {
-                }
+                catch (Exception __ex) { ReflectionProbe.LogOnce("CropOptimizer/UI/CropTileReflection.cs:96", __ex, Plugin.Log); }
             }
 
             return _tileManagerInstance;
@@ -130,9 +126,7 @@ namespace CropOptimizer.UI
                     return true;
                 }
             }
-            catch
-            {
-            }
+            catch (Exception __ex) { ReflectionProbe.LogOnce("CropOptimizer/UI/CropTileReflection.cs:133", __ex, Plugin.Log); }
 
             return false;
         }
@@ -187,9 +181,7 @@ namespace CropOptimizer.UI
                     return true;
                 }
             }
-            catch
-            {
-            }
+            catch (Exception __ex) { ReflectionProbe.LogOnce("CropOptimizer/UI/CropTileReflection.cs:190", __ex, Plugin.Log); }
 
             world = crop.transform.position;
             return true;
@@ -245,9 +237,7 @@ namespace CropOptimizer.UI
                         }
                     }
                 }
-                catch
-                {
-                }
+                catch (Exception __ex) { ReflectionProbe.LogOnce("CropOptimizer/UI/CropTileReflection.cs:248", __ex, Plugin.Log); }
             }
 
             // Last resort: nearest farmingData key to world position (handles offset tilemap / key space).
@@ -283,9 +273,7 @@ namespace CropOptimizer.UI
                         }
                     }
                 }
-                catch
-                {
-                }
+                catch (Exception __ex) { ReflectionProbe.LogOnce("CropOptimizer/UI/CropTileReflection.cs:286", __ex, Plugin.Log); }
             }
 
             tile = new Vector2Int(Mathf.FloorToInt(world.x), Mathf.FloorToInt(world.y));
@@ -395,9 +383,7 @@ namespace CropOptimizer.UI
                     }
                 }
             }
-            catch
-            {
-            }
+            catch (Exception __ex) { ReflectionProbe.LogOnce("CropOptimizer/UI/CropTileReflection.cs:398", __ex, Plugin.Log); }
 
             return null;
         }
@@ -448,18 +434,18 @@ namespace CropOptimizer.UI
             // First, ground truth from IsWatered / IsHoed / IsHoedOrWatered.
             if (_isWateredMethod != null)
             {
-                try { watered = (bool)_isWateredMethod.Invoke(tm, new object[] { tile }); } catch { }
+                try { watered = (bool)_isWateredMethod.Invoke(tm, new object[] { tile }); } catch (Exception __ex) { ReflectionProbe.LogOnce("CropOptimizer/UI/CropTileReflection.cs:451", __ex, Plugin.Log); }
             }
             if (_isHoedMethod != null)
             {
-                try { hoed = (bool)_isHoedMethod.Invoke(tm, new object[] { tile }); } catch { }
+                try { hoed = (bool)_isHoedMethod.Invoke(tm, new object[] { tile }); } catch (Exception __ex) { ReflectionProbe.LogOnce("CropOptimizer/UI/CropTileReflection.cs:455", __ex, Plugin.Log); }
             }
 
             // Second, scan sibling "water"-looking dicts/sets on TileManager for tile membership.
             // This covers builds where watered state lives outside farmingData (e.g. wateredTiles HashSet).
             if (!watered)
             {
-                try { watered = ScanWaterMembersForTile(tm, tile); } catch { }
+                try { watered = ScanWaterMembersForTile(tm, tile); } catch (Exception __ex) { ReflectionProbe.LogOnce("CropOptimizer/UI/CropTileReflection.cs:462", __ex, Plugin.Log); }
             }
 
             if (watered) return "watered";
@@ -468,7 +454,7 @@ namespace CropOptimizer.UI
             if (_isHoedOrWateredMethod != null)
             {
                 try { if ((bool)_isHoedOrWateredMethod.Invoke(tm, new object[] { tile })) return "hoed or watered"; }
-                catch { }
+                catch (Exception __ex) { ReflectionProbe.LogOnce("CropOptimizer/UI/CropTileReflection.cs:471", __ex, Plugin.Log); }
             }
 
             if (_farmingDataField != null)
@@ -488,7 +474,7 @@ namespace CropOptimizer.UI
                         }
                     }
                 }
-                catch { }
+                catch (Exception __ex) { ReflectionProbe.LogOnce("CropOptimizer/UI/CropTileReflection.cs:491", __ex, Plugin.Log); }
             }
             return null;
         }
@@ -580,7 +566,7 @@ namespace CropOptimizer.UI
                             if (val is IDictionary d2 && d2.Contains(tile))
                                 sb.Append($"(contains tile, val={d2[tile]})");
                         }
-                        catch { }
+                        catch (Exception __ex) { ReflectionProbe.LogOnce("CropOptimizer/UI/CropTileReflection.cs:583", __ex, Plugin.Log); }
                     }
                     foreach (PropertyInfo pi in _tileManagerType.GetProperties(f))
                     {

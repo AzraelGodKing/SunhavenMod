@@ -125,6 +125,37 @@ jobs:
         run: ./scripts/localization/validate-localization.ps1
 
   # ---------------------------------------------------------------------------
+  # Unit tests — Unity-free test projects on ubuntu (AZR-247)
+  # ---------------------------------------------------------------------------
+  test:
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: "8.0.x"
+
+      - name: Run TheVault.Tests
+        run: dotnet test TheVault/Tests/TheVault.Tests.csproj -c Release --nologo --logger "trx;LogFileName=vault.trx"
+
+      - name: Run SenpaisChest.Tests
+        run: dotnet test SenpaisChest/Tests/SenpaisChest.Tests.csproj -c Release --nologo --logger "trx;LogFileName=chest.trx"
+
+      - name: Run SunhavenTodo.Tests
+        run: dotnet test SunhavenTodo/Tests/SunhavenTodo.Tests.csproj -c Release --nologo --logger "trx;LogFileName=todo.trx"
+
+      - name: Upload test results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-results
+          path: "**/TestResults/*.trx"
+
+  # ---------------------------------------------------------------------------
   # Version — optional bump + sync before build (dispatch only)
   # Order: Version → setup/verify → build → release
   # ---------------------------------------------------------------------------
@@ -218,12 +249,13 @@ jobs:
   # Build — self-hosted .NET compile + DLL artifacts
   # ---------------------------------------------------------------------------
   build:
-    needs: [setup, validate-localization, version]
+    needs: [setup, validate-localization, version, test]
     if: >-
       always() &&
       needs.setup.result == 'success' &&
       (needs.validate-localization.result == 'success' || needs.validate-localization.result == 'skipped') &&
-      (needs.version.result == 'success' || needs.version.result == 'skipped')
+      (needs.version.result == 'success' || needs.version.result == 'skipped') &&
+      (needs.test.result == 'success' || needs.test.result == 'skipped')
     runs-on: [self-hosted, Linux, X64, sunhaven]
     strategy:
       fail-fast: false

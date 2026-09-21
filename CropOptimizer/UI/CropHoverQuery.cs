@@ -232,7 +232,7 @@ namespace CropOptimizer.UI
         {
             if (_loggedTileProbe) return;
             _loggedTileProbe = true;
-            try { Plugin.Log?.LogInfo(CropTileReflection.BuildDebugSnapshot(crop, tile)); } catch { }
+            try { Plugin.Log?.LogInfo(CropTileReflection.BuildDebugSnapshot(crop, tile)); } catch (Exception __ex) { ReflectionProbe.LogOnce("CropOptimizer/UI/CropHoverQuery.cs:235", __ex, Plugin.Log); }
         }
 
         /// <summary>When <c>Debug.DebugLogging</c> is on, log <see cref="Wish.Crop"/>'s public+private
@@ -262,9 +262,7 @@ namespace CropOptimizer.UI
                 foreach (var pi in t.GetProperties(flags))
                     log.LogInfo($"[HoverDebug]   prop   {pi.PropertyType.Name} {pi.Name}");
             }
-            catch
-            {
-            }
+            catch (Exception __ex) { ReflectionProbe.LogOnce("CropOptimizer/UI/CropHoverQuery.cs:265", __ex, Plugin.Log); }
         }
 
         private static bool IsDebugLogEnabled()
@@ -296,8 +294,8 @@ namespace CropOptimizer.UI
                     {
                         FieldInfo fi = null;
                         PropertyInfo pi = null;
-                        try { fi = t.GetField(name, MemberFlags); } catch { }
-                        try { pi = fi == null ? t.GetProperty(name, MemberFlags) : null; } catch { }
+                        try { fi = t.GetField(name, MemberFlags); } catch (Exception __ex) { ReflectionProbe.LogOnce("CropOptimizer/UI/CropHoverQuery.cs:299", __ex, Plugin.Log); }
+                        try { pi = fi == null ? t.GetProperty(name, MemberFlags) : null; } catch (Exception __ex) { ReflectionProbe.LogOnce("CropOptimizer/UI/CropHoverQuery.cs:300", __ex, Plugin.Log); }
                         if (fi == null && pi == null)
                             continue;
                         object raw = fi != null ? fi.GetValue(instance) : pi.GetValue(instance, null);
@@ -307,9 +305,7 @@ namespace CropOptimizer.UI
                     }
                 }
             }
-            catch
-            {
-            }
+            catch (Exception __ex) { ReflectionProbe.LogOnce("CropOptimizer/UI/CropHoverQuery.cs:310", __ex, Plugin.Log); }
 
             return "?";
         }

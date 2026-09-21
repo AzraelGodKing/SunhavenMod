@@ -4,6 +4,17 @@ Notes for **players and release readers**. Per-mod blurbs and upstream metadata 
 
 ---
 
+## 2026-09-21
+
+**Suite reliability (ticket batch)**
+
+- **Saves:** Atomic save helper no longer deletes the only copy of your data if a write fails mid-rotate; corrupt/truncated JSON is rejected so backups can load.
+- **The Vault:** Tab switching no longer breaks the IMGUI window background (owned textures instead of shared whiteTexture / skin.window atlas).
+- **S.M.U.T.:** Removed a forked icon cache that could leak textures; uses the shared IconCache.
+- **Crop Optimizer:** Reflection failures log once per call-site instead of failing silently after a game update.
+
+---
+
 ## 2026-08-30
 
 **Docs hub**

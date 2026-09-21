@@ -97,7 +97,10 @@ function readCache() {
 }
 
 async function fetchJson(url, options = {}) {
-  const res = await fetch(url, options);
+  const res = await fetch(url, {
+    ...options,
+    signal: options.signal || AbortSignal.timeout(15_000),
+  });
   if (!res.ok) {
     throw new Error(`HTTP ${res.status} from ${url}`);
   }
@@ -136,11 +139,22 @@ function thunderstoreStatsFromPackage(pkg) {
 
 async function loadSunHavenThunderstoreIndex() {
   const url = `https://thunderstore.io/c/${THUNDERSTORE_SUN_HAVEN_COMMUNITY}/api/v1/package/`;
-  const list = await fetchJson(url);
-  if (!Array.isArray(list)) {
-    throw new Error("Sun Haven community package list is not an array");
+  let lastErr;
+  for (let attempt = 1; attempt <= 3; attempt++) {
+    try {
+      const list = await fetchJson(url);
+      if (!Array.isArray(list)) {
+        throw new Error("Sun Haven community package list is not an array");
+      }
+      return buildSunHavenPackageIndex(list);
+    } catch (e) {
+      lastErr = e;
+      if (attempt < 3) {
+        await new Promise((r) => setTimeout(r, 500 * attempt));
+      }
+    }
   }
-  return buildSunHavenPackageIndex(list);
+  throw lastErr || new Error("Thunderstore index unavailable");
 }
 
 async function fetchThunderstore(mod, packageIndex) {
@@ -277,14 +291,33 @@ async function main() {
     console.log("[stats] Force refresh: bypassing same-hour short-circuit");
   }
 
-  const packageIndex = await loadSunHavenThunderstoreIndex();
+  let packageIndex = new Map();
+  let indexOk = true;
+  try {
+    packageIndex = await loadSunHavenThunderstoreIndex();
+  } catch (e) {
+    indexOk = false;
+    console.warn(
+      `[stats] Thunderstore index unavailable, preserving cached Thunderstore totals: ${e.message || e}`
+    );
+  }
+
+  let modRoster;
+  try {
+    modRoster = loadModRoster();
+  } catch (e) {
+    console.error("[stats] Fatal error:", e.message || e);
+    process.exitCode = 1;
+    return;
+  }
+
   const nexusIdLookup = loadNexusModIdByThunderstoreName();
   if (nexusIdLookup.size > 0 && !process.env.NEXUSMODS_API_KEY) {
     console.warn(
       "[stats] NEXUSMODS_API_KEY is not set; Nexus totals will stay empty or unchanged until you run with the key (local .env or CI secret)."
     );
   }
-  const modRoster = loadModRoster();
+
   const modsEntries = await Promise.all(
     modRoster.map(async (mod) => [mod.id, await fetchModStats(mod, cache, packageIndex, nexusIdLookup)])
   );
@@ -296,11 +329,21 @@ async function main() {
     site_total: buildSiteTotal(mods),
   };
 
+  // When the index was down and nothing else could refresh Thunderstore, still write
+  // so Nexus-only updates land — but avoid stamping lastFetched if the payload is identical.
+  const prevJson = JSON.stringify(cache?.mods || {});
+  const nextJson = JSON.stringify(mods);
+  if (!indexOk && prevJson === nextJson && cache?.lastFetched) {
+    console.warn("[stats] Index down and mod totals unchanged; leaving cache file as-is.");
+    return;
+  }
+
   writeCacheAtomic(next);
-  console.log(`[stats] Updated ${CACHE_PATH}`);
+  console.log(`[stats] Updated ${CACHE_PATH}${indexOk ? "" : " (Thunderstore index degraded)"}`);
 }
 
 main().catch((err) => {
   console.error("[stats] Fatal error:", err);
+  // Local/roster/write failures are hard errors; upstream blips that preserve cache exit 0 above.
   process.exitCode = 1;
 });

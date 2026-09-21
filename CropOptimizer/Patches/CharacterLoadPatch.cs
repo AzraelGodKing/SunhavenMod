@@ -6,6 +6,8 @@ using CropOptimizer.UI;
 using HarmonyLib;
 using Wish;
 
+using SunhavenMods.Shared;
+
 namespace CropOptimizer.Patches
 {
     internal static class CharacterLoadPatch
