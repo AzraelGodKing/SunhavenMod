@@ -5,6 +5,8 @@ using HarmonyLib;
 using UnityEngine;
 using Wish;
 
+using SunhavenMods.Shared;
+
 namespace CropOptimizer.UI
 {
     /// <summary>
@@ -160,9 +162,7 @@ namespace CropOptimizer.UI
                 if (sprite.pixelsPerUnit > 0.01f)
                     _pixelsPerUnit = sprite.pixelsPerUnit;
             }
-            catch
-            {
-            }
+            catch (Exception __ex) { ReflectionProbe.LogOnce("CropOptimizer/UI/TileSelectionAssetLoader.cs:165", __ex, Plugin.Log); }
         }
 
         private static string ResolveSheetPath()
@@ -177,9 +177,7 @@ namespace CropOptimizer.UI
                         return besideDll;
                 }
             }
-            catch
-            {
-            }
+            catch (Exception __ex) { ReflectionProbe.LogOnce("CropOptimizer/UI/TileSelectionAssetLoader.cs:182", __ex, Plugin.Log); }
 
             return null;
         }

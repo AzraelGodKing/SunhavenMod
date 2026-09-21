@@ -4,6 +4,10 @@ Internal engineering log: **CI**, **release automation**, **scripts**, **docs in
 
 ---
 
+## 2026-09-21
+
+- **Ticket batch** (`feat/azr-239-247-suite-ticket-batch`): AZR-239 CharacterSaveStore safe atomic write + durable flush; AZR-244/245 strict MinimalJsonParser + control-char escapes; AZR-247 `dotnet test` job (net8) on PRs; AZR-234 Vault IMGUI background; AZR-246 delete SMUT IconCache fork; AZR-250 stats index degrade + timeouts; AZR-253 remove root `functions/` duplicate; AZR-258 README version check in verify script; AZR-254 ReflectionProbe + Crop empty-catch conversion; AZR-255 `TodoSoftClient` + Crop migration; AZR-256 Baseline.props + shared-link checker + link VaultCryptography; AZR-103 ops note (CF Pages `LINEAR_API_TOKEN` / `LINEAR_TEAM_ID`). `SharedCodeRevision` → `2026.09.21`.
+
 ## 2026-08-30
 
 - **AZR-99 — Docs hub Linear ticket desk:** Live Pages hub (`docs/feedback.html`) POSTs JSON to Cloudflare `/api/feedback`. Worker CORS allowlist: `https://azraelgodking.github.io` plus `localhost` / `127.0.0.1` (any port) for `docs:hub:dev`. Extra origins via optional `FEEDBACK_CORS_ORIGINS`. Required env: `LINEAR_API_TOKEN`, `LINEAR_TEAM_ID`. Optional: `FEEDBACK_RATE_WINDOW_SECONDS` (600), `FEEDBACK_RATE_MAX` (5), `LINEAR_BUG_LABEL_ID`, `LINEAR_FEATURE_LABEL_ID`. Default API origin on the form: `https://azrael-sunhaven-website.pages.dev` (override with `data-feedback-api-origin`, `?api=`, or `localStorage sunhavenmod-feedback-api-origin`). Marketing `cloudflare-site/` HTML teardown is a follow-up. No mod version bumps.

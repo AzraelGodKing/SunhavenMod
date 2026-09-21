@@ -22,6 +22,59 @@ PLUGIN_VER_RE = re.compile(r'PLUGIN_VERSION\s*=\s*"([^"]*)"')
 
 MANIFEST_VER_RE = re.compile(r'"version_number"\s*:\s*"([^"]*)"')
 
+# README table: | [`ModDir/`](ModDir/) | x.y.z |
+README_ROW_RE = re.compile(
+    r"\|\s*\[`([^`]+)/`\]\([^)]+\)\s*\|\s*([0-9][^\s|]*)\s*\|"
+)
+
+
+def readme_version_rows() -> dict[str, str]:
+    text = (REPO / "README.md").read_text(encoding=_READ_ENCODING)
+    return {d.rstrip("/"): v for d, v in README_ROW_RE.findall(text)}
+
+
+def check_readme_versions(data: dict, mod_plugin_files: dict[str, tuple[str, str]]) -> list[str]:
+    """AZR-258: README version table must match docs/versions.json."""
+    rows = readme_version_rows()
+    errors: list[str] = []
+    if len(rows) == 0:
+        errors.append(
+            "README.md version table could not be parsed — did the format change? "
+            "Expected rows like: | [`ModDir/`](ModDir/) | x.y.z |"
+        )
+        return errors
+    if len(rows) != len(data):
+        errors.append(
+            f"README.md version table has {len(rows)} row(s) but docs/versions.json has {len(data)} "
+            f"— add/remove README rows so they match."
+        )
+
+    want_by_dir: dict[str, str] = {}
+    for key, entry in data.items():
+        if key not in mod_plugin_files:
+            continue
+        mod_dir, _ = mod_plugin_files[key]
+        want_by_dir[mod_dir] = str(entry.get("version") or "")
+
+    for mod_dir, want in sorted(want_by_dir.items()):
+        got = rows.get(mod_dir)
+        if got is None:
+            errors.append(
+                f"README.md: missing version row for [{mod_dir}/] — add it to the Mods table"
+            )
+        elif got != want:
+            errors.append(
+                f"README.md: {mod_dir} version is {got!r} but docs/versions.json says {want!r}"
+            )
+
+    for mod_dir in sorted(rows.keys()):
+        if mod_dir not in want_by_dir:
+            errors.append(
+                f"README.md: unexpected mod folder {mod_dir!r} not present in versions/matrix"
+            )
+
+    return errors
+
 
 def read_manifest_version(manifest_path: Path) -> str | None:
     if not manifest_path.is_file():
@@ -99,6 +152,7 @@ def main() -> int:
     errors: list[str] = []
     errors.extend(matrix_json_keys_in_versions(data))
     errors.extend(find_stray_mod_manifests(load_matrix_mod_dirs()))
+    errors.extend(check_readme_versions(data, mod_plugin_files))
 
     for key, entry in data.items():
         if key not in mod_plugin_files:

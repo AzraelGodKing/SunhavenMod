@@ -82,13 +82,17 @@ jobs:
           echo "Syncing cloudflare-site/ ..."
           rsync -a --delete "${GITHUB_WORKSPACE}/cloudflare-site/" "$tmp/dest/cloudflare-site/"
 
-          echo "Syncing root functions/ ..."
-          if [ -d "${GITHUB_WORKSPACE}/functions" ]; then
-            rsync -a --delete "${GITHUB_WORKSPACE}/functions/" "$tmp/dest/functions/"
+          echo "Syncing Pages Functions from cloudflare-site/functions into dest/functions/ ..."
+          if [ -d "${GITHUB_WORKSPACE}/cloudflare-site/functions" ]; then
+            mkdir -p "$tmp/dest/functions"
+            rsync -a --delete \
+              "${GITHUB_WORKSPACE}/cloudflare-site/functions/" \
+              "$tmp/dest/functions/"
           else
             rm -rf "$tmp/dest/functions"
           fi
 
+          # Root functions/ was removed (AZR-253); do not resurrect a dead duplicate.
           echo "Copying deploy helper files (if present) ..."
           for f in wrangler.toml package.json package-lock.json; do
             if [ -f "${GITHUB_WORKSPACE}/${f}" ]; then

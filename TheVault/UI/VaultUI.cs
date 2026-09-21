@@ -43,6 +43,7 @@ namespace TheVault.UI
         private Texture2D _windowBackground;
         private Texture2D _rowBackground;
         private Texture2D _rowAltBackground;
+        private Texture2D _solidWhite;
         private Texture2D _buttonNormal;
         private Texture2D _buttonHover;
         private Texture2D _withdrawNormal;
@@ -359,6 +360,7 @@ namespace TheVault.UI
             DestroyTex(ref _windowBackground);
             DestroyTex(ref _rowBackground);
             DestroyTex(ref _rowAltBackground);
+            DestroyTex(ref _solidWhite);
             DestroyTex(ref _buttonNormal);
             DestroyTex(ref _buttonHover);
             DestroyTex(ref _withdrawNormal);
@@ -407,6 +409,7 @@ namespace TheVault.UI
             _windowBackground = MakeRoundedTex(64, 64, _windowBgColor, 8);
             _rowBackground = MakeTex(2, 2, _rowEvenColor);
             _rowAltBackground = MakeTex(2, 2, _rowOddColor);
+            _solidWhite = MakeTex(2, 2, Color.white);
             _buttonNormal = MakeRoundedTex(32, 32, new Color(0.25f, 0.45f, 0.65f, 0.9f), 4);
             _buttonHover = MakeRoundedTex(32, 32, new Color(0.35f, 0.55f, 0.75f, 0.95f), 4);
             _withdrawNormal = MakeRoundedTex(32, 32, _withdrawColor, 4);
@@ -416,7 +419,9 @@ namespace TheVault.UI
             _headerBarBg = MakeTex(2, 2, new Color(0.14f, 0.18f, 0.26f, 0.98f));
             _headerBarStyle = new GUIStyle { normal = { background = _headerBarBg }, padding = new RectOffset(ScaledInt(12), ScaledInt(12), ScaledInt(10), ScaledInt(10)) };
 
-            _windowStyle = new GUIStyle(GUI.skin.window)
+            // Build from a blank style — cloning GUI.skin.window keeps 9-slice atlas UVs that
+            // can render as a "zoomed text" overlay after tab layout changes (AZR-234).
+            _windowStyle = new GUIStyle
             {
                 padding = new RectOffset(ScaledInt(15), ScaledInt(15), ScaledInt(10), ScaledInt(15)),
                 border = new RectOffset(ScaledInt(12), ScaledInt(12), ScaledInt(12), ScaledInt(12)),
@@ -624,10 +629,12 @@ namespace TheVault.UI
             if (_windowRect.xMax > Screen.width - Scaled(10f)) _windowRect.x = Screen.width - WindowWidth - Scaled(10f);
             if (_windowRect.x < Scaled(10f)) _windowRect.x = Scaled(10f);
 
-            // Draw shadow/backdrop
+            // Draw shadow/backdrop with a private solid texture (never Texture2D.whiteTexture).
+            Color prev = GUI.color;
             GUI.color = new Color(0, 0, 0, 0.3f);
-            GUI.DrawTexture(new Rect(_windowRect.x + Scaled(4), _windowRect.y + Scaled(4), _windowRect.width, _windowRect.height), Texture2D.whiteTexture);
-            GUI.color = Color.white;
+            if (_solidWhite != null)
+                GUI.DrawTexture(new Rect(_windowRect.x + Scaled(4), _windowRect.y + Scaled(4), _windowRect.width, _windowRect.height), _solidWhite);
+            GUI.color = prev;
 
             _windowRect = GUI.Window(
                 GetHashCode(),
@@ -726,9 +733,11 @@ namespace TheVault.UI
         private void DrawHorizontalLine(Color color, float height)
         {
             var rect = GUILayoutUtility.GetRect(1, height, GUILayout.ExpandWidth(true));
+            if (_solidWhite == null) return;
+            Color prev = GUI.color;
             GUI.color = color * 0.6f;
-            GUI.DrawTexture(rect, Texture2D.whiteTexture);
-            GUI.color = Color.white;
+            GUI.DrawTexture(rect, _solidWhite);
+            GUI.color = prev;
         }
 
         // Only show these categories in the UI
@@ -883,12 +892,18 @@ namespace TheVault.UI
             bool isSelected = _selectedCurrencyId == currencyId;
             bool autoDepositEnabled = ItemPatches.IsAutoDepositEnabled(currencyId);
 
-            // Row background
+            // Row background — use owned textures, not Texture2D.whiteTexture (AZR-234).
             var rowRect = GUILayoutUtility.GetRect(0, RowHeight, GUILayout.ExpandWidth(true));
-            var bgColor = isSelected ? new Color(0.3f, 0.5f, 0.7f, 0.5f) : (isEvenRow ? _rowEvenColor : _rowOddColor);
-            GUI.color = bgColor;
-            GUI.DrawTexture(rowRect, Texture2D.whiteTexture);
-            GUI.color = Color.white;
+            Texture2D rowTex = isSelected
+                ? _solidWhite
+                : (isEvenRow ? _rowBackground : _rowAltBackground);
+            if (rowTex != null)
+            {
+                Color prev = GUI.color;
+                GUI.color = isSelected ? new Color(0.3f, 0.5f, 0.7f, 0.5f) : Color.white;
+                GUI.DrawTexture(rowRect, rowTex);
+                GUI.color = prev;
+            }
 
             // Draw content using absolute positioning within the row
             float yCenter = rowRect.y + (rowRect.height - Scaled(26)) / 2;
