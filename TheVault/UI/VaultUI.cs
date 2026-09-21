@@ -421,11 +421,20 @@ namespace TheVault.UI
 
             // Build from a blank style — cloning GUI.skin.window keeps 9-slice atlas UVs that
             // can render as a "zoomed text" overlay after tab layout changes (AZR-234).
+            // Focused/onNormal must use the same owned bg; first tab click focuses the window.
+            int border = Math.Min(ScaledInt(12), 16);
             _windowStyle = new GUIStyle
             {
                 padding = new RectOffset(ScaledInt(15), ScaledInt(15), ScaledInt(10), ScaledInt(15)),
-                border = new RectOffset(ScaledInt(12), ScaledInt(12), ScaledInt(12), ScaledInt(12)),
-                normal = { background = _windowBackground, textColor = _textColor }
+                border = new RectOffset(border, border, border, border),
+                normal = { background = _windowBackground, textColor = _textColor },
+                onNormal = { background = _windowBackground, textColor = _textColor },
+                hover = { background = _windowBackground, textColor = _textColor },
+                onHover = { background = _windowBackground, textColor = _textColor },
+                active = { background = _windowBackground, textColor = _textColor },
+                onActive = { background = _windowBackground, textColor = _textColor },
+                focused = { background = _windowBackground, textColor = _textColor },
+                onFocused = { background = _windowBackground, textColor = _textColor }
             };
 
             _titleStyle = new GUIStyle(GUI.skin.label)

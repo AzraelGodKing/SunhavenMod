@@ -6,7 +6,7 @@ Internal engineering log: **CI**, **release automation**, **scripts**, **docs in
 
 ## 2026-09-21
 
-- **Ticket batch** (`feat/azr-239-247-suite-ticket-batch`): AZR-239 CharacterSaveStore safe atomic write + durable flush; AZR-244/245 strict MinimalJsonParser + control-char escapes; AZR-247 `dotnet test` job (net8) on PRs; AZR-234 Vault IMGUI background; AZR-246 delete SMUT IconCache fork; AZR-250 stats index degrade + timeouts; AZR-253 remove root `functions/` duplicate; AZR-258 README version check in verify script; AZR-254 ReflectionProbe + Crop empty-catch conversion; AZR-255 `TodoSoftClient` + Crop migration; AZR-256 Baseline.props + shared-link checker + link VaultCryptography; AZR-103 ops note (CF Pages `LINEAR_API_TOKEN` / `LINEAR_TEAM_ID`). `SharedCodeRevision` → `2026.09.21`.
+- **Ticket batch** (`feat/azr-239-247-suite-ticket-batch`): AZR-239 CharacterSaveStore safe atomic write + durable flush; AZR-244/245 strict MinimalJsonParser + control-char escapes; AZR-247 `dotnet test` job (net8) on PRs; AZR-234 Vault IMGUI background (blank style + `onNormal`/focus states + border clamp); AZR-246 delete SMUT IconCache fork; AZR-250 stats index degrade + timeouts; AZR-253 remove root `functions/` duplicate; AZR-258 README version check in verify script; AZR-254 ReflectionProbe + Crop empty-catch conversion; AZR-255 `TodoSoftClient` + Crop migration; AZR-256 Baseline.props + shared-link checker + link VaultCryptography; AZR-103 ops note (CF Pages `LINEAR_API_TOKEN` / `LINEAR_TEAM_ID`). `SharedCodeRevision` → `2026.09.21`.
 
 ## 2026-08-30
 
