@@ -5,6 +5,7 @@ using CropOptimizer.Patches;
 using HarmonyLib;
 using SunhavenMods.Shared;
 using UnityEngine;
+using ReflectionProbe = SunhavenMods.Shared.ReflectionProbe;
 
 namespace CropOptimizer.UI
 {

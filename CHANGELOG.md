@@ -4,6 +4,14 @@ Notes for **players and release readers**. Per-mod blurbs and upstream metadata 
 
 ---
 
+## 2026-09-22
+
+**Sun Haven 3.1.3b**
+
+- **Trinket Fortune:** Fishing museum-item bias applies again. HarmonyX could not patch `Utilities.RandomItem<int>` after the 3.1.3b launch (generic `ref T __result` failed IL compile), so the plugin aborted during load.
+
+---
+
 ## 2026-09-21
 
 **Suite reliability (ticket batch)**

@@ -6,6 +6,8 @@ using UnityEngine;
 using Wish;
 
 using SunhavenMods.Shared;
+using Object = UnityEngine.Object;
+using ReflectionProbe = SunhavenMods.Shared.ReflectionProbe;
 
 namespace CropOptimizer.UI
 {
