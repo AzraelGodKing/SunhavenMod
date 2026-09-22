@@ -7,6 +7,7 @@ Internal engineering log: **CI**, **release automation**, **scripts**, **docs in
 ## 2026-09-22
 
 - **AZR-259 — Sun Haven 3.1.3b:** Trinket Fortune closed Harmony prefix for `Utilities.RandomItem<int>` (`ref int __result`); ApplyPatches isolated so `RandomFishArray.RandomItem` still patches if RandomItem fails. Vault item-id cache probes `Item.ID()` first; Crop Optimizer / Gifting Assistant optional AccessTools probes switched to `GetMethod`/`GetProperty` so HarmonyX does not warn on 3.1.3b misses (`Crop.Harvest`/`npcName`).
+- **AZR-247 CI:** `CharacterSaveStore.SanitizeFileName` now uses a portable Windows invalid-char set (not `Path.GetInvalidFileNameChars()`). Linux runners were leaving `:` intact and trimming tabs before replace, so `SanitizeFileName_ReplacesInvalidCharacters` / `SanitizeFileName_ReplacesControlCharsBeforeTrim` failed.
 
 ## 2026-09-21
 

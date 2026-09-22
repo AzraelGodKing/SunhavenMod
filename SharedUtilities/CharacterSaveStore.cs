@@ -30,14 +30,31 @@ namespace SunhavenMods.Shared
         public const string TempSuffix = ".tmp";
 
         /// <summary>
+        /// Windows filename invalid set (C0 controls plus <c>" &lt; &gt; | : * ? \ /</c>).
+        /// <see cref="Path.GetInvalidFileNameChars"/> is OS-specific — Linux CI only rejects
+        /// NUL and '/', so ':' and tabs would otherwise survive and <c>Trim()</c> would strip
+        /// tabs instead of turning them into underscores (AZR-239 / AZR-247).
+        /// </summary>
+        private static readonly char[] InvalidFileNameChars = BuildInvalidFileNameChars();
+
+        private static char[] BuildInvalidFileNameChars()
+        {
+            var chars = new char[41];
+            for (int i = 0; i < 32; i++)
+                chars[i] = (char)i;
+            "\"<>|:*?\\/".CopyTo(0, chars, 32, 9);
+            return chars;
+        }
+
+        /// <summary>
         /// Replace invalid filename characters, then trim (matches pre-CharacterSaveStore mod behavior).
         /// </summary>
         public static string SanitizeFileName(string name, string fallback = "unknown")
         {
-            if (string.IsNullOrWhiteSpace(name))
+            if (name == null)
                 return fallback;
 
-            foreach (char c in Path.GetInvalidFileNameChars())
+            foreach (char c in InvalidFileNameChars)
                 name = name.Replace(c, '_');
 
             name = name.Trim();
