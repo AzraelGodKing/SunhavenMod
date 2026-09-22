@@ -1,0 +1,189 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TestRun id="88f8c97c-9172-4d82-8e66-610f0eb1ea43" name="Myleek@AZRAELGODKING 2026-09-22 12:53:59" runUser="AZRAELGODKING\Myleek" xmlns="http://microsoft.com/schemas/VisualStudio/TeamTest/2010">
+  <Times creation="2026-09-22T12:53:59.7273180-04:00" queuing="2026-09-22T12:53:59.7273184-04:00" start="2026-09-22T12:53:58.8874029-04:00" finish="2026-09-22T12:53:59.7452450-04:00" />
+  <TestSettings name="default" id="8adc2948-d67d-44f4-aa1a-0aed1b6c1204">
+    <Deployment runDeploymentRoot="Myleek_AZRAELGODKING_2026-09-22_12_53_59" />
+  </TestSettings>
+  <Results>
+    <UnitTestResult executionId="0edb9aee-aac5-4ce4-806b-e5576eb35b69" testId="1f1d8a55-7679-919b-5c62-dc9e677ef845" testName="WriteAtomicBytes_ThrowsWhenContentNull" computerName="AZRAELGODKING" duration="00:00:00.0008670" startTime="2026-09-22T12:53:59.6871260-04:00" endTime="2026-09-22T12:53:59.6879933-04:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="0edb9aee-aac5-4ce4-806b-e5576eb35b69" />
+    <UnitTestResult executionId="a5ddd971-ffff-4312-a4a3-8b2ee5023f72" testId="1f89fd7c-ba0a-22d5-3fad-e691d7646e3c" testName="LoadTextWithBackup_ReturnsEmptyPrimaryWithoutFallingBackToBackup" computerName="AZRAELGODKING" duration="00:00:00.0026460" startTime="2026-09-22T12:53:59.6583023-04:00" endTime="2026-09-22T12:53:59.6609478-04:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="a5ddd971-ffff-4312-a4a3-8b2ee5023f72" />
+    <UnitTestResult executionId="8c9c25a1-97af-4daa-a364-567f2e9033b7" testId="bc65ffdd-045c-f73e-56c3-15a19a264f75" testName="LoadWithBackup_ReportsDeserializeFailureAndFallsBackToBackup" computerName="AZRAELGODKING" duration="00:00:00.0061210" startTime="2026-09-22T12:53:59.6657236-04:00" endTime="2026-09-22T12:53:59.6718445-04:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="8c9c25a1-97af-4daa-a364-567f2e9033b7" />
+    <UnitTestResult executionId="177aadb0-0821-4dbf-9bc6-978895723e40" testId="254ae2c2-7584-c38f-26f6-461ca6ca6d3c" testName="WriteAtomic_RotatesBackupAndLoadsPrimary" computerName="AZRAELGODKING" duration="00:00:00.0036950" startTime="2026-09-22T12:53:59.6820359-04:00" endTime="2026-09-22T12:53:59.6857312-04:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="177aadb0-0821-4dbf-9bc6-978895723e40" />
+    <UnitTestResult executionId="15dcd4dc-47fe-49de-bd68-6ab41e7e30b8" testId="f802e84c-8ce6-c4a9-42f2-f1d047fbf406" testName="RoundTrip_ControlCharacters" computerName="AZRAELGODKING" duration="00:00:00.0010590" startTime="2026-09-22T12:53:59.6943248-04:00" endTime="2026-09-22T12:53:59.6953840-04:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="15dcd4dc-47fe-49de-bd68-6ab41e7e30b8" />
+    <UnitTestResult executionId="5de49d21-6ba8-428b-8daa-0dd99570962c" testId="8c5bf1d9-16b8-d126-9ed2-2e3674e7a437" testName="Roundtrip_CompletedItem_PreservesCompletedAt" computerName="AZRAELGODKING" duration="00:00:00.0030690" startTime="2026-09-22T12:53:59.6976002-04:00" endTime="2026-09-22T12:53:59.7006693-04:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="5de49d21-6ba8-428b-8daa-0dd99570962c" />
+    <UnitTestResult executionId="3f4c0ae5-1726-4434-8007-8ac39bfea29c" testId="d012ccfd-4cc9-99be-0cfc-d3c200546a6b" testName="WriteJsonString_EscapesControlCharacters" computerName="AZRAELGODKING" duration="00:00:00.0000450" startTime="2026-09-22T12:53:59.6958123-04:00" endTime="2026-09-22T12:53:59.6958569-04:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="3f4c0ae5-1726-4434-8007-8ac39bfea29c" />
+    <UnitTestResult executionId="32da6c61-30f0-4118-bdb0-f5fceea73a37" testId="13b58887-8b72-f863-ad15-451308aaf5a6" testName="Roundtrip_RecurringItem_PreservesInterval" computerName="AZRAELGODKING" duration="00:00:00.0003110" startTime="2026-09-22T12:53:59.7012404-04:00" endTime="2026-09-22T12:53:59.7015508-04:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="32da6c61-30f0-4118-bdb0-f5fceea73a37" />
+    <UnitTestResult executionId="946ecbb8-6bee-41be-b7f2-be23990cc4c6" testId="37c5b8dd-ac9c-dcfa-17bf-a79481c8e073" testName="Roundtrip_WeeklyRecurring_PreservesInterval" computerName="AZRAELGODKING" duration="00:00:00.0000699" startTime="2026-09-22T12:53:59.7024383-04:00" endTime="2026-09-22T12:53:59.7025083-04:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="946ecbb8-6bee-41be-b7f2-be23990cc4c6" />
+    <UnitTestResult executionId="b8eeac93-9d9a-4b4e-8277-c3faf2893df2" testId="23e8c524-194b-d092-efa3-e30c72718639" testName="LoadWithBackup_FallsBackWhenPrimaryCorrupt" computerName="AZRAELGODKING" duration="00:00:00.0047400" startTime="2026-09-22T12:53:59.6609634-04:00" endTime="2026-09-22T12:53:59.6657036-04:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="b8eeac93-9d9a-4b4e-8277-c3faf2893df2" />
+    <UnitTestResult executionId="741ba52b-7e44-4044-82da-0dd9d9bb8cfb" testId="f205e64a-c727-0439-0faa-00d6e56d05cc" testName="Roundtrip_SpecialCharactersInTitle_AreEscapedAndRestored" computerName="AZRAELGODKING" duration="00:00:00.0000810" startTime="2026-09-22T12:53:59.7023545-04:00" endTime="2026-09-22T12:53:59.7024351-04:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="741ba52b-7e44-4044-82da-0dd9d9bb8cfb" />
+    <UnitTestResult executionId="6ffffeff-3317-4524-a991-fb6e15ee8c97" testId="b3c1f791-17ba-995d-ff29-95ca15f233dc" testName="Deserialize_InvalidJson_ReturnsNull" computerName="AZRAELGODKING" duration="00:00:00.0000710" startTime="2026-09-22T12:53:59.6975263-04:00" endTime="2026-09-22T12:53:59.6975972-04:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="6ffffeff-3317-4524-a991-fb6e15ee8c97" />
+    <UnitTestResult executionId="9ea3e3af-1c1d-4f63-9623-f37b5f67971c" testId="4c50d161-c6d7-0f68-1b9a-42a87e077839" testName="SanitizeFileName_ReplacesControlCharsBeforeTrim" computerName="AZRAELGODKING" duration="00:00:00.0010960" startTime="2026-09-22T12:53:59.6718629-04:00" endTime="2026-09-22T12:53:59.6729585-04:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="9ea3e3af-1c1d-4f63-9623-f37b5f67971c" />
+    <UnitTestResult executionId="0186c9a6-41bb-4c53-be7e-9922f3d3fa7c" testId="d7d927a1-b598-ee8a-72af-6264e4cab50a" testName="Roundtrip_MultipleItems_PreservesOrder" computerName="AZRAELGODKING" duration="00:00:00.0004470" startTime="2026-09-22T12:53:59.7007873-04:00" endTime="2026-09-22T12:53:59.7012340-04:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="0186c9a6-41bb-4c53-be7e-9922f3d3fa7c" />
+    <UnitTestResult executionId="e36df9e6-72da-4b0b-8e1e-e3ca88a5a27a" testId="1c4ffc2e-8738-3527-5cbe-ad75f326600b" testName="WriteAtomic_ThrowsWhenContentNull" computerName="AZRAELGODKING" duration="00:00:00.0013720" startTime="2026-09-22T12:53:59.6857432-04:00" endTime="2026-09-22T12:53:59.6871154-04:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="e36df9e6-72da-4b0b-8e1e-e3ca88a5a27a" />
+    <UnitTestResult executionId="0e897303-da89-4a70-a5ac-6a410ada1e65" testId="7a126a18-104f-340b-1150-7d8f104bc732" testName="WriteAtomic_ReturnsFalseAndPreservesPrimaryWhenBackupRotateFails" computerName="AZRAELGODKING" duration="00:00:00.0040180" startTime="2026-09-22T12:53:59.6780044-04:00" endTime="2026-09-22T12:53:59.6820224-04:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="0e897303-da89-4a70-a5ac-6a410ada1e65" />
+    <UnitTestResult executionId="4c94fd51-dc00-4804-a449-15e7d791f439" testId="40c38686-9809-0a70-9794-db92449c7031" testName="TruncationAtEachDecile_IsRejected" computerName="AZRAELGODKING" duration="00:00:00.0004140" startTime="2026-09-22T12:53:59.6953926-04:00" endTime="2026-09-22T12:53:59.6958062-04:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="4c94fd51-dc00-4804-a449-15e7d791f439" />
+    <UnitTestResult executionId="356177e6-3987-4dbc-8911-7fe9549a0898" testId="79f91f9a-5786-7f51-653f-e6545868f83d" testName="WriteAtomicBytes_UsesCustomBackupSuffix" computerName="AZRAELGODKING" duration="00:00:00.0037270" startTime="2026-09-22T12:53:59.6880073-04:00" endTime="2026-09-22T12:53:59.6917340-04:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="356177e6-3987-4dbc-8911-7fe9549a0898" />
+    <UnitTestResult executionId="8ffd1a1f-ca73-4e47-9d48-154eea0dd438" testId="a44f36a9-1288-048b-8817-b79127b08d76" testName="Parse_RejectsTruncatedObject" computerName="AZRAELGODKING" duration="00:00:00.0001030" startTime="2026-09-22T12:53:59.6942162-04:00" endTime="2026-09-22T12:53:59.6943196-04:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="8ffd1a1f-ca73-4e47-9d48-154eea0dd438" />
+    <UnitTestResult executionId="7582f108-4f5a-4973-9a5c-9573c9e65b45" testId="393246c1-182c-4da0-30ab-460857fdd9a6" testName="Roundtrip_EmptyList_PreservesCharacterName" computerName="AZRAELGODKING" duration="00:00:00.0001020" startTime="2026-09-22T12:53:59.7006793-04:00" endTime="2026-09-22T12:53:59.7007809-04:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="7582f108-4f5a-4973-9a5c-9573c9e65b45" />
+    <UnitTestResult executionId="3719fba0-f75d-4a39-b7a1-07b7332f0a0d" testId="979a75de-41f5-63c3-ed41-07bcb62a6695" testName="Roundtrip_SingleItem_PreservesAllFields" computerName="AZRAELGODKING" duration="00:00:00.0007790" startTime="2026-09-22T12:53:59.7015665-04:00" endTime="2026-09-22T12:53:59.7023458-04:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="3719fba0-f75d-4a39-b7a1-07b7332f0a0d" />
+    <UnitTestResult executionId="f37a00ab-02b6-4dac-8657-00b8aead8948" testId="c8accf47-0ac2-f16f-5a81-7001ee59cae9" testName="LoadTextWithBackup_ReadsPrimaryFile" computerName="AZRAELGODKING" duration="00:00:00.0035960" startTime="2026-09-22T12:53:59.6546826-04:00" endTime="2026-09-22T12:53:59.6582791-04:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="f37a00ab-02b6-4dac-8657-00b8aead8948" />
+    <UnitTestResult executionId="01a56932-6302-4efc-8879-b80bdc989f4a" testId="06919e11-4e63-10a0-3770-ad837adfb4b1" testName="Parse_RejectsTrailingContent" computerName="AZRAELGODKING" duration="00:00:00.0011000" startTime="2026-09-22T12:53:59.6931070-04:00" endTime="2026-09-22T12:53:59.6942071-04:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="01a56932-6302-4efc-8879-b80bdc989f4a" />
+    <UnitTestResult executionId="3f5b051c-0866-47b4-a803-98939bff2896" testId="18d85013-b78b-702f-7adb-8eff0a9446c4" testName="WriteAtomic_PromoteFailure_RestoresPrimaryFromBackup" computerName="AZRAELGODKING" duration="00:00:00.0043380" startTime="2026-09-22T12:53:59.6736519-04:00" endTime="2026-09-22T12:53:59.6779899-04:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="3f5b051c-0866-47b4-a803-98939bff2896" />
+    <UnitTestResult executionId="8fa90cf3-bccd-442d-950a-458a098feb41" testId="06d1981c-35b1-d603-d3c4-e97b644529e6" testName="SanitizeFileName_ReplacesInvalidCharacters" computerName="AZRAELGODKING" duration="00:00:00.0006660" startTime="2026-09-22T12:53:59.6729728-04:00" endTime="2026-09-22T12:53:59.6736382-04:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="8fa90cf3-bccd-442d-950a-458a098feb41" />
+    <UnitTestResult executionId="fffe6ecc-9e46-463f-ada4-47bd18a1eaea" testId="bb5e2a5c-f1bc-1ec6-6953-8c857e12397e" testName="Deserialize_EmptyObject_ReturnsEmptyData" computerName="AZRAELGODKING" duration="00:00:00.0016000" startTime="2026-09-22T12:53:59.6959164-04:00" endTime="2026-09-22T12:53:59.6975159-04:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="fffe6ecc-9e46-463f-ada4-47bd18a1eaea" />
+    <UnitTestResult executionId="36172a7b-91b7-4c51-8f9e-7faac83c3d79" testId="91b766d6-1b1b-a240-4097-183a95f420e1" testName="GetAbsenceReason_DistinguishesMissingFromUnusable" computerName="AZRAELGODKING" duration="00:00:00.0692140" startTime="2026-09-22T12:53:59.5848400-04:00" endTime="2026-09-22T12:53:59.6540193-04:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="36172a7b-91b7-4c51-8f9e-7faac83c3d79" />
+  </Results>
+  <TestDefinitions>
+    <UnitTest name="Roundtrip_EmptyList_PreservesCharacterName" storage="f:\repositories\sunhavenmod\sunhaventodo\tests\bin\release\net8.0\sunhaventodo.tests.dll" id="393246c1-182c-4da0-30ab-460857fdd9a6">
+      <Execution id="7582f108-4f5a-4973-9a5c-9573c9e65b45" />
+      <TestMethod codeBase="F:\Repositories\SunhavenMod\SunhavenTodo\Tests\bin\Release\net8.0\SunhavenTodo.Tests.dll" adapterTypeName="executor://nunit3testexecutor/" className="SunhavenTodo.Tests.TodoJsonTests" name="Roundtrip_EmptyList_PreservesCharacterName" />
+    </UnitTest>
+    <UnitTest name="WriteAtomicBytes_ThrowsWhenContentNull" storage="f:\repositories\sunhavenmod\sunhaventodo\tests\bin\release\net8.0\sunhaventodo.tests.dll" id="1f1d8a55-7679-919b-5c62-dc9e677ef845">
+      <Execution id="0edb9aee-aac5-4ce4-806b-e5576eb35b69" />
+      <TestMethod codeBase="F:\Repositories\SunhavenMod\SunhavenTodo\Tests\bin\Release\net8.0\SunhavenTodo.Tests.dll" adapterTypeName="executor://nunit3testexecutor/" className="SunhavenTodo.Tests.CharacterSaveStoreTests" name="WriteAtomicBytes_ThrowsWhenContentNull" />
+    </UnitTest>
+    <UnitTest name="LoadTextWithBackup_ReturnsEmptyPrimaryWithoutFallingBackToBackup" storage="f:\repositories\sunhavenmod\sunhaventodo\tests\bin\release\net8.0\sunhaventodo.tests.dll" id="1f89fd7c-ba0a-22d5-3fad-e691d7646e3c">
+      <Execution id="a5ddd971-ffff-4312-a4a3-8b2ee5023f72" />
+      <TestMethod codeBase="F:\Repositories\SunhavenMod\SunhavenTodo\Tests\bin\Release\net8.0\SunhavenTodo.Tests.dll" adapterTypeName="executor://nunit3testexecutor/" className="SunhavenTodo.Tests.CharacterSaveStoreTests" name="LoadTextWithBackup_ReturnsEmptyPrimaryWithoutFallingBackToBackup" />
+    </UnitTest>
+    <UnitTest name="Roundtrip_CompletedItem_PreservesCompletedAt" storage="f:\repositories\sunhavenmod\sunhaventodo\tests\bin\release\net8.0\sunhaventodo.tests.dll" id="8c5bf1d9-16b8-d126-9ed2-2e3674e7a437">
+      <Execution id="5de49d21-6ba8-428b-8daa-0dd99570962c" />
+      <TestMethod codeBase="F:\Repositories\SunhavenMod\SunhavenTodo\Tests\bin\Release\net8.0\SunhavenTodo.Tests.dll" adapterTypeName="executor://nunit3testexecutor/" className="SunhavenTodo.Tests.TodoJsonTests" name="Roundtrip_CompletedItem_PreservesCompletedAt" />
+    </UnitTest>
+    <UnitTest name="Roundtrip_RecurringItem_PreservesInterval" storage="f:\repositories\sunhavenmod\sunhaventodo\tests\bin\release\net8.0\sunhaventodo.tests.dll" id="13b58887-8b72-f863-ad15-451308aaf5a6">
+      <Execution id="32da6c61-30f0-4118-bdb0-f5fceea73a37" />
+      <TestMethod codeBase="F:\Repositories\SunhavenMod\SunhavenTodo\Tests\bin\Release\net8.0\SunhavenTodo.Tests.dll" adapterTypeName="executor://nunit3testexecutor/" className="SunhavenTodo.Tests.TodoJsonTests" name="Roundtrip_RecurringItem_PreservesInterval" />
+    </UnitTest>
+    <UnitTest name="WriteAtomic_RotatesBackupAndLoadsPrimary" storage="f:\repositories\sunhavenmod\sunhaventodo\tests\bin\release\net8.0\sunhaventodo.tests.dll" id="254ae2c2-7584-c38f-26f6-461ca6ca6d3c">
+      <Execution id="177aadb0-0821-4dbf-9bc6-978895723e40" />
+      <TestMethod codeBase="F:\Repositories\SunhavenMod\SunhavenTodo\Tests\bin\Release\net8.0\SunhavenTodo.Tests.dll" adapterTypeName="executor://nunit3testexecutor/" className="SunhavenTodo.Tests.CharacterSaveStoreTests" name="WriteAtomic_RotatesBackupAndLoadsPrimary" />
+    </UnitTest>
+    <UnitTest name="WriteAtomic_ReturnsFalseAndPreservesPrimaryWhenBackupRotateFails" storage="f:\repositories\sunhavenmod\sunhaventodo\tests\bin\release\net8.0\sunhaventodo.tests.dll" id="7a126a18-104f-340b-1150-7d8f104bc732">
+      <Execution id="0e897303-da89-4a70-a5ac-6a410ada1e65" />
+      <TestMethod codeBase="F:\Repositories\SunhavenMod\SunhavenTodo\Tests\bin\Release\net8.0\SunhavenTodo.Tests.dll" adapterTypeName="executor://nunit3testexecutor/" className="SunhavenTodo.Tests.CharacterSaveStoreTests" name="WriteAtomic_ReturnsFalseAndPreservesPrimaryWhenBackupRotateFails" />
+    </UnitTest>
+    <UnitTest name="TruncationAtEachDecile_IsRejected" storage="f:\repositories\sunhavenmod\sunhaventodo\tests\bin\release\net8.0\sunhaventodo.tests.dll" id="40c38686-9809-0a70-9794-db92449c7031">
+      <Execution id="4c94fd51-dc00-4804-a449-15e7d791f439" />
+      <TestMethod codeBase="F:\Repositories\SunhavenMod\SunhavenTodo\Tests\bin\Release\net8.0\SunhavenTodo.Tests.dll" adapterTypeName="executor://nunit3testexecutor/" className="SunhavenTodo.Tests.MinimalJsonParserTests" name="TruncationAtEachDecile_IsRejected" />
+    </UnitTest>
+    <UnitTest name="Roundtrip_SingleItem_PreservesAllFields" storage="f:\repositories\sunhavenmod\sunhaventodo\tests\bin\release\net8.0\sunhaventodo.tests.dll" id="979a75de-41f5-63c3-ed41-07bcb62a6695">
+      <Execution id="3719fba0-f75d-4a39-b7a1-07b7332f0a0d" />
+      <TestMethod codeBase="F:\Repositories\SunhavenMod\SunhavenTodo\Tests\bin\Release\net8.0\SunhavenTodo.Tests.dll" adapterTypeName="executor://nunit3testexecutor/" className="SunhavenTodo.Tests.TodoJsonTests" name="Roundtrip_SingleItem_PreservesAllFields" />
+    </UnitTest>
+    <UnitTest name="Parse_RejectsTrailingContent" storage="f:\repositories\sunhavenmod\sunhaventodo\tests\bin\release\net8.0\sunhaventodo.tests.dll" id="06919e11-4e63-10a0-3770-ad837adfb4b1">
+      <Execution id="01a56932-6302-4efc-8879-b80bdc989f4a" />
+      <TestMethod codeBase="F:\Repositories\SunhavenMod\SunhavenTodo\Tests\bin\Release\net8.0\SunhavenTodo.Tests.dll" adapterTypeName="executor://nunit3testexecutor/" className="SunhavenTodo.Tests.MinimalJsonParserTests" name="Parse_RejectsTrailingContent" />
+    </UnitTest>
+    <UnitTest name="LoadTextWithBackup_ReadsPrimaryFile" storage="f:\repositories\sunhavenmod\sunhaventodo\tests\bin\release\net8.0\sunhaventodo.tests.dll" id="c8accf47-0ac2-f16f-5a81-7001ee59cae9">
+      <Execution id="f37a00ab-02b6-4dac-8657-00b8aead8948" />
+      <TestMethod codeBase="F:\Repositories\SunhavenMod\SunhavenTodo\Tests\bin\Release\net8.0\SunhavenTodo.Tests.dll" adapterTypeName="executor://nunit3testexecutor/" className="SunhavenTodo.Tests.CharacterSaveStoreTests" name="LoadTextWithBackup_ReadsPrimaryFile" />
+    </UnitTest>
+    <UnitTest name="SanitizeFileName_ReplacesInvalidCharacters" storage="f:\repositories\sunhavenmod\sunhaventodo\tests\bin\release\net8.0\sunhaventodo.tests.dll" id="06d1981c-35b1-d603-d3c4-e97b644529e6">
+      <Execution id="8fa90cf3-bccd-442d-950a-458a098feb41" />
+      <TestMethod codeBase="F:\Repositories\SunhavenMod\SunhavenTodo\Tests\bin\Release\net8.0\SunhavenTodo.Tests.dll" adapterTypeName="executor://nunit3testexecutor/" className="SunhavenTodo.Tests.CharacterSaveStoreTests" name="SanitizeFileName_ReplacesInvalidCharacters" />
+    </UnitTest>
+    <UnitTest name="GetAbsenceReason_DistinguishesMissingFromUnusable" storage="f:\repositories\sunhavenmod\sunhaventodo\tests\bin\release\net8.0\sunhaventodo.tests.dll" id="91b766d6-1b1b-a240-4097-183a95f420e1">
+      <Execution id="36172a7b-91b7-4c51-8f9e-7faac83c3d79" />
+      <TestMethod codeBase="F:\Repositories\SunhavenMod\SunhavenTodo\Tests\bin\Release\net8.0\SunhavenTodo.Tests.dll" adapterTypeName="executor://nunit3testexecutor/" className="SunhavenTodo.Tests.CharacterSaveStoreTests" name="GetAbsenceReason_DistinguishesMissingFromUnusable" />
+    </UnitTest>
+    <UnitTest name="Deserialize_InvalidJson_ReturnsNull" storage="f:\repositories\sunhavenmod\sunhaventodo\tests\bin\release\net8.0\sunhaventodo.tests.dll" id="b3c1f791-17ba-995d-ff29-95ca15f233dc">
+      <Execution id="6ffffeff-3317-4524-a991-fb6e15ee8c97" />
+      <TestMethod codeBase="F:\Repositories\SunhavenMod\SunhavenTodo\Tests\bin\Release\net8.0\SunhavenTodo.Tests.dll" adapterTypeName="executor://nunit3testexecutor/" className="SunhavenTodo.Tests.TodoJsonTests" name="Deserialize_InvalidJson_ReturnsNull" />
+    </UnitTest>
+    <UnitTest name="Roundtrip_WeeklyRecurring_PreservesInterval" storage="f:\repositories\sunhavenmod\sunhaventodo\tests\bin\release\net8.0\sunhaventodo.tests.dll" id="37c5b8dd-ac9c-dcfa-17bf-a79481c8e073">
+      <Execution id="946ecbb8-6bee-41be-b7f2-be23990cc4c6" />
+      <TestMethod codeBase="F:\Repositories\SunhavenMod\SunhavenTodo\Tests\bin\Release\net8.0\SunhavenTodo.Tests.dll" adapterTypeName="executor://nunit3testexecutor/" className="SunhavenTodo.Tests.TodoJsonTests" name="Roundtrip_WeeklyRecurring_PreservesInterval" />
+    </UnitTest>
+    <UnitTest name="Roundtrip_SpecialCharactersInTitle_AreEscapedAndRestored" storage="f:\repositories\sunhavenmod\sunhaventodo\tests\bin\release\net8.0\sunhaventodo.tests.dll" id="f205e64a-c727-0439-0faa-00d6e56d05cc">
+      <Execution id="741ba52b-7e44-4044-82da-0dd9d9bb8cfb" />
+      <TestMethod codeBase="F:\Repositories\SunhavenMod\SunhavenTodo\Tests\bin\Release\net8.0\SunhavenTodo.Tests.dll" adapterTypeName="executor://nunit3testexecutor/" className="SunhavenTodo.Tests.TodoJsonTests" name="Roundtrip_SpecialCharactersInTitle_AreEscapedAndRestored" />
+    </UnitTest>
+    <UnitTest name="WriteAtomicBytes_UsesCustomBackupSuffix" storage="f:\repositories\sunhavenmod\sunhaventodo\tests\bin\release\net8.0\sunhaventodo.tests.dll" id="79f91f9a-5786-7f51-653f-e6545868f83d">
+      <Execution id="356177e6-3987-4dbc-8911-7fe9549a0898" />
+      <TestMethod codeBase="F:\Repositories\SunhavenMod\SunhavenTodo\Tests\bin\Release\net8.0\SunhavenTodo.Tests.dll" adapterTypeName="executor://nunit3testexecutor/" className="SunhavenTodo.Tests.CharacterSaveStoreTests" name="WriteAtomicBytes_UsesCustomBackupSuffix" />
+    </UnitTest>
+    <UnitTest name="Deserialize_EmptyObject_ReturnsEmptyData" storage="f:\repositories\sunhavenmod\sunhaventodo\tests\bin\release\net8.0\sunhaventodo.tests.dll" id="bb5e2a5c-f1bc-1ec6-6953-8c857e12397e">
+      <Execution id="fffe6ecc-9e46-463f-ada4-47bd18a1eaea" />
+      <TestMethod codeBase="F:\Repositories\SunhavenMod\SunhavenTodo\Tests\bin\Release\net8.0\SunhavenTodo.Tests.dll" adapterTypeName="executor://nunit3testexecutor/" className="SunhavenTodo.Tests.TodoJsonTests" name="Deserialize_EmptyObject_ReturnsEmptyData" />
+    </UnitTest>
+    <UnitTest name="SanitizeFileName_ReplacesControlCharsBeforeTrim" storage="f:\repositories\sunhavenmod\sunhaventodo\tests\bin\release\net8.0\sunhaventodo.tests.dll" id="4c50d161-c6d7-0f68-1b9a-42a87e077839">
+      <Execution id="9ea3e3af-1c1d-4f63-9623-f37b5f67971c" />
+      <TestMethod codeBase="F:\Repositories\SunhavenMod\SunhavenTodo\Tests\bin\Release\net8.0\SunhavenTodo.Tests.dll" adapterTypeName="executor://nunit3testexecutor/" className="SunhavenTodo.Tests.CharacterSaveStoreTests" name="SanitizeFileName_ReplacesControlCharsBeforeTrim" />
+    </UnitTest>
+    <UnitTest name="Roundtrip_MultipleItems_PreservesOrder" storage="f:\repositories\sunhavenmod\sunhaventodo\tests\bin\release\net8.0\sunhaventodo.tests.dll" id="d7d927a1-b598-ee8a-72af-6264e4cab50a">
+      <Execution id="0186c9a6-41bb-4c53-be7e-9922f3d3fa7c" />
+      <TestMethod codeBase="F:\Repositories\SunhavenMod\SunhavenTodo\Tests\bin\Release\net8.0\SunhavenTodo.Tests.dll" adapterTypeName="executor://nunit3testexecutor/" className="SunhavenTodo.Tests.TodoJsonTests" name="Roundtrip_MultipleItems_PreservesOrder" />
+    </UnitTest>
+    <UnitTest name="WriteJsonString_EscapesControlCharacters" storage="f:\repositories\sunhavenmod\sunhaventodo\tests\bin\release\net8.0\sunhaventodo.tests.dll" id="d012ccfd-4cc9-99be-0cfc-d3c200546a6b">
+      <Execution id="3f4c0ae5-1726-4434-8007-8ac39bfea29c" />
+      <TestMethod codeBase="F:\Repositories\SunhavenMod\SunhavenTodo\Tests\bin\Release\net8.0\SunhavenTodo.Tests.dll" adapterTypeName="executor://nunit3testexecutor/" className="SunhavenTodo.Tests.MinimalJsonParserTests" name="WriteJsonString_EscapesControlCharacters" />
+    </UnitTest>
+    <UnitTest name="LoadWithBackup_FallsBackWhenPrimaryCorrupt" storage="f:\repositories\sunhavenmod\sunhaventodo\tests\bin\release\net8.0\sunhaventodo.tests.dll" id="23e8c524-194b-d092-efa3-e30c72718639">
+      <Execution id="b8eeac93-9d9a-4b4e-8277-c3faf2893df2" />
+      <TestMethod codeBase="F:\Repositories\SunhavenMod\SunhavenTodo\Tests\bin\Release\net8.0\SunhavenTodo.Tests.dll" adapterTypeName="executor://nunit3testexecutor/" className="SunhavenTodo.Tests.CharacterSaveStoreTests" name="LoadWithBackup_FallsBackWhenPrimaryCorrupt" />
+    </UnitTest>
+    <UnitTest name="LoadWithBackup_ReportsDeserializeFailureAndFallsBackToBackup" storage="f:\repositories\sunhavenmod\sunhaventodo\tests\bin\release\net8.0\sunhaventodo.tests.dll" id="bc65ffdd-045c-f73e-56c3-15a19a264f75">
+      <Execution id="8c9c25a1-97af-4daa-a364-567f2e9033b7" />
+      <TestMethod codeBase="F:\Repositories\SunhavenMod\SunhavenTodo\Tests\bin\Release\net8.0\SunhavenTodo.Tests.dll" adapterTypeName="executor://nunit3testexecutor/" className="SunhavenTodo.Tests.CharacterSaveStoreTests" name="LoadWithBackup_ReportsDeserializeFailureAndFallsBackToBackup" />
+    </UnitTest>
+    <UnitTest name="RoundTrip_ControlCharacters" storage="f:\repositories\sunhavenmod\sunhaventodo\tests\bin\release\net8.0\sunhaventodo.tests.dll" id="f802e84c-8ce6-c4a9-42f2-f1d047fbf406">
+      <Execution id="15dcd4dc-47fe-49de-bd68-6ab41e7e30b8" />
+      <TestMethod codeBase="F:\Repositories\SunhavenMod\SunhavenTodo\Tests\bin\Release\net8.0\SunhavenTodo.Tests.dll" adapterTypeName="executor://nunit3testexecutor/" className="SunhavenTodo.Tests.MinimalJsonParserTests" name="RoundTrip_ControlCharacters" />
+    </UnitTest>
+    <UnitTest name="WriteAtomic_ThrowsWhenContentNull" storage="f:\repositories\sunhavenmod\sunhaventodo\tests\bin\release\net8.0\sunhaventodo.tests.dll" id="1c4ffc2e-8738-3527-5cbe-ad75f326600b">
+      <Execution id="e36df9e6-72da-4b0b-8e1e-e3ca88a5a27a" />
+      <TestMethod codeBase="F:\Repositories\SunhavenMod\SunhavenTodo\Tests\bin\Release\net8.0\SunhavenTodo.Tests.dll" adapterTypeName="executor://nunit3testexecutor/" className="SunhavenTodo.Tests.CharacterSaveStoreTests" name="WriteAtomic_ThrowsWhenContentNull" />
+    </UnitTest>
+    <UnitTest name="WriteAtomic_PromoteFailure_RestoresPrimaryFromBackup" storage="f:\repositories\sunhavenmod\sunhaventodo\tests\bin\release\net8.0\sunhaventodo.tests.dll" id="18d85013-b78b-702f-7adb-8eff0a9446c4">
+      <Execution id="3f5b051c-0866-47b4-a803-98939bff2896" />
+      <TestMethod codeBase="F:\Repositories\SunhavenMod\SunhavenTodo\Tests\bin\Release\net8.0\SunhavenTodo.Tests.dll" adapterTypeName="executor://nunit3testexecutor/" className="SunhavenTodo.Tests.CharacterSaveStoreTests" name="WriteAtomic_PromoteFailure_RestoresPrimaryFromBackup" />
+    </UnitTest>
+    <UnitTest name="Parse_RejectsTruncatedObject" storage="f:\repositories\sunhavenmod\sunhaventodo\tests\bin\release\net8.0\sunhaventodo.tests.dll" id="a44f36a9-1288-048b-8817-b79127b08d76">
+      <Execution id="8ffd1a1f-ca73-4e47-9d48-154eea0dd438" />
+      <TestMethod codeBase="F:\Repositories\SunhavenMod\SunhavenTodo\Tests\bin\Release\net8.0\SunhavenTodo.Tests.dll" adapterTypeName="executor://nunit3testexecutor/" className="SunhavenTodo.Tests.MinimalJsonParserTests" name="Parse_RejectsTruncatedObject" />
+    </UnitTest>
+  </TestDefinitions>
+  <TestEntries>
+    <TestEntry testId="1f1d8a55-7679-919b-5c62-dc9e677ef845" executionId="0edb9aee-aac5-4ce4-806b-e5576eb35b69" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="1f89fd7c-ba0a-22d5-3fad-e691d7646e3c" executionId="a5ddd971-ffff-4312-a4a3-8b2ee5023f72" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="bc65ffdd-045c-f73e-56c3-15a19a264f75" executionId="8c9c25a1-97af-4daa-a364-567f2e9033b7" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="254ae2c2-7584-c38f-26f6-461ca6ca6d3c" executionId="177aadb0-0821-4dbf-9bc6-978895723e40" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="f802e84c-8ce6-c4a9-42f2-f1d047fbf406" executionId="15dcd4dc-47fe-49de-bd68-6ab41e7e30b8" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="8c5bf1d9-16b8-d126-9ed2-2e3674e7a437" executionId="5de49d21-6ba8-428b-8daa-0dd99570962c" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="d012ccfd-4cc9-99be-0cfc-d3c200546a6b" executionId="3f4c0ae5-1726-4434-8007-8ac39bfea29c" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="13b58887-8b72-f863-ad15-451308aaf5a6" executionId="32da6c61-30f0-4118-bdb0-f5fceea73a37" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="37c5b8dd-ac9c-dcfa-17bf-a79481c8e073" executionId="946ecbb8-6bee-41be-b7f2-be23990cc4c6" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="23e8c524-194b-d092-efa3-e30c72718639" executionId="b8eeac93-9d9a-4b4e-8277-c3faf2893df2" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="f205e64a-c727-0439-0faa-00d6e56d05cc" executionId="741ba52b-7e44-4044-82da-0dd9d9bb8cfb" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="b3c1f791-17ba-995d-ff29-95ca15f233dc" executionId="6ffffeff-3317-4524-a991-fb6e15ee8c97" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="4c50d161-c6d7-0f68-1b9a-42a87e077839" executionId="9ea3e3af-1c1d-4f63-9623-f37b5f67971c" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="d7d927a1-b598-ee8a-72af-6264e4cab50a" executionId="0186c9a6-41bb-4c53-be7e-9922f3d3fa7c" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="1c4ffc2e-8738-3527-5cbe-ad75f326600b" executionId="e36df9e6-72da-4b0b-8e1e-e3ca88a5a27a" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="7a126a18-104f-340b-1150-7d8f104bc732" executionId="0e897303-da89-4a70-a5ac-6a410ada1e65" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="40c38686-9809-0a70-9794-db92449c7031" executionId="4c94fd51-dc00-4804-a449-15e7d791f439" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="79f91f9a-5786-7f51-653f-e6545868f83d" executionId="356177e6-3987-4dbc-8911-7fe9549a0898" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="a44f36a9-1288-048b-8817-b79127b08d76" executionId="8ffd1a1f-ca73-4e47-9d48-154eea0dd438" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="393246c1-182c-4da0-30ab-460857fdd9a6" executionId="7582f108-4f5a-4973-9a5c-9573c9e65b45" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="979a75de-41f5-63c3-ed41-07bcb62a6695" executionId="3719fba0-f75d-4a39-b7a1-07b7332f0a0d" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="c8accf47-0ac2-f16f-5a81-7001ee59cae9" executionId="f37a00ab-02b6-4dac-8657-00b8aead8948" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="06919e11-4e63-10a0-3770-ad837adfb4b1" executionId="01a56932-6302-4efc-8879-b80bdc989f4a" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="18d85013-b78b-702f-7adb-8eff0a9446c4" executionId="3f5b051c-0866-47b4-a803-98939bff2896" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="06d1981c-35b1-d603-d3c4-e97b644529e6" executionId="8fa90cf3-bccd-442d-950a-458a098feb41" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="bb5e2a5c-f1bc-1ec6-6953-8c857e12397e" executionId="fffe6ecc-9e46-463f-ada4-47bd18a1eaea" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="91b766d6-1b1b-a240-4097-183a95f420e1" executionId="36172a7b-91b7-4c51-8f9e-7faac83c3d79" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+  </TestEntries>
+  <TestLists>
+    <TestList name="Results Not in a List" id="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestList name="All Loaded Results" id="19431567-8539-422a-85d7-44ee4e166bda" />
+  </TestLists>
+  <ResultSummary outcome="Completed">
+    <Counters total="27" executed="27" passed="27" failed="0" error="0" timeout="0" aborted="0" inconclusive="0" passedButRunAborted="0" notRunnable="0" notExecuted="0" disconnected="0" warning="0" completed="0" inProgress="0" pending="0" />
+    <Output>
+      <StdOut>NUnit Adapter 4.6.0.0: Test execution started&#xD;
+Running all tests in F:\Repositories\SunhavenMod\SunhavenTodo\Tests\bin\Release\net8.0\SunhavenTodo.Tests.dll&#xD;
+   NUnit3TestExecutor discovered 27 of 27 NUnit test cases using Current Discovery mode, Non-Explicit run&#xD;
+NUnit Adapter 4.6.0.0: Test execution complete&#xD;
+</StdOut>
+    </Output>
+  </ResultSummary>
+</TestRun>
