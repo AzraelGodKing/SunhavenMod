@@ -7,6 +7,7 @@ using CropOptimizer.UI;
 using HarmonyLib;
 using SunhavenMods.Shared;
 using UnityEngine;
+using ReflectionProbe = SunhavenMods.Shared.ReflectionProbe;
 
 namespace CropOptimizer.Patches
 {
@@ -64,11 +65,13 @@ namespace CropOptimizer.Patches
             var decorationDataType = AccessTools.TypeByName("Wish.DecorationPositionData");
             if (decorationDataType != null)
                 TryAdd(AccessTools.Method(cropType, "SetMeta", new[] { decorationDataType }));
-            TryAdd(AccessTools.Method(cropType, "Water", Type.EmptyTypes));
-            TryAdd(AccessTools.Method(cropType, "Grow", new[] { typeof(float) }));
-            // Legacy / alternate builds (harmless if absent)
-            TryAdd(AccessTools.Method(cropType, "UpdateGrowth", Type.EmptyTypes));
-            TryAdd(AccessTools.Method(cropType, "GrowCrop", Type.EmptyTypes));
+            TryAdd(cropType.GetMethod("Water", BindingFlags.Public | BindingFlags.Instance, null, Type.EmptyTypes, null)
+                ?? AccessTools.Method(cropType, "Water", Type.EmptyTypes));
+            TryAdd(cropType.GetMethod("Grow", BindingFlags.Public | BindingFlags.Instance, null, new[] { typeof(float) }, null)
+                ?? AccessTools.Method(cropType, "Grow", new[] { typeof(float) }));
+            // Legacy / alternate builds — use GetMethod so HarmonyX does not warn on 3.1.3b misses
+            TryAdd(cropType.GetMethod("UpdateGrowth", BindingFlags.Public | BindingFlags.Instance, null, Type.EmptyTypes, null));
+            TryAdd(cropType.GetMethod("GrowCrop", BindingFlags.Public | BindingFlags.Instance, null, Type.EmptyTypes, null));
 
             methodsToPatch = methodsToPatch
                 .GroupBy(m => m.MetadataToken)
@@ -213,7 +216,7 @@ namespace CropOptimizer.Patches
             {
                 try
                 {
-                    var lifecycleMethod = AccessTools.Method(cropType, methodName, Type.EmptyTypes);
+                    var lifecycleMethod = cropType.GetMethod(methodName, BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance, null, Type.EmptyTypes, null);
                     if (lifecycleMethod == null)
                         continue;
                     harmony.Patch(lifecycleMethod, postfix: new HarmonyMethod(lifecyclePostfix));

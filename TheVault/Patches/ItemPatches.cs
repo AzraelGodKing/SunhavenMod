@@ -797,36 +797,34 @@ namespace TheVault.Patches
                 if (_itemIdReflectionCached) return;
                 try
                 {
-                    // Use full name so we never get System.Xml.XmlWellFormedWriter+AttributeValueCache+Item
+                    // Wish.Item exposes ID() (Sun Haven 3.1+). Probe that first — AccessTools
+                    // Field/Property for id/_id/Id/ItemID logs HarmonyX misses on every launch.
                     var itemType = typeof(Item);
-                    _cachedItemIdField = AccessTools.Field(itemType, "id")
-                        ?? AccessTools.Field(itemType, "_id");
-                    if (_cachedItemIdField == null)
+                    const BindingFlags idFlags = BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance;
+                    _cachedItemIdMethod = itemType.GetMethod("ID", idFlags, null, Type.EmptyTypes, null);
+                    if (_cachedItemIdMethod != null)
                     {
-                        _cachedItemIdProperty = AccessTools.Property(itemType, "id")
-                            ?? AccessTools.Property(itemType, "Id")
-                            ?? AccessTools.Property(itemType, "ItemID");
-                    }
-                    if (_cachedItemIdField == null && _cachedItemIdProperty == null)
-                    {
-                        _cachedItemIdMethod = AccessTools.Method(itemType, "ID");
-                        if (_cachedItemIdMethod != null)
+                        try
                         {
-                            try
+                            var typedDelegate = (Func<Item, int>)Delegate.CreateDelegate(typeof(Func<Item, int>), _cachedItemIdMethod);
+                            _cachedGetItemIdDelegate = obj =>
                             {
-                                var typedDelegate = (Func<Item, int>)Delegate.CreateDelegate(typeof(Func<Item, int>), _cachedItemIdMethod);
-                                _cachedGetItemIdDelegate = obj =>
-                                {
-                                    if (obj is Item wishItem)
-                                        return typedDelegate(wishItem);
-                                    return -1;
-                                };
-                            }
-                            catch
-                            {
-                                _cachedGetItemIdDelegate = null;
-                            }
+                                if (obj is Item wishItem)
+                                    return typedDelegate(wishItem);
+                                return -1;
+                            };
                         }
+                        catch
+                        {
+                            _cachedGetItemIdDelegate = null;
+                        }
+                    }
+                    else
+                    {
+                        _cachedItemIdField = itemType.GetField("id", idFlags) ?? itemType.GetField("_id", idFlags);
+                        _cachedItemIdProperty = itemType.GetProperty("id", idFlags)
+                            ?? itemType.GetProperty("Id", idFlags)
+                            ?? itemType.GetProperty("ItemID", idFlags);
                     }
                     _canResolveItemId = _cachedGetItemIdDelegate != null || _cachedItemIdField != null || _cachedItemIdProperty != null;
                     _itemIdReflectionCached = true;

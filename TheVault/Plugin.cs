@@ -12,6 +12,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Reflection;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using Wish;
@@ -1005,10 +1006,13 @@ namespace TheVault
                 }
             }
 
-            // Fallback: game has AddItem(int, int, bool) not AddItem(int, int)
-            var addItemIntMethod = AccessTools.Method(inventoryType, "AddItem", new[] { typeof(int), typeof(int) });
-            if (addItemIntMethod == null)
-                addItemIntMethod = AccessTools.Method(inventoryType, "AddItem", new[] { typeof(int), typeof(int), typeof(bool) });
+            // 3.1.x: AddItem(int, int, bool). Skip the (int, int) AccessTools probe — it logs a HarmonyX miss.
+            var addItemIntMethod = inventoryType.GetMethod("AddItem",
+                BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance,
+                null, new[] { typeof(int), typeof(int), typeof(bool) }, null)
+                ?? inventoryType.GetMethod("AddItem",
+                    BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance,
+                    null, new[] { typeof(int), typeof(int) }, null);
             if (addItemIntMethod != null)
             {
                 var postfix = AccessTools.Method(typeof(ItemPatches), "OnInventoryAddItem");

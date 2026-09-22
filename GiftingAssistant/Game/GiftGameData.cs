@@ -130,11 +130,11 @@ namespace GiftingAssistant.Game
                                        ?? AccessTools.Property(npcaiType, "romanceable");
                     _npcNameProps = new[]
                     {
-                        AccessTools.Property(npcaiType, "OriginalName"),
-                        AccessTools.Property(npcaiType, "NPCName"),
-                        AccessTools.Property(npcaiType, "ActualNPCName"),
-                        AccessTools.Property(npcaiType, "npcName"),
-                        AccessTools.Property(npcaiType, "Name")
+                        npcaiType.GetProperty("OriginalName", BindingFlags.Public | BindingFlags.Instance),
+                        npcaiType.GetProperty("NPCName", BindingFlags.Public | BindingFlags.Instance),
+                        npcaiType.GetProperty("ActualNPCName", BindingFlags.Public | BindingFlags.Instance),
+                        npcaiType.GetProperty("npcName", BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance),
+                        npcaiType.GetProperty("Name", BindingFlags.Public | BindingFlags.Instance)
                     };
                 }
 

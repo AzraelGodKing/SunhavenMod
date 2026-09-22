@@ -25,7 +25,14 @@ namespace TrinketFortune
             TrinketFortune.Config.Bind(namedConfig);
 
             _harmony = new Harmony(PluginInfo.PLUGIN_GUID);
-            FishingTrinketPatches.ApplyPatches(_harmony);
+            try
+            {
+                FishingTrinketPatches.ApplyPatches(_harmony);
+            }
+            catch (System.Exception ex)
+            {
+                Log.LogError($"Harmony patches failed (game version drift?): {ex}");
+            }
 
             Log.LogInfo($"{PluginInfo.PLUGIN_NAME} v{PluginInfo.PLUGIN_VERSION} loaded. Fishing loot bias active when S.M.U.T. is installed.");
             ModDiagnostics.LogModStartup(Log, PluginInfo.PLUGIN_GUID, PluginInfo.PLUGIN_NAME, PluginInfo.PLUGIN_VERSION,
