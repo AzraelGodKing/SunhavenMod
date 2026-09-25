@@ -1,8 +1,6 @@
 using System;
 using System.IO;
 using System.Reflection;
-using System.Security.Cryptography;
-using System.Text;
 using SunhavenMods.Shared;
 using UnityEngine;
 
@@ -21,32 +19,34 @@ namespace TheVault.Vault
         private readonly VaultManager _vaultManager;
         private string _currentSaveFile;
 
-        // Steam ID caching
+        // Steam ID caching (file-name suffix; encryption uses SharedUtilities.VaultCryptography)
         private static string _cachedSteamId = null;
         private static bool _steamIdChecked = false;
-
-        // Encryption settings
-        private const string ENCRYPTION_SALT = "TheV4ultS@lt2026Secure";
-        private const int KEY_SIZE = 256;
-        private const int ITERATIONS = 10000;
-        private static readonly byte[] _iv = new byte[16] { 0x43, 0x75, 0x72, 0x72, 0x65, 0x6E, 0x63, 0x79, 0x53, 0x70, 0x65, 0x6C, 0x6C, 0x49, 0x56, 0x31 };
 
         // Auto-save interval in seconds
         private float _autoSaveIntervalSeconds = 300f;
         private float _lastAutoSave;
 
         private bool _needsReEncryption;
+        private bool _loggedSaveBlockedOnce;
 
         /// <summary>
         /// Set when a save file could not be read and was quarantined; a new empty in-memory vault was started.
         /// </summary>
         public bool LastLoadQuarantinedCorruptFile { get; private set; }
 
+        /// <summary>
+        /// True when Load fell through to an empty in-memory vault after every on-disk candidate failed.
+        /// Saves are blocked until <see cref="ConfirmStartFreshVault"/> so the spared <c>.backup</c> is not overwritten (AZR-238).
+        /// </summary>
+        public bool LoadFailedNoRecoverableData { get; private set; }
+
         public VaultSaveSystem(VaultManager vaultManager)
         {
             _vaultManager = vaultManager;
             _saveDirectory = Path.Combine(BepInEx.Paths.ConfigPath, "TheVault", "Saves");
             _lastAutoSave = Time.time;
+            VaultCryptography.LogSource = Plugin.Log;
 
             // Ensure save directory exists
             if (!Directory.Exists(_saveDirectory))
@@ -170,25 +170,13 @@ namespace TheVault.Vault
 
         /// <summary>
         /// Decrypt and deserialize vault data from a file path. Returns null when the file cannot be read.
+        /// Uses shared <see cref="VaultCryptography"/> so the CSVAULT2 header is skipped and legacy keys work (AZR-240).
         /// </summary>
         private VaultData TryParseVaultFile(string pathToRead, string playerName)
         {
             byte[] encryptedData = File.ReadAllBytes(pathToRead);
 
-            string json = Decrypt(encryptedData, playerName);
-
-            if (string.IsNullOrEmpty(json))
-            {
-                Plugin.Log?.LogInfo($"Current decryption failed, attempting legacy migration for '{playerName}'...");
-                json = TryLegacyDecryption(encryptedData, playerName);
-
-                if (!string.IsNullOrEmpty(json))
-                {
-                    Plugin.Log?.LogInfo("Legacy decryption successful - will re-encrypt with new method on save");
-                    _needsReEncryption = true;
-                }
-            }
-
+            string json = VaultCryptography.Decrypt(encryptedData, playerName);
             if (string.IsNullOrEmpty(json))
                 return null;
 
@@ -205,6 +193,8 @@ namespace TheVault.Vault
         public bool Load(string playerName)
         {
             LastLoadQuarantinedCorruptFile = false;
+            LoadFailedNoRecoverableData = false;
+            _loggedSaveBlockedOnce = false;
 
             if (!IsValidPlayerName(playerName))
             {
@@ -284,7 +274,8 @@ namespace TheVault.Vault
                     }
 
                     Plugin.Log?.LogError(
-                        $"[VaultSave] Vault file for '{playerName}' could not be loaded from primary, legacy, or backup paths. Starting an empty vault in memory.");
+                        $"[VaultSave] Vault file for '{playerName}' could not be loaded from primary, legacy, or backup paths. Starting an empty vault in memory; saving is blocked until you confirm Start Fresh so the .backup is not overwritten.");
+                    LoadFailedNoRecoverableData = true;
                     _vaultManager.LoadVaultData(new VaultData { PlayerName = playerName });
                     return true;
                 }
@@ -335,6 +326,7 @@ namespace TheVault.Vault
                     TryQuarantineUnreadableFile(pathToQuarantine, "exception during load: " + ex.Message);
                     LastLoadQuarantinedCorruptFile = true;
                 }
+                LoadFailedNoRecoverableData = true;
                 _vaultManager.LoadVaultData(new VaultData { PlayerName = playerName });
                 // Empty vault is now in memory; callers should treat load as applied for this character.
                 return true;
@@ -342,98 +334,18 @@ namespace TheVault.Vault
         }
 
         /// <summary>
-        /// Try to decrypt using legacy encryption methods (for migration from older versions)
+        /// Clears the failed-load save latch so the empty in-memory vault may be persisted.
+        /// Call only after the player explicitly chooses to abandon the on-disk backup.
         /// </summary>
-        private string TryLegacyDecryption(byte[] encryptedData, string playerName)
+        public void ConfirmStartFreshVault()
         {
-            // Try each legacy method in order
-            string[] legacyMethods = new string[]
-            {
-                // Method 1: Player name only (portable method before Steam ID)
-                $"{ENCRYPTION_SALT}_{playerName}_TheVaultPortable",
+            if (!LoadFailedNoRecoverableData)
+                return;
 
-                // Method 2: Player name with "Player_" prefix
-                $"{ENCRYPTION_SALT}_Player_{playerName}_TheVaultPortable",
-
-                // Method 3: Original method with machine ID (old CurrencySpell)
-                $"{ENCRYPTION_SALT}_{playerName}_{GetMachineId()}",
-            };
-
-            foreach (var keySource in legacyMethods)
-            {
-                try
-                {
-                    byte[] key = GenerateLegacyKey(keySource);
-                    string json = DecryptWithKey(encryptedData, key);
-
-                    if (!string.IsNullOrEmpty(json) && json.Contains("PlayerName"))
-                    {
-                        Plugin.Log?.LogInfo($"Successfully decrypted with legacy method");
-                        return json;
-                    }
-                }
-                catch (Exception ex)
-                {
-                    Plugin.Log?.LogDebug($"[VaultSave] Legacy decryption attempt failed: {ex.Message}");
-                }
-            }
-
-            return null;
-        }
-
-        /// <summary>
-        /// Get machine ID for legacy decryption attempts
-        /// </summary>
-        private string GetMachineId()
-        {
-            try
-            {
-                return SystemInfo.deviceUniqueIdentifier;
-            }
-            catch (Exception ex)
-            {
-                Plugin.Log?.LogDebug($"[VaultSave] Could not resolve machine id for legacy decryption fallback: {ex.Message}");
-                return "unknown";
-            }
-        }
-
-        /// <summary>
-        /// Generate key using legacy method (for migration)
-        /// </summary>
-        private byte[] GenerateLegacyKey(string combined)
-        {
-            using (var deriveBytes = new Rfc2898DeriveBytes(combined, Encoding.UTF8.GetBytes(ENCRYPTION_SALT), ITERATIONS))
-            {
-                return deriveBytes.GetBytes(KEY_SIZE / 8);
-            }
-        }
-
-        /// <summary>
-        /// Decrypt using a specific key (for legacy migration)
-        /// </summary>
-        private string DecryptWithKey(byte[] encryptedData, byte[] key)
-        {
-            try
-            {
-                using (var aes = Aes.Create())
-                {
-                    aes.Key = key;
-                    aes.IV = _iv;
-                    aes.Mode = CipherMode.CBC;
-                    aes.Padding = PaddingMode.PKCS7;
-
-                    using (var decryptor = aes.CreateDecryptor())
-                    {
-                        byte[] decrypted = decryptor.TransformFinalBlock(encryptedData, 0, encryptedData.Length);
-                        return Encoding.UTF8.GetString(decrypted);
-                    }
-                }
-            }
-            catch (Exception ex)
-            {
-                Plugin.Log?.LogDebug($"[VaultSave] DecryptWithKey failed: {ex.Message}");
-                return null;
-            }
+            LoadFailedNoRecoverableData = false;
+            _loggedSaveBlockedOnce = false;
+            Plugin.Log?.LogWarning(
+                "[VaultSave] Player confirmed Start Fresh — empty vault may now be saved; on-disk .backup will be rotated on the next successful write.");
         }
 
         /// <summary>
@@ -444,6 +356,18 @@ namespace TheVault.Vault
             if (string.IsNullOrEmpty(_currentSaveFile))
             {
                 Plugin.Log?.LogWarning("No save file set, cannot save");
+                return false;
+            }
+
+            if (!VaultFailedLoadSavePolicy.AllowSave(LoadFailedNoRecoverableData))
+            {
+                if (!_loggedSaveBlockedOnce)
+                {
+                    _loggedSaveBlockedOnce = true;
+                    Plugin.Log?.LogError(
+                        "[VaultSave] Save blocked: vault load recovered no data and a .backup may still hold the last good copy. " +
+                        "Open the Vault UI and choose Start Fresh only if you intend to abandon that backup (AZR-238).");
+                }
                 return false;
             }
 
@@ -458,8 +382,8 @@ namespace TheVault.Vault
                 var wrapper = VaultDataWrapper.FromVaultData(data);
                 string json = JsonUtility.ToJson(wrapper, true);
 
-                // Encrypt the JSON data
-                byte[] encryptedData = Encrypt(json, data.PlayerName);
+                // Encrypt the JSON data (shared CSVAULT2 writer — same salt/IV as legacy)
+                byte[] encryptedData = VaultCryptography.Encrypt(json, data.PlayerName);
 
                 if (!CharacterSaveStore.WriteAtomicBytes(
                         _currentSaveFile,
@@ -750,129 +674,6 @@ namespace TheVault.Vault
             catch (Exception ex)
             {
                 Plugin.Log?.LogWarning($"[VaultSave] Failed to get Steam ID: {ex.Message}");
-                return null;
-            }
-        }
-
-        private static bool _loggedEncryptionMode;
-
-        /// <summary>
-        /// Generate encryption key using Steam ID (preferred) or player name (fallback).
-        /// Steam ID allows saves to work across all devices on the same Steam account.
-        /// Player name fallback supports non-Steam versions.
-        /// </summary>
-        private byte[] GenerateKey(string playerName)
-        {
-            string steamId = TryGetSteamId();
-            string identifier;
-
-            if (!string.IsNullOrEmpty(steamId))
-            {
-                identifier = $"Steam_{steamId}";
-                if (!_loggedEncryptionMode)
-                {
-                    _loggedEncryptionMode = true;
-                    Plugin.Log?.LogDebug("Using Steam ID for vault encryption (cross-device compatible)");
-                }
-            }
-            else
-            {
-                identifier = $"Player_{playerName}";
-                if (!_loggedEncryptionMode)
-                {
-                    _loggedEncryptionMode = true;
-                    Plugin.Log?.LogDebug("Using player name for vault encryption (non-Steam mode)");
-                }
-            }
-
-            string combined = $"{ENCRYPTION_SALT}_{identifier}_TheVaultPortable";
-
-            using (var deriveBytes = new Rfc2898DeriveBytes(combined, Encoding.UTF8.GetBytes(ENCRYPTION_SALT), ITERATIONS))
-            {
-                return deriveBytes.GetBytes(KEY_SIZE / 8);
-            }
-        }
-
-        /// <summary>
-        /// Encrypt JSON string to bytes
-        /// </summary>
-        private byte[] Encrypt(string plainText, string playerName)
-        {
-            byte[] key = GenerateKey(playerName);
-
-            using (var aes = Aes.Create())
-            {
-                aes.Key = key;
-                aes.IV = _iv;
-                aes.Mode = CipherMode.CBC;
-                aes.Padding = PaddingMode.PKCS7;
-
-                using (var encryptor = aes.CreateEncryptor())
-                using (var ms = new MemoryStream())
-                {
-                    // Write a magic header to identify encrypted files
-                    byte[] header = Encoding.UTF8.GetBytes("CSVAULT2");
-                    ms.Write(header, 0, header.Length);
-
-                    using (var cs = new CryptoStream(ms, encryptor, CryptoStreamMode.Write))
-                    using (var writer = new StreamWriter(cs, Encoding.UTF8))
-                    {
-                        writer.Write(plainText);
-                    }
-
-                    return ms.ToArray();
-                }
-            }
-        }
-
-        /// <summary>
-        /// Decrypt bytes to JSON string
-        /// </summary>
-        private string Decrypt(byte[] cipherData, string playerName)
-        {
-            try
-            {
-                // Check for magic header
-                if (cipherData.Length < 8)
-                {
-                    Plugin.Log?.LogWarning("Vault file too small, may be corrupted");
-                    return null;
-                }
-
-                string header = Encoding.UTF8.GetString(cipherData, 0, 8);
-                if (header != "CSVAULT2")
-                {
-                    // Try to read as plain JSON (legacy unencrypted file)
-                    Plugin.Log?.LogInfo("Detected legacy unencrypted vault file, will re-encrypt on save");
-                    return Encoding.UTF8.GetString(cipherData);
-                }
-
-                byte[] key = GenerateKey(playerName);
-
-                using (var aes = Aes.Create())
-                {
-                    aes.Key = key;
-                    aes.IV = _iv;
-                    aes.Mode = CipherMode.CBC;
-                    aes.Padding = PaddingMode.PKCS7;
-
-                    using (var decryptor = aes.CreateDecryptor())
-                    using (var ms = new MemoryStream(cipherData, 8, cipherData.Length - 8))
-                    using (var cs = new CryptoStream(ms, decryptor, CryptoStreamMode.Read))
-                    using (var reader = new StreamReader(cs, Encoding.UTF8))
-                    {
-                        return reader.ReadToEnd();
-                    }
-                }
-            }
-            catch (CryptographicException ex)
-            {
-                Plugin.Log?.LogError($"Decryption failed (file may have been tampered with): {ex.Message}");
-                return null;
-            }
-            catch (Exception ex)
-            {
-                Plugin.Log?.LogError($"Error decrypting vault: {ex.Message}");
                 return null;
             }
         }

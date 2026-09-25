@@ -276,7 +276,12 @@ namespace TheVault
 
             string combined = $"{ENCRYPTION_SALT}_{identifier}_SecretGiftsKey";
 
-            using (var deriveBytes = new Rfc2898DeriveBytes(combined, Encoding.UTF8.GetBytes(ENCRYPTION_SALT), ITERATIONS))
+            // SHA1 matches the obsolete 3-arg ctor default — keep existing secret-gift key material.
+            using (var deriveBytes = new Rfc2898DeriveBytes(
+                combined,
+                Encoding.UTF8.GetBytes(ENCRYPTION_SALT),
+                ITERATIONS,
+                HashAlgorithmName.SHA1))
             {
                 return deriveBytes.GetBytes(KEY_SIZE / 8);
             }
