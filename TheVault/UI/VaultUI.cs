@@ -488,21 +488,37 @@ namespace TheVault.UI
                 normal = { textColor = _goldColor }
             };
 
-            _categoryButtonStyle = new GUIStyle(GUI.skin.button)
+            // Tab buttons: own every interaction state. Cloning GUI.skin.button leaves focused/
+            // onNormal on the skin atlas — same AZR-234 "zoomed text" failure mode as the window chrome.
+            _categoryButtonStyle = new GUIStyle
             {
                 fontSize = ScaledFont(12),
                 fontStyle = FontStyle.Normal,
+                alignment = TextAnchor.MiddleCenter,
                 padding = new RectOffset(ScaledInt(14), ScaledInt(14), ScaledInt(8), ScaledInt(8)),
                 margin = new RectOffset(ScaledInt(3), ScaledInt(3), 0, 0),
+                border = new RectOffset(4, 4, 4, 4),
                 normal = { background = _tabNormal, textColor = _textDimColor },
-                hover = { background = _buttonHover, textColor = _textColor }
+                onNormal = { background = _tabNormal, textColor = _textDimColor },
+                hover = { background = _buttonHover, textColor = _textColor },
+                onHover = { background = _buttonHover, textColor = _textColor },
+                active = { background = _buttonHover, textColor = _textColor },
+                onActive = { background = _buttonHover, textColor = _textColor },
+                focused = { background = _tabNormal, textColor = _textDimColor },
+                onFocused = { background = _tabNormal, textColor = _textDimColor }
             };
 
             _selectedCategoryStyle = new GUIStyle(_categoryButtonStyle)
             {
                 fontStyle = FontStyle.Bold,
                 normal = { background = _tabSelected, textColor = Color.white },
-                hover = { background = _tabSelected, textColor = Color.white }
+                onNormal = { background = _tabSelected, textColor = Color.white },
+                hover = { background = _tabSelected, textColor = Color.white },
+                onHover = { background = _tabSelected, textColor = Color.white },
+                active = { background = _tabSelected, textColor = Color.white },
+                onActive = { background = _tabSelected, textColor = Color.white },
+                focused = { background = _tabSelected, textColor = Color.white },
+                onFocused = { background = _tabSelected, textColor = Color.white }
             };
 
             _rowStyle = new GUIStyle()

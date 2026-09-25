@@ -19,10 +19,14 @@ The site is deployed to **Cloudflare Pages** (project name: `azrael-sunhaven-web
 
 Required Pages project env vars (AZR-103):
 
-- `LINEAR_API_TOKEN` — personal API key with **issue create** on team AzraelGodKing
-- `LINEAR_TEAM_ID` — AzraelGodKing team id
+- `LINEAR_API_TOKEN` — personal API key with **issue create** on team AzraelGodKing (**secret**; set in Cloudflare Pages dashboard)
+- `LINEAR_TEAM_ID` — AzraelGodKing team UUID (defaulted in `wrangler.toml` `[vars]`)
+- `LINEAR_PROJECT_ID` — Sunhaven Mods project UUID (defaulted in `wrangler.toml` `[vars]`)
+- `LINEAR_STATE_ID` — Todo state UUID (defaulted in `wrangler.toml` `[vars]`)
 
 Optional: `LINEAR_BUG_LABEL_ID`, `LINEAR_FEATURE_LABEL_ID`, `FEEDBACK_RATE_*`, `FEEDBACK_CORS_ORIGINS`.
+
+`GET /api/feedback` returns `configured` (token+team) and `intakeReady` (token+team+project+state). Local secrets: copy `.dev.vars.example` → `.dev.vars`.
 
 ## Technology Stack
 
@@ -183,8 +187,16 @@ Manual test checklist when making changes:
 ### Required environment variables
 | Variable | Purpose |
 |----------|---------|
-| `LINEAR_API_TOKEN` | Linear API bearer token |
+| `LINEAR_API_TOKEN` | Linear API bearer token (secret) |
 | `LINEAR_TEAM_ID` | Linear team ID for issue creation |
+
+### Strongly recommended (AZR-103)
+| Variable | Purpose |
+|----------|---------|
+| `LINEAR_PROJECT_ID` | Sunhaven Mods project ID |
+| `LINEAR_STATE_ID` | Todo workflow state ID |
+
+Non-secret IDs ship as `wrangler.toml` `[vars]` defaults. `LINEAR_API_TOKEN` must still be set in the Pages dashboard (or `.dev.vars` locally).
 
 ### Optional environment variables
 | Variable | Default | Purpose |
