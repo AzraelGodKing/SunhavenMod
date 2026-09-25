@@ -139,11 +139,14 @@ namespace TheVault.UI
 
         private void Update()
         {
-            if (!_loggedQuarantineHudOnce && Plugin.LastVaultLoadQuarantinedCorruptFile)
+            if (!_loggedQuarantineHudOnce &&
+                (Plugin.LastVaultLoadQuarantinedCorruptFile || Plugin.VaultLoadFailedNoRecoverableData))
             {
                 _loggedQuarantineHudOnce = true;
                 Plugin.Log?.LogWarning(
-                    "[The Vault] A vault file was unreadable and was quarantined (see LogOutput / BepInEx). An empty vault is in use — check TheVault/Saves for .corrupt-*.bak");
+                    Plugin.VaultLoadFailedNoRecoverableData
+                        ? "[The Vault] Vault load recovered no data — saving is blocked until Start Fresh so a surviving .backup is not overwritten (see LogOutput / TheVault/Saves)."
+                        : "[The Vault] A vault file was unreadable and was quarantined (see LogOutput / BepInEx). An empty vault is in use — check TheVault/Saves for .corrupt-*.bak");
             }
 
             if (!_isEnabled || _vaultManager == null) return;
