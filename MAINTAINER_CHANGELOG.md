@@ -4,6 +4,10 @@ Internal engineering log: **CI**, **release automation**, **scripts**, **docs in
 
 ---
 
+## 2026-09-25
+
+- **AZR-234 / AZR-103 PR** (`cursor/azr-234-103-sunhaven-todos-7024`): Vault tab buttons own all IMGUI focus states (follow-up to window chrome fix). Feedback Worker passes `LINEAR_PROJECT_ID` / `LINEAR_STATE_ID` into `issueCreate`, ships AzraelGodKing/Sunhaven Mods/Todo UUIDs in `wrangler.toml` `[vars]`, adds `.dev.vars.example`, and classifies Linear auth vs ID failures in 502 responses. Pages secret `LINEAR_API_TOKEN` still required for live create. **TheVault** `4.1.1` → `4.1.2` (patch).
+
 ## 2026-09-22
 
 - **AZR-259 — Sun Haven 3.1.3b:** Trinket Fortune closed Harmony prefix for `Utilities.RandomItem<int>` (`ref int __result`); ApplyPatches isolated so `RandomFishArray.RandomItem` still patches if RandomItem fails. Vault item-id cache probes `Item.ID()` first; Crop Optimizer / Gifting Assistant optional AccessTools probes switched to `GetMethod`/`GetProperty` so HarmonyX does not warn on 3.1.3b misses (`Crop.Harvest`/`npcName`).

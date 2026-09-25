@@ -2,8 +2,12 @@
  * Cloudflare Pages Function: POST /api/feedback  |  GET /api/feedback
  *
  * Required env vars (Pages / Worker project):
- * - LINEAR_API_TOKEN
- * - LINEAR_TEAM_ID
+ * - LINEAR_API_TOKEN — personal API key with issue create on team AzraelGodKing (AZR-103)
+ * - LINEAR_TEAM_ID — AzraelGodKing team UUID
+ *
+ * Strongly recommended (AZR-103 intake target):
+ * - LINEAR_PROJECT_ID — Sunhaven Mods project UUID
+ * - LINEAR_STATE_ID — Todo state UUID on that team
  *
  * Optional:
  * - FEEDBACK_RATE_WINDOW_SECONDS (default 600)
@@ -156,8 +160,26 @@ function requestDiag(request, env, extra = {}) {
     cfRay: request.headers.get("cf-ray") || null,
     linearTokenConfigured: Boolean(env.LINEAR_API_TOKEN),
     linearTeamIdConfigured: Boolean(env.LINEAR_TEAM_ID),
+    linearProjectIdConfigured: Boolean(env.LINEAR_PROJECT_ID),
+    linearStateIdConfigured: Boolean(env.LINEAR_STATE_ID),
     ...extra,
   };
+}
+
+function classifyLinearFailure(detail = {}) {
+  const http = detail.linearHttpStatus;
+  const gql = Array.isArray(detail.graphqlErrors) ? detail.graphqlErrors : [];
+  const joined = gql
+    .map((e) => `${e?.message || ""} ${e?.code || ""}`)
+    .join(" ")
+    .toLowerCase();
+  if (http === 401 || http === 403 || /authenticat|unauthorized|forbidden|permission/.test(joined)) {
+    return "auth_or_permission";
+  }
+  if (/team|project|state|not found|invalid uuid|argument/.test(joined)) {
+    return "team_project_or_state";
+  }
+  return detail.failureReason || "unknown";
 }
 
 export async function onRequestOptions(context) {
@@ -177,6 +199,14 @@ export async function onRequestGet(context) {
       configured: Boolean(env.LINEAR_API_TOKEN && env.LINEAR_TEAM_ID),
       linearTokenConfigured: Boolean(env.LINEAR_API_TOKEN),
       linearTeamIdConfigured: Boolean(env.LINEAR_TEAM_ID),
+      linearProjectIdConfigured: Boolean(env.LINEAR_PROJECT_ID),
+      linearStateIdConfigured: Boolean(env.LINEAR_STATE_ID),
+      intakeReady: Boolean(
+        env.LINEAR_API_TOKEN &&
+          env.LINEAR_TEAM_ID &&
+          env.LINEAR_PROJECT_ID &&
+          env.LINEAR_STATE_ID
+      ),
     }),
     request,
     env
@@ -291,6 +321,10 @@ async function handlePost(request, env) {
     title: issueTitle,
     description: issueDescription,
   };
+  const projectId = sanitizeText(env.LINEAR_PROJECT_ID, 120);
+  const stateId = sanitizeText(env.LINEAR_STATE_ID, 120);
+  if (projectId) linearInput.projectId = projectId;
+  if (stateId) linearInput.stateId = stateId;
   if (labelIds.length) {
     linearInput.labelIds = labelIds;
   }
@@ -373,11 +407,17 @@ async function handlePost(request, env) {
         }),
         ...detail,
       });
-      return bad(
-        "Linear returned an error. This usually means the API token is invalid, the team ID is wrong, or the token lacks issue-create permissions.",
-        502,
-        { linearReason: detail.failureReason || "unknown" }
-      );
+      const linearReason = classifyLinearFailure(detail);
+      const message =
+        linearReason === "auth_or_permission"
+          ? "Linear rejected the API token (invalid, expired, or missing issue-create permission). Check LINEAR_API_TOKEN on the Pages project (AZR-103)."
+          : linearReason === "team_project_or_state"
+            ? "Linear rejected team/project/state IDs. Check LINEAR_TEAM_ID, LINEAR_PROJECT_ID, and LINEAR_STATE_ID (AZR-103)."
+            : "Linear returned an error. This usually means the API token is invalid, the team/project/state ID is wrong, or the token lacks issue-create permissions.";
+      return bad(message, 502, {
+        linearReason,
+        failureReason: detail.failureReason || "unknown",
+      });
     }
     feedbackLog("error", {
       event: "feedback.linear_failed",

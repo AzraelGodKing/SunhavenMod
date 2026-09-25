@@ -35,6 +35,7 @@ builds/
 
 # Local secrets for tooling
 .env
+.dev.vars
 
 # Local script run logs (never commit ad hoc transcripts)
 *.log

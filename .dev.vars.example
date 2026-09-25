@@ -1,0 +1,17 @@
+# Copy to `.dev.vars` for `wrangler pages dev` (never commit `.dev.vars`).
+# AZR-103 — Linear intake for /api/feedback
+
+# Required secret (Pages dashboard → Settings → Environment variables):
+LINEAR_API_TOKEN=
+
+# Non-secret IDs are also set in wrangler.toml [vars]. Override here for local if needed.
+# LINEAR_TEAM_ID=793cb9eb-f8a9-4a64-ad43-33a56637ec16
+# LINEAR_PROJECT_ID=474f26ca-5844-4435-be18-ef3ed94169b3
+# LINEAR_STATE_ID=9dd5fdf1-e5e4-406f-bf6d-c59910c29dd9
+
+# Optional:
+# LINEAR_BUG_LABEL_ID=
+# LINEAR_FEATURE_LABEL_ID=
+# FEEDBACK_CORS_ORIGINS=
+# FEEDBACK_RATE_WINDOW_SECONDS=600
+# FEEDBACK_RATE_MAX=5

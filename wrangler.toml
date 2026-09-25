@@ -6,3 +6,9 @@ pages_build_output_dir = "cloudflare-site"
 
 [observability]
 enabled = true
+
+# Non-secret Linear intake targets (AZR-103). Token stays a Pages secret: LINEAR_API_TOKEN.
+[vars]
+LINEAR_TEAM_ID = "793cb9eb-f8a9-4a64-ad43-33a56637ec16"
+LINEAR_PROJECT_ID = "474f26ca-5844-4435-be18-ef3ed94169b3"
+LINEAR_STATE_ID = "9dd5fdf1-e5e4-406f-bf6d-c59910c29dd9"
