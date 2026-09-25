@@ -2,11 +2,14 @@
 
 ## Unreleased
 
+## Version 4.1.3
+
+- **Fix (AZR-240):** Legacy vault recovery skips the plaintext `CSVAULT2` header (shared `VaultCryptography`) so key-mismatch recovery can succeed again.
+- **Fix (AZR-238):** After a failed load, saving is blocked until you confirm **Start Fresh** in the Vault UI — so a surviving `.backup` is not overwritten by an empty in-memory vault.
+
 ## Version 4.1.2
 
 - **Fix (AZR-234):** Tab buttons use owned textures on every IMGUI interaction state (including focused), so switching categories cannot fall back to the skin atlas "zoomed text" background.
-- **Fix (AZR-240):** Legacy vault recovery skips the plaintext `CSVAULT2` header (shared `VaultCryptography`) so key-mismatch recovery can succeed again.
-- **Fix (AZR-238):** After a failed load, saving is blocked until you confirm **Start Fresh** in the Vault UI — so a surviving `.backup` is not overwritten by an empty in-memory vault.
 
 ## Version 4.1.1
 

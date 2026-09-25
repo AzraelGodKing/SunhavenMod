@@ -40,7 +40,7 @@
     "changelog": "Fix: overnight unhook before re-hook; refuse previous-character name fallback when lookup fails."
   },
   "com.azraelgodking.thevault": {
-    "version": "4.1.2",
+    "version": "4.1.3",
     "name": "The Vault",
     "description": "The Vault 3 — per-character vault, encrypted saves, HUD, auto-deposit, shop and inventory vault integration, Custom tab & mod API.",
     "vault_save_breaking": false,
@@ -49,7 +49,7 @@
     "nexus_file_group_id": "1305781",
     "thunderstore": "https://thunderstore.io/c/sun-haven/p/AzraelGodKing/TheVault/",
     "thunderstoreName": "TheVault",
-    "changelog": "Fix (AZR-234): owned IMGUI tab focus backgrounds. AZR-238/240: failed-load save block (Start Fresh) protects .backup; CSVAULT2 legacy decrypt via shared VaultCryptography."
+    "changelog": "Patch (AZR-238/240): failed-load save block (Start Fresh) protects .backup; CSVAULT2 legacy decrypt via shared VaultCryptography."
   },
   "com.azraelgodking.havendevtools": {
     "version": "2.1.1",
