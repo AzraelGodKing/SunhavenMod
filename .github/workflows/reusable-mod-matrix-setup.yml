@@ -1,4 +1,4 @@
-# Shared by Release & Publish and Test — Self-hosted Sunhaven runner.
+# Shared by Release & Publish (matrix + verify-version-consistency).
 # Keeps matrix + verify-version-consistency in one place (avoid drift).
 name: Reusable — mod matrix setup
 
