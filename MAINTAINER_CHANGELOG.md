@@ -6,6 +6,7 @@ Internal engineering log: **CI**, **release automation**, **scripts**, **docs in
 
 ## 2026-09-25
 
+- **Cleanup:** Removed unused **Test — Self-hosted Sunhaven runner** workflow (`release-self-hosted-sunhaven-runner.yml`). Last run was 2026-04; **Release & Publish** already builds on the self-hosted runner and covers dry-run / publish. No mod version bumps.
 - **Release gate (RimWorld-style):** `scripts/version/release_version_gate.py` asks Nexus (page + files), GitHub, and Thunderstore for each mod’s current version. If ours is newer, that channel publishes; if the same (or Nexus already ahead), that channel is skipped with success so other mods in the matrix keep releasing. Wired into `reusable-release-mod.yml` and the self-hosted release job. No mod version bumps.
 - **Nexus upload parity:** `.github/actions/nexus-upload` pins upload-action beta.10 with `update_mod_version`, `archive_existing_version`, and `primary_mod_manager_download`; Changelog tab via `scripts/version/nexus_post_changelog.py` after a successful file upload (soft-fail).
 - **CI fix:** `VaultSaveSystem` missing `System.Security.Cryptography` / `System.Text` usings (SHA256 / Encoding / StringBuilder) broke `thevault` and `havensalmanac` builds.
