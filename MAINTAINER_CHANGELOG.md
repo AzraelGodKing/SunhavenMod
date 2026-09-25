@@ -6,6 +6,7 @@ Internal engineering log: **CI**, **release automation**, **scripts**, **docs in
 
 ## 2026-09-25
 
+- **Release gate (RimWorld-style):** `scripts/version/release_version_gate.py` asks Nexus (page + files), GitHub, and Thunderstore for each mod’s current version. If ours is newer, that channel publishes; if the same (or Nexus already ahead), that channel is skipped with success so other mods in the matrix keep releasing. Wired into `reusable-release-mod.yml` and the self-hosted release job. No mod version bumps.
 - **AZR-234 / AZR-103 PR** (`cursor/azr-234-103-sunhaven-todos-7024`): Vault tab buttons own all IMGUI focus states (follow-up to window chrome fix). Feedback Worker passes `LINEAR_PROJECT_ID` / `LINEAR_STATE_ID` into `issueCreate`, ships AzraelGodKing/Sunhaven Mods/Todo UUIDs in `wrangler.toml` `[vars]`, adds `.dev.vars.example`, and classifies Linear auth vs ID failures in 502 responses. Pages secret `LINEAR_API_TOKEN` still required for live create. **TheVault** `4.1.1` → `4.1.2` (patch).
 - **AZR-238 / AZR-240 — The Vault save recovery:** `VaultSaveSystem` load/save now uses `SharedUtilities.VaultCryptography` (CSVAULT2 header skip + legacy keys). Failed-load path sets `LoadFailedNoRecoverableData` and blocks `Save()` until `ConfirmStartFreshVault()` (UI button). Added `VaultFailedLoadSavePolicy` + CSVAULT2 header unit tests. **TheVault** `4.1.2` → `4.1.3` (patch — data-loss / recovery).
 

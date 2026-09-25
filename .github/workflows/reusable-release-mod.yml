@@ -111,101 +111,35 @@ jobs:
           restore-keys: |
             upstream-version-${{ github.repository }}-${{ inputs.mod }}-
 
-      - name: Upstream version gate (GitHub + Thunderstore + Nexus APIs)
+      - name: Upstream version gate (per-channel GitHub / Thunderstore / Nexus)
         id: version_check
         if: inputs.publish_discord_only != 'true'
         env:
           NEXUS_API_KEY: ${{ secrets.NEXUSMODS_API_KEY }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           set -euo pipefail
-          if [ "${{ inputs.dry_run }}" == "true" ]; then
-            echo "version_unchanged=false" >> "$GITHUB_OUTPUT"
-            echo "version_match_sources=" >> "$GITHUB_OUTPUT"
-            exit 0
+          mkdir -p .cache/upstream-version
+          HAS_NEXUS_TARGET=false
+          if [ -n "${{ steps.config.outputs.nexus_file_group_id }}" ]; then
+            HAS_NEXUS_TARGET=true
           fi
-          if [ "${{ inputs.release_anyway }}" == "true" ]; then
-            echo "release_anyway: skipping upstream gate"
-            echo "version_unchanged=false" >> "$GITHUB_OUTPUT"
-            echo "version_match_sources=" >> "$GITHUB_OUTPUT"
-            exit 0
-          fi
-
-          TS_NAME="${{ steps.config.outputs.thunderstore_name }}"
-          CUR="${{ steps.config.outputs.version }}"
-          NEXUS_URL="${{ steps.config.outputs.nexus_url }}"
-
-          if [ "$TS_NAME" == "TestDiscord" ]; then
-            echo "version_unchanged=false" >> "$GITHUB_OUTPUT"
-            echo "version_match_sources=" >> "$GITHUB_OUTPUT"
-            exit 0
-          fi
-
-          CACHE_DIR=".cache/upstream-version"
-          CACHE_FILE="$CACHE_DIR/${{ inputs.mod }}.json"
-          CACHE_TTL=21600
-          mkdir -p "$CACHE_DIR"
-          NOW="$(date +%s)"
-
-          GH_V="" TS_V="" NX_V="" CACHE_USED=false
-          if [ -f "$CACHE_FILE" ]; then
-            TS_CACHE="$(jq -r '.checked_at_epoch // 0' "$CACHE_FILE" 2>/dev/null || echo 0)"
-            if [ $((NOW - TS_CACHE)) -lt $CACHE_TTL ]; then
-              GH_V="$(jq -r '.github_version // ""' "$CACHE_FILE")"
-              TS_V="$(jq -r '.thunderstore_version // ""' "$CACHE_FILE")"
-              NX_V="$(jq -r '.nexus_version // ""' "$CACHE_FILE")"
-              CACHE_USED=true
-            fi
-          fi
-
-          if [ "$CACHE_USED" != "true" ]; then
-            REL_JSON=$(curl -sSf -H "Accept: application/vnd.github+json" \
-              -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" \
-              "${{ github.api_url }}/repos/${{ github.repository }}/releases?per_page=100" | \
-              jq -r --arg p "${TS_NAME}-v" '[.[] | select(.tag_name | startswith($p))] | sort_by(.published_at) | reverse | .[0] // empty')
-            if [ -n "$REL_JSON" ] && [ "$REL_JSON" != "null" ]; then
-              GH_V="$(echo "$REL_JSON" | jq -r '.tag_name | split("-v")[1] // empty')"
-            fi
-            TS_API="https://thunderstore.io/c/${{ env.THUNDERSTORE_COMMUNITY }}/api/v1/package/${{ env.THUNDERSTORE_NAMESPACE }}/${TS_NAME}/"
-            TS_BODY="$(curl -sSf "$TS_API" || true)"
-            if [ -n "$TS_BODY" ]; then
-              TS_V="$(echo "$TS_BODY" | jq -r '.versions[0].version_number // empty' 2>/dev/null || true)"
-            fi
-            MOD_ID="$(echo "$NEXUS_URL" | sed -n 's|.*/mods/\([0-9][0-9]*\)$|\1|p')"
-            if [ -n "$MOD_ID" ] && [ -n "${NEXUS_API_KEY:-}" ]; then
-              NX_BODY="$(curl -sS -H "accept: application/json" -H "apikey: $NEXUS_API_KEY" \
-                "https://api.nexusmods.com/v1/games/sunhaven/mods/${MOD_ID}/files.json" || true)"
-              if [ -n "$NX_BODY" ]; then
-                NX_V="$(echo "$NX_BODY" | jq -r '[.files[]? | select((.version // "") != "")] | sort_by(.uploaded_timestamp // 0) | reverse | .[0].version // empty' 2>/dev/null || true)"
-              fi
-            fi
-            jq -n \
-              --argjson checked_at_epoch "$NOW" \
-              --arg github_version "$GH_V" \
-              --arg thunderstore_version "$TS_V" \
-              --arg nexus_version "$NX_V" \
-              '{checked_at_epoch:$checked_at_epoch, github_version:$github_version, thunderstore_version:$thunderstore_version, nexus_version:$nexus_version}' \
-              > "$CACHE_FILE"
-          fi
-
-          MATCH=()
-          [ -n "$GH_V" ] && [ "$GH_V" == "$CUR" ] && MATCH+=("github")
-          [ -n "$TS_V" ] && [ "$TS_V" == "$CUR" ] && MATCH+=("thunderstore")
-          [ -n "$NX_V" ] && [ "$NX_V" == "$CUR" ] && MATCH+=("nexus")
-
-          if [ "${#MATCH[@]}" -gt 0 ]; then
-            IFS=,
-            echo "version_unchanged=true" >> "$GITHUB_OUTPUT"
-            echo "version_match_sources=${MATCH[*]}" >> "$GITHUB_OUTPUT"
-            IFS=
-          else
-            echo "version_unchanged=false" >> "$GITHUB_OUTPUT"
-            echo "version_match_sources=" >> "$GITHUB_OUTPUT"
-          fi
-
-          echo "upstream_github_version=$GH_V" >> "$GITHUB_OUTPUT"
-          echo "upstream_thunderstore_version=$TS_V" >> "$GITHUB_OUTPUT"
-          echo "upstream_nexus_version=$NX_V" >> "$GITHUB_OUTPUT"
-          echo "upstream_cache_used=$CACHE_USED" >> "$GITHUB_OUTPUT"
+          python3 scripts/version/release_version_gate.py \
+            --version "${{ steps.config.outputs.version }}" \
+            --thunderstore-name "${{ steps.config.outputs.thunderstore_name }}" \
+            --nexus-url "${{ steps.config.outputs.nexus_url }}" \
+            --has-nexus-target "$HAS_NEXUS_TARGET" \
+            --repo "${{ github.repository }}" \
+            --api-url "${{ github.api_url }}" \
+            --community "${{ env.THUNDERSTORE_COMMUNITY }}" \
+            --namespace "${{ env.THUNDERSTORE_NAMESPACE }}" \
+            --create-github-release "${{ inputs.create_github_release }}" \
+            --publish-thunderstore "${{ inputs.publish_thunderstore }}" \
+            --publish-nexus "${{ inputs.publish_nexus }}" \
+            --dry-run "${{ inputs.dry_run }}" \
+            --release-anyway "${{ inputs.release_anyway }}" \
+            --cache-file ".cache/upstream-version/${{ inputs.mod }}.json" \
+            --github-output
 
       - name: Save upstream version cache
         if: inputs.publish_discord_only != 'true' && inputs.dry_run != 'true' && always()
@@ -214,17 +148,32 @@ jobs:
           path: .cache/upstream-version
           key: upstream-version-${{ github.repository }}-${{ inputs.mod }}-${{ github.run_id }}
 
-      - name: Skip — version already on upstream
-        if: inputs.publish_discord_only != 'true' && steps.version_check.outputs.version_unchanged == 'true'
+      - name: Skip GitHub — this version is already tagged
+        if: inputs.dry_run != 'true' && inputs.publish_discord_only != 'true' && inputs.create_github_release == 'true' && steps.version_check.outputs.github_unchanged == 'true'
+        run: |
+          echo "✅ Skipping GitHub. version=${{ steps.config.outputs.version }} GitHub=${{ steps.version_check.outputs.github_version }} Nexus=${{ steps.version_check.outputs.nexus_version }}"
+
+      - name: Skip Thunderstore — version already published
+        if: inputs.dry_run != 'true' && inputs.publish_discord_only != 'true' && inputs.publish_thunderstore == 'true' && steps.version_check.outputs.thunderstore_unchanged == 'true'
+        run: |
+          echo "✅ Skipping Thunderstore. version=${{ steps.config.outputs.version }} Thunderstore=${{ steps.version_check.outputs.thunderstore_version }}"
+
+      - name: Skip Nexus — version is not newer than Nexus
+        if: inputs.dry_run != 'true' && inputs.publish_discord_only != 'true' && inputs.publish_nexus == 'true' && steps.version_check.outputs.nexus_unchanged == 'true'
+        run: |
+          echo "✅ Skipping Nexus. version=${{ steps.config.outputs.version }} Nexus=${{ steps.version_check.outputs.nexus_version }} (page ${{ steps.version_check.outputs.nexus_page_version }}, file ${{ steps.version_check.outputs.nexus_file_version }})"
+
+      - name: Skip — nothing left to publish
+        if: inputs.publish_discord_only != 'true' && steps.version_check.outputs.has_work != 'true'
         run: |
           SRC="${{ steps.version_check.outputs.version_match_sources }}"
-          echo "✅ Skipping: ${{ steps.config.outputs.display_name }} v${{ steps.config.outputs.version }} already on upstream (sources: ${SRC:-unknown})"
+          echo "✅ Skipping: ${{ steps.config.outputs.display_name }} v${{ steps.config.outputs.version }} already on requested channels (sources: ${SRC:-unknown})"
 
       - name: Package Thunderstore-style zip
         id: package_step
         if: >-
           inputs.publish_discord_only != 'true' &&
-          steps.version_check.outputs.version_unchanged != 'true'
+          steps.version_check.outputs.has_work == 'true'
         env:
           PACKAGE_MANIFEST_DESCRIPTION: ${{ steps.config.outputs.description }}
         run: |
@@ -298,7 +247,7 @@ jobs:
       - name: Package diagnostics (zip path + SHA256)
         if: >-
           inputs.publish_discord_only != 'true' &&
-          steps.version_check.outputs.version_unchanged != 'true' &&
+          steps.version_check.outputs.has_work == 'true' &&
           inputs.mod != 'test_discord'
         run: |
           set -euo pipefail
@@ -327,7 +276,7 @@ jobs:
           inputs.publish_discord_only != 'true' &&
           inputs.create_github_release == 'true' &&
           inputs.test_discord != 'true' &&
-          steps.version_check.outputs.version_unchanged != 'true'
+          steps.version_check.outputs.github_unchanged != 'true'
         uses: softprops/action-gh-release@v2
         with:
           tag_name: "${{ steps.config.outputs.thunderstore_name }}-v${{ steps.config.outputs.version }}"
@@ -353,7 +302,7 @@ jobs:
           inputs.publish_discord_only != 'true' &&
           inputs.publish_thunderstore == 'true' &&
           inputs.test_discord != 'true' &&
-          steps.version_check.outputs.version_unchanged != 'true'
+          steps.version_check.outputs.thunderstore_unchanged != 'true'
         uses: GreenTF/upload-thunderstore-package@v4.3
         with:
           token: ${{ secrets.THUNDERSTORE_TOKEN }}
@@ -375,7 +324,7 @@ jobs:
           inputs.publish_discord_only != 'true' &&
           inputs.publish_nexus == 'true' &&
           inputs.test_discord != 'true' &&
-          steps.version_check.outputs.version_unchanged != 'true' &&
+          steps.version_check.outputs.nexus_unchanged != 'true' &&
           steps.config.outputs.nexus_file_group_id != ''
         run: |
           set -euo pipefail
@@ -521,7 +470,7 @@ jobs:
           inputs.publish_discord_only != 'true' &&
           inputs.publish_nexus == 'true' &&
           inputs.test_discord != 'true' &&
-          steps.version_check.outputs.version_unchanged != 'true' &&
+          steps.version_check.outputs.nexus_unchanged != 'true' &&
           steps.config.outputs.nexus_file_group_id != '' &&
           steps.nexus_preflight.outcome == 'success'
         run: |
@@ -540,7 +489,8 @@ jobs:
           inputs.ignore_discord_notify != 'true' &&
           inputs.create_github_release == 'true' &&
           inputs.test_discord != 'true' &&
-          steps.version_check.outputs.version_unchanged != 'true' &&
+          steps.version_check.outputs.github_unchanged != 'true' &&
+          steps.create_github_release_step.outcome == 'success' &&
           steps.config.outputs.skip_discord_for_almanac != 'true'
         uses: AzraelGodKing/Discord_Release@main
         with:
@@ -625,8 +575,12 @@ jobs:
       - name: Release run report
         if: always()
         env:
+          HAS_WORK: ${{ steps.version_check.outputs.has_work }}
           VERSION_UNCHANGED: ${{ steps.version_check.outputs.version_unchanged }}
           VERSION_MATCH_SOURCES: ${{ steps.version_check.outputs.version_match_sources }}
+          GITHUB_UNCHANGED: ${{ steps.version_check.outputs.github_unchanged }}
+          THUNDERSTORE_UNCHANGED: ${{ steps.version_check.outputs.thunderstore_unchanged }}
+          NEXUS_UNCHANGED: ${{ steps.version_check.outputs.nexus_unchanged }}
           UPSTREAM_GITHUB_VERSION: ${{ steps.version_check.outputs.upstream_github_version }}
           UPSTREAM_THUNDERSTORE_VERSION: ${{ steps.version_check.outputs.upstream_thunderstore_version }}
           UPSTREAM_NEXUS_VERSION: ${{ steps.version_check.outputs.upstream_nexus_version }}
@@ -645,17 +599,22 @@ jobs:
           set -euo pipefail
           mkdir -p reports
           NEXUS_RESULT="not-requested"
-          for i in 1 2 3 4; do
-            VAR="NEXUS_OUTCOME_$i"
-            OUT="${!VAR:-skipped}"
-            if [ "$OUT" = "success" ]; then NEXUS_RESULT="success-attempt-$i"; break; fi
-            if [ "$OUT" = "failure" ]; then NEXUS_RESULT="failed"; fi
-          done
+          if [ "${NEXUS_UNCHANGED:-}" = "true" ]; then
+            NEXUS_RESULT="skipped-same-version"
+          else
+            for i in 1 2 3 4; do
+              VAR="NEXUS_OUTCOME_$i"
+              OUT="${!VAR:-skipped}"
+              if [ "$OUT" = "success" ]; then NEXUS_RESULT="success-attempt-$i"; break; fi
+              if [ "$OUT" = "failure" ]; then NEXUS_RESULT="failed"; fi
+            done
+          fi
           {
             echo "## Release run report"
             echo ""
             echo "- Mod: \`${{ inputs.mod }}\` — ${{ steps.config.outputs.display_name }} \`${{ steps.config.outputs.version }}\`"
-            echo "- Version gate: \`${VERSION_UNCHANGED:-n/a}\` (sources: \`${VERSION_MATCH_SOURCES:-none}\`)"
+            echo "- Has work: \`${HAS_WORK:-n/a}\` (no-work=\`${VERSION_UNCHANGED:-n/a}\`; sources: \`${VERSION_MATCH_SOURCES:-none}\`)"
+            echo "- Channel gates: GH_unchanged=\`${GITHUB_UNCHANGED:-}\` TS_unchanged=\`${THUNDERSTORE_UNCHANGED:-}\` NX_unchanged=\`${NEXUS_UNCHANGED:-}\`"
             echo "- Upstream: GH=\`${UPSTREAM_GITHUB_VERSION:-}\` TS=\`${UPSTREAM_THUNDERSTORE_VERSION:-}\` NX=\`${UPSTREAM_NEXUS_VERSION:-}\` (cache: \`${UPSTREAM_CACHE_USED:-false}\`)"
             echo "- GitHub Release: \`${GITHUB_RELEASE_OUTCOME:-skipped}\`"
             echo "- Thunderstore: \`${THUNDERSTORE_OUTCOME:-skipped}\`"
