@@ -1,5 +1,5 @@
 {
-  "lastFetched": "2026-09-24T21:59:04.078Z",
+  "lastFetched": "2026-09-25T00:26:07.869Z",
   "mods": {
     "senpais-chest": {
       "name": "Senpai's Chest",
@@ -168,7 +168,7 @@
     "the-vault": {
       "name": "The Vault",
       "thunderstore": {
-        "total_downloads": 1326,
+        "total_downloads": 1327,
         "versions": {
           "4.1.1": 96,
           "4.1.0": 83,
@@ -178,7 +178,7 @@
           "3.3.0": 55,
           "3.2.0": 80,
           "3.1.0": 59,
-          "3.0.7": 62,
+          "3.0.7": 63,
           "3.0.4": 102,
           "3.0.2": 68,
           "3.0.1": 65,
@@ -194,19 +194,19 @@
         "total_downloads": 2354,
         "unique_downloads": 1635
       },
-      "combined_total": 3680
+      "combined_total": 3681
     },
     "haven-dev-tools": {
       "name": "HavenDevTools",
       "thunderstore": {
-        "total_downloads": 895,
+        "total_downloads": 896,
         "versions": {
           "2.1.1": 65,
           "2.1.0": 41,
           "2.0.1": 59,
           "2.0.0": 49,
           "1.2.2": 83,
-          "1.2.0": 47,
+          "1.2.0": 48,
           "1.1.0": 48,
           "1.0.11": 50,
           "1.0.8": 59,
@@ -222,7 +222,7 @@
         "total_downloads": 192,
         "unique_downloads": 141
       },
-      "combined_total": 1087
+      "combined_total": 1088
     },
     "havens-almanac": {
       "name": "Haven's Almanac",
@@ -272,10 +272,10 @@
         }
       },
       "nexus": {
-        "total_downloads": 429,
-        "unique_downloads": 324
+        "total_downloads": 430,
+        "unique_downloads": 325
       },
-      "combined_total": 1078
+      "combined_total": 1079
     },
     "trinket-fortune": {
       "name": "Trinket Fortune",
@@ -369,9 +369,9 @@
     }
   },
   "site_total": {
-    "thunderstore": 14807,
-    "nexus_total": 14204,
-    "nexus_unique": 10427,
-    "grand_total": 29011
+    "thunderstore": 14809,
+    "nexus_total": 14205,
+    "nexus_unique": 10428,
+    "grand_total": 29014
   }
 }
