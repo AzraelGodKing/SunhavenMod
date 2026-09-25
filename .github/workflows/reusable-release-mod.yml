@@ -326,6 +326,8 @@ jobs:
           inputs.test_discord != 'true' &&
           steps.version_check.outputs.nexus_unchanged != 'true' &&
           steps.config.outputs.nexus_file_group_id != ''
+        env:
+          NEXUS_API_KEY: ${{ secrets.NEXUSMODS_API_KEY }}
         run: |
           set -euo pipefail
           # Docker-based publish actions (Thunderstore) can reset the workspace
@@ -363,14 +365,35 @@ jobs:
           echo "zip_path=$Z" >> "$GITHUB_OUTPUT"
           ls -lh "$Z"
 
+          NEXUS_URL="${{ steps.config.outputs.nexus_url }}"
+          GAME_SCOPED="$(echo "$NEXUS_URL" | sed -n 's|.*/mods/\([0-9][0-9]*\)$|\1|p')"
+          if [ -z "$GAME_SCOPED" ]; then
+            echo "::error::Could not parse Nexus game-scoped mod id from $NEXUS_URL"
+            exit 1
+          fi
+          if [ -z "${NEXUS_API_KEY:-}" ]; then
+            echo "::error::NEXUSMODS_API_KEY is missing; cannot resolve v3 mod id for the Changelog tab."
+            exit 1
+          fi
+          V3_JSON="$(curl -sS -H "accept: application/json" -H "apikey: $NEXUS_API_KEY" \
+            "https://api.nexusmods.com/v3/games/sunhaven/mods/${GAME_SCOPED}")"
+          V3_ID="$(echo "$V3_JSON" | jq -r '.data.id // .id // empty')"
+          if [ -z "$V3_ID" ] || [ "$V3_ID" = "null" ]; then
+            echo "::error::Could not resolve Nexus v3 mod id from game-scoped id ${GAME_SCOPED}."
+            echo "$V3_JSON" | head -c 500
+            exit 1
+          fi
+          echo "nexus_v3_mod_id=$V3_ID" >> "$GITHUB_OUTPUT"
+          echo "Nexus v3 mod id for changelog: $V3_ID (page ${GAME_SCOPED})"
+
       - name: Nexus upload (1/4)
         id: nexus_upload_1
         if: success() && steps.nexus_preflight.outcome == 'success'
         continue-on-error: true
-        uses: Nexus-Mods/upload-action@v1.0.0-beta.4
+        uses: ./.github/actions/nexus-upload
         with:
           api_key: ${{ secrets.NEXUSMODS_API_KEY }}
-          file_group_id: ${{ steps.config.outputs.nexus_file_group_id }}
+          file_id: ${{ steps.config.outputs.nexus_file_group_id }}
           filename: ${{ steps.nexus_preflight.outputs.zip_path }}
           version: ${{ steps.config.outputs.version }}
           display_name: ${{ steps.config.outputs.display_name }} v${{ steps.config.outputs.version }}.zip
@@ -382,7 +405,6 @@ jobs:
 
             ### Installation
             Extract to Sun Haven `BepInEx/plugins`.
-          file_category: main
 
       - name: Nexus backoff 30s
         if: success() && steps.nexus_preflight.outcome == 'success' && steps.nexus_upload_1.outcome == 'failure'
@@ -392,10 +414,10 @@ jobs:
         id: nexus_upload_2
         if: success() && steps.nexus_preflight.outcome == 'success' && steps.nexus_upload_1.outcome == 'failure'
         continue-on-error: true
-        uses: Nexus-Mods/upload-action@v1.0.0-beta.4
+        uses: ./.github/actions/nexus-upload
         with:
           api_key: ${{ secrets.NEXUSMODS_API_KEY }}
-          file_group_id: ${{ steps.config.outputs.nexus_file_group_id }}
+          file_id: ${{ steps.config.outputs.nexus_file_group_id }}
           filename: ${{ steps.nexus_preflight.outputs.zip_path }}
           version: ${{ steps.config.outputs.version }}
           display_name: ${{ steps.config.outputs.display_name }} v${{ steps.config.outputs.version }}.zip
@@ -407,7 +429,6 @@ jobs:
 
             ### Installation
             Extract to Sun Haven `BepInEx/plugins`.
-          file_category: main
 
       - name: Nexus backoff 2m
         if: success() && steps.nexus_preflight.outcome == 'success' && steps.nexus_upload_1.outcome == 'failure' && steps.nexus_upload_2.outcome == 'failure'
@@ -417,10 +438,10 @@ jobs:
         id: nexus_upload_3
         if: success() && steps.nexus_preflight.outcome == 'success' && steps.nexus_upload_1.outcome == 'failure' && steps.nexus_upload_2.outcome == 'failure'
         continue-on-error: true
-        uses: Nexus-Mods/upload-action@v1.0.0-beta.4
+        uses: ./.github/actions/nexus-upload
         with:
           api_key: ${{ secrets.NEXUSMODS_API_KEY }}
-          file_group_id: ${{ steps.config.outputs.nexus_file_group_id }}
+          file_id: ${{ steps.config.outputs.nexus_file_group_id }}
           filename: ${{ steps.nexus_preflight.outputs.zip_path }}
           version: ${{ steps.config.outputs.version }}
           display_name: ${{ steps.config.outputs.display_name }} v${{ steps.config.outputs.version }}.zip
@@ -432,7 +453,6 @@ jobs:
 
             ### Installation
             Extract to Sun Haven `BepInEx/plugins`.
-          file_category: main
 
       - name: Nexus backoff 5m
         if: success() && steps.nexus_preflight.outcome == 'success' && steps.nexus_upload_1.outcome == 'failure' && steps.nexus_upload_2.outcome == 'failure' && steps.nexus_upload_3.outcome == 'failure'
@@ -446,10 +466,10 @@ jobs:
           steps.nexus_upload_1.outcome == 'failure' &&
           steps.nexus_upload_2.outcome == 'failure' &&
           steps.nexus_upload_3.outcome == 'failure'
-        uses: Nexus-Mods/upload-action@v1.0.0-beta.4
+        uses: ./.github/actions/nexus-upload
         with:
           api_key: ${{ secrets.NEXUSMODS_API_KEY }}
-          file_group_id: ${{ steps.config.outputs.nexus_file_group_id }}
+          file_id: ${{ steps.config.outputs.nexus_file_group_id }}
           filename: ${{ steps.nexus_preflight.outputs.zip_path }}
           version: ${{ steps.config.outputs.version }}
           display_name: ${{ steps.config.outputs.display_name }} v${{ steps.config.outputs.version }}.zip
@@ -461,7 +481,25 @@ jobs:
 
             ### Installation
             Extract to Sun Haven `BepInEx/plugins`.
-          file_category: main
+
+
+      - name: Nexus Changelog tab (only after a successful file upload)
+        id: nexus_changelog
+        if: >-
+          always() &&
+          steps.nexus_preflight.outcome == 'success' &&
+          (steps.nexus_upload_1.outcome == 'success' ||
+           steps.nexus_upload_2.outcome == 'success' ||
+           steps.nexus_upload_3.outcome == 'success' ||
+           steps.nexus_upload_4.outcome == 'success')
+        continue-on-error: true
+        env:
+          NEXUS_API_KEY: ${{ secrets.NEXUSMODS_API_KEY }}
+          NEXUS_CHANGELOG: ${{ steps.config.outputs.changelog }}
+        run: |
+          python3 scripts/version/nexus_post_changelog.py \
+            --mod-id "${{ steps.nexus_preflight.outputs.nexus_v3_mod_id }}" \
+            --version "${{ steps.config.outputs.version }}"
 
       - name: Nexus — fail if publish requested but no attempt succeeded
         if: >-
@@ -595,6 +633,7 @@ jobs:
           NEXUS_OUTCOME_3: ${{ steps.nexus_upload_3.outcome }}
           NEXUS_OUTCOME_4: ${{ steps.nexus_upload_4.outcome }}
           PREFLIGHT: ${{ steps.nexus_preflight.outcome }}
+          NEXUS_CHANGELOG_OUTCOME: ${{ steps.nexus_changelog.outcome }}
         run: |
           set -euo pipefail
           mkdir -p reports
@@ -620,6 +659,7 @@ jobs:
             echo "- Thunderstore: \`${THUNDERSTORE_OUTCOME:-skipped}\`"
             echo "- Nexus preflight: \`${PREFLIGHT:-skipped}\`"
             echo "- Nexus upload: \`${NEXUS_RESULT}\` (1=\`${NEXUS_OUTCOME_1:-}\` 2=\`${NEXUS_OUTCOME_2:-}\` 3=\`${NEXUS_OUTCOME_3:-}\` 4=\`${NEXUS_OUTCOME_4:-}\`)"
+            echo "- Nexus changelog: \`${NEXUS_CHANGELOG_OUTCOME:-skipped}\`"
             echo "- Discord (release): \`${DISCORD_RELEASE_OUTCOME:-skipped}\`"
             echo "- Discord (test): \`${DISCORD_TEST_OUTCOME:-skipped}\`"
             echo "- Discord-only: \`${DISCORD_ONLY_OUTCOME:-skipped}\`"

@@ -482,6 +482,8 @@ jobs:
       - name: Nexus upload — resolve and verify zip
         id: nexus_preflight
         if: github.event.inputs.dry_run != 'true' && github.event.inputs.publish_discord_only != 'true' && github.event.inputs.publish_nexus == 'true' && github.event.inputs.test_discord != 'true' && steps.version_check.outputs.nexus_unchanged != 'true' && steps.config.outputs.nexus_file_group_id != ''
+        env:
+          NEXUS_API_KEY: ${{ secrets.NEXUSMODS_API_KEY }}
         run: |
           set -euo pipefail
           # Docker-based publish actions can reset the workspace and wipe the
@@ -513,6 +515,27 @@ jobs:
           echo "zip_path=$ZIP" >> "$GITHUB_OUTPUT"
           ls -lh "$ZIP"
 
+          NEXUS_URL="${{ steps.config.outputs.nexus_url }}"
+          GAME_SCOPED="$(echo "$NEXUS_URL" | sed -n 's|.*/mods/\([0-9][0-9]*\)$|\1|p')"
+          if [ -z "$GAME_SCOPED" ]; then
+            echo "::error::Could not parse Nexus game-scoped mod id from $NEXUS_URL"
+            exit 1
+          fi
+          if [ -z "${NEXUS_API_KEY:-}" ]; then
+            echo "::error::NEXUSMODS_API_KEY is missing; cannot resolve v3 mod id for the Changelog tab."
+            exit 1
+          fi
+          V3_JSON="$(curl -sS -H "accept: application/json" -H "apikey: $NEXUS_API_KEY" \
+            "https://api.nexusmods.com/v3/games/sunhaven/mods/${GAME_SCOPED}")"
+          V3_ID="$(echo "$V3_JSON" | jq -r '.data.id // .id // empty')"
+          if [ -z "$V3_ID" ] || [ "$V3_ID" = "null" ]; then
+            echo "::error::Could not resolve Nexus v3 mod id from game-scoped id ${GAME_SCOPED}."
+            echo "$V3_JSON" | head -c 500
+            exit 1
+          fi
+          echo "nexus_v3_mod_id=$V3_ID" >> "$GITHUB_OUTPUT"
+          echo "Nexus v3 mod id for changelog: $V3_ID (page ${GAME_SCOPED})"
+
       # Nexus v3 API is marked "evaluation only" and intermittently returns 201 with an empty body
       # (action crashes with: Cannot read properties of undefined (reading 'length') on
       # part_presigned_urls). Each attempt is continue-on-error so GitHub Release + Thunderstore
@@ -521,10 +544,10 @@ jobs:
         id: nexus_upload_1
         if: success() && steps.nexus_preflight.outcome == 'success' && github.event.inputs.dry_run != 'true' && github.event.inputs.publish_discord_only != 'true' && github.event.inputs.publish_nexus == 'true' && github.event.inputs.test_discord != 'true' && steps.version_check.outputs.nexus_unchanged != 'true' && steps.config.outputs.nexus_file_group_id != ''
         continue-on-error: true
-        uses: Nexus-Mods/upload-action@v1.0.0-beta.4
+        uses: ./.github/actions/nexus-upload
         with:
           api_key: ${{ secrets.NEXUSMODS_API_KEY }}
-          file_group_id: ${{ steps.config.outputs.nexus_file_group_id }}
+          file_id: ${{ steps.config.outputs.nexus_file_group_id }}
           filename: ${{ steps.nexus_preflight.outputs.zip_path }}
           version: ${{ steps.config.outputs.version }}
           display_name: ${{ steps.config.outputs.display_name }} v${{ steps.config.outputs.version }}.zip
@@ -538,7 +561,6 @@ jobs:
             Download this ZIP and extract the contents to your Sun Haven BepInEx/plugins folder.
 
             If Nexus displays an alphanumeric file label, the upload is still a ZIP package.
-          file_category: main
 
       - name: Nexus retry backoff (30s)
         if: success() && steps.nexus_preflight.outcome == 'success' && steps.nexus_upload_1.outcome == 'failure' && github.event.inputs.dry_run != 'true' && github.event.inputs.publish_discord_only != 'true' && github.event.inputs.publish_nexus == 'true' && github.event.inputs.test_discord != 'true' && steps.version_check.outputs.nexus_unchanged != 'true' && steps.config.outputs.nexus_file_group_id != ''
@@ -550,10 +572,10 @@ jobs:
         id: nexus_upload_2
         if: success() && steps.nexus_preflight.outcome == 'success' && steps.nexus_upload_1.outcome == 'failure' && github.event.inputs.dry_run != 'true' && github.event.inputs.publish_discord_only != 'true' && github.event.inputs.publish_nexus == 'true' && github.event.inputs.test_discord != 'true' && steps.version_check.outputs.nexus_unchanged != 'true' && steps.config.outputs.nexus_file_group_id != ''
         continue-on-error: true
-        uses: Nexus-Mods/upload-action@v1.0.0-beta.4
+        uses: ./.github/actions/nexus-upload
         with:
           api_key: ${{ secrets.NEXUSMODS_API_KEY }}
-          file_group_id: ${{ steps.config.outputs.nexus_file_group_id }}
+          file_id: ${{ steps.config.outputs.nexus_file_group_id }}
           filename: ${{ steps.nexus_preflight.outputs.zip_path }}
           version: ${{ steps.config.outputs.version }}
           display_name: ${{ steps.config.outputs.display_name }} v${{ steps.config.outputs.version }}.zip
@@ -567,7 +589,6 @@ jobs:
             Download this ZIP and extract the contents to your Sun Haven BepInEx/plugins folder.
 
             If Nexus displays an alphanumeric file label, the upload is still a ZIP package.
-          file_category: main
 
       - name: Nexus retry backoff (2 min)
         if: success() && steps.nexus_preflight.outcome == 'success' && steps.nexus_upload_1.outcome == 'failure' && steps.nexus_upload_2.outcome == 'failure' && github.event.inputs.dry_run != 'true' && github.event.inputs.publish_discord_only != 'true' && github.event.inputs.publish_nexus == 'true' && github.event.inputs.test_discord != 'true' && steps.version_check.outputs.nexus_unchanged != 'true' && steps.config.outputs.nexus_file_group_id != ''
@@ -579,10 +600,10 @@ jobs:
         id: nexus_upload_3
         if: success() && steps.nexus_preflight.outcome == 'success' && steps.nexus_upload_1.outcome == 'failure' && steps.nexus_upload_2.outcome == 'failure' && github.event.inputs.dry_run != 'true' && github.event.inputs.publish_discord_only != 'true' && github.event.inputs.publish_nexus == 'true' && github.event.inputs.test_discord != 'true' && steps.version_check.outputs.nexus_unchanged != 'true' && steps.config.outputs.nexus_file_group_id != ''
         continue-on-error: true
-        uses: Nexus-Mods/upload-action@v1.0.0-beta.4
+        uses: ./.github/actions/nexus-upload
         with:
           api_key: ${{ secrets.NEXUSMODS_API_KEY }}
-          file_group_id: ${{ steps.config.outputs.nexus_file_group_id }}
+          file_id: ${{ steps.config.outputs.nexus_file_group_id }}
           filename: ${{ steps.nexus_preflight.outputs.zip_path }}
           version: ${{ steps.config.outputs.version }}
           display_name: ${{ steps.config.outputs.display_name }} v${{ steps.config.outputs.version }}.zip
@@ -596,7 +617,6 @@ jobs:
             Download this ZIP and extract the contents to your Sun Haven BepInEx/plugins folder.
 
             If Nexus displays an alphanumeric file label, the upload is still a ZIP package.
-          file_category: main
 
       - name: Nexus retry backoff (5 min)
         if: success() && steps.nexus_preflight.outcome == 'success' && steps.nexus_upload_1.outcome == 'failure' && steps.nexus_upload_2.outcome == 'failure' && steps.nexus_upload_3.outcome == 'failure' && github.event.inputs.dry_run != 'true' && github.event.inputs.publish_discord_only != 'true' && github.event.inputs.publish_nexus == 'true' && github.event.inputs.test_discord != 'true' && steps.version_check.outputs.nexus_unchanged != 'true' && steps.config.outputs.nexus_file_group_id != ''
@@ -608,10 +628,10 @@ jobs:
         id: nexus_upload_4
         if: success() && steps.nexus_preflight.outcome == 'success' && steps.nexus_upload_1.outcome == 'failure' && steps.nexus_upload_2.outcome == 'failure' && steps.nexus_upload_3.outcome == 'failure' && github.event.inputs.dry_run != 'true' && github.event.inputs.publish_discord_only != 'true' && github.event.inputs.publish_nexus == 'true' && github.event.inputs.test_discord != 'true' && steps.version_check.outputs.nexus_unchanged != 'true' && steps.config.outputs.nexus_file_group_id != ''
         continue-on-error: true
-        uses: Nexus-Mods/upload-action@v1.0.0-beta.4
+        uses: ./.github/actions/nexus-upload
         with:
           api_key: ${{ secrets.NEXUSMODS_API_KEY }}
-          file_group_id: ${{ steps.config.outputs.nexus_file_group_id }}
+          file_id: ${{ steps.config.outputs.nexus_file_group_id }}
           filename: ${{ steps.nexus_preflight.outputs.zip_path }}
           version: ${{ steps.config.outputs.version }}
           display_name: ${{ steps.config.outputs.display_name }} v${{ steps.config.outputs.version }}.zip
@@ -625,7 +645,6 @@ jobs:
             Download this ZIP and extract the contents to your Sun Haven BepInEx/plugins folder.
 
             If Nexus displays an alphanumeric file label, the upload is still a ZIP package.
-          file_category: main
 
       - name: Nexus upload summary
         if: always() && steps.nexus_preflight.outcome != 'skipped' && github.event.inputs.dry_run != 'true' && github.event.inputs.publish_discord_only != 'true' && github.event.inputs.publish_nexus == 'true' && github.event.inputs.test_discord != 'true' && steps.version_check.outputs.nexus_unchanged != 'true' && steps.config.outputs.nexus_file_group_id != ''
@@ -662,6 +681,25 @@ jobs:
               echo "Release zip available as a workflow artifact: \`dist/${{ steps.config.outputs.thunderstore_name }}-${{ steps.config.outputs.version }}.zip\`"
             fi
           } >> "$GITHUB_STEP_SUMMARY"
+
+
+      - name: Nexus Changelog tab (only after a successful file upload)
+        id: nexus_changelog
+        if: >-
+          always() &&
+          steps.nexus_preflight.outcome == 'success' &&
+          (steps.nexus_upload_1.outcome == 'success' ||
+           steps.nexus_upload_2.outcome == 'success' ||
+           steps.nexus_upload_3.outcome == 'success' ||
+           steps.nexus_upload_4.outcome == 'success')
+        continue-on-error: true
+        env:
+          NEXUS_API_KEY: ${{ secrets.NEXUSMODS_API_KEY }}
+          NEXUS_CHANGELOG: ${{ steps.config.outputs.changelog }}
+        run: |
+          python3 scripts/version/nexus_post_changelog.py \
+            --mod-id "${{ steps.nexus_preflight.outputs.nexus_v3_mod_id }}" \
+            --version "${{ steps.config.outputs.version }}"
 
       - name: Nexus — fail if publish requested but no attempt succeeded
         if: >-
