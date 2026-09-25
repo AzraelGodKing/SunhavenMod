@@ -49,7 +49,7 @@
     "nexus_file_group_id": "1305781",
     "thunderstore": "https://thunderstore.io/c/sun-haven/p/AzraelGodKing/TheVault/",
     "thunderstoreName": "TheVault",
-    "changelog": "Fix (AZR-234): category tab buttons keep owned IMGUI focus backgrounds so switching tabs cannot show a zoomed skin-atlas overlay."
+    "changelog": "Fix (AZR-234): owned IMGUI tab focus backgrounds. AZR-238/240: failed-load save block (Start Fresh) protects .backup; CSVAULT2 legacy decrypt via shared VaultCryptography."
   },
   "com.azraelgodking.havendevtools": {
     "version": "2.1.1",

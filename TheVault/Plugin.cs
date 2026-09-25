@@ -1262,6 +1262,20 @@ namespace TheVault
             _staticSaveSystem != null && _staticSaveSystem.LastLoadQuarantinedCorruptFile;
 
         /// <summary>
+        /// True when load recovered no vault data and saves are blocked until <see cref="ConfirmStartFreshVault"/>.
+        /// </summary>
+        public static bool VaultLoadFailedNoRecoverableData =>
+            _staticSaveSystem != null && _staticSaveSystem.LoadFailedNoRecoverableData;
+
+        /// <summary>
+        /// Player explicitly abandons the on-disk backup and allows the empty in-memory vault to save (AZR-238).
+        /// </summary>
+        public static void ConfirmStartFreshVault()
+        {
+            _staticSaveSystem?.ConfirmStartFreshVault();
+        }
+
+        /// <summary>
         /// Force save vault data
         /// </summary>
         public static void SaveVault()

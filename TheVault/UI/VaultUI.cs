@@ -201,11 +201,13 @@ namespace TheVault.UI
             // Check for secret gifts on first open
             SecretGifts.CheckAndGiveFirstOpenGift(PlayerPatches.LoadedCharacterName);
 
-            if (!_shownCorruptVaultSessionNotice && Plugin.LastVaultLoadQuarantinedCorruptFile)
+            if (!_shownCorruptVaultSessionNotice &&
+                (Plugin.LastVaultLoadQuarantinedCorruptFile || Plugin.VaultLoadFailedNoRecoverableData))
             {
                 _shownCorruptVaultSessionNotice = true;
-                const string msg =
-                    "Your vault file could not be read and was moved to a .corrupt-*.bak file in Saves. An empty vault is in memory — restore the backup from your config folder if needed.";
+                string msg = Plugin.VaultLoadFailedNoRecoverableData
+                    ? "Your vault could not be read. Saving is blocked so your .backup is not overwritten. Restore from TheVault/Saves, or click Start Fresh below to abandon the backup."
+                    : "Your vault file could not be read and was moved to a .corrupt-*.bak file in Saves. An empty vault is in memory — restore the backup from your config folder if needed.";
                 SetVaultStatus(msg, true);
                 Plugin.Log?.LogWarning("[VaultUI] " + msg);
             }
@@ -1111,6 +1113,24 @@ namespace TheVault.UI
 
         private void DrawControls()
         {
+            if (Plugin.VaultLoadFailedNoRecoverableData)
+            {
+                GUILayout.Label(
+                    "Vault load failed — saves blocked to protect your .backup. Restore files from TheVault/Saves, or Start Fresh to keep this empty vault.",
+                    _statusErrorStyle);
+                GUILayout.Space(Scaled(4));
+                GUILayout.BeginHorizontal();
+                GUILayout.FlexibleSpace();
+                if (GUILayout.Button("Start Fresh (abandon backup)", _buttonStyle, GUILayout.Width(Scaled(280)), GUILayout.Height(Scaled(32))))
+                {
+                    Plugin.ConfirmStartFreshVault();
+                    SetVaultStatus("Start Fresh confirmed — empty vault may now be saved. Your previous .backup will rotate on the next save.", true);
+                }
+                GUILayout.FlexibleSpace();
+                GUILayout.EndHorizontal();
+                GUILayout.Space(Scaled(8));
+            }
+
             if (!string.IsNullOrEmpty(_vaultStatusMessage))
             {
                 var st = _vaultStatusIsError ? _statusErrorStyle : _statusOkStyle;

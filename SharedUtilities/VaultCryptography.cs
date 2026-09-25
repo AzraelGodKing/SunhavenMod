@@ -172,14 +172,23 @@ namespace SunhavenMods.Shared
 
         private static byte[] GenerateLegacyKey(string combined)
         {
-            using (var deriveBytes = new Rfc2898DeriveBytes(combined, Encoding.UTF8.GetBytes(EncryptionSalt), Iterations))
+            // SHA1 matches the obsolete 3-arg ctor default — required for existing CSVAULT2 key compatibility.
+            using (var deriveBytes = new Rfc2898DeriveBytes(
+                combined,
+                Encoding.UTF8.GetBytes(EncryptionSalt),
+                Iterations,
+                HashAlgorithmName.SHA1))
                 return deriveBytes.GetBytes(KeySize / 8);
         }
 
         private static byte[] DeriveKeyPlayerPortable(string playerName)
         {
             string combined = $"{EncryptionSalt}_Player_{playerName}_TheVaultPortable";
-            using (var deriveBytes = new Rfc2898DeriveBytes(combined, Encoding.UTF8.GetBytes(EncryptionSalt), Iterations))
+            using (var deriveBytes = new Rfc2898DeriveBytes(
+                combined,
+                Encoding.UTF8.GetBytes(EncryptionSalt),
+                Iterations,
+                HashAlgorithmName.SHA1))
                 return deriveBytes.GetBytes(KeySize / 8);
         }
 
@@ -188,7 +197,11 @@ namespace SunhavenMods.Shared
             string steamId = GetSteamIdLegacyCached();
             string identifier = !string.IsNullOrEmpty(steamId) ? $"Steam_{steamId}" : $"Player_{playerName}";
             string combined = $"{EncryptionSalt}_{identifier}_TheVaultPortable";
-            using (var deriveBytes = new Rfc2898DeriveBytes(combined, Encoding.UTF8.GetBytes(EncryptionSalt), Iterations))
+            using (var deriveBytes = new Rfc2898DeriveBytes(
+                combined,
+                Encoding.UTF8.GetBytes(EncryptionSalt),
+                Iterations,
+                HashAlgorithmName.SHA1))
                 return deriveBytes.GetBytes(KeySize / 8);
         }
 

@@ -7,6 +7,7 @@ Internal engineering log: **CI**, **release automation**, **scripts**, **docs in
 ## 2026-09-25
 
 - **AZR-234 / AZR-103 PR** (`cursor/azr-234-103-sunhaven-todos-7024`): Vault tab buttons own all IMGUI focus states (follow-up to window chrome fix). Feedback Worker passes `LINEAR_PROJECT_ID` / `LINEAR_STATE_ID` into `issueCreate`, ships AzraelGodKing/Sunhaven Mods/Todo UUIDs in `wrangler.toml` `[vars]`, adds `.dev.vars.example`, and classifies Linear auth vs ID failures in 502 responses. Pages secret `LINEAR_API_TOKEN` still required for live create. **TheVault** `4.1.1` → `4.1.2` (patch).
+- **AZR-238 / AZR-240 — The Vault save recovery:** `VaultSaveSystem` load/save now uses `SharedUtilities.VaultCryptography` (CSVAULT2 header skip + legacy keys). Failed-load path sets `LoadFailedNoRecoverableData` and blocks `Save()` until `ConfirmStartFreshVault()` (UI button). Added `VaultFailedLoadSavePolicy` + CSVAULT2 header unit tests. Ships on top of TheVault **4.1.2** already on main from AZR-234 (version decision pending if a further bump is needed).
 
 ## 2026-09-22
 
