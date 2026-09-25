@@ -40,7 +40,7 @@ Requires `ADMIN_PUSH_TOKEN` (or a branch policy that allows `GITHUB_TOKEN` pushe
 
 ## Why version must come before the release build
 
-- The **duplicate-version guard** compares `docs/versions.json` to the **last GitHub release tag** for that mod. Shipping without bumping would skip or confuse releases.
+- The **per-channel release gate** compares `docs/versions.json` to GitHub tags, Thunderstore, and Nexus (page + files API). Each channel is skipped independently when our version is not newer; same-version Nexus is a soft skip (job succeeds) so other mods in the matrix keep releasing. Shipping without bumping skips every requested channel.
 - The **DLL** must be built from sources that already contain the new `PLUGIN_VERSION`, or the artifact version and the published metadata will not match.
 
 ## Local checks
@@ -85,6 +85,7 @@ The workflow [`.github/workflows/sync-mod-versions.yml`](../.github/workflows/sy
 | Piece | Role |
 |--------|------|
 | `docs/versions.json` | Source of truth for semver, changelog, store links |
+| `scripts/version/release_version_gate.py` | Per-channel GH/Thunderstore/Nexus version gate (skip-if-same, no fail) |
 | `scripts/version/pre-push-build.ps1` | Bump/sync version across plugin, manifests, docs (`-SyncOnly` for CI without game DLLs) |
 | `scripts/version/verify-version-consistency.py` | CI + local guard: JSON vs plugin vs manifest |
 | `scripts/version/verify-version-consistency.ps1` | Windows helper that invokes `verify-version-consistency.py` (Python required) |

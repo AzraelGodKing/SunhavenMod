@@ -49,9 +49,9 @@ This runbook is for manual release operations while CI changes are staged.
 
 ## 7) Post-Release Verification
 
-- Confirm GitHub release/tag exists and has expected zip.
-- Confirm Thunderstore version matches release version.
-- Confirm Nexus upload (if enabled).
+- Confirm GitHub release/tag exists and has expected zip (or was skipped as already tagged).
+- Confirm Thunderstore version matches release version (or skip-same-version).
+- Confirm Nexus upload (if enabled) or soft skip when Nexus already has this version — that skip must not fail the matrix for other mods.
 - Confirm changelog text and version are correct.
 
 ## 8) Rollback / Hotfix
