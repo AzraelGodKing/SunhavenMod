@@ -34,7 +34,7 @@ Requires `ADMIN_PUSH_TOKEN` (or a branch policy that allows `GITHUB_TOKEN` pushe
 
 3. **Commit and push** to the branch your workflows use (usually `main`).
 
-4. **CI check:** the **Release & Publish** and **Test — Self-hosted Sunhaven runner** workflows run [`scripts/version/verify-version-consistency.py`](../scripts/version/verify-version-consistency.py) in the setup job. If `versions.json`, `PLUGIN_VERSION`, and `thunderstore/manifest.json` disagree, the workflow fails before building.
+4. **CI check:** **Release & Publish** runs [`scripts/version/verify-version-consistency.py`](../scripts/version/verify-version-consistency.py) in the setup job. If `versions.json`, `PLUGIN_VERSION`, and `thunderstore/manifest.json` disagree, the workflow fails before building.
 
 5. **Publish:** run **Release & Publish** with **`bump_version` = `none`**. Toggle GitHub Release / Thunderstore / Nexus as needed.
 
