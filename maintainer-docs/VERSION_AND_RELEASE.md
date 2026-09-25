@@ -86,6 +86,8 @@ The workflow [`.github/workflows/sync-mod-versions.yml`](../.github/workflows/sy
 |--------|------|
 | `docs/versions.json` | Source of truth for semver, changelog, store links |
 | `scripts/version/release_version_gate.py` | Per-channel GH/Thunderstore/Nexus version gate (skip-if-same, no fail) |
+| `scripts/version/nexus_post_changelog.py` | POST Nexus Changelog tab after a successful file upload |
+| `.github/actions/nexus-upload` | File upload with page version bump, archive previous, Vortex primary |
 | `scripts/version/pre-push-build.ps1` | Bump/sync version across plugin, manifests, docs (`-SyncOnly` for CI without game DLLs) |
 | `scripts/version/verify-version-consistency.py` | CI + local guard: JSON vs plugin vs manifest |
 | `scripts/version/verify-version-consistency.ps1` | Windows helper that invokes `verify-version-consistency.py` (Python required) |
