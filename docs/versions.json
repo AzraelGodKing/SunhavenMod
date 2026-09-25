@@ -40,7 +40,7 @@
     "changelog": "Fix: overnight unhook before re-hook; refuse previous-character name fallback when lookup fails."
   },
   "com.azraelgodking.thevault": {
-    "version": "4.1.1",
+    "version": "4.1.2",
     "name": "The Vault",
     "description": "The Vault 3 — per-character vault, encrypted saves, HUD, auto-deposit, shop and inventory vault integration, Custom tab & mod API.",
     "vault_save_breaking": false,
@@ -49,7 +49,7 @@
     "nexus_file_group_id": "1305781",
     "thunderstore": "https://thunderstore.io/c/sun-haven/p/AzraelGodKing/TheVault/",
     "thunderstoreName": "TheVault",
-    "changelog": "Fix: HasEnough uses bag+vault; deposit/auto-deposit rolls back inventory if vault credit fails; clear auto-deposit guards on menu reset."
+    "changelog": "Fix (AZR-234): category tab buttons keep owned IMGUI focus backgrounds so switching tabs cannot show a zoomed skin-atlas overlay."
   },
   "com.azraelgodking.havendevtools": {
     "version": "2.1.1",
