@@ -4,6 +4,18 @@ Notes for **players and release readers**. Per-mod blurbs and upstream metadata 
 
 ---
 
+## 2026-09-25
+
+**The Vault (4.1.2)**
+
+- **Fix (AZR-234):** Category tab buttons keep owned backgrounds on focus so switching tabs cannot replace the window chrome with a zoomed skin-atlas overlay.
+
+**Website / feedback desk**
+
+- **Fix (AZR-103):** Feedback intake now targets Sunhaven Mods + Todo via `LINEAR_PROJECT_ID` / `LINEAR_STATE_ID` (wrangler defaults), with clearer Linear auth vs ID error messages. Still requires a valid `LINEAR_API_TOKEN` secret on the Pages project.
+
+---
+
 ## 2026-09-22
 
 **Sun Haven 3.1.3b**

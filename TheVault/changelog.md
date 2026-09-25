@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+## Version 4.1.2
+
+- **Fix (AZR-234):** Tab buttons use owned textures on every IMGUI interaction state (including focused), so switching categories cannot fall back to the skin atlas "zoomed text" background.
+
 ## Version 4.1.1
 
 - **Fix:** `HasEnough` combines bag + vault; deposit/auto-deposit rolls back inventory when vault credit fails; menu `ResetState` clears auto-deposit guard flags.
