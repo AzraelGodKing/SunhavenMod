@@ -6,11 +6,14 @@ Notes for **players and release readers**. Per-mod blurbs and upstream metadata 
 
 ## 2026-09-25
 
+**The Vault (4.1.3)**
+
+- **Legacy decrypt (AZR-240):** Recovery no longer feeds the plaintext `CSVAULT2` header into AES. Shared `VaultCryptography` skips the header and tries legacy keys, so key-mismatch recovery can succeed again.
+- **Failed load (AZR-238):** If every on-disk candidate fails, the empty in-memory vault **cannot autosave** until you click **Start Fresh** in the Vault UI — so a surviving `.backup` is not overwritten.
+
 **The Vault (4.1.2)**
 
 - **Fix (AZR-234):** Category tab buttons keep owned backgrounds on focus so switching tabs cannot replace the window chrome with a zoomed skin-atlas overlay.
-- **Legacy decrypt (AZR-240):** Recovery no longer feeds the plaintext `CSVAULT2` header into AES. Shared `VaultCryptography` skips the header and tries legacy keys, so key-mismatch recovery can succeed again.
-- **Failed load (AZR-238):** If every on-disk candidate fails, the empty in-memory vault **cannot autosave** until you click **Start Fresh** in the Vault UI — so a surviving `.backup` is not overwritten.
 
 **Website / feedback desk**
 

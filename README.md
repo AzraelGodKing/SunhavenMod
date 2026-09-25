@@ -9,7 +9,7 @@ BepInEx plugins for [Sun Haven](https://store.steampowered.com/app/1432860/Sun_H
 | Senpai's Chest | [`SenpaisChest/`](SenpaisChest/) | 3.1.1 |
 | Sun Haven Todo | [`SunhavenTodo/`](SunhavenTodo/) | 2.1.1 |
 | Sun Haven Museum Utility Tracker (S.M.U.T.) | [`SunHavenMuseumUtilityTracker/`](SunHavenMuseumUtilityTracker/) | 3.1.1 |
-| The Vault | [`TheVault/`](TheVault/) | 4.1.2 |
+| The Vault | [`TheVault/`](TheVault/) | 4.1.3 |
 | Haven's Birthright | [`HavensBirthright/`](HavensBirthright/) | 3.1.2 |
 | Haven's Almanac | [`HavensAlmanac/`](HavensAlmanac/) | 2.2.1 |
 | A Squirrel's Birthday Reminder | [`BirthdayReminder/`](BirthdayReminder/) | 2.1.1 |
