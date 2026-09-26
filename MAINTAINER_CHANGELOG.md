@@ -4,6 +4,10 @@ Internal engineering log: **CI**, **release automation**, **scripts**, **docs in
 
 ---
 
+## 2026-09-26
+
+- **Cleanup:** Removed **Sync Cloudflare site mirror** workflow (`sync-cloudflare-site-mirror.yml`). Pages deploy stays on `cloudflare-site/` via wrangler; no more push-mirror to `azrael-sunhaven-website`. No mod version bumps.
+
 ## 2026-09-25
 
 - **Cleanup:** Removed unused **Test — Self-hosted Sunhaven runner** workflow (`release-self-hosted-sunhaven-runner.yml`). Last run was 2026-04; **Release & Publish** already builds on the self-hosted runner and covers dry-run / publish. No mod version bumps.
