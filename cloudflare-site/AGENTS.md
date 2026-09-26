@@ -165,8 +165,7 @@ These commands rely on `wrangler.toml` and `package.json` in the parent director
 
 - **Primary host**: Cloudflare Pages (project `azrael-sunhaven-website`)
 - **Build output directory**: `cloudflare-site` (configured in `wrangler.toml`)
-- **Mirror workflow**: `.github/workflows/sync-cloudflare-site-mirror.yml` mirrors `cloudflare-site/`, `functions/`, `wrangler.toml`, `package.json`, and `package-lock.json` to a separate repo (`AzraelGodKing/azrael-sunhaven-website`) on every push to `main` that touches those paths.
-- Cloudflare Pages automatically builds from the mirror repo.
+- Deploy from this repo with root `wrangler` / `npm run cf:pages:deploy` (no separate mirror repo sync).
 
 ## Testing
 
