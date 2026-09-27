@@ -135,8 +135,8 @@
     "version": "1.0.0",
     "name": "Haven's Mirror",
     "description": "Custom player dialogue bust portraits from a PNG gallery folder, with optional NPC look override and hotkey reload",
-    "nexus": "",
-    "nexus_file_group_id": "",
+    "nexus": "https://www.nexusmods.com/sunhaven/mods/538",
+    "nexus_file_group_id": "8035296",
     "thunderstore": "",
     "thunderstoreName": "HavensMirror",
     "changelog": "V1 playable: PNG gallery busts; PersistentRunner-safe dialogue; left bust layout/sizing matched to NPC portraits; ForcedLook; Ctrl+F8 reload."

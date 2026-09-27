@@ -1,0 +1,50 @@
+[b][size=5]Haven's Mirror[/size][/b] [i](v1.0.0)[/i]
+
+Drop custom PNG bust portraits into a gallery folder and see your farmer in dialogue. Optional forced look for NPC busts and seasonal outfits.
+
+[line]
+
+[size=4][b]Features[/b][/size]
+[list]
+[*]Custom player dialogue bust from drop-in PNG gallery folders
+[*]Per-character folders under [b]BepInEx/plugins/HavensMirror/gallery/[/b] (auto-created from save slots) plus [b]gallery/_shared/[/b]
+[*]Seasonal / special slots: [b]spring.png[/b], [b]summer.png[/b], [b]autumn.png[/b], [b]winter.png[/b], [b]vows.png[/b], [b]shore.png[/b], [b]costume.png[/b]
+[*]Player bust anchors on the left opposite the NPC, sized to match
+[*]Optional [b]ForcedLook[/b] overrides NPC dialogue bust season / outfit
+[*]Reload portraits in-game with [b]Ctrl+F8[/b] (configurable)
+[/list]
+
+[line]
+
+[size=4][b]Requirements[/b][/size]
+[list]
+[*][url=https://github.com/BepInEx/BepInEx]BepInEx 5.x[/url] for Sun Haven
+[*]Sun Haven
+[/list]
+
+[size=4][b]Installation[/b][/size]
+[list]
+[*]Place [b]HavensMirror.dll[/b] in [b]Sun Haven/BepInEx/plugins/HavensMirror/[/b]
+[*]Launch once so gallery folders and [b]HOWTO.txt[/b] appear
+[*]Drop transparent PNG busts into [b]gallery/_shared/[/b] or [b]gallery/YourCharacterName/[/b]
+[/list]
+
+[line]
+
+[size=4][b]Configuration[/b][/size]
+[b]Sun Haven/BepInEx/config/HavensMirror.cfg[/b]
+
+[list]
+[*][b]General.Enabled[/b] - Master toggle
+[*][b]ForcedLook[/b] - Optional NPC bust look override
+[*][b]Hotkeys[/b] - Portrait reload (default Ctrl+F8)
+[/list]
+
+[line]
+
+[size=4][b]Links[/b][/size]
+[list]
+[*][url=https://www.nexusmods.com/sunhaven/mods/538]Nexus Mods[/url]
+[*][url=https://azraelgodking.github.io/SunhavenMod/HavensMirror/HavensMirror.html]Documentation[/url]
+[*][url=https://discord.gg/Vwh2y7qMXv]Discord - bugs and discussion[/url]
+[/list]
