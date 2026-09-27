@@ -7,6 +7,7 @@ Internal engineering log: **CI**, **release automation**, **scripts**, **docs in
 ## 2026-09-27
 
 - **AZR-346 — Haven's Mirror:** New suite mod scaffold (`HavensMirror/`), matrix + `docs/versions.json` entry at **1.0.0**, hub page, workflow dispatch option `havensmirror`, `SuitePluginGuids.HavensMirror`. Player notes in `CHANGELOG.md`. No Nexus/Thunderstore URLs until ship.
+- **AZR-346 — save-slot gallery folders:** `SaveSlotFolderSync` reads `Wish.GameSave` save-slot `characterData.characterName` (plus `GameSaveCharacterName` for the active character), creates empty `gallery/<name>/` via `CharacterSaveStore` sanitization; empty folders skipped for display; HOWTO rewritten for the install → scan → drop PNGs story.
 
 ## 2026-09-26
 
