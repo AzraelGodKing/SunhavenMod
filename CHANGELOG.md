@@ -4,6 +4,19 @@ Notes for **players and release readers**. Per-mod blurbs and upstream metadata 
 
 ---
 
+## 2026-09-27
+
+**Haven's Mirror (1.0.0)** — new suite mod
+
+- Drop PNG bust portraits into `BepInEx/plugins/HavensMirror/gallery/<CharacterName>/` (or `gallery/_shared/`).
+- File names: `spring.png`, `summer.png`, `autumn.png`, `winter.png`, `vows.png`, `shore.png`, `costume.png`.
+- Your custom bust appears in dialogue when portraits are present.
+- Optional `ForcedLook` overrides NPC dialogue busts and seasonal outfits.
+- Reload portraits in-game with **Ctrl+F8** (configurable).
+- Independent AzraelGodKing implementation inspired by the idea of Nexus Sun Haven #329 (Self Portrait) — not a port of that mod.
+
+---
+
 ## 2026-09-25
 
 **The Vault (4.1.3)**

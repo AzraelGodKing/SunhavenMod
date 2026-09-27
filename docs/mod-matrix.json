@@ -194,5 +194,20 @@
     "docsCardNames": [
       "Gifting Assistant"
     ]
+  },
+  {
+    "modKey": "havensmirror",
+    "statsDomId": "havens-mirror",
+    "jsonKey": "com.azraelgodking.havensmirror",
+    "modDir": "HavensMirror",
+    "thunderstoreName": "HavensMirror",
+    "indexDataName": "Haven's Mirror",
+    "docsPagePath": "HavensMirror/HavensMirror.html",
+    "docsNavNames": [
+      "Haven's Mirror"
+    ],
+    "docsCardNames": [
+      "Haven's Mirror"
+    ]
   }
 ]

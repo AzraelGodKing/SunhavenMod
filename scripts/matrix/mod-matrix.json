@@ -206,5 +206,21 @@
     "extraCsprojPaths": [],
     "docsNavNames": ["Gifting Assistant"],
     "docsCardNames": ["Gifting Assistant"]
+  },
+  {
+    "modKey": "havensmirror",
+    "statsDomId": "havens-mirror",
+    "jsonKey": "com.azraelgodking.havensmirror",
+    "modDir": "HavensMirror",
+    "pluginFile": "PluginInfo.cs",
+    "dllName": "HavensMirror",
+    "csproj": "HavensMirror/HavensMirror.csproj",
+    "thunderstoreName": "HavensMirror",
+    "readmePath": "HavensMirror",
+    "indexDataName": "Haven's Mirror",
+    "docsPagePath": "HavensMirror/HavensMirror.html",
+    "extraCsprojPaths": [],
+    "docsNavNames": ["Haven's Mirror"],
+    "docsCardNames": ["Haven's Mirror"]
   }
 ]
