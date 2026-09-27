@@ -66,7 +66,7 @@ namespace HavensMirror.Config
                 "General",
                 "CreateStarterFolders",
                 true,
-                "On load, create the gallery/_shared folder (and a short HOWTO.txt) if missing.");
+                "When true: create gallery/_shared (with HOWTO.txt) and auto-create empty gallery/<CharacterName>/ folders from your game saves.");
         }
     }
 }
