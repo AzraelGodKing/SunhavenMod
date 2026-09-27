@@ -1,5 +1,4 @@
 using System;
-using System.IO;
 using System.Reflection;
 using BepInEx;
 using BepInEx.Configuration;
@@ -25,6 +24,7 @@ namespace HavensMirror
         private Harmony _harmony;
         private bool _applicationQuitting;
         private GalleryReloadLoop _reloadLoop;
+        private GalleryFolderSyncLoop _folderSyncLoop;
 
         private void Awake()
         {
@@ -45,6 +45,10 @@ namespace HavensMirror
             }
 
             GalleryPaths.EnsureStarterLayout(msg => Log.LogInfo(msg));
+            // Creates empty gallery/<CharacterName>/ for each save slot when GameSave is already up.
+            int created = SaveSlotFolderSync.EnsureCharacterFolders();
+            if (created > 0)
+                Log.LogInfo($"[Gallery] Created {created} character folder(s) from saves.");
 
             _harmony = new Harmony(PluginInfo.PLUGIN_GUID);
             try
@@ -58,6 +62,7 @@ namespace HavensMirror
             }
 
             _reloadLoop = gameObject.AddComponent<GalleryReloadLoop>();
+            _folderSyncLoop = gameObject.AddComponent<GalleryFolderSyncLoop>();
 
             ReloadGallery(notify: false);
 
@@ -75,45 +80,26 @@ namespace HavensMirror
             if (Shelf == null)
                 Shelf = new SpriteShelf();
 
+            // Re-scan saves on reload so newly created characters get folders without restart.
+            SaveSlotFolderSync.EnsureCharacterFolders();
+
             string character = TryReadCharacterName();
             string status = Shelf.LoadForCharacter(character);
 
-            Log?.LogInfo($"[Gallery] {status}");
+            if (Shelf.HasAny)
+                Log?.LogInfo($"[Gallery] {status}");
+            else
+                Log?.LogDebug($"[Gallery] {status}");
+
             if (notify)
                 TryNotify($"[Haven's Mirror] {status}");
         }
 
         private static string TryReadCharacterName()
         {
-            try
-            {
-                Type gameSaveType = ReflectionHelper.FindWishType("GameSave");
-                if (gameSaveType == null)
-                    return null;
-
-                object gameSave = ReflectionHelper.GetSingletonInstance(gameSaveType);
-                if (gameSave == null)
-                    return null;
-
-                object currentSave = AccessTools.Property(gameSave.GetType(), "CurrentSave")?.GetValue(gameSave, null)
-                                     ?? AccessTools.Field(gameSave.GetType(), "CurrentSave")?.GetValue(gameSave);
-                if (currentSave == null)
-                    return null;
-
-                object characterData = AccessTools.Property(currentSave.GetType(), "characterData")?.GetValue(currentSave, null)
-                                       ?? AccessTools.Field(currentSave.GetType(), "characterData")?.GetValue(currentSave);
-                if (characterData == null)
-                    return null;
-
-                object name = AccessTools.Property(characterData.GetType(), "characterName")?.GetValue(characterData, null)
-                              ?? AccessTools.Field(characterData.GetType(), "characterName")?.GetValue(characterData);
-                return name?.ToString();
-            }
-            catch (Exception ex)
-            {
-                Log?.LogDebug($"[Gallery] Character name resolve failed: {ex.Message}");
-                return null;
-            }
+            return GameSaveCharacterName.TryGetCurrent(
+                fallback: null,
+                logWarning: msg => Log?.LogDebug($"[Gallery] Character name resolve failed: {msg}"));
         }
 
         private static void TryNotify(string message)
@@ -182,6 +168,12 @@ namespace HavensMirror
             {
                 Destroy(_reloadLoop);
                 _reloadLoop = null;
+            }
+
+            if (_folderSyncLoop != null)
+            {
+                Destroy(_folderSyncLoop);
+                _folderSyncLoop = null;
             }
 
             Shelf?.Dispose();

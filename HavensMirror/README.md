@@ -8,9 +8,9 @@ Drop-in PNG bust portraits for your farmer during dialogue, with an optional for
 
 ## Default Behavior
 
-- Reads PNGs from `BepInEx/plugins/HavensMirror/gallery/<CharacterName>/` (fallback: `gallery/_shared/`).
+- Drop PNG bust portraits into `BepInEx/plugins/HavensMirror/gallery/<CharacterName>/` (folders are created from your saves) or `gallery/_shared/`.
 - Expected files: `spring.png`, `summer.png`, `autumn.png`, `winter.png`, `vows.png`, `shore.png`, `costume.png`.
-- Missing slots reuse the first PNG found in the folder.
+- Empty character folders are ignored; missing slots reuse the first PNG found.
 - Reload with **Ctrl+F8** (configurable).
 - Optional `ForcedLook` overrides NPC dialogue bust season / special outfit.
 

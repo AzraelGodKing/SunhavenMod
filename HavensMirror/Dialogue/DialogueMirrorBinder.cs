@@ -143,6 +143,8 @@ namespace HavensMirror.Dialogue
                 if (panel != null)
                     PlayerBustHud.EnsureOn(panel);
 
+                // Saves are usually loaded by the time dialogue UI exists — ensure character folders exist.
+                SaveSlotFolderSync.EnsureCharacterFolders();
                 Plugin.ReloadGallery(notify: false);
             }
             catch (Exception ex)
