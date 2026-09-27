@@ -45,6 +45,7 @@ Drop custom PNG bust portraits into a gallery folder and see your farmer in dial
 [size=4][b]Links[/b][/size]
 [list]
 [*][url=https://www.nexusmods.com/sunhaven/mods/538]Nexus Mods[/url]
+[*][url=https://thunderstore.io/c/sun-haven/p/AzraelGodKing/HavensMirror/]Thunderstore[/url]
 [*][url=https://azraelgodking.github.io/SunhavenMod/HavensMirror/HavensMirror.html]Documentation[/url]
 [*][url=https://discord.gg/Vwh2y7qMXv]Discord - bugs and discussion[/url]
 [/list]

@@ -1,7 +1,7 @@
 # Haven's Mirror
 
 - **Nexus Mods:** [Haven's Mirror](https://www.nexusmods.com/sunhaven/mods/538) ([files tab](https://www.nexusmods.com/sunhaven/mods/538?tab=files); CI `nexus_file_group_id` **8035296**)
-- **Thunderstore:** pending first publish (`HavensMirror`)
+- **Thunderstore:** [HavensMirror](https://thunderstore.io/c/sun-haven/p/AzraelGodKing/HavensMirror/)
 
 Drop-in PNG bust portraits for your farmer during dialogue, with an optional forced look for NPC portraits and seasonal outfits.
 
