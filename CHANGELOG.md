@@ -14,6 +14,7 @@ Notes for **players and release readers**. Per-mod blurbs and upstream metadata 
 - Optional `ForcedLook` overrides NPC dialogue busts and seasonal outfits.
 - Reload portraits in-game with **Ctrl+F8** (configurable).
 - Independent AzraelGodKing implementation inspired by the idea of Nexus Sun Haven #329 (Self Portrait) — not a port of that mod.
+- **HOWTO.txt** (written to `gallery/_shared/` on first launch) rewritten in plain steps: what the mod does, where images go, exact file names, and how to reload.
 
 ---
 
