@@ -139,6 +139,6 @@
     "nexus_file_group_id": "",
     "thunderstore": "",
     "thunderstoreName": "HavensMirror",
-    "changelog": "Initial release: gallery PNG busts; auto-create empty gallery folders from character saves; ForcedLook; Ctrl+F8 reload."
+    "changelog": "V1 playable: PNG gallery busts; PersistentRunner-safe dialogue; left bust layout/sizing matched to NPC portraits; ForcedLook; Ctrl+F8 reload."
   }
 }

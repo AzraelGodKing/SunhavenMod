@@ -56,9 +56,11 @@ cloudflare-site/
 ├── mods/
 │   ├── cropoptimizer.html     # Thin HTML shells: <html data-mod-key="cropoptimizer">
 │   ├── fasterraces.html
+│   ├── giftingassistant.html
 │   ├── havendevtools.html
 │   ├── havensalmanac.html
 │   ├── havensbirthright.html
+│   ├── havensmirror.html
 │   ├── havensrespec.html
 │   ├── senpaischest.html
 │   ├── squirrelsbirthdayreminder.html
@@ -96,7 +98,7 @@ Both `app.js` and `mod-page.js` contain a hardcoded mapping `STATS_ID_BY_MOD_KEY
 
 ### Mod keys
 Every mod has a stable `modKey` used in filenames, data attributes, and JS lookup tables:
-- `senpaischest`, `havensbirthright`, `sunhavenmuseumutilitytracker`, `squirrelsbirthdayreminder`, `sunhaventodo`, `thevault`, `havendevtools`, `havensalmanac`, `fasterraces`, `trinketfortune`, `cropoptimizer`, `havensrespec`
+- `senpaischest`, `havensbirthright`, `sunhavenmuseumutilitytracker`, `squirrelsbirthdayreminder`, `sunhaventodo`, `thevault`, `havendevtools`, `havensalmanac`, `fasterraces`, `trinketfortune`, `cropoptimizer`, `havensrespec`, `giftingassistant`, `havensmirror`
 
 ### Lanes
 Mods are grouped into gameplay "lanes" (categories): `Storage`, `Races`, `Tracking`, `Social`, `Planning`, `Currency`, `Dev`, `Dashboard`, `Movement`, `Fishing`, `Farming`, `Skills`, `QoL`.
