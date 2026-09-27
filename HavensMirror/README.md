@@ -1,0 +1,25 @@
+# Haven's Mirror
+
+Drop-in PNG bust portraits for your farmer during dialogue, with an optional forced look for NPC portraits and seasonal outfits.
+
+## Version
+
+**1.0.0** — published in [`docs/versions.json`](../docs/versions.json). Player-facing store text: [`thunderstore/README.md`](thunderstore/README.md).
+
+## Default Behavior
+
+- Reads PNGs from `BepInEx/plugins/HavensMirror/gallery/<CharacterName>/` (fallback: `gallery/_shared/`).
+- Expected files: `spring.png`, `summer.png`, `autumn.png`, `winter.png`, `vows.png`, `shore.png`, `costume.png`.
+- Missing slots reuse the first PNG found in the folder.
+- Reload with **Ctrl+F8** (configurable).
+- Optional `ForcedLook` overrides NPC dialogue bust season / special outfit.
+
+## Config
+
+File: `Sun Haven/BepInEx/config/HavensMirror.cfg`
+
+## Notes
+
+- This README is for repo maintainers.
+- Independent suite implementation inspired by the *idea* of Nexus Sun Haven #329 (Self Portrait) — original code, names, assets, and layout.
+- Shipped release notes: repo root [`CHANGELOG.md`](../CHANGELOG.md), [`docs/versions.json`](../docs/versions.json).

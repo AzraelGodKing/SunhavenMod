@@ -19,6 +19,7 @@ BepInEx plugins for [Sun Haven](https://store.steampowered.com/app/1432860/Sun_H
 | Crop Optimizer | [`CropOptimizer/`](CropOptimizer/) | 2.2.2 |
 | Haven's Respec | [`HavensRespec/`](HavensRespec/) | 2.1.1 |
 | Gifting Assistant | [`GiftingAssistant/`](GiftingAssistant/) | 1.1.1 |
+| Haven's Mirror | [`HavensMirror/`](HavensMirror/) | 1.0.0 |
 
 Per-mod READMEs and Thunderstore packages describe features, hotkeys, and config in detail.
 

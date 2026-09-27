@@ -65,6 +65,7 @@ on:
           - cropoptimizer
           - havensrespec
           - giftingassistant
+          - havensmirror
       publish_thunderstore:
         description: 'Publish to Thunderstore?'
         required: true

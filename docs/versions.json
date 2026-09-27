@@ -130,5 +130,15 @@
     "thunderstore": "https://thunderstore.io/c/sun-haven/p/AzraelGodKing/GiftingAssistant/",
     "thunderstoreName": "GiftingAssistant",
     "changelog": "Fix: overnight unhook before re-hook to prevent duplicate day resets."
+  },
+  "com.azraelgodking.havensmirror": {
+    "version": "1.0.0",
+    "name": "Haven's Mirror",
+    "description": "Custom player dialogue bust portraits from a PNG gallery folder, with optional NPC look override and hotkey reload",
+    "nexus": "",
+    "nexus_file_group_id": "",
+    "thunderstore": "",
+    "thunderstoreName": "HavensMirror",
+    "changelog": "Initial release: gallery PNG busts for dialogue, ForcedLook for NPC portraits/outfits, Ctrl+F8 reload."
   }
 }

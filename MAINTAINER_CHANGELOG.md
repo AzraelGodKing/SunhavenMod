@@ -4,6 +4,10 @@ Internal engineering log: **CI**, **release automation**, **scripts**, **docs in
 
 ---
 
+## 2026-09-27
+
+- **AZR-346 — Haven's Mirror:** New suite mod scaffold (`HavensMirror/`), matrix + `docs/versions.json` entry at **1.0.0**, hub page, workflow dispatch option `havensmirror`, `SuitePluginGuids.HavensMirror`. Player notes in `CHANGELOG.md`. No Nexus/Thunderstore URLs until ship.
+
 ## 2026-09-26
 
 - **Cleanup:** Removed **Sync Cloudflare site mirror** workflow (`sync-cloudflare-site-mirror.yml`). Pages deploy stays on `cloudflare-site/` via wrangler; no more push-mirror to `azrael-sunhaven-website`. No mod version bumps.

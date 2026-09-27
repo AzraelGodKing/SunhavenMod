@@ -21,6 +21,7 @@ namespace SunhavenMods.Shared
         public const string CropOptimizer = "com.azraelgodking.cropoptimizer";
         public const string HavensRespec = "com.azraelgodking.havensrespec";
         public const string GiftingAssistant = "com.azraelgodking.giftingassistant";
+        public const string HavensMirror = "com.azraelgodking.havensmirror";
     }
 
     /// <summary>
