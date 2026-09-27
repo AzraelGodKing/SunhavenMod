@@ -37,6 +37,9 @@ namespace TheVault
         {
             Plugin.TickAutoSave();
 
+            // Deck layout needs a valid Screen size; Awake may run before that.
+            Plugin.TryApplyDeckLayoutDefaults();
+
             // Poll for menu scene changes
             _sceneCheckTimer += Time.deltaTime;
             if (_sceneCheckTimer >= SCENE_CHECK_INTERVAL)
@@ -91,6 +94,16 @@ namespace TheVault
 
                 // Check for alternative toggle key (no modifier - for Steam Deck)
                 if (Plugin.StaticAltToggleKey != KeyCode.None && Input.GetKeyDown(Plugin.StaticAltToggleKey))
+                {
+                    Plugin.ToggleMainVaultWindow();
+                }
+
+                // Controller open/toggle (default LB+Y = JoystickButton4 held + JoystickButton3 down)
+                if (Plugin.StaticControllerOpenEnabled
+                    && Plugin.StaticControllerOpenModifier != KeyCode.None
+                    && Plugin.StaticControllerOpenButton != KeyCode.None
+                    && Input.GetKey(Plugin.StaticControllerOpenModifier)
+                    && Input.GetKeyDown(Plugin.StaticControllerOpenButton))
                 {
                     Plugin.ToggleMainVaultWindow();
                 }
