@@ -87,13 +87,16 @@ namespace TheVault.UI
         private Texture2D _toggleOffHover;
 
         // Window dimensions (base values, scaled by _scale)
-        private const float BASE_WINDOW_WIDTH = 520f;
-        private const float BASE_ROW_HEIGHT = 40f;
+        // Width ~560 so -1/-5/-10 touch buttons + name still fit at scale 1 (Steam Deck V1).
+        private const float BASE_WINDOW_WIDTH = 560f;
+        // Row height ~52 so 44px min touch targets fit with padding.
+        private const float BASE_ROW_HEIGHT = 52f;
         private const float BASE_HEADER_HEIGHT = 118f;
-        private const float BASE_FOOTER_HEIGHT = 200f;
+        // Extra footer room for amount chip row under qty / Withdraw / Deposit.
+        private const float BASE_FOOTER_HEIGHT = 255f;
         private const float BASE_MIN_CONTENT_HEIGHT = 120f;
         private const float BASE_MAX_CONTENT_HEIGHT = 420f;
-        private const float BASE_SETTINGS_CONTENT_HEIGHT = 340f;
+        private const float BASE_SETTINGS_CONTENT_HEIGHT = 390f;
 
         // UI scale (from config, 0.5-3.0)
         private float _scale = 1f;
@@ -112,6 +115,9 @@ namespace TheVault.UI
         private int ScaledFont(int baseSize) => Mathf.Max(8, Mathf.RoundToInt(baseSize * _scale));
         private float Scaled(float value) => value * _scale;
         private int ScaledInt(float value) => Mathf.RoundToInt(value * _scale);
+
+        /// <summary>Minimum ~44px touch target for Deck / trackpad; grows with WindowScale.</summary>
+        private float TouchSize(float basePx) => Mathf.Max(44f, Scaled(basePx));
 
         // Toggle key
         private KeyCode _toggleKey = KeyCode.V;
@@ -277,13 +283,59 @@ namespace TheVault.UI
 
             // NOTE: Hotkey detection is now handled by PersistentRunner to avoid double-toggle.
             // PersistentRunner survives game cleanup and calls our Toggle() method directly.
-            // We only handle Escape here since it's specific to closing this UI when visible.
+            // Close on Escape or game cancel (Steam Input B / UICancel) when visible.
+            // Do not Harmony-block UICancel globally — B/cancel should close the vault.
 
-            // Close on Escape
-            if (_isVisible && Input.GetKeyDown(KeyCode.Escape))
+            if (_isVisible && (Input.GetKeyDown(KeyCode.Escape) || IsGameCancelPressed()))
             {
                 Hide();
             }
+        }
+
+        /// <summary>
+        /// Tries Wish.PlayerInput / Unity cancel actions. Wrapped so missing methods or
+        /// Rewired name changes never crash the vault UI.
+        /// </summary>
+        private static bool IsGameCancelPressed()
+        {
+            try
+            {
+                if (PlayerInput.GetButtonDown("UICancel"))
+                    return true;
+            }
+            catch
+            {
+                // Method or action may not exist on this game build.
+            }
+
+            try
+            {
+                if (PlayerInput.GetButtonDown("Cancel"))
+                    return true;
+            }
+            catch
+            {
+            }
+
+            try
+            {
+                if (PlayerInput.GetButtonDown("Close"))
+                    return true;
+            }
+            catch
+            {
+            }
+
+            try
+            {
+                if (Input.GetButtonDown("Cancel"))
+                    return true;
+            }
+            catch
+            {
+            }
+
+            return false;
         }
 
         private void SetVaultStatus(string message, bool isError)
@@ -933,21 +985,23 @@ namespace TheVault.UI
             }
 
             // Draw content using absolute positioning within the row
-            float yCenter = rowRect.y + (rowRect.height - Scaled(26)) / 2;
+            float labelH = Scaled(26f);
+            float labelY = rowRect.y + (rowRect.height - labelH) / 2;
             float xPos = rowRect.x + Scaled(8);
 
-            // Auto-deposit toggle button (leftmost) - using cached styles
-            float toggleBtnY = rowRect.y + (rowRect.height - Scaled(20)) / 2;
+            // Auto-deposit toggle — touch-sized (≥44px)
+            float toggleSize = TouchSize(20f);
+            float toggleBtnY = rowRect.y + (rowRect.height - toggleSize) / 2;
             var toggleStyle = autoDepositEnabled ? _toggleOnStyle : _toggleOffStyle;
 
-            var toggleRect = new Rect(xPos, toggleBtnY, 20, 20);
+            var toggleRect = new Rect(xPos, toggleBtnY, toggleSize, toggleSize);
             string toggleText = autoDepositEnabled ? "ON" : "--";
             if (GUI.Button(toggleRect, toggleText, toggleStyle))
             {
                 ItemPatches.ToggleAutoDeposit(currencyId);
                 Plugin.Log?.LogInfo($"[UI] Toggle clicked for {currencyId}");
             }
-            xPos += 24;
+            xPos += toggleSize + Scaled(4);
 
             // Currency icon - use game icon if available, fallback to text
             float iconSize = Scaled(28f);
@@ -962,43 +1016,53 @@ namespace TheVault.UI
             {
                 // Fallback to text icon while loading or if icon unavailable (using cached style)
                 string icon = VaultUiShared.GetCurrencyIcon(currencyId);
-                GUI.Label(new Rect(xPos, yCenter, iconSize, Scaled(26)), icon, _iconFallbackStyle);
+                GUI.Label(new Rect(xPos, labelY, iconSize, labelH), icon, _iconFallbackStyle);
             }
-            xPos += 32;
+            xPos += iconSize + Scaled(4);
 
-            // Currency name (wider column for long names like "King's Lost Mine Key")
+            // Currency name (scaled; wider for long names like "King's Lost Mine Key")
+            float nameW = Scaled(160f);
             string displayName = VaultUiShared.GetDisplayName(_vaultManager, currencyId);
-            GUI.Label(new Rect(xPos, yCenter, 140, 26), displayName, _labelStyle);
-            xPos += 144;
+            GUI.Label(new Rect(xPos, labelY, nameW, labelH), displayName, _labelStyle);
+            xPos += nameW + Scaled(4);
 
             // Amount with gold color - make it prominent with "x" prefix
             // Use K/M formatting for large numbers
+            float amountW = Scaled(70f);
             string amountText = "x" + VaultUiShared.FormatNumber(amount);
             var amountStyle = new GUIStyle(_valueStyle) { fontSize = ScaledFont(16), alignment = TextAnchor.MiddleLeft };
-            GUI.Label(new Rect(xPos, yCenter, 70, 26), amountText, amountStyle);
-            xPos += 74;
+            GUI.Label(new Rect(xPos, labelY, amountW, labelH), amountText, amountStyle);
 
-            // Quick withdraw buttons - positioned from the right
-            float btnY = rowRect.y + (rowRect.height - Scaled(28)) / 2;
+            // Quick withdraw buttons — touch-sized, positioned from the right
+            float btnH = TouchSize(28f);
+            float btnW1 = TouchSize(34f);
+            float btnW5 = TouchSize(34f);
+            float btnW10 = TouchSize(40f);
+            float btnGap = Scaled(4f);
+            float btnY = rowRect.y + (rowRect.height - btnH) / 2;
             float rightEdge = rowRect.x + rowRect.width - Scaled(8);
+
+            var withdraw10Rect = new Rect(rightEdge - btnW10, btnY, btnW10, btnH);
+            var withdraw5Rect = new Rect(withdraw10Rect.x - btnGap - btnW5, btnY, btnW5, btnH);
+            var withdraw1Rect = new Rect(withdraw5Rect.x - btnGap - btnW1, btnY, btnW1, btnH);
 
             // -10 button (rightmost)
             GUI.enabled = amount >= 10;
-            if (GUI.Button(new Rect(rightEdge - 40, btnY, 40, 28), "-10", _withdrawButtonStyle))
+            if (GUI.Button(withdraw10Rect, "-10", _withdrawButtonStyle))
             {
                 WithdrawToInventory(currencyId, 10);
             }
 
             // -5 button
             GUI.enabled = amount >= 5;
-            if (GUI.Button(new Rect(rightEdge - 78, btnY, 34, 28), "-5", _withdrawButtonStyle))
+            if (GUI.Button(withdraw5Rect, "-5", _withdrawButtonStyle))
             {
                 WithdrawToInventory(currencyId, 5);
             }
 
             // -1 button
             GUI.enabled = amount >= 1;
-            if (GUI.Button(new Rect(rightEdge - 116, btnY, 34, 28), "-1", _withdrawButtonStyle))
+            if (GUI.Button(withdraw1Rect, "-1", _withdrawButtonStyle))
             {
                 WithdrawToInventory(currencyId, 1);
             }
@@ -1006,14 +1070,13 @@ namespace TheVault.UI
             GUI.enabled = true;
 
             // Row selection on click (only if not clicking a button)
-            // Check if mouse is in row but not over any button
+            // Hit-tests must use the same scaled rects as the buttons above.
             if (Event.current.type == UnityEngine.EventType.MouseDown && rowRect.Contains(Event.current.mousePosition))
             {
-                // Check if click is outside button areas
                 bool overToggle = toggleRect.Contains(Event.current.mousePosition);
-                bool overWithdraw1 = new Rect(rightEdge - 116, btnY, 34, 28).Contains(Event.current.mousePosition);
-                bool overWithdraw5 = new Rect(rightEdge - 78, btnY, 34, 28).Contains(Event.current.mousePosition);
-                bool overWithdraw10 = new Rect(rightEdge - 40, btnY, 40, 28).Contains(Event.current.mousePosition);
+                bool overWithdraw1 = withdraw1Rect.Contains(Event.current.mousePosition);
+                bool overWithdraw5 = withdraw5Rect.Contains(Event.current.mousePosition);
+                bool overWithdraw10 = withdraw10Rect.Contains(Event.current.mousePosition);
 
                 if (!overToggle && !overWithdraw1 && !overWithdraw5 && !overWithdraw10)
                 {
@@ -1099,6 +1162,13 @@ namespace TheVault.UI
             if (newAltIdx != altIdx && newAltIdx >= 0) Plugin.SetConfigAltToggleKey(SettingsKeyOptions[newAltIdx]);
             GUILayout.EndHorizontal();
 
+            bool ctrlOpen = Plugin.GetConfigControllerOpenEnabled();
+            bool newCtrlOpen = GUILayout.Toggle(ctrlOpen, " Controller open (LB+Y)", _labelStyle);
+            if (newCtrlOpen != ctrlOpen) Plugin.SetConfigControllerOpenEnabled(newCtrlOpen);
+            GUILayout.Label(
+                "Hold LB + press Y (Xbox/Steam Deck). Remap via [UI] ControllerOpenModifier / ControllerOpenButton in TheVault.cfg. F8 AltToggle still works for Steam Input keyboard layers.",
+                _hintStyle);
+
             GUILayout.Space(Scaled(8));
             GUILayout.Label(ModLocalization.T("vault.settings.autoSave"), _hintStyle);
             GUILayout.EndScrollView();
@@ -1144,6 +1214,8 @@ namespace TheVault.UI
             }
             else
             {
+                float ctrlH = Mathf.Max(44f, Scaled(32f));
+
                 GUILayout.BeginHorizontal();
                 GUILayout.FlexibleSpace();
 
@@ -1151,12 +1223,12 @@ namespace TheVault.UI
 
                 GUILayout.Space(Scaled(15));
 
-                GUILayout.Label(ModLocalization.T("vault.qty"), _amountLabelStyle, GUILayout.Width(Scaled(30)));
-                _depositAmount = GUILayout.TextField(_depositAmount, 6, _textFieldStyle, GUILayout.Width(Scaled(55)));
+                GUILayout.Label(ModLocalization.T("vault.qty"), _amountLabelStyle, GUILayout.Width(Scaled(30)), GUILayout.Height(ctrlH));
+                _depositAmount = GUILayout.TextField(_depositAmount, 6, _textFieldStyle, GUILayout.Width(Scaled(70)), GUILayout.Height(ctrlH));
 
                 GUILayout.Space(Scaled(8));
 
-                if (GUILayout.Button(ModLocalization.T("vault.withdraw"), _buttonStyle, GUILayout.Width(Scaled(86))))
+                if (GUILayout.Button(ModLocalization.T("vault.withdraw"), _buttonStyle, GUILayout.Width(Scaled(100)), GUILayout.Height(ctrlH)))
                 {
                     if (!int.TryParse(_depositAmount, out int wAmt) || wAmt <= 0)
                         SetVaultStatus("Enter a positive number for quantity.", true);
@@ -1164,7 +1236,7 @@ namespace TheVault.UI
                         WithdrawToInventory(_selectedCurrencyId, wAmt);
                 }
 
-                if (GUILayout.Button(ModLocalization.T("vault.deposit"), _buttonStyle, GUILayout.Width(Scaled(86))))
+                if (GUILayout.Button(ModLocalization.T("vault.deposit"), _buttonStyle, GUILayout.Width(Scaled(100)), GUILayout.Height(ctrlH)))
                 {
                     if (!int.TryParse(_depositAmount, out int dAmt) || dAmt <= 0)
                         SetVaultStatus("Enter a positive number for quantity.", true);
@@ -1172,6 +1244,26 @@ namespace TheVault.UI
                         DepositFromInventory(_selectedCurrencyId, dAmt);
                 }
 
+                GUILayout.FlexibleSpace();
+                GUILayout.EndHorizontal();
+
+                // Amount chips — Deck / trackpad friendly; avoid typing in the TextField.
+                GUILayout.Space(Scaled(4));
+                GUILayout.BeginHorizontal();
+                GUILayout.FlexibleSpace();
+                float chipW = TouchSize(40f);
+                float chipMaxW = TouchSize(56f);
+                if (GUILayout.Button("1", _buttonStyle, GUILayout.Width(chipW), GUILayout.Height(ctrlH)))
+                    _depositAmount = "1";
+                if (GUILayout.Button("5", _buttonStyle, GUILayout.Width(chipW), GUILayout.Height(ctrlH)))
+                    _depositAmount = "5";
+                if (GUILayout.Button("10", _buttonStyle, GUILayout.Width(chipW), GUILayout.Height(ctrlH)))
+                    _depositAmount = "10";
+                if (GUILayout.Button("Max", _buttonStyle, GUILayout.Width(chipMaxW), GUILayout.Height(ctrlH)))
+                {
+                    int vaultAmt = _vaultManager != null ? _vaultManager.GetCurrency(_selectedCurrencyId) : 0;
+                    _depositAmount = Mathf.Max(0, vaultAmt).ToString();
+                }
                 GUILayout.FlexibleSpace();
                 GUILayout.EndHorizontal();
 
@@ -1191,7 +1283,7 @@ namespace TheVault.UI
             GUILayout.Space(Scaled(6));
             GUILayout.BeginHorizontal();
             GUILayout.FlexibleSpace();
-            if (GUILayout.Button(ModLocalization.T("vault.sweep"), _buttonStyle, GUILayout.Width(Scaled(260)), GUILayout.Height(Scaled(32))))
+            if (GUILayout.Button(ModLocalization.T("vault.sweep"), _buttonStyle, GUILayout.Width(Scaled(260)), GUILayout.Height(Mathf.Max(44f, Scaled(32)))))
             {
                 Plugin.Log?.LogInfo("[Vault UI] Sweep button clicked");
                 ItemPatches.ForceAutoDepositAll();
