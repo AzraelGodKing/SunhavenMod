@@ -6,6 +6,7 @@ Internal engineering log: **CI**, **release automation**, **scripts**, **docs in
 
 ## 2026-09-27
 
+- **AZR-347 — Haven's Mirror docs page:** Replaced the thin shared-styles shell with a gold/plum portrait theme (`icon.png` hero, seasonal slot cards, folder map, numbered install steps, dark mode). Docs-only; no mod version bump.
 - **AZR-346 — Haven's Mirror Thunderstore icon:** CI packs `HavensMirror/thunderstore/icon.png`; resized **512×512 → 256×256** (RGBA) so Thunderstore publish no longer rejects with “Invalid icon dimensions”. Mirrored same file at `docs/HavensMirror/icon.png` (identical source copy for the hub).
 - **AZR-346 — Haven's Mirror Nexus + Thunderstore URLs:** `docs/versions.json` → Nexus [`/mods/538`](https://www.nexusmods.com/sunhaven/mods/538), `nexus_file_group_id` **8035296**, Thunderstore [`HavensMirror`](https://thunderstore.io/c/sun-haven/p/AzraelGodKing/HavensMirror/). README + Nexus BBCode + download-nav.
 - **AZR-346 — Haven's Mirror release prep:** Cloudflare site page + stats/presentation maps (`havensmirror` → `havens-mirror`); Discord tag→dir case; deploy `DEFAULT_MODS`; Thunderstore `website_url` → docs hub. Player notes in `CHANGELOG.md`.

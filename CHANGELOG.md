@@ -19,6 +19,7 @@ Notes for **players and release readers**. Per-mod blurbs and upstream metadata 
 - **Fixed (AZR-346):** Survive early BepInEx `OnDestroy` via `PersistentRunner`; Harmony patches and gallery sync stay alive so dialogue busts keep working.
 - **Release prep:** Suite release pipeline + Cloudflare site page ready; Nexus listing [mod 538](https://www.nexusmods.com/sunhaven/mods/538) (`nexus_file_group_id` **8035296**) and Thunderstore [`HavensMirror`](https://thunderstore.io/c/sun-haven/p/AzraelGodKing/HavensMirror/) wired in `docs/versions.json` for CI uploads and download-nav.
 - **Fix (AZR-346):** Thunderstore package icon resized to the required **256×256** PNG (was 512×512).
+- **Docs:** Haven's Mirror hub page now uses the gold oval portrait theme, seasonal file cards, and a gallery folder map instead of a plain shared-styles shell.
 
 ---
 

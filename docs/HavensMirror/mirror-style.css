@@ -1,29 +1,791 @@
-/* Haven's Mirror — amber mirror glass theme (uses shared-styles for layout) */
+/* ==========================================================================
+   Haven's Mirror — gold oval / plum glass (matches docs/HavensMirror/icon.png)
+   ========================================================================== */
+
+@import url('https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,600;0,9..144,700;1,9..144,500&family=Outfit:wght@400;500;600;700&display=swap');
+
 :root {
-    --mirror-ink: #2a2118;
-    --mirror-amber: #b45309;
+    --mirror-gold: #c9a227;
+    --mirror-gold-bright: #e4c56a;
+    --mirror-gold-deep: #8a6a12;
+    --mirror-plum: #5c1a40;
+    --mirror-plum-deep: #2a1024;
     --mirror-glass: #9ec5d1;
-    --mirror-frame: #d4af6e;
+    --mirror-ink: #2a2118;
+    --mirror-muted: #5c5348;
+    --mirror-paper: #f7f1e8;
+    --mirror-paper-warm: #efe4d4;
+    --mirror-card: #fffdf8;
+    --mirror-border: rgba(201, 162, 39, 0.32);
+    --mirror-border-strong: rgba(201, 162, 39, 0.55);
+    --mirror-shadow: rgba(42, 16, 36, 0.1);
+    --mirror-shadow-hover: rgba(42, 16, 36, 0.16);
+    --download-accent: #8a6a12;
+    --download-accent-hover: #c9a227;
+}
+
+*,
+*::before,
+*::after {
+    box-sizing: border-box;
 }
 
 body {
+    font-family: 'Outfit', system-ui, sans-serif;
+    font-size: 16px;
+    line-height: 1.65;
     color: var(--mirror-ink);
+    background:
+        radial-gradient(ellipse at 12% 0%, rgba(201, 162, 39, 0.16), transparent 48%),
+        radial-gradient(ellipse at 88% 8%, rgba(92, 26, 64, 0.1), transparent 42%),
+        linear-gradient(165deg, var(--mirror-paper) 0%, var(--mirror-paper-warm) 42%, #fff 100%);
+    background-attachment: fixed;
+    min-height: 100vh;
+    -webkit-font-smoothing: antialiased;
+}
+
+h1, h2, .slot-name {
+    font-family: 'Fraunces', Georgia, serif;
+}
+
+.top-nav {
+    background: rgba(247, 241, 232, 0.92);
+    padding: 14px 32px;
+    border-bottom: 1px solid var(--mirror-border);
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    backdrop-filter: blur(12px);
+}
+
+.nav-home {
+    color: var(--mirror-gold-deep);
+    text-decoration: none;
+    font-weight: 600;
+}
+
+.nav-home:hover {
+    color: var(--mirror-plum);
+}
+
+.nav-divider {
+    color: var(--mirror-border-strong);
+    margin: 0 10px;
+}
+
+.nav-current {
+    color: var(--mirror-muted);
+    font-weight: 500;
+}
+
+.breadcrumb-date {
+    color: var(--mirror-muted);
+    font-size: 0.9em;
+}
+
+.container {
+    max-width: 880px;
+    margin: 0 auto;
+    padding: 28px 24px 56px;
+}
+
+.related-mods-strip {
+    background: rgba(92, 26, 64, 0.06);
+    border-color: var(--mirror-border);
+}
+
+.related-mods-strip a {
+    color: var(--mirror-gold-deep);
+}
+
+.hero {
+    text-align: center;
+    padding: 48px 28px 40px;
+    margin-bottom: 28px;
+    background:
+        radial-gradient(ellipse at 50% 0%, rgba(201, 162, 39, 0.18), transparent 58%),
+        linear-gradient(180deg, rgba(255, 253, 248, 0.96) 0%, rgba(247, 241, 232, 0.98) 100%);
+    border-radius: 24px;
+    border: 1px solid var(--mirror-border);
+    box-shadow: 0 22px 48px var(--mirror-shadow), inset 0 0 0 1px rgba(255, 255, 255, 0.65);
+    position: relative;
+    overflow: hidden;
+}
+
+.hero::before {
+    content: '';
+    position: absolute;
+    inset: -20% -10% auto -10%;
+    height: 55%;
+    background: radial-gradient(ellipse at 50% 0%, rgba(158, 197, 209, 0.22), transparent 70%);
+    pointer-events: none;
+}
+
+.hero > * {
+    position: relative;
+    z-index: 1;
+}
+
+.hero-portrait {
+    width: 168px;
+    height: 168px;
+    margin: 0 auto 18px;
+    border-radius: 28px;
+    overflow: hidden;
+    box-shadow:
+        0 0 0 3px var(--mirror-gold),
+        0 0 0 7px rgba(92, 26, 64, 0.18),
+        0 16px 32px var(--mirror-shadow);
+}
+
+.hero-portrait img {
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
 }
 
 .hero-label {
-    color: var(--mirror-amber);
+    font-size: 0.78rem;
+    text-transform: uppercase;
+    letter-spacing: 0.32em;
+    color: var(--mirror-gold-deep);
+    font-weight: 700;
+    margin: 0 0 8px;
+}
+
+.hero h1 {
+    font-size: 2.35rem;
+    font-weight: 700;
+    letter-spacing: -0.02em;
+    color: var(--mirror-plum-deep);
+    margin: 0 0 6px;
+    line-height: 1.15;
+}
+
+.hero h1 .full-name {
+    display: block;
+    font-size: 0.42em;
+    font-weight: 500;
+    font-style: italic;
+    letter-spacing: 0.02em;
+    color: var(--mirror-gold-deep);
+    margin-top: 8px;
+}
+
+.hero .tagline {
+    font-size: 1.08rem;
+    color: var(--mirror-plum);
+    font-weight: 600;
+    margin: 0 0 18px;
+}
+
+.mirror-callout {
+    display: inline-flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: center;
+    gap: 6px 8px;
+    max-width: 100%;
+    padding: 8px 16px;
+    margin-bottom: 18px;
+    background: rgba(201, 162, 39, 0.14);
+    border: 1px solid var(--mirror-border);
+    border-radius: 999px;
+    font-size: 0.92rem;
+    font-weight: 600;
+    color: var(--mirror-ink);
+}
+
+.mirror-callout-keys {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    white-space: nowrap;
+}
+
+.mirror-callout kbd {
+    font-family: ui-monospace, monospace;
+    font-size: 0.85em;
+    padding: 2px 7px;
+    border-radius: 5px;
+    background: var(--mirror-card);
+    border: 1px solid var(--mirror-border-strong);
 }
 
 .version-badge {
-    background: var(--mirror-amber);
+    display: inline-block;
+    padding: 6px 14px;
+    background: linear-gradient(135deg, var(--mirror-gold-deep), var(--mirror-gold));
+    color: #fff;
+    font-size: 0.8rem;
+    font-weight: 700;
+    letter-spacing: 0.05em;
+    border-radius: 999px;
 }
 
-.file-list {
-    margin: 0.75rem 0 0;
-    padding-left: 1.25rem;
-    line-height: 1.7;
+.mod-page-download-stats {
+    background: rgba(201, 162, 39, 0.1);
+    border-color: var(--mirror-border);
 }
 
-.file-list code {
-    font-size: 0.95em;
+.page-jump {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px 10px;
+    margin: 0 0 28px;
+}
+
+.page-jump a {
+    color: var(--mirror-gold-deep);
+    text-decoration: none;
+    font-weight: 600;
+    font-size: 0.88rem;
+    padding: 6px 12px;
+    border-radius: 999px;
+    border: 1px solid var(--mirror-border);
+    background: var(--mirror-card);
+}
+
+.page-jump a:hover {
+    border-color: var(--mirror-border-strong);
+    background: rgba(201, 162, 39, 0.12);
+}
+
+.intro-section {
+    padding: 22px 24px;
+    margin-bottom: 36px;
+    background: var(--mirror-card);
+    border-radius: 16px;
+    border-left: 4px solid var(--mirror-gold);
+    box-shadow: 0 4px 20px var(--mirror-shadow);
+}
+
+.intro-section p {
+    margin: 0;
+    font-size: 1.05rem;
+}
+
+.section-title {
+    font-size: 1.4rem;
+    font-weight: 700;
+    color: var(--mirror-plum-deep);
+    margin: 0 0 12px;
+    padding-bottom: 8px;
+    border-bottom: 2px solid var(--mirror-border);
+    display: inline-block;
+}
+
+.section-lead {
+    margin: 0 0 18px;
+    color: var(--mirror-muted);
+    max-width: 62ch;
+}
+
+.section-lead code,
+.feature-card code,
+.folder-card code,
+.install-step code {
+    background: rgba(201, 162, 39, 0.14);
+    padding: 1px 7px;
+    border-radius: 5px;
+    font-size: 0.9em;
+    color: var(--mirror-gold-deep);
+}
+
+.folder-section,
+.features-section,
+.config-section,
+.install-section,
+.related-mods,
+.intro-section {
+    margin-bottom: 44px;
+    scroll-margin-top: 76px;
+}
+
+.folder-map {
+    background: var(--mirror-card);
+    border: 1px solid var(--mirror-border);
+    border-radius: 16px;
+    padding: 20px 22px 16px;
+    box-shadow: 0 4px 20px var(--mirror-shadow);
+}
+
+.folder-path {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 4px 2px;
+    font-family: ui-monospace, monospace;
+    font-size: 0.88rem;
+    margin-bottom: 16px;
+    color: var(--mirror-muted);
+}
+
+.folder-sep {
+    opacity: 0.45;
+    padding: 0 2px;
+}
+
+.folder-accent {
+    color: var(--mirror-gold-deep);
+    font-weight: 700;
+}
+
+.folder-cards {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 12px;
+}
+
+.folder-card {
+    padding: 14px 16px;
+    border-radius: 12px;
+    background: rgba(201, 162, 39, 0.08);
+    border: 1px solid var(--mirror-border);
+}
+
+.folder-card-character {
+    background: rgba(92, 26, 64, 0.06);
+}
+
+.folder-card h3 {
+    margin: 0 0 6px;
+    font-size: 1rem;
+}
+
+.folder-card p {
+    margin: 0;
+    font-size: 0.92rem;
+    color: var(--mirror-muted);
+}
+
+.folder-note {
+    margin: 12px 0 0;
+    font-size: 0.88rem;
+    color: var(--mirror-muted);
+}
+
+.slot-heading {
+    font-size: 1.05rem;
+    font-weight: 700;
+    margin: 28px 0 12px;
+    color: var(--mirror-plum-deep);
+}
+
+.slot-grid {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 12px;
+}
+
+.slot-card {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    padding: 14px 14px 12px;
+    border-radius: 14px;
+    background: var(--mirror-card);
+    border: 1px solid var(--mirror-border);
+    border-top: 4px solid var(--slot-accent, var(--mirror-gold));
+    box-shadow: 0 4px 14px var(--mirror-shadow);
+}
+
+.slot-spring { --slot-accent: #5a8f4a; }
+.slot-summer { --slot-accent: #d4a017; }
+.slot-autumn { --slot-accent: #c45c1a; }
+.slot-winter { --slot-accent: #6a9bb8; }
+.slot-vows { --slot-accent: #c48aa0; }
+.slot-shore { --slot-accent: #3d9aa0; }
+.slot-costume { --slot-accent: #7a4aa8; }
+
+.slot-name {
+    font-size: 1.05rem;
+    font-weight: 700;
+    color: var(--mirror-ink);
+}
+
+.slot-card code {
+    font-size: 0.82rem;
+    color: var(--mirror-gold-deep);
+}
+
+.slot-use {
+    font-size: 0.82rem;
+    color: var(--mirror-muted);
+}
+
+.features-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 16px;
+    margin-top: 8px;
+}
+
+.feature-card {
+    background: var(--mirror-card);
+    border: 1px solid var(--mirror-border);
+    border-radius: 16px;
+    padding: 20px 18px;
+}
+
+.feature-card h3 {
+    font-size: 1.08rem;
+    margin: 0 0 8px;
+    color: var(--mirror-plum-deep);
+}
+
+.feature-card p {
+    margin: 0;
+    font-size: 0.95rem;
+    color: var(--mirror-muted);
+}
+
+.feature-card kbd {
+    font-family: ui-monospace, monospace;
+    font-size: 0.85em;
+    padding: 1px 6px;
+    border-radius: 4px;
+    border: 1px solid var(--mirror-border-strong);
+    background: rgba(201, 162, 39, 0.1);
+}
+
+.config-table {
+    margin-top: 12px;
+    border-radius: 14px;
+    overflow: hidden;
+    border: 1px solid var(--mirror-border);
+    box-shadow: 0 4px 20px var(--mirror-shadow);
+}
+
+.config-table .table-bar {
+    padding: 10px 16px;
+    background: linear-gradient(180deg, rgba(201, 162, 39, 0.18), rgba(201, 162, 39, 0.08));
+    border-bottom: 1px solid var(--mirror-border);
+    font-family: ui-monospace, monospace;
+    font-size: 0.85rem;
+    color: var(--mirror-muted);
+}
+
+.table-scroll {
+    overflow-x: auto;
+}
+
+.config-table table {
+    width: 100%;
+    min-width: 520px;
+    border-collapse: collapse;
+    background: var(--mirror-card);
+}
+
+.config-table th {
+    text-align: left;
+    padding: 12px 16px;
+    font-size: 0.78rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    color: var(--mirror-gold-deep);
+    background: rgba(201, 162, 39, 0.1);
+}
+
+.config-table td {
+    padding: 12px 16px;
+    border-top: 1px solid var(--mirror-border);
+    font-size: 0.94rem;
+    vertical-align: top;
+}
+
+.config-table tbody tr:hover {
+    background: rgba(201, 162, 39, 0.06);
+}
+
+.config-table code {
+    background: rgba(201, 162, 39, 0.14);
+    padding: 2px 7px;
+    border-radius: 5px;
+    font-size: 0.88em;
+    color: var(--mirror-gold-deep);
+}
+
+.install-steps {
+    list-style: none;
+    margin: 12px 0 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.install-step {
+    display: flex;
+    gap: 16px;
+    align-items: flex-start;
+    padding: 18px 20px;
+    background: var(--mirror-card);
+    border: 1px solid var(--mirror-border);
+    border-radius: 14px;
+}
+
+.step-num {
+    flex-shrink: 0;
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    color: #fff;
+    background: linear-gradient(135deg, var(--mirror-gold-deep), var(--mirror-gold));
+}
+
+.step-info h3 {
+    margin: 0 0 4px;
+    font-size: 1.05rem;
+    font-family: 'Outfit', sans-serif;
+}
+
+.step-info p {
+    margin: 0;
+    font-size: 0.95rem;
+    color: var(--mirror-muted);
+}
+
+.step-info a {
+    color: var(--mirror-gold-deep);
+    font-weight: 600;
+}
+
+.related-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+    gap: 14px;
+    margin-top: 8px;
+}
+
+.related-card {
+    display: block;
+    padding: 18px 20px;
+    border-radius: 16px;
+    text-decoration: none;
+    color: inherit;
+    background: var(--mirror-card);
+    border: 1px solid var(--mirror-border);
+}
+
+.related-card:hover {
+    border-color: var(--mirror-gold);
+}
+
+.related-info h3 {
+    margin: 0 0 6px;
+    font-size: 1.05rem;
+    font-family: 'Outfit', sans-serif;
+    color: var(--mirror-plum-deep);
+}
+
+.related-info p {
+    margin: 0;
+    font-size: 0.9rem;
+    color: var(--mirror-muted);
+}
+
+.footer {
+    padding-top: 28px;
+    border-top: 1px solid var(--mirror-border);
+    text-align: center;
+}
+
+.footer p {
+    margin: 0;
+    color: var(--mirror-muted);
+}
+
+.footer-links {
+    margin-top: 10px;
+}
+
+.footer-links a {
+    color: var(--mirror-gold-deep);
+    font-weight: 600;
+    text-decoration: none;
+}
+
+.footer-links a:hover {
+    color: var(--mirror-plum);
+}
+
+.download-nav {
+    --download-accent: #8a6a12;
+    --download-accent-hover: #c9a227;
+}
+
+/* Dark mode */
+[data-theme="dark"] body {
+    background:
+        radial-gradient(ellipse at 12% 0%, rgba(201, 162, 39, 0.12), transparent 48%),
+        radial-gradient(ellipse at 88% 8%, rgba(92, 26, 64, 0.35), transparent 42%),
+        linear-gradient(165deg, #140c12 0%, #1c1018 50%, #120c10 100%);
+    color: #f3eadc;
+}
+
+[data-theme="dark"] .top-nav {
+    background: rgba(20, 12, 18, 0.92);
+    border-bottom-color: rgba(201, 162, 39, 0.28);
+}
+
+[data-theme="dark"] .nav-home,
+[data-theme="dark"] .page-jump a,
+[data-theme="dark"] .footer-links a,
+[data-theme="dark"] .step-info a,
+[data-theme="dark"] .related-mods-strip a {
+    color: var(--mirror-gold-bright);
+}
+
+[data-theme="dark"] .nav-current,
+[data-theme="dark"] .breadcrumb-date,
+[data-theme="dark"] .section-lead,
+[data-theme="dark"] .folder-card p,
+[data-theme="dark"] .folder-note,
+[data-theme="dark"] .slot-use,
+[data-theme="dark"] .feature-card p,
+[data-theme="dark"] .step-info p,
+[data-theme="dark"] .related-info p,
+[data-theme="dark"] .footer p,
+[data-theme="dark"] .config-table .table-bar {
+    color: #d4c4b0;
+}
+
+[data-theme="dark"] .hero {
+    background:
+        radial-gradient(ellipse at 50% 0%, rgba(201, 162, 39, 0.16), transparent 58%),
+        linear-gradient(180deg, rgba(36, 20, 30, 0.96) 0%, rgba(22, 12, 18, 0.98) 100%);
+    border-color: rgba(201, 162, 39, 0.32);
+    box-shadow: 0 22px 48px rgba(0, 0, 0, 0.4);
+}
+
+[data-theme="dark"] .hero h1,
+[data-theme="dark"] .section-title,
+[data-theme="dark"] .slot-heading,
+[data-theme="dark"] .feature-card h3,
+[data-theme="dark"] .related-info h3,
+[data-theme="dark"] .step-info h3,
+[data-theme="dark"] .slot-name {
+    color: #f8f0e4;
+}
+
+[data-theme="dark"] .hero h1 .full-name,
+[data-theme="dark"] .hero-label {
+    color: var(--mirror-gold-bright);
+}
+
+[data-theme="dark"] .hero .tagline {
+    color: #e8c9d8;
+}
+
+[data-theme="dark"] .mirror-callout {
+    color: #f3eadc;
+    background: rgba(201, 162, 39, 0.18);
+    border-color: rgba(201, 162, 39, 0.4);
+}
+
+[data-theme="dark"] .mirror-callout kbd {
+    background: rgba(20, 12, 18, 0.9);
+    color: #f8f0e4;
+    border-color: rgba(201, 162, 39, 0.45);
+}
+
+[data-theme="dark"] .intro-section,
+[data-theme="dark"] .folder-map,
+[data-theme="dark"] .folder-card,
+[data-theme="dark"] .slot-card,
+[data-theme="dark"] .feature-card,
+[data-theme="dark"] .install-step,
+[data-theme="dark"] .related-card,
+[data-theme="dark"] .page-jump a,
+[data-theme="dark"] .config-table table {
+    background: rgba(32, 18, 26, 0.92);
+    border-color: rgba(201, 162, 39, 0.28);
+}
+
+[data-theme="dark"] .intro-section {
+    border-left-color: var(--mirror-gold);
+}
+
+[data-theme="dark"] .config-table th {
+    color: var(--mirror-gold-bright);
+    background: rgba(201, 162, 39, 0.12);
+}
+
+[data-theme="dark"] .config-table td {
+    border-top-color: rgba(201, 162, 39, 0.2);
+    color: #f3eadc;
+}
+
+[data-theme="dark"] .config-table code,
+[data-theme="dark"] .section-lead code,
+[data-theme="dark"] .feature-card code,
+[data-theme="dark"] .folder-card code,
+[data-theme="dark"] .install-step code,
+[data-theme="dark"] .slot-card code {
+    background: rgba(201, 162, 39, 0.18);
+    color: var(--mirror-gold-bright);
+}
+
+[data-theme="dark"] .mod-page-download-stats {
+    background: rgba(201, 162, 39, 0.1);
+    border-color: rgba(201, 162, 39, 0.28);
+}
+
+[data-theme="dark"] .footer {
+    border-top-color: rgba(201, 162, 39, 0.25);
+}
+
+@media (max-width: 640px) {
+    .container {
+        padding: 18px 16px 40px;
+    }
+
+    .hero {
+        padding: 32px 18px 28px;
+    }
+
+    .hero h1 {
+        font-size: 1.85rem;
+    }
+
+    .hero-portrait {
+        width: 132px;
+        height: 132px;
+    }
+
+    .top-nav {
+        padding: 12px 16px;
+    }
+
+    .slot-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .mirror-callout {
+        font-size: 0.85rem;
+        padding: 8px 12px;
+        border-radius: 16px;
+    }
+
+    .breadcrumb-date {
+        display: none;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .related-card:hover,
+    .page-jump a:hover,
+    .install-step {
+        transition: none;
+    }
 }

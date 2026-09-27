@@ -11,8 +11,8 @@
     <link rel="canonical" href="https://azraelgodking.github.io/SunhavenMod/HavensMirror/HavensMirror.html">
     <meta property="og:url" content="https://azraelgodking.github.io/SunhavenMod/HavensMirror/HavensMirror.html">
     <meta property="og:image" content="https://azraelgodking.github.io/SunhavenMod/og-card.png">
-    <meta name="theme-color" content="#b45309">
-    <link rel="icon" type="image/svg+xml" href="../favicon.svg">
+    <meta name="theme-color" content="#c9a227">
+    <link rel="icon" type="image/png" href="icon.png">
     <link rel="stylesheet" href="../shared-styles.css">
     <link rel="stylesheet" href="mirror-style.css">
     <script src="../shared.js" defer></script>
@@ -36,10 +36,16 @@
         </nav>
 
         <header class="hero">
-            <div class="hero-icon-wrap" aria-hidden="true">&#x1FA9E;</div>
-            <p class="hero-label">Quick Mod</p>
-            <h1>Haven's Mirror<span class="full-name">Custom Dialogue Busts</span></h1>
+            <div class="hero-portrait" aria-hidden="true">
+                <img src="icon.png" width="176" height="176" alt="">
+            </div>
+            <p class="hero-label">Dialogue portraits</p>
+            <h1>Haven's Mirror<span class="full-name">Custom player busts</span></h1>
             <p class="tagline">Your face in the conversation</p>
+            <div class="mirror-callout" aria-label="Reload hotkey">
+                <span class="mirror-callout-keys"><kbd>Ctrl</kbd> + <kbd>F8</kbd></span>
+                <span>reloads PNGs in-game</span>
+            </div>
             <span class="version-badge">v1.0.0</span>
         </header>
 
@@ -49,123 +55,198 @@
             <span>Combined <strong><span data-stats-mod="havens-mirror" data-field="combined_total">&mdash;</span></strong></span>
         </div>
 
-        <section class="intro-section">
-            <p>Haven's Mirror lets you show a <strong>custom player bust</strong> during dialogue by dropping PNG files into a gallery folder. Optional config can force a look for NPC portraits and seasonal outfits. Reload portraits with a hotkey &mdash; no restart required.</p>
+        <nav class="page-jump" aria-label="Page sections">
+            <a href="#overview">Overview</a>
+            <a href="#gallery">Gallery files</a>
+            <a href="#features">Features</a>
+            <a href="#config">Config</a>
+            <a href="#install">Install</a>
+        </nav>
+
+        <section class="intro-section" id="overview">
+            <p>Haven's Mirror shows a <strong>custom player bust</strong> during dialogue. Drop PNGs into a gallery folder &mdash; one per look. Optional config can keep NPC portraits (and seasonal outfits) on a look you choose. Reload from disk with a hotkey; no restart required.</p>
         </section>
 
-        <section class="features-section">
-            <h2 class="section-title">Features</h2>
-            <div class="features-grid">
-                <div class="feature-card">
-                    <div class="feature-icon">&#x1F5BC;&#xFE0F;</div>
-                    <h3>PNG Gallery</h3>
-                    <p>Per-character folders under <code>gallery/</code>, with a shared fallback. Missing slots reuse the first PNG found.</p>
+        <section class="folder-section" id="gallery" aria-labelledby="gallery-title">
+            <h2 class="section-title" id="gallery-title">Where portraits go</h2>
+            <p class="section-lead">On launch the mod scans your character saves and creates empty folders. Empty folders are ignored until you add PNGs. <code>gallery/_shared/</code> is the fallback for every character.</p>
+            <div class="folder-map">
+                <div class="folder-path" aria-label="Plugin gallery path">
+                    <span>BepInEx</span><span class="folder-sep">/</span>
+                    <span>plugins</span><span class="folder-sep">/</span>
+                    <span>HavensMirror</span><span class="folder-sep">/</span>
+                    <span class="folder-accent">gallery</span>
                 </div>
-                <div class="feature-card">
-                    <div class="feature-icon">&#x1F338;</div>
-                    <h3>Season &amp; Special Looks</h3>
-                    <p>Spring, summer, autumn, winter, vows, shore, and costume files map to dialogue contexts.</p>
+                <div class="folder-cards">
+                    <article class="folder-card">
+                        <h3><code>_shared</code></h3>
+                        <p>Fallback looks used when a character folder is empty or a slot file is missing.</p>
+                    </article>
+                    <article class="folder-card folder-card-character">
+                        <h3><code>&lt;CharacterName&gt;</code></h3>
+                        <p>Created from your saves. Drop PNGs here to override the shared gallery for that farmer.</p>
+                    </article>
                 </div>
-                <div class="feature-card">
-                    <div class="feature-icon">&#x1F504;</div>
-                    <h3>Hotkey Reload</h3>
-                    <p>Press <kbd>Ctrl</kbd>+<kbd>F8</kbd> (configurable) to reload PNGs from disk while playing.</p>
-                </div>
-                <div class="feature-card">
-                    <div class="feature-icon">&#x1F3AD;</div>
-                    <h3>Forced Look</h3>
-                    <p>Optional override keeps NPC dialogue busts (and seasonal body outfits) on a look you choose.</p>
-                </div>
+                <p class="folder-note">Missing slots reuse the first PNG found in that folder.</p>
             </div>
-        </section>
 
-        <section class="config-section">
-            <h2 class="section-title">Portrait files</h2>
-            <p>When the game runs, Haven's Mirror reads your character saves and creates empty <code>gallery/&lt;CharacterName&gt;/</code> folders for you. Empty folders are ignored until you add PNGs. You can also use <code>gallery/_shared/</code> as a fallback:</p>
-            <ul class="file-list">
-                <li><code>spring.png</code> &mdash; default / spring</li>
-                <li><code>summer.png</code>, <code>autumn.png</code>, <code>winter.png</code></li>
-                <li><code>vows.png</code> &mdash; wedding / ceremony</li>
-                <li><code>shore.png</code> &mdash; swimsuit / beach</li>
-                <li><code>costume.png</code> &mdash; halloween / costume</li>
+            <h3 class="slot-heading">Expected file names</h3>
+            <ul class="slot-grid">
+                <li class="slot-card slot-spring">
+                    <span class="slot-name">Spring</span>
+                    <code>spring.png</code>
+                    <span class="slot-use">Default / spring</span>
+                </li>
+                <li class="slot-card slot-summer">
+                    <span class="slot-name">Summer</span>
+                    <code>summer.png</code>
+                    <span class="slot-use">Warm season</span>
+                </li>
+                <li class="slot-card slot-autumn">
+                    <span class="slot-name">Autumn</span>
+                    <code>autumn.png</code>
+                    <span class="slot-use">Fall season</span>
+                </li>
+                <li class="slot-card slot-winter">
+                    <span class="slot-name">Winter</span>
+                    <code>winter.png</code>
+                    <span class="slot-use">Cold season</span>
+                </li>
+                <li class="slot-card slot-vows">
+                    <span class="slot-name">Vows</span>
+                    <code>vows.png</code>
+                    <span class="slot-use">Wedding / ceremony</span>
+                </li>
+                <li class="slot-card slot-shore">
+                    <span class="slot-name">Shore</span>
+                    <code>shore.png</code>
+                    <span class="slot-use">Swimsuit / beach</span>
+                </li>
+                <li class="slot-card slot-costume">
+                    <span class="slot-name">Costume</span>
+                    <code>costume.png</code>
+                    <span class="slot-use">Halloween / costume</span>
+                </li>
             </ul>
         </section>
 
-        <section class="config-section">
+        <section class="features-section" id="features">
+            <h2 class="section-title">Features</h2>
+            <div class="features-grid">
+                <article class="feature-card">
+                    <h3>PNG gallery</h3>
+                    <p>Per-character folders under <code>gallery/</code>, with a shared fallback. Missing slots reuse the first PNG found.</p>
+                </article>
+                <article class="feature-card">
+                    <h3>Season &amp; special looks</h3>
+                    <p>Spring, summer, autumn, winter, vows, shore, and costume files map to dialogue contexts.</p>
+                </article>
+                <article class="feature-card">
+                    <h3>Hotkey reload</h3>
+                    <p>Press <kbd>Ctrl</kbd>+<kbd>F8</kbd> (configurable) to reload PNGs from disk while playing.</p>
+                </article>
+                <article class="feature-card">
+                    <h3>Forced look</h3>
+                    <p>Optional override keeps NPC dialogue busts (and seasonal body outfits) on a look you choose.</p>
+                </article>
+            </div>
+        </section>
+
+        <section class="config-section" id="config">
             <h2 class="section-title">Configuration</h2>
             <div class="config-table">
                 <div class="table-bar">
                     <span class="table-bar-title">BepInEx/config/HavensMirror.cfg</span>
                 </div>
-                <table>
-                    <thead>
-                        <tr>
-                            <th>Setting</th>
-                            <th>Default</th>
-                            <th>Description</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr>
-                            <td><code>Enabled</code></td>
-                            <td>true</td>
-                            <td>Master switch</td>
-                        </tr>
-                        <tr>
-                            <td><code>GalleryFolderName</code></td>
-                            <td>gallery</td>
-                            <td>Folder under the plugin directory for portraits</td>
-                        </tr>
-                        <tr>
-                            <td><code>SharedFolderName</code></td>
-                            <td>_shared</td>
-                            <td>Fallback folder when the character folder is empty</td>
-                        </tr>
-                        <tr>
-                            <td><code>ForcedLook</code></td>
-                            <td>(blank)</td>
-                            <td>Spring / Summer / Autumn / Winter / Vows / Shore / Costume</td>
-                        </tr>
-                        <tr>
-                            <td><code>ReloadModifier</code> + <code>ReloadKey</code></td>
-                            <td>LeftControl + F8</td>
-                            <td>Reload PNGs from disk</td>
-                        </tr>
-                    </tbody>
-                </table>
+                <div class="table-scroll">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Setting</th>
+                                <th>Default</th>
+                                <th>Description</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><code>Enabled</code></td>
+                                <td>true</td>
+                                <td>Master switch</td>
+                            </tr>
+                            <tr>
+                                <td><code>GalleryFolderName</code></td>
+                                <td>gallery</td>
+                                <td>Folder under the plugin directory for portraits</td>
+                            </tr>
+                            <tr>
+                                <td><code>SharedFolderName</code></td>
+                                <td>_shared</td>
+                                <td>Fallback folder when the character folder is empty</td>
+                            </tr>
+                            <tr>
+                                <td><code>ForcedLook</code></td>
+                                <td>(blank)</td>
+                                <td>Spring / Summer / Autumn / Winter / Vows / Shore / Costume</td>
+                            </tr>
+                            <tr>
+                                <td><code>ReloadModifier</code> + <code>ReloadKey</code></td>
+                                <td>LeftControl + F8</td>
+                                <td>Reload PNGs from disk</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
             </div>
         </section>
 
-        <section class="install-section">
+        <section class="install-section" id="install">
             <h2 class="section-title">Installation</h2>
-            <div class="install-steps">
-                <div class="install-step">
-                    <div class="step-icon">&#x1F4E6;</div>
+            <ol class="install-steps">
+                <li class="install-step">
+                    <span class="step-num" aria-hidden="true">1</span>
                     <div class="step-info">
-                        <h4>1. Install BepInEx</h4>
+                        <h3>Install BepInEx</h3>
                         <p>Install BepInEx 5.x for Sun Haven if you haven't already.</p>
                     </div>
-                </div>
-                <div class="install-step">
-                    <div class="step-icon">&#x1F4E5;</div>
+                </li>
+                <li class="install-step">
+                    <span class="step-num" aria-hidden="true">2</span>
                     <div class="step-info">
-                        <h4>2. Download Haven's Mirror</h4>
-                        <p>Get <code>HavensMirror.dll</code> from <a href="https://www.nexusmods.com/sunhaven/mods/538" target="_blank" rel="noopener noreferrer">Nexus Mods</a>, <a href="https://thunderstore.io/c/sun-haven/p/AzraelGodKing/HavensMirror/" target="_blank" rel="noopener noreferrer">Thunderstore</a>, or GitHub Releases — or build from this repo.</p>
+                        <h3>Download Haven's Mirror</h3>
+                        <p>Get <code>HavensMirror.dll</code> from <a href="https://www.nexusmods.com/sunhaven/mods/538" target="_blank" rel="noopener noreferrer">Nexus Mods</a>, <a href="https://thunderstore.io/c/sun-haven/p/AzraelGodKing/HavensMirror/" target="_blank" rel="noopener noreferrer">Thunderstore</a>, or GitHub Releases &mdash; or build from this repo.</p>
                     </div>
-                </div>
-                <div class="install-step">
-                    <div class="step-icon">&#x1F4C1;</div>
+                </li>
+                <li class="install-step">
+                    <span class="step-num" aria-hidden="true">3</span>
                     <div class="step-info">
-                        <h4>3. Install &amp; add portraits</h4>
+                        <h3>Install &amp; add portraits</h3>
                         <p>Place the DLL in <code>BepInEx/plugins/HavensMirror/</code>, then drop PNGs into <code>gallery/_shared/</code> or a character-named subfolder.</p>
                     </div>
-                </div>
+                </li>
+            </ol>
+        </section>
+
+        <section class="related-mods">
+            <h2 class="section-title">Works well with</h2>
+            <div class="related-grid">
+                <a href="../HavensAlmanac/HavensAlmanac.html" class="related-card">
+                    <div class="related-info">
+                        <h3>Haven's Almanac</h3>
+                        <p>Unified HUD, dashboard, and briefing for the rest of the suite</p>
+                    </div>
+                </a>
+                <a href="../HavenDevTools/HavenDevTools.html" class="related-card">
+                    <div class="related-info">
+                        <h3>Haven Dev Tools</h3>
+                        <p>Health and suite tabs while you test portrait reloads</p>
+                    </div>
+                </a>
             </div>
         </section>
 
         <nav class="download-nav" data-mod-key="com.azraelgodking.havensmirror" aria-label="Download links"></nav>
         <footer class="footer">
-            <p>Haven's Mirror - A Sun Haven Mod by AzraelGodKing</p>
+            <p>Haven's Mirror &mdash; a Sun Haven mod by AzraelGodKing</p>
             <div class="footer-links">
                 <a href="../index.html">Back to Mod Hub</a>
             </div>
