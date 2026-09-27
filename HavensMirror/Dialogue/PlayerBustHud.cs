@@ -222,9 +222,9 @@ namespace HavensMirror.Dialogue
         }
 
         /// <summary>
-        /// Canvas-local left placement. X is always a left-half fraction of the canvas —
-        /// never NPC anchored X, never mirrored sibling placement under BustOffset.
-        /// After NPC settles, only size + Y are refreshed from the NPC; X stays left-locked.
+        /// Screen-space left placement under root Canvas (never BustOffset).
+        /// X from Screen.width * LeftFraction — not from parent rect xMin (the 'UI' node can be
+        /// right-biased; left-of-UI still stacks on the NPC). Y/size from NPC only.
         /// </summary>
         private void PlaceOnLeftHalf()
         {
@@ -234,12 +234,14 @@ namespace HavensMirror.Dialogue
             TryResolveNpcBust();
             RectTransform npcRect = _npcBust != null ? _npcBust.rectTransform : null;
             RectTransform layoutParent = ResolveLayoutParent();
+            Canvas canvas = layoutParent != null ? layoutParent.GetComponentInParent<Canvas>() : null;
+            if (canvas != null && canvas.rootCanvas != null)
+                canvas = canvas.rootCanvas;
 
             if (layoutParent != null && _rect.parent != layoutParent)
                 _rect.SetParent(layoutParent, false);
 
-            // Center anchors so anchoredPosition is absolute canvas-local (not left-edge relative
-            // under a right-biased intermediate parent).
+            // Center anchors: anchoredPosition is parent-local, filled from screen points below.
             _rect.anchorMin = new Vector2(0.5f, 0.5f);
             _rect.anchorMax = new Vector2(0.5f, 0.5f);
             _rect.pivot = new Vector2(0.5f, 0.5f);
@@ -249,25 +251,53 @@ namespace HavensMirror.Dialogue
             Vector2 size = ResolvePlayerSize(npcRect);
             _rect.sizeDelta = size;
 
-            Rect canvasRect = layoutParent != null
-                ? layoutParent.rect
-                : new Rect(-960f, -540f, 1920f, 1080f);
+            Camera eventCam = null;
+            if (canvas != null && canvas.renderMode != RenderMode.ScreenSpaceOverlay)
+                eventCam = canvas.worldCamera;
 
-            // Left half only — fraction of canvas width, then pad by half bust width + margin.
-            float leftCenterX = canvasRect.xMin + canvasRect.width * LeftFraction;
-            float x = leftCenterX;
-            // Keep the full sprite on-screen with a left margin.
-            float minX = canvasRect.xMin + size.x * 0.5f + LeftMargin;
-            if (x < minX)
-                x = minX;
-            // Never cross into the right half.
-            float maxLeftX = canvasRect.xMin + canvasRect.width * 0.45f - size.x * 0.5f;
-            if (x > maxLeftX)
-                x = maxLeftX;
+            float screenX = Mathf.Max(Screen.width * LeftFraction, size.x * 0.5f + LeftMargin);
+            // Hard cap: stay in the left 45% of the screen.
+            float screenMaxX = Screen.width * 0.45f - size.x * 0.5f;
+            if (screenX > screenMaxX)
+                screenX = Mathf.Max(size.x * 0.5f + LeftMargin, screenMaxX);
 
-            float y = ResolvePlayerY(npcRect, layoutParent, canvasRect);
+            float screenY;
+            if (npcRect != null)
+            {
+                Vector3 npcWorldCenter = npcRect.TransformPoint(npcRect.rect.center);
+                Vector2 npcScreen = RectTransformUtility.WorldToScreenPoint(eventCam, npcWorldCenter);
+                screenY = npcScreen.y;
+            }
+            else
+            {
+                screenY = Screen.height * 0.5f;
+            }
 
-            _rect.anchoredPosition = new Vector2(x, y);
+            Vector2 screenPoint = new Vector2(screenX, screenY);
+            Vector2 localPoint;
+            if (layoutParent != null
+                && RectTransformUtility.ScreenPointToLocalPointInRectangle(
+                    layoutParent, screenPoint, eventCam, out localPoint))
+            {
+                _rect.anchoredPosition = localPoint;
+            }
+            else
+            {
+                // Fallback if conversion fails: left fraction of parent rect (still never NPC.x).
+                Rect canvasRect = layoutParent != null
+                    ? layoutParent.rect
+                    : new Rect(-960f, -540f, 1920f, 1080f);
+                float x = canvasRect.xMin + canvasRect.width * LeftFraction;
+                float y = 0f;
+                if (npcRect != null && layoutParent != null)
+                {
+                    Vector3 npcWorldCenter = npcRect.TransformPoint(npcRect.rect.center);
+                    Vector3 npcLocal = layoutParent.InverseTransformPoint(npcWorldCenter);
+                    y = npcLocal.y - canvasRect.center.y;
+                }
+
+                _rect.anchoredPosition = new Vector2(x, y);
+            }
 
             _image.color = Color.white;
             _image.preserveAspect = true;
@@ -296,20 +326,6 @@ namespace HavensMirror.Dialogue
                 size = new Vector2(FallbackBustWidth, FallbackBustHeight);
 
             return size;
-        }
-
-        /// <summary>
-        /// Y from NPC bust world center → canvas local. Never uses NPC.x for player X.
-        /// </summary>
-        private static float ResolvePlayerY(RectTransform npcRect, RectTransform layoutParent, Rect canvasRect)
-        {
-            if (npcRect == null || layoutParent == null)
-                return 0f;
-
-            Vector3 npcWorldCenter = npcRect.TransformPoint(npcRect.rect.center);
-            Vector3 npcLocal = layoutParent.InverseTransformPoint(npcWorldCenter);
-            // Center-anchored child: anchored Y is offset from parent rect center.
-            return npcLocal.y - canvasRect.center.y;
         }
 
         public void Hide()
@@ -403,10 +419,12 @@ namespace HavensMirror.Dialogue
                 Vector2 npcPos = _npcBust != null
                     ? _npcBust.rectTransform.anchoredPosition
                     : Vector2.zero;
+                Vector3 playerScreen = RectTransformUtility.WorldToScreenPoint(null, _rect.position);
                 Plugin.Log?.LogInfo(
                     $"[Dialogue] Player bust layout: parent='{parentName}' anchoredPosition={_rect.anchoredPosition} " +
                     $"sizeDelta={_rect.sizeDelta} anchors=({_rect.anchorMin},{_rect.anchorMax}) " +
-                    $"npcParent='{npcParent}' npcAnchored={npcPos} siblingIndex={_rect.GetSiblingIndex()}");
+                    $"screen={playerScreen} npcParent='{npcParent}' npcAnchored={npcPos} " +
+                    $"siblingIndex={_rect.GetSiblingIndex()}");
             }
 
             Plugin.Log?.LogInfo($"[Dialogue] Present player bust '{slot}' from '{loadedFrom}'.");
