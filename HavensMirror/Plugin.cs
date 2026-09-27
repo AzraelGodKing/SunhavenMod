@@ -21,10 +21,9 @@ namespace HavensMirror
         public static ManualLogSource Log { get; private set; }
         public static SpriteShelf Shelf { get; private set; }
 
-        private Harmony _harmony;
+        private static Harmony _harmony;
+        private static MirrorPersistentRunner _runner;
         private bool _applicationQuitting;
-        private GalleryReloadLoop _reloadLoop;
-        private GalleryFolderSyncLoop _folderSyncLoop;
 
         private void Awake()
         {
@@ -61,8 +60,10 @@ namespace HavensMirror
                 Log.LogError($"Harmony setup failed (game version drift?): {ex}");
             }
 
-            _reloadLoop = gameObject.AddComponent<GalleryReloadLoop>();
-            _folderSyncLoop = gameObject.AddComponent<GalleryFolderSyncLoop>();
+            // DDOL runner owns folder sync + reload hotkey so early BepInEx OnDestroy
+            // (empty scene) does not kill Harmony patches or gallery sync.
+            if (_runner == null)
+                _runner = PersistentRunnerBase.CreateRunner<MirrorPersistentRunner>();
 
             ReloadGallery(notify: false);
 
@@ -160,25 +161,19 @@ namespace HavensMirror
             bool expectedTeardown = _applicationQuitting || !Application.isPlaying
                                     || sceneLower.Contains("menu") || sceneLower.Contains("title");
             if (expectedTeardown)
+            {
                 Log?.LogInfo($"[Lifecycle] Plugin OnDestroy during expected teardown (scene: {sceneName})");
+                Shelf?.Dispose();
+                Shelf = null;
+                _harmony?.UnpatchSelf();
+                _harmony = null;
+            }
             else
-                Log?.LogWarning($"[Lifecycle] Plugin OnDestroy outside expected teardown (scene: {sceneName})");
-
-            if (_reloadLoop != null)
             {
-                Destroy(_reloadLoop);
-                _reloadLoop = null;
+                // Early BepInEx empty-scene OnDestroy: keep Harmony + Shelf + PersistentRunner alive
+                // so dialogue busts and gallery sync continue working (Suite pattern / AZR-346).
+                Log?.LogWarning($"[Lifecycle] Plugin OnDestroy outside expected teardown (scene: {sceneName}) — keeping Harmony patches, Shelf, and MirrorPersistentRunner");
             }
-
-            if (_folderSyncLoop != null)
-            {
-                Destroy(_folderSyncLoop);
-                _folderSyncLoop = null;
-            }
-
-            Shelf?.Dispose();
-            Shelf = null;
-            _harmony?.UnpatchSelf();
         }
     }
 }

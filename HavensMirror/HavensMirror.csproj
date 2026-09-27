@@ -75,6 +75,8 @@
     <Compile Include="..\SharedUtilities\CharacterSaveStore.cs" Link="Shared\CharacterSaveStore.cs" />
     <Compile Include="..\SharedUtilities\GameSaveCharacterName.cs" Link="Shared\GameSaveCharacterName.cs" />
     <Compile Include="..\SharedUtilities\SceneRootSurvivor.cs" Link="Shared\SceneRootSurvivor.cs" />
+    <Compile Include="..\SharedUtilities\PersistentRunnerBase.cs" Link="Shared\PersistentRunnerBase.cs" />
+    <Compile Include="..\SharedUtilities\SceneHelpers.cs" Link="Shared\SceneHelpers.cs" />
     <Compile Include="..\SharedUtilities\VersionChecker.cs" Link="Shared\VersionChecker.cs" />
   </ItemGroup>
 
