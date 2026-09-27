@@ -40,6 +40,7 @@ namespace HavensMirror.Dialogue
             TryPatchAwake(harmony, dialogueType);
             TryPatchBustVisualSetters(harmony, dialogueType);
             TryPatchInitialBustSelectors(harmony, dialogueType);
+            TryPatchCancelDialogue(harmony, dialogueType);
 
             _bound = true;
         }
@@ -141,7 +142,14 @@ namespace HavensMirror.Dialogue
                     panel = component.gameObject;
 
                 if (panel != null)
+                {
                     PlayerBustHud.EnsureOn(panel);
+                    Plugin.Log?.LogInfo("[Dialogue] PlayerBustHud attached on DialogueController.Awake.");
+                }
+                else
+                {
+                    Plugin.Log?.LogWarning("[Dialogue] Awake: dialogue panel not found — HUD attach deferred.");
+                }
 
                 // Saves are usually loaded by the time dialogue UI exists — ensure character folders exist.
                 SaveSlotFolderSync.EnsureCharacterFolders();
@@ -168,20 +176,83 @@ namespace HavensMirror.Dialogue
             }
         }
 
-        private static void BustSetterPostfix(object[] __args)
+        private static void BustSetterPostfix(object __instance, object[] __args)
         {
             if (MirrorOptions.Enabled == null || !MirrorOptions.Enabled.Value)
                 return;
 
             try
             {
-                bool vows = false, shore = false, costume = false, refresh = false;
-                ReadLookFlagsFromArgs(__args, ref vows, ref shore, ref costume, ref refresh);
-                PlayerBustHud.Instance?.Present(vows, shore, costume, refresh);
+                // NPCAI.Interact always passes isRefreshBust:true — that flag only hides the
+                // vanilla NPC bust while addressables load. Do NOT treat it as "hide player".
+                bool vows = false, shore = false, costume = false, refreshIgnored = false;
+                ReadLookFlagsFromArgs(__args, ref vows, ref shore, ref costume, ref refreshIgnored);
+
+                // Awake may have missed the panel (or Instance was cleared) — re-attach here.
+                EnsureHudOn(__instance);
+
+                PlayerBustHud hud = PlayerBustHud.Instance;
+                if (hud == null)
+                {
+                    Plugin.Log?.LogWarning("[Dialogue] Present skipped — PlayerBustHud not attached.");
+                    return;
+                }
+
+                hud.Present(vows, shore, costume);
             }
             catch (Exception ex)
             {
-                Plugin.Log?.LogDebug($"[Dialogue] BustSetterPostfix: {ex.Message}");
+                Plugin.Log?.LogWarning($"[Dialogue] BustSetterPostfix: {ex.Message}");
+            }
+        }
+
+        private static void TryPatchCancelDialogue(Harmony harmony, Type dialogueType)
+        {
+            foreach (MethodInfo method in AccessTools.GetDeclaredMethods(dialogueType))
+            {
+                if (method == null || !string.Equals(method.Name, "CancelDialogue", StringComparison.Ordinal))
+                    continue;
+
+                try
+                {
+                    harmony.Patch(method, postfix: new HarmonyMethod(typeof(DialogueMirrorBinder), nameof(CancelDialoguePostfix)));
+                    Plugin.Log?.LogInfo($"Patched DialogueController.{method.Name} to hide player bust.");
+                }
+                catch (Exception ex)
+                {
+                    Plugin.Log?.LogWarning($"[Reflect] Could not patch CancelDialogue: {ex.Message}");
+                }
+            }
+        }
+
+        private static void CancelDialoguePostfix()
+        {
+            try
+            {
+                PlayerBustHud.Instance?.Hide();
+            }
+            catch (Exception ex)
+            {
+                Plugin.Log?.LogDebug($"[Dialogue] CancelDialogue hide: {ex.Message}");
+            }
+        }
+
+        private static void EnsureHudOn(object dialogueController)
+        {
+            if (PlayerBustHud.Instance != null && PlayerBustHud.Instance.gameObject != null)
+                return;
+
+            GameObject panel = null;
+            if (_dialoguePanelField != null && dialogueController != null)
+                panel = _dialoguePanelField.GetValue(dialogueController) as GameObject;
+
+            if (panel == null && dialogueController is Component component)
+                panel = component.gameObject;
+
+            if (panel != null)
+            {
+                PlayerBustHud.EnsureOn(panel);
+                Plugin.Log?.LogInfo("[Dialogue] PlayerBustHud attached on bust setter.");
             }
         }
 
