@@ -12,6 +12,7 @@ Paths (mod folder → file):
   HavenDevTools/NexusMods-HavenDevTools-BBCode.txt
   HavensAlmanac/NexusMods-HavensAlmanac-BBCode.txt
   HavensBirthright/NexusMods-HavensBirthright-BBCode.txt
+  HavensMirror/NexusMods-HavensMirror-BBCode.txt
   HavensRespec/NexusMods-HavensRespec-BBCode.txt
   SenpaisChest/NexusMods-SenpaisChest-BBCode.txt
   SunhavenTodo/NexusMods-SunhavenTodo-BBCode.txt
