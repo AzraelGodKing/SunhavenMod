@@ -11,12 +11,16 @@ using UnityEngine.UI;
 namespace HavensMirror.Dialogue
 {
     /// <summary>
-    /// Draws the player's gallery bust as a left-side mirror of the vanilla NPC dialogue portrait.
-    /// Vanilla <c>DialogueController._bust</c> sits at anchoredPosition ~(512, 0) beside the dialogue
-    /// panel (not inside it); the player image is a sibling with X mirrored.
+    /// Draws the player's gallery bust on the left side of the dialogue screen.
+    /// Vanilla <c>DialogueController._bust</c> lives under a <c>BustOffset</c> parent at
+    /// anchoredPosition ~(512 + npcOffset, y). Mirroring to -|x| under that same parent
+    /// pushes the player off-canvas (BustOffset is already right-biased). Instead we parent
+    /// under the Canvas with left-edge anchors and a fixed inset X.
     /// </summary>
     public sealed class PlayerBustHud : MonoBehaviour
     {
+        private const float LeftMargin = 24f;
+
         private static PlayerBustHud _instance;
         private static bool _loggedLayout;
 
@@ -124,23 +128,20 @@ namespace HavensMirror.Dialogue
         private void EnsureVisual()
         {
             if (_ready && _image != null && _rect != null)
-            {
-                // Re-parent if NPC bust parent changed (or we were under the wrong root).
-                if (_npcBust != null && _rect.parent != _npcBust.transform.parent)
-                    PlaceAsNpcSibling();
                 return;
-            }
 
             try
             {
                 TryResolveNpcBust();
 
-                Transform parent = null;
+                Transform parent = transform;
+                Canvas canvas = null;
                 if (_npcBust != null)
-                    parent = _npcBust.transform.parent;
-
-                if (parent == null)
-                    parent = transform;
+                    canvas = _npcBust.GetComponentInParent<Canvas>();
+                if (canvas == null)
+                    canvas = GetComponentInParent<Canvas>();
+                if (canvas != null)
+                    parent = canvas.transform;
 
                 var go = new GameObject("HavensMirror_PlayerBust", typeof(RectTransform), typeof(CanvasRenderer), typeof(Image));
                 go.transform.SetParent(parent, false);
@@ -152,7 +153,7 @@ namespace HavensMirror.Dialogue
                 _image.color = Color.white;
                 go.SetActive(false);
 
-                PlaceAsNpcSibling();
+                PlaceLeftOfDialogue();
                 _ready = _image != null;
             }
             catch (Exception ex)
@@ -163,59 +164,117 @@ namespace HavensMirror.Dialogue
         }
 
         /// <summary>
-        /// Mirror the NPC bust: same parent/anchors/pivot/size/Y, X negated, drawn last among siblings.
+        /// Fixed left-of-screen placement under the Canvas (not under BustOffset).
+        /// Same Y as the NPC bust center; size matches NPC when available.
         /// </summary>
-        private void PlaceAsNpcSibling()
+        private void PlaceLeftOfDialogue()
         {
             if (_rect == null || _image == null)
                 return;
 
-            if (!TryResolveNpcBust() || _npcBust == null)
+            TryResolveNpcBust();
+            RectTransform npcRect = _npcBust != null ? _npcBust.rectTransform : null;
+
+            Canvas canvas = null;
+            if (npcRect != null)
+                canvas = npcRect.GetComponentInParent<Canvas>();
+            if (canvas == null)
+                canvas = GetComponentInParent<Canvas>();
+
+            RectTransform layoutParent = canvas != null ? canvas.transform as RectTransform : null;
+
+            // Escape BustOffset: prefer Canvas, else parent of BustOffset (sibling of offset node).
+            if (layoutParent == null && npcRect != null && npcRect.parent != null)
             {
-                // Fallback if NPC bust is not yet wired — left of a centered dialogue panel chrome.
-                _rect.anchorMin = new Vector2(0.5f, 0.5f);
-                _rect.anchorMax = new Vector2(0.5f, 0.5f);
-                _rect.pivot = new Vector2(0.5f, 0.5f);
-                _rect.anchoredPosition = new Vector2(-512f, 0f);
-                _rect.sizeDelta = new Vector2(166f, 199f);
-                _image.color = Color.white;
-                _rect.SetAsLastSibling();
-                return;
+                if (npcRect.parent.parent is RectTransform grandparent)
+                    layoutParent = grandparent;
+                else if (npcRect.parent is RectTransform offsetParent)
+                    layoutParent = offsetParent;
             }
 
-            RectTransform npcRect = _npcBust.rectTransform;
-            Transform npcParent = npcRect.parent;
-            if (npcParent != null && _rect.parent != npcParent)
-                _rect.SetParent(npcParent, false);
+            if (layoutParent == null)
+                layoutParent = transform as RectTransform;
 
-            _rect.anchorMin = npcRect.anchorMin;
-            _rect.anchorMax = npcRect.anchorMax;
-            _rect.pivot = npcRect.pivot;
-            _rect.localScale = npcRect.localScale;
-            _rect.localRotation = npcRect.localRotation;
+            if (layoutParent != null && _rect.parent != layoutParent)
+                _rect.SetParent(layoutParent, false);
 
-            Vector2 npcPos = npcRect.anchoredPosition;
-            // Vanilla places NPC at ~(512 + offset.x, offset.y). Player mirrors to the left.
-            float mirrorX = npcPos.x;
-            if (Mathf.Abs(mirrorX) < 1f)
-                mirrorX = 512f;
-            _rect.anchoredPosition = new Vector2(-Mathf.Abs(mirrorX), npcPos.y);
+            _rect.anchorMin = new Vector2(0f, 0.5f);
+            _rect.anchorMax = new Vector2(0f, 0.5f);
+            _rect.pivot = new Vector2(0.5f, 0.5f);
+            _rect.localScale = Vector3.one;
+            _rect.localRotation = Quaternion.identity;
 
-            Vector2 npcSize = npcRect.sizeDelta;
-            if (npcSize.x > 1f && npcSize.y > 1f)
-                _rect.sizeDelta = npcSize;
-            else if (_image.sprite != null)
+            Vector2 size = _rect.sizeDelta;
+            if (npcRect != null)
+            {
+                Vector2 npcSize = npcRect.sizeDelta;
+                if (npcSize.x > 1f && npcSize.y > 1f)
+                    size = npcSize;
+            }
+
+            if ((size.x <= 1f || size.y <= 1f) && _image.sprite != null)
+            {
                 _image.SetNativeSize();
+                size = _rect.sizeDelta;
+            }
+
+            if (size.x <= 1f || size.y <= 1f)
+                size = new Vector2(166f, 199f);
+
+            _rect.sizeDelta = size;
+
+            float x = size.x * 0.5f + LeftMargin;
+            float y = 0f;
+
+            if (npcRect != null && layoutParent != null)
+            {
+                Vector3 npcWorldCenter = npcRect.TransformPoint(npcRect.rect.center);
+                Vector3 npcLocal = layoutParent.InverseTransformPoint(npcWorldCenter);
+                // Left-middle anchor reference is parent's left edge at vertical center.
+                Rect parentRect = layoutParent.rect;
+                y = npcLocal.y - parentRect.center.y;
+            }
+
+            _rect.anchoredPosition = new Vector2(x, y);
+
+            if (layoutParent != null)
+                ClampFullyVisible(layoutParent);
 
             _image.color = Color.white;
             _image.preserveAspect = true;
             _image.raycastTarget = false;
-            // Immediately after the NPC bust so we share its layer above the dim overlay.
-            if (npcRect.parent != null)
-            {
-                int npcIndex = npcRect.GetSiblingIndex();
-                _rect.SetSiblingIndex(Mathf.Min(npcIndex + 1, npcRect.parent.childCount - 1));
-            }
+            _rect.SetAsLastSibling();
+        }
+
+        /// <summary>
+        /// Keep the bust fully inside the layout parent (canvas) by shifting X only.
+        /// </summary>
+        private void ClampFullyVisible(RectTransform layoutParent)
+        {
+            if (_rect == null || layoutParent == null)
+                return;
+
+            Vector3[] bustCorners = new Vector3[4];
+            Vector3[] parentCorners = new Vector3[4];
+            _rect.GetWorldCorners(bustCorners);
+            layoutParent.GetWorldCorners(parentCorners);
+
+            float bustMinX = bustCorners[0].x;
+            float bustMaxX = bustCorners[2].x;
+            float parentMinX = parentCorners[0].x;
+            float parentMaxX = parentCorners[2].x;
+
+            float worldShift = 0f;
+            if (bustMinX < parentMinX)
+                worldShift = parentMinX - bustMinX;
+            else if (bustMaxX > parentMaxX)
+                worldShift = parentMaxX - bustMaxX;
+
+            if (Mathf.Abs(worldShift) < 0.01f)
+                return;
+
+            Vector3 localShift = layoutParent.InverseTransformVector(new Vector3(worldShift, 0f, 0f));
+            _rect.anchoredPosition += new Vector2(localShift.x, 0f);
         }
 
         public void Hide()
@@ -268,19 +327,16 @@ namespace HavensMirror.Dialogue
 
             _image.sprite = sprite;
             _image.color = Color.white;
-            // Match vanilla LoadBust sizing; PlaceAsNpcSibling may overwrite with NPC sizeDelta.
             _image.SetNativeSize();
-            PlaceAsNpcSibling();
-            _image.gameObject.SetActive(true);
+            // Stay hidden until final left placement so we never flash then jump off-screen.
+            _image.gameObject.SetActive(false);
 
-            // Vanilla LoadBust yields then SetNativeSize + ActivateBustsNextFrame (2 frames).
-            // Re-mirror after that so we pick up final NPC size/offset.
             if (_relayoutRoutine != null)
                 StopCoroutine(_relayoutRoutine);
-            _relayoutRoutine = StartCoroutine(RelayoutAfterNpcSettles(slot, shelf.LoadedFrom));
+            _relayoutRoutine = StartCoroutine(PresentAfterNpcSettles(slot, shelf.LoadedFrom));
         }
 
-        private IEnumerator RelayoutAfterNpcSettles(LookSlot slot, string loadedFrom)
+        private IEnumerator PresentAfterNpcSettles(LookSlot slot, string loadedFrom)
         {
             // Wait for vanilla LoadBust + ActivateBustsNextFrame (size/active), with a short cap.
             for (int i = 0; i < 45; i++)
@@ -295,15 +351,27 @@ namespace HavensMirror.Dialogue
                 }
             }
 
-            PlaceAsNpcSibling();
+            // One more frame so NPC size/offset stick before we sample Y.
+            yield return null;
+
+            PlaceLeftOfDialogue();
+            if (_image != null)
+                _image.gameObject.SetActive(true);
 
             if (!_loggedLayout && _rect != null)
             {
                 _loggedLayout = true;
                 string parentName = _rect.parent != null ? _rect.parent.name : "(null)";
+                string npcParent = _npcBust != null && _npcBust.rectTransform.parent != null
+                    ? _npcBust.rectTransform.parent.name
+                    : "(null)";
+                Vector2 npcPos = _npcBust != null
+                    ? _npcBust.rectTransform.anchoredPosition
+                    : Vector2.zero;
                 Plugin.Log?.LogInfo(
                     $"[Dialogue] Player bust layout: parent='{parentName}' anchoredPosition={_rect.anchoredPosition} " +
-                    $"sizeDelta={_rect.sizeDelta} siblingIndex={_rect.GetSiblingIndex()}");
+                    $"sizeDelta={_rect.sizeDelta} anchors=({_rect.anchorMin},{_rect.anchorMax}) " +
+                    $"npcParent='{npcParent}' npcAnchored={npcPos} siblingIndex={_rect.GetSiblingIndex()}");
             }
 
             Plugin.Log?.LogInfo($"[Dialogue] Present player bust '{slot}' from '{loadedFrom}'.");
