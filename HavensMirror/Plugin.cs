@@ -112,22 +112,38 @@ namespace HavensMirror
                 if (stack == null)
                     return;
 
-                MethodInfo send = AccessTools.Method(stackType, "SendNotification", new[] { typeof(string) })
+                // Wish.NotificationStack.SendNotification(string text, int id, int amount, bool unique, bool error)
+                MethodInfo send = AccessTools.Method(
+                                      stackType,
+                                      "SendNotification",
+                                      new[] { typeof(string), typeof(int), typeof(int), typeof(bool), typeof(bool) })
                                   ?? AccessTools.Method(stackType, "SendNotification");
                 if (send == null)
                     return;
 
                 var parms = send.GetParameters();
                 if (parms.Length == 1 && parms[0].ParameterType == typeof(string))
-                    send.Invoke(stack, new object[] { message });
-                else if (parms.Length >= 1)
                 {
-                    object[] args = new object[parms.Length];
-                    args[0] = message;
-                    for (int i = 1; i < parms.Length; i++)
-                        args[i] = parms[i].HasDefaultValue ? parms[i].DefaultValue : GetDefault(parms[i].ParameterType);
-                    send.Invoke(stack, args);
+                    send.Invoke(stack, new object[] { message });
+                    return;
                 }
+
+                object[] args = new object[parms.Length];
+                args[0] = message;
+                for (int i = 1; i < parms.Length; i++)
+                {
+                    Type pt = parms[i].ParameterType;
+                    if (pt == typeof(int))
+                        args[i] = 0;
+                    else if (pt == typeof(bool))
+                        args[i] = false; // unique=false, error=false
+                    else if (parms[i].HasDefaultValue)
+                        args[i] = parms[i].DefaultValue;
+                    else
+                        args[i] = GetDefault(pt);
+                }
+
+                send.Invoke(stack, args);
             }
             catch (Exception ex)
             {

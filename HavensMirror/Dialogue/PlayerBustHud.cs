@@ -136,7 +136,11 @@ namespace HavensMirror.Dialogue
                 _image.gameObject.SetActive(false);
         }
 
-        public void Present(bool vows, bool shore, bool costume, bool hideDuringRefresh)
+        /// <summary>
+        /// Show the player's gallery bust. Vanilla <c>isRefreshBust</c> is intentionally ignored —
+        /// NPCAI.Interact always passes true (NPC bust flicker during addressable load).
+        /// </summary>
+        public void Present(bool vows, bool shore, bool costume)
         {
             if (MirrorOptions.Enabled == null || !MirrorOptions.Enabled.Value)
             {
@@ -146,17 +150,15 @@ namespace HavensMirror.Dialogue
 
             EnsureVisual();
             if (!_ready || _image == null)
+            {
+                Plugin.Log?.LogWarning("[Dialogue] Present: PlayerBustHud image not ready.");
                 return;
+            }
 
             var shelf = Plugin.Shelf;
             if (shelf == null || !shelf.HasAny)
             {
-                Hide();
-                return;
-            }
-
-            if (hideDuringRefresh)
-            {
+                Plugin.Log?.LogDebug("[Dialogue] Present: shelf empty — hiding.");
                 Hide();
                 return;
             }
@@ -165,12 +167,14 @@ namespace HavensMirror.Dialogue
             Sprite sprite = shelf.Get(slot);
             if (sprite == null)
             {
+                Plugin.Log?.LogWarning($"[Dialogue] Present: no sprite for look '{slot}'.");
                 Hide();
                 return;
             }
 
             _image.sprite = sprite;
             _image.gameObject.SetActive(true);
+            Plugin.Log?.LogInfo($"[Dialogue] Present player bust '{slot}' from '{shelf.LoadedFrom}'.");
         }
 
         private static Transform FindChildRecursive(Transform root, string name)
