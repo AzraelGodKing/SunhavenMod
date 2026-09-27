@@ -1,10 +1,10 @@
 {
-  "lastFetched": "2026-09-26T21:50:54.539Z",
+  "lastFetched": "2026-09-27T00:15:52.829Z",
   "mods": {
     "senpais-chest": {
       "name": "Senpai's Chest",
       "thunderstore": {
-        "total_downloads": 1848,
+        "total_downloads": 1849,
         "versions": {
           "3.1.1": 146,
           "3.1.0": 79,
@@ -14,7 +14,7 @@
           "3.0.0": 62,
           "2.7.0": 142,
           "2.6.2": 49,
-          "2.6.0": 59,
+          "2.6.0": 60,
           "2.5.0": 57,
           "2.4.0": 58,
           "2.3.0": 49,
@@ -39,12 +39,12 @@
         "total_downloads": 1312,
         "unique_downloads": 919
       },
-      "combined_total": 3160
+      "combined_total": 3161
     },
     "havens-birthright": {
       "name": "Haven's Birthright",
       "thunderstore": {
-        "total_downloads": 1671,
+        "total_downloads": 1672,
         "versions": {
           "3.1.2": 121,
           "3.1.1": 76,
@@ -63,7 +63,7 @@
           "1.3.2": 68,
           "1.3.1": 64,
           "1.3.0": 69,
-          "1.2.3": 68,
+          "1.2.3": 69,
           "1.2.2": 67,
           "1.2.1": 87,
           "1.2.0": 65
@@ -73,7 +73,7 @@
         "total_downloads": 1844,
         "unique_downloads": 1216
       },
-      "combined_total": 3515
+      "combined_total": 3516
     },
     "museum-utility-tracker": {
       "name": "S.M.U.T.",
@@ -227,7 +227,7 @@
     "havens-almanac": {
       "name": "Haven's Almanac",
       "thunderstore": {
-        "total_downloads": 1283,
+        "total_downloads": 1284,
         "versions": {
           "2.2.1": 110,
           "2.2.0": 76,
@@ -237,7 +237,7 @@
           "1.4.2": 108,
           "1.4.0": 68,
           "1.3.0": 72,
-          "1.2.0": 51,
+          "1.2.0": 52,
           "1.1.2": 55,
           "1.0.6": 55,
           "1.0.5": 78,
@@ -252,7 +252,7 @@
         "total_downloads": 765,
         "unique_downloads": 577
       },
-      "combined_total": 2048
+      "combined_total": 2049
     },
     "faster-races": {
       "name": "Faster Races",
@@ -369,9 +369,9 @@
     }
   },
   "site_total": {
-    "thunderstore": 14890,
+    "thunderstore": 14893,
     "nexus_total": 14309,
     "nexus_unique": 10518,
-    "grand_total": 29199
+    "grand_total": 29202
   }
 }
