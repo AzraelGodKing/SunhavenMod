@@ -46,7 +46,7 @@
                 </div>
             </div>
             <div class="hero-meta-row">
-                <span class="version-badge">v4.1.3</span>
+                <span class="version-badge">v4.2.0</span>
                 <span class="hero-meta-item">Account Status: <span class="hero-meta-value">ACTIVE</span></span>
                 <span class="hero-meta-item">Encryption: <span class="hero-meta-value">AES-256</span></span>
             </div>
@@ -86,7 +86,11 @@
                     <div class="keybind-action">Alt Toggle (Steam Deck)</div>
                 </div>
                 <div class="keybind-card">
-                    <div class="keybind-keys"><kbd>Esc</kbd></div>
+                    <div class="keybind-keys"><kbd>LB</kbd> + <kbd>Y</kbd></div>
+                    <div class="keybind-action">Controller Open (Steam Deck)</div>
+                </div>
+                <div class="keybind-card">
+                    <div class="keybind-keys"><kbd>Esc</kbd> / <kbd>B</kbd></div>
                     <div class="keybind-action">Close Vault</div>
                 </div>
             </div>
@@ -139,7 +143,7 @@
                 <div class="feature-card">
                     <div class="feature-icon">&#x1F3AE;</div>
                     <h3>Steam Deck Ready</h3>
-                    <p>Full Steam Deck support with <kbd>F8</kbd> as an alternative toggle key (no modifier required). The HUD and vault UI work great with controller input.</p>
+                    <p>Open with <kbd>F8</kbd> (no Ctrl) or controller <strong>LB+Y</strong>. Touch-sized toggles and withdraw buttons, amount chips (1 / 5 / 10 / Max), and close with Escape or controller <strong>B</strong> / cancel. Optional one-shot larger UI scale on Deck-like resolutions. Trackpad-friendly — not full D-pad row navigation.</p>
                 </div>
             </div>
         </section>
@@ -211,7 +215,7 @@
                     <div class="step-number">2</div>
                     <div class="step-content">
                         <h4>Access Your Vault</h4>
-                        <p>Press <kbd>Ctrl</kbd> + <kbd>V</kbd> (or <kbd>F8</kbd> on Steam Deck) to open the vault interface. Press <kbd>Escape</kbd> or click Close to exit.</p>
+                        <p>Press <kbd>Ctrl</kbd> + <kbd>V</kbd>, <kbd>F8</kbd>, or controller <strong>LB+Y</strong> on Steam Deck to open the vault interface. Press <kbd>Escape</kbd>, controller <strong>B</strong> / cancel, or click Close to exit.</p>
                     </div>
                 </div>
                 <div class="step">
@@ -239,7 +243,7 @@
                     <div class="step-number">6</div>
                     <div class="step-content">
                         <h4>Make Withdrawals</h4>
-                        <p>Use the quick -1, -5, or -10 buttons next to each currency, or select a row and enter a custom amount to withdraw items back to your inventory.</p>
+                        <p>Use the quick -1, -5, or -10 buttons next to each currency, or select a row and use the qty field / amount chips (1, 5, 10, Max) with Withdraw or Deposit.</p>
                     </div>
                 </div>
             </div>
@@ -329,7 +333,32 @@
                         <tr>
                             <td>AltToggleKey</td>
                             <td><kbd>F8</kbd></td>
-                            <td>Alternative key for Steam Deck (no modifier required)</td>
+                            <td>Alternative key for Steam Deck / Steam Input keyboard layers (no modifier required)</td>
+                        </tr>
+                        <tr>
+                            <td>ControllerOpenEnabled</td>
+                            <td>true</td>
+                            <td>Enable controller combo to open/close vault (default LB+Y)</td>
+                        </tr>
+                        <tr>
+                            <td>ControllerOpenModifier</td>
+                            <td><kbd>JoystickButton4</kbd> (LB)</td>
+                            <td>Button held for controller open (Unity Xbox layout)</td>
+                        </tr>
+                        <tr>
+                            <td>ControllerOpenButton</td>
+                            <td><kbd>JoystickButton3</kbd> (Y)</td>
+                            <td>Button pressed while modifier held to toggle vault</td>
+                        </tr>
+                        <tr>
+                            <td>AutoDeckLayout</td>
+                            <td>true</td>
+                            <td>Once raise WindowScale / HUD Scale on Deck-like resolutions (unless already customized)</td>
+                        </tr>
+                        <tr>
+                            <td>DeckLayoutApplied</td>
+                            <td>false</td>
+                            <td>Internal one-shot flag — set after AutoDeckLayout has applied</td>
                         </tr>
                         <tr>
                             <td>EnableHUD</td>

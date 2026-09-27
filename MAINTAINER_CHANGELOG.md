@@ -6,6 +6,8 @@ Internal engineering log: **CI**, **release automation**, **scripts**, **docs in
 
 ## 2026-09-27
 
+- **AZR-348 — The Vault Steam Deck V1:** Touch-sized row controls (≥44px), amount chips (1/5/10/Max), **LB+Y** controller open (`[UI] ControllerOpenEnabled` / Modifier=JoystickButton4 / Button=JoystickButton3), Escape + `UICancel`/`Cancel`/`Close` to dismiss, `[Display] AutoDeckLayout` / `DeckLayoutApplied` one-shot 1.35 scale on Deck-like resolutions. Docs/hub honesty (no D-pad nav claim). **Ship bump 4.1.3 → 4.2.0** (Az yes). Player notes in `CHANGELOG.md`.
+- **AZR-348 — GitHub Pages / `docs/` hub:** Hub announce → Vault 4.2.0 Deck; Vault card chips + comparison `Deck`; Vault Parameters rows (`AutoDeckLayout` / `DeckLayoutApplied`); search-index Deck keywords. No Cloudflare site edits for this work.
 - **AZR-347 — Haven's Mirror docs page:** Replaced the thin shared-styles shell with a gold/plum portrait theme (`icon.png` hero, seasonal slot cards, folder map, numbered install steps, dark mode). Docs-only; no mod version bump.
 - **AZR-346 — Haven's Mirror Thunderstore icon:** CI packs `HavensMirror/thunderstore/icon.png`; resized **512×512 → 256×256** (RGBA) so Thunderstore publish no longer rejects with “Invalid icon dimensions”. Mirrored same file at `docs/HavensMirror/icon.png` (identical source copy for the hub).
 - **AZR-346 — Haven's Mirror Nexus + Thunderstore URLs:** `docs/versions.json` → Nexus [`/mods/538`](https://www.nexusmods.com/sunhaven/mods/538), `nexus_file_group_id` **8035296**, Thunderstore [`HavensMirror`](https://thunderstore.io/c/sun-haven/p/AzraelGodKing/HavensMirror/). README + Nexus BBCode + download-nav.

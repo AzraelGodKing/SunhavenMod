@@ -18,10 +18,11 @@
 
 ## Usage
 
-- **Main window:** IMGUI vault UI (**Ctrl+V** or **F8**). The HUD hides while the window is open.
+- **Main window:** IMGUI vault UI (**Ctrl+V**, **F8**, or controller **LB+Y**). The HUD hides while the window is open. Close with **Escape**, controller **B**/cancel, or the Close button.
 - **F7:** Toggle HUD.
 - **HUD position:** drag the **top accent strip** to move the bar; **`[HUD] PositionX`** / **`PositionY`** in `TheVault.cfg` persist placement. **`[HUD] Position`** is the anchor when those are `-1`; changing **Position** clears a custom drag placement.
-- Select a row, enter a quantity, then **Withdraw** (vault → bag) or **Deposit** (bag → vault). Status text under the buttons reports success or errors (not only the BepInEx log).
+- Select a row, set quantity (TextField or **1 / 5 / 10 / Max** chips), then **Withdraw** (vault → bag) or **Deposit** (bag → vault). Status text under the buttons reports success or errors (not only the BepInEx log).
+- **Steam Deck:** Open with **F8** or **LB+Y**; close with **B**/cancel. Touch-sized row controls; optional **`[Display] AutoDeckLayout`** (default on) once raises WindowScale / HUD Scale on Deck-like resolutions. Not full D-pad navigation.
 - **`[HUD] Density`:** **Normal**, **Compact**, or **Minimal**. **`[HUD] CompactMode`** still narrows the bar when Density is **Normal**. The in-game **Settings** tab shows HUD density and the compact toggle.
 
 ## Full vault inspector
@@ -62,7 +63,7 @@ The vault UI includes a **Custom** tab for currencies registered at runtime. Fro
 
 ## Version
 
-**Released version is `4.0.1`** (BepInEx, Thunderstore, Nexus). Source of truth: **`docs/versions.json`** / **`TheVault.csproj`**.
+**Released version is `4.2.0`** (BepInEx, Thunderstore, Nexus). Source of truth: **`docs/versions.json`** / **`TheVault.csproj`**.
 
 **Maintainer note:** Same as the [repo root README](../../README.md): do not bump **any** mod’s published version unless the owner explicitly asks for a release.
 
