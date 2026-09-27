@@ -18,6 +18,7 @@ namespace HavensMirror.Dialogue
     {
         private static bool _bound;
         private static FieldInfo _dialoguePanelField;
+        private static FieldInfo _bustField;
         private static FieldInfo _npcNameField;
         private static readonly Dictionary<LookSlot, object> EmoteTables = new Dictionary<LookSlot, object>();
         private static readonly Dictionary<LookSlot, object> EmoteAddressables = new Dictionary<LookSlot, object>();
@@ -35,6 +36,7 @@ namespace HavensMirror.Dialogue
             }
 
             _dialoguePanelField = FindField(dialogueType, "_dialoguePanel", "dialoguePanel", "DialoguePanel");
+            _bustField = FindField(dialogueType, "_bust", "bust", "Bust");
             _npcNameField = FindField(dialogueType, "npcName", "_npcName", "NpcName");
 
             TryPatchAwake(harmony, dialogueType);
@@ -133,23 +135,11 @@ namespace HavensMirror.Dialogue
                     return;
 
                 CaptureEmoteTables(__instance);
-
-                GameObject panel = null;
-                if (_dialoguePanelField != null)
-                    panel = _dialoguePanelField.GetValue(__instance) as GameObject;
-
-                if (panel == null && __instance is Component component)
-                    panel = component.gameObject;
-
-                if (panel != null)
-                {
-                    PlayerBustHud.EnsureOn(panel);
+                EnsureHudOn(__instance);
+                if (PlayerBustHud.Instance != null)
                     Plugin.Log?.LogInfo("[Dialogue] PlayerBustHud attached on DialogueController.Awake.");
-                }
                 else
-                {
-                    Plugin.Log?.LogWarning("[Dialogue] Awake: dialogue panel not found — HUD attach deferred.");
-                }
+                    Plugin.Log?.LogWarning("[Dialogue] Awake: DialogueController host not found — HUD attach deferred.");
 
                 // Saves are usually loaded by the time dialogue UI exists — ensure character folders exist.
                 SaveSlotFolderSync.EnsureCharacterFolders();
@@ -239,21 +229,31 @@ namespace HavensMirror.Dialogue
 
         private static void EnsureHudOn(object dialogueController)
         {
-            if (PlayerBustHud.Instance != null && PlayerBustHud.Instance.gameObject != null)
+            // Prefer the DialogueController GameObject — _bust is a sibling of _dialoguePanel,
+            // not a child of it. Parenting under the panel put the player behind the text chrome.
+            GameObject host = null;
+            if (dialogueController is Component component)
+                host = component.gameObject;
+
+            if (host == null && _dialoguePanelField != null && dialogueController != null)
+                host = _dialoguePanelField.GetValue(dialogueController) as GameObject;
+
+            if (host == null)
                 return;
 
-            GameObject panel = null;
-            if (_dialoguePanelField != null && dialogueController != null)
-                panel = _dialoguePanelField.GetValue(dialogueController) as GameObject;
+            bool created = PlayerBustHud.Instance == null || PlayerBustHud.Instance.gameObject == null;
+            PlayerBustHud hud = PlayerBustHud.EnsureOn(host);
+            if (hud == null)
+                return;
 
-            if (panel == null && dialogueController is Component component)
-                panel = component.gameObject;
-
-            if (panel != null)
+            if (_bustField != null && dialogueController != null
+                && _bustField.GetValue(dialogueController) is UnityEngine.UI.Image bustImage)
             {
-                PlayerBustHud.EnsureOn(panel);
-                Plugin.Log?.LogInfo("[Dialogue] PlayerBustHud attached on bust setter.");
+                hud.BindNpcBust(bustImage);
             }
+
+            if (created)
+                Plugin.Log?.LogInfo("[Dialogue] PlayerBustHud attached on DialogueController host.");
         }
 
         private static bool SetInitialBustPrefix(object __instance, object[] __args)
