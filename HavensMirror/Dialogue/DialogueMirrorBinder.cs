@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Reflection;
 using HarmonyLib;
 using HavensMirror.Config;
+using HavensMirror.Gallery;
 using HavensMirror.Look;
 using SunhavenMods.Shared;
 using UnityEngine;
