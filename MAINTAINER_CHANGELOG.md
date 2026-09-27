@@ -8,6 +8,7 @@ Internal engineering log: **CI**, **release automation**, **scripts**, **docs in
 
 - **AZR-346 — Haven's Mirror:** New suite mod scaffold (`HavensMirror/`), matrix + `docs/versions.json` entry at **1.0.0**, hub page, workflow dispatch option `havensmirror`, `SuitePluginGuids.HavensMirror`. Player notes in `CHANGELOG.md`. No Nexus/Thunderstore URLs until ship.
 - **AZR-346 — save-slot gallery folders:** `SaveSlotFolderSync` reads `Wish.GameSave` save-slot `characterData.characterName` (plus `GameSaveCharacterName` for the active character), creates empty `gallery/<name>/` via `CharacterSaveStore` sanitization; empty folders skipped for display; HOWTO rewritten for the install → scan → drop PNGs story.
+- **AZR-346 — early OnDestroy:** `MirrorPersistentRunner` (DDOL / PersistentRunnerBase) owns folder sync + reload hotkey; Plugin OnDestroy only Disposes Shelf + UnpatchSelf on expected teardown so dialogue busts survive empty-scene BepInEx teardown.
 
 ## 2026-09-26
 
