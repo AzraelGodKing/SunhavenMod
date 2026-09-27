@@ -6,6 +6,7 @@ Internal engineering log: **CI**, **release automation**, **scripts**, **docs in
 
 ## 2026-09-27
 
+- **AZR-346 — Haven's Mirror Thunderstore icon:** CI packs `HavensMirror/thunderstore/icon.png`; resized **512×512 → 256×256** (RGBA) so Thunderstore publish no longer rejects with “Invalid icon dimensions”. Mirrored same file at `docs/HavensMirror/icon.png` (identical source copy for the hub).
 - **AZR-346 — Haven's Mirror Nexus + Thunderstore URLs:** `docs/versions.json` → Nexus [`/mods/538`](https://www.nexusmods.com/sunhaven/mods/538), `nexus_file_group_id` **8035296**, Thunderstore [`HavensMirror`](https://thunderstore.io/c/sun-haven/p/AzraelGodKing/HavensMirror/). README + Nexus BBCode + download-nav.
 - **AZR-346 — Haven's Mirror release prep:** Cloudflare site page + stats/presentation maps (`havensmirror` → `havens-mirror`); Discord tag→dir case; deploy `DEFAULT_MODS`; Thunderstore `website_url` → docs hub. Player notes in `CHANGELOG.md`.
 - **AZR-346 — Haven's Mirror:** New suite mod scaffold (`HavensMirror/`), matrix + `docs/versions.json` entry at **1.0.0**, hub page, workflow dispatch option `havensmirror`, `SuitePluginGuids.HavensMirror`. Player notes in `CHANGELOG.md`.
