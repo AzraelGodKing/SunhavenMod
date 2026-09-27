@@ -2,6 +2,7 @@ using System;
 using System.IO;
 using System.Reflection;
 using HavensMirror.Config;
+using SunhavenMods.Shared;
 
 namespace HavensMirror.Gallery
 {
@@ -63,21 +64,34 @@ namespace HavensMirror.Gallery
             }
         }
 
+        /// <summary>
+        /// Suite-consistent filename sanitization (matches CharacterSaveStore / other mods).
+        /// </summary>
         public static string SanitizeFolderName(string name)
         {
             if (string.IsNullOrWhiteSpace(name))
                 return SharedFolderName;
 
-            char[] invalid = Path.GetInvalidFileNameChars();
-            var chars = name.Trim().ToCharArray();
-            for (int i = 0; i < chars.Length; i++)
+            string cleaned = CharacterSaveStore.SanitizeFileName(name.Trim(), SharedFolderName);
+            return string.IsNullOrEmpty(cleaned) ? SharedFolderName : cleaned;
+        }
+
+        /// <summary>
+        /// True when the folder exists and contains at least one known portrait PNG name.
+        /// Empty character folders (created from saves) are ignored for display.
+        /// </summary>
+        public static bool FolderHasPortraitFiles(string folder)
+        {
+            if (string.IsNullOrEmpty(folder) || !Directory.Exists(folder))
+                return false;
+
+            foreach (LookSlot slot in Enum.GetValues(typeof(LookSlot)))
             {
-                if (Array.IndexOf(invalid, chars[i]) >= 0)
-                    chars[i] = '_';
+                if (File.Exists(Path.Combine(folder, FileNameFor(slot))))
+                    return true;
             }
 
-            string cleaned = new string(chars).Trim();
-            return string.IsNullOrEmpty(cleaned) ? SharedFolderName : cleaned;
+            return false;
         }
 
         public static void EnsureStarterLayout(Action<string> logInfo = null)
@@ -87,61 +101,43 @@ namespace HavensMirror.Gallery
 
             try
             {
-                Directory.CreateDirectory(SharedFolder);
+                CharacterSaveStore.EnsureDirectory(GalleryRoot);
+                CharacterSaveStore.EnsureDirectory(SharedFolder);
                 string howto = Path.Combine(SharedFolder, "HOWTO.txt");
-                if (!File.Exists(howto))
-                {
-                    File.WriteAllText(howto,
-                        "Haven's Mirror\n" +
-                        "==============\n" +
-                        "\n" +
-                        "This mod shows a custom picture of your farmer when you talk to people.\n" +
-                        "You add PNG image files; the mod displays them as your dialogue bust.\n" +
-                        "\n" +
-                        "1. Where to put your images\n" +
-                        "---------------------------\n" +
-                        "Next to this mod, open (or create) the gallery folder:\n" +
-                        "\n" +
-                        "  BepInEx/plugins/HavensMirror/gallery/\n" +
-                        "\n" +
-                        "Then pick one of these:\n" +
-                        "\n" +
-                        "  A) One character only\n" +
-                        "     Make a folder named exactly like that character.\n" +
-                        "     Example: gallery/Azrael/\n" +
-                        "\n" +
-                        "  B) Every character (shared)\n" +
-                        "     Put images in gallery/_shared/\n" +
-                        "     (that is this folder — the shared fallback).\n" +
-                        "\n" +
-                        "The character folder is checked first. If it has no images, the mod\n" +
-                        "uses gallery/_shared/ instead.\n" +
-                        "\n" +
-                        "2. What to name the files\n" +
-                        "------------------------\n" +
-                        "Use PNG files with these exact names:\n" +
-                        "\n" +
-                        "  spring.png    everyday / spring (also the default)\n" +
-                        "  summer.png\n" +
-                        "  autumn.png\n" +
-                        "  winter.png\n" +
-                        "  vows.png      wedding / ceremony\n" +
-                        "  shore.png     swimsuit / beach\n" +
-                        "  costume.png   halloween / costume\n" +
-                        "\n" +
-                        "You do not need every file. If a name is missing, the mod reuses\n" +
-                        "the first PNG it finds in that same folder.\n" +
-                        "\n" +
-                        "3. How to reload\n" +
-                        "---------------\n" +
-                        "After you add or change images:\n" +
-                        "\n" +
-                        "  1. Save the PNG files into the folder above.\n" +
-                        "  2. In game, press Ctrl+F8 (changeable in HavensMirror.cfg).\n" +
-                        "  3. Talk to someone — your new bust should appear.\n" +
-                        "\n" +
-                        "No game restart needed after a reload.\n");
-                }
+                File.WriteAllText(howto,
+                    "Haven's Mirror\n" +
+                    "==============\n" +
+                    "\n" +
+                    "What happens\n" +
+                    "------------\n" +
+                    "1. You install the mod.\n" +
+                    "2. When the game runs, the mod reads your character saves and creates\n" +
+                    "   an empty folder for each one under gallery/ (named like the character).\n" +
+                    "3. Empty folders are fine — they are ignored until you add PNGs.\n" +
+                    "4. Drop PNG bust images into a character folder (or into this _shared folder).\n" +
+                    "5. Talk to someone — if that folder has images, your bust appears.\n" +
+                    "\n" +
+                    "Where images go\n" +
+                    "---------------\n" +
+                    "  gallery/<YourCharacterName>/   (created automatically from saves)\n" +
+                    "  gallery/_shared/               (this folder — used if a character folder is empty)\n" +
+                    "\n" +
+                    "File names (PNG)\n" +
+                    "----------------\n" +
+                    "  spring.png    everyday / spring (default)\n" +
+                    "  summer.png\n" +
+                    "  autumn.png\n" +
+                    "  winter.png\n" +
+                    "  vows.png      wedding / ceremony\n" +
+                    "  shore.png     swimsuit / beach\n" +
+                    "  costume.png   halloween / costume\n" +
+                    "\n" +
+                    "You do not need every file. Missing names reuse the first PNG in that folder.\n" +
+                    "\n" +
+                    "Reload\n" +
+                    "------\n" +
+                    "After adding or changing images, press Ctrl+F8 in game (configurable).\n" +
+                    "No restart needed.\n");
 
                 logInfo?.Invoke($"Gallery ready at '{GalleryRoot}'.");
             }

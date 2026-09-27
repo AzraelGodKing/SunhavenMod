@@ -41,6 +41,7 @@ namespace HavensMirror.Gallery
 
         /// <summary>
         /// Load portraits for the active character, falling back to the shared folder.
+        /// Empty folders (created from saves with no PNGs yet) are skipped quietly.
         /// Returns a short status message for logs / notifications.
         /// </summary>
         public string LoadForCharacter(string characterName)
@@ -55,7 +56,8 @@ namespace HavensMirror.Gallery
 
             foreach (string folder in candidates)
             {
-                if (!Directory.Exists(folder))
+                // Empty save-created folders are ignored — no error, no load attempt.
+                if (!GalleryPaths.FolderHasPortraitFiles(folder))
                     continue;
 
                 Sprite first = null;
@@ -74,7 +76,6 @@ namespace HavensMirror.Gallery
                 if (first == null)
                     continue;
 
-                // Fill gaps with the first successfully loaded portrait in this folder.
                 foreach (LookSlot slot in Enum.GetValues(typeof(LookSlot)))
                 {
                     if (!_sprites.ContainsKey(slot))
@@ -82,10 +83,10 @@ namespace HavensMirror.Gallery
                 }
 
                 _loadedFrom = folder;
-                return $"Loaded {_sprites.Count} look slot(s) from '{folder}'.";
+                return $"Loaded portraits from '{folder}'.";
             }
 
-            return "No portrait PNGs found (checked character folder and shared fallback).";
+            return "No portrait PNGs yet (empty character folders are ignored; drop files in gallery/<name>/ or gallery/_shared/).";
         }
 
         public Sprite Get(LookSlot slot)
