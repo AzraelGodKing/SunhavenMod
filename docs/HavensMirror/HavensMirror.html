@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Haven's Mirror - Custom Dialogue Bust Portraits for Sun Haven</title>
+    <meta name="description" content="Drop PNG bust portraits into a gallery folder and see your farmer in dialogue. Optional NPC look override and hotkey reload.">
+    <meta property="og:title" content="Haven's Mirror">
+    <meta property="og:description" content="Custom player dialogue bust portraits from a PNG gallery. Optional ForcedLook for NPCs.">
+    <meta property="og:type" content="website">
+    <link rel="canonical" href="https://azraelgodking.github.io/SunhavenMod/HavensMirror/HavensMirror.html">
+    <meta property="og:url" content="https://azraelgodking.github.io/SunhavenMod/HavensMirror/HavensMirror.html">
+    <meta property="og:image" content="https://azraelgodking.github.io/SunhavenMod/og-card.png">
+    <meta name="theme-color" content="#b45309">
+    <link rel="icon" type="image/svg+xml" href="../favicon.svg">
+    <link rel="stylesheet" href="../shared-styles.css">
+    <link rel="stylesheet" href="mirror-style.css">
+    <script src="../shared.js" defer></script>
+    <script src="../scripts/stats-display.js" defer></script>
+</head>
+<body>
+    <a href="#main-content" class="skip-to-content">Skip to content</a>
+    <nav class="top-nav" role="navigation" aria-label="Breadcrumb">
+        <a href="../index.html" class="nav-home">Mod Hub</a>
+        <span class="nav-divider">/</span>
+        <span class="nav-current">Haven's Mirror</span>
+        <span class="breadcrumb-date">Updated Sep 2026</span>
+    </nav>
+
+    <div class="container" id="main-content" role="main">
+
+        <nav class="related-mods-strip" aria-label="Related mods">
+            <span class="related-mods-label">Also see</span>
+            <a href="../HavenDevTools/HavenDevTools.html">HavenDevTools</a>
+            <a href="../HavensAlmanac/HavensAlmanac.html">Haven&rsquo;s Almanac</a>
+        </nav>
+
+        <header class="hero">
+            <div class="hero-icon-wrap" aria-hidden="true">&#x1FA9E;</div>
+            <p class="hero-label">Quick Mod</p>
+            <h1>Haven's Mirror<span class="full-name">Custom Dialogue Busts</span></h1>
+            <p class="tagline">Your face in the conversation</p>
+            <span class="version-badge">v1.0.0</span>
+        </header>
+
+        <div class="mod-page-download-stats" role="region" aria-label="Recorded download counts">
+            <span>Thunderstore <strong><span data-stats-mod="havens-mirror" data-field="thunderstore_downloads">&mdash;</span></strong></span>
+            <span>Nexus Mods <strong><span data-stats-mod="havens-mirror" data-field="nexus_downloads">&mdash;</span></strong></span>
+            <span>Combined <strong><span data-stats-mod="havens-mirror" data-field="combined_total">&mdash;</span></strong></span>
+        </div>
+
+        <section class="intro-section">
+            <p>Haven's Mirror lets you show a <strong>custom player bust</strong> during dialogue by dropping PNG files into a gallery folder. Optional config can force a look for NPC portraits and seasonal outfits. Reload portraits with a hotkey &mdash; no restart required.</p>
+        </section>
+
+        <section class="features-section">
+            <h2 class="section-title">Features</h2>
+            <div class="features-grid">
+                <div class="feature-card">
+                    <div class="feature-icon">&#x1F5BC;&#xFE0F;</div>
+                    <h3>PNG Gallery</h3>
+                    <p>Per-character folders under <code>gallery/</code>, with a shared fallback. Missing slots reuse the first PNG found.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">&#x1F338;</div>
+                    <h3>Season &amp; Special Looks</h3>
+                    <p>Spring, summer, autumn, winter, vows, shore, and costume files map to dialogue contexts.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">&#x1F504;</div>
+                    <h3>Hotkey Reload</h3>
+                    <p>Press <kbd>Ctrl</kbd>+<kbd>F8</kbd> (configurable) to reload PNGs from disk while playing.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">&#x1F3AD;</div>
+                    <h3>Forced Look</h3>
+                    <p>Optional override keeps NPC dialogue busts (and seasonal body outfits) on a look you choose.</p>
+                </div>
+            </div>
+        </section>
+
+        <section class="config-section">
+            <h2 class="section-title">Portrait files</h2>
+            <p>Place PNGs in <code>BepInEx/plugins/HavensMirror/gallery/&lt;YourCharacterName&gt;/</code> or <code>gallery/_shared/</code>:</p>
+            <ul class="file-list">
+                <li><code>spring.png</code> &mdash; default / spring</li>
+                <li><code>summer.png</code>, <code>autumn.png</code>, <code>winter.png</code></li>
+                <li><code>vows.png</code> &mdash; wedding / ceremony</li>
+                <li><code>shore.png</code> &mdash; swimsuit / beach</li>
+                <li><code>costume.png</code> &mdash; halloween / costume</li>
+            </ul>
+        </section>
+
+        <section class="config-section">
+            <h2 class="section-title">Configuration</h2>
+            <div class="config-table">
+                <div class="table-bar">
+                    <span class="table-bar-title">BepInEx/config/HavensMirror.cfg</span>
+                </div>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Setting</th>
+                            <th>Default</th>
+                            <th>Description</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><code>Enabled</code></td>
+                            <td>true</td>
+                            <td>Master switch</td>
+                        </tr>
+                        <tr>
+                            <td><code>GalleryFolderName</code></td>
+                            <td>gallery</td>
+                            <td>Folder under the plugin directory for portraits</td>
+                        </tr>
+                        <tr>
+                            <td><code>SharedFolderName</code></td>
+                            <td>_shared</td>
+                            <td>Fallback folder when the character folder is empty</td>
+                        </tr>
+                        <tr>
+                            <td><code>ForcedLook</code></td>
+                            <td>(blank)</td>
+                            <td>Spring / Summer / Autumn / Winter / Vows / Shore / Costume</td>
+                        </tr>
+                        <tr>
+                            <td><code>ReloadModifier</code> + <code>ReloadKey</code></td>
+                            <td>LeftControl + F8</td>
+                            <td>Reload PNGs from disk</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+        <section class="install-section">
+            <h2 class="section-title">Installation</h2>
+            <div class="install-steps">
+                <div class="install-step">
+                    <div class="step-icon">&#x1F4E6;</div>
+                    <div class="step-info">
+                        <h4>1. Install BepInEx</h4>
+                        <p>Install BepInEx 5.x for Sun Haven if you haven't already.</p>
+                    </div>
+                </div>
+                <div class="install-step">
+                    <div class="step-icon">&#x1F4E5;</div>
+                    <div class="step-info">
+                        <h4>2. Download Haven's Mirror</h4>
+                        <p>Get <code>HavensMirror.dll</code> from GitHub Releases / Thunderstore / Nexus when published, or build from this repo.</p>
+                    </div>
+                </div>
+                <div class="install-step">
+                    <div class="step-icon">&#x1F4C1;</div>
+                    <div class="step-info">
+                        <h4>3. Install &amp; add portraits</h4>
+                        <p>Place the DLL in <code>BepInEx/plugins/HavensMirror/</code>, then drop PNGs into <code>gallery/_shared/</code> or a character-named subfolder.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <nav class="download-nav" data-mod-key="com.azraelgodking.havensmirror" aria-label="Download links"></nav>
+        <footer class="footer">
+            <p>Haven's Mirror - A Sun Haven Mod by AzraelGodKing</p>
+            <div class="footer-links">
+                <a href="../index.html">Back to Mod Hub</a>
+            </div>
+        </footer>
+    </div>
+</body>
+</html>
