@@ -1,6 +1,14 @@
 # The Vault - Changelog
 
-## Unreleased
+## Version 4.2.0
+
+### Steam Deck compatibility V1 (AZR-348)
+
+- **Touch targets:** Currency row toggle and -1/-5/-10 withdraw buttons use a ≥44px minimum (scale with WindowScale). Row height 52; window width 560.
+- **Amount chips:** When a currency is selected, **1 / 5 / 10 / Max** chips set the qty field (Max = vault balance). Deposit/Withdraw/chips use ≥44px control height.
+- **Controller open:** Hold **LB** + press **Y** (`JoystickButton4` held + `JoystickButton3` down) toggles the vault via `ToggleMainVaultWindow`. Configurable: `[UI] ControllerOpenEnabled` (default true), `ControllerOpenModifier`, `ControllerOpenButton`. Settings tab has an Enable toggle + hint; F8 AltToggle still works for Steam Input keyboard layers.
+- **Controller close:** Escape still closes; also tries game cancel (`UICancel` / `Cancel` / `Close`) so Steam Input **B** can dismiss the vault. No global Harmony block of UICancel.
+- **Deck layout defaults:** `[Display] AutoDeckLayout` (default true) once raises WindowScale / HUD Scale to at least **1.35** on Deck-like resolutions (1280×800 / 1280×720 or ≤1366×800 ~16:10). `[Display] DeckLayoutApplied` prevents re-fighting user prefs.
 
 ## Version 4.1.3
 

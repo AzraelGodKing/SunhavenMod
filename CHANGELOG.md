@@ -6,6 +6,15 @@ Notes for **players and release readers**. Per-mod blurbs and upstream metadata 
 
 ## 2026-09-27
 
+**The Vault (4.2.0)** — Steam Deck V1 / AZR-348 (**4.1.3 → 4.2.0**)
+
+- **Touch-sized controls:** Row toggle and quick withdraw buttons enforce a ~44px minimum; wider window / taller rows so they fit.
+- **Amount chips:** 1 / 5 / 10 / Max under the qty field for trackpad-friendly withdraw/deposit.
+- **Open:** **F8** (AltToggle) or controller **LB+Y** (Xbox layout; `[UI] ControllerOpenEnabled` / Modifier / Button).
+- **Close:** Escape plus game cancel (`UICancel` / Cancel / Close) when the vault is open.
+- **Auto Deck layout:** Once on Deck-like resolutions, WindowScale and HUD Scale bump to ≥1.35 unless already customized (`AutoDeckLayout` / `DeckLayoutApplied` in Display).
+- **Docs (GitHub Pages / `docs/` hub):** Steam Deck Ready copy — F8 or LB+Y open, touch UI, chips, B/cancel close; not full D-pad nav. Hub announce, Vault card chips, comparison Controller Support (`Deck`), Vault Parameters (`AutoDeckLayout` / `DeckLayoutApplied`), and search-index keywords.
+
 **Haven's Mirror (1.0.0)** — new suite mod
 
 - Drop PNG bust portraits into `BepInEx/plugins/HavensMirror/gallery/<CharacterName>/` (or `gallery/_shared/`).
