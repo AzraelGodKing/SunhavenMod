@@ -15,14 +15,16 @@ namespace HavensMirror.Dialogue
     /// Vanilla <c>DialogueController._bust</c> lives under <c>BustOffset</c> at a right-biased
     /// anchored X (~512). Parenting under that node (or mirroring NPC X) stacks the player on
     /// the NPC. Placement is always under the root Canvas in canvas-local space: fixed left X,
-    /// Y/size sampled from the NPC bust only.
+    /// Y from NPC world center; height matches NPC rect height with width from sprite aspect
+    /// (full-body PNGs — never SetNativeSize / never mask-crop).
     /// </summary>
     public sealed class PlayerBustHud : MonoBehaviour
     {
         private const float LeftMargin = 24f;
         private const float LeftFraction = 0.15f;
-        private const float FallbackBustWidth = 166f;
-        private const float FallbackBustHeight = 199f;
+        /// <summary>Typical NPC dialogue bust height when no NPC Image is available.</summary>
+        private const float FallbackBustHeight = 250f;
+        private const float FallbackAspect = 0.83f;
 
         private static PlayerBustHud _instance;
         private static bool _loggedLayout;
@@ -145,9 +147,14 @@ namespace HavensMirror.Dialogue
                 _image = go.GetComponent<Image>();
                 _rect = go.GetComponent<RectTransform>();
 
+                _image.type = Image.Type.Simple;
                 _image.preserveAspect = true;
                 _image.raycastTarget = false;
                 _image.color = Color.white;
+                // Never mask/crop full-body gallery PNGs.
+                var mask = go.GetComponent<RectMask2D>();
+                if (mask != null)
+                    UnityEngine.Object.Destroy(mask);
                 go.SetActive(false);
 
                 PlaceOnLeftHalf();
@@ -299,33 +306,53 @@ namespace HavensMirror.Dialogue
                 _rect.anchoredPosition = new Vector2(x, y);
             }
 
+            _image.type = Image.Type.Simple;
             _image.color = Color.white;
             _image.preserveAspect = true;
             _image.raycastTarget = false;
             _rect.SetAsLastSibling();
         }
 
+        /// <summary>
+        /// Match NPC bust height on screen; width from gallery sprite aspect.
+        /// Full-body PNGs must not use SetNativeSize (huge pixels → screen crop).
+        /// </summary>
         private Vector2 ResolvePlayerSize(RectTransform npcRect)
         {
-            Vector2 size = _rect != null ? _rect.sizeDelta : Vector2.zero;
+            float targetHeight = FallbackBustHeight;
 
             if (npcRect != null)
             {
-                Vector2 npcSize = npcRect.sizeDelta;
-                if (npcSize.x > 1f && npcSize.y > 1f)
-                    size = npcSize;
+                float h = Mathf.Abs(npcRect.rect.height);
+                if (h <= 1f)
+                    h = Mathf.Abs(npcRect.sizeDelta.y);
+                if (h <= 1f)
+                {
+                    // World-space height as last resort (canvas scale).
+                    Vector3[] corners = new Vector3[4];
+                    npcRect.GetWorldCorners(corners);
+                    h = Mathf.Abs(corners[1].y - corners[0].y);
+                    if (_rect != null && _rect.parent is RectTransform parent)
+                    {
+                        Vector3 local0 = parent.InverseTransformPoint(corners[0]);
+                        Vector3 local1 = parent.InverseTransformPoint(corners[1]);
+                        h = Mathf.Abs(local1.y - local0.y);
+                    }
+                }
+
+                if (h > 1f)
+                    targetHeight = h;
             }
 
-            if ((size.x <= 1f || size.y <= 1f) && _image != null && _image.sprite != null)
+            float aspect = FallbackAspect;
+            if (_image != null && _image.sprite != null)
             {
-                _image.SetNativeSize();
-                size = _rect.sizeDelta;
+                Rect sr = _image.sprite.rect;
+                if (sr.height > 0.01f)
+                    aspect = sr.width / sr.height;
             }
 
-            if (size.x <= 1f || size.y <= 1f)
-                size = new Vector2(FallbackBustWidth, FallbackBustHeight);
-
-            return size;
+            return new Vector2(targetHeight * aspect, targetHeight);
         }
 
         public void Hide()
@@ -377,8 +404,11 @@ namespace HavensMirror.Dialogue
             }
 
             _image.sprite = sprite;
+            _image.type = Image.Type.Simple;
+            _image.preserveAspect = true;
             _image.color = Color.white;
-            _image.SetNativeSize();
+            // Do not SetNativeSize — gallery PNGs are full-body at large pixel sizes and
+            // would overflow the screen. Size is set in PlaceOnLeftHalf from NPC height.
             // Stay hidden until final left placement so we never flash on the NPC side.
             _image.gameObject.SetActive(false);
 
@@ -419,10 +449,26 @@ namespace HavensMirror.Dialogue
                 Vector2 npcPos = _npcBust != null
                     ? _npcBust.rectTransform.anchoredPosition
                     : Vector2.zero;
+                float npcH = 0f;
+                if (_npcBust != null)
+                {
+                    npcH = Mathf.Abs(_npcBust.rectTransform.rect.height);
+                    if (npcH <= 1f)
+                        npcH = Mathf.Abs(_npcBust.rectTransform.sizeDelta.y);
+                }
+
+                Vector2 spritePx = Vector2.zero;
+                if (_image != null && _image.sprite != null)
+                {
+                    Rect sr = _image.sprite.rect;
+                    spritePx = new Vector2(sr.width, sr.height);
+                }
+
                 Vector3 playerScreen = RectTransformUtility.WorldToScreenPoint(null, _rect.position);
                 Plugin.Log?.LogInfo(
                     $"[Dialogue] Player bust layout: parent='{parentName}' anchoredPosition={_rect.anchoredPosition} " +
-                    $"sizeDelta={_rect.sizeDelta} anchors=({_rect.anchorMin},{_rect.anchorMax}) " +
+                    $"sizeDelta={_rect.sizeDelta} spritePx={spritePx} npcHeight={npcH} " +
+                    $"anchors=({_rect.anchorMin},{_rect.anchorMax}) " +
                     $"screen={playerScreen} npcParent='{npcParent}' npcAnchored={npcPos} " +
                     $"siblingIndex={_rect.GetSiblingIndex()}");
             }
