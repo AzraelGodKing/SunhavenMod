@@ -33,6 +33,7 @@ const STATS_ID_BY_MOD_KEY = {
   cropoptimizer: "crop-optimizer",
   havensrespec: "havens-respec",
   giftingassistant: "gifting-assistant",
+  havensmirror: "havens-mirror",
 };
 
 const MOD_META = {
@@ -49,6 +50,7 @@ const MOD_META = {
   cropoptimizer: { icon: "🌱", lane: "Farming" },
   havensrespec: { icon: "📜", lane: "Skills" },
   giftingassistant: { icon: "🎁", lane: "Social" },
+  havensmirror: { icon: "🪞", lane: "QoL" },
 };
 
 function resolveStatsId(modKey) {

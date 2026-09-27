@@ -479,6 +479,7 @@ jobs:
             CropOptimizer)              DIR="CropOptimizer" ;;
             HavensRespec)               DIR="HavensRespec" ;;
             GiftingAssistant)           DIR="GiftingAssistant" ;;
+            HavensMirror)               DIR="HavensMirror" ;;
             *)                          DIR="" ;;
           esac
           if [ -n "$DIR" ]; then

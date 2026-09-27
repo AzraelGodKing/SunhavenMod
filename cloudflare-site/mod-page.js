@@ -22,6 +22,7 @@ const STATS_ID_BY_MOD_KEY = {
   cropoptimizer: "crop-optimizer",
   havensrespec: "havens-respec",
   giftingassistant: "gifting-assistant",
+  havensmirror: "havens-mirror",
 };
 
 const MOD_PRESENTATION = {
@@ -103,6 +104,12 @@ const MOD_PRESENTATION = {
     tags: ["Social", "QoL", "Planning"],
     related: ["squirrelsbirthdayreminder", "sunhaventodo", "havensalmanac"],
   },
+  havensmirror: {
+    icon: "🪞",
+    status: "New",
+    tags: ["UI", "QoL", "Dialogue"],
+    related: ["havensalmanac", "havendevtools", "giftingassistant"],
+  },
 };
 
 const MOD_SCENES = {
@@ -119,6 +126,7 @@ const MOD_SCENES = {
   cropoptimizer: ["Forecast value before harvest", "Prioritize plots by projected yield", "Act on ETA and quality context"],
   havensrespec: ["Rebuild trees with confidence", "Preview cost before commitment", "Keep resets safe and controlled"],
   giftingassistant: ["Plan the day's gift run", "See loved/liked gifts with icons", "Mark gifted and stay in sync"],
+  havensmirror: ["Drop seasonal PNGs into gallery folders", "See your bust in dialogue", "Reload looks in-game with a hotkey"],
 };
 
 const MOD_LAYOUTS = {
@@ -134,6 +142,7 @@ const MOD_LAYOUTS = {
   trinketfortune: "spotlight",
   havensrespec: "spotlight",
   giftingassistant: "checklist",
+  havensmirror: "spotlight",
   thevault: "vault",
 };
 
@@ -309,6 +318,19 @@ const MOD_PROFILES = {
       "Checklist-forward profile built around a daily roster, mirroring how the mod plans, prioritizes, and checks off each gift.",
     panelTitle: "Gifting highlights",
     highlights: ["Daily gift roster", "Loved/liked suggestions", "Todo auto-complete sync"],
+  },
+  havensmirror: {
+    themeClass: "theme-violet",
+    tagline: "Custom dialogue busts from your own PNG gallery.",
+    motif: "Looking Glass",
+    context:
+      "Haven's Mirror loads player dialogue bust portraits from a PNG gallery, with left-side layout sizing that matches NPC portraits and optional ForcedLook overrides.",
+    bestFor: "Players who want custom seasonal or outfit dialogue portraits without replacing core assets.",
+    synergy: "Sits beside Almanac and DevTools for suite polish; pairs with Gifting Assistant for character-focused play.",
+    story:
+      "A violet, dark-fantasy looking-glass motif for portrait craft — drop PNGs, open dialogue, and see yourself reflected.",
+    panelTitle: "Mirror highlights",
+    highlights: ["PNG gallery busts", "PersistentRunner-safe dialogue", "Left bust layout matching NPC size"],
   },
 };
 

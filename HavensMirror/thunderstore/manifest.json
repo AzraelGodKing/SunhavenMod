@@ -1,7 +1,7 @@
 {
   "name": "HavensMirror",
   "version_number": "1.0.0",
-  "website_url": "https://www.nexusmods.com/sunhaven/mods",
+  "website_url": "https://azraelgodking.github.io/SunhavenMod/HavensMirror/HavensMirror.html",
   "description": "Custom player dialogue bust portraits from a PNG gallery, with optional NPC look override and hotkey reload.",
   "dependencies": ["BepInEx-BepInExPack-5.4.2100"]
 }
