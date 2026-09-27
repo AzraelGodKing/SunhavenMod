@@ -37,6 +37,9 @@ namespace TheVault
         internal static KeyCode StaticToggleKey = KeyCode.V;
         internal static bool StaticRequireCtrl = true;
         internal static KeyCode StaticAltToggleKey = KeyCode.F8;
+        internal static bool StaticControllerOpenEnabled = true;
+        internal static KeyCode StaticControllerOpenModifier = KeyCode.JoystickButton4;
+        internal static KeyCode StaticControllerOpenButton = KeyCode.JoystickButton3;
         internal static KeyCode StaticHUDToggleKey = KeyCode.F7;
         internal static KeyCode StaticQuickConvertKey = KeyCode.F6;
         private const float MinWindowScale = 0.5f;
@@ -52,6 +55,9 @@ namespace TheVault
         private ConfigEntry<KeyCode> _toggleKey;
         private ConfigEntry<bool> _requireCtrlModifier;
         private ConfigEntry<KeyCode> _altToggleKey;
+        private ConfigEntry<bool> _controllerOpenEnabled;
+        private ConfigEntry<KeyCode> _controllerOpenModifier;
+        private ConfigEntry<KeyCode> _controllerOpenButton;
         private ConfigEntry<bool> _enableHUD;
         private ConfigEntry<string> _hudPosition;
         private ConfigEntry<float> _hudPositionX;
@@ -63,6 +69,8 @@ namespace TheVault
         private ConfigEntry<KeyCode> _quickConvertKey;
         private ConfigEntry<string> _quickConvertTable;
         private ConfigEntry<float> _windowScale;
+        private ConfigEntry<bool> _autoDeckLayout;
+        private ConfigEntry<bool> _deckLayoutApplied;
         private ConfigEntry<bool> _enableAutoSave;
         private ConfigEntry<float> _autoSaveInterval;
         private ConfigEntry<bool> _checkForUpdates;
@@ -103,6 +111,7 @@ namespace TheVault
                 // Initialize configuration
                 InitializeConfig();
                 SubscribeConfigChanged();
+                TryApplyDeckLayoutDefaults();
 
                 // Initialize vault system
                 // Store in both instance and static fields so they survive Plugin destruction
@@ -127,6 +136,9 @@ namespace TheVault
                 StaticToggleKey = _toggleKey.Value;
                 StaticRequireCtrl = _requireCtrlModifier.Value;
                 StaticAltToggleKey = _altToggleKey.Value;
+                StaticControllerOpenEnabled = _controllerOpenEnabled.Value;
+                StaticControllerOpenModifier = _controllerOpenModifier.Value;
+                StaticControllerOpenButton = _controllerOpenButton.Value;
                 StaticHUDToggleKey = _hudToggleKey.Value;
                 StaticQuickConvertKey = _quickConvertKey.Value;
 
@@ -175,7 +187,8 @@ namespace TheVault
                     ModHealthIntegrationSummary.Build(
                         ("DevTools", SuitePluginGuids.DevTools),
                         ("Almanac", SuitePluginGuids.HavensAlmanac)));
-                Log.LogInfo($"Press {(_requireCtrlModifier.Value ? "Ctrl+" : "")}{_toggleKey.Value} or {_altToggleKey.Value} to open the vault");
+                Log.LogInfo(
+                    $"Press {(_requireCtrlModifier.Value ? "Ctrl+" : "")}{_toggleKey.Value}, {_altToggleKey.Value}, or controller LB+Y (JoystickButton4+JoystickButton3) to open the vault");
             }
             catch (Exception ex)
             {
@@ -340,7 +353,28 @@ namespace TheVault
                 "UI",
                 "AltToggleKey",
                 KeyCode.F8,
-                "Alternative key to toggle vault UI (no modifier required). Useful for Steam Deck."
+                "Alternative key to toggle vault UI (no modifier required). Useful for Steam Deck / Steam Input keyboard layers (F8 still works)."
+            );
+
+            _controllerOpenEnabled = ConfigFile.Bind(
+                "UI",
+                "ControllerOpenEnabled",
+                true,
+                "Enable controller combo to open/close the vault (Steam Deck / Xbox layout). Default combo: hold LB + press Y."
+            );
+
+            _controllerOpenModifier = ConfigFile.Bind(
+                "UI",
+                "ControllerOpenModifier",
+                KeyCode.JoystickButton4,
+                "Controller button held for vault open (Unity Xbox layout: JoystickButton4 = LB). JoystickButton* aggregates all joysticks."
+            );
+
+            _controllerOpenButton = ConfigFile.Bind(
+                "UI",
+                "ControllerOpenButton",
+                KeyCode.JoystickButton3,
+                "Controller button pressed while modifier is held to toggle vault (Unity Xbox layout: JoystickButton3 = Y)."
             );
 
             _enableHUD = ConfigFile.Bind(
@@ -404,6 +438,20 @@ namespace TheVault
                     "Scale factor for the main Vault window (1.0 = default, 1.5 = 50% larger)",
                     new BepInEx.Configuration.AcceptableValueRange<float>(0.5f, 3.0f)
                 )
+            );
+
+            _autoDeckLayout = ConfigFile.Bind(
+                "Display",
+                "AutoDeckLayout",
+                true,
+                "Apply larger UI scale once on Deck-like resolutions (1280×800 / 1280×720 or similar 16:10). Set false to never auto-bump WindowScale / HUD Scale."
+            );
+
+            _deckLayoutApplied = ConfigFile.Bind(
+                "Display",
+                "DeckLayoutApplied",
+                false,
+                "Internal flag: set true after AutoDeckLayout has applied once so we do not overwrite user prefs on later launches. Reset to false to re-apply."
             );
 
             _hudToggleKey = ConfigFile.Bind(
@@ -487,6 +535,9 @@ namespace TheVault
                 StaticToggleKey = _toggleKey.Value;
                 StaticRequireCtrl = _requireCtrlModifier.Value;
                 StaticAltToggleKey = _altToggleKey.Value;
+                StaticControllerOpenEnabled = _controllerOpenEnabled.Value;
+                StaticControllerOpenModifier = _controllerOpenModifier.Value;
+                StaticControllerOpenButton = _controllerOpenButton.Value;
                 StaticHUDToggleKey = _hudToggleKey.Value;
                 StaticQuickConvertKey = _quickConvertKey.Value;
                 _staticSaveSystem?.SetAutoSaveIntervalSeconds(Mathf.Max(10f, _autoSaveInterval.Value));
@@ -559,6 +610,12 @@ namespace TheVault
         public static void SetConfigRequireCtrl(bool v) { if (Instance?._requireCtrlModifier != null) Instance._requireCtrlModifier.Value = v; }
         public static KeyCode GetConfigAltToggleKey() => Instance?._altToggleKey?.Value ?? KeyCode.F8;
         public static void SetConfigAltToggleKey(KeyCode k) { if (Instance?._altToggleKey != null) Instance._altToggleKey.Value = k; }
+        public static bool GetConfigControllerOpenEnabled() => Instance?._controllerOpenEnabled?.Value ?? true;
+        public static void SetConfigControllerOpenEnabled(bool v) { if (Instance?._controllerOpenEnabled != null) Instance._controllerOpenEnabled.Value = v; }
+        public static KeyCode GetConfigControllerOpenModifier() => Instance?._controllerOpenModifier?.Value ?? KeyCode.JoystickButton4;
+        public static void SetConfigControllerOpenModifier(KeyCode k) { if (Instance?._controllerOpenModifier != null) Instance._controllerOpenModifier.Value = k; }
+        public static KeyCode GetConfigControllerOpenButton() => Instance?._controllerOpenButton?.Value ?? KeyCode.JoystickButton3;
+        public static void SetConfigControllerOpenButton(KeyCode k) { if (Instance?._controllerOpenButton != null) Instance._controllerOpenButton.Value = k; }
         public static bool GetConfigHUDEnabled() => Instance?._enableHUD?.Value ?? true;
         public static void SetConfigHUDEnabled(bool v) { if (Instance?._enableHUD != null) Instance._enableHUD.Value = v; }
         public static float GetConfigHUDScale() => Instance?._hudScale?.Value ?? 1f;
@@ -610,6 +667,71 @@ namespace TheVault
         private float ClampWindowScaleValue(float value)
         {
             return Mathf.Clamp(value, MinWindowScale, MaxWindowScale);
+        }
+
+        /// <summary>
+        /// Once per install (while AutoDeckLayout and !DeckLayoutApplied): raise WindowScale / HUD
+        /// Scale to at least 1.35 on Deck-like resolutions. Safe to call repeatedly; no-ops after applied
+        /// or when Screen size is not ready yet.
+        /// </summary>
+        internal static void TryApplyDeckLayoutDefaults()
+        {
+            Instance?.ApplyDeckLayoutDefaultsIfNeeded();
+        }
+
+        private void ApplyDeckLayoutDefaultsIfNeeded()
+        {
+            try
+            {
+                if (_autoDeckLayout == null || _deckLayoutApplied == null || _windowScale == null || _hudScale == null)
+                    return;
+                if (!_autoDeckLayout.Value || _deckLayoutApplied.Value)
+                    return;
+                if (Screen.width <= 0 || Screen.height <= 0)
+                    return;
+                if (!LooksLikeDeckResolution())
+                    return;
+
+                const float deckScale = 1.35f;
+                float win = ClampWindowScaleValue(_windowScale.Value);
+                if (win < deckScale)
+                    _windowScale.Value = ClampWindowScaleValue(deckScale);
+
+                // Only bump HUD when still near factory default (1.25) or below.
+                float hud = _hudScale.Value;
+                if (hud <= 1.26f)
+                    _hudScale.Value = Mathf.Clamp(Mathf.Max(hud, deckScale), 0.5f, 3.0f);
+
+                _deckLayoutApplied.Value = true;
+                ApplyConfigToState();
+                Log?.LogInfo(
+                    $"[The Vault] Auto Deck layout applied (WindowScale={_windowScale.Value:F2}, HUD Scale={_hudScale.Value:F2}, {Screen.width}x{Screen.height})");
+            }
+            catch (Exception ex)
+            {
+                Log?.LogWarning($"[The Vault] Auto Deck layout failed: {ex.Message}");
+            }
+        }
+
+        /// <summary>
+        /// Steam Deck-like resolutions:
+        /// - Native Deck LCD / OLED Game Mode: 1280×800
+        /// - Docked / external 720p: 1280×720
+        /// - Other small 16:10-ish panels: width ≤1366 and height ≤800 with aspect ≈16:10 (1.5–1.7)
+        /// </summary>
+        private static bool LooksLikeDeckResolution()
+        {
+            int w = Screen.width;
+            int h = Screen.height;
+            if (w == 1280 && (h == 720 || h == 800))
+                return true;
+            if (w <= 1366 && h <= 800 && h > 0)
+            {
+                float aspect = (float)w / h;
+                if (aspect >= 1.5f && aspect <= 1.7f)
+                    return true;
+            }
+            return false;
         }
 
         public static bool GetConfigDebugFullVaultInspector() => _debugFullVaultInspector;
@@ -1435,6 +1557,6 @@ namespace TheVault
     {
         public const string PLUGIN_GUID = "com.azraelgodking.thevault";
         public const string PLUGIN_NAME = "The Vault";
-        public const string PLUGIN_VERSION = "4.1.3";
+        public const string PLUGIN_VERSION = "4.2.0";
     }
 }
