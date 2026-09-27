@@ -4,9 +4,9 @@ import { animate, stagger } from "https://esm.sh/motion@12.23.24";
 const STATS_CACHE_URL =
   "https://azraelgodking.github.io/SunhavenMod/data/stats-cache.json";
 const MOD_MATRIX_URL =
-  "https://raw.githubusercontent.com/AzraelGodKing/SunhavenMod/main/scripts/matrix/mod-matrix.json";
+  "https://raw.githubusercontent.com/AzraelGodKing/SunhavenMod/cursor/azr-346-havens-mirror-b08c/scripts/matrix/mod-matrix.json";
 const VERSIONS_URL =
-  "https://raw.githubusercontent.com/AzraelGodKing/SunhavenMod/main/docs/versions.json";
+  "https://raw.githubusercontent.com/AzraelGodKing/SunhavenMod/cursor/azr-346-havens-mirror-b08c/docs/versions.json";
 
 const STATS_ID_BY_MOD_KEY = {
   senpaischest: "senpais-chest",

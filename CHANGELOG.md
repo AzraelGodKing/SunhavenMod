@@ -17,7 +17,7 @@ Notes for **players and release readers**. Per-mod blurbs and upstream metadata 
 - **HOWTO.txt** (written to `gallery/_shared/` on first launch) rewritten in plain steps: what the mod does, where images go, exact file names, and how to reload.
 - **Save-slot folders:** when the game runs, scans `GameSave` character saves and creates empty `gallery/<CharacterName>/` folders automatically. Empty folders are ignored until you drop PNGs; `_shared/` remains the fallback.
 - **Fixed (AZR-346):** Survive early BepInEx `OnDestroy` via `PersistentRunner`; Harmony patches and gallery sync stay alive so dialogue busts keep working.
-- **Release prep:** Suite release pipeline + Cloudflare site page ready; Nexus page URL still TBD (create on Nexus, then fill `docs/versions.json`).
+- **Release prep:** Suite release pipeline + Cloudflare site page ready; Nexus listing [mod 538](https://www.nexusmods.com/sunhaven/mods/538) (`nexus_file_group_id` **8035296**) wired in `docs/versions.json` for CI uploads and download-nav.
 
 ---
 
