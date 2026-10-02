@@ -1,0 +1,17 @@
+{
+  "slug": "smut",
+  "name": "Sunhaven Museum Utility Tracker",
+  "game": "sun-haven",
+  "description": "Track museum donation progress across all three halls",
+  "version": "3.1.1",
+  "screenshots": [],
+  "download": {
+    "file": "SMUT-3.1.1.zip",
+    "url": "https://github.com/AzraelGodKing/SunhavenMod/releases/download/SMUT-v3.1.1/SMUT-3.1.1.zip"
+  },
+  "links": {
+    "steam": null,
+    "thunderstore": "https://thunderstore.io/c/sun-haven/p/AzraelGodKing/SMUT/",
+    "nexus": "https://www.nexusmods.com/sunhaven/mods/490"
+  }
+}

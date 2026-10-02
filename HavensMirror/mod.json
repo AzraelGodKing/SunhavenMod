@@ -1,0 +1,17 @@
+{
+  "slug": "havens-mirror",
+  "name": "Haven's Mirror",
+  "game": "sun-haven",
+  "description": "Custom player dialogue bust portraits from a PNG gallery folder, with optional NPC look override and hotkey reload",
+  "version": "1.0.0",
+  "screenshots": [],
+  "download": {
+    "file": "HavensMirror-1.0.0.zip",
+    "url": "https://github.com/AzraelGodKing/SunhavenMod/releases/download/HavensMirror-v1.0.0/HavensMirror-1.0.0.zip"
+  },
+  "links": {
+    "steam": null,
+    "thunderstore": "https://thunderstore.io/c/sun-haven/p/AzraelGodKing/HavensMirror/",
+    "nexus": "https://www.nexusmods.com/sunhaven/mods/538"
+  }
+}

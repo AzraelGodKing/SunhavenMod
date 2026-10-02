@@ -1,0 +1,17 @@
+{
+  "slug": "the-vault",
+  "name": "The Vault",
+  "game": "sun-haven",
+  "description": "The Vault 3 — per-character vault, encrypted saves, HUD, auto-deposit, shop and inventory vault integration, Custom tab & mod API.",
+  "version": "4.2.0",
+  "screenshots": [],
+  "download": {
+    "file": "TheVault-4.2.0.zip",
+    "url": "https://github.com/AzraelGodKing/SunhavenMod/releases/download/TheVault-v4.2.0/TheVault-4.2.0.zip"
+  },
+  "links": {
+    "steam": null,
+    "thunderstore": "https://thunderstore.io/c/sun-haven/p/AzraelGodKing/TheVault/",
+    "nexus": "https://www.nexusmods.com/sunhaven/mods/488"
+  }
+}

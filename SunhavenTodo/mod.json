@@ -1,0 +1,17 @@
+{
+  "slug": "sunhaven-todo",
+  "name": "Sun Haven Todo",
+  "game": "sun-haven",
+  "description": "In-game task tracker for farming goals, quests, and daily tasks",
+  "version": "2.1.1",
+  "screenshots": [],
+  "download": {
+    "file": "SunHavenTodo-2.1.1.zip",
+    "url": "https://github.com/AzraelGodKing/SunhavenMod/releases/download/SunHavenTodo-v2.1.1/SunHavenTodo-2.1.1.zip"
+  },
+  "links": {
+    "steam": null,
+    "thunderstore": "https://thunderstore.io/c/sun-haven/p/AzraelGodKing/SunHavenTodo/",
+    "nexus": "https://www.nexusmods.com/sunhaven/mods/491"
+  }
+}
