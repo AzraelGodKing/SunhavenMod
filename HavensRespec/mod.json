@@ -1,0 +1,17 @@
+{
+  "slug": "havens-respec",
+  "name": "Haven's Respec",
+  "game": "sun-haven",
+  "description": "Safe skill respec — Reset button on every skill tab, confirmation dialog, one-step Undo, configurable cost, and full Configuration Manager support",
+  "version": "2.1.1",
+  "screenshots": [],
+  "download": {
+    "file": "HavensRespec-2.1.1.zip",
+    "url": "https://github.com/AzraelGodKing/SunhavenMod/releases/download/HavensRespec-v2.1.1/HavensRespec-2.1.1.zip"
+  },
+  "links": {
+    "steam": null,
+    "thunderstore": "https://thunderstore.io/c/sun-haven/p/AzraelGodKing/HavensRespec/",
+    "nexus": "https://www.nexusmods.com/sunhaven/mods/502"
+  }
+}

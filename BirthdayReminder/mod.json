@@ -1,0 +1,17 @@
+{
+  "slug": "birthday-reminder",
+  "name": "A Squirrel's Birthday Reminder",
+  "game": "sun-haven",
+  "description": "Never miss an NPC birthday - get reminders and gift suggestions",
+  "version": "2.1.1",
+  "screenshots": [],
+  "download": {
+    "file": "SquirrelsBirthdayReminder-2.1.1.zip",
+    "url": "https://github.com/AzraelGodKing/SunhavenMod/releases/download/SquirrelsBirthdayReminder-v2.1.1/SquirrelsBirthdayReminder-2.1.1.zip"
+  },
+  "links": {
+    "steam": null,
+    "thunderstore": "https://thunderstore.io/c/sun-haven/p/AzraelGodKing/SquirrelsBirthdayReminder/",
+    "nexus": "https://www.nexusmods.com/sunhaven/mods/493"
+  }
+}

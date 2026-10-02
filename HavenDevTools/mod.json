@@ -1,0 +1,17 @@
+{
+  "slug": "haven-dev-tools",
+  "name": "HavenDevTools",
+  "game": "sun-haven",
+  "description": "Developer utilities for mod debugging and game state inspection",
+  "version": "2.1.1",
+  "screenshots": [],
+  "download": {
+    "file": "HavenDevTools-2.1.1.zip",
+    "url": "https://github.com/AzraelGodKing/SunhavenMod/releases/download/HavenDevTools-v2.1.1/HavenDevTools-2.1.1.zip"
+  },
+  "links": {
+    "steam": null,
+    "thunderstore": "https://thunderstore.io/c/sun-haven/p/AzraelGodKing/HavenDevTools/",
+    "nexus": "https://www.nexusmods.com/sunhaven/mods/495"
+  }
+}
