@@ -4,6 +4,10 @@ Internal engineering log: **CI**, **release automation**, **scripts**, **docs in
 
 ---
 
+## 2026-10-02
+
+- **Website catalog:** Added `mod.json` in each published mod folder (name, version, description, GitHub zip, Nexus, Thunderstore). Generated from `docs/versions.json` and existing release assets. No mod version bumps.
+
 ## 2026-09-27
 
 - **AZR-348 — The Vault Steam Deck V1:** Touch-sized row controls (≥44px), amount chips (1/5/10/Max), **LB+Y** controller open (`[UI] ControllerOpenEnabled` / Modifier=JoystickButton4 / Button=JoystickButton3), Escape + `UICancel`/`Cancel`/`Close` to dismiss, `[Display] AutoDeckLayout` / `DeckLayoutApplied` one-shot 1.35 scale on Deck-like resolutions. Docs/hub honesty (no D-pad nav claim). **Ship bump 4.1.3 → 4.2.0** (Az yes). Player notes in `CHANGELOG.md`.

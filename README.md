@@ -1,6 +1,6 @@
 # Sun Haven Mods
 
-BepInEx plugins for [Sun Haven](https://store.steampowered.com/app/1432860/Sun_Haven/) — vault, QoL, integrations, and docs. **Published versions and download links** live in [`docs/versions.json`](docs/versions.json) (also drives the [mod hub](https://azraelgodking.github.io/SunhavenMod/)).
+BepInEx plugins for [Sun Haven](https://store.steampowered.com/app/1432860/Sun_Haven/) — vault, QoL, integrations, and docs. **Published versions and download links** live in [`docs/versions.json`](docs/versions.json) (also drives the [mod hub](https://azraelgodking.github.io/SunhavenMod/)). Each mod folder also has a `mod.json` for the public mod website.
 
 ## Mods (versions match `docs/versions.json`)
 
