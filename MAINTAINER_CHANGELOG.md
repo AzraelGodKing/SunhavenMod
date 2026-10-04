@@ -4,6 +4,10 @@ Internal engineering log: **CI**, **release automation**, **scripts**, **docs in
 
 ---
 
+## 2026-10-04
+
+- **Website downloads:** Release & Publish uploads the packed zip to `downloads.azraelsmods.com` and records the version in `downloads.json`. Uses `CLOUDFLARE_API_TOKEN` and `CLOUDFLARE_ACCOUNT_ID`. A missing token does not fail GitHub, Nexus, or Thunderstore.
+
 ## 2026-10-02
 
 - **Website catalog:** Added `mod.json` in each published mod folder (name, version, description, GitHub zip, Nexus, Thunderstore). Generated from `docs/versions.json` and existing release assets. No mod version bumps.
