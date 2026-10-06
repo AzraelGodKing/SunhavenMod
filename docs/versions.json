@@ -112,14 +112,14 @@
     "changelog": "Fix: Nel'Vari/Withergate HUD totals use orb and ticket shop prices, not gold-only."
   },
   "com.azraelgodking.havensrespec": {
-    "version": "2.1.1",
+    "version": "2.1.2",
     "name": "Haven's Respec",
     "description": "Safe skill respec — Reset button on every skill tab, confirmation dialog, one-step Undo, configurable cost, and full Configuration Manager support",
     "nexus": "https://www.nexusmods.com/sunhaven/mods/502",
     "nexus_file_group_id": "7326839",
     "thunderstore": "https://thunderstore.io/c/sun-haven/p/AzraelGodKing/HavensRespec/",
     "thunderstoreName": "HavensRespec",
-    "changelog": "Fix: profession reset fails closed and rolls back on mid-walk errors (no gold charge for partial wipe)."
+    "changelog": "Fix: Confirm and Cancel on the respec prompt now work, so the Skills window is no longer stuck."
   },
   "com.azraelgodking.giftingassistant": {
     "version": "1.1.1",
