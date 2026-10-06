@@ -4,12 +4,15 @@ using TMPro;
 using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.UI;
+using Wish;
 
 namespace HavensRespec.UI
 {
     /// <summary>
-    /// Minimal uGUI confirmation modal that appears on top of the Skills panel.
-    /// Built programmatically so the mod does not need any asset bundles.
+    /// Confirmation modal drawn on the Skills canvas.
+    /// Sun Haven's skill window accepts clicks on the Reset button, then stops delivering
+    /// uGUI clicks to anything created beside that panel. Confirm and Cancel therefore
+    /// read the mouse themselves. Shift-click never opens this dialog.
     /// </summary>
     internal sealed class ConfirmResetDialog : MonoBehaviour
     {
@@ -18,20 +21,25 @@ namespace HavensRespec.UI
         private TextMeshProUGUI _cancelLabel;
         private TextMeshProUGUI _confirmLabel;
         private RectTransform _cardRt;
+        private RectTransform _cancelRt;
+        private RectTransform _confirmRt;
+        private Image _cancelImage;
+        private Image _confirmImage;
         private Action _onConfirm;
         private string _pendingTitle;
         private string _pendingBody;
+        private bool _closeQueued;
+        private bool _shown;
+        private int _acceptClicksFrame;
 
         public event Action Dismissed;
 
         /// <summary>
-        /// Build the dialog GameObject tree under <paramref name="parent"/> (usually the canvas
-        /// that owns the Skills panel). The dialog starts hidden.
+        /// Build the dialog under <paramref name="parent"/> (the canvas that owns the Skills panel).
+        /// The dialog starts hidden.
         /// </summary>
         public static ConfirmResetDialog BuildUnder(Transform parent)
         {
-            // Must be a RectTransform stretched to the parent canvas — a plain Transform breaks
-            // layout for full-screen children and can leave raycasts not matching visuals.
             var go = new GameObject("HavensRespec_ConfirmDialog", typeof(RectTransform));
             var rootRt = go.GetComponent<RectTransform>();
             rootRt.SetParent(parent, false);
@@ -41,20 +49,13 @@ namespace HavensRespec.UI
             rootRt.offsetMax = Vector2.zero;
             rootRt.localScale = Vector3.one;
 
-            // Nested canvas above sibling UI (inventory overlays, other panels) so our scrim and
-            // buttons reliably receive pointer events. Parent canvas already has a raycaster; a
-            // child canvas needs its own GraphicRaycaster for its draw hierarchy.
-            var parentCanvas = parent.GetComponent<Canvas>() ?? parent.GetComponentInParent<Canvas>();
-            var overlayCanvas = go.AddComponent<Canvas>();
-            if (parentCanvas != null)
-            {
-                overlayCanvas.renderMode = parentCanvas.renderMode;
-                overlayCanvas.worldCamera = parentCanvas.worldCamera;
-                overlayCanvas.planeDistance = parentCanvas.planeDistance;
-            }
-            overlayCanvas.overrideSorting = true;
-            overlayCanvas.sortingOrder = parentCanvas != null ? parentCanvas.sortingOrder + 200 : 32000;
-            go.AddComponent<GraphicRaycaster>();
+            // Parent skill-window groups set interactable/blocksRaycasts off for strangers.
+            // ignoreParentGroups keeps this modal hittable and keeps it from passing clicks through.
+            var group = go.AddComponent<CanvasGroup>();
+            group.alpha = 1f;
+            group.interactable = true;
+            group.blocksRaycasts = true;
+            group.ignoreParentGroups = true;
 
             var dialog = go.AddComponent<ConfirmResetDialog>();
             dialog.BuildHierarchy();
@@ -70,17 +71,186 @@ namespace HavensRespec.UI
             _body.text = _pendingBody;
             LayoutCardForBody(_pendingBody);
             _onConfirm = onConfirm;
+            _shown = true;
+            _closeQueued = false;
+            _acceptClicksFrame = Time.frameCount + 1;
             gameObject.SetActive(true);
             transform.SetAsLastSibling();
+            Canvas.ForceUpdateCanvases();
+        }
+
+        private void Update()
+        {
+            if (!_shown)
+                return;
+
+            if (CancelPressed())
+            {
+                Close(runConfirm: false);
+                return;
+            }
+
+            PaintButtons();
+
+            if (Time.frameCount < _acceptClicksFrame || !PrimaryDown())
+                return;
+
+            if (Contains(_confirmRt))
+                Close(runConfirm: true);
+            else if (Contains(_cancelRt) || !Contains(_cardRt))
+                Close(runConfirm: false);
+        }
+
+        private void LateUpdate()
+        {
+            if (!_shown)
+                return;
+
+            if (transform.parent != null && transform.GetSiblingIndex() != transform.parent.childCount - 1)
+                transform.SetAsLastSibling();
+
+            SuppressTextRaycasts(_title);
+            SuppressTextRaycasts(_body);
         }
 
         public void Hide()
         {
-            gameObject.SetActive(false);
+            bool wasShown = _shown;
+            _shown = false;
+            _closeQueued = false;
             _onConfirm = null;
             _pendingTitle = null;
             _pendingBody = null;
-            Dismissed?.Invoke();
+            if (wasShown && EventSystem.current != null)
+                EventSystem.current.SetSelectedGameObject(null);
+            if (wasShown)
+                Dismissed?.Invoke();
+            gameObject.SetActive(false);
+        }
+
+        /// <summary>
+        /// Close from Update, not from a uGUI onClick. Hiding a button inside onClick leaves
+        /// the game's pointer stuck and the Skills window stops taking input.
+        /// </summary>
+        private void Close(bool runConfirm)
+        {
+            if (!_shown || _closeQueued)
+                return;
+
+            _closeQueued = true;
+            var handler = runConfirm ? _onConfirm : null;
+            _onConfirm = null;
+            Hide();
+            try
+            {
+                handler?.Invoke();
+            }
+            catch (Exception ex)
+            {
+                Debug.LogError($"[Haven's Respec] dialog action failed: {ex}");
+            }
+        }
+
+        private static bool CancelPressed()
+        {
+            if (Input.GetKeyDown(KeyCode.Escape))
+                return true;
+
+            try
+            {
+                if (PlayerInput.GetButtonDown("UICancel"))
+                    return true;
+                if (PlayerInput.GetButtonDown("Cancel"))
+                    return true;
+                if (PlayerInput.GetButtonDown("Close"))
+                    return true;
+            }
+            catch (Exception)
+            {
+                // Rewired has no action by that name.
+            }
+
+            return false;
+        }
+
+        private static bool PrimaryDown()
+        {
+            try
+            {
+                if (PlayerInput.GetMouseButtonDown(0))
+                    return true;
+            }
+            catch (Exception)
+            {
+                // PlayerInput is not ready; fall through to Unity.
+            }
+
+            return Input.GetMouseButtonDown(0);
+        }
+
+        private void PaintButtons()
+        {
+            bool held = false;
+            try
+            {
+                held = PlayerInput.GetMouseButton(0);
+            }
+            catch (Exception)
+            {
+                held = Input.GetMouseButton(0);
+            }
+
+            Paint(_confirmImage, Contains(_confirmRt), held, RespecStyle.Danger, RespecStyle.DangerHover, RespecStyle.DangerPressed);
+            Paint(_cancelImage, Contains(_cancelRt), held, RespecStyle.Neutral, RespecStyle.NeutralHover, RespecStyle.NeutralPressed);
+        }
+
+        private static void Paint(Image image, bool over, bool held, Color normal, Color hover, Color pressed)
+        {
+            if (image == null)
+                return;
+            image.color = over ? (held ? pressed : hover) : normal;
+        }
+
+        private static bool Contains(RectTransform rt)
+        {
+            if (rt == null || !rt.gameObject.activeInHierarchy)
+                return false;
+
+            Vector2 screen = Input.mousePosition;
+            try
+            {
+                if (MouseVisualManager.UsingController)
+                    screen = MouseVisualManager.mousePosition;
+            }
+            catch (Exception)
+            {
+                screen = Input.mousePosition;
+            }
+
+            var canvas = rt.GetComponentInParent<Canvas>();
+            Camera cam = null;
+            if (canvas != null && canvas.renderMode != RenderMode.ScreenSpaceOverlay)
+                cam = canvas.worldCamera;
+
+            if (RectTransformUtility.RectangleContainsScreenPoint(rt, screen, cam))
+                return true;
+
+            // Some Sun Haven canvases report overlay while still drawing through a camera.
+            if (cam == null && canvas != null && canvas.worldCamera != null)
+                return RectTransformUtility.RectangleContainsScreenPoint(rt, screen, canvas.worldCamera);
+            if (cam != null)
+                return RectTransformUtility.RectangleContainsScreenPoint(rt, screen, null);
+            return false;
+        }
+
+        private static void SuppressTextRaycasts(Graphic graphic)
+        {
+            if (graphic == null)
+                return;
+            graphic.raycastTarget = false;
+            var graphics = graphic.GetComponentsInChildren<Graphic>(true);
+            for (int i = 0; i < graphics.Length; i++)
+                graphics[i].raycastTarget = false;
         }
 
         public void RefreshLocalizedLabels()
@@ -100,8 +270,6 @@ namespace HavensRespec.UI
 
         private void BuildHierarchy()
         {
-            // Content is parented directly to this behaviour's RectTransform (full screen).
-            // Full-screen scrim — eats clicks so the player cannot click underneath the dialog.
             var scrimGo = new GameObject("Scrim");
             scrimGo.transform.SetParent(transform, false);
             var scrimRt = scrimGo.AddComponent<RectTransform>();
@@ -113,11 +281,7 @@ namespace HavensRespec.UI
             scrim.sprite = RespecStyle.Solid();
             scrim.color = new Color(0f, 0f, 0f, 0.55f);
             scrim.raycastTarget = true;
-            var scrimBtn = scrimGo.AddComponent<Button>();
-            scrimBtn.transition = Selectable.Transition.None;
-            scrimBtn.onClick.AddListener(Hide);
 
-            // Card.
             var cardGo = new GameObject("Card");
             cardGo.transform.SetParent(transform, false);
             var cardRt = cardGo.AddComponent<RectTransform>();
@@ -143,7 +307,6 @@ namespace HavensRespec.UI
             fill.type = Image.Type.Sliced;
             fill.raycastTarget = true;
 
-            // Title.
             var titleGo = new GameObject("Title");
             titleGo.transform.SetParent(fillGo.transform, false);
             var titleRt = titleGo.AddComponent<RectTransform>();
@@ -160,7 +323,6 @@ namespace HavensRespec.UI
             _title.text = ModLocalization.T("respec.dialog.title");
             _title.raycastTarget = false;
 
-            // Body.
             var bodyGo = new GameObject("Body");
             bodyGo.transform.SetParent(fillGo.transform, false);
             var bodyRt = bodyGo.AddComponent<RectTransform>();
@@ -177,16 +339,10 @@ namespace HavensRespec.UI
             _body.text = string.Empty;
             _body.raycastTarget = false;
 
-            // Buttons row — pinned to card footer with clear separation from body text.
-            BuildButton(fillGo.transform, ModLocalization.T("respec.dialog.cancel"), new Vector2(-14f, 14f), new Vector2(1f, 0f), new Vector2(1f, 0f), new Vector2(1f, 0f),
-                RespecStyle.Neutral, RespecStyle.NeutralHover, RespecStyle.NeutralPressed, Hide, out _cancelLabel);
-            BuildButton(fillGo.transform, ModLocalization.T("respec.dialog.confirm"), new Vector2(-134f, 14f), new Vector2(1f, 0f), new Vector2(1f, 0f), new Vector2(1f, 0f),
-                RespecStyle.Danger, RespecStyle.DangerHover, RespecStyle.DangerPressed, () =>
-                {
-                    var handler = _onConfirm;
-                    Hide();
-                    handler?.Invoke();
-                }, out _confirmLabel);
+            BuildButton(fillGo.transform, ModLocalization.T("respec.dialog.cancel"), new Vector2(-14f, 14f),
+                RespecStyle.Neutral, out _cancelRt, out _cancelImage, out _cancelLabel);
+            BuildButton(fillGo.transform, ModLocalization.T("respec.dialog.confirm"), new Vector2(-134f, 14f),
+                RespecStyle.Danger, out _confirmRt, out _confirmImage, out _confirmLabel);
         }
 
         private const float CardWidth = 420f;
@@ -210,41 +366,24 @@ namespace HavensRespec.UI
         }
 
         private static void BuildButton(
-            Transform parent, string label,
-            Vector2 anchoredPos, Vector2 anchorMin, Vector2 anchorMax, Vector2 pivot,
-            Color normal, Color hover, Color pressed, Action onClick,
-            out TextMeshProUGUI labelTmp)
+            Transform parent, string label, Vector2 anchoredPos, Color normal,
+            out RectTransform rect, out Image image, out TextMeshProUGUI labelTmp)
         {
             var go = new GameObject($"Btn_{label}");
             go.transform.SetParent(parent, false);
             var rt = go.AddComponent<RectTransform>();
-            rt.anchorMin = anchorMin;
-            rt.anchorMax = anchorMax;
-            rt.pivot = pivot;
+            rt.anchorMin = new Vector2(1f, 0f);
+            rt.anchorMax = new Vector2(1f, 0f);
+            rt.pivot = new Vector2(1f, 0f);
             rt.sizeDelta = new Vector2(110f, 36f);
             rt.anchoredPosition = anchoredPos;
+            rect = rt;
 
-            var image = go.AddComponent<Image>();
+            image = go.AddComponent<Image>();
             image.sprite = RespecStyle.SolidRounded(Color.white, new Color(0f, 0f, 0f, 0.45f), 20, 1, 5);
             image.type = Image.Type.Sliced;
             image.color = normal;
             image.raycastTarget = true;
-
-            var button = go.AddComponent<Button>();
-            var colors = button.colors;
-            colors.normalColor = Color.white;
-            colors.highlightedColor = Color.white;
-            colors.pressedColor = Color.white;
-            colors.selectedColor = Color.white;
-            button.colors = colors;
-            button.transition = Selectable.Transition.None;
-            button.onClick.AddListener(() => onClick?.Invoke());
-
-            var hoverHandler = go.AddComponent<ButtonHoverTint>();
-            hoverHandler.Target = image;
-            hoverHandler.Normal = normal;
-            hoverHandler.Hover = hover;
-            hoverHandler.Pressed = pressed;
 
             var textGo = new GameObject("Text");
             textGo.transform.SetParent(go.transform, false);
@@ -261,28 +400,6 @@ namespace HavensRespec.UI
             tmp.text = label;
             tmp.raycastTarget = false;
             labelTmp = tmp;
-        }
-
-        /// <summary>Updates button tint on hover / pressed state without regenerating sprites.</summary>
-        private sealed class ButtonHoverTint : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler, IPointerDownHandler, IPointerUpHandler
-        {
-            public Image Target;
-            public Color Normal;
-            public Color Hover;
-            public Color Pressed;
-
-            private bool _isOver;
-
-            public void OnPointerEnter(PointerEventData _) { _isOver = true; Apply(Hover); }
-            public void OnPointerExit(PointerEventData _) { _isOver = false; Apply(Normal); }
-            public void OnPointerDown(PointerEventData _) { Apply(Pressed); }
-            public void OnPointerUp(PointerEventData _) { Apply(_isOver ? Hover : Normal); }
-
-            private void Apply(Color fill)
-            {
-                if (Target == null) return;
-                Target.color = fill;
-            }
         }
     }
 }

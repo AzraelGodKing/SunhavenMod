@@ -1,4 +1,4 @@
-# Sun Haven Mods
+﻿# Sun Haven Mods
 
 BepInEx plugins for [Sun Haven](https://store.steampowered.com/app/1432860/Sun_Haven/) — vault, QoL, integrations, and docs. **Published versions and download links** live in [`docs/versions.json`](docs/versions.json) (also drives the [mod hub](https://azraelgodking.github.io/SunhavenMod/)). Each mod folder also has a `mod.json` for the public mod website.
 
@@ -17,7 +17,7 @@ BepInEx plugins for [Sun Haven](https://store.steampowered.com/app/1432860/Sun_H
 | Trinket Fortune | [`TrinketFortune/`](TrinketFortune/) | 2.1.1 |
 | Faster Races | [`FasterRaces/`](FasterRaces/) | 2.1.1 |
 | Crop Optimizer | [`CropOptimizer/`](CropOptimizer/) | 2.2.2 |
-| Haven's Respec | [`HavensRespec/`](HavensRespec/) | 2.1.1 |
+| Haven's Respec | [`HavensRespec/`](HavensRespec/) | 2.1.2 |
 | Gifting Assistant | [`GiftingAssistant/`](GiftingAssistant/) | 1.1.1 |
 | Haven's Mirror | [`HavensMirror/`](HavensMirror/) | 1.0.0 |
 
