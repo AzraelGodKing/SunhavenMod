@@ -11,7 +11,7 @@ recent reset can be undone per-profession during the same session.
 
 ## Version
 
-**2.0.1** — published in [`docs/versions.json`](../docs/versions.json). Player-facing store text: [`thunderstore/README.md`](thunderstore/README.md).
+**2.1.2** — published in [`docs/versions.json`](../docs/versions.json). Player-facing store text: [`thunderstore/README.md`](thunderstore/README.md).
 
 ## Features
 
@@ -71,8 +71,9 @@ correctness and UX upgrades over the prior implementation.
 
 ## Changelog
 
-### Unreleased
+### 2.1.2
 
+- **Fix:** Confirm and Cancel on the respec prompt now work, so the Skills window is no longer stuck. The skill UI never delivered clicks to those buttons; the prompt reads the mouse itself. Shift-click is unchanged. Escape or a click on the dark backdrop still cancels.
 - **UI:** **RESET ALL** sits below **Reset** in the left sidebar (Undo moves down when shown). Removes the old top-center placement that overlapped tier headers. Reset-all confirm dialog grows with longer copy so footer buttons no longer cover the undo note.
 
 ### 2026-05-02 (maintainer notes)
