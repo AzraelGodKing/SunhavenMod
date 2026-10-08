@@ -71,6 +71,10 @@ correctness and UX upgrades over the prior implementation.
 
 ## Changelog
 
+### Unreleased
+
+- **Fix (AZR-356):** Respec rolls back Max Mana from refunded nodes (Mental Focus / Town Spirit and other mana skills). `SetActive` receives the live node rank; leftover permanent mana and matching character progress counters are cleared; Undo restores them.
+
 ### 2.1.2
 
 - **Fix:** Confirm and Cancel on the respec prompt now work, so the Skills window is no longer stuck. The skill UI never delivered clicks to those buttons; the prompt reads the mouse itself. Shift-click is unchanged. Escape or a click on the dark backdrop still cancels.
