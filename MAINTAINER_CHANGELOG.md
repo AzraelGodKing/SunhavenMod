@@ -4,6 +4,10 @@ Internal engineering log: **CI**, **release automation**, **scripts**, **docs in
 
 ---
 
+## 2026-10-08
+
+- **AZR-356 / 357 / 358 / 359** (`cursor/azr-356-359-sunhaven-fixes-0135`): One-branch Sunhaven ticket batch. Respec `SkillManaRollback` + `SetActive(..., nodeAmount)`; Trinket Fortune multi-strategy Harmony discovery; Senpai's Chest resolution-aware UIScale + ConstantPixelSize labels; Vault `ScaleWithResolution` / `AutoHighResLayout`. Player notes in `CHANGELOG.md`. Version bumps not applied yet (`cursor/` branch prefix does not auto-bump) — propose patch each: Respec 2.1.2→2.1.3, Trinket 2.1.1→2.1.2, Chest 3.1.1→3.1.2, Vault 4.2.0→4.2.1.
+
 ## 2026-10-04
 
 - **Website downloads:** Release & Publish uploads the packed zip to `downloads.azraelsmods.com` and records the version in `downloads.json`. Uses `CLOUDFLARE_API_TOKEN` and `CLOUDFLARE_ACCOUNT_ID`. A missing token does not fail GitHub, Nexus, or Thunderstore.

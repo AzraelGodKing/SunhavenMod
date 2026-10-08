@@ -69,8 +69,11 @@ namespace TheVault
         private ConfigEntry<KeyCode> _quickConvertKey;
         private ConfigEntry<string> _quickConvertTable;
         private ConfigEntry<float> _windowScale;
+        private ConfigEntry<bool> _scaleWithResolution;
         private ConfigEntry<bool> _autoDeckLayout;
         private ConfigEntry<bool> _deckLayoutApplied;
+        private ConfigEntry<bool> _autoHighResLayout;
+        private ConfigEntry<bool> _highResLayoutApplied;
         private ConfigEntry<bool> _enableAutoSave;
         private ConfigEntry<float> _autoSaveInterval;
         private ConfigEntry<bool> _checkForUpdates;
@@ -112,6 +115,7 @@ namespace TheVault
                 InitializeConfig();
                 SubscribeConfigChanged();
                 TryApplyDeckLayoutDefaults();
+                TryApplyHighResLayoutDefaults();
 
                 // Initialize vault system
                 // Store in both instance and static fields so they survive Plugin destruction
@@ -435,9 +439,16 @@ namespace TheVault
                 "WindowScale",
                 1.0f,
                 new BepInEx.Configuration.ConfigDescription(
-                    "Scale factor for the main Vault window (1.0 = default, 1.5 = 50% larger)",
+                    "Scale factor for the main Vault window (1.0 = default, 1.5 = 50% larger). Multiplied by resolution factor when ScaleWithResolution is on.",
                     new BepInEx.Configuration.AcceptableValueRange<float>(0.5f, 3.0f)
                 )
+            );
+
+            _scaleWithResolution = ConfigFile.Bind(
+                "Display",
+                "ScaleWithResolution",
+                true,
+                "When true, WindowScale is multiplied by Screen.height/1080 so 1440p/ultrawide/4K stays readable without huge manual scale values (AZR-359)."
             );
 
             _autoDeckLayout = ConfigFile.Bind(
@@ -452,6 +463,20 @@ namespace TheVault
                 "DeckLayoutApplied",
                 false,
                 "Internal flag: set true after AutoDeckLayout has applied once so we do not overwrite user prefs on later launches. Reset to false to re-apply."
+            );
+
+            _autoHighResLayout = ConfigFile.Bind(
+                "Display",
+                "AutoHighResLayout",
+                true,
+                "Once on high-res / ultrawide (height ≥1440 or width ≥2560), bump WindowScale to at least 1.5 if still near default (AZR-359)."
+            );
+
+            _highResLayoutApplied = ConfigFile.Bind(
+                "Display",
+                "HighResLayoutApplied",
+                false,
+                "Internal flag: set true after AutoHighResLayout has applied once. Reset to false to re-apply."
             );
 
             _hudToggleKey = ConfigFile.Bind(
@@ -647,6 +672,15 @@ namespace TheVault
             return VaultHudDensity.Normal;
         }
         public static float GetConfigWindowScale() => Instance?.GetValidatedWindowScale() ?? 1f;
+        public static float GetConfigWindowScaleRaw() => Instance?._windowScale != null
+            ? Instance.ClampWindowScaleValue(Instance._windowScale.Value)
+            : 1f;
+        public static bool GetConfigScaleWithResolution() => Instance?._scaleWithResolution?.Value ?? true;
+        public static void SetConfigScaleWithResolution(bool v)
+        {
+            if (Instance?._scaleWithResolution != null)
+                Instance._scaleWithResolution.Value = v;
+        }
         public static void SetConfigWindowScale(float v)
         {
             if (Instance?._windowScale != null)
@@ -661,12 +695,74 @@ namespace TheVault
             float clamped = ClampWindowScaleValue(_windowScale.Value);
             if (!Mathf.Approximately(_windowScale.Value, clamped))
                 _windowScale.Value = clamped;
-            return clamped;
+            float factor = GetResolutionScaleFactor();
+            return ClampWindowScaleValue(clamped * factor);
+        }
+
+        private float GetResolutionScaleFactor()
+        {
+            if (_scaleWithResolution == null || !_scaleWithResolution.Value)
+                return 1f;
+            if (Screen.height <= 0)
+                return 1f;
+            // 1080p → 1.0, 1440p → ~1.33, 2160p → 2.0 (clamped).
+            return Mathf.Clamp(Screen.height / 1080f, 1f, 2f);
         }
 
         private float ClampWindowScaleValue(float value)
         {
             return Mathf.Clamp(value, MinWindowScale, MaxWindowScale);
+        }
+
+        internal static void TryApplyHighResLayoutDefaults()
+        {
+            Instance?.ApplyHighResLayoutDefaultsIfNeeded();
+        }
+
+        private void ApplyHighResLayoutDefaultsIfNeeded()
+        {
+            try
+            {
+                if (_autoHighResLayout == null || _highResLayoutApplied == null || _windowScale == null)
+                    return;
+                if (!_autoHighResLayout.Value || _highResLayoutApplied.Value)
+                    return;
+                if (Screen.width <= 0 || Screen.height <= 0)
+                    return;
+                if (!LooksLikeHighResOrUltrawide())
+                    return;
+
+                const float highResFloor = 1.5f;
+                float win = ClampWindowScaleValue(_windowScale.Value);
+                // Only bump when still near factory default so we don't overwrite intentional prefs.
+                if (win <= 1.05f)
+                    _windowScale.Value = ClampWindowScaleValue(highResFloor);
+
+                if (_hudScale != null && _hudScale.Value <= 1.26f)
+                    _hudScale.Value = Mathf.Clamp(Mathf.Max(_hudScale.Value, highResFloor), 0.5f, 3.0f);
+
+                _highResLayoutApplied.Value = true;
+                ApplyConfigToState();
+                Log?.LogInfo(
+                    $"[The Vault] Auto high-res layout applied (WindowScale={_windowScale.Value:F2}, HUD Scale={_hudScale?.Value:F2}, {Screen.width}x{Screen.height})");
+            }
+            catch (Exception ex)
+            {
+                Log?.LogWarning($"[The Vault] Auto high-res layout failed: {ex.Message}");
+            }
+        }
+
+        private static bool LooksLikeHighResOrUltrawide()
+        {
+            int w = Screen.width;
+            int h = Screen.height;
+            if (h >= 1440)
+                return true;
+            if (w >= 2560 && h >= 1080)
+                return true;
+            if (h > 0 && (float)w / h >= 2.0f && w >= 2560)
+                return true;
+            return false;
         }
 
         /// <summary>

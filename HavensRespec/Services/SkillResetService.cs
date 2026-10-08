@@ -59,7 +59,8 @@ namespace HavensRespec.Services
                 snapshot.SkillPointsUsed,
                 snapshot.NumActiveNodes,
                 chargedCost,
-                chargedCostMode));
+                chargedCostMode,
+                snapshot.ManaRollback));
         }
 
         /// <summary>
@@ -96,14 +97,17 @@ namespace HavensRespec.Services
                 // the point refund — this matches the exact formula UpdateProfession uses
                 // to populate Skills.skillPointsUsed, so our refund count is guaranteed to
                 // be in sync with what the game thinks was spent. Deactivating each node
-                // via SetActive(false, false, 0) also repaints the UI immediately (no wait
-                // for LateUpdate/UpdateProfession) and bypasses the DeactivateNode sound.
+                // via SetActive(false, false, nodeAmount) also repaints the UI immediately
+                // (no wait for LateUpdate/UpdateProfession) and bypasses the DeactivateNode
+                // sound. Passing the live NodeAmount (not 0) lets the game reverse rank-scaled
+                // bonuses such as Mental Focus Max Mana (AZR-356).
                 //
                 // Fail closed: any exception mid-walk rolls back from snapshot and returns
                 // false so callers never charge gold for a half-applied reset.
                 int nodeSlotsVisited = 0;
                 int nodesDeactivated = 0;
                 int refundedFromNodes = 0;
+                var deactivatedManaNodes = new List<ActiveManaNode>();
                 try
                 {
                     var dict = _professionNodeDictionaryField?.GetValue(skills) as IDictionary;
@@ -116,9 +120,20 @@ namespace HavensRespec.Services
                             nodeSlotsVisited++;
                             if (node.active)
                             {
-                                refundedFromNodes += Mathf.Max(1, node.NodeAmount);
+                                int amount = Mathf.Max(1, node.NodeAmount);
+                                refundedFromNodes += amount;
                                 nodesDeactivated++;
-                                node.SetActive(false, false, 0);
+                                if (SkillManaRollback.LooksLikeManaNode(node))
+                                {
+                                    deactivatedManaNodes.Add(new ActiveManaNode
+                                    {
+                                        NodeName = node.nodeName,
+                                        Description = SkillManaRollback.BuildDescription(node),
+                                        NodeAmount = amount
+                                    });
+                                }
+
+                                node.SetActive(false, false, amount);
                             }
                         }
                     }
@@ -152,7 +167,32 @@ namespace HavensRespec.Services
 
                     TryRefreshProfessionPanel(skills, profession);
 
-                    PushUndoSnapshot(profession, snapshot);
+                    // Permanent Max Mana from refunded nodes (Mental Focus / Town Spirit, etc.).
+                    ManaRollbackResult manaRollback = null;
+                    try
+                    {
+                        manaRollback = SkillManaRollback.Apply(deactivatedManaNodes, _log, _isDebug);
+                    }
+                    catch (Exception manaEx)
+                    {
+                        _log?.LogWarning($"[Respec] SkillManaRollback skipped: {manaEx.Message}");
+                    }
+
+                    var undoSnapshot = manaRollback != null
+                        && (manaRollback.ManaRemoved > 0.01f
+                            || manaRollback.ProgressFloats.Count > 0
+                            || manaRollback.ProgressInts.Count > 0)
+                        ? new ResetSnapshot(
+                            snapshot.Profession,
+                            snapshot.Nodes,
+                            snapshot.SkillPointsUsed,
+                            snapshot.NumActiveNodes,
+                            snapshot.ChargedCost,
+                            snapshot.ChargedCostMode,
+                            manaRollback)
+                        : snapshot;
+
+                    PushUndoSnapshot(profession, undoSnapshot);
 
                     if (nodeSlotsVisited > 0)
                     {
@@ -204,6 +244,7 @@ namespace HavensRespec.Services
                 SetNumActiveNodes(profession, snapshot.NumActiveNodes);
 
                 TryRefreshProfessionPanel(skills, profession);
+                SkillManaRollback.Restore(snapshot.ManaRollback, _log);
 
                 if (stack.Count == 0)
                     _undoByProfession.Remove(profession);

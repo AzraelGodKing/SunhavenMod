@@ -17,6 +17,7 @@ namespace HavensRespec.Services
         public int NumActiveNodes { get; }
         public int ChargedCost { get; }
         public RespecCostMode ChargedCostMode { get; }
+        public ManaRollbackResult ManaRollback { get; }
 
         public ResetSnapshot(
             ProfessionType profession,
@@ -24,7 +25,8 @@ namespace HavensRespec.Services
             int skillPointsUsed,
             int numActiveNodes,
             int chargedCost = 0,
-            RespecCostMode chargedCostMode = RespecCostMode.None)
+            RespecCostMode chargedCostMode = RespecCostMode.None,
+            ManaRollbackResult manaRollback = null)
         {
             Profession = profession;
             Nodes = nodes;
@@ -32,6 +34,7 @@ namespace HavensRespec.Services
             NumActiveNodes = numActiveNodes;
             ChargedCost = chargedCost;
             ChargedCostMode = chargedCostMode;
+            ManaRollback = manaRollback;
         }
     }
 }

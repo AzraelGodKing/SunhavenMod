@@ -1093,15 +1093,22 @@ namespace TheVault.UI
             float settingsScrollHeight = Mathf.Min(SettingsContentHeight, MaxContentHeight);
             _settingsScroll = GUILayout.BeginScrollView(_settingsScroll, false, false, GUIStyle.none, GUI.skin.verticalScrollbar, GUILayout.Height(settingsScrollHeight));
 
-            // Window scale
+            // Window scale (slider edits raw config; effective scale may include resolution factor)
             GUILayout.Label(ModLocalization.T("vault.settings.display"), _labelStyle);
             GUILayout.BeginHorizontal();
             GUILayout.Label(ModLocalization.T("vault.settings.windowScale"), _labelStyle, GUILayout.Width(Scaled(90)));
-            float winScale = Plugin.GetConfigWindowScale();
-            float newWinScale = GUILayout.HorizontalSlider(winScale, 0.5f, 3f, GUILayout.Width(Scaled(120)));
-            if (Math.Abs(newWinScale - winScale) > 0.01f) Plugin.SetConfigWindowScale(newWinScale);
-            GUILayout.Label($"{newWinScale:F1}", _labelStyle, GUILayout.Width(Scaled(28)));
+            float winScaleRaw = Plugin.GetConfigWindowScaleRaw();
+            float newWinScale = GUILayout.HorizontalSlider(winScaleRaw, 0.5f, 3f, GUILayout.Width(Scaled(120)));
+            if (Math.Abs(newWinScale - winScaleRaw) > 0.01f) Plugin.SetConfigWindowScale(newWinScale);
+            float effective = Plugin.GetConfigWindowScale();
+            GUILayout.Label(
+                Math.Abs(effective - newWinScale) > 0.02f ? $"{newWinScale:F1}→{effective:F1}" : $"{newWinScale:F1}",
+                _labelStyle,
+                GUILayout.Width(Scaled(56)));
             GUILayout.EndHorizontal();
+            bool scaleWithRes = Plugin.GetConfigScaleWithResolution();
+            bool newScaleWithRes = GUILayout.Toggle(scaleWithRes, " Scale with resolution (height/1080)", _labelStyle);
+            if (newScaleWithRes != scaleWithRes) Plugin.SetConfigScaleWithResolution(newScaleWithRes);
             GUILayout.Space(Scaled(6));
 
             // HUD
