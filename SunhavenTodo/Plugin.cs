@@ -683,53 +683,10 @@ namespace SunhavenTodo
 
         private static string GetCurrentCharacterName(object player)
         {
-            try
-            {
-                // Use GameSave.CurrentCharacter (static) - returns CharacterData with characterName
-                var gameSaveType = AccessTools.TypeByName("Wish.GameSave");
-                if (gameSaveType != null)
-                {
-                    var currentCharProp = AccessTools.Property(gameSaveType, "CurrentCharacter");
-                    if (currentCharProp != null)
-                    {
-                        var currentChar = currentCharProp.GetValue(null);
-                        if (currentChar != null)
-                        {
-                            var characterNameProp = AccessTools.Property(currentChar.GetType(), "characterName");
-                            if (characterNameProp != null)
-                            {
-                                var name = characterNameProp.GetValue(currentChar) as string;
-                                if (!string.IsNullOrEmpty(name))
-                                    return name;
-                            }
-                        }
-                    }
-                    // Fallback: SingletonBehaviour<GameSave>.Instance.CurrentSave.characterData.characterName
-                    var instanceProp = AccessTools.Property(gameSaveType, "Instance");
-                    var instance = instanceProp?.GetValue(null);
-                    if (instance != null)
-                    {
-                        var currentSaveProp = AccessTools.Property(gameSaveType, "CurrentSave");
-                        var currentSave = currentSaveProp?.GetValue(instance);
-                        if (currentSave != null)
-                        {
-                            var charDataProp = AccessTools.Property(currentSave.GetType(), "characterData");
-                            var charData = charDataProp?.GetValue(currentSave);
-                            if (charData != null)
-                            {
-                                var characterNameProp = AccessTools.Property(charData.GetType(), "characterName");
-                                var name = characterNameProp?.GetValue(charData) as string;
-                                if (!string.IsNullOrEmpty(name))
-                                    return name;
-                            }
-                        }
-                    }
-                }
-            }
-            catch (Exception ex)
-            {
-                Plugin.Log?.LogWarning($"Failed to get character name: {ex.Message}");
-            }
+            string name = GameSaveCharacterName.TryGetCurrent(
+                logWarning: msg => Plugin.Log?.LogWarning($"Failed to get character name: {msg}"));
+            if (!string.IsNullOrEmpty(name))
+                return name;
 
             if (!string.IsNullOrEmpty(_loadedCharacterName))
                 Plugin.Log?.LogWarning("Character name lookup failed; refusing to reuse previous character identity.");

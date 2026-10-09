@@ -749,53 +749,24 @@ namespace BirthdayReminder
 
         private static string GetCharacterName(object player)
         {
+            string name = GameSaveCharacterName.TryGetCurrent(
+                logWarning: msg => Plugin.Log?.LogWarning($"Failed to get character name: {msg}"));
+            if (!string.IsNullOrEmpty(name))
+                return name;
+
             try
             {
-                // Try to get from GameSave
-                var gameSaveType = AccessTools.TypeByName("Wish.GameSave");
-                if (gameSaveType != null)
-                {
-                    var singletonBaseType = AccessTools.TypeByName("Wish.SingletonBehaviour`1");
-                    if (singletonBaseType != null)
-                    {
-                        var genericType = singletonBaseType.MakeGenericType(gameSaveType);
-                        var instanceProp = AccessTools.Property(genericType, "Instance");
-                        var gameSave = instanceProp?.GetValue(null);
-
-                        if (gameSave != null)
-                        {
-                            var currentSaveProp = AccessTools.Property(gameSaveType, "CurrentSave");
-                            var currentSave = currentSaveProp?.GetValue(gameSave);
-
-                            if (currentSave != null)
-                            {
-                                var charDataProp = AccessTools.Property(currentSave.GetType(), "characterData");
-                                var charData = charDataProp?.GetValue(currentSave);
-
-                                if (charData != null)
-                                {
-                                    var nameProp = AccessTools.Property(charData.GetType(), "characterName");
-                                    var name = nameProp?.GetValue(charData) as string;
-                                    if (!string.IsNullOrEmpty(name))
-                                        return name;
-                                }
-                            }
-                        }
-                    }
-                }
-
-                // Fallback: try player name
                 if (player != null)
                 {
                     var nameProp = AccessTools.Property(player.GetType(), "playerName");
-                    var name = nameProp?.GetValue(player) as string;
-                    if (!string.IsNullOrEmpty(name))
-                        return name;
+                    var playerName = nameProp?.GetValue(player) as string;
+                    if (!string.IsNullOrEmpty(playerName))
+                        return playerName;
                 }
             }
             catch (Exception ex)
             {
-                Plugin.Log?.LogWarning($"Failed to get character name: {ex.Message}");
+                Plugin.Log?.LogWarning($"Failed to get player name fallback: {ex.Message}");
             }
 
             return "Unknown";
