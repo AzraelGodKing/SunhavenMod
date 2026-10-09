@@ -4,6 +4,10 @@ Internal engineering log: **CI**, **release automation**, **scripts**, **docs in
 
 ---
 
+## 2026-10-09
+
+- **Repo hygiene — orphaned files:** Removed `pt-BR-translation-review.md` (finished review artifact), `repo-management-review-2026-07-02.md` (completed audit), `SunhavenTodo/README.txt` (superseded by `README.md`), and `SunhavenTodo/Tests/TestResults/todo.trx` (committed test-run output with machine/user name). Added `**/TestResults/` to `.gitignore`.
+
 ## 2026-10-04
 
 - **Website downloads:** Release & Publish uploads the packed zip to `downloads.azraelsmods.com` and records the version in `downloads.json`. Uses `CLOUDFLARE_API_TOKEN` and `CLOUDFLARE_ACCOUNT_ID`. A missing token does not fail GitHub, Nexus, or Thunderstore.
