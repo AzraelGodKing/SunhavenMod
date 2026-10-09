@@ -577,7 +577,6 @@ namespace TheVault
             }
         }
 
-        /// <summary>Sync which vault window is active (IMGUI vs uGUI).</summary>
         /// <summary>Apply window scale to the vault UI.</summary>
         public void ApplyVaultWindowScaleToUi()
         {
@@ -814,9 +813,6 @@ namespace TheVault
                 PatchMethod(playerType, "InitializeAsOwner",
                     typeof(PlayerPatches), "OnPlayerInitialized");
 
-                // Patch shop purchase methods for vault currency checks (game uses Wish.Shop, not ShopMenu)
-                PatchShopBuyItem();
-
                 // Patch save/load for vault persistence (game uses GameSave.SaveGame / LoadGame, not SaveLoadManager)
                 PatchGameSaveSaveLoad();
 
@@ -967,91 +963,10 @@ namespace TheVault
                     }
                 }
 
-                var loadGameMethod = AccessTools.Method(gameSaveType, "LoadGame");
-                if (loadGameMethod != null)
-                {
-                    var postfix = AccessTools.Method(typeof(SaveLoadPatches), "OnGameLoaded");
-                    if (postfix != null)
-                    {
-                        _harmony.Patch(loadGameMethod, postfix: new HarmonyMethod(postfix));
-                        Log.LogInfo("Patched GameSave.LoadGame");
-                    }
-                }
             }
             catch (Exception ex)
             {
                 Log.LogError($"Error patching GameSave save/load: {ex.Message}");
-            }
-        }
-
-        /// <summary>
-        /// Patch Wish.Shop.BuyItem for vault purchase checks (game uses Shop, not ShopMenu).
-        /// </summary>
-        private void PatchShopBuyItem()
-        {
-            try
-            {
-                var shopType = typeof(Shop);
-                var shopItemInfo2Type = typeof(ShopItemInfo2);
-                var shopLoot2Type = typeof(ShopLoot2);
-                if (shopItemInfo2Type != null)
-                {
-                    var buyItemMethod = AccessTools.Method(shopType, "BuyItem", new[] { shopItemInfo2Type, typeof(int) });
-                    if (buyItemMethod != null)
-                    {
-                        var prefix = AccessTools.Method(typeof(ShopPatches), "OnBeforeBuyItem");
-                        var postfix = AccessTools.Method(typeof(ShopPatches), "OnAfterBuyItem");
-                        if (prefix != null)
-                        {
-                            _harmony.Patch(buyItemMethod, prefix: new HarmonyMethod(prefix));
-                            Log.LogInfo("Patched Shop.BuyItem(ShopItemInfo2,int) for vault (prefix)");
-                        }
-                        if (postfix != null)
-                        {
-                            _harmony.Patch(buyItemMethod, postfix: new HarmonyMethod(postfix));
-                            Log.LogInfo("Patched Shop.BuyItem(ShopItemInfo2,int) for vault (postfix)");
-                        }
-                    }
-                }
-                if (shopLoot2Type != null)
-                {
-                    var buyItemMethod = AccessTools.Method(shopType, "BuyItem", new[] { shopLoot2Type, typeof(int) });
-                    if (buyItemMethod != null)
-                    {
-                        var prefix = AccessTools.Method(typeof(ShopPatches), "OnBeforeBuyItem");
-                        var postfix = AccessTools.Method(typeof(ShopPatches), "OnAfterBuyItem");
-                        if (prefix != null)
-                        {
-                            _harmony.Patch(buyItemMethod, prefix: new HarmonyMethod(prefix));
-                            Log.LogInfo("Patched Shop.BuyItem(ShopLoot2,int) for vault (prefix)");
-                        }
-                        if (postfix != null)
-                        {
-                            _harmony.Patch(buyItemMethod, postfix: new HarmonyMethod(postfix));
-                            Log.LogInfo("Patched Shop.BuyItem(ShopLoot2,int) for vault (postfix)");
-                        }
-                    }
-                    var buyItemSingle = AccessTools.Method(shopType, "BuyItem", new[] { shopLoot2Type });
-                    if (buyItemSingle != null)
-                    {
-                        var prefix = AccessTools.Method(typeof(ShopPatches), "OnBeforeBuyItemSingle");
-                        var postfix = AccessTools.Method(typeof(ShopPatches), "OnAfterBuyItemSingle");
-                        if (prefix != null)
-                        {
-                            _harmony.Patch(buyItemSingle, prefix: new HarmonyMethod(prefix));
-                            Log.LogInfo("Patched Shop.BuyItem(ShopLoot2) for vault (prefix)");
-                        }
-                        if (postfix != null)
-                        {
-                            _harmony.Patch(buyItemSingle, postfix: new HarmonyMethod(postfix));
-                            Log.LogInfo("Patched Shop.BuyItem(ShopLoot2) for vault (postfix)");
-                        }
-                    }
-                }
-            }
-            catch (Exception ex)
-            {
-                Log.LogError($"Error patching Shop: {ex.Message}");
             }
         }
 

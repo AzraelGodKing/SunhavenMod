@@ -452,52 +452,6 @@ namespace TheVault.Patches
         }
 
         /// <summary>
-        /// Postfix patch for item pickup.
-        /// Auto-deposits currency items if enabled.
-        /// </summary>
-        public static void OnItemPickedUp(object __instance, int itemId, int amount)
-        {
-            try
-            {
-                if (!ShouldAutoDeposit(itemId)) return;
-
-                string currencyId = GetCurrencyForItem(itemId);
-                if (string.IsNullOrEmpty(currencyId)) return;
-
-                var vaultManager = Plugin.GetVaultManager();
-                if (vaultManager == null) return;
-
-                // Auto-deposit: remove from inventory, add to vault
-                if (RemoveItemFromInventory(itemId, amount))
-                {
-                    if (!AddCurrencyToVault(vaultManager, currencyId, amount))
-                    {
-                        AddItemToInventory(itemId, amount);
-                        Plugin.Log?.LogWarning($"Auto-deposit pickup failed to credit {currencyId}; restored item {itemId}");
-                        return;
-                    }
-                    Plugin.Log?.LogInfo($"Auto-deposited {amount} of item {itemId} as {currencyId}");
-
-                    // Show notification
-                    EnqueueAutoDepositNotification(currencyId, amount);
-                }
-            }
-            catch (Exception ex)
-            {
-                Plugin.Log?.LogError($"Error in OnItemPickedUp: {ex.Message}");
-            }
-        }
-
-        /// <summary>
-        /// Postfix patch for item pickup (single parameter version).
-        /// Assumes amount of 1.
-        /// </summary>
-        public static void OnItemPickedUpSingle(object __instance, int itemId)
-        {
-            OnItemPickedUp(__instance, itemId, 1);
-        }
-
-        /// <summary>
         /// PREFIX patch for Player.Pickup method.
         /// Signature: Pickup(int item, int amount = 1, bool rollForExtra = false)
         /// We always return true to let the original method run - the AddItem POSTFIX will handle auto-deposit.
@@ -571,72 +525,6 @@ namespace TheVault.Patches
             {
                 _isProcessingAutoDeposit = false;
                 Plugin.Log?.LogError($"Error in OnInventoryAddItem: {ex.Message}");
-            }
-        }
-
-        /// <summary>
-        /// Postfix patch for Inventory.AddItem(int item, int amount, bool sendNotification).
-        /// Parameter names must match the game method exactly for Harmony binding.
-        /// </summary>
-        public static void OnInventoryAddItemWithNotify(object __instance, int item, int amount, bool sendNotification)
-        {
-            int itemId = item;
-            try
-            {
-                if (!IsPlayerMainInventory(__instance)) return;
-                if (_isProcessingAutoDeposit || IsWithdrawing || _withdrawingItemIds.Contains(itemId)) return;
-                if (!ShouldAutoDeposit(itemId))
-                {
-                    return;
-                }
-
-                string currencyId = GetCurrencyForItem(itemId);
-                if (string.IsNullOrEmpty(currencyId))
-                {
-                    return;
-                }
-
-                var vaultManager = Plugin.GetVaultManager();
-                if (vaultManager == null)
-                {
-                    return;
-                }
-
-                _isProcessingAutoDeposit = true;
-                try
-                {
-                    // Remove from inventory - try inventory instance first, then Player fallback
-                    BeginSuppressVaultRemoveHook();
-                    bool removed;
-                    try
-                    {
-                        removed = TryRemoveFromInventory(__instance, itemId, amount) || RemoveItemFromInventory(itemId, amount);
-                    }
-                    finally
-                    {
-                        EndSuppressVaultRemoveHook();
-                    }
-                    if (!removed)
-                    {
-                        Plugin.Log?.LogWarning($"Failed to remove {amount} of item {itemId} from inventory for auto-deposit");
-                        return;
-                    }
-
-                    if (!AddCurrencyToVault(vaultManager, currencyId, amount))
-                    {
-                        AddItemToInventory(itemId, amount);
-                        Plugin.Log?.LogWarning($"Auto-deposit failed to credit {currencyId}; restored {amount} of item {itemId}");
-                    }
-                }
-                finally
-                {
-                    _isProcessingAutoDeposit = false;
-                }
-            }
-            catch (Exception ex)
-            {
-                _isProcessingAutoDeposit = false;
-                Plugin.Log?.LogError($"Error in OnInventoryAddItemWithNotify: {ex.Message}");
             }
         }
 
