@@ -877,7 +877,7 @@ namespace BirthdayReminder
             }
 
             // Test Mode: Ctrl+Alt+B - Add test birthday
-            if (ctrlPressed && altPressed && !shiftPressed && Input.GetKeyDown(Plugin.StaticToggleKey))
+            if (Plugin.StaticDebugMode && ctrlPressed && altPressed && !shiftPressed && Input.GetKeyDown(Plugin.StaticToggleKey))
             {
                 Plugin.Log?.LogInfo("[PersistentRunner] Ctrl+Alt+B pressed - adding test birthday");
                 Plugin.EnsureUIComponentsExist();
@@ -895,8 +895,8 @@ namespace BirthdayReminder
                 }
             }
 
-            // Test Mode: Ctrl+Alt+A - Load ALL birthdays (no debug flag)
-            if (ctrlPressed && altPressed && !shiftPressed && Input.GetKeyDown(KeyCode.A))
+            // Test Mode: Ctrl+Alt+A - Load ALL birthdays
+            if (Plugin.StaticDebugMode && ctrlPressed && altPressed && !shiftPressed && Input.GetKeyDown(KeyCode.A))
             {
                 Plugin.Log?.LogInfo("[PersistentRunner] Ctrl+Alt+A pressed - loading all birthdays");
                 Plugin.EnsureUIComponentsExist();

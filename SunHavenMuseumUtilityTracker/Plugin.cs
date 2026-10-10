@@ -232,7 +232,7 @@ namespace SunHavenMuseumUtilityTracker
             _trackerUI.SetToggleKey(_toggleKey.Value, _requireCtrl.Value);
             _staticTrackerUI = _trackerUI;
 
-            // Create Debug Mode (only activates for authorized users via F10)
+            // Debug helpers (F10 toggles; not gated behind a config flag yet)
             uiObject.AddComponent<DebugMode>();
 
             Logger.LogInfo("UI components created");
