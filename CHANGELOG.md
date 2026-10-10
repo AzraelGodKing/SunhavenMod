@@ -10,6 +10,10 @@ Notes for **players and release readers**. Per-mod blurbs and upstream metadata 
 - **Save format:** Vault files are now saved as CSVAULT3. Each vault gets its own random salt and a fresh IV on every save, and an integrity check (HMAC-SHA256) rejects a corrupted or edited file instead of loading half of it. Older vault files still load and are rewritten in the new format right away.
 - **Fix:** The save key no longer depends on whether Steam finished loading before the mod started, so a vault saved in one session is not unreadable in the next.
 
+**Senpai's Chest 3.1.3, Haven's Birthright 3.1.3, Museum Utility Tracker 3.1.2, A Squirrel's Birthday Reminder 2.1.3, Sunhaven Todo 2.1.2, Haven Dev Tools 2.1.2, Haven's Almanac 2.2.2, Faster Races 2.1.2, Trinket Fortune 2.1.3, Crop Optimizer 2.2.3, Haven's Respec 2.1.4, Gifting Assistant 1.1.3, Haven's Mirror 1.0.1** — AZR-257
+- **Update checks:** One download of the version list per game launch, shared by every installed mod, instead of one request per mod. The list is read with a real JSON parser, and an installed or published version that can't be compared now reports a failed check instead of "up to date". Checks point at the renamed `SunhavenMods` repository.
+- **Haven's Almanac:** A relationship value that can't be read is now logged once instead of silently showing 0.
+
 **The Vault (4.2.1 → 4.2.2)** — AZR-438
 - **Fix:** Clicks on the vault window no longer pass through to the inventory. Item slots under the window no longer pick up or throw items.
 

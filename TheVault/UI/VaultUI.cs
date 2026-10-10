@@ -322,6 +322,7 @@ namespace TheVault.UI
             }
             catch
             {
+                // Method or action may not exist on this game build.
             }
 
             try
@@ -331,6 +332,7 @@ namespace TheVault.UI
             }
             catch
             {
+                // Method or action may not exist on this game build.
             }
 
             try
@@ -340,6 +342,7 @@ namespace TheVault.UI
             }
             catch
             {
+                // "Cancel" may be missing from the Unity input manager.
             }
 
             return false;

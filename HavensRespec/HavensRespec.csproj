@@ -1,4 +1,6 @@
 <Project Sdk="Microsoft.NET.Sdk">
+  <Import Project="..\SharedUtilities\SharedUtilities.Baseline.props" />
+
   <PropertyGroup>
     <TargetFramework>net48</TargetFramework>
     <AssemblyName>HavensRespec</AssemblyName>
@@ -75,14 +77,8 @@
   <!-- Shared helpers reused by every mod in the repo. CS0436 suppresses the "type defined in
        multiple assemblies" warning because each mod compiles its own copy of these files. -->
   <ItemGroup>
-    <Compile Include="..\SharedUtilities\ConfigFileHelper.cs" Link="Shared\ConfigFileHelper.cs" />
-    <Compile Include="..\SharedUtilities\SharedCodeRevision.cs" Link="Shared\SharedCodeRevision.cs" />
-    <Compile Include="..\SharedUtilities\ModHealthReport.cs" Link="Shared\ModHealthReport.cs" />
-    <Compile Include="..\SharedUtilities\ModDiagnostics.cs" Link="Shared\ModDiagnostics.cs" />
-    <Compile Include="..\SharedUtilities\ModHealthIntegrationSummary.cs" Link="Shared\ModHealthIntegrationSummary.cs" />
     <Compile Include="..\SharedUtilities\VersionChecker.cs" Link="Shared\VersionChecker.cs" />
     <Compile Include="..\SharedUtilities\SceneRootSurvivor.cs" Link="Shared\SceneRootSurvivor.cs" />
-    <Compile Include="..\SharedUtilities\ReflectionHelper.cs" Link="Shared\ReflectionHelper.cs" />
     <Compile Include="..\SharedUtilities\TextInputFocusGuard.cs" Link="Shared\TextInputFocusGuard.cs" />
     <Compile Include="..\SharedUtilities\MinimalJsonParser.cs" Link="Shared\MinimalJsonParser.cs" />
     <Compile Include="..\SharedUtilities\ModLocalization.cs" Link="Shared\ModLocalization.cs" />

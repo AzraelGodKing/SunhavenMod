@@ -1,6 +1,6 @@
 # Crop Optimizer
 
-**Version 2.2.2**
+**Version 2.2.3**
 
 Crop Optimizer provides crop forecast HUD data and soft integrations for Todo/Birthday/Vault workflows.
 

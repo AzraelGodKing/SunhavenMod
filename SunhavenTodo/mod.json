@@ -3,11 +3,11 @@
   "name": "Sun Haven Todo",
   "game": "sun-haven",
   "description": "In-game task tracker for farming goals, quests, and daily tasks",
-  "version": "2.1.1",
+  "version": "2.1.2",
   "screenshots": [],
   "download": {
-    "file": "SunHavenTodo-2.1.1.zip",
-    "url": "https://github.com/AzraelGodKing/SunhavenMod/releases/download/SunHavenTodo-v2.1.1/SunHavenTodo-2.1.1.zip"
+    "file": "SunHavenTodo-2.1.2.zip",
+    "url": "https://github.com/AzraelGodKing/SunhavenMod/releases/download/SunHavenTodo-v2.1.2/SunHavenTodo-2.1.2.zip"
   },
   "links": {
     "steam": null,

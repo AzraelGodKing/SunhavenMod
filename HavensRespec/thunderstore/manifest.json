@@ -1,6 +1,6 @@
 {
   "name": "HavensRespec",
-  "version_number": "2.1.3",
+  "version_number": "2.1.4",
   "website_url": "https://www.azraelsmods.com/sun-haven/havens-respec/",
   "description": "Respec skills on any tab with a confirmation dialog, one-step undo, optional cost, and full Configuration Manager support.",
   "dependencies": [

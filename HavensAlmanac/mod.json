@@ -3,11 +3,11 @@
   "name": "Haven's Almanac",
   "game": "sun-haven",
   "description": "Unified mod dashboard - HUD, full dashboard, and daily morning briefing aggregating data from all installed mods",
-  "version": "2.2.1",
+  "version": "2.2.2",
   "screenshots": [],
   "download": {
-    "file": "HavensAlmanac-2.2.1.zip",
-    "url": "https://github.com/AzraelGodKing/SunhavenMod/releases/download/HavensAlmanac-v2.2.1/HavensAlmanac-2.2.1.zip"
+    "file": "HavensAlmanac-2.2.2.zip",
+    "url": "https://github.com/AzraelGodKing/SunhavenMod/releases/download/HavensAlmanac-v2.2.2/HavensAlmanac-2.2.2.zip"
   },
   "links": {
     "steam": null,
