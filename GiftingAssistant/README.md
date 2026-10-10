@@ -66,6 +66,6 @@ Initial release — daily gift routine planner (**Ctrl + G** by default):
 
 - [Thunderstore](https://thunderstore.io/c/sun-haven/p/AzraelGodKing/GiftingAssistant/)
 - [Nexus Mods](https://www.nexusmods.com/sunhaven/mods/507)
-- [Documentation](https://azraelgodking.github.io/SunhavenMod/GiftingAssistant/GiftingAssistant.html)
+- [Documentation](https://www.azraelsmods.com/sun-haven/gifting-assistant/)
 - [Discord — bugs & discussion](https://discord.gg/Vwh2y7qMXv)
 

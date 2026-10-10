@@ -6,3 +6,7 @@ Crop Optimizer provides crop forecast HUD data and soft integrations for Todo/Bi
 
 Nel'Vari and Withergate farm totals use orb and ticket shop prices (not gold-only).
 
+
+## Links
+
+- [Mod page](https://www.azraelsmods.com/sun-haven/crop-optimizer/)

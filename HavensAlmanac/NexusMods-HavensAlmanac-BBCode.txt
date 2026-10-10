@@ -1,4 +1,4 @@
-[b][size=5]Haven's Almanac[/size][/b] [i](v2.2.1)[/i]
+[b][size=5]Haven's Almanac[/size][/b]
 
 Unified mod dashboard for Sun Haven. Aggregates data from supported installed mods: compact HUD, full dashboard ([b]Ctrl+F5[/b] by default), daily briefing, draggable UI, optional UI scale and update check.
 
@@ -62,6 +62,6 @@ At least [b]one[/b] supported mod must be installed for the Almanac to display c
 
 [size=4][b]Links[/b][/size]
 [list]
-[*][url=https://azraelgodking.github.io/SunhavenMod/HavensAlmanac/HavensAlmanac.html]Documentation[/url]
+[*][url=https://www.azraelsmods.com/sun-haven/havens-almanac/]Documentation[/url]
 [*][url=https://discord.gg/Vwh2y7qMXv]Discord - bugs & discussion[/url]
 [/list]

@@ -1,4 +1,4 @@
-[b][size=5]Trinket Fortune[/size][/b] [i](v2.1.2)[/i]
+[b][size=5]Trinket Fortune[/size][/b]
 
 Increases the odds of [b]unowned fishing trinkets[/b] dropping as you donate to the museum aquarium. Fish that grant aquarium trinkets benefit — less frustrating grind for the last few catches.
 
@@ -49,7 +49,7 @@ Increases the odds of [b]unowned fishing trinkets[/b] dropping as you donate to 
 
 [size=4][b]Links[/b][/size]
 [list]
-[*][url=https://azraelgodking.github.io/SunhavenMod/TrinketFortune/TrinketFortune.html]Documentation[/url]
+[*][url=https://www.azraelsmods.com/sun-haven/trinket-fortune/]Documentation[/url]
 [*][url=https://thunderstore.io/c/sun-haven/p/AzraelGodKing/TrinketFortune/]Thunderstore[/url]
 [*][url=https://www.nexusmods.com/sunhaven/mods/498]Nexus Mods[/url]
 [*][url=https://github.com/AzraelGodKing/SunhavenMod/releases]GitHub Releases[/url]

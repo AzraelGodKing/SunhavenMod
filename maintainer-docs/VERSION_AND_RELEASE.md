@@ -93,6 +93,8 @@ The workflow [`.github/workflows/sync-mod-versions.yml`](../.github/workflows/sy
 | `scripts/version/verify-version-consistency.ps1` | Windows helper that invokes `verify-version-consistency.py` (Python required) |
 | `scripts/version/stage-version-sync-files.py` | Used by `sync-mod-versions.yml` to `git add` only paths `pre-push-build.ps1` may touch (avoids broad `git add -A`) |
 | `.github/workflows/sync-mod-versions.yml` | After merge: align tracked files with `versions.json` if needed |
-| `.github/workflows/build-release-publish.yml` | Build → package → GitHub / Thunderstore / Nexus |
+| `.github/workflows/build-mods.yml` | PR and `main` compile gate (localization, tests, self-hosted DLL build) |
+| `.github/workflows/release-publish.yml` | Dispatch: optional bump → build → GitHub / Thunderstore / Nexus |
+| `.github/workflows/live-stats.yml` | Hourly Thunderstore + Nexus counts on the `stats` branch (`live.json`) |
 | [`maintainer-docs/ATOMIC_SAVE_POLICY.md`](ATOMIC_SAVE_POLICY.md) | Documents temp-file / on-failure behavior for The Vault vs Senpai's Chest vs Todo saves |
 | [`maintainer-docs/NexusMods-BBCode-Index.txt`](NexusMods-BBCode-Index.txt) | Lists each mod’s `NexusMods-<ModFolder>-BBCode.txt` for paste into Nexus (BBCode mode) |

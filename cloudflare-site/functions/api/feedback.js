@@ -17,7 +17,7 @@
  * - FEEDBACK_CORS_ORIGINS — comma-separated extra allowed Origins
  *
  * CORS allowlist (always):
- * - https://azraelgodking.github.io  (GitHub Pages hub)
+ * - https://www.azraelsmods.com  (public site)
  * - http(s)://localhost:* and http(s)://127.0.0.1:*  (docs:hub:dev / local static)
  *
  * Logs: one JSON object per line. Never logs tokens or user-submitted text.
@@ -30,7 +30,7 @@ const rateBuckets = new Map();
 const LOG_SERVICE = "sunhaven-website";
 const LOG_COMPONENT = "api.feedback";
 
-const PAGES_HUB_ORIGIN = "https://azraelgodking.github.io";
+const PAGES_HUB_ORIGIN = "https://www.azraelsmods.com";
 
 function truncate(str, maxLen) {
   const s = String(str ?? "");
