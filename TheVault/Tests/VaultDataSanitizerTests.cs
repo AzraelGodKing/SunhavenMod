@@ -61,5 +61,19 @@ namespace TheVault.Tests
             Assert.That(v, Is.EqualTo(4));
             Assert.That(data.Tickets.ContainsKey("ManaShard"), Is.False);
         }
+
+        [Test]
+        public void SanitizeAndMigrate_KeepExactSpringTokenCount()
+        {
+            // AZR-439: a reported 280 → 200 drop. Load normalization must not floor to the nearest hundred.
+            var data = new VaultData();
+            data.SeasonalTokens[SeasonalTokenType.Spring] = 280;
+
+            int fixes = VaultDataSanitizer.Sanitize(data);
+            var migrated = VaultDataMigration.Migrate(data);
+
+            Assert.That(fixes, Is.EqualTo(0));
+            Assert.That(migrated.SeasonalTokens[SeasonalTokenType.Spring], Is.EqualTo(280));
+        }
     }
 }

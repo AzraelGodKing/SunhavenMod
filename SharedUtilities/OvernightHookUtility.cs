@@ -1,4 +1,5 @@
 using System;
+using System.Reflection;
 using HarmonyLib;
 using UnityEngine.Events;
 
@@ -23,23 +24,9 @@ namespace SunhavenMods.Shared
                 if (dayCycleType != null)
                 {
                     var onDayStartField = AccessTools.Field(dayCycleType, "OnDayStart");
-                    if (onDayStartField != null)
+                    if (onDayStartField != null && TryCombineCallback(onDayStartField, null, callback, logWarning))
                     {
-                        var currentAction = onDayStartField.GetValue(null) as UnityAction;
                         overnightCallback = callback;
-
-                        if (currentAction != null)
-                        {
-                            // Idempotent attach: remove old instance before adding.
-                            currentAction -= overnightCallback;
-                            currentAction += overnightCallback;
-                            onDayStartField.SetValue(null, currentAction);
-                        }
-                        else
-                        {
-                            onDayStartField.SetValue(null, overnightCallback);
-                        }
-
                         overnightHooked = true;
                         logInfo?.Invoke("Hooked into DayCycle.OnDayStart");
                         return true;
@@ -58,21 +45,10 @@ namespace SunhavenMods.Shared
                 if (overnightField == null)
                     return false;
 
-                var existingAction = overnightField.GetValue(uiHandler) as UnityAction;
+                if (!TryCombineCallback(overnightField, uiHandler, callback, logWarning))
+                    return false;
+
                 overnightCallback = callback;
-
-                if (existingAction != null)
-                {
-                    // Idempotent attach: remove old instance before adding.
-                    existingAction -= overnightCallback;
-                    existingAction += overnightCallback;
-                    overnightField.SetValue(uiHandler, existingAction);
-                }
-                else
-                {
-                    overnightField.SetValue(uiHandler, overnightCallback);
-                }
-
                 overnightHooked = true;
                 logInfo?.Invoke("Hooked into UIHandler.OnCompleteOvernight");
                 return true;
@@ -108,14 +84,7 @@ namespace SunhavenMods.Shared
                             ? AccessTools.Field(dayCycleType, "OnDayStart")
                             : null;
                         if (onDayStartField != null)
-                        {
-                            var currentAction = onDayStartField.GetValue(null) as UnityAction;
-                            if (currentAction != null)
-                            {
-                                currentAction -= callback;
-                                onDayStartField.SetValue(null, currentAction);
-                            }
-                        }
+                            TryRemoveCallback(onDayStartField, null, callback);
                     }
                     catch (Exception ex)
                     {
@@ -130,14 +99,7 @@ namespace SunhavenMods.Shared
                             var uiHandler = singletonResolver?.Invoke(uiHandlerType);
                             var overnightField = AccessTools.Field(uiHandlerType, "OnCompleteOvernight");
                             if (uiHandler != null && overnightField != null)
-                            {
-                                var existingAction = overnightField.GetValue(uiHandler) as UnityAction;
-                                if (existingAction != null)
-                                {
-                                    existingAction -= callback;
-                                    overnightField.SetValue(uiHandler, existingAction);
-                                }
-                            }
+                                TryRemoveCallback(overnightField, uiHandler, callback);
                         }
                     }
                     catch (Exception ex)
@@ -153,6 +115,47 @@ namespace SunhavenMods.Shared
                 overnightHooked = false;
                 overnightCallback = null;
             }
+        }
+
+        /// <summary>
+        /// Appends <paramref name="callback"/> without dropping listeners already on the field.
+        /// A failed <c>as UnityAction</c> used to take the null branch and replace the whole
+        /// invocation list, which removed another mod's day-start hook (AZR-437).
+        /// </summary>
+        private static bool TryCombineCallback(FieldInfo field, object instance, UnityAction callback, Action<string> logWarning)
+        {
+            if (field == null || callback == null)
+                return false;
+
+            object raw = field.GetValue(instance);
+            Delegate combined;
+            if (raw == null)
+            {
+                combined = callback;
+            }
+            else if (raw is Delegate existing)
+            {
+                combined = Delegate.Combine(Delegate.Remove(existing, callback), callback);
+            }
+            else
+            {
+                logWarning?.Invoke($"{field.DeclaringType?.Name}.{field.Name} is set but is not a delegate; left unchanged.");
+                return false;
+            }
+
+            field.SetValue(instance, combined);
+            return true;
+        }
+
+        private static void TryRemoveCallback(FieldInfo field, object instance, UnityAction callback)
+        {
+            if (field == null || callback == null)
+                return;
+
+            if (field.GetValue(instance) is not Delegate existing)
+                return;
+
+            field.SetValue(instance, Delegate.Remove(existing, callback));
         }
     }
 }
