@@ -1,43 +1,43 @@
 ﻿{
   "com.azraelgodking.squirrelsbirthdayreminder": {
-    "version": "2.1.2",
+    "version": "2.1.3",
     "name": "A Squirrel's Birthday Reminder",
     "description": "Never miss an NPC birthday - get reminders and gift suggestions",
     "nexus": "https://www.nexusmods.com/sunhaven/mods/493",
     "nexus_file_group_id": "1311370",
     "thunderstore": "https://thunderstore.io/c/sun-haven/p/AzraelGodKing/SquirrelsBirthdayReminder/",
     "thunderstoreName": "SquirrelsBirthdayReminder",
-    "changelog": "Fix: stays hooked when Gifting Assistant is installed. Day-start listeners are appended instead of replaced."
+    "changelog": "Update checks now share one version-list download per game launch across all installed mods, and a version that can't be compared reports a failed check instead of \"up to date\"."
   },
   "com.azraelgodking.havensbirthright": {
-    "version": "3.1.2",
+    "version": "3.1.3",
     "name": "Haven's Birthright",
     "description": "Unique racial bonuses and abilities for all 12 playable races",
     "nexus": "https://www.nexusmods.com/sunhaven/mods/487",
     "nexus_file_group_id": "1297555",
     "thunderstore": "https://thunderstore.io/c/sun-haven/p/AzraelGodKing/HavensBirthright/",
     "thunderstoreName": "HavensBirthright",
-    "changelog": "Fix: Infernal Forge AddMana Harmony prefix uses mana/overCapAmount so the patch applies (HarmonyX name bind)."
+    "changelog": "Update checks now share one version-list download per game launch across all installed mods, and a version that can't be compared reports a failed check instead of \"up to date\"."
   },
   "com.azraelgodking.sunhavenmuseumutilitytracker": {
-    "version": "3.1.1",
+    "version": "3.1.2",
     "name": "Sunhaven Museum Utility Tracker",
     "description": "Track museum donation progress across all three halls",
     "nexus": "https://www.nexusmods.com/sunhaven/mods/490",
     "nexus_file_group_id": "1309168",
     "thunderstore": "https://thunderstore.io/c/sun-haven/p/AzraelGodKing/SMUT/",
     "thunderstoreName": "SMUT",
-    "changelog": "Fix: wishlist badges destroy and drop dead dictionary entries on disable/refresh."
+    "changelog": "Update checks now share one version-list download per game launch across all installed mods, and a version that can't be compared reports a failed check instead of \"up to date\"."
   },
   "com.azraelgodking.sunhaventodo": {
-    "version": "2.1.1",
+    "version": "2.1.2",
     "name": "Sun Haven Todo",
     "description": "In-game task tracker for farming goals, quests, and daily tasks",
     "nexus": "https://www.nexusmods.com/sunhaven/mods/491",
     "nexus_file_group_id": "1310599",
     "thunderstore": "https://thunderstore.io/c/sun-haven/p/AzraelGodKing/SunHavenTodo/",
     "thunderstoreName": "SunHavenTodo",
-    "changelog": "Fix: overnight unhook before re-hook; refuse previous-character name fallback when lookup fails."
+    "changelog": "Update checks now share one version-list download per game launch across all installed mods, and a version that can't be compared reports a failed check instead of \"up to date\"."
   },
   "com.azraelgodking.thevault": {
     "version": "4.3.0",
@@ -52,93 +52,93 @@
     "changelog": "New save format: vault files get an integrity check, so a corrupted or edited file is refused and the backup is used instead. Opening a vault no longer depends on Steam finishing startup first. Older vault files upgrade automatically on first load; after that, earlier Vault versions can't read them."
   },
   "com.azraelgodking.havendevtools": {
-    "version": "2.1.1",
+    "version": "2.1.2",
     "name": "HavenDevTools",
     "description": "Developer utilities for mod debugging and game state inspection",
     "nexus": "https://www.nexusmods.com/sunhaven/mods/495",
     "nexus_file_group_id": "1316842",
     "thunderstore": "https://thunderstore.io/c/sun-haven/p/AzraelGodKing/HavenDevTools/",
     "thunderstoreName": "HavenDevTools",
-    "changelog": "Patch: SharedCodeRevision 2026.07.28 (suite overnight unhook) for Mod Health skew detection."
+    "changelog": "Update checks now share one version-list download per game launch across all installed mods, and a version that can't be compared reports a failed check instead of \"up to date\"."
   },
   "com.azraelgodking.senpaischest": {
-    "version": "3.1.2",
+    "version": "3.1.3",
     "name": "Senpai's Chest",
     "description": "Smart chest auto-sorting with custom rules by item, type, category, property, or player groups. Manage Groups tab for custom subcategories.",
     "nexus": "https://www.nexusmods.com/sunhaven/mods/496",
     "nexus_file_group_id": "1317103",
     "thunderstore": "https://thunderstore.io/c/sun-haven/p/AzraelGodKing/SenpaisChest/",
     "thunderstoreName": "SenpaisChest",
-    "changelog": "Fix: config window and chest labels follow UI scale, including ultrawide."
+    "changelog": "Update checks now share one version-list download per game launch across all installed mods, and a version that can't be compared reports a failed check instead of \"up to date\"."
   },
   "com.azraelgodking.havensalmanac": {
-    "version": "2.2.1",
+    "version": "2.2.2",
     "name": "Haven's Almanac",
     "description": "Unified mod dashboard - HUD, full dashboard, and daily morning briefing aggregating data from all installed mods",
     "nexus": "https://www.nexusmods.com/sunhaven/mods/501",
     "nexus_file_group_id": "7326779",
     "thunderstore": "https://thunderstore.io/c/sun-haven/p/AzraelGodKing/HavensAlmanac/",
     "thunderstoreName": "HavensAlmanac",
-    "changelog": "Fix: overnight unhook before re-hook to prevent duplicate morning briefings."
+    "changelog": "Update checks now share one version-list download per game launch across all installed mods, and a version that can't be compared reports a failed check instead of \"up to date\". A relationship value that can't be read is now logged once instead of silently showing 0."
   },
   "com.azraelgodking.fasterraces": {
-    "version": "2.1.1",
+    "version": "2.1.2",
     "name": "Faster Races",
     "description": "Configurable movement speed bonus for all races; disables Haven's Birthright speed buffs when both are installed",
     "nexus": "https://www.nexusmods.com/sunhaven/mods/497",
     "nexus_file_group_id": "7154323",
     "thunderstore": "https://thunderstore.io/c/sun-haven/p/AzraelGodKing/FasterRaces/",
     "thunderstoreName": "FasterRaces",
-    "changelog": "Patch: SharedCodeRevision 2026.07.28 rebuild with suite overnight unhook."
+    "changelog": "Update checks now share one version-list download per game launch across all installed mods, and a version that can't be compared reports a failed check instead of \"up to date\"."
   },
   "com.azraelgodking.trinketfortune": {
-    "version": "2.1.2",
+    "version": "2.1.3",
     "name": "Trinket Fortune",
     "description": "Increases odds of unowned fishing trinkets dropping as you complete the aquarium",
     "nexus": "https://www.nexusmods.com/sunhaven/mods/498",
     "nexus_file_group_id": "7159384",
     "thunderstore": "https://thunderstore.io/c/sun-haven/p/AzraelGodKing/TrinketFortune/",
     "thunderstoreName": "TrinketFortune",
-    "changelog": "Fix: museum-item bias patching finds alternate RandomItem hooks when the game renames them."
+    "changelog": "Update checks now share one version-list download per game launch across all installed mods, and a version that can't be compared reports a failed check instead of \"up to date\"."
   },
   "com.azraelgodking.cropoptimizer": {
-    "version": "2.2.2",
+    "version": "2.2.3",
     "name": "Crop Optimizer",
     "description": "Crop forecast HUD with seasonal planning helpers and soft Todo/Birthday/Vault integrations",
     "nexus": "https://www.nexusmods.com/sunhaven/mods/500",
     "nexus_file_group_id": "7320911",
     "thunderstore": "https://thunderstore.io/c/sun-haven/p/AzraelGodKing/CropOptimizer/",
     "thunderstoreName": "CropOptimizer",
-    "changelog": "Fix: Nel'Vari/Withergate HUD totals use orb and ticket shop prices, not gold-only."
+    "changelog": "Update checks now share one version-list download per game launch across all installed mods, and a version that can't be compared reports a failed check instead of \"up to date\"."
   },
   "com.azraelgodking.havensrespec": {
-    "version": "2.1.3",
+    "version": "2.1.4",
     "name": "Haven's Respec",
     "description": "Safe skill respec — Reset button on every skill tab, confirmation dialog, one-step Undo, configurable cost, and full Configuration Manager support",
     "nexus": "https://www.nexusmods.com/sunhaven/mods/502",
     "nexus_file_group_id": "7326839",
     "thunderstore": "https://thunderstore.io/c/sun-haven/p/AzraelGodKing/HavensRespec/",
     "thunderstoreName": "HavensRespec",
-    "changelog": "Fix: respec rolls back Max Mana from refunded skill nodes."
+    "changelog": "Update checks now share one version-list download per game launch across all installed mods, and a version that can't be compared reports a failed check instead of \"up to date\"."
   },
   "com.azraelgodking.giftingassistant": {
-    "version": "1.1.2",
+    "version": "1.1.3",
     "name": "Gifting Assistant",
     "description": "Initial release: per-character gift roster, loved/liked suggestions with icons, preferred gifts, heart bars, gifted-today tracking, priority sort, Ctrl+G UI, 16 languages. Optional Birthday Reminder, Sun Haven Todo, and Haven's Almanac.",
     "nexus": "https://www.nexusmods.com/sunhaven/mods/507",
     "nexus_file_group_id": "7597922",
     "thunderstore": "https://thunderstore.io/c/sun-haven/p/AzraelGodKing/GiftingAssistant/",
     "thunderstoreName": "GiftingAssistant",
-    "changelog": "Fix: player and gift hooks no longer skip Birthday Reminder when this mod throws."
+    "changelog": "Update checks now share one version-list download per game launch across all installed mods, and a version that can't be compared reports a failed check instead of \"up to date\"."
   },
   "com.azraelgodking.havensmirror": {
-    "version": "1.0.0",
+    "version": "1.0.1",
     "name": "Haven's Mirror",
     "description": "Custom player dialogue bust portraits from a PNG gallery folder, with optional NPC look override and hotkey reload",
     "nexus": "https://www.nexusmods.com/sunhaven/mods/538",
     "nexus_file_group_id": "8035296",
     "thunderstore": "https://thunderstore.io/c/sun-haven/p/AzraelGodKing/HavensMirror/",
     "thunderstoreName": "HavensMirror",
-    "changelog": "V1 playable: PNG gallery busts; PersistentRunner-safe dialogue; left bust layout/sizing matched to NPC portraits; ForcedLook; Ctrl+F8 reload."
+    "changelog": "Update checks now share one version-list download per game launch across all installed mods, and a version that can't be compared reports a failed check instead of \"up to date\"."
   }
 }

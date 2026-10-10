@@ -5,6 +5,7 @@ using System.Linq;
 using System.Reflection;
 using HarmonyLib;
 using HavensAlmanac.Data;
+using SunhavenMods.Shared;
 
 namespace HavensAlmanac.Services
 {
@@ -96,8 +97,9 @@ namespace HavensAlmanac.Services
                     return Convert.ToSingle(raw);
                 }
             }
-            catch
+            catch (Exception ex)
             {
+                ReflectionProbe.LogOnce("GameRelationshipReader.ReadRelationshipPoints", ex, Plugin.Log);
             }
 
             return 0f;

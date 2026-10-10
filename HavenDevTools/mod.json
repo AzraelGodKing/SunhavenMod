@@ -3,11 +3,11 @@
   "name": "HavenDevTools",
   "game": "sun-haven",
   "description": "Developer utilities for mod debugging and game state inspection",
-  "version": "2.1.1",
+  "version": "2.1.2",
   "screenshots": [],
   "download": {
-    "file": "HavenDevTools-2.1.1.zip",
-    "url": "https://github.com/AzraelGodKing/SunhavenMod/releases/download/HavenDevTools-v2.1.1/HavenDevTools-2.1.1.zip"
+    "file": "HavenDevTools-2.1.2.zip",
+    "url": "https://github.com/AzraelGodKing/SunhavenMod/releases/download/HavenDevTools-v2.1.2/HavenDevTools-2.1.2.zip"
   },
   "links": {
     "steam": null,

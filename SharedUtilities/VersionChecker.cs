@@ -2,25 +2,30 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
-using System.Text.RegularExpressions;
+using System.Globalization;
 using BepInEx.Logging;
 using UnityEngine;
 
 namespace SunhavenMods.Shared
 {
     /// <summary>
-        /// Checks for mod updates from docs/versions.json on the main branch.
-        /// Each mod can call CheckForUpdate() on startup to notify players of new versions.
-        /// </summary>
+    /// Checks for mod updates from docs/versions.json on the main branch.
+    /// Each mod can call CheckForUpdate() on startup to notify players of new versions.
+    /// Every mod links its own copy of this file, so the download is shared through AppDomain data:
+    /// one request per launch, however many mods ask.
+    /// </summary>
     public static class VersionChecker
     {
-        private const string VersionsUrl = "https://raw.githubusercontent.com/AzraelGodKing/SunhavenMod/main/docs/versions.json";
+        private const string VersionsUrl = "https://raw.githubusercontent.com/AzraelGodKing/SunhavenMods/main/docs/versions.json";
+
+        private const string SharedStateKey = "SunhavenMods.VersionChecker.State";
+        private const string SharedJsonKey = "SunhavenMods.VersionChecker.Json";
+        private static readonly TimeSpan SharedFetchTimeout = TimeSpan.FromSeconds(20);
+        private static readonly TimeSpan SharedSuccessTtl = TimeSpan.FromMinutes(30);
+        private static readonly TimeSpan SharedFailureTtl = TimeSpan.FromMinutes(1);
 
         private static readonly Dictionary<string, ModHealthSnapshot> HealthByPluginGuid = new Dictionary<string, ModHealthSnapshot>(StringComparer.OrdinalIgnoreCase);
         private static readonly object HealthLock = new object();
-        private static readonly Dictionary<string, Regex> ModPatternCache = new Dictionary<string, Regex>(StringComparer.Ordinal);
-        private static readonly object ModPatternCacheLock = new object();
-        private static readonly Regex ExtractFieldRegex = new Regex("\"(?<key>[^\"]+)\"\\s*:\\s*(?:\"(?<value>[^\"]*)\"|null)", RegexOptions.Compiled);
 
         /// <summary>
         /// Result of a version check operation.
@@ -83,37 +88,99 @@ namespace SunhavenMods.Shared
 
         /// <summary>
         /// Compares two semantic version strings.
-        /// Returns: -1 if v1 &lt; v2, 0 if equal, 1 if v1 &gt; v2
+        /// Returns: -1 if v1 &lt; v2, 0 if equal, 1 if v1 &gt; v2. Also returns 0 when either side is unparseable;
+        /// use <see cref="TryCompareVersions"/> to tell that apart from "equal".
         /// </summary>
         public static int CompareVersions(string v1, string v2)
         {
-            if (string.IsNullOrEmpty(v1) || string.IsNullOrEmpty(v2))
-                return 0;
+            return TryCompareVersions(v1, v2) ?? 0;
+        }
 
-            // Remove 'v' prefix if present
-            v1 = v1.TrimStart('v', 'V');
-            v2 = v2.TrimStart('v', 'V');
-            // Compare core numeric segments only (ignore SemVer pre-release / build metadata after '-' or '+').
-            int dash1 = v1.IndexOfAny(new[] { '-', '+' });
-            if (dash1 >= 0) v1 = v1.Substring(0, dash1);
-            int dash2 = v2.IndexOfAny(new[] { '-', '+' });
-            if (dash2 >= 0) v2 = v2.Substring(0, dash2);
+        /// <summary>
+        /// Compares the numeric core of two versions (a leading v and any -prerelease / +build suffix are ignored).
+        /// Returns null when either version is missing or has a non-numeric segment.
+        /// </summary>
+        public static int? TryCompareVersions(string v1, string v2)
+        {
+            if (!TryParseVersionCore(v1, out var parts1) || !TryParseVersionCore(v2, out var parts2))
+                return null;
 
-            var parts1 = v1.Split('.');
-            var parts2 = v2.Split('.');
-
-            var maxLength = Math.Max(parts1.Length, parts2.Length);
-
+            int maxLength = Math.Max(parts1.Length, parts2.Length);
             for (int i = 0; i < maxLength; i++)
             {
-                int num1 = i < parts1.Length && int.TryParse(parts1[i], out var n1) ? n1 : 0;
-                int num2 = i < parts2.Length && int.TryParse(parts2[i], out var n2) ? n2 : 0;
-
+                int num1 = i < parts1.Length ? parts1[i] : 0;
+                int num2 = i < parts2.Length ? parts2[i] : 0;
                 if (num1 < num2) return -1;
                 if (num1 > num2) return 1;
             }
-
             return 0;
+        }
+
+        private static bool TryParseVersionCore(string version, out int[] parts)
+        {
+            parts = null;
+            if (string.IsNullOrWhiteSpace(version))
+                return false;
+
+            string core = version.Trim().TrimStart('v', 'V');
+            int suffix = core.IndexOfAny(new[] { '-', '+' });
+            if (suffix >= 0) core = core.Substring(0, suffix);
+
+            string[] segments = core.Split('.');
+            var parsed = new int[segments.Length];
+            for (int i = 0; i < segments.Length; i++)
+            {
+                if (!int.TryParse(segments[i], NumberStyles.None, CultureInfo.InvariantCulture, out parsed[i]))
+                    return false;
+            }
+            parts = parsed;
+            return true;
+        }
+
+        /// <summary>
+        /// Reads one mod's entry from a versions.json document into <paramref name="result"/>.
+        /// Returns null on success, otherwise the reason the check could not complete.
+        /// </summary>
+        internal static string EvaluateManifest(string json, string pluginGuid, string currentVersion, VersionCheckResult result)
+        {
+            Dictionary<string, object> root;
+            try
+            {
+                root = MinimalJsonParser.Parse((json ?? string.Empty).TrimStart('\uFEFF')) as Dictionary<string, object>;
+            }
+            catch (JsonParseException ex)
+            {
+                return $"versions.json is not valid JSON ({ex.Message})";
+            }
+            if (root == null)
+                return "versions.json root is not an object";
+
+            if (string.IsNullOrEmpty(pluginGuid) ||
+                !root.TryGetValue(pluginGuid, out object entryValue) ||
+                !(entryValue is Dictionary<string, object> entry))
+                return $"Mod '{pluginGuid}' not found in versions.json";
+
+            result.LatestVersion = ManifestField(entry, "version");
+            result.ModName = ManifestField(entry, "name");
+            result.NexusUrl = ManifestField(entry, "nexus");
+            result.Changelog = ManifestField(entry, "changelog");
+
+            if (string.IsNullOrEmpty(result.LatestVersion))
+                return "Could not parse version from response";
+
+            int? comparison = TryCompareVersions(currentVersion, result.LatestVersion);
+            if (comparison == null)
+                return $"Could not compare installed version '{currentVersion}' with '{result.LatestVersion}'";
+
+            result.UpdateAvailable = comparison.Value < 0;
+            return null;
+        }
+
+        private static string ManifestField(Dictionary<string, object> entry, string key)
+        {
+            if (!entry.TryGetValue(key, out object value) || value == null)
+                return null;
+            return value as string ?? Convert.ToString(value, CultureInfo.InvariantCulture);
         }
 
         private static void TouchHealth(string pluginGuid)
@@ -172,112 +239,118 @@ namespace SunhavenMods.Shared
                     CurrentVersion = currentVersion
                 };
 
-                // Use UnityWebRequest for better compatibility
-                using (var www = UnityEngine.Networking.UnityWebRequest.Get(VersionsUrl))
+                string json = null;
+                string fetchError = null;
+                while (true)
                 {
-                    www.timeout = 10;
-
-                    yield return www.SendWebRequest();
-
-                    if (www.result == UnityEngine.Networking.UnityWebRequest.Result.ConnectionError ||
-                        www.result == UnityEngine.Networking.UnityWebRequest.Result.ProtocolError)
+                    var state = SharedFetchState.Read();
+                    TimeSpan age = DateTime.UtcNow - state.AtUtc;
+                    if (state.Kind == SharedFetchState.Done && age < SharedSuccessTtl &&
+                        AppDomain.CurrentDomain.GetData(SharedJsonKey) is string cached)
                     {
-                        result.Success = false;
-                        result.ErrorMessage = $"Network error: {www.error}";
-                        RecordHealthError(pluginGuid, result.ErrorMessage);
-                        LogWarningMsg(result.ErrorMessage);
-                        onComplete?.Invoke(result);
-                        Destroy(gameObject);
-                        yield break;
+                        json = cached;
+                        break;
+                    }
+                    if (state.Kind == SharedFetchState.Failed && age < SharedFailureTtl)
+                    {
+                        fetchError = state.Message;
+                        break;
+                    }
+                    if (state.Kind == SharedFetchState.Fetching && age < SharedFetchTimeout)
+                    {
+                        yield return null;
+                        continue;
                     }
 
-                    try
+                    SharedFetchState.Write(SharedFetchState.Fetching, null);
+                    using (var www = UnityEngine.Networking.UnityWebRequest.Get(VersionsUrl))
                     {
-                        var json = www.downloadHandler.text;
+                        www.timeout = 10;
+                        yield return www.SendWebRequest();
 
-                        // Simple JSON parsing without external dependencies
-                        // Look for the mod's entry in the JSON
-                        var modMatch = GetModPattern(pluginGuid).Match(json);
-
-                        if (!modMatch.Success)
+                        if (www.result == UnityEngine.Networking.UnityWebRequest.Result.ConnectionError ||
+                            www.result == UnityEngine.Networking.UnityWebRequest.Result.ProtocolError)
                         {
-                            result.Success = false;
-                            result.ErrorMessage = $"Mod '{pluginGuid}' not found in versions.json";
-                            RecordHealthError(pluginGuid, result.ErrorMessage);
-                            LogWarningMsg(result.ErrorMessage);
-                            onComplete?.Invoke(result);
-                            Destroy(gameObject);
-                            yield break;
-                        }
-
-                        var modJson = modMatch.Groups[1].Value;
-
-                        // Extract fields
-                        result.LatestVersion = ExtractJsonString(modJson, "version");
-                        result.ModName = ExtractJsonString(modJson, "name");
-                        result.NexusUrl = ExtractJsonString(modJson, "nexus");
-                        result.Changelog = ExtractJsonString(modJson, "changelog");
-
-                        if (string.IsNullOrEmpty(result.LatestVersion))
-                        {
-                            result.Success = false;
-                            result.ErrorMessage = "Could not parse version from response";
-                            RecordHealthError(pluginGuid, result.ErrorMessage);
-                            LogWarningMsg(result.ErrorMessage);
-                            onComplete?.Invoke(result);
-                            Destroy(gameObject);
-                            yield break;
-                        }
-
-                        result.Success = true;
-                        result.UpdateAvailable = CompareVersions(currentVersion, result.LatestVersion) < 0;
-
-                        if (result.UpdateAvailable)
-                        {
-                            LogInfo($"Update available for {result.ModName}: {currentVersion} -> {result.LatestVersion}");
+                            fetchError = $"Network error: {www.error}";
+                            SharedFetchState.Write(SharedFetchState.Failed, fetchError);
                         }
                         else
                         {
-                            LogInfo($"{result.ModName} is up to date (v{currentVersion})");
+                            json = www.downloadHandler.text;
+                            AppDomain.CurrentDomain.SetData(SharedJsonKey, json);
+                            SharedFetchState.Write(SharedFetchState.Done, null);
                         }
+                    }
+                    break;
+                }
+
+                string error = fetchError;
+                if (error == null)
+                {
+                    try
+                    {
+                        error = EvaluateManifest(json, pluginGuid, currentVersion, result);
                     }
                     catch (Exception ex)
                     {
-                        result.Success = false;
-                        result.ErrorMessage = $"Parse error: {ex.Message}";
-                        RecordHealthError(pluginGuid, result.ErrorMessage);
-                        LogErrorMsg(result.ErrorMessage);
+                        error = $"Parse error: {ex.Message}";
                     }
+                }
+
+                if (error != null)
+                {
+                    result.Success = false;
+                    result.UpdateAvailable = false;
+                    result.ErrorMessage = error;
+                    RecordHealthError(pluginGuid, error);
+                    LogWarningMsg(error);
+                }
+                else
+                {
+                    result.Success = true;
+                    if (result.UpdateAvailable)
+                        LogInfo($"Update available for {result.ModName}: {currentVersion} -> {result.LatestVersion}");
+                    else
+                        LogInfo($"{result.ModName} is up to date (v{currentVersion})");
                 }
 
                 onComplete?.Invoke(result);
                 Destroy(gameObject);
             }
-
-            private string ExtractJsonString(string json, string key)
-            {
-                var match = ExtractFieldRegex.Match(json);
-                while (match.Success)
-                {
-                    if (string.Equals(match.Groups["key"].Value, key, StringComparison.Ordinal))
-                        return match.Groups["value"].Value;
-                    match = match.NextMatch();
-                }
-                return null;
-            }
         }
 
-        private static Regex GetModPattern(string pluginGuid)
+        /// <summary>
+        /// Cross-assembly fetch state in AppDomain data, formatted as <c>kind|utcTicks|message</c>.
+        /// Strings only, so every mod's copy of this class can read what another copy wrote.
+        /// </summary>
+        private struct SharedFetchState
         {
-            lock (ModPatternCacheLock)
-            {
-                if (!ModPatternCache.TryGetValue(pluginGuid, out var regex))
-                {
-                    regex = new Regex($"\"{Regex.Escape(pluginGuid)}\"\\s*:\\s*\\{{([^}}]+)\\}}", RegexOptions.Singleline | RegexOptions.Compiled);
-                    ModPatternCache[pluginGuid] = regex;
-                }
+            public const string Fetching = "fetching";
+            public const string Done = "done";
+            public const string Failed = "failed";
 
-                return regex;
+            public string Kind;
+            public DateTime AtUtc;
+            public string Message;
+
+            public static SharedFetchState Read()
+            {
+                var state = new SharedFetchState { AtUtc = DateTime.MinValue };
+                if (!(AppDomain.CurrentDomain.GetData(SharedStateKey) is string raw))
+                    return state;
+                string[] parts = raw.Split(new[] { '|' }, 3);
+                if (parts.Length < 2 || !long.TryParse(parts[1], NumberStyles.None, CultureInfo.InvariantCulture, out long ticks))
+                    return state;
+                state.Kind = parts[0];
+                state.AtUtc = new DateTime(ticks, DateTimeKind.Utc);
+                state.Message = parts.Length > 2 ? parts[2] : null;
+                return state;
+            }
+
+            public static void Write(string kind, string message)
+            {
+                string ticks = DateTime.UtcNow.Ticks.ToString(CultureInfo.InvariantCulture);
+                AppDomain.CurrentDomain.SetData(SharedStateKey, kind + "|" + ticks + "|" + (message ?? string.Empty));
             }
         }
     }

@@ -67,6 +67,8 @@ jobs:
       matrix: ${{ steps.set.outputs.matrix }}
     steps:
       - uses: actions/checkout@v4
+      - name: SharedUtilities link check
+        run: node scripts/build/check-sharedutilities-links.mjs
       - id: set
         run: echo "matrix=$(jq -c '[.[].modKey]' scripts/matrix/mod-matrix.json)" >> "$GITHUB_OUTPUT"
 

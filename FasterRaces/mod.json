@@ -3,11 +3,11 @@
   "name": "Faster Races",
   "game": "sun-haven",
   "description": "Configurable movement speed bonus for all races; disables Haven's Birthright speed buffs when both are installed",
-  "version": "2.1.1",
+  "version": "2.1.2",
   "screenshots": [],
   "download": {
-    "file": "FasterRaces-2.1.1.zip",
-    "url": "https://github.com/AzraelGodKing/SunhavenMod/releases/download/FasterRaces-v2.1.1/FasterRaces-2.1.1.zip"
+    "file": "FasterRaces-2.1.2.zip",
+    "url": "https://github.com/AzraelGodKing/SunhavenMod/releases/download/FasterRaces-v2.1.2/FasterRaces-2.1.2.zip"
   },
   "links": {
     "steam": null,
