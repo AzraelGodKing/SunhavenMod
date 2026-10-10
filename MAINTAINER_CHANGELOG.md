@@ -4,6 +4,14 @@ Internal engineering log: **CI**, **release automation**, **scripts**, **docs in
 
 ---
 
+## 2026-10-10
+
+- **Nexus BBCode:** Removed the `[i](vX.Y.Z)[/i]` header from every `NexusMods-*-BBCode.txt`. `pre-push-build.ps1` no longer rewrites those files on a version bump.
+- **Gifting Assistant Nexus paste:** Added `GiftingAssistant/NexusMods-GiftingAssistant-BBCode.txt` (v1.1.1) and listed it in `maintainer-docs/NexusMods-BBCode-Index.txt`. The version sync script already updates `NexusMods-<ModFolder>-BBCode.txt` from the matrix, so this file is picked up on the next bump.
+- **Public links:** Replaced `azraelgodking.github.io/SunhavenMod` documentation and Thunderstore `website_url` links with [azraelsmods.com/sun-haven](https://www.azraelsmods.com/sun-haven/) mod pages. Every mod's Thunderstore `website_url`, Thunderstore README, and Nexus BBCode now include that mod page so the store fields can be pasted as-is. In-game update checks now read `docs/versions.json` from the raw `main` branch. Feedback CORS allowlist origin is `https://www.azraelsmods.com`.
+
+- **CI workflows rebuilt on the RimWorld layout:** `build-mods.yml` (PR/`main` compile gate on the self-hosted runner), `release-publish.yml` (dispatch bump → build → GitHub / Thunderstore / Nexus), `reusable-release-mod.yml`, and `live-stats.yml` (Thunderstore + Nexus counts force-pushed to the `stats` branch as `live.json`, no commit on `main`). Removed `build-release-publish.yml`, `update-stats.yml`, `reusable-mod-matrix-setup.yml`, and the empty `workflows/deprecated` folder. Kept `sync-mod-versions.yml` and `remove-stale-github-releases.yml`. No GitHub Pages deploy: the public site stays on Cloudflare (`cloudflare-site/`). Cloudflare stats read `stats/live.json`, then `docs/data/stats-cache.json` on `main`.
+
 ## 2026-10-09
 
 - **Repo hygiene — orphaned files:** Removed `pt-BR-translation-review.md` (finished review artifact), `repo-management-review-2026-07-02.md` (completed audit), `SunhavenTodo/README.txt` (superseded by `README.md`), and `SunhavenTodo/Tests/TestResults/todo.trx` (committed test-run output with machine/user name). Added `**/TestResults/` to `.gitignore`.

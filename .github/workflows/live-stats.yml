@@ -1,0 +1,61 @@
+# Publishes Thunderstore + Nexus counts to the `stats` branch (live.json only).
+# Does not commit on main. The docs hub fetches this file on each visit and
+# falls back to docs/data/stats-cache.json when the branch is missing.
+name: Live download stats
+
+on:
+  schedule:
+    # Hourly at :00 UTC (paired with the same-hour short-circuit in scripts/stats/fetch-stats.js)
+    - cron: "0 * * * *"
+  workflow_dispatch:
+    inputs:
+      force:
+        description: "Fetch even if cache was already updated this UTC hour"
+        required: false
+        default: false
+        type: boolean
+
+concurrency:
+  group: live-stats
+  cancel-in-progress: true
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Fetch Thunderstore + Nexus
+        env:
+          NEXUSMODS_API_KEY: ${{ secrets.NEXUSMODS_API_KEY }}
+          STATS_FORCE: ${{ github.event_name == 'workflow_dispatch' && inputs.force && '1' || '' }}
+        run: npm run stats
+
+      - name: Force-push live.json to stats branch
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          set -euo pipefail
+          test -f docs/data/stats-cache.json
+          WORK="$(mktemp -d)"
+          cp docs/data/stats-cache.json "$WORK/live.json"
+          cd "$WORK"
+          git init
+          git checkout -b stats
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add live.json
+          git commit -m "live Thunderstore + Nexus stats"
+          git remote add origin "https://x-access-token:${GITHUB_TOKEN}@github.com/${GITHUB_REPOSITORY}.git"
+          git push -f origin stats

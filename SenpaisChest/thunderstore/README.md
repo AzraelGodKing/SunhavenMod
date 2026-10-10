@@ -69,5 +69,5 @@ Wildcard tips:
 ## Links
 
 - [Nexus Mods](https://www.nexusmods.com/sunhaven/mods/496)
-- [Documentation](https://azraelgodking.github.io/SunhavenMod/SenpaisChest/SenpaisChest.html)
+- [Documentation](https://www.azraelsmods.com/sun-haven/senpais-chest/)
 - [Report Bugs / Discord](https://discord.gg/Vwh2y7qMXv)

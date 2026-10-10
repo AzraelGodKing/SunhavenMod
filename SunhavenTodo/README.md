@@ -74,7 +74,7 @@ Character names are sanitized to avoid invalid filename characters.
 ## Links
 
 - [Nexus Mods](https://www.nexusmods.com/sunhaven/mods/491)
-- [Documentation](https://azraelgodking.github.io/SunhavenMod/Todo/todo.html)
+- [Documentation](https://www.azraelsmods.com/sun-haven/sunhaven-todo/)
 - [Discord — bugs & discussion](https://discord.gg/Vwh2y7qMXv)
 
 ## License

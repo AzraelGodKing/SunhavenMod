@@ -21,7 +21,7 @@ jobs:
 
     steps:
       # Default: GITHUB_TOKEN. If pushes to the default branch are blocked, set repo secret ADMIN_PUSH_TOKEN
-      # (PAT with contents:write), same as update-stats.yml, and use: token: ${{ secrets.ADMIN_PUSH_TOKEN }}
+      # (PAT with contents:write), same pattern as a contents:write checkout, and use: token: ${{ secrets.ADMIN_PUSH_TOKEN }}
       - name: Checkout
         uses: actions/checkout@v4
         with:

@@ -1,9 +1,11 @@
 import { createApp, nextTick } from "https://esm.sh/vue@3.5.13/dist/vue.esm-browser.prod.js";
 import { animate, stagger } from "https://esm.sh/motion@12.23.24";
 
-/** Same URLs as your public GitHub Pages + raw repo content (adjust if repo rename). */
+/** Live counts from the stats branch; committed cache is the fallback. */
+const STATS_LIVE_URL =
+  "https://raw.githubusercontent.com/AzraelGodKing/SunhavenMod/stats/live.json";
 const STATS_CACHE_URL =
-  "https://azraelgodking.github.io/SunhavenMod/data/stats-cache.json";
+  "https://raw.githubusercontent.com/AzraelGodKing/SunhavenMod/main/docs/data/stats-cache.json";
 const MOD_MATRIX_URL =
   "https://raw.githubusercontent.com/AzraelGodKing/SunhavenMod/main/scripts/matrix/mod-matrix.json";
 
@@ -196,10 +198,12 @@ createApp({
     try {
       const [matrixRes, statsRes] = await Promise.all([
         fetch(MOD_MATRIX_URL, { cache: "no-cache" }),
-        fetch(STATS_CACHE_URL, { cache: "no-cache" }),
+        fetch(STATS_LIVE_URL, { cache: "no-store" }).then((res) =>
+          res.ok ? res : fetch(STATS_CACHE_URL, { cache: "no-store" })
+        ),
       ]);
       if (!matrixRes.ok) throw new Error(`mod-matrix: HTTP ${matrixRes.status}`);
-      if (!statsRes.ok) throw new Error(`stats-cache: HTTP ${statsRes.status}`);
+      if (!statsRes.ok) throw new Error(`stats: HTTP ${statsRes.status}`);
       const matrix = await matrixRes.json();
       const stats = await statsRes.json();
       if (!Array.isArray(matrix)) throw new Error("mod-matrix.json was not an array");

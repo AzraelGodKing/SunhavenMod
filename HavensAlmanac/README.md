@@ -177,6 +177,6 @@ The built-in **Mod Health** provider is always on and surfaces
 
 ## Links
 
-- [Documentation](https://azraelgodking.github.io/SunhavenMod/HavensAlmanac/HavensAlmanac.html)
+- [Documentation](https://www.azraelsmods.com/sun-haven/havens-almanac/)
 - [Thunderstore](https://thunderstore.io/c/sun-haven/p/AzraelGodKing/HavensAlmanac/)
 - [Report Bugs on Discord](https://discord.gg/Vwh2y7qMXv)

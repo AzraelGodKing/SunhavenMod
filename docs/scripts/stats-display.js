@@ -1,5 +1,8 @@
 // Load this script with `defer` so rendering is never blocked.
-// Cache file: docs/data/stats-cache.json → on GitHub Pages (publish /docs) public URL is /data/stats-cache.json at site root (no "/docs" segment).
+// Live counts: stats branch live.json (Actions, hourly). Fallback: docs/data/stats-cache.json
+// served as /data/stats-cache.json when GitHub Pages publishes docs/ at the site root.
+const LIVE_JSON =
+  "https://raw.githubusercontent.com/AzraelGodKing/SunhavenMod/stats/live.json";
 
 function resolveStatsCacheUrl() {
   const scripts = document.getElementsByTagName("script");
@@ -42,11 +45,15 @@ document.addEventListener("DOMContentLoaded", () => {
     el.textContent = `${totalText} (${uniqueText})`;
   };
 
-  fetch(resolveStatsCacheUrl(), { cache: "no-cache" })
-    .then((res) => {
+  function loadStats(url) {
+    return fetch(url, { cache: "no-store" }).then((res) => {
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
       return res.json();
-    })
+    });
+  }
+
+  loadStats(LIVE_JSON)
+    .catch(() => loadStats(resolveStatsCacheUrl()))
     .then((stats) => {
       const siteTotal = stats?.site_total || {};
       const mods = stats?.mods || {};

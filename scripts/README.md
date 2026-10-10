@@ -57,10 +57,10 @@ npm run stats
 
 | Workflow | Scripts |
 |----------|---------|
-| `reusable-mod-matrix-setup.yml` | `matrix/sync-docs-mod-matrix.js`, `version/verify-version-consistency.py` |
+| `release-publish.yml` | `matrix/sync-docs-mod-matrix.js`, `version/verify-version-consistency.py`, `version/set-versions-changelog.py`, `version/pre-push-build.ps1` |
 | `sync-mod-versions.yml` | `version/pre-push-build.ps1`, `version/stage-version-sync-files.py` |
-| `build-release-publish.yml` | version + `localization/validate-localization.ps1`, `version/set-versions-changelog.py` |
-| `update-stats.yml` | `stats/fetch-stats.js` (npm) |
+| `build-mods.yml` | `localization/validate-localization.ps1` |
+| `live-stats.yml` | `stats/fetch-stats.js` (npm) |
 
 ## Mod matrix
 

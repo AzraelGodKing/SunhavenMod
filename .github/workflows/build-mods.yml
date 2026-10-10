@@ -1,0 +1,173 @@
+name: Build mods
+
+# Compile gate for Sun Haven mods.
+# Game assemblies live on the self-hosted runner (BepInEx + Managed).
+# Localization and unit tests run on GitHub-hosted Ubuntu.
+# Versioned GitHub / Thunderstore / Nexus publish stays on Release & Publish.
+# This workflow does not cut releases or overwrite a rolling `latest` tag.
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "BirthdayReminder/**"
+      - "CropOptimizer/**"
+      - "FasterRaces/**"
+      - "GiftingAssistant/**"
+      - "HavenDevTools/**"
+      - "HavensAlmanac/**"
+      - "HavensBirthright/**"
+      - "HavensMirror/**"
+      - "HavensRespec/**"
+      - "SenpaisChest/**"
+      - "SharedUtilities/**"
+      - "SunHavenMuseumUtilityTracker/**"
+      - "SunhavenTodo/**"
+      - "TheVault/**"
+      - "TheVault.Abstractions/**"
+      - "TrinketFortune/**"
+      - "scripts/localization/**"
+      - "scripts/matrix/**"
+      - ".github/workflows/build-mods.yml"
+  pull_request:
+    paths:
+      - "BirthdayReminder/**"
+      - "CropOptimizer/**"
+      - "FasterRaces/**"
+      - "GiftingAssistant/**"
+      - "HavenDevTools/**"
+      - "HavensAlmanac/**"
+      - "HavensBirthright/**"
+      - "HavensMirror/**"
+      - "HavensRespec/**"
+      - "SenpaisChest/**"
+      - "SharedUtilities/**"
+      - "SunHavenMuseumUtilityTracker/**"
+      - "SunhavenTodo/**"
+      - "TheVault/**"
+      - "TheVault.Abstractions/**"
+      - "TrinketFortune/**"
+      - "scripts/localization/**"
+      - "scripts/matrix/**"
+      - ".github/workflows/build-mods.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: build-mods-${{ github.event_name }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  setup:
+    name: Mod matrix
+    runs-on: ubuntu-latest
+    outputs:
+      matrix: ${{ steps.set.outputs.matrix }}
+    steps:
+      - uses: actions/checkout@v4
+      - id: set
+        run: echo "matrix=$(jq -c '[.[].modKey]' scripts/matrix/mod-matrix.json)" >> "$GITHUB_OUTPUT"
+
+  validate-localization:
+    name: Validate localization
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Validate localization strings
+        shell: pwsh
+        run: ./scripts/localization/validate-localization.ps1
+
+  test:
+    name: Unit tests
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: "8.0.x"
+      - name: Run TheVault.Tests
+        run: dotnet test TheVault/Tests/TheVault.Tests.csproj -c Release --nologo --logger "trx;LogFileName=vault.trx"
+      - name: Run SenpaisChest.Tests
+        run: dotnet test SenpaisChest/Tests/SenpaisChest.Tests.csproj -c Release --nologo --logger "trx;LogFileName=chest.trx"
+      - name: Run SunhavenTodo.Tests
+        run: dotnet test SunhavenTodo/Tests/SunhavenTodo.Tests.csproj -c Release --nologo --logger "trx;LogFileName=todo.trx"
+      - name: Upload test results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-results
+          path: "**/TestResults/*.trx"
+          if-no-files-found: ignore
+
+  build:
+    name: Build ${{ matrix.mod }}
+    needs: [setup, validate-localization, test]
+    runs-on: [self-hosted, Linux, X64, sunhaven]
+    strategy:
+      fail-fast: false
+      matrix:
+        mod: ${{ fromJson(needs.setup.outputs.matrix) }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup .NET SDK
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 8.0.x
+        env:
+          DOTNET_INSTALL_DIR: ${{ runner.temp }}/dotnet
+          DOTNET_ROOT: ${{ runner.temp }}/dotnet
+
+      - name: Set build targets from mod matrix
+        id: build_config
+        shell: bash
+        run: |
+          set -euo pipefail
+          MOD_KEY="${{ matrix.mod }}"
+          MOD_JSON="$(jq -c --arg key "$MOD_KEY" '.[] | select(.modKey == $key)' scripts/matrix/mod-matrix.json)"
+          if [ -z "$MOD_JSON" ]; then
+            echo "::error::Unknown mod: $MOD_KEY"
+            exit 1
+          fi
+          echo "mod_dir=$(echo "$MOD_JSON" | jq -r '.modDir')" >> "$GITHUB_OUTPUT"
+          echo "dll_name=$(echo "$MOD_JSON" | jq -r '.dllName')" >> "$GITHUB_OUTPUT"
+          echo "csproj=$(echo "$MOD_JSON" | jq -r '.csproj')" >> "$GITHUB_OUTPUT"
+
+      - name: Build mod
+        shell: bash
+        env:
+          BEPINEX_PATH: /sunhaven/BepInEx
+          MANAGED_PATH: "/sunhaven/Sun Haven_Data/Managed"
+        run: |
+          set -euo pipefail
+          dotnet restore "${{ steps.build_config.outputs.csproj }}"
+          dotnet build "${{ steps.build_config.outputs.csproj }}" -c Release --nologo \
+            -p:BepInExPath="$BEPINEX_PATH" \
+            -p:ManagedPath="$MANAGED_PATH" \
+            -p:SunhavenCopyToBepInExPlugins=false
+
+      - name: Collect build outputs
+        shell: bash
+        run: |
+          set -euo pipefail
+          MOD_DIR="${{ steps.build_config.outputs.mod_dir }}"
+          DLL_NAME="${{ steps.build_config.outputs.dll_name }}"
+          SRC_DLL="$MOD_DIR/bin/Release/net48/$DLL_NAME.dll"
+          DEST_DIR="builds/$MOD_DIR"
+          mkdir -p "$DEST_DIR"
+          test -f "$SRC_DLL" || { echo "::error::Missing $SRC_DLL"; exit 1; }
+          cp "$SRC_DLL" "$DEST_DIR/"
+          if [ "${{ matrix.mod }}" = "thevault" ]; then
+            ABS_SRC="TheVault.Abstractions/bin/Release/netstandard2.0/TheVault.Abstractions.dll"
+            test -f "$ABS_SRC" || { echo "::error::Missing $ABS_SRC"; exit 1; }
+            cp "$ABS_SRC" "$DEST_DIR/"
+          fi
+
+      - name: Upload built DLL artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: built-${{ matrix.mod }}
+          path: builds/${{ steps.build_config.outputs.mod_dir }}/*.dll
+          if-no-files-found: error
