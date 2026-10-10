@@ -24,15 +24,6 @@ namespace TheVault.Patches
         }
 
         /// <summary>
-        /// Called after the game loads.
-        /// Note: Main vault loading is handled by OnPlayerInitialized.
-        /// </summary>
-        public static void OnGameLoaded()
-        {
-            Plugin.Log?.LogInfo("Game loaded");
-        }
-
-        /// <summary>
         /// Called when returning to main menu.
         /// </summary>
         public static void OnReturnToMenu()

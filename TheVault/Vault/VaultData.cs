@@ -115,9 +115,7 @@ namespace TheVault.Vault
     {
         public string Id { get; set; }
         public string DisplayName { get; set; }
-        public string Description { get; set; }
         public CurrencyCategory Category { get; set; }
-        public string IconPath { get; set; }
 
         /// <summary>
         /// The item ID in Sun Haven's item database that corresponds to this currency.
@@ -131,8 +129,6 @@ namespace TheVault.Vault
             DisplayName = displayName;
             Category = category;
             GameItemId = gameItemId;
-            Description = "";
-            IconPath = "";
         }
     }
 

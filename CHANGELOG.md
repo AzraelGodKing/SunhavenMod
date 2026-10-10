@@ -4,6 +4,24 @@ Notes for **players and release readers**. Per-mod blurbs and upstream metadata 
 
 ---
 
+## Unreleased
+
+**The Vault** — dead-code cleanup
+
+- Deleted `DoorPatches.cs` (never wired to Harmony).
+- Deleted `ShopPatches.cs` and its `PatchShopBuyItem` registration (`_vaultPurchaseRequirements` was never populated; all hooks were no-ops).
+- Removed `GameSavePatches.OnGameSaveLoad` / `OnSetCurrentCharacter` (never registered or called).
+- Removed `PlayerPatches.ResetVaultLoaded` / `ForceVaultReload` (zero callers; aliases for `ResetState`).
+- Removed `ItemPatches.OnItemPickedUp` / `OnItemPickedUpSingle` / `OnInventoryAddItemWithNotify` (never registered as Harmony targets).
+- Removed `VaultSaveSystem.ExportVault` / `ImportVault` / `DeleteSave` / `GetAllSavedPlayers` (zero callers).
+- Removed `VaultManager.GetCurrencyByGameItemId` / `GetAllCurrencies` (zero callers).
+- Removed `CurrencyDefinition.Description` / `IconPath` (never read; not serialized).
+- Removed `SaveLoadPatches.OnGameLoaded` and its `GameSave.LoadGame` patch registration (only logged).
+- Deleted `README_BREAKING_CALLOUT.in.md` (unreferenced template).
+- Cleaned stale commented-out code and duplicate summary in touched files.
+
+---
+
 ## 2026-09-27
 
 **The Vault (4.2.0)** — Steam Deck V1 / AZR-348 (**4.1.3 → 4.2.0**)

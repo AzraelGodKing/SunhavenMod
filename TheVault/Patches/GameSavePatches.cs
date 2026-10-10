@@ -21,22 +21,6 @@ namespace TheVault.Patches
             Plugin.Log?.LogInfo("GameSavePatches: Reset LastLoadedSlot and LastLoadedCharacterName");
         }
 
-        public static void OnGameSaveLoad()
-        {
-            try
-            {
-                var currentChar = GameSave.CurrentCharacter;
-                if (currentChar != null)
-                {
-                    Plugin.Log?.LogInfo($"GameSave.Load: {currentChar.characterName}");
-                }
-            }
-            catch (Exception ex)
-            {
-                Plugin.Log?.LogError($"Error in OnGameSaveLoad: {ex.Message}");
-            }
-        }
-
         public static void OnLoadCharacterAny(object[] __args, MethodBase __originalMethod)
         {
             try
@@ -153,28 +137,6 @@ namespace TheVault.Patches
             }
 
             return null;
-        }
-
-        public static void OnSetCurrentCharacter()
-        {
-            try
-            {
-                var currentChar = GameSave.CurrentCharacter;
-                if (currentChar != null)
-                {
-                    string currentName = currentChar.characterName;
-                    if (!string.IsNullOrEmpty(currentName))
-                    {
-                        LastLoadedCharacterName = currentName;
-                        PlayerPatches.SetPendingCharacterName(currentName);
-                    }
-                    Plugin.Log?.LogInfo($"GameSave.SetCurrentCharacter: {currentName}");
-                }
-            }
-            catch (Exception ex)
-            {
-                Plugin.Log?.LogError($"Error in OnSetCurrentCharacter: {ex.Message}");
-            }
         }
 
         private static void TrySetCharacterFromCurrentCharacter(string reason)
