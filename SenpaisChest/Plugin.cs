@@ -79,11 +79,11 @@ namespace SenpaisChest
                 _config = new SmartChestConfig();
                 _config.Initialize(ConfigFile);
                 _staticConfig = _config;
-                _config.UIScale.SettingChanged += (_, _) =>
-                {
-                    float scale = Mathf.Clamp(_config.UIScale.Value, 0.5f, 2.5f);
-                    _staticUI?.SetScale(scale);
-                };
+                if (_config.TryApplyHighResLayoutDefaults())
+                    Log.LogInfo($"[Senpai's Chest] Auto high-res layout applied (UIScale={_config.UIScale.Value:F2}, {Screen.width}x{Screen.height})");
+                void ApplyUiScale() => _staticUI?.SetScale(_config.GetEffectiveUIScale());
+                _config.UIScale.SettingChanged += (_, _) => ApplyUiScale();
+                _config.ScaleWithResolution.SettingChanged += (_, _) => ApplyUiScale();
 
                 // Initialize manager and save system
                 _manager = new SmartChestManager();
@@ -96,7 +96,7 @@ namespace SenpaisChest
                 DontDestroyOnLoad(uiObject);
                 _ui = uiObject.AddComponent<SmartChestUI>();
                 _ui.Initialize(_manager);
-                _ui.SetScale(Mathf.Clamp(_config.UIScale.Value, 0.5f, 2.5f));
+                _ui.SetScale(_config.GetEffectiveUIScale());
                 _staticUI = _ui;
 
                 // Apply Harmony patches
@@ -188,7 +188,7 @@ namespace SenpaisChest
                     UnityEngine.Object.DontDestroyOnLoad(uiObject);
                     _staticUI = uiObject.AddComponent<SmartChestUI>();
                     _staticUI.Initialize(_staticManager);
-                    _staticUI.SetScale(Mathf.Clamp(_staticConfig.UIScale.Value, 0.5f, 2.5f));
+                    _staticUI.SetScale(_staticConfig != null ? _staticConfig.GetEffectiveUIScale() : 1f);
                 }
             }
             catch (Exception ex)

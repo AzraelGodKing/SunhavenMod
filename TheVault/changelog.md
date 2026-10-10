@@ -1,5 +1,10 @@
 # The Vault - Changelog
 
+## Version 4.2.1
+
+- **Fix (AZR-359):** Window scale follows `Screen.height/1080` when `ScaleWithResolution` is on, so 1440p and ultrawide stay readable. `AutoHighResLayout` raises the default scale once on those displays.
+- Removed unused door, shop, save, and inventory hooks that were never registered.
+
 ## Version 4.2.0
 
 ### Steam Deck compatibility V1 (AZR-348)

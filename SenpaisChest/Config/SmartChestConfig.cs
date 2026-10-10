@@ -21,6 +21,9 @@ namespace SenpaisChest.Config
         public ConfigEntry<ChestLabelVisibility> IconVisibility { get; private set; }
         public ConfigEntry<string> LabeledChestDecorationIds { get; private set; }
         public ConfigEntry<float> UIScale { get; private set; }
+        public ConfigEntry<bool> ScaleWithResolution { get; private set; }
+        public ConfigEntry<bool> AutoHighResLayout { get; private set; }
+        public ConfigEntry<bool> HighResLayoutApplied { get; private set; }
         public ConfigEntry<bool> BlockInputWhenTypingInConfig { get; private set; }
         public ConfigEntry<bool> SeparateWildcardRuleInUI { get; private set; }
         public ConfigEntry<bool> EnableScanCountdownDebugLog { get; private set; }
@@ -84,9 +87,30 @@ namespace SenpaisChest.Config
                 "UIScale",
                 1f,
                 new BepInEx.Configuration.ConfigDescription(
-                    "Scale factor for Smart Chest config window (1.0 = default)",
-                    new BepInEx.Configuration.AcceptableValueRange<float>(0.5f, 2.5f)
+                    "Scale factor for Smart Chest config window (1.0 = default). Multiplied by resolution factor when ScaleWithResolution is on.",
+                    new BepInEx.Configuration.AcceptableValueRange<float>(0.5f, 3.0f)
                 ));
+
+            ScaleWithResolution = config.Bind(
+                "UI",
+                "ScaleWithResolution",
+                true,
+                "When true, UIScale is multiplied by Screen.height/1080 so 1440p/ultrawide/4K stays readable (AZR-358)."
+            );
+
+            AutoHighResLayout = config.Bind(
+                "UI",
+                "AutoHighResLayout",
+                true,
+                "Once on high-res / ultrawide (height ≥1440 or width ≥2560), bump UIScale to at least 1.5 if still near default."
+            );
+
+            HighResLayoutApplied = config.Bind(
+                "UI",
+                "HighResLayoutApplied",
+                false,
+                "Internal flag: set true after AutoHighResLayout has applied once. Reset to false to re-apply."
+            );
 
             BlockInputWhenTypingInConfig = config.Bind(
                 "UI",
@@ -163,6 +187,44 @@ namespace SenpaisChest.Config
         public float GetScanInterval()
         {
             return Mathf.Max(10f, ScanInterval.Value);
+        }
+
+        /// <summary>Raw UIScale config clamped to 0.5–3.0.</summary>
+        public float GetUIScaleRaw()
+        {
+            return Mathf.Clamp(UIScale?.Value ?? 1f, 0.5f, 3.0f);
+        }
+
+        /// <summary>Effective scale including optional resolution factor (AZR-358).</summary>
+        public float GetEffectiveUIScale()
+        {
+            float raw = GetUIScaleRaw();
+            if (ScaleWithResolution == null || !ScaleWithResolution.Value || Screen.height <= 0)
+                return raw;
+            float factor = Mathf.Clamp(Screen.height / 1080f, 1f, 2f);
+            return Mathf.Clamp(raw * factor, 0.5f, 3.0f);
+        }
+
+        /// <summary>Once on high-res/ultrawide, bump UIScale to ≥1.5 when still near default.</summary>
+        public bool TryApplyHighResLayoutDefaults()
+        {
+            if (AutoHighResLayout == null || HighResLayoutApplied == null || UIScale == null)
+                return false;
+            if (!AutoHighResLayout.Value || HighResLayoutApplied.Value)
+                return false;
+            if (Screen.width <= 0 || Screen.height <= 0)
+                return false;
+
+            bool highRes = Screen.height >= 1440
+                || (Screen.width >= 2560 && Screen.height >= 1080)
+                || (Screen.height > 0 && (float)Screen.width / Screen.height >= 2.0f && Screen.width >= 2560);
+            if (!highRes)
+                return false;
+
+            if (UIScale.Value <= 1.05f)
+                UIScale.Value = 1.5f;
+            HighResLayoutApplied.Value = true;
+            return true;
         }
 
         public bool IsLabeledChestDecorationId(int decorationId)

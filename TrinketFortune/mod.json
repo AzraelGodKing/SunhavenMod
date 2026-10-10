@@ -3,11 +3,10 @@
   "name": "Trinket Fortune",
   "game": "sun-haven",
   "description": "Increases odds of unowned fishing trinkets dropping as you complete the aquarium",
-  "version": "2.1.1",
+  "version": "2.1.2",
   "screenshots": [],
   "download": {
-    "file": "TrinketFortune-2.1.1.zip",
-    "url": "https://github.com/AzraelGodKing/SunhavenMod/releases/download/TrinketFortune-v2.1.1/TrinketFortune-2.1.1.zip"
+    "file": "TrinketFortune-2.1.2.zip"
   },
   "links": {
     "steam": null,
