@@ -245,7 +245,9 @@ namespace CropOptimizer.UI
                 return;
 
             if (!sessionLive
-                || (!_config.HighlightDryTiles.Value && !_config.HighlightUnfertilizedTiles.Value))
+                || (!_config.HighlightDryTiles.Value
+                    && !_config.HighlightUnfertilizedTiles.Value
+                    && !_config.HighlightUninfusedManaCrops.Value))
             {
                 _fieldHighlights.SetVisible(false);
                 return;
@@ -263,7 +265,9 @@ namespace CropOptimizer.UI
                 && (!toolGate || HeldItemProbe.IsFertilizerSelected())
                 && (!toolGate || !requireMouse || mouseDown);
 
-            if (!showDry && !showFertilizer)
+            bool showMana = _config.HighlightUninfusedManaCrops.Value;
+
+            if (!showDry && !showFertilizer && !showMana)
             {
                 _fieldHighlights.SetVisible(false);
                 return;
@@ -275,7 +279,7 @@ namespace CropOptimizer.UI
             if (now >= _nextHighlightScanTime || _lastHighlightTargets.Count == 0)
             {
                 _nextHighlightScanTime = now + interval;
-                _lastHighlightTargets = CropFieldHighlightScanner.Scan(showDry, showFertilizer);
+                _lastHighlightTargets = CropFieldHighlightScanner.Scan(showDry, showFertilizer, showMana);
             }
 
             _fieldHighlights.Sync(_lastHighlightTargets);

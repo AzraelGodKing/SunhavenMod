@@ -9,6 +9,7 @@ Optimize your farm day with crop forecasting and a compact HUD.
 [*]Field-level harvest forecasting with projected sell-value totals
 [*]Lightweight HUD with drag positioning and configurable scale
 [*]Growth and crop-state tracking with practical, in-session visibility
+[*]Field highlights on crops that need water, fertilizer, or mana infusion
 [*]Soft integrations with Sun Haven Todo, Birthday Reminder, The Vault, and Haven's Almanac
 [/list]
 

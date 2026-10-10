@@ -7,13 +7,13 @@ Crop Optimizer adds field-level harvest forecasting, a lightweight crop HUD, and
 
 ## Version
 
-**2.2.2** — published in [`docs/versions.json`](../docs/versions.json). Player-facing store text: [`thunderstore/README.md`](thunderstore/README.md).
+**2.3.0** — published in [`docs/versions.json`](../docs/versions.json). Player-facing store text: [`thunderstore/README.md`](thunderstore/README.md).
 
 ## Features
 
 - Tracks crop growth updates through a single Harmony patch on crop growth.
 - HUD summary for tracked crops and projected sell value.
-- **Field highlights:** bundled `Assets/tile_selection_sheet.png` (vanilla selection frames); yellow corners for dry tiles, green corners for unfertilized; see `[Highlights]` in config.
+- **Field highlights:** bundled `Assets/tile_selection_sheet.png` (vanilla selection frames); yellow corners for dry tiles, purple corners for mana crops that are not infused yet, green corners for unfertilized; see `[Highlights]` in config.
 - Optional Sunhaven Todo morning task injection for harvest-ready tiles.
 - Optional Birthday reminder integration for produce reservation hints.
 - Optional The Vault integration via reflection when The Vault is installed (no hard dependency on `TheVault.Abstractions.dll`).
@@ -44,6 +44,9 @@ Crop Optimizer adds field-level harvest forecasting, a lightweight crop HUD, and
 - Optional shortcut to open the Vault / journal filtered by the hovered crop.
 
 ## Changelog
+
+### 2026-10-10 (2.3.0)
+- **Added (AZR-440):** Purple corner highlights on crops that can be mana infused but are not yet (requested by Achenar459). Uses the game's own Infuse check: mana-infusable seed, not infused, not dead, and Mana Infusion unlocked on the character. Shown at any growth stage, since an uninfused mana crop has to be infused before it can be harvested. Toggle with `Highlights.HighlightUninfusedManaCrops` (default on). Infusing needs no tool, so `OnlyWhenHoldingTool` does not hide these. When a tile is also dry, the dry highlight wins.
 
 ### 2026-08-30 (2.2.2)
 - **Fixed (AZR-92):** Projected sell on the HUD (and hover) now includes **orbs** (Nel'Vari) and **tickets** (Withergate). Those harvests use `ItemSellInfo.orbSellPrice` / `ticketSellPrice` with gold at 0, so the farm total looked missing even though crop count and hover names already worked.
