@@ -81,21 +81,16 @@ namespace HavenDevTools
 
             try
             {
-                // Initialize configuration
                 ModConfig.Initialize(ConfigFile);
 
-                // Store static config values for PersistentRunner
                 StaticToggleKey = ModConfig.ToggleKey.Value;
                 StaticOverlayToggleKey = ModConfig.OverlayToggleKey.Value;
 
-                // Create persistent runner first
                 CreatePersistentRunner();
 
-                // Detect installed mods
                 DetectInstalledMods();
                 ModConfig.SyncTheVaultFullVaultInspectorToPlugin();
 
-                // Initialize services
                 _staticItemInspector = new ItemInspector();
                 _staticCurrencyTracker = new CurrencyTracker();
                 _staticBundleInspector = new BundleInspector();
@@ -103,19 +98,15 @@ namespace HavenDevTools
                 _staticCommandConsole = new CommandConsole();
                 _staticLogViewer = new LogViewerPanel();
 
-                // Create UI components
                 CreateUIComponents();
 
-                // Apply Harmony patches for player detection
                 _harmony = new Harmony(PluginInfo.PLUGIN_GUID);
                 LocalizationBootstrap.BindForceEnglish(ConfigFile);
                 LocalizationBootstrap.Init(PluginInfo.PLUGIN_GUID, _harmony, Log);
                 PatchPlayerInit();
 
-                // Subscribe to scene changes
                 SceneManager.sceneLoaded += OnSceneLoaded;
 
-                // Check for updates
                 if (ModConfig.CheckForUpdates.Value)
                 {
                     VersionChecker.CheckForUpdate(PluginInfo.PLUGIN_GUID, PluginInfo.PLUGIN_VERSION, Log,
@@ -435,13 +426,12 @@ namespace HavenDevTools
 
             CheckHotkeys();
 
-            // Heartbeat - prove the runner is still alive
             _heartbeatTimer += Time.deltaTime;
             if (_heartbeatTimer >= HEARTBEAT_INTERVAL)
             {
                 _heartbeatTimer = 0f;
                 _heartbeatCount++;
-                Plugin.Log?.LogInfo($"[PersistentRunner Heartbeat #{_heartbeatCount}] Player: {Plugin.CurrentPlayerName ?? "none"}");
+                Plugin.Log?.LogDebug($"[PersistentRunner Heartbeat #{_heartbeatCount}] Player: {Plugin.CurrentPlayerName ?? "none"}");
             }
         }
 
