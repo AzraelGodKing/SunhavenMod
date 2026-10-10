@@ -7,7 +7,6 @@
     - docs/versions.json
     - <Mod>/PluginInfo.cs or Plugin.cs (PLUGIN_VERSION)
     - <Mod>/thunderstore/manifest.json (version_number)
-    - <Mod>/NexusMods-<ModFolder>-BBCode.txt (first [i](vX.Y.Z)[/i] line)
     - <Mod>/thunderstore/README.md (**Version X.Y.Z** line)
     - README.md mods table (pipe-separated version column for that mod)
     - docs/<mod-page>.html (version-badge span), when mapped
@@ -256,27 +255,6 @@ function Update-RootReadmeTable {
     }
 }
 
-function Update-NexusBbcodeHeader {
-    param([string]$NexusPath, [string]$Version)
-    if (-not (Test-Path $NexusPath)) {
-        Write-Warning "  Nexus BBCode file not found: $NexusPath"
-        return
-    }
-    $c = [System.IO.File]::ReadAllText($NexusPath)
-    if ($c -notmatch '\[i\]\(v[\d\.]+\)\[/i\]') {
-        Write-Warning "  Nexus BBCode file: no [i](v...) header to update"
-        return
-    }
-    $once = [regex]::Replace($c, '\[i\]\(v[\d\.]+\)\[/i\]', "[i](v$Version)[/i]", 1)
-    if ($once -ne $c) {
-        [System.IO.File]::WriteAllText($NexusPath, $once)
-        Write-Host "  Updated Nexus BBCode header -> v$Version"
-    }
-    else {
-        Write-Host "  Nexus BBCode header already v$Version"
-    }
-}
-
 function Update-ThunderstoreReadmeVersionLine {
     param([string]$TsReadmePath, [string]$Version)
     if (-not (Test-Path $TsReadmePath)) {
@@ -414,8 +392,6 @@ function Sync-ModVersionEverywhere {
     Update-ThunderstoreManifest -ManifestPath (Join-Path $modPath "thunderstore\manifest.json") -Version $Version
 
     Update-RootReadmeTable -ReadmeSegment $Def.ReadmePath -Version $Version
-
-    Update-NexusBbcodeHeader -NexusPath (Join-Path $modPath "NexusMods-$modDir-BBCode.txt") -Version $Version
 
     Update-ThunderstoreReadmeVersionLine -TsReadmePath (Join-Path $modPath "thunderstore\README.md") -Version $Version
 

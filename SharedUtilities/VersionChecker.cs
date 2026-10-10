@@ -9,13 +9,12 @@ using UnityEngine;
 namespace SunhavenMods.Shared
 {
     /// <summary>
-    /// Checks for mod updates via GitHub Pages hosted versions.json.
-    /// Each mod can call CheckForUpdate() on startup to notify players of new versions.
-    /// </summary>
+        /// Checks for mod updates from docs/versions.json on the main branch.
+        /// Each mod can call CheckForUpdate() on startup to notify players of new versions.
+        /// </summary>
     public static class VersionChecker
     {
-        // UPDATE THIS URL to your GitHub Pages URL
-        private const string VersionsUrl = "https://azraelgodking.github.io/SunhavenMod/versions.json";
+        private const string VersionsUrl = "https://raw.githubusercontent.com/AzraelGodKing/SunhavenMod/main/docs/versions.json";
 
         private static readonly Dictionary<string, ModHealthSnapshot> HealthByPluginGuid = new Dictionary<string, ModHealthSnapshot>(StringComparer.OrdinalIgnoreCase);
         private static readonly object HealthLock = new object();

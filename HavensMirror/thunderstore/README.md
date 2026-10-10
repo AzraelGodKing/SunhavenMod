@@ -4,4 +4,4 @@
 
 - [Nexus Mods](https://www.nexusmods.com/sunhaven/mods/538)
 - [Thunderstore](https://thunderstore.io/c/sun-haven/p/AzraelGodKing/HavensMirror/)
-- [Documentation](https://azraelgodking.github.io/SunhavenMod/HavensMirror/HavensMirror.html)
+- [Documentation](https://www.azraelsmods.com/sun-haven/havens-mirror/)

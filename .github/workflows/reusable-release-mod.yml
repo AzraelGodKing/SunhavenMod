@@ -1,4 +1,10 @@
-name: Reusable — release one mod
+# =============================================================================
+# Reusable — GitHub Release + Thunderstore + Nexus for one Sun Haven mod
+# Called by release-publish.yml. Version source is docs/versions.json.
+# Thunderstore's Docker action resets the workspace; the zip is staged in
+# $RUNNER_TEMP/release-pkg before that step so Nexus can restore it.
+# =============================================================================
+name: Reusable — release one Sun Haven mod
 
 on:
   workflow_call:
@@ -102,7 +108,7 @@ jobs:
 
       - name: Download built DLL artifact
         if: inputs.publish_discord_only != 'true' && inputs.mod != 'test_discord'
-        uses: actions/download-artifact@v7
+        uses: actions/download-artifact@v4
         with:
           name: built-${{ inputs.mod }}
           path: builds/${{ steps.config.outputs.mod_dir }}
@@ -259,7 +265,7 @@ jobs:
 
       - name: Upload dry-run zip artifact
         if: inputs.dry_run == 'true' && inputs.publish_discord_only != 'true' && inputs.mod != 'test_discord'
-        uses: actions/upload-artifact@v6
+        uses: actions/upload-artifact@v4
         with:
           name: dry-run-${{ steps.config.outputs.thunderstore_name }}-${{ steps.config.outputs.version }}
           path: ${{ steps.package_step.outputs.zip_path }}
@@ -694,7 +700,7 @@ jobs:
 
       - name: Upload report for combined summary
         if: always()
-        uses: actions/upload-artifact@v6
+        uses: actions/upload-artifact@v4
         with:
           name: release-report-${{ inputs.mod }}
           path: reports/${{ inputs.mod }}.md

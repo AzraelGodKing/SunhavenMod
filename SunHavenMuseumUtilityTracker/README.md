@@ -123,7 +123,7 @@ Backups may appear beside the primary file after failed loads. Keep these if you
 
 - [Nexus Mods](https://www.nexusmods.com/sunhaven/mods/490)  
 - [Thunderstore — SMUT](https://thunderstore.io/c/sun-haven/p/AzraelGodKing/SMUT/)  
-- [Documentation (GitHub Pages)](https://azraelgodking.github.io/SunhavenMod/SMUT/SMUT.html)  
+- [Documentation](https://www.azraelsmods.com/sun-haven/smut/)  
 - [Discord — bugs & discussion](https://discord.gg/Vwh2y7qMXv)  
 
 ---

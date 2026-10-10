@@ -1,4 +1,4 @@
-[b][size=5]Crop Optimizer[/size][/b] [i](v2.2.2)[/i]
+[b][size=5]Crop Optimizer[/size][/b]
 
 Optimize your farm day with crop forecasting and a compact HUD.
 
@@ -43,6 +43,6 @@ Optimize your farm day with crop forecasting and a compact HUD.
 [list]
 [*][url=https://www.nexusmods.com/sunhaven/mods/500]Nexus Mods[/url]
 [*][url=https://thunderstore.io/c/sun-haven/p/AzraelGodKing/CropOptimizer/]Thunderstore[/url]
-[*][url=https://azraelgodking.github.io/SunhavenMod/CropOptimizer/CropOptimizer.html]Documentation[/url]
+[*][url=https://www.azraelsmods.com/sun-haven/crop-optimizer/]Documentation[/url]
 [*][url=https://discord.gg/Vwh2y7qMXv]Discord - bugs and discussion[/url]
 [/list]

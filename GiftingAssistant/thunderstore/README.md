@@ -12,3 +12,7 @@ Daily gift routine planner for Sun Haven.
 Default hotkey: **Ctrl + G**
 
 Config: `BepInEx/config/GiftingAssistant.cfg`
+
+## Links
+
+- [Mod page](https://www.azraelsmods.com/sun-haven/gifting-assistant/)
