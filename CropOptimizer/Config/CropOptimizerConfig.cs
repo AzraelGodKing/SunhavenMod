@@ -18,6 +18,7 @@ namespace CropOptimizer.Config
 
         public ConfigEntry<bool> HighlightDryTiles { get; }
         public ConfigEntry<bool> HighlightUnfertilizedTiles { get; }
+        public ConfigEntry<bool> HighlightUninfusedManaCrops { get; }
         public ConfigEntry<bool> HighlightOnlyWhenHoldingTool { get; }
         public ConfigEntry<bool> HighlightRequireMouseButton { get; }
         public ConfigEntry<float> HighlightRefreshSeconds { get; }
@@ -45,11 +46,16 @@ namespace CropOptimizer.Config
                 "HighlightUnfertilizedTiles",
                 true,
                 "Draw corner brackets on growing crops without fertilizer applied.");
+            HighlightUninfusedManaCrops = config.Bind(
+                "Highlights",
+                "HighlightUninfusedManaCrops",
+                true,
+                "Draw purple corner brackets on crops that can be mana infused but are not yet (after you unlock Mana Infusion). Infusing needs no tool, so OnlyWhenHoldingTool does not hide these.");
             HighlightOnlyWhenHoldingTool = config.Bind(
                 "Highlights",
                 "OnlyWhenHoldingTool",
                 true,
-                "When true, dry highlights require a watering can selected; fertilizer highlights require fertilizer/compost selected.");
+                "When true, dry highlights require a watering can selected; fertilizer highlights require fertilizer/compost selected. Mana infusion highlights are not affected.");
             HighlightRequireMouseButton = config.Bind(
                 "Highlights",
                 "RequireMouseButton",

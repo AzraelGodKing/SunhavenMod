@@ -172,18 +172,17 @@ namespace CropOptimizer.UI
             if (!_useBundledSprites)
                 return null;
 
-            int frame = kind == CropHighlightKind.NeedsFertilizer
-                ? TileSelectionAssetLoader.FrameGreenCorners
-                : TileSelectionAssetLoader.FrameYellowCorners;
-
-            return TileSelectionAssetLoader.TryGetFrame(frame, out Sprite sprite) ? sprite : null;
+            return TileSelectionAssetLoader.TryGetFrame(FrameIndexForKind(kind), out Sprite sprite) ? sprite : null;
         }
 
         private static int FrameIndexForKind(CropHighlightKind kind)
         {
-            return kind == CropHighlightKind.NeedsFertilizer
-                ? TileSelectionAssetLoader.FrameGreenCorners
-                : TileSelectionAssetLoader.FrameYellowCorners;
+            switch (kind)
+            {
+                case CropHighlightKind.NeedsFertilizer: return TileSelectionAssetLoader.FrameGreenCorners;
+                case CropHighlightKind.NeedsManaInfusion: return TileSelectionAssetLoader.FrameManaCorners;
+                default: return TileSelectionAssetLoader.FrameYellowCorners;
+            }
         }
 
         private static Color ColorForKind(CropHighlightKind kind)
@@ -195,9 +194,12 @@ namespace CropOptimizer.UI
                     : Color.white;
             }
 
-            return kind == CropHighlightKind.NeedsWater
-                ? new Color(0.95f, 0.98f, 1f, 0.94f)
-                : new Color(0.55f, 1f, 0.45f, 0.94f);
+            switch (kind)
+            {
+                case CropHighlightKind.NeedsWater: return new Color(0.95f, 0.98f, 1f, 0.94f);
+                case CropHighlightKind.NeedsManaInfusion: return new Color(0.78f, 0.5f, 1f, 0.94f);
+                default: return new Color(0.55f, 1f, 0.45f, 0.94f);
+            }
         }
 
         private Marker CreateMarker()

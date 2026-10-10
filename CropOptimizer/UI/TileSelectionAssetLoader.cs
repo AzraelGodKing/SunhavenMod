@@ -12,17 +12,22 @@ namespace CropOptimizer.UI
 {
     /// <summary>
     /// Loads <c>Assets/tile_selection_sheet.png</c>: three 36×36 sprites in one row
-    /// (yellow corners, green corners, green full outline).
+    /// (yellow corners, green corners, green full outline). A fourth frame (purple corners)
+    /// is generated from the yellow one at load time.
     /// </summary>
     internal static class TileSelectionAssetLoader
     {
         public const int FrameYellowCorners = 0;
         public const int FrameGreenCorners = 1;
         public const int FrameGreenOutline = 2;
+        public const int FrameManaCorners = 3;
 
         private const string SheetFileName = "tile_selection_sheet.png";
-        private const int SpriteCount = 3;
+        private const int SheetSpriteCount = 3;
+        private const int SpriteCount = 4;
         private const int SpriteSizePx = 36;
+        private static readonly Color ManaShadow = new Color(0.24f, 0.06f, 0.32f);
+        private static readonly Color ManaLight = new Color(0.84f, 0.6f, 1f);
         private static readonly Vector4 DefaultSliceBorder = new Vector4(7f, 7f, 7f, 7f);
 
         private static Texture2D _sheetTexture;
@@ -64,16 +69,19 @@ namespace CropOptimizer.UI
                     return false;
                 }
 
-                if (_sheetTexture.width < SpriteSizePx * SpriteCount || _sheetTexture.height < SpriteSizePx)
+                if (_sheetTexture.width < SpriteSizePx * SheetSpriteCount || _sheetTexture.height < SpriteSizePx)
                 {
                     ReleaseSheetTexture();
                     return false;
                 }
 
+                AppendManaFrame();
+
                 _sprites = new Sprite[SpriteCount];
                 _sprites[FrameYellowCorners] = CreateSlicedSprite(FrameYellowCorners);
                 _sprites[FrameGreenCorners] = CreateSlicedSprite(FrameGreenCorners);
                 _sprites[FrameGreenOutline] = CreateSimpleSprite(FrameGreenOutline);
+                _sprites[FrameManaCorners] = CreateSlicedSprite(FrameManaCorners);
 
                 Plugin.Log?.LogInfo(
                     $"[TileSelectionAssetLoader] Loaded {SheetFileName} ({_sheetTexture.width}x{_sheetTexture.height}, " +
@@ -87,6 +95,38 @@ namespace CropOptimizer.UI
                 ReleaseSheetTexture();
                 return false;
             }
+        }
+
+        /// <summary>
+        /// Copies the shipped frames into a wider texture and fills the extra slot with the yellow
+        /// corners recolored by brightness from <see cref="ManaShadow"/> to <see cref="ManaLight"/>.
+        /// </summary>
+        private static void AppendManaFrame()
+        {
+            int shippedWidth = SpriteSizePx * SheetSpriteCount;
+            var expanded = new Texture2D(SpriteSizePx * SpriteCount, SpriteSizePx, TextureFormat.RGBA32, false)
+            {
+                filterMode = FilterMode.Point,
+                wrapMode = TextureWrapMode.Clamp
+            };
+
+            expanded.SetPixels(0, 0, shippedWidth, SpriteSizePx, _sheetTexture.GetPixels(0, 0, shippedWidth, SpriteSizePx));
+
+            Color[] mana = _sheetTexture.GetPixels(FrameYellowCorners * SpriteSizePx, 0, SpriteSizePx, SpriteSizePx);
+            for (int i = 0; i < mana.Length; i++)
+            {
+                Color c = mana[i];
+                float brightness = Mathf.Max(c.r, c.g, c.b);
+                Color tinted = Color.Lerp(ManaShadow, ManaLight, brightness * brightness);
+                tinted.a = c.a;
+                mana[i] = tinted;
+            }
+
+            expanded.SetPixels(FrameManaCorners * SpriteSizePx, 0, SpriteSizePx, SpriteSizePx, mana);
+            expanded.Apply();
+
+            ReleaseSheetTexture();
+            _sheetTexture = expanded;
         }
 
         private static void ReleaseSheetTexture()
@@ -110,7 +150,7 @@ namespace CropOptimizer.UI
 
         public static bool UsesSlicedDrawMode(int index)
         {
-            return index == FrameYellowCorners || index == FrameGreenCorners;
+            return index == FrameYellowCorners || index == FrameGreenCorners || index == FrameManaCorners;
         }
 
         private static Sprite CreateSlicedSprite(int index)

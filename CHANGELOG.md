@@ -20,6 +20,10 @@ Notes for **players and release readers**. Per-mod blurbs and upstream metadata 
 
 **Website / feedback** — AZR-251, AZR-252
 - **Fix:** The Mod Hub feedback page posted to a server that no longer exists. It now links to each mod's report form on [azraelsmods.com](https://www.azraelsmods.com/sun-haven/).
+
+**Crop Optimizer (2.2.3 → 2.3.0)** — AZR-440
+- **New:** Crops that can be mana infused but aren't yet get purple corner brackets, like the dry (yellow) and unfertilized (green) ones. They show at any growth stage once you've unlocked Mana Infusion, and don't need a tool held. Turn off with `HighlightUninfusedManaCrops` under `[Highlights]`. Requested by Achenar459.
+
 **The Vault (4.2.1 → 4.2.2)** — AZR-438
 - **Fix:** Clicks on the vault window no longer pass through to the inventory. Item slots under the window no longer pick up or throw items.
 

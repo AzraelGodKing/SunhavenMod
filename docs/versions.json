@@ -102,14 +102,14 @@
     "changelog": "Update checks now share one version-list download per game launch across all installed mods, and a version that can't be compared reports a failed check instead of \"up to date\"."
   },
   "com.azraelgodking.cropoptimizer": {
-    "version": "2.2.3",
+    "version": "2.3.0",
     "name": "Crop Optimizer",
     "description": "Crop forecast HUD with seasonal planning helpers and soft Todo/Birthday/Vault integrations",
     "nexus": "https://www.nexusmods.com/sunhaven/mods/500",
     "nexus_file_group_id": "7320911",
     "thunderstore": "https://thunderstore.io/c/sun-haven/p/AzraelGodKing/CropOptimizer/",
     "thunderstoreName": "CropOptimizer",
-    "changelog": "Update checks now share one version-list download per game launch across all installed mods, and a version that can't be compared reports a failed check instead of \"up to date\"."
+    "changelog": "Crops that can be mana infused but aren't yet get purple corner highlights (toggle: Highlights.HighlightUninfusedManaCrops)."
   },
   "com.azraelgodking.havensrespec": {
     "version": "2.1.4",
