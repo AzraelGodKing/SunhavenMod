@@ -3,8 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using SunHavenMuseumUtilityTracker;
 using SunHavenMuseumUtilityTracker.Data;
-using SunhavenTodo;
-using SunhavenTodo.Data;
+using SunhavenMods.Shared;
 using Wish;
 
 namespace SenpaisChest.Integration
@@ -16,6 +15,7 @@ namespace SenpaisChest.Integration
     /// Auto-completes todos when items are donated.
     ///
     /// Only instantiated when both SMUT and SunhavenTodo are confirmed loaded.
+    /// Todo is reached through <see cref="TodoSoftClient"/>.
     /// </summary>
     public class MuseumTodoIntegration
     {
@@ -63,10 +63,10 @@ namespace SenpaisChest.Integration
             try
             {
                 var donationManager = SunHavenMuseumUtilityTracker.Plugin.GetDonationManager();
-                var todoManager = SunhavenTodo.Plugin.GetTodoManager();
-
                 if (donationManager == null || !donationManager.IsLoaded) return;
-                if (todoManager == null) return;
+
+                var todo = TodoSoftClient.TryGetManager(Plugin.Log);
+                if (todo == null || !todo.HasData) return;
 
                 var inventories = ChestManager.inventories;
                 if (inventories == null || inventories.Count == 0) return;
@@ -85,11 +85,11 @@ namespace SenpaisChest.Integration
                         if (slotData.id <= 0 || slotData.amount <= 0)
                             continue;
 
-                        CheckMuseumItem(slotData.id, donationManager, todoManager);
+                        CheckMuseumItem(slotData.id, donationManager, todo);
                     }
                 }
 
-                SyncOneItemShortBundleTodos(donationManager, todoManager);
+                SyncOneItemShortBundleTodos(donationManager, todo);
             }
             catch (Exception ex)
             {
@@ -97,7 +97,7 @@ namespace SenpaisChest.Integration
             }
         }
 
-        private void SyncOneItemShortBundleTodos(DonationManager donationManager, TodoManager todoManager)
+        private void SyncOneItemShortBundleTodos(DonationManager donationManager, TodoManagerReflection todo)
         {
             var activeBundleIds = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
 
@@ -117,12 +117,15 @@ namespace SenpaisChest.Integration
                     if (_bundleTodoIds.ContainsKey(bundle.Id))
                         continue;
 
-                    string title = $"Museum nearly complete: {bundle.Name}";
-                    string desc = $"One item left: {lastItem.Name}";
-                    var todo = new TodoItem(title, desc, TodoPriority.High, TodoCategory.Collection);
-                    SetTodoMetadata(todo, lastItem.GameItemId, section.Name);
-                    todoManager.AddTodo(todo);
-                    _bundleTodoIds[bundle.Id] = todo.Id;
+                    _bundleTodoIds[bundle.Id] = todo.AddTodo(new TodoDraft
+                    {
+                        Title = $"Museum nearly complete: {bundle.Name}",
+                        Description = $"One item left: {lastItem.Name}",
+                        Priority = "High",
+                        Category = "Collection",
+                        IconItemId = lastItem.GameItemId,
+                        MuseumDestination = section.Name ?? ""
+                    });
                 }
             }
 
@@ -130,14 +133,13 @@ namespace SenpaisChest.Integration
             foreach (string bundleId in toRemove)
             {
                 string todoId = _bundleTodoIds[bundleId];
-                var existing = todoManager.GetAllTodos().FirstOrDefault(t => t.Id == todoId);
-                if (existing != null && !existing.IsCompleted)
-                    todoManager.RemoveTodo(todoId);
+                if (todo.IsCompleted(todoId) == false)
+                    todo.RemoveTodo(todoId);
                 _bundleTodoIds.Remove(bundleId);
             }
         }
 
-        private void CheckMuseumItem(int gameItemId, DonationManager donationManager, TodoManager todoManager)
+        private void CheckMuseumItem(int gameItemId, DonationManager donationManager, TodoManagerReflection todo)
         {
             // Already tracking this item
             if (_museumTodoIds.ContainsKey(gameItemId))
@@ -154,15 +156,15 @@ namespace SenpaisChest.Integration
 
             string destinationHall = GetDestinationHallForItem(gameItemId);
 
-            // Create a todo for this museum item
-            string title = $"Donate {museumItem.Name} -> {destinationHall}";
-            string description = $"Found in a chest. Needed in {destinationHall}.";
-
-            var todoItem = new TodoItem(title, description, TodoPriority.High, TodoCategory.Collection);
-            SetTodoMetadata(todoItem, gameItemId, destinationHall);
-            todoManager.AddTodo(todoItem);
-
-            _museumTodoIds[gameItemId] = todoItem.Id;
+            _museumTodoIds[gameItemId] = todo.AddTodo(new TodoDraft
+            {
+                Title = $"Donate {museumItem.Name} -> {destinationHall}",
+                Description = $"Found in a chest. Needed in {destinationHall}.",
+                Priority = "High",
+                Category = "Collection",
+                IconItemId = gameItemId,
+                MuseumDestination = destinationHall ?? ""
+            });
 
             Plugin.Log?.LogInfo($"[MuseumTodoIntegration] Created todo for museum item: {museumItem.Name} -> {destinationHall} (ID: {gameItemId})");
         }
@@ -176,9 +178,9 @@ namespace SenpaisChest.Integration
             try
             {
                 var donationManager = SunHavenMuseumUtilityTracker.Plugin.GetDonationManager();
-                var todoManager = SunhavenTodo.Plugin.GetTodoManager();
+                var todo = TodoSoftClient.TryGetManager(Plugin.Log);
 
-                if (donationManager == null || todoManager == null) return;
+                if (donationManager == null || todo == null) return;
 
                 var toComplete = new List<int>();
 
@@ -194,11 +196,8 @@ namespace SenpaisChest.Integration
                 {
                     if (_museumTodoIds.TryGetValue(gameItemId, out var todoId))
                     {
-                        var todo = todoManager.GetAllTodos().FirstOrDefault(t => t.Id == todoId);
-                        if (todo != null && !todo.IsCompleted)
+                        if (todo.SetCompleted(todoId, true))
                         {
-                            todoManager.ToggleComplete(todoId);
-
                             var museumItem = MuseumContent.FindByGameItemId(gameItemId);
                             Plugin.Log?.LogInfo($"[MuseumTodoIntegration] Completed todo for donated item: {museumItem?.Name ?? gameItemId.ToString()}");
                         }
@@ -242,13 +241,6 @@ namespace SenpaisChest.Integration
                 return "the museum";
 
             return string.Join(" / ", halls);
-        }
-
-        private static void SetTodoMetadata(TodoItem todoItem, int gameItemId, string destinationHall)
-        {
-            if (todoItem == null) return;
-            todoItem.IconItemId = gameItemId;
-            todoItem.MuseumDestination = destinationHall ?? "";
         }
     }
 }

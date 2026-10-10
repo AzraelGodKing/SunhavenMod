@@ -106,9 +106,6 @@
     <ProjectReference Include="..\SunHavenMuseumUtilityTracker\SunHavenMuseumUtilityTracker.csproj">
       <Private>false</Private>
     </ProjectReference>
-    <ProjectReference Include="..\SunhavenTodo\SunhavenTodo.csproj">
-      <Private>false</Private>
-    </ProjectReference>
   </ItemGroup>
 
   <!-- Shared Utilities (linked files) -->
@@ -119,6 +116,8 @@
   <ItemGroup>
     <Compile Include="..\SharedUtilities\CharacterSaveStore.cs" Link="Shared\CharacterSaveStore.cs" />
     <Compile Include="..\SharedUtilities\VersionChecker.cs" Link="Shared\VersionChecker.cs" />
+    <Compile Include="..\SharedUtilities\TodoManagerReflection.cs" Link="Shared\TodoManagerReflection.cs" />
+    <Compile Include="..\SharedUtilities\TodoSoftClient.cs" Link="Shared\TodoSoftClient.cs" />
     <Compile Include="..\SharedUtilities\SceneRootSurvivor.cs" Link="Shared\SceneRootSurvivor.cs" />
     <Compile Include="..\SharedUtilities\ItemSearch.cs" Link="Shared\ItemSearch.cs" />
     <Compile Include="..\SharedUtilities\TextInputFocusGuard.cs" Link="Shared\TextInputFocusGuard.cs" />

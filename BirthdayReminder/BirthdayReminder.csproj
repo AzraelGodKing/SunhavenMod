@@ -8,8 +8,6 @@
     <LangVersion>latest</LangVersion>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <SunhavenModUiProject>true</SunhavenModUiProject>
-    <!-- CS0436: We compile SharedUtilities and optionally reference SunhavenTodo; both define VersionChecker/ReflectionHelper. We use our copy. -->
-    <NoWarn>$(NoWarn);CS0436</NoWarn>
   </PropertyGroup>
 
   <!-- BepInEx References -->
@@ -68,18 +66,13 @@
     </Reference>
   </ItemGroup>
 
-  <!-- Soft dependency: compile against sibling project (no `builds/SunhavenTodo` required). -->
-  <ItemGroup>
-    <ProjectReference Include="..\SunhavenTodo\SunhavenTodo.csproj">
-      <Private>false</Private>
-    </ProjectReference>
-  </ItemGroup>
-
   <!-- Shared Utilities (linked files) -->
   <ItemGroup>
     <Compile Include="..\SharedUtilities\CharacterSaveStore.cs" Link="Shared\CharacterSaveStore.cs" />
     <Compile Include="..\SharedUtilities\OvernightHookUtility.cs" Link="Shared\OvernightHookUtility.cs" />
     <Compile Include="..\SharedUtilities\VersionChecker.cs" Link="Shared\VersionChecker.cs" />
+    <Compile Include="..\SharedUtilities\TodoManagerReflection.cs" Link="Shared\TodoManagerReflection.cs" />
+    <Compile Include="..\SharedUtilities\TodoSoftClient.cs" Link="Shared\TodoSoftClient.cs" />
     <Compile Include="..\SharedUtilities\SceneRootSurvivor.cs" Link="Shared\SceneRootSurvivor.cs" />
     <Compile Include="..\SharedUtilities\TextInputFocusGuard.cs" Link="Shared\TextInputFocusGuard.cs" />
     <Compile Include="..\SharedUtilities\MinimalJsonParser.cs" Link="Shared\MinimalJsonParser.cs" />
