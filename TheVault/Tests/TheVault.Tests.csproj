@@ -23,6 +23,8 @@
     <Compile Include="VaultDataSanitizerTests.cs" />
     <Compile Include="VaultFailedLoadSavePolicyTests.cs" />
     <Compile Include="VaultCsvault2HeaderTests.cs" />
+    <Compile Include="..\..\SharedUtilities\VaultCsvault3.cs" Link="Shared\VaultCsvault3.cs" />
+    <Compile Include="VaultCsvault3Tests.cs" />
   </ItemGroup>
 
 </Project>
