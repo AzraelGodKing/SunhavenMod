@@ -11,7 +11,7 @@ recent reset can be undone per-profession during the same session.
 
 ## Version
 
-**2.1.2** — published in [`docs/versions.json`](../docs/versions.json). Player-facing store text: [`thunderstore/README.md`](thunderstore/README.md).
+**2.1.3** — published in [`docs/versions.json`](../docs/versions.json). Player-facing store text: [`thunderstore/README.md`](thunderstore/README.md).
 
 ## Features
 
@@ -71,7 +71,7 @@ correctness and UX upgrades over the prior implementation.
 
 ## Changelog
 
-### Unreleased
+### 2.1.3
 
 - **Fix (AZR-356):** Respec rolls back Max Mana from refunded nodes (Mental Focus / Town Spirit and other mana skills). `SetActive` receives the live node rank; leftover permanent mana and matching character progress counters are cleared; Undo restores them.
 
