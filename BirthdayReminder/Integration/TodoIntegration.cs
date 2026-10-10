@@ -1,26 +1,21 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Reflection;
 using BirthdayReminder.Data;
-using SunhavenTodo;
-using SunhavenTodo.Data;
+using SunhavenMods.Shared;
 
 namespace BirthdayReminder.Integration
 {
     /// <summary>
-    /// Integration with SunhavenTodo mod.
+    /// Integration with SunhavenTodo mod, through <see cref="TodoSoftClient"/>.
     /// Auto-creates birthday gift todos when birthdays are detected,
     /// and auto-completes them when gifts are given.
     ///
-    /// This class is only instantiated when SunhavenTodo is confirmed loaded,
-    /// so the JIT compiler won't resolve SunhavenTodo types unless the mod is present.
+    /// Only instantiated when SunhavenTodo is loaded.
     /// </summary>
     public class TodoIntegration
     {
         private readonly BirthdayManager _birthdayManager;
-        private static MethodInfo _todoGetByIdMethod;
-        private static bool _todoGetByIdLookedUp;
 
         // Track which NPC birthday todos we've created (NPC name → todo item ID)
         private readonly Dictionary<string, string> _birthdayTodoIds = new Dictionary<string, string>();
@@ -41,8 +36,8 @@ namespace BirthdayReminder.Integration
         {
             try
             {
-                var todoManager = SunhavenTodo.Plugin.GetTodoManager();
-                if (todoManager == null)
+                var todo = TodoSoftClient.TryGetManager(Plugin.Log);
+                if (todo == null)
                 {
                     Plugin.Log?.LogWarning($"[TodoIntegration] OnGiftGiven: TodoManager is null, cannot complete todo for {npcName}");
                     return;
@@ -54,23 +49,18 @@ namespace BirthdayReminder.Integration
                     return;
                 }
 
-                var todo = FindTodoById(todoManager, todoId);
-                if (todo == null)
+                bool? completed = todo.IsCompleted(todoId);
+                if (completed == null)
                 {
                     Plugin.Log?.LogWarning($"[TodoIntegration] OnGiftGiven: Todo {todoId} not found for {npcName}");
                     _birthdayTodoIds.Remove(npcName);
                     return;
                 }
 
-                if (!todo.IsCompleted)
-                {
-                    todoManager.ToggleComplete(todoId);
+                if (todo.SetCompleted(todoId, true))
                     Plugin.Log?.LogInfo($"[TodoIntegration] Completed birthday todo for {npcName} (direct path)");
-                }
                 else
-                {
                     Plugin.Log?.LogInfo($"[TodoIntegration] Todo for {npcName} already completed");
-                }
             }
             catch (Exception ex)
             {
@@ -82,8 +72,8 @@ namespace BirthdayReminder.Integration
         {
             try
             {
-                var todoManager = SunhavenTodo.Plugin.GetTodoManager();
-                if (todoManager == null)
+                var todo = TodoSoftClient.TryGetManager(Plugin.Log);
+                if (todo == null)
                 {
                     Plugin.Log?.LogDebug("[TodoIntegration] OnBirthdaysUpdated: TodoManager is null");
                     return;
@@ -94,7 +84,7 @@ namespace BirthdayReminder.Integration
                 // If no birthdays today, clean up any existing birthday todos
                 if (todaysBirthdays == null || todaysBirthdays.Count == 0)
                 {
-                    CleanupBirthdayTodos(todoManager);
+                    CleanupBirthdayTodos(todo);
                     return;
                 }
 
@@ -107,7 +97,7 @@ namespace BirthdayReminder.Integration
                 var toRemove = _birthdayTodoIds.Keys.Where(k => !currentNPCs.Contains(k)).ToList();
                 foreach (var npc in toRemove)
                 {
-                    RemoveBirthdayTodo(todoManager, npc);
+                    RemoveBirthdayTodo(todo, npc);
                 }
 
                 // Process each birthday
@@ -116,12 +106,12 @@ namespace BirthdayReminder.Integration
                     if (birthday.HasBeenGifted)
                     {
                         // Gift was given - complete the todo if it exists and isn't already completed
-                        CompleteBirthdayTodo(todoManager, birthday.NPCName);
+                        CompleteBirthdayTodo(todo, birthday.NPCName);
                     }
                     else
                     {
                         // No gift yet - ensure a todo exists
-                        EnsureBirthdayTodo(todoManager, birthday);
+                        EnsureBirthdayTodo(todo, birthday);
                     }
                 }
             }
@@ -131,7 +121,7 @@ namespace BirthdayReminder.Integration
             }
         }
 
-        private void EnsureBirthdayTodo(TodoManager todoManager, BirthdayDisplayInfo birthday)
+        private void EnsureBirthdayTodo(TodoManagerReflection todo, BirthdayDisplayInfo birthday)
         {
             string todoKey = GiftPatches.NormalizeNpcName(birthday.NPCName);
             if (string.IsNullOrEmpty(todoKey))
@@ -140,57 +130,29 @@ namespace BirthdayReminder.Integration
             // Don't create duplicate
             if (_birthdayTodoIds.ContainsKey(todoKey)) return;
 
-            string title = $"Give {birthday.NPCName} a birthday gift!";
             string description = !string.IsNullOrEmpty(birthday.GiftHint)
                 ? birthday.GiftHint
                 : "It's their birthday today!";
 
-            var todoItem = new TodoItem(title, description, TodoPriority.High, TodoCategory.Social);
-            todoManager.AddTodo(todoItem);
+            string todoId = todo.AddTodo(new TodoDraft
+            {
+                Title = $"Give {birthday.NPCName} a birthday gift!",
+                Description = description,
+                Priority = "High",
+                Category = "Social"
+            });
 
-            _birthdayTodoIds[todoKey] = todoItem.Id;
+            _birthdayTodoIds[todoKey] = todoId;
 
-            Plugin.Log?.LogInfo($"[TodoIntegration] Added birthday todo for {birthday.NPCName} (id: {todoItem.Id})");
+            Plugin.Log?.LogInfo($"[TodoIntegration] Added birthday todo for {birthday.NPCName} (id: {todoId})");
         }
 
-        private void CompleteBirthdayTodo(TodoManager todoManager, string npcName)
+        private void CompleteBirthdayTodo(TodoManagerReflection todo, string npcName)
         {
             if (!TryResolveTodoId(npcName, out var todoId)) return;
 
-            var todo = FindTodoById(todoManager, todoId);
-            if (todo != null && !todo.IsCompleted)
-            {
-                todoManager.ToggleComplete(todoId);
+            if (todo.SetCompleted(todoId, true))
                 Plugin.Log?.LogInfo($"[TodoIntegration] Completed birthday todo for {npcName} (event path)");
-            }
-        }
-
-        private static TodoItem FindTodoById(TodoManager todoManager, string todoId)
-        {
-            if (todoManager == null || string.IsNullOrEmpty(todoId))
-                return null;
-
-            // Prefer O(1) TodoManager.GetTodoById when available.
-            if (!_todoGetByIdLookedUp)
-            {
-                _todoGetByIdMethod = typeof(TodoManager).GetMethod("GetTodoById", BindingFlags.Public | BindingFlags.Instance);
-                _todoGetByIdLookedUp = true;
-            }
-
-            if (_todoGetByIdMethod != null)
-            {
-                try
-                {
-                    return _todoGetByIdMethod.Invoke(todoManager, new object[] { todoId }) as TodoItem;
-                }
-                catch (Exception ex)
-                {
-                    Plugin.Log?.LogDebug($"[TodoIntegration] GetTodoById reflection fallback used: {ex.Message}");
-                    // Fall back to linear scan if reflective call fails.
-                }
-            }
-
-            return todoManager.GetAllTodos().FirstOrDefault(t => t.Id == todoId);
         }
 
         private bool TryResolveTodoId(string npcName, out string todoId)
@@ -218,22 +180,22 @@ namespace BirthdayReminder.Integration
             return false;
         }
 
-        private void RemoveBirthdayTodo(TodoManager todoManager, string npcName)
+        private void RemoveBirthdayTodo(TodoManagerReflection todo, string npcName)
         {
             if (!TryResolveTodoId(npcName, out var todoId))
                 return;
 
-            todoManager.RemoveTodo(todoId);
+            todo.RemoveTodo(todoId);
             string normalized = GiftPatches.NormalizeNpcName(npcName);
             _birthdayTodoIds.Remove(normalized);
             _birthdayTodoIds.Remove(npcName);
         }
 
-        private void CleanupBirthdayTodos(TodoManager todoManager)
+        private void CleanupBirthdayTodos(TodoManagerReflection todo)
         {
             foreach (var kvp in _birthdayTodoIds.ToList())
             {
-                todoManager.RemoveTodo(kvp.Value);
+                todo.RemoveTodo(kvp.Value);
             }
             _birthdayTodoIds.Clear();
         }
@@ -247,9 +209,9 @@ namespace BirthdayReminder.Integration
         {
             try
             {
-                var todoManager = SunhavenTodo.Plugin.GetTodoManager();
-                if (todoManager != null && _birthdayTodoIds.Count > 0)
-                    CleanupBirthdayTodos(todoManager);
+                var todo = TodoSoftClient.TryGetManager(Plugin.Log);
+                if (todo != null && _birthdayTodoIds.Count > 0)
+                    CleanupBirthdayTodos(todo);
                 else
                     _birthdayTodoIds.Clear();
             }

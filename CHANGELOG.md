@@ -14,6 +14,10 @@ Notes for **players and release readers**. Per-mod blurbs and upstream metadata 
 - **Update checks:** One download of the version list per game launch, shared by every installed mod, instead of one request per mod. The list is read with a real JSON parser, and an installed or published version that can't be compared now reports a failed check instead of "up to date". Checks point at the renamed `SunhavenMods` repository.
 - **Haven's Almanac:** A relationship value that can't be read is now logged once instead of silently showing 0.
 
+**Senpai's Chest, A Squirrel's Birthday Reminder, Gifting Assistant, Crop Optimizer** — AZR-255
+- **Sun Haven Todo integration:** All four mods now talk to Sun Haven Todo through one shared client. If a Todo update changes something they rely on, each mod logs one clear warning and turns its Todo tasks off instead of failing silently.
+- **Senpai's Chest:** Museum donation tasks wait until your character's todo list has loaded. Before, a chest scan that ran first could mark an item as tracked without creating its task.
+
 **The Vault (4.2.1 → 4.2.2)** — AZR-438
 - **Fix:** Clicks on the vault window no longer pass through to the inventory. Item slots under the window no longer pick up or throw items.
 
