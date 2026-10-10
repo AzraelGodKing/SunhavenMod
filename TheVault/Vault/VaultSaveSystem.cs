@@ -181,6 +181,8 @@ namespace TheVault.Vault
             string json = VaultCryptography.Decrypt(encryptedData, playerName);
             if (string.IsNullOrEmpty(json))
                 return null;
+            if (VaultCryptography.LastDecryptNeedsUpgrade)
+                _needsReEncryption = true;
 
             var wrapper = JsonUtility.FromJson<VaultDataWrapper>(json);
             if (wrapper == null)
@@ -384,7 +386,6 @@ namespace TheVault.Vault
                 var wrapper = VaultDataWrapper.FromVaultData(data);
                 string json = JsonUtility.ToJson(wrapper, true);
 
-                // Encrypt the JSON data (shared CSVAULT2 writer — same salt/IV as legacy)
                 byte[] encryptedData = VaultCryptography.Encrypt(json, data.PlayerName);
 
                 if (!CharacterSaveStore.WriteAtomicBytes(

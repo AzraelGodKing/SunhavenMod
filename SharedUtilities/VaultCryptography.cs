@@ -9,9 +9,9 @@ using UnityEngine;
 namespace SunhavenMods.Shared
 {
     /// <summary>
-    /// CSVAULT2 AES crypto aligned with the **legacy** TheVault <c>VaultSaveSystem</c> (same salt, fixed IV, PBKDF2 count, Steam/player key rule).
-    /// This is **tamper-resistant local storage**, not confidentiality against a motivated user with file access. For future hardening, prefer AES-GCM, random nonces, per-save salt, and a stronger KDF.
-    /// V3 adds: player-name key when Steam key fails, legacy password variants, and accepting V3 JSON in legacy decrypt (not only <c>PlayerName</c>).
+    /// Vault file crypto. New saves are written as CSVAULT3 (<see cref="VaultCsvault3"/>: per-vault salt, random IV,
+    /// PBKDF2-SHA256, encrypt-then-MAC). CSVAULT2 and older legacy files stay readable and are upgraded on load.
+    /// This is **tamper-resistant local storage**, not confidentiality against a motivated user with file access.
     /// </summary>
     public static class VaultCryptography
     {
@@ -25,36 +25,21 @@ namespace SunhavenMods.Shared
         };
 
         private static string _cachedSteamId;
-        private static bool _steamLookupFinished;
 
         public static ManualLogSource LogSource { get; set; }
 
+        /// <summary>True when the last successful <see cref="Decrypt"/> read a pre-CSVAULT3 file that should be rewritten.</summary>
+        public static bool LastDecryptNeedsUpgrade { get; private set; }
+
         public static byte[] Encrypt(string plainText, string playerName)
         {
-            byte[] key = GenerateKey(playerName);
-            using (var aes = Aes.Create())
-            {
-                aes.Key = key;
-                aes.IV = Iv;
-                aes.Mode = CipherMode.CBC;
-                aes.Padding = PaddingMode.PKCS7;
-
-                using (var encryptor = aes.CreateEncryptor())
-                using (var ms = new MemoryStream())
-                {
-                    byte[] header = Encoding.UTF8.GetBytes("CSVAULT2");
-                    ms.Write(header, 0, header.Length);
-                    using (var cs = new CryptoStream(ms, encryptor, CryptoStreamMode.Write))
-                    using (var writer = new StreamWriter(cs, Encoding.UTF8))
-                        writer.Write(plainText);
-                    return ms.ToArray();
-                }
-            }
+            return VaultCsvault3.Encrypt(plainText, playerName);
         }
 
         /// <param name="alternateKeyName">Sanitized file stem when it differs from <paramref name="playerName"/>.</param>
         public static string Decrypt(byte[] cipherData, string playerName, string alternateKeyName = null)
         {
+            LastDecryptNeedsUpgrade = false;
             try
             {
                 if (cipherData == null || cipherData.Length < 8)
@@ -63,36 +48,23 @@ namespace SunhavenMods.Shared
                     return null;
                 }
 
+                if (VaultCsvault3.HasHeader(cipherData))
+                    return DecryptCsvault3(cipherData, playerName, alternateKeyName);
+
                 string header = Encoding.UTF8.GetString(cipherData, 0, 8);
                 if (header != "CSVAULT2")
                 {
                     LogSource?.LogInfo("[VaultCryptography] Unencrypted vault payload; will re-encrypt on save.");
+                    LastDecryptNeedsUpgrade = true;
                     return Encoding.UTF8.GetString(cipherData);
                 }
 
-                // 1–2) Same as legacy primary key, then player-portable if Steam is active (cross-session fix)
-                string steamId = GetSteamIdLegacyCached();
-                string json = DecryptWithPrimaryKey(cipherData, GenerateKey(playerName));
-                if (IsVaultJson(json)) return json;
-                if (!string.IsNullOrEmpty(steamId))
+                string json = DecryptCsvault2(cipherData, playerName, alternateKeyName);
+                if (json != null)
                 {
-                    json = DecryptWithPrimaryKey(cipherData, DeriveKeyPlayerPortable(playerName));
-                    if (IsVaultJson(json)) return json;
+                    LastDecryptNeedsUpgrade = true;
+                    return json;
                 }
-
-                // 3) Legacy TryLegacyDecryption password strings (header skipped; matches migration intent)
-                json = TryLegacyKeyStrings(cipherData, playerName);
-                if (IsVaultJson(json)) return json;
-
-                if (!string.IsNullOrEmpty(alternateKeyName) &&
-                    !string.Equals(alternateKeyName, playerName, StringComparison.OrdinalIgnoreCase))
-                {
-                    json = TryLegacyKeyStrings(cipherData, alternateKeyName);
-                    if (IsVaultJson(json)) return json;
-                }
-
-                json = TryLegacyKeyStrings(cipherData, "Player_" + playerName);
-                if (IsVaultJson(json)) return json;
 
                 LogSource?.LogError("[VaultCryptography] Decryption failed (legacy-compatible paths exhausted).");
                 return null;
@@ -102,6 +74,47 @@ namespace SunhavenMods.Shared
                 LogSource?.LogError($"[VaultCryptography] Decrypt error: {ex.Message}");
                 return null;
             }
+        }
+
+        private static string DecryptCsvault3(byte[] cipherData, string playerName, string alternateKeyName)
+        {
+            if (VaultCsvault3.TryDecrypt(cipherData, playerName, out string json))
+                return json;
+            if (!string.IsNullOrEmpty(alternateKeyName) &&
+                !string.Equals(alternateKeyName, playerName, StringComparison.OrdinalIgnoreCase) &&
+                VaultCsvault3.TryDecrypt(cipherData, alternateKeyName, out json))
+                return json;
+
+            LogSource?.LogError("[VaultCryptography] CSVAULT3 integrity check failed (file corrupted, edited, or written for another character).");
+            return null;
+        }
+
+        private static string DecryptCsvault2(byte[] cipherData, string playerName, string alternateKeyName)
+        {
+            // 1–2) Steam-keyed primary when Steam is up, then the player-portable key regardless of Steam state (AZR-242)
+            string steamId = GetSteamIdForLegacyKey();
+            string json;
+            if (!string.IsNullOrEmpty(steamId))
+            {
+                json = DecryptWithPrimaryKey(cipherData, GenerateLegacySteamKey(steamId));
+                if (IsVaultJson(json)) return json;
+            }
+            json = DecryptWithPrimaryKey(cipherData, DeriveKeyPlayerPortable(playerName));
+            if (IsVaultJson(json)) return json;
+
+            // 3) Legacy TryLegacyDecryption password strings (header skipped; matches migration intent)
+            json = TryLegacyKeyStrings(cipherData, playerName);
+            if (IsVaultJson(json)) return json;
+
+            if (!string.IsNullOrEmpty(alternateKeyName) &&
+                !string.Equals(alternateKeyName, playerName, StringComparison.OrdinalIgnoreCase))
+            {
+                json = TryLegacyKeyStrings(cipherData, alternateKeyName);
+                if (IsVaultJson(json)) return json;
+            }
+
+            json = TryLegacyKeyStrings(cipherData, "Player_" + playerName);
+            return IsVaultJson(json) ? json : null;
         }
 
         /// <summary>Public for persistence that still mirrors legacy load order.</summary>
@@ -192,25 +205,18 @@ namespace SunhavenMods.Shared
                 return deriveBytes.GetBytes(KeySize / 8);
         }
 
-        private static byte[] GenerateKey(string playerName)
+        private static byte[] GenerateLegacySteamKey(string steamId)
         {
-            string steamId = GetSteamIdLegacyCached();
-            string identifier = !string.IsNullOrEmpty(steamId) ? $"Steam_{steamId}" : $"Player_{playerName}";
-            string combined = $"{EncryptionSalt}_{identifier}_TheVaultPortable";
-            using (var deriveBytes = new Rfc2898DeriveBytes(
-                combined,
-                Encoding.UTF8.GetBytes(EncryptionSalt),
-                Iterations,
-                HashAlgorithmName.SHA1))
-                return deriveBytes.GetBytes(KeySize / 8);
+            return GenerateLegacyKey($"{EncryptionSalt}_Steam_{steamId}_TheVaultPortable");
         }
 
-        /// <summary>Same one-shot behavior as legacy VaultSaveSystem (first call locks result).</summary>
-        private static string GetSteamIdLegacyCached()
+        /// <summary>
+        /// Caches only a successful lookup. A miss is retried on the next call so a late-loading Steamworks
+        /// is still picked up instead of being latched as "no Steam" for the whole session (AZR-242).
+        /// </summary>
+        private static string GetSteamIdForLegacyKey()
         {
-            if (_steamLookupFinished) return _cachedSteamId;
-            _steamLookupFinished = true;
-            _cachedSteamId = null;
+            if (!string.IsNullOrEmpty(_cachedSteamId)) return _cachedSteamId;
             try
             {
                 Assembly steamAssembly = null;

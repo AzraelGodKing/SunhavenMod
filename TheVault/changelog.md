@@ -1,5 +1,10 @@
 # The Vault - Changelog
 
+## Version 4.3.0
+
+- **Save format (AZR-243):** New saves use CSVAULT3: a random per-vault salt, a fresh IV per write, PBKDF2-SHA256 with 100,000 iterations, and an HMAC-SHA256 integrity check verified before decrypting. A corrupted or edited file fails cleanly and falls back to the backup. CSVAULT2 and older files still load and are rewritten as CSVAULT3 on load.
+- **Fix (AZR-242):** CSVAULT3 keys use the character name only, so they no longer depend on Steamworks load timing. For older files, a failed Steam ID lookup is retried instead of latched for the session, and the player-portable key is always tried.
+
 ## Version 4.2.2
 
 - **Fix (AZR-438):** The vault window consumes mouse input. Inventory slots under the cursor no longer pick up or throw items while the window is open.

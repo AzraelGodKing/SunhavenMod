@@ -6,6 +6,7 @@ Internal engineering log: **CI**, **release automation**, **scripts**, **docs in
 
 ## 2026-10-10
 
+- **SharedUtilities `VaultCsvault3.cs` (AZR-243):** CSVAULT3 format kept free of Unity/BepInEx so `TheVault.Tests` links it directly. PBKDF2-HMAC-SHA256 is implemented in-file (tested against `Rfc2898DeriveBytes`) so it does not depend on Mono's SHA-256 PBKDF2 support. Derived keys are cached per character for the session, so only the first load or save pays the 100,000-iteration cost. `SharedCodeRevision` bumped to `2026.10.10`.
 - **Thunderstore duplicate is a skip:** The release gate was calling `thunderstore.io/c/sun-haven/api/v1/package/...`, which 404s, so an already-published version looked unpublished and the upload failed with "Package of the same namespace, name and version already exists". The gate now reads `api/experimental/package` `latest.version_number`. A 400 for that duplicate exits the mod successfully. An empty cached Thunderstore version is not reused.
 - **Nexus BBCode:** Removed the `[i](vX.Y.Z)[/i]` header from every `NexusMods-*-BBCode.txt`. `pre-push-build.ps1` no longer rewrites those files on a version bump.
 - **Gifting Assistant Nexus paste:** Added `GiftingAssistant/NexusMods-GiftingAssistant-BBCode.txt` (v1.1.1) and listed it in `maintainer-docs/NexusMods-BBCode-Index.txt`. The version sync script already updates `NexusMods-<ModFolder>-BBCode.txt` from the matrix, so this file is picked up on the next bump.
