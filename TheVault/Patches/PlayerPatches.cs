@@ -149,13 +149,6 @@ namespace TheVault.Patches
                 }
 
                 // FALLBACK: Use CurrentCharacter (may be stale on character switch)
-                // OLD CODE (kept for reference):
-                // var currentChar = GameSave.CurrentCharacter;
-                // if (currentChar != null && !string.IsNullOrEmpty(currentChar.characterName))
-                // {
-                //     return SanitizeFileName(currentChar.characterName);
-                // }
-
                 var currentChar = GameSave.CurrentCharacter;
                 if (currentChar != null && !string.IsNullOrEmpty(currentChar.characterName))
                 {
@@ -259,10 +252,6 @@ namespace TheVault.Patches
                 Plugin.Log?.LogError($"Error in SaveAndReset: {ex.Message}");
             }
         }
-
-        // Legacy compatibility methods
-        public static void ResetVaultLoaded() => ResetState();
-        public static void ForceVaultReload() => ResetState();
 
         /// <summary>
         /// External/manual vault load (e.g. integrations). Uses the same lock as <see cref="OnPlayerInitialized"/> to avoid races with sync/reload.

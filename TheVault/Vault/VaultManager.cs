@@ -79,27 +79,6 @@ namespace TheVault.Vault
         }
 
         /// <summary>
-        /// Get a currency definition by its game item ID
-        /// </summary>
-        public CurrencyDefinition GetCurrencyByGameItemId(int gameItemId)
-        {
-            foreach (var def in _currencyDefinitions.Values)
-            {
-                if (def.GameItemId == gameItemId)
-                    return def;
-            }
-            return null;
-        }
-
-        /// <summary>
-        /// Get all registered currency definitions
-        /// </summary>
-        public IEnumerable<CurrencyDefinition> GetAllCurrencies()
-        {
-            return _currencyDefinitions.Values;
-        }
-
-        /// <summary>
         /// Get currencies by category
         /// </summary>
         public IEnumerable<CurrencyDefinition> GetCurrenciesByCategory(CurrencyCategory category)
