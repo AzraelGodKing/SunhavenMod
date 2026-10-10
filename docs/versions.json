@@ -1,13 +1,13 @@
 ﻿{
   "com.azraelgodking.squirrelsbirthdayreminder": {
-    "version": "2.1.1",
+    "version": "2.1.2",
     "name": "A Squirrel's Birthday Reminder",
     "description": "Never miss an NPC birthday - get reminders and gift suggestions",
     "nexus": "https://www.nexusmods.com/sunhaven/mods/493",
     "nexus_file_group_id": "1311370",
     "thunderstore": "https://thunderstore.io/c/sun-haven/p/AzraelGodKing/SquirrelsBirthdayReminder/",
     "thunderstoreName": "SquirrelsBirthdayReminder",
-    "changelog": "Fix: overnight unhook before re-hook; birthday todo cleanup on character switch (no orphan/duplicate todos)."
+    "changelog": "Fix: stays hooked when Gifting Assistant is installed. Day-start listeners are appended instead of replaced."
   },
   "com.azraelgodking.havensbirthright": {
     "version": "3.1.2",
@@ -40,7 +40,7 @@
     "changelog": "Fix: overnight unhook before re-hook; refuse previous-character name fallback when lookup fails."
   },
   "com.azraelgodking.thevault": {
-    "version": "4.2.1",
+    "version": "4.2.2",
     "name": "The Vault",
     "description": "The Vault 3 — per-character vault, encrypted saves, HUD, auto-deposit, shop and inventory vault integration, Custom tab & mod API.",
     "vault_save_breaking": false,
@@ -49,7 +49,7 @@
     "nexus_file_group_id": "1305781",
     "thunderstore": "https://thunderstore.io/c/sun-haven/p/AzraelGodKing/TheVault/",
     "thunderstoreName": "TheVault",
-    "changelog": "Fix: vault window scale follows screen height on 1440p and ultrawide."
+    "changelog": "Fix: clicks on the vault window no longer pick up or throw inventory items underneath."
   },
   "com.azraelgodking.havendevtools": {
     "version": "2.1.1",
@@ -122,14 +122,14 @@
     "changelog": "Fix: respec rolls back Max Mana from refunded skill nodes."
   },
   "com.azraelgodking.giftingassistant": {
-    "version": "1.1.1",
+    "version": "1.1.2",
     "name": "Gifting Assistant",
     "description": "Initial release: per-character gift roster, loved/liked suggestions with icons, preferred gifts, heart bars, gifted-today tracking, priority sort, Ctrl+G UI, 16 languages. Optional Birthday Reminder, Sun Haven Todo, and Haven's Almanac.",
     "nexus": "https://www.nexusmods.com/sunhaven/mods/507",
     "nexus_file_group_id": "7597922",
     "thunderstore": "https://thunderstore.io/c/sun-haven/p/AzraelGodKing/GiftingAssistant/",
     "thunderstoreName": "GiftingAssistant",
-    "changelog": "Fix: overnight unhook before re-hook to prevent duplicate day resets."
+    "changelog": "Fix: player and gift hooks no longer skip Birthday Reminder when this mod throws."
   },
   "com.azraelgodking.havensmirror": {
     "version": "1.0.0",

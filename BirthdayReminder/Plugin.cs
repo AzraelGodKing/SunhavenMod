@@ -283,7 +283,6 @@ namespace BirthdayReminder
             catch (Exception ex)
             {
                 Log.LogWarning($"Failed to apply player init patch: {ex.Message}");
-                return;
             }
 
             try
@@ -685,7 +684,9 @@ namespace BirthdayReminder
             else
                 Log?.LogWarning($"[Lifecycle] Plugin OnDestroy outside expected teardown (scene: {sceneName})");
 
-            _harmony?.UnpatchSelf();
+            // Leave patches applied. UnpatchSelf here dropped player, gift, and day hooks when this
+            // component was destroyed during scene cleanup, so Birthday Reminder stayed dead until
+            // restart (AZR-437). Same rule as The Vault and Gifting Assistant.
         }
 
         private void OnApplicationQuit()
@@ -701,6 +702,7 @@ namespace BirthdayReminder
     {
         private static string _lastCharacterName;
 
+        [HarmonyWrapSafe]
         public static void OnPlayerInitialized(object __instance)
         {
             try
@@ -781,6 +783,7 @@ namespace BirthdayReminder
         /// <summary>
         /// Track when a gift is given (postfix on NPCAI.Gift)
         /// </summary>
+        [HarmonyWrapSafe]
         public static void OnGiftGiven(object __instance, object __0)
         {
             try

@@ -926,6 +926,9 @@ namespace TheVault
                 // Patch item pickup for auto-deposit
                 PatchItemPickup(playerType);
 
+                // Block inventory clicks that pass through the IMGUI vault window (AZR-438).
+                VaultPointerGuard.Apply(_harmony);
+
                 // Log results
                 var patchedMethods = _harmony.GetPatchedMethods();
                 int count = 0;
@@ -1568,6 +1571,6 @@ namespace TheVault
     {
         public const string PLUGIN_GUID = "com.azraelgodking.thevault";
         public const string PLUGIN_NAME = "The Vault";
-        public const string PLUGIN_VERSION = "4.2.1";
+        public const string PLUGIN_VERSION = "4.2.2";
     }
 }
