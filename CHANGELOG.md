@@ -18,6 +18,8 @@ Notes for **players and release readers**. Per-mod blurbs and upstream metadata 
 - **Sun Haven Todo integration:** All four mods now talk to Sun Haven Todo through one shared client. If a Todo update changes something they rely on, each mod logs one clear warning and turns its Todo tasks off instead of failing silently.
 - **Senpai's Chest:** Museum donation tasks wait until your character's todo list has loaded. Before, a chest scan that ran first could mark an item as tracked without creating its task.
 
+**Website / feedback** — AZR-251, AZR-252
+- **Fix:** The Mod Hub feedback page posted to a server that no longer exists. It now links to each mod's report form on [azraelsmods.com](https://www.azraelsmods.com/sun-haven/).
 **The Vault (4.2.1 → 4.2.2)** — AZR-438
 - **Fix:** Clicks on the vault window no longer pass through to the inventory. Item slots under the window no longer pick up or throw items.
 
