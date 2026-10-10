@@ -10,6 +10,7 @@ namespace GiftingAssistant.Patches
     /// </summary>
     public static class GiftPatch
     {
+        [HarmonyWrapSafe]
         public static void OnGiftGiven(object __instance, object __0)
         {
             try

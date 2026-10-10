@@ -199,6 +199,8 @@ namespace TheVault.UI
                 Plugin.Log?.LogWarning($"Could not block game input: {ex.Message}");
             }
 
+            VaultPointerGuard.Sync(_windowRect, true);
+            VaultPointerGuard.EnsureBlocker();
             Plugin.Log?.LogInfo("Vault UI opened");
 
             // Log icon cache status when opening
@@ -237,6 +239,7 @@ namespace TheVault.UI
                 Plugin.Log?.LogWarning($"Could not re-enable game input: {ex.Message}");
             }
 
+            VaultPointerGuard.Sync(default, false);
             Plugin.Log?.LogInfo("Vault UI closed");
         }
 
@@ -261,6 +264,7 @@ namespace TheVault.UI
             {
                 Hide();
             }
+            VaultPointerGuard.DestroyBlocker();
             DisposeGeneratedTextures();
         }
 
@@ -278,6 +282,9 @@ namespace TheVault.UI
 
         private void Update()
         {
+            if (_isVisible)
+                VaultPointerGuard.EnsureBlocker();
+
             if (!string.IsNullOrEmpty(_vaultStatusMessage) && Time.unscaledTime > _vaultStatusUntil)
                 _vaultStatusMessage = null;
 
@@ -722,6 +729,8 @@ namespace TheVault.UI
                 "",
                 _windowStyle
             );
+
+            VaultPointerGuard.Sync(_windowRect, true);
         }
 
         private void DrawWindow(int windowId)
