@@ -330,6 +330,7 @@ jobs:
           inputs.publish_thunderstore == 'true' &&
           inputs.test_discord != 'true' &&
           steps.version_check.outputs.thunderstore_unchanged != 'true'
+        continue-on-error: true
         uses: GreenTF/upload-thunderstore-package@v4.3
         with:
           token: ${{ secrets.THUNDERSTORE_TOKEN }}
@@ -343,6 +344,14 @@ jobs:
             ${{ env.THUNDERSTORE_CATEGORIES }}
           deps: ${{ env.THUNDERSTORE_DEPS }}
           file: ${{ steps.package_step.outputs.zip_path }}
+
+      - name: Thunderstore already published
+        if: steps.publish_thunderstore_step.outcome == 'failure'
+        run: |
+          python3 scripts/version/thunderstore_duplicate_ok.py \
+            --namespace "${{ env.THUNDERSTORE_NAMESPACE }}" \
+            --name "${{ steps.config.outputs.thunderstore_name }}" \
+            --version "${{ steps.config.outputs.version }}"
 
       - name: Nexus — resolve and verify zip
         id: nexus_preflight

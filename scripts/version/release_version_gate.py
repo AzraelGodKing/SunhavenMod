@@ -136,18 +136,29 @@ def github_latest_and_tag(
 
 
 def thunderstore_latest(community: str, namespace: str, name: str) -> str:
-    if not community or not namespace or not name:
+    """Latest version_number, or none when the package does not exist.
+
+    The community v1 URL (.../c/<community>/api/v1/package/<ns>/<name>/) is 404
+    for these packages, which used to look like "unpublished" and made the
+    upload fail with "package already exists". The experimental package
+    endpoint returns latest.version_number. `community` is unused; callers
+    still pass it.
+    """
+    del community
+    if not namespace or not name:
         return UNFETCHED
     status, body = http_json(
-        f"https://thunderstore.io/c/{community}/api/v1/package/{namespace}/{name}/",
+        f"https://thunderstore.io/api/experimental/package/{namespace}/{name}/",
         {"Accept": "application/json"},
     )
+    if status == 404:
+        return NONE
     if status != 200 or not isinstance(body, dict):
         return UNFETCHED
-    versions = body.get("versions") or []
-    if not versions or not isinstance(versions[0], dict):
+    latest = body.get("latest")
+    if not isinstance(latest, dict):
         return NONE
-    return display_ver(str(versions[0].get("version_number") or ""))
+    return display_ver(str(latest.get("version_number") or ""))
 
 
 def nexus_page_version(mod_id: str, api_key: str) -> str:
@@ -242,6 +253,14 @@ def evaluate(
 ) -> dict[str, str]:
     cache_used = False
     cached = load_cache(cache_file, cache_ttl) if cache_file else None
+    # An empty Thunderstore version is a failed lookup, not "unpublished".
+    # Reuse of that cache made a second run upload a package that already existed.
+    if (
+        cached is not None
+        and publish_thunderstore
+        and not normalize_version(cached.get("thunderstore_version") or "")
+    ):
+        cached = None
     if cached is not None:
         cache_used = True
         gh_v = cached["github_version"]

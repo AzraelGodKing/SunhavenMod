@@ -6,6 +6,7 @@ Internal engineering log: **CI**, **release automation**, **scripts**, **docs in
 
 ## 2026-10-10
 
+- **Thunderstore duplicate is a skip:** The release gate was calling `thunderstore.io/c/sun-haven/api/v1/package/...`, which 404s, so an already-published version looked unpublished and the upload failed with "Package of the same namespace, name and version already exists". The gate now reads `api/experimental/package` `latest.version_number`. A 400 for that duplicate exits the mod successfully. An empty cached Thunderstore version is not reused.
 - **Nexus BBCode:** Removed the `[i](vX.Y.Z)[/i]` header from every `NexusMods-*-BBCode.txt`. `pre-push-build.ps1` no longer rewrites those files on a version bump.
 - **Gifting Assistant Nexus paste:** Added `GiftingAssistant/NexusMods-GiftingAssistant-BBCode.txt` (v1.1.1) and listed it in `maintainer-docs/NexusMods-BBCode-Index.txt`. The version sync script already updates `NexusMods-<ModFolder>-BBCode.txt` from the matrix, so this file is picked up on the next bump.
 - **Public links:** Replaced `azraelgodking.github.io/SunhavenMod` documentation and Thunderstore `website_url` links with [azraelsmods.com/sun-haven](https://www.azraelsmods.com/sun-haven/) mod pages. Every mod's Thunderstore `website_url`, Thunderstore README, and Nexus BBCode now include that mod page so the store fields can be pasted as-is. In-game update checks now read `docs/versions.json` from the raw `main` branch. Feedback CORS allowlist origin is `https://www.azraelsmods.com`.
