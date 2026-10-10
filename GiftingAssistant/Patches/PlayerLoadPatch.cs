@@ -13,6 +13,7 @@ namespace GiftingAssistant.Patches
     {
         private static string _loadedCharacterName;
 
+        [HarmonyWrapSafe]
         public static void OnPlayerInitialized(object __instance)
         {
             try

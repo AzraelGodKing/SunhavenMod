@@ -63,7 +63,7 @@ The vault UI includes a **Custom** tab for currencies registered at runtime. Fro
 
 ## Version
 
-**Released version is `4.2.1`** (BepInEx, Thunderstore, Nexus). Source of truth: **`docs/versions.json`** / **`TheVault.csproj`**.
+**Released version is `4.2.2`** (BepInEx, Thunderstore, Nexus). Source of truth: **`docs/versions.json`** / **`TheVault.csproj`**.
 
 **Maintainer note:** Same as the [repo root README](../../README.md): do not bump **any** mod’s published version unless the owner explicitly asks for a release.
 

@@ -6,6 +6,15 @@ Notes for **players and release readers**. Per-mod blurbs and upstream metadata 
 
 ## Unreleased
 
+**The Vault (4.2.1 → 4.2.2)** — AZR-438
+- **Fix:** Clicks on the vault window no longer pass through to the inventory. Item slots under the window no longer pick up or throw items.
+
+**A Squirrel's Birthday Reminder (2.1.1 → 2.1.2)** — AZR-437
+- **Fix:** Scene cleanup no longer unpatches this mod, so it keeps running when Gifting Assistant is installed. Shared day-start hooks append to the existing listener list instead of replacing it. A failed player-init patch no longer skips gift tracking.
+
+**Gifting Assistant (1.1.1 → 1.1.2)** — AZR-437
+- **Fix:** Player-load and gift patches are isolated so an exception in this mod cannot skip Birthday Reminder's hooks on the same game methods.
+
 ## 2026-10-10
 
 **Haven's Respec (2.1.2 → 2.1.3)** — AZR-356

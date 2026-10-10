@@ -1,5 +1,9 @@
 # The Vault - Changelog
 
+## Version 4.2.2
+
+- **Fix (AZR-438):** The vault window consumes mouse input. Inventory slots under the cursor no longer pick up or throw items while the window is open.
+
 ## Version 4.2.1
 
 - **Fix (AZR-359):** Window scale follows `Screen.height/1080` when `ScaleWithResolution` is on, so 1440p and ultrawide stay readable. `AutoHighResLayout` raises the default scale once on those displays.
