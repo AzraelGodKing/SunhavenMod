@@ -40,7 +40,7 @@ Requires `ADMIN_PUSH_TOKEN` (or a branch policy that allows `GITHUB_TOKEN` pushe
 
 ## Why version must come before the release build
 
-- The **per-channel release gate** compares `docs/versions.json` to GitHub tags, Thunderstore, and Nexus (page + files API). Each channel is skipped independently when our version is not newer; same-version Nexus is a soft skip (job succeeds) so other mods in the matrix keep releasing. Shipping without bumping skips every requested channel.
+- The **per-channel release gate** compares `docs/versions.json` to GitHub tags, Thunderstore, and Nexus (page + files API). Thunderstore is read from `https://thunderstore.io/api/experimental/package/<namespace>/<name>/` (`latest.version_number`). Each channel is skipped independently when our version is not newer. A Thunderstore upload that returns "package already exists" is the same skip: the job succeeds so the rest of the matrix keeps releasing. Same-version Nexus is a soft skip for the same reason. Shipping without bumping skips every requested channel.
 - The **DLL** must be built from sources that already contain the new `PLUGIN_VERSION`, or the artifact version and the published metadata will not match.
 
 ## Local checks
