@@ -1,6 +1,6 @@
 ﻿# Sun Haven Mods
 
-BepInEx plugins for [Sun Haven](https://store.steampowered.com/app/1432860/Sun_Haven/) — vault, QoL, integrations, and docs. **Published versions and download links** live in [`docs/versions.json`](docs/versions.json) (also drives the [mod hub](https://azraelgodking.github.io/SunhavenMod/)). Each mod folder also has a `mod.json` for the public mod website.
+BepInEx plugins for [Sun Haven](https://store.steampowered.com/app/1432860/Sun_Haven/) — vault, QoL, integrations, and docs. **Published versions and download links** live in [`docs/versions.json`](docs/versions.json) (also drives the [mod hub](https://www.azraelsmods.com/sun-haven/)). Each mod folder also has a `mod.json` for the public mod website.
 
 ## Mods (versions match `docs/versions.json`)
 
@@ -49,7 +49,7 @@ Multi-mod solution (subset of mods): [`HavensBirthright/HavensBirthright.sln`](H
 | [`SharedUtilities/`](SharedUtilities/) | Shared source linked into mods (VersionChecker, IconCache, etc.) |
 | [`TheVault.Abstractions/`](TheVault.Abstractions/) | Compile-time API surface for soft-dependent mods |
 | [`scripts/`](scripts/) | Maintainer tooling: mod matrix, version sync, stats, build checks, localization (see [`scripts/README.md`](scripts/README.md)) |
-| [`docs/`](docs/) | GitHub Pages site (public), `versions.json`, mod HTML guides |
+| [`docs/`](docs/) | `versions.json`, mod guides (not a hosted site) |
 | [`maintainer-docs/`](maintainer-docs/) | Internal engineering docs (not published) — release process, compatibility contract, lifecycle/save policies |
 | [`.github/workflows/`](.github/workflows/) | CI, release, stats, site mirror |
 
@@ -64,6 +64,6 @@ The `builds/` directory is **ephemeral** (CI/local staging); do not commit it �
 
 ## Links
 
-- [Documentation hub](https://azraelgodking.github.io/SunhavenMod/)
+- [Site](https://www.azraelsmods.com/sun-haven/)
 - [Version & release process](maintainer-docs/VERSION_AND_RELEASE.md)
 - [Discord](https://discord.gg/Vwh2y7qMXv)

@@ -1,4 +1,4 @@
-[b][size=5]Haven's Mirror[/size][/b] [i](v1.0.0)[/i]
+[b][size=5]Haven's Mirror[/size][/b]
 
 Drop custom PNG bust portraits into a gallery folder and see your farmer in dialogue. Optional forced look for NPC busts and seasonal outfits.
 
@@ -46,6 +46,6 @@ Drop custom PNG bust portraits into a gallery folder and see your farmer in dial
 [list]
 [*][url=https://www.nexusmods.com/sunhaven/mods/538]Nexus Mods[/url]
 [*][url=https://thunderstore.io/c/sun-haven/p/AzraelGodKing/HavensMirror/]Thunderstore[/url]
-[*][url=https://azraelgodking.github.io/SunhavenMod/HavensMirror/HavensMirror.html]Documentation[/url]
+[*][url=https://www.azraelsmods.com/sun-haven/havens-mirror/]Documentation[/url]
 [*][url=https://discord.gg/Vwh2y7qMXv]Discord - bugs and discussion[/url]
 [/list]

@@ -1,8 +1,10 @@
 import { createApp, nextTick } from "https://esm.sh/vue@3.5.13/dist/vue.esm-browser.prod.js";
 import { animate, stagger } from "https://esm.sh/motion@12.23.24";
 
+const STATS_LIVE_URL =
+  "https://raw.githubusercontent.com/AzraelGodKing/SunhavenMod/stats/live.json";
 const STATS_CACHE_URL =
-  "https://azraelgodking.github.io/SunhavenMod/data/stats-cache.json";
+  "https://raw.githubusercontent.com/AzraelGodKing/SunhavenMod/main/docs/data/stats-cache.json";
 const MOD_MATRIX_URL =
   "https://raw.githubusercontent.com/AzraelGodKing/SunhavenMod/main/scripts/matrix/mod-matrix.json";
 const VERSIONS_URL =
@@ -396,9 +398,26 @@ createApp({
       return `https://thunderstore.io/c/sun-haven/p/AzraelGodKing/${this.mod.thunderstoreName}/`;
     },
     docsUrl() {
-      const pagePath = this.mod?.docsPagePath;
-      if (!pagePath) return "https://azraelgodking.github.io/SunhavenMod/";
-      return `https://azraelgodking.github.io/SunhavenMod/${pagePath}`;
+      const slugByPath = {
+        "BirthdayReminder/BirthdayReminder.html": "birthday-reminder",
+        "CropOptimizer/CropOptimizer.html": "crop-optimizer",
+        "FasterRaces/FasterRaces.html": "faster-races",
+        "GiftingAssistant/GiftingAssistant.html": "gifting-assistant",
+        "HavensAlmanac/HavensAlmanac.html": "havens-almanac",
+        "RacialBonuses/RacialBonuses.html": "havens-birthright",
+        "HavensMirror/HavensMirror.html": "havens-mirror",
+        "HavensRespec/HavensRespec.html": "havens-respec",
+        "HavenDevTools/HavenDevTools.html": "haven-dev-tools",
+        "SenpaisChest/SenpaisChest.html": "senpais-chest",
+        "Todo/todo.html": "sunhaven-todo",
+        "SMUT/SMUT.html": "smut",
+        "TheVault/TheVault.html": "the-vault",
+        "TrinketFortune/TrinketFortune.html": "trinket-fortune",
+      };
+      const slug = slugByPath[this.mod?.docsPagePath];
+      return slug
+        ? `https://www.azraelsmods.com/sun-haven/${slug}/`
+        : "https://www.azraelsmods.com/sun-haven/";
     },
     fallbackNexusSearchUrl() {
       const q = encodeURIComponent(this.mod?.indexDataName || this.mod?.modKey || "Sunhaven mod");
@@ -451,7 +470,9 @@ createApp({
     try {
       const [matrixRes, statsRes, versionsRes] = await Promise.all([
         fetch(MOD_MATRIX_URL, { cache: "no-cache" }),
-        fetch(STATS_CACHE_URL, { cache: "no-cache" }),
+        fetch(STATS_LIVE_URL, { cache: "no-store" }).then((res) =>
+          res.ok ? res : fetch(STATS_CACHE_URL, { cache: "no-store" })
+        ),
         fetch(VERSIONS_URL, { cache: "no-cache" }),
       ]);
       if (!matrixRes.ok) throw new Error(`mod-matrix: HTTP ${matrixRes.status}`);

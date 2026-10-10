@@ -87,7 +87,7 @@ All stats and metadata are fetched client-side from GitHub-hosted files. These a
 | URL | Purpose | Used By |
 |-----|---------|---------|
 | `https://raw.githubusercontent.com/AzraelGodKing/SunhavenMod/main/scripts/matrix/mod-matrix.json` | Canonical list of all mods with keys, names, Thunderstore slugs, docs paths | `app.js`, `mod-page.js` |
-| `https://azraelgodking.github.io/SunhavenMod/data/stats-cache.json` | Download stats (Thunderstore + Nexus totals, unique counts, combined totals, site aggregates) | `app.js`, `mod-page.js` |
+| `https://raw.githubusercontent.com/AzraelGodKing/SunhavenMod/stats/live.json` (fallback `main/docs/data/stats-cache.json`) | Download stats | `app.js`, `mod-page.js` |
 | `https://raw.githubusercontent.com/AzraelGodKing/SunhavenMod/main/docs/versions.json` | Version numbers and Nexus URLs per mod | `mod-page.js` |
 
 ### Important: `STATS_ID_BY_MOD_KEY`
@@ -226,7 +226,7 @@ Non-secret IDs ship as `wrangler.toml` `[vars]` defaults. `LINEAR_API_TOKEN` mus
 - **Input sanitization**: Control characters (`\u0000`–`\u001F`) are stripped from feedback text.
 - **Rate limiting**: Per-IP sliding window with configurable max and duration.
 - **Safe logging**: The feedback function logs structured JSON but never includes the Linear token or raw user input.
-- **CORS**: Allowlist for `https://azraelgodking.github.io` (GitHub Pages hub), `http(s)://localhost:*` and `http(s)://127.0.0.1:*` (local docs hub), plus any origins in `FEEDBACK_CORS_ORIGINS`. `OPTIONS` preflight is handled. The hub form at `docs/feedback.html` calls this Worker cross-origin.
+- **CORS**: Allowlist for `https://www.azraelsmods.com`, `http(s)://localhost:*` and `http(s)://127.0.0.1:*`, plus any origins in `FEEDBACK_CORS_ORIGINS`. `OPTIONS` preflight is handled.
 
 ## Accessibility Conventions
 

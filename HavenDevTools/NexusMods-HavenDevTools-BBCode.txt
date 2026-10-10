@@ -1,4 +1,4 @@
-[b][size=5]Haven Dev Tools[/size][/b] [i](v2.1.1)[/i]
+[b][size=5]Haven Dev Tools[/size][/b]
 
 Developer utilities for mod debugging and game state inspection in Sun Haven. [b]Not intended for typical players[/b]; may impact performance.
 
@@ -50,6 +50,6 @@ Developer tool — may affect performance. Not recommended for normal gameplay.
 
 [size=4][b]Links[/b][/size]
 [list]
-[*][url=https://azraelgodking.github.io/SunhavenMod/HavenDevTools/HavenDevTools.html]Documentation[/url]
+[*][url=https://www.azraelsmods.com/sun-haven/haven-dev-tools/]Documentation[/url]
 [*][url=https://discord.gg/Vwh2y7qMXv]Discord - bugs & discussion[/url]
 [/list]

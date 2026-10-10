@@ -1,38 +1,30 @@
 # =============================================================================
-# Release & Publish — SunhavenMod
-# =============================================================================
-# - PR: build all mods on self-hosted runner (compile gate only).
-# - workflow_dispatch: version (optional bump) → build → package → optional publish.
+# Release & Publish — Sun Haven mods (GitHub Releases + Thunderstore + Nexus)
+# Pattern from RimWorld Release & Publish: dispatch → matrix → build → zip →
+# optional GitHub tag Name-vVERSION → optional store upload.
 #
-# maintainer-docs/VERSION_AND_RELEASE.md — version source of truth; setup runs verify script.
-# Nexus: v3 upload API is evaluation-only; we retry with backoff and require the
-# final attempt to succeed when publish_nexus=true (no silent green on failure).
-#
-# `builds/` in this workflow = ephemeral path on the GitHub runner only: the build
-# job copies `bin/Release/...` outputs into `builds/<ModDir>/`, upload-artifact
-# stores them, the release job downloads back into the same path, then packaging
-# reads DLLs from there. Nothing is read from a committed `builds/` tree (.gitignore).
-# See builds/README.md.
+# Version comes from docs/versions.json (not About.xml). Optional bump_version
+# writes that file, syncs plugin/manifest strings, and pushes before the build.
+# Compile uses the self-hosted runner (BepInEx + Sun Haven Managed).
+# PR compile gate is Build mods, not this workflow.
 # =============================================================================
-
 name: Release & Publish
 
 on:
-  pull_request:
   workflow_dispatch:
     inputs:
       dry_run:
-        description: 'Dry run (build + package + artifact only; no external publish)'
+        description: "Dry run (build + package + artifact only; no external publish)"
         required: true
         type: boolean
         default: false
       build_only:
-        description: 'Build only (DLL artifacts; skip package/release/publish job)'
+        description: "Build only (DLL artifacts; skip package/release/publish job)"
         required: false
         type: boolean
         default: false
       bump_version:
-        description: 'Bump semver in versions.json before build (none = use branch as-is)'
+        description: "Bump semver in versions.json before build (none = use branch as-is)"
         required: false
         type: choice
         options:
@@ -42,12 +34,12 @@ on:
           - major
         default: none
       release_changelog:
-        description: 'Optional changelog written to versions.json before bump (mod or all)'
+        description: "Optional changelog written to versions.json before bump (mod or all)"
         required: false
         type: string
-        default: ''
+        default: ""
       mod:
-        description: 'Which mod to release'
+        description: "Which mod to release"
         required: true
         type: choice
         options:
@@ -67,44 +59,43 @@ on:
           - giftingassistant
           - havensmirror
       publish_thunderstore:
-        description: 'Publish to Thunderstore?'
+        description: "Publish to Thunderstore?"
         required: true
         type: boolean
         default: false
       publish_nexus:
-        description: 'Upload to Nexus Mods?'
+        description: "Upload the zip to Nexus Mods?"
         required: false
         type: boolean
         default: false
       create_github_release:
-        description: 'Create GitHub Release?'
+        description: "Create a versioned GitHub Release?"
         required: true
         type: boolean
         default: false
       release_anyway:
-        description: 'Ignore upstream version gate and continue package/publish'
+        description: "Ignore GitHub / Thunderstore / Nexus version compare and publish anyway"
         required: false
         type: boolean
         default: false
       test_discord:
-        description: 'Test Discord notification only'
+        description: "Test Discord notification only"
         required: false
         type: boolean
         default: false
       publish_discord_only:
-        description: 'Discord only (no package/publish from this job)'
+        description: "Discord only (no package/publish from this job)"
         required: false
         type: boolean
         default: false
       ignore_discord_notify:
-        description: 'Skip all Discord steps for this workflow_dispatch run'
+        description: "Skip all Discord steps for this run"
         required: false
         type: boolean
         default: false
 
-# One dispatch run per branch/ref per mod choice (avoid racing Thunderstore/GitHub Release).
 concurrency:
-  group: ${{ github.workflow }}-${{ github.ref }}-${{ github.event_name == 'workflow_dispatch' && format('mod-{0}', github.event.inputs.mod) || format('pr-{0}', github.event.pull_request.number || 'na') }}
+  group: ${{ github.workflow }}-${{ github.ref }}-mod-${{ github.event.inputs.mod }}
   cancel-in-progress: false
 
 env:
@@ -113,61 +104,14 @@ env:
   THUNDERSTORE_CATEGORIES: "mods"
   THUNDERSTORE_DEPS: "BepInEx-BepInExPack@5.4.2100"
 
+permissions:
+  contents: write
+
 jobs:
-  validate-localization:
-    if: github.event_name == 'pull_request'
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
-
-      - name: Validate localization strings
-        shell: pwsh
-        run: ./scripts/localization/validate-localization.ps1
-
-  # ---------------------------------------------------------------------------
-  # Unit tests — Unity-free test projects on ubuntu (AZR-247)
-  # ---------------------------------------------------------------------------
-  test:
-    if: github.event_name == 'pull_request'
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
-
-      - name: Setup .NET
-        uses: actions/setup-dotnet@v4
-        with:
-          dotnet-version: "8.0.x"
-
-      - name: Run TheVault.Tests
-        run: dotnet test TheVault/Tests/TheVault.Tests.csproj -c Release --nologo --logger "trx;LogFileName=vault.trx"
-
-      - name: Run SenpaisChest.Tests
-        run: dotnet test SenpaisChest/Tests/SenpaisChest.Tests.csproj -c Release --nologo --logger "trx;LogFileName=chest.trx"
-
-      - name: Run SunhavenTodo.Tests
-        run: dotnet test SunhavenTodo/Tests/SunhavenTodo.Tests.csproj -c Release --nologo --logger "trx;LogFileName=todo.trx"
-
-      - name: Upload test results
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: test-results
-          path: "**/TestResults/*.trx"
-
-  # ---------------------------------------------------------------------------
-  # Version — optional bump + sync before build (dispatch only)
-  # Order: Version → setup/verify → build → release
-  # ---------------------------------------------------------------------------
   version:
     name: Version bump & sync
-    if: >-
-      github.event_name == 'workflow_dispatch' &&
-      github.event.inputs.build_only != 'true'
+    if: github.event.inputs.build_only != 'true'
     runs-on: ubuntu-latest
-    permissions:
-      contents: write
     outputs:
       ref: ${{ steps.meta.outputs.ref }}
     steps:
@@ -178,9 +122,7 @@ jobs:
           token: ${{ secrets.ADMIN_PUSH_TOKEN || github.token }}
 
       - name: Apply release changelog text
-        if: >-
-          github.event.inputs.bump_version != 'none' &&
-          github.event.inputs.release_changelog != ''
+        if: github.event.inputs.bump_version != 'none' && github.event.inputs.release_changelog != ''
         shell: bash
         env:
           CHANGELOG: ${{ github.event.inputs.release_changelog }}
@@ -214,7 +156,6 @@ jobs:
       - name: Commit and push version bump
         if: github.event.inputs.bump_version != 'none'
         env:
-          MOD_INPUT: ${{ github.event.inputs.mod }}
           BUMP: ${{ github.event.inputs.bump_version }}
         run: |
           set -euo pipefail
@@ -232,31 +173,52 @@ jobs:
         id: meta
         run: echo "ref=$(git rev-parse HEAD)" >> "$GITHUB_OUTPUT"
 
-  # ---------------------------------------------------------------------------
-  # Setup — matrix + version consistency (Python) — shared with Test workflow
-  # ---------------------------------------------------------------------------
   setup:
+    name: Mod matrix
     needs: version
     if: always() && (needs.version.result == 'success' || needs.version.result == 'skipped')
-    uses: ./.github/workflows/reusable-mod-matrix-setup.yml
-    with:
-      event_name: ${{ github.event_name }}
-      test_discord: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.test_discord == 'true' || false }}
-      mod: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.mod || 'all' }}
-      pull_request_all_mods: ${{ github.event_name == 'pull_request' }}
-      ref: ${{ needs.version.outputs.ref || github.sha }}
+    runs-on: ubuntu-latest
+    outputs:
+      matrix: ${{ steps.set-matrix.outputs.matrix }}
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ needs.version.outputs.ref || github.sha }}
 
-  # ---------------------------------------------------------------------------
-  # Build — self-hosted .NET compile + DLL artifacts
-  # ---------------------------------------------------------------------------
+      - name: Setup Node.js (mod-matrix doc sync check)
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      - name: docs/mod-matrix.json must match scripts/matrix/mod-matrix.json
+        run: |
+          node scripts/matrix/sync-docs-mod-matrix.js
+          git diff --exit-code docs/mod-matrix.json
+
+      - name: Verify version consistency
+        run: python3 scripts/version/verify-version-consistency.py
+
+      - name: Set mod matrix
+        id: set-matrix
+        shell: bash
+        env:
+          TEST_DISCORD: ${{ github.event.inputs.test_discord }}
+          MOD_INPUT: ${{ github.event.inputs.mod }}
+        run: |
+          set -euo pipefail
+          if [ "$TEST_DISCORD" == "true" ]; then
+            echo 'matrix=["test_discord"]' >> "$GITHUB_OUTPUT"
+          elif [ "$MOD_INPUT" == "all" ]; then
+            echo "matrix=$(jq -c '[.[].modKey]' scripts/matrix/mod-matrix.json)" >> "$GITHUB_OUTPUT"
+          else
+            echo "matrix=[\"$MOD_INPUT\"]" >> "$GITHUB_OUTPUT"
+          fi
+
   build:
-    needs: [setup, validate-localization, version, test]
-    if: >-
-      always() &&
-      needs.setup.result == 'success' &&
-      (needs.validate-localization.result == 'success' || needs.validate-localization.result == 'skipped') &&
-      (needs.version.result == 'success' || needs.version.result == 'skipped') &&
-      (needs.test.result == 'success' || needs.test.result == 'skipped')
+    name: Build ${{ matrix.mod }}
+    needs: [setup, version]
+    if: always() && needs.setup.result == 'success' && (needs.version.result == 'success' || needs.version.result == 'skipped')
     runs-on: [self-hosted, Linux, X64, sunhaven]
     strategy:
       fail-fast: false
@@ -294,10 +256,11 @@ jobs:
         id: build_config
         shell: bash
         run: |
+          set -euo pipefail
           MOD_KEY="${{ matrix.mod }}"
           MOD_JSON="$(jq -c --arg key "$MOD_KEY" '.[] | select(.modKey == $key)' scripts/matrix/mod-matrix.json)"
           if [ -z "$MOD_JSON" ]; then
-            echo "❌ Unknown mod: $MOD_KEY"
+            echo "::error::Unknown mod: $MOD_KEY"
             exit 1
           fi
           echo "mod_dir=$(echo "$MOD_JSON" | jq -r '.modDir')" >> "$GITHUB_OUTPUT"
@@ -318,7 +281,7 @@ jobs:
             -p:ManagedPath="$MANAGED_PATH" \
             -p:SunhavenCopyToBepInExPlugins=false
 
-      # Stage DLLs under builds/<ModDir>/ for upload-artifact (runner-local; not from git).
+      # builds/<ModDir>/ is runner-local staging for upload-artifact, not a committed tree.
       - name: Collect build outputs
         if: matrix.mod != 'test_discord'
         shell: bash
@@ -329,41 +292,28 @@ jobs:
           SRC_DLL="$MOD_DIR/bin/Release/net48/$DLL_NAME.dll"
           DEST_DIR="builds/$MOD_DIR"
           mkdir -p "$DEST_DIR"
-          test -f "$SRC_DLL" || { echo "❌ Missing $SRC_DLL"; exit 1; }
+          test -f "$SRC_DLL" || { echo "::error::Missing $SRC_DLL"; exit 1; }
           cp "$SRC_DLL" "$DEST_DIR/"
           if [ "${{ matrix.mod }}" = "thevault" ]; then
             ABS_SRC="TheVault.Abstractions/bin/Release/netstandard2.0/TheVault.Abstractions.dll"
-            test -f "$ABS_SRC" || { echo "❌ Missing $ABS_SRC"; exit 1; }
+            test -f "$ABS_SRC" || { echo "::error::Missing $ABS_SRC"; exit 1; }
             cp "$ABS_SRC" "$DEST_DIR/"
           fi
 
       - name: Upload built DLL artifact
         if: matrix.mod != 'test_discord'
-        uses: actions/upload-artifact@v6
+        uses: actions/upload-artifact@v4
         with:
           name: built-${{ matrix.mod }}
           path: builds/${{ steps.build_config.outputs.mod_dir }}/*.dll
           if-no-files-found: error
 
-  # ---------------------------------------------------------------------------
-  # Release — single matrix caller of the reusable per-mod release workflow.
-  #
-  # `always()` in the `if` is REQUIRED: every job that transitively depends on
-  # the matrix `build` job is auto-skipped without it (observed across runs
-  # #124–#139 — the release jobs showed "skipped / 0 steps" while build-gate and
-  # the always() aggregate ran). The explicit needs.*.result checks still gate
-  # correctly. The matrix is the same fromJson(setup) the build job uses, so
-  # mod=all fans out to all mods and a single-mod dispatch fans out to one.
-  # ---------------------------------------------------------------------------
+  # always() is required. A job that depends on this matrix build is skipped
+  # unless its if starts with always() (runs #124–#139).
   release:
     name: release (${{ matrix.mod }})
     needs: [setup, build, version]
-    if: >-
-      always() &&
-      github.event_name == 'workflow_dispatch' &&
-      github.event.inputs.build_only != 'true' &&
-      needs.build.result == 'success' &&
-      (needs.version.result == 'success' || needs.version.result == 'skipped')
+    if: always() && github.event.inputs.build_only != 'true' && needs.build.result == 'success' && (needs.version.result == 'success' || needs.version.result == 'skipped')
     permissions:
       contents: write
     strategy:
@@ -384,23 +334,16 @@ jobs:
       ignore_discord_notify: ${{ github.event.inputs.ignore_discord_notify }}
     secrets: inherit
 
-  # ---------------------------------------------------------------------------
-  # Combined report — single human-readable summary (open this job first)
-  # ---------------------------------------------------------------------------
   release_aggregate_report:
     name: Combined release report
     needs: [release]
-    if: >-
-      always() &&
-      github.event_name == 'workflow_dispatch' &&
-      github.event.inputs.build_only != 'true' &&
-      needs.release.result != 'skipped'
+    if: always() && github.event.inputs.build_only != 'true' && needs.release.result != 'skipped'
     runs-on: ubuntu-latest
     steps:
       - name: Download per-mod reports
         id: dl
         continue-on-error: true
-        uses: actions/download-artifact@v7
+        uses: actions/download-artifact@v4
         with:
           pattern: release-report-*
           path: aggregated-reports
@@ -414,8 +357,6 @@ jobs:
             echo ""
             echo "Workflow run: [\`${{ github.run_id }}\`](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}) · ref \`${{ github.ref_name }}\` · event \`${{ github.event_name }}\`"
             echo ""
-            echo "Open this **Combined release report** job at the top of the run for all mods in one place. Individual release jobs still include the same section under their own summary."
-            echo ""
           } >> "$GITHUB_STEP_SUMMARY"
 
           ROOT="aggregated-reports"
@@ -424,7 +365,7 @@ jobs:
             {
               echo "## No report files"
               echo ""
-              echo "No \`release-report-*\` artifacts were found (for example every release job failed before the report step, or artifacts expired)."
+              echo "No \`release-report-*\` artifacts were found."
               echo ""
               echo "**Release job result:** \`${{ needs.release.result }}\`"
             } >> "$GITHUB_STEP_SUMMARY"
@@ -449,48 +390,3 @@ jobs:
               echo ""
             } >> "$GITHUB_STEP_SUMMARY"
           done
-
-  # ---------------------------------------------------------------------------
-  # Discord — published GitHub Release (no checkout; tag → mod dir map)
-  # ---------------------------------------------------------------------------
-  notify_discord:
-    if: github.event_name == 'release' && !startsWith(github.ref_name, 'HavensAlmanac-')
-    runs-on: ubuntu-latest
-    steps:
-      - name: Set mod icon URL from release tag
-        id: icon
-        run: |
-          TAG="${{ github.ref_name }}"
-          if [ -z "$TAG" ]; then
-            exit 0
-          fi
-          PREFIX="${TAG%-v*}"
-          case "$PREFIX" in
-            HavensBirthright)           DIR="HavensBirthright" ;;
-            SMUT)                       DIR="SunHavenMuseumUtilityTracker" ;;
-            SquirrelsBirthdayReminder)  DIR="BirthdayReminder" ;;
-            SunHavenTodo)               DIR="SunhavenTodo" ;;
-            TheVault)                   DIR="TheVault" ;;
-            HavenDevTools)              DIR="HavenDevTools" ;;
-            SenpaisChest)               DIR="SenpaisChest" ;;
-            HavensAlmanac)              DIR="HavensAlmanac" ;;
-            FasterRaces)                DIR="FasterRaces" ;;
-            TrinketFortune)             DIR="TrinketFortune" ;;
-            CropOptimizer)              DIR="CropOptimizer" ;;
-            HavensRespec)               DIR="HavensRespec" ;;
-            GiftingAssistant)           DIR="GiftingAssistant" ;;
-            HavensMirror)               DIR="HavensMirror" ;;
-            *)                          DIR="" ;;
-          esac
-          if [ -n "$DIR" ]; then
-            echo "url=https://raw.githubusercontent.com/${{ github.repository }}/main/$DIR/thunderstore/icon.png" >> "$GITHUB_OUTPUT"
-          fi
-
-      - name: GitHub Release → Discord
-        uses: AzraelGodKing/Discord_Release@main
-        with:
-          webhook_url: ${{ secrets.DISCORD_WEBHOOK_URL }}
-          color: "2105893"
-          username: "Sun Haven Mods"
-          reduce_headings: true
-          thumbnail_url: ${{ steps.icon.outputs.url }}

@@ -1,0 +1,67 @@
+[b][size=5]Gifting Assistant[/size][/b]
+
+Daily gift routine planner for Sun Haven. Build a per-character NPC roster, see loved and liked gifts with icons, and track who you have already gifted today.
+
+[line]
+
+[size=4][b]Features[/b][/size]
+[list]
+[*][b]Gift roster[/b] — Add any NPC to a per-character daily list
+[*][b]Gift suggestions[/b] — Loved and liked gifts from live game data, with item icons
+[*][b]Preferred gifts[/b] — Pick a preferred gift per NPC
+[*][b]Gifted today[/b] — Reads the game's gifted-today flag and lets you mark gifts manually; resets on a new day. Gifted NPCs sink to the bottom
+[*][b]Heart bars[/b] — Relationship hearts on roster rows and the Add NPC picker
+[*][b]Inventory hints[/b] — Optional indicator when suggested gifts are in your bag
+[*][b]Priority sorting[/b] — Low / Normal / High / Urgent
+[*][b]16 languages[/b] — Plus optional Force English
+[*][b]Soft integrations[/b] — Birthday Reminder (birthday badge), Sun Haven Todo (+Todo when Reminder Mode is Push to Todo), Haven's Almanac (roster progress when Almanac integration is on)
+[/list]
+
+[line]
+
+[size=4][b]Controls[/b][/size]
+[table]
+[tr][th]Action[/th][th]Key[/th][/tr]
+[tr][td]Toggle window[/td][td][b]Ctrl + G[/b] (default)[/td][/tr]
+[/table]
+
+[line]
+
+[size=4][b]Requirements[/b][/size]
+[list]
+[*][url=https://github.com/BepInEx/BepInEx]BepInEx 5.x[/url] for Sun Haven
+[*]Sun Haven
+[*]Optional: A Squirrel's Birthday Reminder, Sun Haven Todo, Haven's Almanac
+[/list]
+
+[size=4][b]Installation[/b][/size]
+[list]
+[*]Place [b]GiftingAssistant.dll[/b] in [b]Sun Haven/BepInEx/plugins/GiftingAssistant/[/b]
+[*]Launch the game
+[/list]
+
+[line]
+
+[size=4][b]Configuration[/b][/size]
+[b]Sun Haven/BepInEx/config/GiftingAssistant.cfg[/b]
+
+[list]
+[*][b]General.Enabled[/b] — Master toggle
+[*][b]Hotkeys[/b] — Toggle key and whether Ctrl is required
+[*][b]Display[/b] — Bag counts and window scale
+[*][b]Saving[/b] — Autosave and interval
+[*][b]Integrations.ReminderMode[/b] — Roster Only, or Push to Todo when Sun Haven Todo is installed
+[*][b]Integrations.UseAlmanacIntegration[/b] — Share roster progress with Haven's Almanac
+[/list]
+
+Per-character roster saves to [b]BepInEx/config/com.azraelgodking.giftingassistant/[/b] as [b]CharacterName_giftroster.json[/b].
+
+[line]
+
+[size=4][b]Links[/b][/size]
+[list]
+[*][url=https://www.nexusmods.com/sunhaven/mods/507]Nexus Mods[/url]
+[*][url=https://thunderstore.io/c/sun-haven/p/AzraelGodKing/GiftingAssistant/]Thunderstore[/url]
+[*][url=https://www.azraelsmods.com/sun-haven/gifting-assistant/]Documentation[/url]
+[*][url=https://discord.gg/Vwh2y7qMXv]Discord - bugs & discussion[/url]
+[/list]

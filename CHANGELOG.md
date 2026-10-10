@@ -107,7 +107,7 @@ Notes for **players and release readers**. Per-mod blurbs and upstream metadata 
 
 **Docs hub**
 
-- **New:** [Feedback](https://azraelgodking.github.io/SunhavenMod/feedback.html) ticket desk on the GitHub Pages hub — file a bug or feature request without leaving the docs. The floating Report Bug button on every guide now opens that page.
+- **New:** [Feedback](https://www.azraelsmods.com/sun-haven/) ticket desk on the site — file a bug or feature request without leaving the docs. The floating Report Bug button on every guide now opens that page.
 
 **Crop Optimizer (2.2.2)**
 
