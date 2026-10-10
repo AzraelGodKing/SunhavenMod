@@ -8,6 +8,7 @@ Internal engineering log: **CI**, **release automation**, **scripts**, **docs in
 
 - **Repo hygiene — orphaned files:** Removed `pt-BR-translation-review.md` (finished review artifact), `repo-management-review-2026-07-02.md` (completed audit), `SunhavenTodo/README.txt` (superseded by `README.md`), and `SunhavenTodo/Tests/TestResults/todo.trx` (committed test-run output with machine/user name). Added `**/TestResults/` to `.gitignore`.
 - **Cleanup — deduplicate character-name reflection:** BirthdayReminder (`PlayerPatches.GetCharacterName`) and SunhavenTodo (`PlayerPatches.GetCurrentCharacterName`) replaced private reflection walks with linked `SharedUtilities/GameSaveCharacterName.cs` (same pattern as GiftingAssistant / HavensMirror). BirthdayReminder retains its `player.playerName` fallback in the caller. No behavior change; no mod version bumps.
+- **HavenDevTools code-quality:** PersistentRunner heartbeat log demoted from `LogInfo` to `LogDebug` (MOD_LIFECYCLE_AND_LOGGING_CONTRACT §3). Removed dead `devtools.auth.*` locale keys (auth UI removed, `IsAuthorized` hardcoded true). Deleted narrating comments in `Awake()`.
 
 ## 2026-10-08
 
