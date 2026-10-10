@@ -6,6 +6,23 @@ Notes for **players and release readers**. Per-mod blurbs and upstream metadata 
 
 ## Unreleased
 
+## 2026-10-10
+
+**Haven's Respec (2.1.2 → 2.1.3)** — AZR-356
+- **Fix:** Respec now rolls back Max Mana from refunded skill nodes (e.g. Mental Focus, Town Spirit). Deactivate passes the live node rank into `SetActive`, and leftover permanent mana / character progress is cleared (Undo restores it).
+
+**Trinket Fortune (2.1.1 → 2.1.2)** — AZR-357
+- **Fix:** Museum-item bias patching is more resilient to game updates — discovers alternate `RandomItem` names, tries postfix if prefix fails, and falls back to FishingRod call-site patches when `Utilities.RandomItem` cannot be hooked.
+
+**Senpai's Chest (3.1.1 → 3.1.2)** — AZR-358
+- **Fix:** Config window layout heights scale with UIScale so 1.5×+ no longer overflows a fixed window.
+- **Fix:** Chest name labels use constant pixel canvas positioning (no ultrawide sideways drift).
+- **QoL:** `ScaleWithResolution` (default on), `AutoHighResLayout` for 1440p/ultrawide, UIScale range up to 3.0.
+
+**The Vault (4.2.0 → 4.2.1)** — AZR-359
+- **Fix:** WindowScale is multiplied by `Screen.height/1080` when `ScaleWithResolution` is on so 1440p/ultrawide stays readable.
+- **QoL:** `AutoHighResLayout` bumps default scale on high-res / ultrawide once; settings slider shows raw→effective scale.
+
 **The Vault** — dead-code cleanup
 
 - Deleted `DoorPatches.cs` (never wired to Harmony).

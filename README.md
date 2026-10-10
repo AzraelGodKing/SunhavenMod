@@ -6,18 +6,18 @@ BepInEx plugins for [Sun Haven](https://store.steampowered.com/app/1432860/Sun_H
 
 | Mod | Folder | Version |
 |-----|--------|---------|
-| Senpai's Chest | [`SenpaisChest/`](SenpaisChest/) | 3.1.1 |
+| Senpai's Chest | [`SenpaisChest/`](SenpaisChest/) | 3.1.2 |
 | Sun Haven Todo | [`SunhavenTodo/`](SunhavenTodo/) | 2.1.1 |
 | Sun Haven Museum Utility Tracker (S.M.U.T.) | [`SunHavenMuseumUtilityTracker/`](SunHavenMuseumUtilityTracker/) | 3.1.1 |
-| The Vault | [`TheVault/`](TheVault/) | 4.2.0 |
+| The Vault | [`TheVault/`](TheVault/) | 4.2.1 |
 | Haven's Birthright | [`HavensBirthright/`](HavensBirthright/) | 3.1.2 |
 | Haven's Almanac | [`HavensAlmanac/`](HavensAlmanac/) | 2.2.1 |
 | A Squirrel's Birthday Reminder | [`BirthdayReminder/`](BirthdayReminder/) | 2.1.1 |
 | Haven Dev Tools | [`HavenDevTools/`](HavenDevTools/) | 2.1.1 |
-| Trinket Fortune | [`TrinketFortune/`](TrinketFortune/) | 2.1.1 |
+| Trinket Fortune | [`TrinketFortune/`](TrinketFortune/) | 2.1.2 |
 | Faster Races | [`FasterRaces/`](FasterRaces/) | 2.1.1 |
 | Crop Optimizer | [`CropOptimizer/`](CropOptimizer/) | 2.2.2 |
-| Haven's Respec | [`HavensRespec/`](HavensRespec/) | 2.1.2 |
+| Haven's Respec | [`HavensRespec/`](HavensRespec/) | 2.1.3 |
 | Gifting Assistant | [`GiftingAssistant/`](GiftingAssistant/) | 1.1.1 |
 | Haven's Mirror | [`HavensMirror/`](HavensMirror/) | 1.0.0 |
 

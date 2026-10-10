@@ -12,8 +12,8 @@ namespace SenpaisChest.ChestLabels
 {
     internal class ChestLabel : MonoBehaviour
     {
-        private const float LabelVerticalOffset = 0.45f;
-        private const float ScreenYOffset = 16f;
+        private const float LabelVerticalOffset = 0.35f;
+        private const float ScreenYOffset = 8f;
 
         private static readonly (Color32 color, Color32 outlineColor)[] ChestColors = new (int, int)[]
         {
@@ -297,9 +297,11 @@ namespace SenpaisChest.ChestLabels
             _overlayCanvas.sortingOrder = short.MaxValue;
 
             var scaler = go.GetComponent<CanvasScaler>();
-            scaler.uiScaleMode = CanvasScaler.ScaleMode.ScaleWithScreenSize;
-            scaler.referenceResolution = new Vector2(1920f, 1080f);
-            scaler.matchWidthOrHeight = 0.5f;
+            // Constant pixel size: labels are positioned from WorldToScreenPoint pixel coords.
+            // ScaleWithScreenSize on ultrawide (e.g. 3440×1440) drifts labels sideways (AZR-358).
+            scaler.uiScaleMode = CanvasScaler.ScaleMode.ConstantPixelSize;
+            scaler.scaleFactor = 1f;
+            scaler.referencePixelsPerUnit = 100f;
 
             _overlayRoot = go.GetComponent<RectTransform>();
         }

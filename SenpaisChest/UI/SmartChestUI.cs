@@ -23,7 +23,7 @@ namespace SenpaisChest.UI
         private bool _confirmCopyRules;
         private float _confirmCopyRulesUntil;
 
-        // UI scale (0.5–2.5)
+        // UI scale (0.5–3.0; may include resolution factor)
         private float _scale = 1f;
         private const float BASE_WINDOW_WIDTH = 420f;
         private const float BASE_WINDOW_HEIGHT = 500f;
@@ -240,13 +240,15 @@ namespace SenpaisChest.UI
 
         public void SetScale(float scale)
         {
-            _scale = Mathf.Clamp(scale, 0.5f, 2.5f);
+            _scale = Mathf.Clamp(scale, 0.5f, 3.0f);
             _stylesDirty = true;
             _configWindowStyle = null;
             _windowRect.width = WindowWidth;
             _windowRect.height = WindowHeight;
             _groupsWindowRect.width = GroupsWindowWidth;
             _groupsWindowRect.height = GroupsWindowHeight;
+            // Reset content height so the next OnGUI pass remeasures at the new scale (AZR-358).
+            _contentHeight = WindowHeight;
         }
 
         public void Show()
@@ -709,7 +711,7 @@ namespace SenpaisChest.UI
                     string bulkLabel = confirmActive
                         ? $"Click Again to Confirm ({sameNameCount})"
                         : $"Copy Rules to All \"{_currentData.ChestName}\" ({sameNameCount})";
-                    if (GUILayout.Button(bulkLabel, bulkBtnStyle, GUILayout.Height((useParchmentTheme || compact) ? 24 : 28)))
+                    if (GUILayout.Button(bulkLabel, bulkBtnStyle, GUILayout.Height(Scaled((useParchmentTheme || compact) ? 24f : 28f))))
                     {
                         if (confirmActive)
                         {
@@ -748,14 +750,14 @@ namespace SenpaisChest.UI
                 else
                     GUILayout.Space(12);
                 GUILayout.BeginHorizontal();
-                if (GUILayout.Button(ModLocalization.T("chest.removeSmartChest"), useParchmentTheme ? _configRemoveButtonStyle : _dangerButtonStyle, GUILayout.Height(28)))
+                if (GUILayout.Button(ModLocalization.T("chest.removeSmartChest"), useParchmentTheme ? _configRemoveButtonStyle : _dangerButtonStyle, GUILayout.Height(Scaled(28f))))
                 {
                     _manager.RemoveSmartChest(_chestId, userInitiated: true);
                     SaveIfDirty();
                     HideConfig();
                 }
-                GUILayout.Space(8);
-                if (GUILayout.Button(ModLocalization.T("chest.close"), useParchmentTheme ? _configCloseBottomStyle : _closeBottomButtonStyle, GUILayout.Height(28)))
+                GUILayout.Space(Scaled(8f));
+                if (GUILayout.Button(ModLocalization.T("chest.close"), useParchmentTheme ? _configCloseBottomStyle : _closeBottomButtonStyle, GUILayout.Height(Scaled(28f))))
                     HideConfig();
                 GUILayout.EndHorizontal();
             }
@@ -1071,7 +1073,7 @@ namespace SenpaisChest.UI
                     if (_searchResults.Count > 0)
                     {
                         GUILayout.Space(4);
-                        _searchScrollPos = GUILayout.BeginScrollView(_searchScrollPos, GUILayout.Height(120));
+                        _searchScrollPos = GUILayout.BeginScrollView(_searchScrollPos, GUILayout.Height(Scaled(120f)));
                         foreach (var result in _searchResults)
                         {
                             bool isMuseum = IsUndonatedMuseumItem(result.Key);
